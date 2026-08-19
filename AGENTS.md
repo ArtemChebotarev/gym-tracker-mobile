@@ -8,20 +8,9 @@ Documentation and comments are written in English.
 
 Source of requirements — Notion, page/database **"GymTracker — Product Spec"**. The spec sections (Scope, Domain Model, Persistence Layer Contract, Screens & Navigation, etc.) live as subpages inside it.
 
-Tasks are tracked in the Notion **Tasks** database (a child database of the same page), numbered 001, 002, ... Statuses: "Not started" → "In progress" → "Done".
+If asked to "take a task" or "do the task", use the `take-task` skill.
 
-If asked to "take a task" or "do the task":
-
-1. Find the task in the Tasks database by number/name.
-2. Move it to "In progress" before starting work.
-3. Read the related Product Spec sections if the task references them.
-4. Complete the Definition of Done from the task description.
-5. After checking the DoD, describe what was done and wait for my approval.
-6. After approval, move the status to Done.
-
-Notion access requires a connected Notion MCP server (connected by default in Cowork; in Claude Code — add it via `claude mcp add`, see the Claude Code MCP docs).
-
-Project folder on disk: `~/gym-tracker-mobile` (git repository).
+Project folder on disk: `~/gym-tracker-mobile` (git repository). To commit and push changes, use the `commit-and-push` skill.
 
 # Running and debugging
 
