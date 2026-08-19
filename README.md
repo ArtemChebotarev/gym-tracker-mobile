@@ -13,17 +13,20 @@
 
 Open the JS debugger (React Native DevTools): run `npm run start` (or any of the `ios`/`android`/`web` commands — they also start the dev server) and press `j` in the terminal running the Expo CLI.
 
-### Linting, formatting, and type checking
+### Linting, formatting, type checking, and tests
 
-| Command                | What it does                                                  |
-| ---------------------- | ------------------------------------------------------------- |
-| `npm run lint`         | Runs ESLint across the project; fails on any error or warning |
-| `npm run typecheck`    | Runs `tsc --noEmit`                                           |
-| `npm run verify`       | Runs lint + typecheck (this is what gates every run below)    |
-| `npm run format`       | Formats the project with Prettier                             |
-| `npm run format:check` | Checks formatting without writing changes                     |
+| Command                   | What it does                                                           |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `npm run lint`            | Runs ESLint across the project; fails on any error or warning          |
+| `npm run typecheck`       | Runs `tsc --noEmit`                                                    |
+| `npm test`                | Runs the Jest test suite once                                          |
+| `npm run test:watch`      | Runs Jest in watch mode                                                |
+| `npm run test:boundaries` | Regression-checks the layer-boundary ESLint rules against fixtures     |
+| `npm run verify`          | Runs lint + typecheck + boundary check + tests (gates every run below) |
+| `npm run format`          | Formats the project with Prettier                                      |
+| `npm run format:check`    | Checks formatting without writing changes                              |
 
-`verify` runs automatically before every command in the table above (`start`, `start:clean`, `ios`, `ios:device`, `android`, `web`) via npm's `pre*` script hooks — a lint or type error stops the run before Metro/Xcode/Gradle even starts, the same way a failed `dotnet build` blocks `dotnet run`.
+`verify` runs automatically before every command in the table above (`start`, `start:clean`, `ios`, `ios:device`, `android`, `web`) via npm's `pre*` script hooks — a lint, type, boundary, or test error stops the run before Metro/Xcode/Gradle even starts, the same way a failed `dotnet build` blocks `dotnet run`.
 
 ### Running on a physical iPhone
 

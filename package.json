@@ -9,10 +9,13 @@
     "react-native": "0.86.2"
   },
   "devDependencies": {
+    "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.1",
     "eslint-config-prettier": "^10.1.8",
+    "jest": "~29.7.0",
+    "jest-expo": "~57.0.4",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3"
   },
@@ -31,8 +34,10 @@
     "web": "expo start --web",
     "lint": "expo lint . --max-warnings=0 --ignore-pattern '**/__boundary-fixtures__/**'",
     "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "test:boundaries": "node scripts/verify-boundaries.js",
-    "verify": "npm run lint && npm run typecheck && npm run test:boundaries",
+    "verify": "npm run lint && npm run typecheck && npm run test:boundaries && npm run test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
