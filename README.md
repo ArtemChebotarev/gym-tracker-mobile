@@ -1,18 +1,18 @@
 # GymTracker
 
-## Запуск и отладка
+## Running and debugging
 
-| Команда | Что делает |
+| Command | What it does |
 | --- | --- |
-| `npm run start` | Поднимает dev-сервер Metro (QR-код, привязка к симулятору/устройству) |
-| `npm run start:clean` | То же самое, но с очисткой кэша Metro (`-c`) — используй, если сборка бандла ведёт себя странно |
-| `npm run ios` | Собирает и запускает приложение в iOS-симуляторе |
-| `npm run ios:device` | Собирает и запускает приложение на подключённом физическом iPhone |
-| `npm run android` | Собирает и запускает приложение на Android-эмуляторе/устройстве (нужен установленный JDK) |
-| `npm run web` | Запускает dev-сервер с открытием версии для браузера |
+| `npm run start` | Starts the Metro dev server (QR code, binds to simulator/device) |
+| `npm run start:clean` | Same, but clears the Metro cache (`-c`) — use if the bundle build behaves oddly |
+| `npm run ios` | Builds and runs the app in the iOS simulator |
+| `npm run ios:device` | Builds and runs the app on a connected physical iPhone |
+| `npm run android` | Builds and runs the app on an Android emulator/device (requires JDK installed) |
+| `npm run web` | Starts the dev server and opens the browser version |
 
-Открыть JS-дебаггер (React Native DevTools): запусти `npm run start` (или любую из `ios`/`android`/`web` команд — они тоже поднимают dev-сервер) и нажми `j` в терминале, где выполняется Expo CLI.
+Open the JS debugger (React Native DevTools): run `npm run start` (or any of the `ios`/`android`/`web` commands — they also start the dev server) and press `j` in the terminal running the Expo CLI.
 
-### Запуск на физическом iPhone
+### Running on a physical iPhone
 
-Первый запуск на телефоне требует один раз вручную довериться профилю разработчика: **Настройки → Основные → VPN и управление устройством** → выбрать профиль → **Доверять**. После этого `npm run ios:device` устанавливает и запускает приложение без дополнительных шагов.
+The first run on the phone requires manually trusting the developer profile once: **Settings → General → VPN & Device Management** → select the profile → **Trust**. After that, `npm run ios:device` installs and launches the app with no extra steps.

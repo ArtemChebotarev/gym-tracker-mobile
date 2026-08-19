@@ -4,29 +4,32 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 # GymTracker — project context
 
-Источник требований — Notion, страница/база **"GymTracker — Product Spec"**. Разделы спеки (Scope, Domain Model, Persistence Layer Contract, Screens & Navigation и т.д.) лежат подстраницами внутри неё.
+Documentation and comments are written in English.
 
-Таски ведутся в Notion-базе **Tasks** (дочерняя база той же страницы), пронумерованы 001, 002, ... Статусы: "Not started" → "In progress" → "Done".
+Source of requirements — Notion, page/database **"GymTracker — Product Spec"**. The spec sections (Scope, Domain Model, Persistence Layer Contract, Screens & Navigation, etc.) live as subpages inside it.
 
-Если тебя просят "взять таск" или "выполнить задачу":
-1. Найди задачу в базе Tasks по номеру/названию.
-2. Переведи её в статус "In progress" перед началом работы.
-3. Прочитай связанные разделы Product Spec, если задача на них ссылается.
-4. Выполни Definition of Done из описания таска.
-5. После проверки DoD переведи статус в "Done".
+Tasks are tracked in the Notion **Tasks** database (a child database of the same page), numbered 001, 002, ... Statuses: "Not started" → "In progress" → "Done".
 
-Для доступа к Notion нужен подключённый Notion MCP-сервер (в Cowork он подключён по умолчанию; в Claude Code — добавь через `claude mcp add`, см. документацию Claude Code по MCP).
+If asked to "take a task" or "do the task":
+1. Find the task in the Tasks database by number/name.
+2. Move it to "In progress" before starting work.
+3. Read the related Product Spec sections if the task references them.
+4. Complete the Definition of Done from the task description.
+5. After checking the DoD, describe what was done and wait for my approval.
+6. After approval, move the status to Done.
 
-Папка проекта на диске: `~/gym-tracker-mobile` (git-репозиторий).
+Notion access requires a connected Notion MCP server (connected by default in Cowork; in Claude Code — add it via `claude mcp add`, see the Claude Code MCP docs).
 
-# Запуск и отладка
+Project folder on disk: `~/gym-tracker-mobile` (git repository).
 
-Полный список npm-скриптов и когда их использовать — в [README.md](README.md). Не дублируй эту информацию тут, просто следуй README.
+# Running and debugging
 
-Коротко:
-- `npm run start` / `npm run start:clean` — dev-сервер (Metro), второй вариант с очисткой кэша.
-- `npm run ios` — сборка и запуск в iOS-симуляторе.
-- `npm run ios:device` — сборка и запуск на физическом iPhone. Первый раз на телефоне нужно вручную довериться профилю разработчика (Настройки → Основные → VPN и управление устройством → Доверять) — без этого шага запуск падает с ошибкой подписи, это не баг.
-- `npm run android` — сборка и запуск на Android-эмуляторе/устройстве. Требует `ANDROID_HOME` и `JAVA_HOME` в окружении (у Артёма уже настроено в `~/.zshrc`, `JAVA_HOME` указывает на встроенный JDK Android Studio: `/Applications/Android Studio.app/Contents/jbr/Contents/Home`).
+Full list of npm scripts and when to use them — in [README.md](README.md). Don't duplicate that information here, just follow the README.
 
-Открыть JS-дебаггер (React Native DevTools): после любого dev-сервера нажать `j` в терминале — отдельного скрипта для этого нет, флага в Expo CLI тоже нет.
+Briefly:
+- `npm run start` / `npm run start:clean` — dev server (Metro), the second variant clears the cache.
+- `npm run ios` — build and run in the iOS simulator.
+- `npm run ios:device` — build and run on a physical iPhone. The first time on the phone you need to manually trust the developer profile (Settings → General → VPN & Device Management → Trust) — without this step the launch fails with a signing error, this is not a bug.
+- `npm run android` — build and run on an Android emulator/device. Requires `ANDROID_HOME` and `JAVA_HOME` in the environment (already set up for Artem in `~/.zshrc`, `JAVA_HOME` points to the JDK bundled with Android Studio: `/Applications/Android Studio.app/Contents/jbr/Contents/Home`).
+
+Open the JS debugger (React Native DevTools): after any dev server, press `j` in the terminal — there is no separate script for this, nor an Expo CLI flag.
