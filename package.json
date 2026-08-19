@@ -29,9 +29,10 @@
     "ios:device": "expo run:ios --device",
     "preweb": "npm run verify",
     "web": "expo start --web",
-    "lint": "expo lint . --max-warnings=0",
+    "lint": "expo lint . --max-warnings=0 --ignore-pattern '**/__boundary-fixtures__/**'",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run lint && npm run typecheck",
+    "test:boundaries": "node scripts/verify-boundaries.js",
+    "verify": "npm run lint && npm run typecheck && npm run test:boundaries",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
