@@ -10,15 +10,30 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.6",
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "prestart": "npm run verify",
     "start": "expo start",
+    "prestart:clean": "npm run verify",
     "start:clean": "expo start -c",
+    "preandroid": "npm run verify",
     "android": "expo run:android",
+    "preios": "npm run verify",
     "ios": "expo run:ios",
+    "preios:device": "npm run verify",
     "ios:device": "expo run:ios --device",
-    "web": "expo start --web"
+    "preweb": "npm run verify",
+    "web": "expo start --web",
+    "lint": "expo lint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "private": true
 }

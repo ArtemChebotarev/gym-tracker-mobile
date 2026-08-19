@@ -11,6 +11,7 @@ Source of requirements — Notion, page/database **"GymTracker — Product Spec"
 Tasks are tracked in the Notion **Tasks** database (a child database of the same page), numbered 001, 002, ... Statuses: "Not started" → "In progress" → "Done".
 
 If asked to "take a task" or "do the task":
+
 1. Find the task in the Tasks database by number/name.
 2. Move it to "In progress" before starting work.
 3. Read the related Product Spec sections if the task references them.
@@ -24,9 +25,12 @@ Project folder on disk: `~/gym-tracker-mobile` (git repository).
 
 # Running and debugging
 
+Always run these through `npm run <script>`, never call `expo`/`npx expo` directly — lint and typecheck run automatically as a `pre*` hook before `start`, `ios`, `ios:device`, `android`, and `web`, and calling the underlying Expo CLI command directly skips that check.
+
 Full list of npm scripts and when to use them — in [README.md](README.md). Don't duplicate that information here, just follow the README.
 
 Briefly:
+
 - `npm run start` / `npm run start:clean` — dev server (Metro), the second variant clears the cache.
 - `npm run ios` — build and run in the iOS simulator.
 - `npm run ios:device` — build and run on a physical iPhone. The first time on the phone you need to manually trust the developer profile (Settings → General → VPN & Device Management → Trust) — without this step the launch fails with a signing error, this is not a bug.
