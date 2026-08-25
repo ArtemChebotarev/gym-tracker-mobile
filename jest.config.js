@@ -8,6 +8,7 @@ module.exports = {
     '^@storage/(.*)$': '<rootDir>/storage/$1',
     '^@design/(.*)$': '<rootDir>/design/$1',
     '^@app/(.*)$': '<rootDir>/app/$1',
+    '^@state/(.*)$': '<rootDir>/state/$1',
   },
   testPathIgnorePatterns: ['/node_modules/'],
 };
