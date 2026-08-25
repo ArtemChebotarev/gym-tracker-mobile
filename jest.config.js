@@ -1,6 +1,10 @@
 // https://docs.expo.dev/develop/unit-testing/
 module.exports = {
   preset: 'jest-expo',
+  setupFilesAfterEnv: [
+    '@react-native/jest-preset/jest/setup.js',
+    '<rootDir>/jest.setup.ts',
+  ],
   moduleNameMapper: {
     '^@domain/(.*)$': '<rootDir>/domain/$1',
     '^@usecases/(.*)$': '<rootDir>/usecases/$1',
