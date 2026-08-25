@@ -13,8 +13,9 @@ Invoking this skill IS the user's confirmation to commit and push — don't ask 
 
 ## Steps
 
-1. Check the current branch (`git branch --show-current`). If it's `main`, create and switch to a new branch first (e.g. `task/<NNN>-<short-name>` or `chore/<short-name>`) — do not commit on `main`.
-2. Run `npm run verify` (lint + typecheck + `test`) from the project root. Fix any failures before continuing — do not commit code that fails verify.
-3. Review the changes (`git status`, `git diff`) and stage only the files relevant to the task.
-4. Commit with a message describing the *why*, not just the *what*.
-5. Push the branch straight away — no separate confirmation needed. If no PR exists yet for this branch, open one against `main` (`gh pr create`).
+1. `git fetch origin`, then sync with `origin/main` before doing anything else — `main` is protected and moves between sessions, so a stale local base causes avoidable conflicts later. If the current branch is `main`, fast-forward it (`git pull`) before branching off. If already on a task/feature branch, merge or rebase `origin/main` into it now, not right before pushing.
+2. Check the current branch (`git branch --show-current`). If it's `main`, create and switch to a new branch first (e.g. `task/<NNN>-<short-name>` or `chore/<short-name>`) — do not commit on `main`.
+3. Run `npm run verify` (lint + typecheck + `test`) from the project root. Fix any failures before continuing — do not commit code that fails verify.
+4. Review the changes (`git status`, `git diff`) and stage only the files relevant to the task.
+5. Commit with a message describing the *why*, not just the *what*.
+6. Push the branch straight away — no separate confirmation needed. If no PR exists yet for this branch, open one against `main` (`gh pr create`).

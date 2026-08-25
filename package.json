@@ -35,7 +35,9 @@
   },
   "overrides": {
     "react-dom": "19.2.3",
-    "react-test-renderer": "19.2.3"
+    "react-test-renderer": "19.2.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-worklets": "0.10.1"
   },
   "scripts": {
     "prestart": "npm run verify",
