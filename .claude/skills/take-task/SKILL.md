@@ -11,9 +11,10 @@ Notion access requires a connected Notion MCP server (connected by default in Co
 
 ## Steps
 
-1. Find the task in the Tasks database by number or name.
-2. Move it to "In progress" before starting work.
-3. Read the related Product Spec sections if the task references them.
-4. Complete the Definition of Done from the task description.
-5. After checking the DoD, describe what was done and wait for the user's approval — do not mark the task Done yet.
-6. After approval, move the status to Done.
+1. `git fetch origin` and sync local `main` with `origin/main` (fast-forward pull, or rebase/merge into your branch) before touching any files — `main` is protected and moves between sessions, so a stale base causes avoidable conflicts and rediscovering already-fixed bugs.
+2. Find the task in the Tasks database by number or name.
+3. Move it to "In progress" before starting work.
+4. Read the related Product Spec sections if the task references them.
+5. Complete the Definition of Done from the task description.
+6. After checking the DoD, describe what was done and wait for the user's approval — do not mark the task Done yet.
+7. After approval, move the status to Done.
