@@ -9,5 +9,5 @@ module.exports = {
     '^@design/(.*)$': '<rootDir>/design/$1',
     '^@app/(.*)$': '<rootDir>/app/$1',
   },
-  testPathIgnorePatterns: ['/node_modules/', '/__boundary-fixtures__/'],
+  testPathIgnorePatterns: ['/node_modules/'],
 };

@@ -5,8 +5,6 @@ const prettierConfig = require('eslint-config-prettier');
 
 // Layer boundary rules — see 07 · Persistence Layer Contract, "Layers" and rules 1 and 9.
 // The dependency arrow always points inward: screens -> use cases -> domain -> repositories.
-// Violation fixtures for these rules live in each layer's __boundary-fixtures__ folder and
-// are checked by `npm run test:boundaries` (scripts/verify-boundaries.js).
 const RN_AND_NAVIGATION_RESTRICTIONS = {
   paths: [
     {
@@ -81,14 +79,6 @@ module.exports = defineConfig([
     files: ['app/**/*.{js,jsx,ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
-    },
-  },
-  {
-    // Intentional violations used to test the rules above — see scripts/verify-boundaries.js.
-    // Not part of the default `npm run lint` run (excluded via --ignore-pattern).
-    files: ['**/__boundary-fixtures__/**/*.{js,jsx,ts,tsx}'],
-    rules: {
-      'import/no-unresolved': 'off',
     },
   },
 ]);

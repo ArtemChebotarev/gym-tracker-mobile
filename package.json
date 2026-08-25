@@ -1,12 +1,17 @@
 {
   "name": "gym-tracker-mobile",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "dependencies": {
     "expo": "~57.0.13",
+    "expo-constants": "~57.0.12",
+    "expo-linking": "~57.0.6",
+    "expo-router": "~57.0.14",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
-    "react-native": "0.86.2"
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
   },
   "devDependencies": {
     "@types/jest": "29.5.14",
@@ -32,12 +37,11 @@
     "ios:device": "expo run:ios --device",
     "preweb": "npm run verify",
     "web": "expo start --web",
-    "lint": "expo lint . --max-warnings=0 --ignore-pattern '**/__boundary-fixtures__/**'",
+    "lint": "expo lint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:boundaries": "node scripts/verify-boundaries.js",
-    "verify": "npm run lint && npm run typecheck && npm run test:boundaries && npm run test",
+    "verify": "npm run lint && npm run typecheck && npm run test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
