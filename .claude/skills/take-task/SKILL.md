@@ -16,5 +16,6 @@ Notion access requires a connected Notion MCP server (connected by default in Co
 3. Move it to "In progress" before starting work.
 4. Read the related Product Spec sections if the task references them.
 5. Complete the Definition of Done from the task description.
-6. After checking the DoD, describe what was done and wait for the user's approval — do not mark the task Done yet.
-7. After approval, move the status to Done.
+6. Invoke the `commit-and-push` skill to verify, commit, push the branch, and open a PR against `main` (use a `task/<NNN>-<short-name>` branch name).
+7. Share the PR link with the user, describe what was done and how it satisfies the DoD, and wait for their review/approval — do not mark the task Done yet.
+8. After approval, move the status to Done.
