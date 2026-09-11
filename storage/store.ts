@@ -1,13 +1,16 @@
+import type { TransactionalStore } from '@repositories/transaction';
+
 import { type Identifiable, InMemoryCollection } from './collection';
 
 // The in-memory storage engine — see 07 · Persistence Layer Contract, task 022. Holds a
-// set of named collections ("tables") and the transaction mechanism required by rule 6:
-// "There is a mechanism to run a set of writes atomically" (used by mesocycle creation and
-// next-session generation). This class is repository-agnostic on purpose: it does not know
-// about `MuscleGroup`, `Exercise`, `Session`, or any other domain entity. Concrete
-// repositories (built in later tasks) get a typed handle onto the collection(s) they need
-// via `collection()` and compose it with domain logic — the engine itself has none.
-export class InMemoryStore {
+// set of named collections ("tables") and implements the `TransactionalStore` contract
+// from task 021 (rule 6: "There is a mechanism to run a set of writes atomically"), used
+// by mesocycle creation and next-session generation. This class is repository-agnostic on
+// purpose: it does not know about `MuscleGroup`, `Exercise`, `Session`, or any other domain
+// entity. Concrete repositories (built in later tasks) get a typed handle onto the
+// collection(s) they need via `collection()` and compose it with domain logic — the engine
+// itself has none.
+export class InMemoryStore implements TransactionalStore<InMemoryStore> {
   private readonly collections = new Map<string, InMemoryCollection<Identifiable>>();
 
   /**
@@ -24,14 +27,19 @@ export class InMemoryStore {
   }
 
   /**
+   * See `TransactionalStore.transaction` in `repositories/transaction.ts` for the contract.
+   *
    * Runs `work` against this store atomically: if it throws (synchronously) or its
    * returned promise rejects, every collection is rolled back to exactly the state it was
    * in before `work` started, and the original error is re-thrown. Otherwise `work`'s
    * writes are kept and its result is returned.
    *
-   * Implemented via snapshot and restore, per the task's Definition of Done — not via undo
-   * logs or command replay: before running `work`, every existing collection's rows are
-   * deep-cloned aside; on failure they're copied back wholesale.
+   * Implemented via snapshot and restore, per task 021's Definition of Done ("a failure
+   * partway through a batch leaves no partially-written data") — not via undo logs or
+   * command replay: before running `work`, every existing collection's rows are
+   * deep-cloned aside; on failure they're copied back wholesale. This in-memory engine
+   * happens to support real transactions natively; an adapter for a medium that doesn't
+   * (see the interface doc) would need its own emulation strategy behind the same contract.
    */
   async transaction<T>(work: (store: InMemoryStore) => Promise<T> | T): Promise<T> {
     const snapshot = this.snapshot();
