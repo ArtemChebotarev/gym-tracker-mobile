@@ -8,7 +8,8 @@ describe('InMemoryMuscleGroupRepository', () => {
 
     expect(groups).toContain('chest');
     expect(groups).toContain('abs');
-    expect(groups).toHaveLength(11);
+    expect(groups).toContain('traps');
+    expect(groups).toHaveLength(12);
   });
 
   test('getById resolves a valid muscle group and null for one outside the catalog', async () => {
