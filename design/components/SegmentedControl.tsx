@@ -32,7 +32,11 @@ export function SegmentedControl({ options, value, onChange }: SegmentedControlP
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
-            style={[styles.segment, active && styles.activeSegment]}
+            style={({ pressed }) => [
+              styles.segment,
+              active && styles.activeSegment,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={[styles.label, active && styles.activeLabel]}>{option.label}</Text>
           </Pressable>
@@ -58,6 +62,9 @@ const styles = StyleSheet.create({
   },
   activeSegment: {
     backgroundColor: COLORS['surface/control-active'],
+  },
+  pressed: {
+    opacity: 0.7,
   },
   label: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

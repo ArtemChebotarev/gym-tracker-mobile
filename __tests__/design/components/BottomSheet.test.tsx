@@ -1,6 +1,6 @@
 import { BottomSheet } from '@design/components/BottomSheet';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { ScrollView, Text } from 'react-native';
 
 describe('BottomSheet', () => {
   test('renders nothing when not visible', () => {
@@ -65,6 +65,16 @@ describe('BottomSheet', () => {
     fireEvent(grabber, 'responderRelease', { nativeEvent: { pageY: 120 } });
 
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  test('renders content inside a scroll view so a long list is reachable', () => {
+    render(
+      <BottomSheet visible onClose={() => {}} title="Filters">
+        <Text>Content</Text>
+      </BottomSheet>,
+    );
+
+    expect(screen.UNSAFE_getByType(ScrollView)).toBeTruthy();
   });
 
   test('renders the optional action and footer', () => {

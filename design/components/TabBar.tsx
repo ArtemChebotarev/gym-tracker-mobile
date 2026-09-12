@@ -2,9 +2,10 @@
 // label together (08.0: "Активная — акцентом, иконка и подпись вместе"). Background reuses
 // `surface/raised`, the same "sticky, don't blend during scroll" surface SectionHeader uses
 // (08.0: "surface/raised: Липкие заголовки секций, таб-бар"). Like IconButton, the project has
-// no icon library yet, so `icon` is a render function of the active state — the caller supplies
-// an icon that already matches the tab's active/inactive look, the same contract IconButton
-// documents for its own icon slot.
+// no icon library yet, so `icon` is caller-supplied — the caller renders an icon that already
+// matches the tab's active/inactive look, the same contract IconButton documents for its own
+// icon slot. `icon` accepts either a plain node (same icon regardless of state) or a function of
+// the active state, so a tab whose icon never changes look doesn't need to write a closure.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,7 +14,7 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
 export type TabBarItem = {
   key: string;
   label: string;
-  icon: (active: boolean) => ReactNode;
+  icon: ReactNode | ((active: boolean) => ReactNode);
 };
 
 export type TabBarProps = {
@@ -27,6 +28,7 @@ export function TabBar({ items, activeKey, onChange }: TabBarProps) {
     <View style={styles.container}>
       {items.map((item) => {
         const active = item.key === activeKey;
+        const icon = typeof item.icon === 'function' ? item.icon(active) : item.icon;
         return (
           <Pressable
             key={item.key}
@@ -34,9 +36,9 @@ export function TabBar({ items, activeKey, onChange }: TabBarProps) {
             accessibilityLabel={item.label}
             accessibilityState={{ selected: active }}
             onPress={() => onChange(item.key)}
-            style={styles.tab}
+            style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
           >
-            {item.icon(active)}
+            {icon}
             <Text style={active ? styles.activeLabel : styles.inactiveLabel}>{item.label}</Text>
           </Pressable>
         );
@@ -56,6 +58,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING['space/gap-tight'],
     paddingVertical: SPACING['space/row'],
+  },
+  pressed: {
+    opacity: 0.7,
   },
   activeLabel: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

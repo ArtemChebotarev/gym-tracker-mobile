@@ -36,4 +36,14 @@ describe('TabBar', () => {
 
     expect(onChange).toHaveBeenCalledWith('library');
   });
+
+  test('accepts a plain icon that does not vary with active state', () => {
+    const items: TabBarItem[] = [
+      { key: 'today', label: 'Today', icon: <Text>●</Text> },
+      { key: 'history', label: 'History', icon: <Text>●</Text> },
+    ];
+    render(<TabBar items={items} activeKey="today" onChange={() => {}} />);
+
+    expect(screen.getAllByText('●')).toHaveLength(2);
+  });
 });

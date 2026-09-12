@@ -31,6 +31,28 @@ describe('Dropdown', () => {
     expect(onChange).toHaveBeenCalledWith('chest');
   });
 
+  test('closes the option list after selecting an option', () => {
+    render(<Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={() => {}} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
+    expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Chest' }));
+
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+  });
+
+  test('marks the trigger as expanded only while the sheet is open', () => {
+    render(<Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={() => {}} />);
+
+    const trigger = screen.getByRole('button', { name: 'Muscle group' });
+    expect(trigger.props.accessibilityState).toEqual(expect.objectContaining({ expanded: false }));
+
+    fireEvent.press(trigger);
+
+    expect(trigger.props.accessibilityState).toEqual(expect.objectContaining({ expanded: true }));
+  });
+
   test('renders the error state', () => {
     render(
       <Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={() => {}} error="Pick a group" />,

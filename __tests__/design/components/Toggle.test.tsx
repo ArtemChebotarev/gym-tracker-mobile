@@ -31,4 +31,26 @@ describe('Toggle', () => {
 
     expect(onValueChange).toHaveBeenCalledWith(true);
   });
+
+  test('is enabled by default', () => {
+    render(
+      <Toggle label="Deload week" description="Halves the load and widens RIR" value={false} onValueChange={() => {}} />,
+    );
+
+    expect(screen.getByLabelText('Deload week').props.disabled).toBeFalsy();
+  });
+
+  test('disables the switch when disabled', () => {
+    render(
+      <Toggle
+        label="Deload week"
+        description="Halves the load and widens RIR"
+        value={false}
+        onValueChange={() => {}}
+        disabled
+      />,
+    );
+
+    expect(screen.getByLabelText('Deload week').props.disabled).toBe(true);
+  });
 });

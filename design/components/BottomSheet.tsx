@@ -15,15 +15,19 @@
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import type { GestureResponderEvent } from 'react-native';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
 const DISMISS_DISTANCE = 60;
 // No token exists yet for a modal scrim or the grabber's own pill size — both are
-// implementation-only pixel details, same exception as IconButton's DIAMETER.
-const SCRIM_COLOR = 'rgba(0, 0, 0, 0.5)';
+// implementation-only pixel details, same exception as IconButton's DIAMETER. SCRIM_COLOR is
+// exported so a future overlay/modal component can reuse it instead of hardcoding its own.
+export const SCRIM_COLOR = 'rgba(0, 0, 0, 0.5)';
 const GRABBER_WIDTH = 36;
 const GRABBER_HEIGHT = 4;
+// Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
+// overflowing past the screen — no token for this exists in 08.0 either.
+const MAX_SHEET_HEIGHT = '80%';
 
 export type BottomSheetProps = {
   visible: boolean;
@@ -72,7 +76,7 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
             <Text style={styles.title}>{title}</Text>
             {action}
           </View>
-          <View style={styles.content}>{children}</View>
+          <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
           {footer !== undefined && <View style={styles.footer}>{footer}</View>}
         </View>
       </View>
@@ -90,6 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: SCRIM_COLOR,
   },
   sheet: {
+    maxHeight: MAX_SHEET_HEIGHT,
     backgroundColor: COLORS['surface/sheet'],
     borderTopLeftRadius: RADII['radius/sheet'],
     borderTopRightRadius: RADII['radius/sheet'],

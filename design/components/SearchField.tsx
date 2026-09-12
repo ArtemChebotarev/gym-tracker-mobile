@@ -32,6 +32,7 @@ export function SearchField({ value, onChangeText, icon, placeholder }: SearchFi
           accessibilityLabel="Clear search"
           onPress={() => onChangeText('')}
           hitSlop={8}
+          style={({ pressed }) => pressed && styles.pressed}
         >
           <Text style={styles.clear}>×</Text>
         </Pressable>
@@ -61,5 +62,8 @@ const styles = StyleSheet.create({
   clear: {
     fontSize: TYPOGRAPHY['type/value'].fontSize,
     color: COLORS['text/faint'],
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });
