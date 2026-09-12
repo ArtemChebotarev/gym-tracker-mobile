@@ -15,6 +15,7 @@ export const MUSCLE_GROUPS = [
   'hamstrings',
   'calves',
   'abs',
+  'traps',
 ] as const;
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
