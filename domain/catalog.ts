@@ -24,8 +24,20 @@ export type ExerciseSource = 'catalog' | 'custom';
 
 export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'other';
 
+// Branded so an ExerciseId can't be passed where another entity's id is expected (both are
+// plain strings otherwise). Zero runtime cost — the brand only exists at the type level, and
+// an ExerciseId serializes/compares exactly like the string it wraps.
+export type ExerciseId = string & { readonly __brand: 'ExerciseId' };
+
+// The only way to obtain an ExerciseId: wrap a hand-picked catalog slug (02 · Domain Model,
+// "Идентификаторы каталога прошиты в приложение") or a generateId() result for a custom
+// exercise. Never generate catalog ids at runtime — see domain/exerciseCatalog.ts.
+export function toExerciseId(id: string): ExerciseId {
+  return id as ExerciseId;
+}
+
 export type Exercise = {
-  id: string;
+  id: ExerciseId;
   name: string;
   muscleGroup: MuscleGroup;
   source: ExerciseSource;

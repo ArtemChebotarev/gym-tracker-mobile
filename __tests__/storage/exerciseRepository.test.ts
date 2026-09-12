@@ -1,10 +1,11 @@
 import type { Exercise } from '@domain/catalog';
+import { toExerciseId } from '@domain/catalog';
 import { ConflictError } from '@domain/errors';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryStore } from '@storage/store';
 
 const benchPress: Exercise = {
-  id: 'exercise-bench-press',
+  id: toExerciseId('exercise-bench-press'),
   name: 'Bench Press',
   muscleGroup: 'chest',
   source: 'catalog',
@@ -13,7 +14,7 @@ const benchPress: Exercise = {
 };
 
 const legPress: Exercise = {
-  id: 'exercise-leg-press',
+  id: toExerciseId('exercise-leg-press'),
   name: 'Leg Press',
   muscleGroup: 'quads',
   source: 'catalog',
@@ -22,7 +23,7 @@ const legPress: Exercise = {
 };
 
 const customCurl: Exercise = {
-  id: 'exercise-custom-curl',
+  id: toExerciseId('exercise-custom-curl'),
   name: 'Cable Curl Variation',
   muscleGroup: 'biceps',
   source: 'custom',
@@ -44,13 +45,13 @@ describe('InMemoryExerciseRepository', () => {
 
     await expect(repo.getAll()).resolves.toEqual(expect.arrayContaining([benchPress, legPress]));
     await expect(repo.getById(benchPress.id)).resolves.toEqual(benchPress);
-    await expect(repo.getById('missing')).resolves.toBeNull();
+    await expect(repo.getById(toExerciseId('missing'))).resolves.toBeNull();
   });
 
   test('listByIds returns matches and silently skips ids that do not resolve', async () => {
     const repo = await seeded(benchPress, legPress);
 
-    const found = await repo.listByIds([legPress.id, 'missing', benchPress.id]);
+    const found = await repo.listByIds([legPress.id, toExerciseId('missing'), benchPress.id]);
 
     expect(found.map((exercise) => exercise.id).sort()).toEqual([benchPress.id, legPress.id].sort());
   });

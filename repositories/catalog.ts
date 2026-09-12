@@ -1,4 +1,4 @@
-import type { Exercise, MuscleGroup } from '@domain/catalog';
+import type { Exercise, ExerciseId, MuscleGroup } from '@domain/catalog';
 
 /**
  * Read-only access to the muscle group catalog.
@@ -36,13 +36,13 @@ export interface ExerciseRepository {
   getAll(): Promise<Exercise[]>;
 
   /** A single exercise by id, or `null` if it does not exist. */
-  getById(id: string): Promise<Exercise | null>;
+  getById(id: ExerciseId): Promise<Exercise | null>;
 
   /**
    * Exercises matching the given ids, in no particular order. Ids that don't
    * resolve to an exercise are silently omitted from the result.
    */
-  listByIds(ids: readonly string[]): Promise<Exercise[]>;
+  listByIds(ids: readonly ExerciseId[]): Promise<Exercise[]>;
 
   /** All exercises belonging to the given muscle group. */
   filterByMuscleGroup(muscleGroup: MuscleGroup): Promise<Exercise[]>;
@@ -64,7 +64,7 @@ export interface ExerciseRepository {
    * Flips `isHidden` on the exercise with the given id (catalog or custom)
    * and returns the updated entity. Rejects if the record does not exist.
    */
-  toggleHidden(id: string): Promise<Exercise>;
+  toggleHidden(id: ExerciseId): Promise<Exercise>;
 
   /**
    * Seeds the catalog with the given `source: 'catalog'` exercises for the

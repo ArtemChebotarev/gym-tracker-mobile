@@ -1,4 +1,4 @@
-import type { Exercise, MuscleGroup } from '@domain/catalog';
+import type { Exercise, ExerciseId, MuscleGroup } from '@domain/catalog';
 import type { ExerciseRepository } from '@repositories/catalog';
 
 import { ConflictError } from './errors';
@@ -17,11 +17,11 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     return this.exercises.list();
   }
 
-  async getById(id: string): Promise<Exercise | null> {
+  async getById(id: ExerciseId): Promise<Exercise | null> {
     return (await this.exercises.findById(id)) ?? null;
   }
 
-  async listByIds(ids: readonly string[]): Promise<Exercise[]> {
+  async listByIds(ids: readonly ExerciseId[]): Promise<Exercise[]> {
     return this.exercises.listByIds([...ids]);
   }
 
@@ -44,7 +44,7 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     });
   }
 
-  async toggleHidden(id: string): Promise<Exercise> {
+  async toggleHidden(id: ExerciseId): Promise<Exercise> {
     return this.exercises.update(id, (current) => ({ ...current, isHidden: !current.isHidden }));
   }
 
