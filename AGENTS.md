@@ -12,6 +12,10 @@ If asked to "take a task" or "do the task", use the `take-task` skill.
 
 Project folder on disk: `~/gym-tracker-mobile` (git repository). To commit and push changes, use the `commit-and-push` skill.
 
+# Code organization
+
+One file, one responsibility. Don't mix a domain module's type definitions with its business logic (validators, converters, etc.) in the same file — split them, e.g. `domain/mesocycle.ts` (types) + `domain/mesocycleValidators.ts` (validators for those types). Name the logic file after the model file it belongs to (`<model>Validators.ts`, `<model>Converters.ts`, ...). Mirror the split in `__tests__/` so each source file has its own matching test file.
+
 # Git workflow
 
 `main` is protected on GitHub and moves between sessions (other PRs get merged independently of this one). Before starting *any* task that will touch files — and before branching off `main` for a commit — always run `git fetch origin` and sync local `main` with `origin/main` (fast-forward pull, or rebase/merge it into the working branch). Never assume the local `main` you last looked at is still current; a stale base is how avoidable merge conflicts and "fixed" bugs that are actually already-fixed-upstream get discovered late.
