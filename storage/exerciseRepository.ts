@@ -1,24 +1,8 @@
-import { MUSCLE_GROUPS } from '@domain/catalog';
 import type { Exercise, MuscleGroup } from '@domain/catalog';
-import type { ExerciseRepository, MuscleGroupRepository } from '@repositories/catalog';
+import type { ExerciseRepository } from '@repositories/catalog';
 
-import { runAsync } from './async';
 import { ConflictError } from './errors';
 import type { InMemoryStore } from './store';
-
-// The muscle group catalog is a fixed enum, not a stored table (02 · Domain Model:
-// "Группа мышц — фиксированный enum прямо на упражнении, не отдельная сущность") — there is
-// nothing to seed or persist, so this repository just reads the domain's own MUSCLE_GROUPS
-// constant instead of an InMemoryCollection (or a second, hand-written copy of the list).
-export class InMemoryMuscleGroupRepository implements MuscleGroupRepository {
-  async getAll(): Promise<MuscleGroup[]> {
-    return runAsync(() => [...MUSCLE_GROUPS]);
-  }
-
-  async getById(id: MuscleGroup): Promise<MuscleGroup | null> {
-    return runAsync(() => (MUSCLE_GROUPS.includes(id) ? id : null));
-  }
-}
 
 const EXERCISES_COLLECTION = 'Exercise';
 
