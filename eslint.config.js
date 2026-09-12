@@ -2,6 +2,7 @@
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const prettierConfig = require('eslint-config-prettier');
+const noHardcodedDesignValues = require('./eslint-rules/noHardcodedDesignValues');
 
 // Layer boundary rules — see 07 · Persistence Layer Contract, "Layers" and rules 1 and 9.
 // The dependency arrow always points inward: screens -> use cases -> domain -> repositories.
@@ -75,10 +76,15 @@ module.exports = defineConfig([
     },
   },
   {
-    // app/ (screens) must go through usecases, never storage/ directly.
+    // app/ (screens) must go through usecases, never storage/ directly, and must never set a
+    // color or size itself — see 08.0 · Design SDK, "Только токены".
     files: ['app/**/*.{js,jsx,ts,tsx}'],
+    plugins: {
+      design: { rules: { 'no-hardcoded-design-values': noHardcodedDesignValues } },
+    },
     rules: {
       'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
+      'design/no-hardcoded-design-values': 'error',
     },
   },
 ]);
