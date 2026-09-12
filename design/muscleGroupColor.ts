@@ -1,39 +1,44 @@
 // Muscle-group color mapping — see 08.0 · Design SDK, "Цвета групп мышц". Color is assigned
-// to the family, not the individual group: four families read at a glance, twelve individual
-// colors don't. `tint` and `text-on-tint` are derived from the family color by a fixed rule
-// below rather than hand-picked per family (08.0: "Производные значения выводятся ... по
-// правилу, а не задаются вручную").
-//
-// The spec's own worked example for `pull` was written by hand and didn't reproduce under any
-// standard color-blend formula, so it was corrected in the spec to match this rule's actual
-// output rather than the other way around.
+// to a coarser category, not the individual group: twelve individual colors aren't
+// distinguishable, six categories are. `tint` and `text-on-tint` are derived from the
+// category color by a fixed rule below rather than hand-picked per category (08.0:
+// "Производные значения выводятся ... по правилу, а не задаются вручную").
 
 import type { MuscleGroup } from '@domain/catalog';
 import { COLORS } from './tokens';
 
-export const MUSCLE_FAMILIES = ['push', 'pull', 'legs', 'core'] as const;
-export type MuscleFamily = (typeof MUSCLE_FAMILIES)[number];
+export const MUSCLE_GROUP_COLOR_CATEGORIES = [
+  'chest',
+  'back',
+  'arms',
+  'legs',
+  'shoulders',
+  'abs',
+] as const;
+export type MuscleGroupColorCategory = (typeof MUSCLE_GROUP_COLOR_CATEGORIES)[number];
 
-const FAMILY_BY_MUSCLE_GROUP: Record<MuscleGroup, MuscleFamily> = {
-  chest: 'push',
-  shoulders: 'push',
-  triceps: 'push',
-  back: 'pull',
-  biceps: 'pull',
-  forearms: 'pull',
+const CATEGORY_BY_MUSCLE_GROUP: Record<MuscleGroup, MuscleGroupColorCategory> = {
+  chest: 'chest',
+  back: 'back',
+  traps: 'back',
+  biceps: 'arms',
+  triceps: 'arms',
+  forearms: 'arms',
   quads: 'legs',
   hamstrings: 'legs',
   glutes: 'legs',
   calves: 'legs',
-  abs: 'core',
-  traps: 'core',
+  shoulders: 'shoulders',
+  abs: 'abs',
 };
 
-const FAMILY_COLOR: Record<MuscleFamily, string> = {
-  push: '#F0A537',
-  pull: '#5B9CF8',
+const CATEGORY_COLOR: Record<MuscleGroupColorCategory, string> = {
+  chest: '#F0A537',
+  back: '#5B9CF8',
+  arms: '#F25ACE',
   legs: '#35C2A0',
-  core: '#A78BFA',
+  shoulders: '#5AF25F',
+  abs: '#A78BFA',
 };
 
 const TINT_OPACITY = 0.12;
@@ -42,24 +47,26 @@ const TEXT_ON_TINT_LIGHTNESS = 78;
 // Takes the raw muscleGroupId a screen has on hand (e.g. straight off a stored Exercise)
 // rather than the narrow MuscleGroup type, so a value that predates a domain change or was
 // corrupted in storage degrades to `undefined` instead of crashing the lookup.
-export function getMuscleFamily(muscleGroupId: string): MuscleFamily | undefined {
-  return FAMILY_BY_MUSCLE_GROUP[muscleGroupId as MuscleGroup];
+export function getMuscleGroupCategory(
+  muscleGroupId: string,
+): MuscleGroupColorCategory | undefined {
+  return CATEGORY_BY_MUSCLE_GROUP[muscleGroupId as MuscleGroup];
 }
 
-export function getFamilyColor(family: MuscleFamily): string {
-  return FAMILY_COLOR[family];
+export function getCategoryColor(category: MuscleGroupColorCategory): string {
+  return CATEGORY_COLOR[category];
 }
 
-// tint = the family color blended at TINT_OPACITY over `surface/page` — background for a
+// tint = the category color blended at TINT_OPACITY over `surface/page` — background for a
 // muscle-group chip.
-export function getFamilyTint(family: MuscleFamily): string {
-  return blendOverPage(FAMILY_COLOR[family], TINT_OPACITY);
+export function getCategoryTint(category: MuscleGroupColorCategory): string {
+  return blendOverPage(CATEGORY_COLOR[category], TINT_OPACITY);
 }
 
-// text-on-tint = the family color lightened to a fixed lightness, keeping its hue and
-// saturation — readable on top of the tint above, for any family.
-export function getFamilyTextOnTint(family: MuscleFamily): string {
-  return withLightness(FAMILY_COLOR[family], TEXT_ON_TINT_LIGHTNESS);
+// text-on-tint = the category color lightened to a fixed lightness, keeping its hue and
+// saturation — readable on top of the tint above, for any category.
+export function getCategoryTextOnTint(category: MuscleGroupColorCategory): string {
+  return withLightness(CATEGORY_COLOR[category], TEXT_ON_TINT_LIGHTNESS);
 }
 
 // --- color math, private to this module -------------------------------------------------
