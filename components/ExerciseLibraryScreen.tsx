@@ -10,6 +10,7 @@
 
 import { useMemo } from 'react';
 import { SectionList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Exercise, MuscleGroup } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup, ExerciseListQuery } from '@domain/catalogListing';
@@ -102,7 +103,7 @@ export function ExerciseLibraryScreen({
   const showList = !isPending && (groups?.length ?? 0) > 0;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Exercises</Text>
         <IconButton accessibilityLabel="Add exercise" variant="accent" onPress={() => onRequestCreate()}>
@@ -171,7 +172,7 @@ export function ExerciseLibraryScreen({
           )}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
