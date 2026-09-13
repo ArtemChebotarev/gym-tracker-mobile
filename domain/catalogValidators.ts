@@ -2,7 +2,7 @@
 // Kept separate from `domain/catalog.ts` (types only) per the single-responsibility rule in
 // AGENTS.md.
 
-import { MUSCLE_GROUPS, type MuscleGroup } from './catalog';
+import { EQUIPMENT_OPTIONS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from './catalog';
 
 /**
  * Trims `name` and throws if the result is empty. Backs the "New exercise" sheet's Name field
@@ -26,5 +26,16 @@ export function normalizeExerciseName(name: string): string {
 export function validateExerciseMuscleGroup(muscleGroup: MuscleGroup): void {
   if (!MUSCLE_GROUPS.includes(muscleGroup)) {
     throw new Error(`Unknown muscle group: "${muscleGroup}".`);
+  }
+}
+
+/**
+ * Throws if `equipment` is given but is not one of the fixed catalog values
+ * (`EQUIPMENT_OPTIONS`). Unlike muscle group, equipment is optional (02 · Domain Model:
+ * `equipment?: Equipment`) — `undefined` is always valid.
+ */
+export function validateExerciseEquipment(equipment: Equipment | undefined): void {
+  if (equipment !== undefined && !EQUIPMENT_OPTIONS.includes(equipment)) {
+    throw new Error(`Unknown equipment: "${equipment}".`);
   }
 }

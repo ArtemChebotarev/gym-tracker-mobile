@@ -83,6 +83,28 @@ describe('createCustomExercise', () => {
       /Exercise name is required/,
     );
   });
+
+  test('persists the given equipment when provided', async () => {
+    const deps = makeDeps();
+
+    const created = await createCustomExercise(
+      { name: 'Garage Press', muscleGroup: 'chest', equipment: 'dumbbell' },
+      deps,
+    );
+
+    expect(created.equipment).toBe('dumbbell');
+  });
+
+  test('rejects an unknown equipment value', async () => {
+    const deps = makeDeps();
+
+    await expect(
+      createCustomExercise(
+        { name: 'Garage Press', muscleGroup: 'chest', equipment: 'not-equipment' as never },
+        deps,
+      ),
+    ).rejects.toThrow(/Unknown equipment/);
+  });
 });
 
 describe('updateCustomExercise', () => {
@@ -96,6 +118,21 @@ describe('updateCustomExercise', () => {
     );
 
     expect(updated).toEqual({ ...created, name: 'Renamed Press', muscleGroup: 'shoulders' });
+  });
+
+  test('updates the equipment of an existing custom exercise', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise(
+      { name: 'Garage Press', muscleGroup: 'chest', equipment: 'dumbbell' },
+      deps,
+    );
+
+    const updated = await updateCustomExercise(
+      { id: created.id, name: created.name, muscleGroup: created.muscleGroup, equipment: 'barbell' },
+      deps,
+    );
+
+    expect(updated.equipment).toBe('barbell');
   });
 
   test('rejects editing a catalog exercise', async () => {

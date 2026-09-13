@@ -1,5 +1,12 @@
+import { View } from 'react-native';
 import { Dropdown } from '@design/components/Dropdown';
 import { fireEvent, render, screen } from '@testing-library/react-native';
+
+function flatStylesOf(instance: ReturnType<typeof screen.getByRole>) {
+  return instance
+    .findAllByType(View)
+    .map((view) => Object.assign({}, ...(Array.isArray(view.props.style) ? view.props.style : [view.props.style]).filter(Boolean)));
+}
 
 const OPTIONS = [
   { value: 'chest', label: 'Chest' },
@@ -18,7 +25,7 @@ describe('Dropdown', () => {
   test('renders the selected option label', () => {
     render(<Dropdown label="Muscle group" options={OPTIONS} value="back" onChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent('Back');
+    expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent(/Back/);
   });
 
   test('opens the option list and propagates the chosen value outward', () => {
@@ -59,5 +66,29 @@ describe('Dropdown', () => {
     );
 
     expect(screen.getByText('Pick a group')).toBeTruthy();
+  });
+
+  test('the option list expands inline, not in a separate overlay — pressing the trigger again collapses it', () => {
+    render(<Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={() => {}} />);
+    const trigger = screen.getByRole('button', { name: 'Muscle group' });
+
+    fireEvent.press(trigger);
+    expect(screen.getByRole('button', { name: 'Chest' })).toBeTruthy();
+
+    fireEvent.press(trigger);
+    expect(screen.queryByRole('button', { name: 'Chest' })).toBeNull();
+  });
+
+  test('an option with a dotColor renders its color both on the trigger and in the option list', () => {
+    const coloredOptions = [
+      { value: 'chest', label: 'Chest', dotColor: '#F0A537' },
+      { value: 'back', label: 'Back', dotColor: '#5B9CF8' },
+    ];
+    render(<Dropdown label="Muscle group" options={coloredOptions} value="chest" onChange={() => {}} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
+
+    const backOption = screen.getByRole('button', { name: 'Back' });
+    expect(flatStylesOf(backOption).some((style) => style.backgroundColor === '#5B9CF8')).toBe(true);
   });
 });

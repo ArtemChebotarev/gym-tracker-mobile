@@ -2,13 +2,23 @@
 // Orchestrates domain validation/listing with the catalog and set-log repositories; contains no
 // business logic of its own, per usecases/README.md.
 
-import { toExerciseId, type Exercise, type ExerciseId, type MuscleGroup } from '@domain/catalog';
+import {
+  toExerciseId,
+  type Equipment,
+  type Exercise,
+  type ExerciseId,
+  type MuscleGroup,
+} from '@domain/catalog';
 import {
   buildExerciseListGroups,
   type ExerciseListGroup,
   type ExerciseListQuery,
 } from '@domain/catalogListing';
-import { normalizeExerciseName, validateExerciseMuscleGroup } from '@domain/catalogValidators';
+import {
+  normalizeExerciseName,
+  validateExerciseEquipment,
+  validateExerciseMuscleGroup,
+} from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SetLog } from '@domain/execution';
 import { generateId } from '@domain/id';
@@ -23,12 +33,14 @@ export type ExerciseLibraryDeps = {
 export type CreateCustomExerciseInput = {
   name: string;
   muscleGroup: MuscleGroup;
+  equipment?: Equipment;
 };
 
 export type UpdateCustomExerciseInput = {
   id: ExerciseId;
   name: string;
   muscleGroup: MuscleGroup;
+  equipment?: Equipment;
 };
 
 /** Creates a custom exercise (08.6, "New exercise — лист"). */
@@ -38,12 +50,14 @@ export async function createCustomExercise(
 ): Promise<Exercise> {
   const name = normalizeExerciseName(input.name);
   validateExerciseMuscleGroup(input.muscleGroup);
+  validateExerciseEquipment(input.equipment);
 
   return deps.exerciseRepo.createCustom({
     id: toExerciseId(generateId()),
     name,
     muscleGroup: input.muscleGroup,
     source: 'custom',
+    equipment: input.equipment,
     isHidden: false,
   });
 }
@@ -67,8 +81,14 @@ export async function updateCustomExercise(
 
   const name = normalizeExerciseName(input.name);
   validateExerciseMuscleGroup(input.muscleGroup);
+  validateExerciseEquipment(input.equipment);
 
-  return deps.exerciseRepo.updateCustom({ ...existing, name, muscleGroup: input.muscleGroup });
+  return deps.exerciseRepo.updateCustom({
+    ...existing,
+    name,
+    muscleGroup: input.muscleGroup,
+    equipment: input.equipment,
+  });
 }
 
 /**

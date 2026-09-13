@@ -18,11 +18,19 @@
 // on any device that has one, and can read as visually cropped. The same paddingBottom below
 // still applies underneath the inset, exactly as RootScreen layers `space/screen` under the top
 // inset — see that file's own SafeAreaView usage.
+//
+// KeyboardAvoidingView wraps the overlay so a focused TextField (e.g. the New/Edit exercise
+// sheet's Name field) doesn't end up hidden behind the keyboard — `behavior: 'padding'` pads the
+// overlay's bottom by the keyboard's height, and since the overlay is `justifyContent: 'flex-end'`
+// that padding pushes the whole sheet up rather than squashing it. Android's default window-resize
+// behavior already handles this, so no `behavior` is set there.
+// `keyboardShouldPersistTaps="handled"` on the content ScrollView lets a tap on another field or
+// a Dropdown option register in the same gesture instead of only dismissing the keyboard first.
 
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import type { GestureResponderEvent } from 'react-native';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
@@ -63,7 +71,10 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close"
@@ -84,10 +95,12 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
             <Text style={styles.title}>{title}</Text>
             {action}
           </View>
-          <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
           {footer !== undefined && <View style={styles.footer}>{footer}</View>}
         </SafeAreaView>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
