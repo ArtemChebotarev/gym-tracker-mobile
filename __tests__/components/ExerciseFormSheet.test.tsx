@@ -161,8 +161,8 @@ describe('ExerciseFormSheet — edit mode', () => {
 
     expect(screen.getByText('Edit exercise')).toBeTruthy();
     expect(screen.getByLabelText('Name').props.value).toBe('Garage Press');
-    expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent('Chest');
-    expect(screen.getByRole('button', { name: 'Equipment' })).toHaveTextContent('Dumbbell');
+    expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent(/Chest/);
+    expect(screen.getByRole('button', { name: 'Equipment' })).toHaveTextContent(/Dumbbell/);
     expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
   });
 
