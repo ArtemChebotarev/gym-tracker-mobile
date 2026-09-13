@@ -1,5 +1,9 @@
-import type { MuscleGroup } from '@domain/catalog';
-import { normalizeExerciseName, validateExerciseMuscleGroup } from '@domain/catalogValidators';
+import type { Equipment, MuscleGroup } from '@domain/catalog';
+import {
+  normalizeExerciseName,
+  validateExerciseEquipment,
+  validateExerciseMuscleGroup,
+} from '@domain/catalogValidators';
 
 describe('normalizeExerciseName', () => {
   test('trims leading and trailing whitespace', () => {
@@ -21,5 +25,22 @@ describe('validateExerciseMuscleGroup', () => {
     expect(() =>
       validateExerciseMuscleGroup('not-a-muscle-group' as MuscleGroup),
     ).toThrow(/Unknown muscle group/);
+  });
+});
+
+describe('validateExerciseEquipment', () => {
+  test('accepts every fixed catalog equipment value', () => {
+    expect(() => validateExerciseEquipment('barbell')).not.toThrow();
+    expect(() => validateExerciseEquipment('other')).not.toThrow();
+  });
+
+  test('accepts undefined — equipment is optional', () => {
+    expect(() => validateExerciseEquipment(undefined)).not.toThrow();
+  });
+
+  test('rejects a value outside the fixed catalog', () => {
+    expect(() => validateExerciseEquipment('not-equipment' as Equipment)).toThrow(
+      /Unknown equipment/,
+    );
   });
 });

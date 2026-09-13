@@ -22,7 +22,19 @@ export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
 export type ExerciseSource = 'catalog' | 'custom';
 
-export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'other';
+// Same reasoning as MUSCLE_GROUPS above: an array of the fixed values, with the type derived
+// from it, so a repository or UI that needs to enumerate every equipment value (e.g. the New/Edit
+// exercise sheet's dropdown) reuses this constant instead of re-listing the same values.
+export const EQUIPMENT_OPTIONS = [
+  'barbell',
+  'dumbbell',
+  'machine',
+  'cable',
+  'bodyweight',
+  'other',
+] as const;
+
+export type Equipment = (typeof EQUIPMENT_OPTIONS)[number];
 
 // Branded so an ExerciseId can't be passed where another entity's id is expected (both are
 // plain strings otherwise). Zero runtime cost — the brand only exists at the type level, and
