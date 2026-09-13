@@ -10,7 +10,6 @@
 
 import { useMemo } from 'react';
 import { SectionList, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Exercise, MuscleGroup } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup, ExerciseListQuery } from '@domain/catalogListing';
@@ -20,6 +19,7 @@ import { Chip } from '@design/components/Chip';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
+import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
 import { SectionHeader } from '@design/components/SectionHeader';
 import { formatRelativeDate } from '@design/formatDate';
@@ -103,14 +103,14 @@ export function ExerciseLibraryScreen({
   const showList = !isPending && (groups?.length ?? 0) > 0;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Exercises</Text>
+    <RootScreen
+      title="Exercises"
+      trailing={
         <IconButton accessibilityLabel="Add exercise" variant="accent" onPress={() => onRequestCreate()}>
           <Text style={styles.addIcon}>+</Text>
         </IconButton>
-      </View>
-
+      }
+    >
       <SearchField value={search} onChangeText={onSearchChange} placeholder="Search exercises" />
 
       <View style={styles.filterRow}>
@@ -172,28 +172,11 @@ export function ExerciseLibraryScreen({
           )}
         />
       )}
-    </SafeAreaView>
+    </RootScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS['surface/page'],
-    paddingHorizontal: SPACING['space/screen'],
-    paddingTop: SPACING['space/screen'],
-    gap: SPACING['space/gap'],
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: TYPOGRAPHY['type/screen-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/screen-title'].fontWeight,
-    color: COLORS['text/primary'],
-  },
   addIcon: {
     fontSize: TYPOGRAPHY['type/entity-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/entity-title'].fontWeight,
