@@ -93,4 +93,23 @@ describe('BottomSheet', () => {
     expect(screen.getByText('Reset')).toBeTruthy();
     expect(screen.getByText('Apply')).toBeTruthy();
   });
+
+  test('pads for the device bottom safe-area inset (e.g. the home indicator), on top of the base sheet padding — only the bottom edge, not top/left/right', () => {
+    // The actual inset value is computed natively and isn't observable through a style prop
+    // under the test renderer (SafeAreaView renders a native host component whose insets are
+    // resolved on the device, not in JS) — so this asserts the sheet requests bottom-only
+    // "additive" padding from it, which is what actually produces the fix on a real device.
+    render(
+      <BottomSheet visible onClose={() => {}} title="Filters">
+        <Text>Content</Text>
+      </BottomSheet>,
+    );
+
+    expect(screen.getByTestId('bottom-sheet').props.edges).toEqual({
+      top: 'off',
+      right: 'off',
+      bottom: 'additive',
+      left: 'off',
+    });
+  });
 });

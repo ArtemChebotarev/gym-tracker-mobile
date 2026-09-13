@@ -11,11 +11,19 @@
 // (onResponderGrant/onResponderRelease) rather than react-native-gesture-handler — the project
 // has no direct dependency on that library (see package.json) — and a plain
 // distance-since-touch-start check is all a dismiss threshold needs.
+//
+// The sheet itself is a SafeAreaView (bottom edge only — the Modal already covers the full
+// screen, and the grabber/header at the top have nothing near the top inset to protect against).
+// Without it, the last row of content or the footer button sits right against the home indicator
+// on any device that has one, and can read as visually cropped. The same paddingBottom below
+// still applies underneath the inset, exactly as RootScreen layers `space/screen` under the top
+// inset — see that file's own SafeAreaView usage.
 
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import type { GestureResponderEvent } from 'react-native';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
 const DISMISS_DISTANCE = 60;
@@ -62,7 +70,7 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View style={styles.sheet}>
+        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={styles.sheet}>
           <View
             testID="bottom-sheet-grabber-area"
             style={styles.grabberArea}
@@ -78,7 +86,7 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
           </View>
           <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
           {footer !== undefined && <View style={styles.footer}>{footer}</View>}
-        </View>
+        </SafeAreaView>
       </View>
     </Modal>
   );

@@ -5,7 +5,12 @@
 // мультивыбора"); static carries the group dot. Uses `type/caption`, the same scale as Badge,
 // for the same sentence-case reason (see design/components/Badge.tsx). `dotColor` is supplied
 // by the caller (e.g. a muscle-group category color) — this file has no literal color of its
-// own for it.
+// own for it. Selected is a solid accent fill (same weight as the accent IconButton) — its only
+// current caller is the list's "Filters" chip, which is exactly that: a single filled indicator,
+// not one of several equally-weighted options. A muscle-group filter's own selected chip needs a
+// per-family tint instead (a different treatment for a different meaning — "this option is
+// picked" vs. "this is the one thing to press"), so it's composed locally in
+// ExerciseFiltersSheet.tsx rather than folded into this component as another prop.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
@@ -82,9 +87,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING['space/gap-tight'],
     gap: SPACING['space/gap-tight'],
   },
+  // Solid accent fill — the same treatment as the accent IconButton (e.g. the list's "+" and
+  // "Filters" chip), not the muted accent/bg + accent/border pair used for a muscle-group tint.
   selected: {
-    backgroundColor: COLORS['accent/bg'],
-    borderColor: COLORS['accent/border'],
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
   },
   unselected: {
     backgroundColor: COLORS['surface/card'],
@@ -95,7 +102,7 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
   },
   selectedLabel: {
-    color: COLORS.accent,
+    color: COLORS['accent/on'],
   },
   unselectedLabel: {
     color: COLORS['text/secondary'],

@@ -3,16 +3,18 @@
 // in the caller, so this component can be rendered and asserted on with plain props, the same
 // way design/components are tested — no QueryProvider or real repositories needed here.
 //
-// The "+" button, the "Filters" chip, and the search-empty state's "Create" action all point at
-// sheets that don't exist yet (066 · New/Edit exercise, 064 · Filters) — task 063 scopes to this
-// list screen only, so `onRequestCreate`/`onRequestFilters` are the caller's problem to wire up
-// once those sheets ship.
+// The "+" button and the search-empty state's "Create" action point at a sheet that doesn't
+// exist yet (066 · New/Edit exercise) — task 063 scoped this list screen only, so
+// `onRequestCreate` stays the caller's problem to wire up once that sheet ships.
+// `onRequestFilters` opens 064 · Filters (see ExerciseFiltersSheet.tsx), which the caller
+// composes as a sibling rather than this component rendering it directly, keeping this screen
+// fully controlled and testable with plain props.
 //
 // JSX/rendering only — styles live in ExerciseLibraryScreenStyles.ts and pure helpers in
 // ExerciseLibraryScreenLogic.ts, per AGENTS.md's "Code organization".
 
 import { useMemo } from 'react';
-import { SectionList, Text, View } from 'react-native';
+import { Pressable, SectionList, Text, View } from 'react-native';
 
 import type { ExerciseListEntry, ExerciseListQuery, ExerciseListGroup } from '@domain/catalogListing';
 import { Chip } from '@design/components/Chip';
@@ -94,6 +96,11 @@ export function ExerciseLibraryScreen({
         ))}
         {filters.performedOnly && <Chip variant="static" label="Performed only" />}
         <Chip variant="counter" label="Exercises" count={resultCount} />
+        {filtersActive && (
+          <Pressable accessibilityRole="button" style={styles.resetChip} onPress={onResetFilters}>
+            <Text style={styles.resetChipLabel}>Reset</Text>
+          </Pressable>
+        )}
       </View>
 
       {isPending && <Text style={styles.status}>Loading…</Text>}
