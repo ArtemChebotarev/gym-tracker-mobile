@@ -12,11 +12,9 @@ If asked to "take a task" or "do the task", use the `take-task` skill.
 
 Project folder on disk: `~/gym-tracker-mobile` (git repository). To commit and push changes, use the `commit-and-push` skill.
 
-# Code organization
+# Code style
 
-One file, one responsibility. Don't mix a domain module's type definitions with its business logic (validators, converters, etc.) in the same file — split them, e.g. `domain/mesocycle.ts` (types) + `domain/mesocycleValidators.ts` (validators for those types). Name the logic file after the model file it belongs to (`<model>Validators.ts`, `<model>Converters.ts`, ...). Mirror the split in `__tests__/` so each source file has its own matching test file.
-
-Reuse existing models, types, classes, and constants instead of recreating them. Before adding a new type or a runtime constant that represents a domain concept, check whether `domain/` (or the relevant sibling layer — `repositories/`, an existing `storage/` adapter, etc.) already defines it, and import that instead of writing a second copy — e.g. a repository that needs every value of a domain enum should reuse a constant exported from the domain module that owns that type, not hand-list the values again. A second hand-written copy of the same values silently drifts from the original the next time it changes. If you deliberately don't reuse an existing model (the shapes only look similar but represent different concepts, reusing it would violate a layer boundary, etc.), say why in the PR summary.
+File organization and code-splitting conventions — domain modules, screens, styles/logic separation, `RootScreen` usage, reusing existing models — live in the `code-style` skill. Use it before writing any new source file, splitting an existing one, or reviewing a PR for file organization.
 
 # Git workflow
 

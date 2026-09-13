@@ -1,17 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
+
+import { RootScreen } from '@design/components/RootScreen';
+import { styles } from '@components/TodayScreenStyles';
 
 export default function TodayScreen() {
   return (
-    <View style={styles.container}>
-      <Text>Today</Text>
-    </View>
+    <RootScreen title="Today">
+      <Text style={styles.placeholder}>Today</Text>
+    </RootScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

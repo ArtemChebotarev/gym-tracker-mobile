@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup } from '@domain/catalogListing';
@@ -37,9 +38,21 @@ const BASE_PROPS: ExerciseLibraryScreenProps = {
   onRequestFilters: jest.fn(),
 };
 
+// SafeAreaView (used for the screen's top inset — see components/ExerciseLibraryScreen.tsx)
+// throws without a SafeAreaProvider ancestor. initialMetrics makes it resolve synchronously
+// instead of waiting on a native onLayout that jest's test renderer never fires.
+const TEST_SAFE_AREA_METRICS: Metrics = {
+  insets: { top: 47, left: 0, right: 0, bottom: 34 },
+  frame: { x: 0, y: 0, width: 402, height: 874 },
+};
+
 function renderScreen(overrides: Partial<ExerciseLibraryScreenProps> = {}) {
   const props: ExerciseLibraryScreenProps = { ...BASE_PROPS, ...overrides };
-  render(<ExerciseLibraryScreen {...props} />);
+  render(
+    <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+      <ExerciseLibraryScreen {...props} />
+    </SafeAreaProvider>,
+  );
   return props;
 }
 
