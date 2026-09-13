@@ -14,7 +14,7 @@
 // ExerciseLibraryScreenLogic.ts, per AGENTS.md's "Code organization".
 
 import { useMemo } from 'react';
-import { SectionList, Text, View } from 'react-native';
+import { Pressable, SectionList, Text, View } from 'react-native';
 
 import type { ExerciseListEntry, ExerciseListQuery, ExerciseListGroup } from '@domain/catalogListing';
 import { Chip } from '@design/components/Chip';
@@ -97,7 +97,9 @@ export function ExerciseLibraryScreen({
         {filters.performedOnly && <Chip variant="static" label="Performed only" />}
         <Chip variant="counter" label="Exercises" count={resultCount} />
         {filtersActive && (
-          <Chip variant="selectable" label="Reset" selected={false} onPress={onResetFilters} />
+          <Pressable accessibilityRole="button" style={styles.resetChip} onPress={onResetFilters}>
+            <Text style={styles.resetChipLabel}>Reset</Text>
+          </Pressable>
         )}
       </View>
 

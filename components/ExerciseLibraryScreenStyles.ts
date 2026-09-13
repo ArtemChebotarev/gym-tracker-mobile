@@ -21,4 +21,16 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/faint'],
   },
+  // Same treatment as the Filters sheet's own header Reset action (ExerciseFiltersSheetStyles.ts)
+  // — plain accent-colored text, not a filled chip — so it reads as the same action wherever it
+  // appears, and stands out against the row's muted chips rather than blending in.
+  resetChip: {
+    paddingHorizontal: SPACING['space/gap-tight'],
+    paddingVertical: SPACING['space/gap-tight'],
+  },
+  resetChipLabel: {
+    fontSize: TYPOGRAPHY['type/body'].fontSize,
+    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    color: COLORS.accent,
+  },
 });
