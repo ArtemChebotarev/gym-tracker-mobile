@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { COLORS } from '@design/tokens';
+import { muscleGroupChipColors } from '@components/ExerciseFiltersSheetLogic';
 import {
   ExerciseFiltersSheet,
   type ExerciseFiltersSheetProps,
@@ -41,6 +43,7 @@ describe('ExerciseFiltersSheet', () => {
     expect(screen.getByText('Custom')).toBeTruthy();
 
     expect(screen.getByText('Performed only')).toBeTruthy();
+    expect(screen.getByText('Has at least one logged set')).toBeTruthy();
   });
 
   test('with an empty selection, no muscle group or source chip reads as selected — empty means every value', () => {
@@ -66,6 +69,18 @@ describe('ExerciseFiltersSheet', () => {
       selected: true,
     });
     expect(screen.getByLabelText('Performed only').props.value).toBe(true);
+  });
+
+  test('a selected muscle-group chip is tinted by its own family color, not the generic accent', () => {
+    renderSheet({ filters: { muscleGroups: ['back'] } });
+
+    const backChip = screen.getByRole('button', { name: 'Back' });
+    const flatStyle = Object.assign({}, ...backChip.props.style.filter(Boolean));
+    const colors = muscleGroupChipColors('back');
+
+    expect(flatStyle.backgroundColor).toBe(colors.tint);
+    expect(flatStyle.borderColor).toBe(colors.border);
+    expect(flatStyle.backgroundColor).not.toBe(COLORS.accent);
   });
 
   test('pressing an unselected muscle group chip adds it', () => {
