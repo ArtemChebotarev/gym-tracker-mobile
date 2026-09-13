@@ -76,9 +76,11 @@ module.exports = defineConfig([
     },
   },
   {
-    // app/ (screens) must go through usecases, never storage/ directly, and must never set a
-    // color or size itself — see 08.0 · Design SDK, "Только токены".
-    files: ['app/**/*.{js,jsx,ts,tsx}'],
+    // app/ (screens) and components/ (screen-level components kept out of app/ only because
+    // Expo Router treats every file directly under app/ as a route — see components/README.md)
+    // must go through usecases, never storage/ directly, and must never set a color or size
+    // themselves — see 08.0 · Design SDK, "Только токены".
+    files: ['app/**/*.{js,jsx,ts,tsx}', 'components/**/*.{js,jsx,ts,tsx}'],
     plugins: {
       design: { rules: { 'no-hardcoded-design-values': noHardcodedDesignValues } },
     },

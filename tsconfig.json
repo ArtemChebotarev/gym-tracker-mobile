@@ -26,6 +26,9 @@
       "@design/*": [
         "./design/*"
       ],
+      "@components/*": [
+        "./components/*"
+      ],
       "@app/*": [
         "./app/*"
       ],

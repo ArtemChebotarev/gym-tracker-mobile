@@ -11,6 +11,7 @@ module.exports = {
     '^@repositories/(.*)$': '<rootDir>/repositories/$1',
     '^@storage/(.*)$': '<rootDir>/storage/$1',
     '^@design/(.*)$': '<rootDir>/design/$1',
+    '^@components/(.*)$': '<rootDir>/components/$1',
     '^@app/(.*)$': '<rootDir>/app/$1',
     '^@state/(.*)$': '<rootDir>/state/$1',
   },
