@@ -96,6 +96,9 @@ export function ExerciseLibraryScreen({
         ))}
         {filters.performedOnly && <Chip variant="static" label="Performed only" />}
         <Chip variant="counter" label="Exercises" count={resultCount} />
+        {filtersActive && (
+          <Chip variant="selectable" label="Reset" selected={false} onPress={onResetFilters} />
+        )}
       </View>
 
       {isPending && <Text style={styles.status}>Loading…</Text>}

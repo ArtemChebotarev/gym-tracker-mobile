@@ -190,4 +190,19 @@ describe('ExerciseLibraryScreen', () => {
     expect(screen.getByText('Performed only')).toBeTruthy();
     expect(screen.getByText('Exercises 1')).toBeTruthy();
   });
+
+  test('a Reset chip at the end of the filter row resets filters without opening the sheet', () => {
+    const onResetFilters = jest.fn();
+    renderScreen({ filters: { muscleGroups: ['chest'] }, onResetFilters });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Reset' }));
+
+    expect(onResetFilters).toHaveBeenCalledTimes(1);
+  });
+
+  test('no Reset chip when no filter is active', () => {
+    renderScreen({ filters: {} });
+
+    expect(screen.queryByRole('button', { name: 'Reset' })).toBeNull();
+  });
 });
