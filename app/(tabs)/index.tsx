@@ -1,7 +1,7 @@
-import { StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import { RootScreen } from '@design/components/RootScreen';
-import { COLORS } from '@design/tokens';
+import { styles } from '@components/TodayScreenStyles';
 
 export default function TodayScreen() {
   return (
@@ -10,9 +10,3 @@ export default function TodayScreen() {
     </RootScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  placeholder: {
-    color: COLORS['text/faint'],
-  },
-});

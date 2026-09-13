@@ -3,6 +3,8 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const prettierConfig = require('eslint-config-prettier');
 const noHardcodedDesignValues = require('./eslint-rules/noHardcodedDesignValues');
+const noInlineScreenStyles = require('./eslint-rules/noInlineScreenStyles');
+const noInlineScreenLogic = require('./eslint-rules/noInlineScreenLogic');
 
 // Layer boundary rules — see 07 · Persistence Layer Contract, "Layers" and rules 1 and 9.
 // The dependency arrow always points inward: screens -> use cases -> domain -> repositories.
@@ -87,6 +89,25 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
       'design/no-hardcoded-design-values': 'error',
+    },
+  },
+  {
+    // Screen components hold only JSX/rendering — see the `code-style` skill, "Screens keep the
+    // same split, one level up". Scoped to `.tsx` only (not `.ts`), so the `Styles.ts`/`Logic.ts`
+    // sibling files this pushes screens' styles/helpers *into* aren't flagged for containing
+    // exactly that.
+    files: ['app/**/*.tsx', 'components/**/*.tsx'],
+    plugins: {
+      codeStyle: {
+        rules: {
+          'no-inline-screen-styles': noInlineScreenStyles,
+          'no-inline-screen-logic': noInlineScreenLogic,
+        },
+      },
+    },
+    rules: {
+      'codeStyle/no-inline-screen-styles': 'error',
+      'codeStyle/no-inline-screen-logic': 'error',
     },
   },
 ]);
