@@ -4,7 +4,13 @@
 // one-accent-per-screen hierarchy.
 
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, RADII, TYPOGRAPHY } from '../tokens';
+
+// Every full-size mockup's primary button (e.g. 01-new-meso-basics.html's .btn-primary) uses
+// 15px padding on all sides — noticeably taller than any single spacing token (space/gap=7,
+// space/section=18). No token matches exactly, so this stays a local constant, the same
+// exception Stepper's BUTTON_DIAMETER and IconButton's DIAMETER already take.
+const BUTTON_PADDING = 15;
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger';
 
@@ -54,8 +60,8 @@ const VARIANT_STYLE = {
 const styles = StyleSheet.create({
   base: {
     borderRadius: RADII['radius/control'],
-    paddingVertical: SPACING['space/gap'],
-    paddingHorizontal: SPACING['space/section'],
+    paddingVertical: BUTTON_PADDING,
+    paddingHorizontal: BUTTON_PADDING,
     alignItems: 'center',
     justifyContent: 'center',
   },

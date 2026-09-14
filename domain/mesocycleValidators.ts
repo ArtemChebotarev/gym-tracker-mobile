@@ -5,10 +5,13 @@
 
 import type { Mesocycle } from '@domain/mesocycle';
 
-const MIN_LENGTH_WEEKS = 3;
-const MAX_LENGTH_WEEKS = 8;
-const MIN_DAYS_PER_WEEK = 1;
-const MAX_DAYS_PER_WEEK = 7;
+// Exported so callers that need the same bounds (e.g. the mesocycle editor's Stepper props —
+// see 08.5 · Редактор мезоцикла — Flow A, "Шаг 1 — Basics") reuse them instead of hand-copying
+// the numbers.
+export const MIN_LENGTH_WEEKS = 3;
+export const MAX_LENGTH_WEEKS = 8;
+export const MIN_DAYS_PER_WEEK = 1;
+export const MAX_DAYS_PER_WEEK = 7;
 
 /**
  * Throws if `lengthWeeks` is outside the 3..8 range (03 · Progression Engine,

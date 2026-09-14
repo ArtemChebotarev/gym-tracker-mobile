@@ -70,4 +70,35 @@ describe('Stepper', () => {
         .disabled,
     ).toBe(false);
   });
+
+  test('formatValue overrides the displayed value', () => {
+    render(
+      <Stepper
+        label="Mesocycle length"
+        value={6}
+        onChange={() => {}}
+        min={3}
+        max={8}
+        formatValue={(value) => `${value} weeks`}
+      />,
+    );
+
+    expect(screen.getByText('6 weeks')).toBeTruthy();
+    expect(screen.queryByText('6')).toBeNull();
+  });
+
+  test('renders an optional caption under the value', () => {
+    render(
+      <Stepper
+        label="Mesocycle length"
+        value={6}
+        onChange={() => {}}
+        min={3}
+        max={8}
+        caption="Includes a deload week"
+      />,
+    );
+
+    expect(screen.getByText('Includes a deload week')).toBeTruthy();
+  });
 });

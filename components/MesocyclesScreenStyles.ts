@@ -1,11 +1,16 @@
-// Styles behind app/(tabs)/mesocycles.tsx's MesocyclesScreen — see the `code-style` skill and
-// components/LibraryScreenLogic.ts for why this lives here rather than beside the route file.
+// Styles behind components/MesocyclesScreen.tsx — see the `code-style` skill and
+// ExerciseLibraryScreenStyles.ts's `addIcon` for why the "+" button is styled this way.
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS } from '@design/tokens';
+import { COLORS, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  addIcon: {
+    fontSize: TYPOGRAPHY['type/entity-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/entity-title'].fontWeight,
+    color: COLORS['accent/on'],
+  },
   placeholder: {
     color: COLORS['text/faint'],
   },
