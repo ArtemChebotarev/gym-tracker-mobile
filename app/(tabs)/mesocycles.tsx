@@ -1,12 +1,9 @@
-import { Text } from 'react-native';
+import { useRouter } from 'expo-router';
 
-import { RootScreen } from '@design/components/RootScreen';
-import { styles } from '@components/MesocyclesScreenStyles';
+import { MesocyclesScreen } from '@components/MesocyclesScreen';
 
-export default function MesocyclesScreen() {
-  return (
-    <RootScreen title="Mesocycles">
-      <Text style={styles.placeholder}>Mesocycles</Text>
-    </RootScreen>
-  );
+export default function MesocyclesRoute() {
+  const router = useRouter();
+
+  return <MesocyclesScreen onRequestCreate={() => router.push('/meso-editor/basics')} />;
 }

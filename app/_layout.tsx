@@ -7,6 +7,10 @@ export default function RootLayout() {
     <QueryProvider>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="meso-editor/basics"
+          options={{ headerShown: false, presentation: 'fullScreenModal' }}
+        />
       </Stack>
     </QueryProvider>
   );
