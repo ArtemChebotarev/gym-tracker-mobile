@@ -5,10 +5,9 @@
 // values — kept in the zustand draft store so they survive navigation to steps 2 and 3 — plus
 // what Close and Continue do.
 //
-// Both steppers reuse the Stepper component from 073 as-is (task 075: "Оба степпера — компонент
-// из 073") rather than reshaping it into the mockup's side-by-side value/caption layout — the
-// "Includes a deload week" / "You'll pick exercises for each next" captions are rendered by this
-// screen underneath each Stepper instead of inside it.
+// Both steppers reuse the Stepper component from 073 (task 075: "Оба степпера — компонент из
+// 073") — its `formatValue`/`caption` props render the mockup's "6 weeks" / "Includes a deload
+// week" value+caption directly inside the stepper-row card.
 //
 // JSX/rendering only — styles live in MesoEditorBasicsScreenStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsScreenLogic.ts, per the code-style skill.
@@ -27,7 +26,11 @@ import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
 import { TextField } from '@design/components/TextField';
 
-import { canContinueFromBasics } from './MesoEditorBasicsScreenLogic';
+import {
+  canContinueFromBasics,
+  formatDaysPerWeekValue,
+  formatMesocycleLengthValue,
+} from './MesoEditorBasicsScreenLogic';
 import { styles } from './MesoEditorBasicsScreenStyles';
 
 const TOTAL_STEPS = 3;
@@ -92,8 +95,9 @@ export function MesoEditorBasicsScreen({
               onChange={onChangeLengthWeeks}
               min={MIN_LENGTH_WEEKS}
               max={MAX_LENGTH_WEEKS}
+              formatValue={formatMesocycleLengthValue}
+              caption="Includes a deload week"
             />
-            <Text style={styles.stepperCaption}>Includes a deload week</Text>
           </View>
 
           <View style={styles.section}>
@@ -103,8 +107,9 @@ export function MesoEditorBasicsScreen({
               onChange={onChangeDaysPerWeek}
               min={MIN_DAYS_PER_WEEK}
               max={MAX_DAYS_PER_WEEK}
+              formatValue={formatDaysPerWeekValue}
+              caption="You'll pick exercises for each next"
             />
-            <Text style={styles.stepperCaption}>You&apos;ll pick exercises for each next</Text>
           </View>
         </View>
 

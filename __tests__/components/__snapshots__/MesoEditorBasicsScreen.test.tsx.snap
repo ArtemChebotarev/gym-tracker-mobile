@@ -128,8 +128,9 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
             "color": "#F5F5F4",
             "fontSize": 19,
             "fontWeight": "500",
-            "paddingBottom": 6,
+            "paddingBottom": 4,
             "paddingHorizontal": 14,
+            "paddingTop": 6,
           }
         }
       >
@@ -192,6 +193,7 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
           {
             "flex": 1,
             "paddingHorizontal": 14,
+            "paddingTop": 4,
           }
         }
       >
@@ -270,161 +272,178 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
               style={
                 {
                   "alignItems": "center",
+                  "backgroundColor": "#1A1C1F",
+                  "borderColor": "#2A2D31",
+                  "borderRadius": 9,
+                  "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
+                  "justifyContent": "space-between",
+                  "paddingLeft": 14,
+                  "paddingRight": 10,
+                  "paddingVertical": 10,
                 }
               }
             >
-              <View
-                accessibilityLabel="Decrease Mesocycle length"
-                accessibilityRole="button"
-                accessibilityState={
-                  {
-                    "busy": undefined,
-                    "checked": undefined,
-                    "disabled": false,
-                    "expanded": undefined,
-                    "selected": undefined,
-                  }
-                }
-                accessibilityValue={
-                  {
-                    "max": undefined,
-                    "min": undefined,
-                    "now": undefined,
-                    "text": undefined,
-                  }
-                }
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
-                style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "backgroundColor": "#1A1C1F",
-                      "borderRadius": 15,
-                      "height": 30,
-                      "justifyContent": "center",
-                      "width": 30,
-                    },
-                    false,
-                    false,
-                  ]
-                }
-              >
+              <View>
                 <Text
                   style={
-                    [
-                      {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
-                      },
-                      false,
-                    ]
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                      "fontWeight": "400",
+                    }
                   }
                 >
-                  −
+                  6 weeks
+                </Text>
+                <Text
+                  style={
+                    {
+                      "color": "#6B7076",
+                      "fontSize": 10,
+                      "fontWeight": "400",
+                      "marginTop": 2,
+                    }
+                  }
+                >
+                  Includes a deload week
                 </Text>
               </View>
-              <Text
-                style={
-                  {
-                    "color": "#F5F5F4",
-                    "fontSize": 15,
-                    "fontWeight": "400",
-                    "minWidth": 24,
-                    "textAlign": "center",
-                  }
-                }
-              >
-                6
-              </Text>
               <View
-                accessibilityLabel="Increase Mesocycle length"
-                accessibilityRole="button"
-                accessibilityState={
-                  {
-                    "busy": undefined,
-                    "checked": undefined,
-                    "disabled": false,
-                    "expanded": undefined,
-                    "selected": undefined,
-                  }
-                }
-                accessibilityValue={
-                  {
-                    "max": undefined,
-                    "min": undefined,
-                    "now": undefined,
-                    "text": undefined,
-                  }
-                }
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
                 style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "backgroundColor": "#1A1C1F",
-                      "borderRadius": 15,
-                      "height": 30,
-                      "justifyContent": "center",
-                      "width": 30,
-                    },
-                    false,
-                    false,
-                  ]
+                  {
+                    "flexDirection": "row",
+                    "gap": 6,
+                  }
                 }
               >
-                <Text
+                <View
+                  accessibilityLabel="Decrease Mesocycle length"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": false,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
                   style={
                     [
                       {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
+                        "alignItems": "center",
+                        "backgroundColor": "#2C3036",
+                        "borderRadius": 15,
+                        "height": 30,
+                        "justifyContent": "center",
+                        "width": 30,
                       },
+                      false,
                       false,
                     ]
                   }
                 >
-                  +
-                </Text>
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        },
+                        false,
+                      ]
+                    }
+                  >
+                    −
+                  </Text>
+                </View>
+                <View
+                  accessibilityLabel="Increase Mesocycle length"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": false,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "backgroundColor": "#2C3036",
+                        "borderRadius": 15,
+                        "height": 30,
+                        "justifyContent": "center",
+                        "width": 30,
+                      },
+                      false,
+                      false,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        },
+                        false,
+                      ]
+                    }
+                  >
+                    +
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-          <Text
-            style={
-              {
-                "color": "#6B7076",
-                "fontSize": 10,
-                "marginTop": 6,
-              }
-            }
-          >
-            Includes a deload week
-          </Text>
         </View>
         <View
           style={
@@ -452,161 +471,178 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
               style={
                 {
                   "alignItems": "center",
+                  "backgroundColor": "#1A1C1F",
+                  "borderColor": "#2A2D31",
+                  "borderRadius": 9,
+                  "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
+                  "justifyContent": "space-between",
+                  "paddingLeft": 14,
+                  "paddingRight": 10,
+                  "paddingVertical": 10,
                 }
               }
             >
-              <View
-                accessibilityLabel="Decrease Days per week"
-                accessibilityRole="button"
-                accessibilityState={
-                  {
-                    "busy": undefined,
-                    "checked": undefined,
-                    "disabled": false,
-                    "expanded": undefined,
-                    "selected": undefined,
-                  }
-                }
-                accessibilityValue={
-                  {
-                    "max": undefined,
-                    "min": undefined,
-                    "now": undefined,
-                    "text": undefined,
-                  }
-                }
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
-                style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "backgroundColor": "#1A1C1F",
-                      "borderRadius": 15,
-                      "height": 30,
-                      "justifyContent": "center",
-                      "width": 30,
-                    },
-                    false,
-                    false,
-                  ]
-                }
-              >
+              <View>
                 <Text
                   style={
-                    [
-                      {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
-                      },
-                      false,
-                    ]
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                      "fontWeight": "400",
+                    }
                   }
                 >
-                  −
+                  4 days
+                </Text>
+                <Text
+                  style={
+                    {
+                      "color": "#6B7076",
+                      "fontSize": 10,
+                      "fontWeight": "400",
+                      "marginTop": 2,
+                    }
+                  }
+                >
+                  You'll pick exercises for each next
                 </Text>
               </View>
-              <Text
-                style={
-                  {
-                    "color": "#F5F5F4",
-                    "fontSize": 15,
-                    "fontWeight": "400",
-                    "minWidth": 24,
-                    "textAlign": "center",
-                  }
-                }
-              >
-                4
-              </Text>
               <View
-                accessibilityLabel="Increase Days per week"
-                accessibilityRole="button"
-                accessibilityState={
-                  {
-                    "busy": undefined,
-                    "checked": undefined,
-                    "disabled": false,
-                    "expanded": undefined,
-                    "selected": undefined,
-                  }
-                }
-                accessibilityValue={
-                  {
-                    "max": undefined,
-                    "min": undefined,
-                    "now": undefined,
-                    "text": undefined,
-                  }
-                }
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
                 style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "backgroundColor": "#1A1C1F",
-                      "borderRadius": 15,
-                      "height": 30,
-                      "justifyContent": "center",
-                      "width": 30,
-                    },
-                    false,
-                    false,
-                  ]
+                  {
+                    "flexDirection": "row",
+                    "gap": 6,
+                  }
                 }
               >
-                <Text
+                <View
+                  accessibilityLabel="Decrease Days per week"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": false,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
                   style={
                     [
                       {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
+                        "alignItems": "center",
+                        "backgroundColor": "#2C3036",
+                        "borderRadius": 15,
+                        "height": 30,
+                        "justifyContent": "center",
+                        "width": 30,
                       },
+                      false,
                       false,
                     ]
                   }
                 >
-                  +
-                </Text>
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        },
+                        false,
+                      ]
+                    }
+                  >
+                    −
+                  </Text>
+                </View>
+                <View
+                  accessibilityLabel="Increase Days per week"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": false,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "backgroundColor": "#2C3036",
+                        "borderRadius": 15,
+                        "height": 30,
+                        "justifyContent": "center",
+                        "width": 30,
+                      },
+                      false,
+                      false,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        },
+                        false,
+                      ]
+                    }
+                  >
+                    +
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-          <Text
-            style={
-              {
-                "color": "#6B7076",
-                "fontSize": 10,
-                "marginTop": 6,
-              }
-            }
-          >
-            You'll pick exercises for each next
-          </Text>
         </View>
       </View>
       <View
@@ -614,9 +650,9 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
           {
             "borderTopColor": "#1E2125",
             "borderTopWidth": 1,
-            "paddingBottom": 18,
+            "paddingBottom": 24,
             "paddingHorizontal": 14,
-            "paddingTop": 7,
+            "paddingTop": 14,
           }
         }
       >
