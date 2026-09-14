@@ -693,8 +693,8 @@ exports[`MesoEditorBasicsScreen matches the step 1 snapshot 1`] = `
                 "alignItems": "center",
                 "borderRadius": 10,
                 "justifyContent": "center",
-                "paddingHorizontal": 18,
-                "paddingVertical": 7,
+                "paddingHorizontal": 15,
+                "paddingVertical": 15,
               },
               {
                 "backgroundColor": "#CDFF57",
