@@ -69,11 +69,6 @@ export function canContinueFromDays(daysPerWeek: number, exercisesByDay: Exercis
   return getDayNumbers(daysPerWeek).every((day) => getDayExercises(exercisesByDay, day).length > 0);
 }
 
-/** Mockup (02-new-meso-days.html): the day header shows "4 exercises", not a bare count. */
-export function formatDayExerciseCount(count: number): string {
-  return `${count} ${count === 1 ? 'exercise' : 'exercises'}`;
-}
-
 export function exerciseDotColor(exercisesById: ExercisesById, exerciseId: string): string | undefined {
   const muscleGroup = exercisesById[exerciseId]?.muscleGroup;
   if (!muscleGroup) {

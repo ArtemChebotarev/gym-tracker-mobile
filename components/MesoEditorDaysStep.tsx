@@ -1,6 +1,11 @@
 // Step 2 of 3's own content in the mesocycle editor, Flow A — see 08.5 · Редактор мезоцикла —
-// Flow A, "Шаг 2 — Days & exercises", and its mockup 02-new-meso-days.html (treated as the
-// literal pixel spec, same as step 1 — see MesoEditorBasicsStep.tsx).
+// Flow A, "Шаг 2 — Days & exercises", and its mockup 02-new-meso-days.html — treated as a
+// starting point rather than the literal pixel spec once on-device review found two things it
+// got wrong: the per-row "sets" caption under every stepper read as visually uneven (the value
+// and the caption don't share a width) and got redundant once there's more than a couple of
+// rows — replaced with a single "Exercise" / "Sets" column-header row above the list instead.
+// The mockup's own "Day N" / "N exercises" heading above that column header was cut entirely:
+// it just repeated what the day tab immediately above it already says.
 //
 // Fully controlled, the same way MesoEditorBasicsStep.tsx is: the caller (app/meso-editor/
 // new.tsx) owns the draft (via the zustand draft store), which day tab is active, and the
@@ -27,7 +32,6 @@ import {
   exerciseDotColor,
   exerciseSubtitle,
   exerciseTitle,
-  formatDayExerciseCount,
   getDayExercises,
   getDayNumbers,
   type ExercisesByDay,
@@ -85,8 +89,14 @@ export function MesoEditorDaysStep({
       </ScrollView>
 
       <ScrollView style={styles.content}>
-        <Text style={styles.dayTitle}>{`Day ${activeDay}`}</Text>
-        <Text style={styles.daySub}>{formatDayExerciseCount(activeDayExercises.length)}</Text>
+        {activeDayExercises.length > 0 && (
+          <View style={styles.columnHeader}>
+            <View style={styles.columnHeaderDotSpacer} />
+            <Text style={styles.columnHeaderExercise}>Exercise</Text>
+            <Text style={styles.columnHeaderSets}>Sets</Text>
+            <View style={styles.columnHeaderRemoveSpacer} />
+          </View>
+        )}
 
         {activeDayExercises.map((exercise, index) => {
           const title = exerciseTitle(exercisesById, exercise.exerciseId);
@@ -110,7 +120,6 @@ export function MesoEditorDaysStep({
                 onChange={(sets) => onChangeSets(activeDay, index, sets)}
                 min={MIN_EXERCISE_SETS}
                 max={MAX_EXERCISE_SETS}
-                caption="sets"
               />
               <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>
                 <Text style={styles.removeIcon}>✕</Text>

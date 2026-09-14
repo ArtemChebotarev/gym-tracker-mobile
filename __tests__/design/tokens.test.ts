@@ -33,7 +33,6 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
   'type/screen-title',
   'type/entity-title',
   'type/sheet-title',
-  'type/subsection-title',
   'type/row-title',
   'type/body',
   'type/value',
