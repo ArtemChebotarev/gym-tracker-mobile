@@ -159,29 +159,60 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
     }
   >
     <View>
-      <Text
+      <View
         style={
           {
-            "color": "#F5F5F4",
-            "fontSize": 15,
-            "fontWeight": "500",
-            "marginBottom": 2,
+            "alignItems": "center",
+            "flexDirection": "row",
+            "gap": 7,
+            "marginBottom": 6,
           }
         }
       >
-        Day 1
-      </Text>
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 10,
-            "marginBottom": 14,
+        <View
+          style={
+            {
+              "width": 8,
+            }
           }
-        }
-      >
-        1 exercise
-      </Text>
+        />
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "flex": 1,
+              "fontSize": 11,
+              "fontWeight": "400",
+              "letterSpacing": 0.04,
+              "textTransform": "uppercase",
+            }
+          }
+        >
+          Exercise
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 11,
+              "fontWeight": "400",
+              "letterSpacing": 0.04,
+              "textAlign": "center",
+              "textTransform": "uppercase",
+              "width": 80,
+            }
+          }
+        >
+          Sets
+        </Text>
+        <View
+          style={
+            {
+              "width": 30,
+            }
+          }
+        />
+      </View>
       <View
         style={
           {
@@ -323,18 +354,6 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
               }
             >
               3
-            </Text>
-            <Text
-              style={
-                {
-                  "color": "#6B7076",
-                  "fontSize": 10,
-                  "marginTop": 2,
-                  "textAlign": "center",
-                }
-              }
-            >
-              sets
             </Text>
           </View>
           <View
