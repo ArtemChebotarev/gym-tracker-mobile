@@ -15,8 +15,7 @@ export default function MesoEditorBasicsRoute() {
   }
 
   function handleContinue() {
-    // Step 2 (076 · Days & exercises) doesn't exist yet — nothing to navigate to. The route
-    // wiring for it lands with that task; the draft is already in place for it to read.
+    router.push('/meso-editor/days');
   }
 
   return (

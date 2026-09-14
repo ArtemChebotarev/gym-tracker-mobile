@@ -44,6 +44,10 @@ export const TYPOGRAPHY = {
   'type/screen-title': { fontSize: 24, fontWeight: '500' },
   'type/entity-title': { fontSize: 22, fontWeight: '500' },
   'type/sheet-title': { fontSize: 19, fontWeight: '500' },
+  // A per-group heading inside a screen's content (e.g. 08.5's "Day 1" above that day's exercise
+  // list, 02-new-meso-days.html's `.day-title`) — bigger and bolder than a row title, but well
+  // under a sheet title. Added by task 076; the first screen to need this weight of heading.
+  'type/subsection-title': { fontSize: 15, fontWeight: '500' },
   'type/row-title': { fontSize: 14, fontWeight: '400' },
   'type/body': { fontSize: 13, fontWeight: '400' },
   'type/value': { fontSize: 15, fontWeight: '400' },

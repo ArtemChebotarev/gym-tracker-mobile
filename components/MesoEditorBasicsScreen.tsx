@@ -7,12 +7,15 @@
 //
 // Both steppers reuse the Stepper component from 073 (task 075: "Оба степпера — компонент из
 // 073") — its `formatValue`/`caption` props render the mockup's "6 weeks" / "Includes a deload
-// week" value+caption directly inside the stepper-row card.
+// week" value+caption directly inside the stepper-row card. The header/title/progress-bar chrome
+// is WizardHeader (design/components) — step 1 is the flow's first step, so it gets `onClose`,
+// not `onBack` (task 076 review: step 2 had copy-pasted this chrome with a Close icon where the
+// mockup wants Back, which is what prompted pulling this out into a shared component).
 //
 // JSX/rendering only — styles live in MesoEditorBasicsScreenStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsScreenLogic.ts, per the code-style skill.
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -22,9 +25,9 @@ import {
   MIN_LENGTH_WEEKS,
 } from '@domain/mesocycleValidators';
 import { Button } from '@design/components/Button';
-import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
 import { TextField } from '@design/components/TextField';
+import { WizardHeader } from '@design/components/WizardHeader';
 
 import {
   canContinueFromBasics,
@@ -60,23 +63,7 @@ export function MesoEditorBasicsScreen({
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <IconButton accessibilityLabel="Close" onPress={onClose}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </IconButton>
-          <Text style={styles.stepLabel}>{`Step ${CURRENT_STEP} of ${TOTAL_STEPS}`}</Text>
-        </View>
-
-        <Text style={styles.title}>New mesocycle</Text>
-
-        <View style={styles.progress}>
-          {Array.from({ length: TOTAL_STEPS }, (_, index) => (
-            <View
-              key={index}
-              style={[styles.progressSegment, index < CURRENT_STEP && styles.progressSegmentDone]}
-            />
-          ))}
-        </View>
+        <WizardHeader title="New mesocycle" currentStep={CURRENT_STEP} totalSteps={TOTAL_STEPS} onClose={onClose} />
 
         <View style={styles.content}>
           <View style={styles.section}>

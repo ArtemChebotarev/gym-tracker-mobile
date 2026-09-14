@@ -10,17 +10,28 @@ describe('draftStore', () => {
   });
 
   test('setMesoBuilder replaces the draft', () => {
-    useDraftStore.getState().setMesoBuilder({ name: 'Block 6', lengthWeeks: 8, daysPerWeek: 5 });
+    useDraftStore.getState().setMesoBuilder({
+      name: 'Block 6',
+      lengthWeeks: 8,
+      daysPerWeek: 5,
+      exercisesByDay: { 1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
+    });
 
     expect(useDraftStore.getState().mesoBuilder).toEqual({
       name: 'Block 6',
       lengthWeeks: 8,
       daysPerWeek: 5,
+      exercisesByDay: { 1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
     });
   });
 
   test('resetMesoBuilder restores the default draft', () => {
-    useDraftStore.getState().setMesoBuilder({ name: 'Block 6', lengthWeeks: 8, daysPerWeek: 5 });
+    useDraftStore.getState().setMesoBuilder({
+      name: 'Block 6',
+      lengthWeeks: 8,
+      daysPerWeek: 5,
+      exercisesByDay: {},
+    });
 
     useDraftStore.getState().resetMesoBuilder();
 

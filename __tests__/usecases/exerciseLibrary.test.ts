@@ -9,6 +9,7 @@ import {
   createCustomExercise,
   hideExercise,
   listExerciseGroups,
+  listExercisesByIds,
   updateCustomExercise,
 } from '@usecases/exerciseLibrary';
 
@@ -241,5 +242,22 @@ describe('listExerciseGroups', () => {
     const groups = await listExerciseGroups({}, deps);
 
     expect(groups[0]?.entries[0]?.lastSetLog).toEqual(newer);
+  });
+});
+
+describe('listExercisesByIds', () => {
+  test('resolves the requested ids and silently skips ones that do not exist', async () => {
+    const deps = makeDeps();
+    const benchPress = makeExercise({ id: toExerciseId('e-bench-press') });
+    const legPress = makeExercise({ id: toExerciseId('e-leg-press'), name: 'Leg Press', muscleGroup: 'quads' });
+    await deps.exerciseRepo.seedCatalog(1, [benchPress, legPress]);
+
+    const found = await listExercisesByIds(
+      [legPress.id, toExerciseId('e-missing'), benchPress.id],
+      deps,
+    );
+
+    expect(found).toEqual(expect.arrayContaining([benchPress, legPress]));
+    expect(found).toHaveLength(2);
   });
 });

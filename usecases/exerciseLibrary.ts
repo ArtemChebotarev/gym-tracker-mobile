@@ -110,6 +110,19 @@ export async function hideExercise(
   return deps.exerciseRepo.toggleHidden(id);
 }
 
+/**
+ * Resolves a set of exercise ids to their `Exercise` records — e.g. the mesocycle editor's Days
+ * & exercises step (08.5, "Шаг 2") rendering each `WeekPlanExercise.exerciseId` it holds as a
+ * name/muscle-group row. Ids that don't resolve are silently omitted, same as
+ * `ExerciseRepository.listByIds` itself.
+ */
+export async function listExercisesByIds(
+  ids: readonly ExerciseId[],
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise[]> {
+  return deps.exerciseRepo.listByIds(ids);
+}
+
 /** Builds the grouped, filtered, searched exercise list (08.6, "Exercises — список"). */
 export async function listExerciseGroups(
   query: ExerciseListQuery,
