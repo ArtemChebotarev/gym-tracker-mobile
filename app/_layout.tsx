@@ -7,16 +7,13 @@ export default function RootLayout() {
     <QueryProvider>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* One route for the whole mesocycle editor flow (all of Flow A's steps) — see
+            app/meso-editor/new.tsx for why step transitions are handled inside that single
+            screen instead of by pushing a route per step. */}
         <Stack.Screen
-          name="meso-editor/basics"
+          name="meso-editor/new"
           options={{ headerShown: false, presentation: 'fullScreenModal' }}
         />
-        {/* Steps after the first (days, and review once it exists) are NOT their own modal —
-            they're plain pushes inside the modal "New mesocycle" already presented by basics,
-            so stepping forward/back within the flow reads as switching steps, not opening
-            another modal on top of one (task 076 review: giving this the same fullScreenModal
-            presentation as basics made Continue look like a second popup sliding up). */}
-        <Stack.Screen name="meso-editor/days" options={{ headerShown: false, animation: 'none' }} />
       </Stack>
     </QueryProvider>
   );

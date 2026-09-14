@@ -13,7 +13,7 @@ import {
   removeExerciseFromDay,
   updateExerciseSets,
   type ExercisesByDay,
-} from '@components/MesoEditorDaysScreenLogic';
+} from '@components/MesoEditorDaysStepLogic';
 
 const BENCH_PRESS: Exercise = {
   id: toExerciseId('bench-press'),

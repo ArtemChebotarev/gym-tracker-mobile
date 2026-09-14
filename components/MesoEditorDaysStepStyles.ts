@@ -1,14 +1,13 @@
-// Styles for MesoEditorDaysScreen.tsx — see the code-style skill, "Screens keep the same split,
-// one level up". The header/title/progress-bar chrome lives in design/components/WizardHeader.tsx
-// (task 076 review) — its own styles moved with it.
+// Styles for MesoEditorDaysStep.tsx — see the code-style skill, "Screens keep the same split,
+// one level up". The header/progress-bar/footer chrome's own styles live in
+// design/components/WizardScreen.tsx (task 076 review) — only this step's own content styling
+// stays here.
 
 import { StyleSheet } from 'react-native';
 
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 const CONTENT_PADDING_TOP = 4;
-const FOOTER_PADDING_BOTTOM = 24;
-const FOOTER_BORDER_WIDTH = 1;
 
 // Mockup (02-new-meso-days.html): `.dot{width:8px;height:8px}` — bigger than the 6px group-dot
 // Chip/SectionHeader/ExerciseFiltersSheet already use elsewhere in the app. Kept as this
@@ -26,13 +25,8 @@ const DAY_TITLE_MARGIN_BOTTOM = 2;
 const ADD_ROW_PADDING_VERTICAL = 12;
 const ADD_ICON_SIZE = 22;
 const ADD_ICON_GLYPH_SIZE = 14;
-const FOOTER_HINT_MARGIN_TOP = 10;
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS['surface/page'],
-  },
   dayTabs: {
     flexGrow: 0,
   },
@@ -130,18 +124,5 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
     color: COLORS.accent,
-  },
-  footer: {
-    paddingHorizontal: SPACING['space/screen'],
-    paddingTop: SPACING['space/screen'],
-    paddingBottom: FOOTER_PADDING_BOTTOM,
-    borderTopWidth: FOOTER_BORDER_WIDTH,
-    borderTopColor: COLORS['border/divider'],
-  },
-  footerHint: {
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
-    color: COLORS['text/faint'],
-    textAlign: 'center',
-    marginTop: FOOTER_HINT_MARGIN_TOP,
   },
 });

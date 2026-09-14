@@ -1,4 +1,8 @@
-import { canContinueFromBasics } from '@components/MesoEditorBasicsScreenLogic';
+import {
+  canContinueFromBasics,
+  formatDaysPerWeekValue,
+  formatMesocycleLengthValue,
+} from '@components/MesoEditorBasicsStepLogic';
 
 describe('canContinueFromBasics', () => {
   test('rejects an empty or whitespace-only name', () => {
@@ -20,5 +24,19 @@ describe('canContinueFromBasics', () => {
 
   test.each([0, 8])('rejects daysPerWeek out of range (%i)', (daysPerWeek) => {
     expect(canContinueFromBasics('Block 6', 6, daysPerWeek)).toBe(false);
+  });
+});
+
+describe('formatMesocycleLengthValue', () => {
+  test('pluralizes for anything other than exactly 1', () => {
+    expect(formatMesocycleLengthValue(1)).toBe('1 week');
+    expect(formatMesocycleLengthValue(6)).toBe('6 weeks');
+  });
+});
+
+describe('formatDaysPerWeekValue', () => {
+  test('pluralizes for anything other than exactly 1', () => {
+    expect(formatDaysPerWeekValue(1)).toBe('1 day');
+    expect(formatDaysPerWeekValue(4)).toBe('4 days');
   });
 });

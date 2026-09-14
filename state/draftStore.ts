@@ -11,7 +11,7 @@ import type { WeekPlanExercise } from '@domain/plan';
 //
 // `exercisesByDay` is keyed by day number (1..daysPerWeek) rather than a `WeekPlanDay[]` array
 // kept in sync with `daysPerWeek` — a day the user hasn't touched yet simply has no entry (read
-// as empty, see MesoEditorDaysScreenLogic.ts's `getDayExercises`), so growing or shrinking
+// as empty, see MesoEditorDaysStepLogic.ts's `getDayExercises`), so growing or shrinking
 // `daysPerWeek` on step 1 never requires padding or truncating this map to match: day 6 either
 // has exercises under key 6 or it doesn't, regardless of what `daysPerWeek` said the last time
 // this was read.

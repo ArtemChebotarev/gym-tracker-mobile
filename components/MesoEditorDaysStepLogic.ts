@@ -1,5 +1,7 @@
-// Pure, non-JSX logic behind MesoEditorDaysScreen.tsx — see the code-style skill, "Screens keep
-// the same split, one level up".
+// Pure, non-JSX logic behind MesoEditorDaysStep.tsx — see the code-style skill, "Screens keep
+// the same split, one level up". `canContinueFromDays` is used by the route
+// (app/meso-editor/new.tsx) to gate the shared footer's Continue button, not by this step's own
+// content component.
 
 import type { Exercise } from '@domain/catalog';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';

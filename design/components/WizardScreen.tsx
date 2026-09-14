@@ -1,0 +1,76 @@
+// WizardScreen — the persistent frame for a multi-step wizard flow (currently only the
+// mesocycle editor's Basics → Days & exercises → Review, see 08.5, but written domain-agnostic
+// like WizardHeader). Mounted exactly ONCE for the whole flow — the caller swaps `children` and
+// `footer` as the user moves between steps, it does not swap this component itself.
+//
+// This exists because giving each step its own screen file, each rendering its own
+// SafeAreaView/WizardHeader/footer, meant React Navigation actually unmounted one screen and
+// mounted a new one on every step change — even with the transition animation turned off, that
+// remount visibly reset the header/progress-bar/button positions for a frame, which is exactly
+// the "jump" a caller review flagged after testing task 076 on-device: "Между шагами 1 и 2
+// прыгает всё... я хочу это видеть как виджет, внутри которого меняется контент при передвижении
+// вперёд назад, но выравнивание и т.д. остаются на месте." The fix is architectural, not visual:
+// one mounted shell, driven entirely by step state in the caller (no per-step routes at all) —
+// see app/meso-editor/new.tsx.
+//
+// No SafeAreaProvider here — same reasoning as design/components/RootScreen.tsx: Expo Router
+// already supplies one at the app root, so wrapping again here would just be redundant nesting.
+
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { COLORS, SPACING } from '../tokens';
+import { WizardHeader } from './WizardHeader';
+
+export type WizardScreenProps = {
+  title: string;
+  currentStep: number;
+  totalSteps: number;
+  footer: ReactNode;
+  children: ReactNode;
+} & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
+
+const FOOTER_PADDING_BOTTOM = 24;
+const FOOTER_BORDER_WIDTH = 1;
+
+export function WizardScreen({
+  title,
+  currentStep,
+  totalSteps,
+  footer,
+  children,
+  onClose,
+  onBack,
+}: WizardScreenProps) {
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {onClose ? (
+        <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onClose={onClose} />
+      ) : (
+        <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onBack={onBack!} />
+      )}
+
+      <View style={styles.body}>{children}</View>
+
+      <View style={styles.footer}>{footer}</View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS['surface/page'],
+  },
+  body: {
+    flex: 1,
+  },
+  footer: {
+    paddingHorizontal: SPACING['space/screen'],
+    paddingTop: SPACING['space/screen'],
+    paddingBottom: FOOTER_PADDING_BOTTOM,
+    borderTopWidth: FOOTER_BORDER_WIDTH,
+    borderTopColor: COLORS['border/divider'],
+  },
+});

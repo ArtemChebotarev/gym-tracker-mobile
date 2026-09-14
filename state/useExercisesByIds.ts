@@ -10,7 +10,7 @@ import { listExercisesByIds } from '@usecases/exerciseLibrary';
 
 import { ensureExerciseCatalogSeeded, exerciseLibraryDeps } from './exerciseLibraryStore';
 
-/** Keyed by id for O(1) lookups from a screen's render — see `MesoEditorDaysScreenLogic.ts`. */
+/** Keyed by id for O(1) lookups from a screen's render — see `MesoEditorDaysStepLogic.ts`. */
 export type ExercisesById = Record<string, Exercise>;
 
 export function useExercisesByIds(ids: readonly ExerciseId[]) {
