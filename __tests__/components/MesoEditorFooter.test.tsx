@@ -30,5 +30,12 @@ describe('MesoEditorFooter', () => {
     );
 
     expect(screen.getByText('Every day needs at least one exercise')).toBeTruthy();
+    expect(screen.queryByTestId('meso-editor-footer-hint-placeholder')).toBeNull();
+  });
+
+  test('reserves the hint\'s space with a placeholder when no hint is given', () => {
+    render(<MesoEditorFooter onContinue={() => {}} continueDisabled={false} />);
+
+    expect(screen.getByTestId('meso-editor-footer-hint-placeholder')).toBeTruthy();
   });
 });

@@ -13,12 +13,18 @@
 // one mounted shell, driven entirely by step state in the caller (no per-step routes at all) —
 // see app/meso-editor/new.tsx.
 //
-// No SafeAreaProvider here — same reasoning as design/components/RootScreen.tsx: Expo Router
-// already supplies one at the app root, so wrapping again here would just be redundant nesting.
+// Wrapped in its own SafeAreaProvider, even though Expo Router already supplies one at the app
+// root (see ExpoRoot's own SafeAreaProviderCompat) — a caller review found the header losing its
+// top inset specifically after switching from step 1 to step 2 on this exact screen (both steps
+// render through the same persistent SafeAreaView, never remounted, so this wasn't insets being
+// stale from a remount). The root provider is a fullScreenModal's ancestor, not a descendant of
+// the modal's own native presentation; nesting a second provider here — inside the modal — is
+// the fix, not just defensive duplication, and matches what worked before this flow was merged
+// into one screen (each old per-step screen had its own local provider too).
 
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { COLORS, SPACING } from '../tokens';
 import { WizardHeader } from './WizardHeader';
@@ -44,17 +50,19 @@ export function WizardScreen({
   onBack,
 }: WizardScreenProps) {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {onClose ? (
-        <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onClose={onClose} />
-      ) : (
-        <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onBack={onBack!} />
-      )}
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        {onClose ? (
+          <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onClose={onClose} />
+        ) : (
+          <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onBack={onBack!} />
+        )}
 
-      <View style={styles.body}>{children}</View>
+        <View style={styles.body}>{children}</View>
 
-      <View style={styles.footer}>{footer}</View>
-    </SafeAreaView>
+        <View style={styles.footer}>{footer}</View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
