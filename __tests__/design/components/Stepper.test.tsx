@@ -101,4 +101,39 @@ describe('Stepper', () => {
 
     expect(screen.getByText('Includes a deload week')).toBeTruthy();
   });
+
+  describe('inline variant', () => {
+    test('omits the label line but still renders the value and caption, and keeps the label in accessibility labels', () => {
+      render(
+        <Stepper
+          label="Sets"
+          value={2}
+          onChange={() => {}}
+          min={1}
+          max={10}
+          caption="sets"
+          variant="inline"
+        />,
+      );
+
+      expect(screen.queryByText('Sets')).toBeNull();
+      expect(screen.getByText('sets')).toBeTruthy();
+      expect(screen.getByText('2')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Increase Sets' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Decrease Sets' })).toBeTruthy();
+    });
+
+    test('increment/decrement behave the same as the field variant', () => {
+      const onChange = jest.fn();
+      render(
+        <Stepper label="Sets" value={2} onChange={onChange} min={1} max={10} variant="inline" />,
+      );
+
+      fireEvent.press(screen.getByRole('button', { name: 'Increase Sets' }));
+      expect(onChange).toHaveBeenCalledWith(3);
+
+      fireEvent.press(screen.getByRole('button', { name: 'Decrease Sets' }));
+      expect(onChange).toHaveBeenCalledWith(1);
+    });
+  });
 });

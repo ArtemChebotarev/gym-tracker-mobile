@@ -1,5 +1,7 @@
-// Pure, non-JSX logic behind MesoEditorBasicsScreen.tsx — see the code-style skill, "Screens
-// keep the same split, one level up".
+// Pure, non-JSX logic behind MesoEditorBasicsStep.tsx — see the code-style skill, "Screens keep
+// the same split, one level up". `canContinueFromBasics` is used by the route
+// (app/meso-editor/new.tsx) to gate the shared footer's Continue button, not by this step's own
+// content component.
 
 import {
   validateMesocycleDaysPerWeek,
