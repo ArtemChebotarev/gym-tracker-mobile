@@ -7,7 +7,6 @@ import {
   exerciseDotColor,
   exerciseSubtitle,
   exerciseTitle,
-  formatDayExerciseCount,
   getDayExercises,
   getDayNumbers,
   removeExerciseFromDay,
@@ -122,14 +121,6 @@ describe('canContinueFromDays', () => {
 
   test('is vacuously true for daysPerWeek 0 — never a real draft value (min is 1), but documents the edge case', () => {
     expect(canContinueFromDays(0, {})).toBe(true);
-  });
-});
-
-describe('formatDayExerciseCount', () => {
-  test('pluralizes for anything other than exactly 1', () => {
-    expect(formatDayExerciseCount(0)).toBe('0 exercises');
-    expect(formatDayExerciseCount(1)).toBe('1 exercise');
-    expect(formatDayExerciseCount(4)).toBe('4 exercises');
   });
 });
 

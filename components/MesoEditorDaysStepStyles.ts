@@ -21,10 +21,16 @@ const DAY_TAB_PADDING_HORIZONTAL = 16;
 const DAY_TAB_PADDING_VERTICAL = 8;
 const DAY_TAB_BORDER_WIDTH = 1;
 const ROW_BORDER_WIDTH = 1;
-const DAY_TITLE_MARGIN_BOTTOM = 2;
 const ADD_ROW_PADDING_VERTICAL = 12;
 const ADD_ICON_SIZE = 22;
 const ADD_ICON_GLYPH_SIZE = 14;
+const COLUMN_HEADER_MARGIN_BOTTOM = 6;
+// Width of the Stepper's own inline rendering (two 24px buttons, two 6px gaps, and the value
+// text between them) — matched here so "Sets" centers over the actual stepper below it rather
+// than over the row's full remaining width. IconButton's own DIAMETER (30, not exported) is
+// mirrored the same way for the trailing remove-button column.
+const SETS_COLUMN_WIDTH = 80;
+const REMOVE_COLUMN_WIDTH = 30;
 
 export const styles = StyleSheet.create({
   dayTabs: {
@@ -61,16 +67,34 @@ export const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/screen'],
     paddingTop: CONTENT_PADDING_TOP,
   },
-  dayTitle: {
-    fontSize: TYPOGRAPHY['type/subsection-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/subsection-title'].fontWeight,
-    color: COLORS['text/primary'],
-    marginBottom: DAY_TITLE_MARGIN_BOTTOM,
+  columnHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/gap'],
+    marginBottom: COLUMN_HEADER_MARGIN_BOTTOM,
   },
-  daySub: {
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
-    color: COLORS['text/faint'],
-    marginBottom: SPACING['space/screen'],
+  columnHeaderDotSpacer: {
+    width: DOT_SIZE,
+  },
+  columnHeaderExercise: {
+    flex: 1,
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
+    letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
+    textTransform: TYPOGRAPHY['type/label'].textTransform,
+    color: COLORS['text/muted'],
+  },
+  columnHeaderSets: {
+    width: SETS_COLUMN_WIDTH,
+    textAlign: 'center',
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
+    letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
+    textTransform: TYPOGRAPHY['type/label'].textTransform,
+    color: COLORS['text/muted'],
+  },
+  columnHeaderRemoveSpacer: {
+    width: REMOVE_COLUMN_WIDTH,
   },
   exerciseRow: {
     flexDirection: 'row',

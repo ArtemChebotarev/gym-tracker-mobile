@@ -41,19 +41,24 @@ describe('MesoEditorDaysStep', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  test('renders day tabs, the day heading, and the active day exercises', () => {
+  test('renders day tabs, the column header, and the active day exercises', () => {
     render(<MesoEditorDaysStep {...BASE_PROPS} />);
 
     expect(screen.getByRole('button', { name: 'Day 1' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Day 2' })).toBeTruthy();
-    // "Day 1" appears both as a day tab and as the content heading — getAllByText, not getByText.
-    expect(screen.getAllByText('Day 1').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('1 exercise')).toBeTruthy();
     expect(screen.getByText('Bench Press')).toBeTruthy();
     expect(screen.getByText('Chest')).toBeTruthy();
     expect(screen.getByText('3')).toBeTruthy();
-    expect(screen.getByText('sets')).toBeTruthy();
+    expect(screen.getByText('Exercise')).toBeTruthy();
+    expect(screen.getByText('Sets')).toBeTruthy();
     expect(screen.queryByText('Squat')).toBeNull();
+  });
+
+  test('omits the column header when the active day has no exercises', () => {
+    render(<MesoEditorDaysStep {...BASE_PROPS} exercisesByDay={{}} />);
+
+    expect(screen.queryByText('Exercise')).toBeNull();
+    expect(screen.queryByText('Sets')).toBeNull();
   });
 
   test('pressing a day tab calls onChangeActiveDay', () => {
