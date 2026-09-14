@@ -10,8 +10,9 @@
 // progress-bar/footer chrome shared by every step lives one level up, in
 // design/components/WizardScreen.tsx (see MesoEditorBasicsStep.tsx's comment for why).
 //
-// `onAddExercise` opens task 077's "Add exercise" sheet — not built yet, so the caller currently
-// wires it to a no-op, the same way step 1's Continue was stubbed before this task existed.
+// `onAddExercise` opens task 077's "Add exercise" sheet (MesoEditorAddExerciseSheet.tsx),
+// rendered as a sibling popup over this step's content, not as a step of its own — see that
+// component's own comment.
 //
 // JSX/rendering only — styles live in MesoEditorDaysStepStyles.ts and pure helpers in
 // MesoEditorDaysStepLogic.ts, per the code-style skill.

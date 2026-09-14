@@ -26,9 +26,9 @@ export function getDayExercises(exercisesByDay: ExercisesByDay, dayNumber: numbe
 
 /**
  * Appends `exerciseId` to `dayNumber` with the mockup's default sets (08.5, "Шаг 2": "степпер
- * sets с дефолтом 2") and the next `order`. Task 077's "Add exercise" sheet is this function's
- * intended caller once it exists; this task wires the row that will open that sheet, not the
- * sheet itself.
+ * sets с дефолтом 2") and the next `order`. Called once per selected exercise by
+ * app/meso-editor/new.tsx when task 077's "Add exercise" sheet confirms a (possibly multi-)
+ * selection.
  */
 export function addExerciseToDay(
   exercisesByDay: ExercisesByDay,
