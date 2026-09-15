@@ -36,6 +36,9 @@ const BASE_PROPS: MesoEditorAddExerciseSheetProps = {
   isPending: false,
   search: '',
   onSearchChange: jest.fn(),
+  filters: {},
+  onRequestFilters: jest.fn(),
+  onResetFilters: jest.fn(),
   selectedIds: [],
   onChangeSelectedIds: jest.fn(),
   onConfirm: jest.fn(),
@@ -159,5 +162,30 @@ describe('MesoEditorAddExerciseSheet', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Close' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  // Task 079: this sheet is the same list/search/Filters component the Exercises tab uses (see
+  // ExercisePickerSheet.tsx), so it gets Filters access through composing that component —
+  // task 077's original scope didn't include this row at all.
+  test('pressing the Filters chip calls onRequestFilters', () => {
+    const onRequestFilters = jest.fn();
+    renderSheet({ onRequestFilters });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Filters' }));
+
+    expect(onRequestFilters).toHaveBeenCalledTimes(1);
+  });
+
+  test('renders a chip for an active filter and a Reset chip that calls onResetFilters', () => {
+    // 'back' rather than one of GROUPS's own muscle groups (chest/quads), so the filter chip's
+    // label doesn't collide with a section header rendering the same text.
+    const onResetFilters = jest.fn();
+    renderSheet({ filters: { muscleGroups: ['back'] }, onResetFilters });
+
+    expect(screen.getByText('Back')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Reset' }));
+
+    expect(onResetFilters).toHaveBeenCalledTimes(1);
   });
 });

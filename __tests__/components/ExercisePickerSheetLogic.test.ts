@@ -1,8 +1,5 @@
 import { toExerciseId } from '@domain/catalog';
-import {
-  confirmButtonLabel,
-  toggleExerciseSelection,
-} from '@components/MesoEditorAddExerciseSheetLogic';
+import { confirmButtonLabel, toggleExerciseSelection } from '@components/ExercisePickerSheetLogic';
 
 const BENCH_PRESS = toExerciseId('bench-press');
 const SQUAT = toExerciseId('squat');
