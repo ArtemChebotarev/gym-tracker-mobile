@@ -31,6 +31,7 @@ const BASE_PROPS: MesoEditorDaysStepProps = {
   exercisesById: { [BENCH_PRESS.id]: BENCH_PRESS, [SQUAT.id]: SQUAT },
   onChangeSets: jest.fn(),
   onRemoveExercise: jest.fn(),
+  onReorderExercises: jest.fn(),
   onAddExercise: jest.fn(),
 };
 
@@ -95,5 +96,11 @@ describe('MesoEditorDaysStep', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
 
     expect(onAddExercise).toHaveBeenCalledWith(2);
+  });
+
+  test('renders a drag handle for each row (task 080: drag-to-reorder)', () => {
+    render(<MesoEditorDaysStep {...BASE_PROPS} />);
+
+    expect(screen.getByLabelText('Reorder Bench Press')).toBeTruthy();
   });
 });

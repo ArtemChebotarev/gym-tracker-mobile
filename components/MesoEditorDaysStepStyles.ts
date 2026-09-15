@@ -31,6 +31,18 @@ const COLUMN_HEADER_MARGIN_BOTTOM = 6;
 // mirrored the same way for the trailing remove-button column.
 const SETS_COLUMN_WIDTH = 80;
 const REMOVE_COLUMN_WIDTH = 30;
+// Task 080's drag handle — sized like the row's other small glyphs (REMOVE_ICON_SIZE) with a
+// touch-friendly box around it, same reasoning as IconButton's own DIAMETER exception.
+const DRAG_HANDLE_WIDTH = 24;
+const DRAG_HANDLE_GLYPH_SIZE = 16;
+// A fixed, exact row height rather than the old content-driven paddingVertical — the hand-rolled
+// drag (MesoEditorDaysStep.tsx's PanResponder) turns a drag distance in points into a target row
+// index by dividing by this constant, so it has to be exact, not just "close enough": if it drifts
+// from what actually renders, dragging past N rows would land on N±1.
+export const EXERCISE_ROW_HEIGHT = 58;
+const DRAGGING_SHADOW_RADIUS = 8;
+const DRAGGING_SHADOW_OPACITY = 0.3;
+const DRAGGING_SHADOW_OFFSET = 0;
 
 export const styles = StyleSheet.create({
   dayTabs: {
@@ -96,13 +108,29 @@ export const styles = StyleSheet.create({
   columnHeaderRemoveSpacer: {
     width: REMOVE_COLUMN_WIDTH,
   },
+  columnHeaderHandleSpacer: {
+    width: DRAG_HANDLE_WIDTH,
+  },
   exerciseRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
-    paddingVertical: SPACING['space/row'],
+    height: EXERCISE_ROW_HEIGHT,
     borderBottomWidth: ROW_BORDER_WIDTH,
     borderBottomColor: COLORS['border/divider'],
+  },
+  // Lifted state while a row is being dragged (task 080) — a card-like surface and shadow so it
+  // visually separates from the rows it's passing over, since they don't move out of the way
+  // until the drag is released (see MesoEditorDaysStep.tsx's own comment on why that's the
+  // deliberately simpler choice here).
+  exerciseRowDragging: {
+    backgroundColor: COLORS['surface/card'],
+    borderBottomColor: 'transparent',
+    shadowColor: 'black',
+    shadowOpacity: DRAGGING_SHADOW_OPACITY,
+    shadowRadius: DRAGGING_SHADOW_RADIUS,
+    shadowOffset: { width: DRAGGING_SHADOW_OFFSET, height: DRAGGING_SHADOW_OFFSET },
+    zIndex: 1,
   },
   dot: {
     width: DOT_SIZE,
@@ -124,6 +152,15 @@ export const styles = StyleSheet.create({
   },
   removeIcon: {
     fontSize: REMOVE_ICON_SIZE,
+    color: COLORS['text/faint'],
+  },
+  dragHandle: {
+    width: DRAG_HANDLE_WIDTH,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dragHandleGlyph: {
+    fontSize: DRAG_HANDLE_GLYPH_SIZE,
     color: COLORS['text/faint'],
   },
   addExerciseRow: {

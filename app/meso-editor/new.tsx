@@ -22,6 +22,7 @@ import {
   addExerciseToDay,
   canContinueFromDays,
   removeExerciseFromDay,
+  reorderDayExercises,
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
@@ -150,6 +151,17 @@ export default function MesoEditorRoute() {
               ...draft,
               exercisesByDay: removeExerciseFromDay(draft.exercisesByDay, dayNumber, index),
             })
+          }
+          // Updater form, not a plain value built from the `draft` in scope here — see
+          // state/draftStore.ts's own comment: MesoEditorDaysStep.tsx caches this callback
+          // inside a PanResponder it deliberately doesn't rebuild on every render, so by the
+          // time it's actually invoked, `draft` in *this* closure could already be behind
+          // whatever's in the store (e.g. a Stepper edit made after the responder was cached).
+          onReorderExercises={(dayNumber, newOrder) =>
+            setDraft((current) => ({
+              ...current,
+              exercisesByDay: reorderDayExercises(current.exercisesByDay, dayNumber, newOrder),
+            }))
           }
           onAddExercise={handleRequestAddExercise}
         />

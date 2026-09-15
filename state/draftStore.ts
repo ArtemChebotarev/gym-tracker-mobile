@@ -31,12 +31,22 @@ export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
 
 type DraftState = {
   mesoBuilder: MesoBuilderDraft;
-  setMesoBuilder: (draft: MesoBuilderDraft) => void;
+  // Same dual-mode shape as React's own useState setter: a plain value replaces the draft
+  // outright (every existing call site), and an updater function receives the store's *current*
+  // draft at the moment it actually runs — not whatever `mesoBuilder` a caller's own closure
+  // captured back when that closure was created. MesoEditorDaysStep.tsx's drag-to-reorder needs
+  // exactly that: its PanResponder is cached and deliberately not rebuilt on every render (see
+  // that file's own comment), so an old cached closure calling this with a plain value could
+  // overwrite a newer draft — e.g. a Stepper edit made after the responder was cached, silently
+  // reverted by a reorder that follows it. The updater form reads the store's own state at call
+  // time instead, so it's correct no matter how stale the closure that invoked it is.
+  setMesoBuilder: (draft: MesoBuilderDraft | ((current: MesoBuilderDraft) => MesoBuilderDraft)) => void;
   resetMesoBuilder: () => void;
 };
 
 export const useDraftStore = create<DraftState>((set) => ({
   mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT,
-  setMesoBuilder: (draft) => set({ mesoBuilder: draft }),
+  setMesoBuilder: (draft) =>
+    set((state) => ({ mesoBuilder: typeof draft === 'function' ? draft(state.mesoBuilder) : draft })),
   resetMesoBuilder: () => set({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT }),
 }));

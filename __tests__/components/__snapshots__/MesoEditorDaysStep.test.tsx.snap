@@ -150,6 +150,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
     </View>
   </RCTScrollView>,
   <RCTScrollView
+    bounces={false}
     style={
       {
         "flex": 1,
@@ -169,6 +170,13 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
           }
         }
       >
+        <View
+          style={
+            {
+              "width": 24,
+            }
+          }
+        />
         <View
           style={
             {
@@ -214,6 +222,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
         />
       </View>
       <View
+        collapsable={false}
         style={
           {
             "alignItems": "center",
@@ -221,10 +230,48 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
             "borderBottomWidth": 1,
             "flexDirection": "row",
             "gap": 7,
-            "paddingVertical": 10,
+            "height": 58,
+            "transform": [
+              {
+                "translateY": 0,
+              },
+            ],
           }
         }
       >
+        <View
+          accessibilityLabel="Reorder Bench Press"
+          onMoveShouldSetResponder={[Function]}
+          onMoveShouldSetResponderCapture={[Function]}
+          onResponderEnd={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderReject={[Function]}
+          onResponderRelease={[Function]}
+          onResponderStart={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          onStartShouldSetResponderCapture={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "width": 24,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6B7076",
+                "fontSize": 16,
+              }
+            }
+          >
+            ≡
+          </Text>
+        </View>
         <View
           style={
             [
