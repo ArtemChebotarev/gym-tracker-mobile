@@ -131,10 +131,24 @@ export function MesoEditorDaysStep({
 
   // Springs every non-dragged row toward how far it should currently be shifted to make room for
   // the drag in progress (0 for all of them once the drag ends or hasn't started).
+  //
+  // useNativeDriver: false, deliberately — `dragY` (the dragged row's own translateY, set via
+  // plain `dragY.setValue()` in the PanResponder handlers below, not an `Animated.timing/spring`
+  // call) can never itself be native-driven, and a row that's been pushed by *this* spring at
+  // some point in the past is the exact same native view that later becomes the dragged row in a
+  // later gesture (rows are stable across drags — same key, same index, per exercise). Native
+  // driver hands a view's transform prop over to the native side once it's used with
+  // `useNativeDriver: true`; on-device testing showed that once that happened, the *next* time
+  // that row switched to being driven by plain-JS `dragY.setValue()` calls, its on-screen
+  // position simply stopped updating during the drag (it only caught up once the drag ended and
+  // the state change forced a full re-render) — a native/JS driver handoff RN doesn't support
+  // cleanly on the same view. Keeping every row's translateY JS-driven, always, avoids that
+  // handoff entirely; a spring over one row height has no perceptible cost from skipping the
+  // native driver.
   useEffect(() => {
     rowShiftAnimations.forEach((animation, index) => {
       const shift = draggingIndex !== null && hoverIndex !== null ? rowShiftUnits(index, draggingIndex, hoverIndex) : 0;
-      Animated.spring(animation, { toValue: shift * EXERCISE_ROW_HEIGHT, useNativeDriver: true }).start();
+      Animated.spring(animation, { toValue: shift * EXERCISE_ROW_HEIGHT, useNativeDriver: false }).start();
     });
   }, [rowShiftAnimations, draggingIndex, hoverIndex]);
 
@@ -185,6 +199,13 @@ export function MesoEditorDaysStep({
         },
         onPanResponderRelease: (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
           const targetIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, EXERCISE_ROW_HEIGHT);
+          // Reset every row's push-preview offset immediately (setValue, not a spring) *before*
+          // the reorder lands — rowShiftAnimations is keyed by row *position*, and a reorder
+          // reassigns which exercise sits at which position, so any leftover shift from this
+          // drag's preview is now describing the wrong row's content. Left to the effect below to
+          // spring back to 0 on its own, the newly-repositioned rows would visibly animate in from
+          // that stale offset — a jump in the opposite direction of the drag (found on-device).
+          rowShiftAnimations.forEach((animation) => animation.setValue(0));
           if (targetIndex !== index) {
             onReorderExercises(activeDay, moveIndex(exerciseCount, index, targetIndex));
           }
@@ -192,6 +213,7 @@ export function MesoEditorDaysStep({
           setHoverIndex(null);
         },
         onPanResponderTerminate: () => {
+          rowShiftAnimations.forEach((animation) => animation.setValue(0));
           setDraggingIndex(null);
           setHoverIndex(null);
         },
@@ -202,13 +224,16 @@ export function MesoEditorDaysStep({
 
     return { getHandleResponder };
     // `dragY` is a stable useState value (never replaced via its setter), safe and harmless to
-    // list. `onReorderExercises` is deliberately *not* listed: it's a fresh closure from the
-    // caller every render, but its target (setDraft in app/meso-editor/new.tsx) is stable and
-    // only ever reads exercisesByDay fresh when it actually runs — including it here would
-    // rebuild every row's responder for no behavioral difference, defeating the whole point of
-    // this cache (see the comment above).
+    // list. `rowShiftAnimations` is listed too — it's rebuilt by its own useMemo only when
+    // `activeDayExercises.length` changes, i.e. in lockstep with a dependency already listed
+    // here, so listing it adds no extra responder-cache rebuilds beyond what already happens.
+    // `onReorderExercises` is deliberately *not* listed: it's a fresh closure from the caller
+    // every render, but its target (setDraft in app/meso-editor/new.tsx) is stable and only ever
+    // reads exercisesByDay fresh when it actually runs — including it here would rebuild every
+    // row's responder for no behavioral difference, defeating the whole point of this cache (see
+    // the comment above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeDay, activeDayExercises.length, dragY]);
+  }, [activeDay, activeDayExercises.length, dragY, rowShiftAnimations]);
 
   return (
     <>
