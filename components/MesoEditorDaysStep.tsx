@@ -81,6 +81,7 @@ import {
   getDayExercises,
   getDayNumbers,
   moveIndex,
+  resetRowShiftAnimations,
   rowShiftUnits,
   type ExercisesByDay,
   type ExercisesById,
@@ -171,10 +172,16 @@ export function MesoEditorDaysStep({
   // responder inside it) is only ever rebuilt *between* gestures, when those values are free to
   // actually change.
   //
-  // There's no "current hover index" to read back at release, either — `dragTargetIndex` is pure
-  // and stateless (MesoEditorDaysStepLogic.ts), so onPanResponderRelease just calls it again with
-  // *its own* gestureState.dy (the release event carries the same cumulative delta move events
-  // do) instead of needing to remember the last one computed during a move.
+  // The "current hover index" at release is whatever `onPanResponderMove` last previewed — read
+  // from a plain closure variable local to this responder (reassigned on every move, reset on
+  // grant), *not* recomputed from the release event's own `gestureState.dy`. Those two used to be
+  // computed separately and, on-device, could disagree by a row: a fast/long drag's release
+  // coordinates land a touch away from the last move sample it actually rendered a preview for
+  // (more likely the longer the drag — i.e. more noticeable on a big list), so the reorder that
+  // landed didn't always match the slot the push-preview had just shown the row hovering over,
+  // reading as a brief "wrong rows swap, then correct themselves" once the real (differently
+  // targeted) layout rendered. Releasing into the exact index the preview last showed removes any
+  // room for the two to disagree.
   const handleResponders = useMemo(() => {
     const exerciseCount = activeDayExercises.length;
     const responders = new Map<number, ReturnType<typeof PanResponder.create>>();
@@ -184,36 +191,32 @@ export function MesoEditorDaysStep({
       if (responder) {
         return responder;
       }
+      let latestHoverIndex = index;
       responder = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => {
           dragY.setValue(0);
+          latestHoverIndex = index;
           setDraggingIndex(index);
           setHoverIndex(index);
         },
         onPanResponderMove: (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
           dragY.setValue(gestureState.dy);
-          setHoverIndex(dragTargetIndex(index, gestureState.dy, exerciseCount, EXERCISE_ROW_HEIGHT));
+          latestHoverIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, EXERCISE_ROW_HEIGHT);
+          setHoverIndex(latestHoverIndex);
         },
-        onPanResponderRelease: (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-          const targetIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, EXERCISE_ROW_HEIGHT);
-          // Reset every row's push-preview offset immediately (setValue, not a spring) *before*
-          // the reorder lands — rowShiftAnimations is keyed by row *position*, and a reorder
-          // reassigns which exercise sits at which position, so any leftover shift from this
-          // drag's preview is now describing the wrong row's content. Left to the effect below to
-          // spring back to 0 on its own, the newly-repositioned rows would visibly animate in from
-          // that stale offset — a jump in the opposite direction of the drag (found on-device).
-          rowShiftAnimations.forEach((animation) => animation.setValue(0));
-          if (targetIndex !== index) {
-            onReorderExercises(activeDay, moveIndex(exerciseCount, index, targetIndex));
+        onPanResponderRelease: () => {
+          resetRowShiftAnimations(rowShiftAnimations);
+          if (latestHoverIndex !== index) {
+            onReorderExercises(activeDay, moveIndex(exerciseCount, index, latestHoverIndex));
           }
           setDraggingIndex(null);
           setHoverIndex(null);
         },
         onPanResponderTerminate: () => {
-          rowShiftAnimations.forEach((animation) => animation.setValue(0));
+          resetRowShiftAnimations(rowShiftAnimations);
           setDraggingIndex(null);
           setHoverIndex(null);
         },
