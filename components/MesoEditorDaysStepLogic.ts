@@ -3,6 +3,8 @@
 // (app/meso-editor/new.tsx) to gate the shared footer's Continue button, not by this step's own
 // content component.
 
+import type { Animated } from 'react-native';
+
 import type { Exercise } from '@domain/catalog';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
@@ -137,6 +139,21 @@ export function reorderDayExercises(
     .filter((exercise): exercise is WeekPlanExercise => exercise !== undefined)
     .map((exercise, index) => ({ ...exercise, order: index }));
   return { ...exercisesByDay, [dayNumber]: reordered };
+}
+
+/**
+ * Ends a drag: cancels each row's in-flight push-preview spring (started by
+ * MesoEditorDaysStep.tsx's effect on the row's *previous* hoverIndex) before snapping every
+ * offset back to 0. `setValue()` alone isn't enough — it doesn't stop an animation already
+ * running via `.start()`, so a spring still mid-flight from the last `onPanResponderMove` kept
+ * emitting its own frames afterward and stomped a plain reset a moment later, producing a brief
+ * "two rows swap, then settle back" flash on-device before this fix.
+ */
+export function resetRowShiftAnimations(rowShiftAnimations: readonly Animated.Value[]): void {
+  rowShiftAnimations.forEach((animation) => {
+    animation.stopAnimation();
+    animation.setValue(0);
+  });
 }
 
 /** Gates Continue (08.5, "Шаг 2": "Continue неактивна, пока хотя бы один день пуст"). */
