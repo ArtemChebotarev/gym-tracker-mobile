@@ -14,6 +14,9 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import { toExerciseId, type ExerciseId } from '@domain/catalog';
+import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
+import type { ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
+import { countEntries } from '@components/ExerciseLibraryScreenLogic';
 import { MesoEditorAddExerciseSheet } from '@components/MesoEditorAddExerciseSheet';
 import { MesoEditorBasicsStep } from '@components/MesoEditorBasicsStep';
 import { canContinueFromBasics } from '@components/MesoEditorBasicsStepLogic';
@@ -50,12 +53,34 @@ export default function MesoEditorRoute() {
   const [addExerciseDay, setAddExerciseDay] = useState<number | null>(null);
   const [addExerciseSearch, setAddExerciseSearch] = useState('');
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<ExerciseId[]>([]);
-  const addExerciseQuery = useExerciseLibrary({ search: addExerciseSearch });
+  const [addExerciseFilters, setAddExerciseFilters] = useState<ExerciseLibraryFilters>({});
+  const [addExerciseDraftFilters, setAddExerciseDraftFilters] = useState<ExerciseLibraryFilters>(
+    {},
+  );
+  const [isAddExerciseFiltersSheetOpen, setIsAddExerciseFiltersSheetOpen] = useState(false);
+  const addExerciseQuery = useExerciseLibrary({ ...addExerciseFilters, search: addExerciseSearch });
+  // Recomputed live as the Filters sheet's draft selection changes, so its confirm button always
+  // shows an up-to-date count before the draft is applied — same as app/(tabs)/library.tsx.
+  const addExerciseDraftQuery = useExerciseLibrary({
+    ...addExerciseDraftFilters,
+    search: addExerciseSearch,
+  });
 
   function handleRequestAddExercise(dayNumber: number) {
     setAddExerciseDay(dayNumber);
     setAddExerciseSearch('');
     setSelectedExerciseIds([]);
+    setAddExerciseFilters({});
+  }
+
+  function handleRequestAddExerciseFilters() {
+    setAddExerciseDraftFilters(addExerciseFilters);
+    setIsAddExerciseFiltersSheetOpen(true);
+  }
+
+  function handleApplyAddExerciseFilters() {
+    setAddExerciseFilters(addExerciseDraftFilters);
+    setIsAddExerciseFiltersSheetOpen(false);
   }
 
   function handleConfirmAddExercise() {
@@ -65,7 +90,8 @@ export default function MesoEditorRoute() {
     setDraft({
       ...draft,
       exercisesByDay: selectedExerciseIds.reduce(
-        (exercisesByDay, exerciseId) => addExerciseToDay(exercisesByDay, addExerciseDay, exerciseId),
+        (exercisesByDay, exerciseId) =>
+          addExerciseToDay(exercisesByDay, addExerciseDay, exerciseId),
         draft.exercisesByDay,
       ),
     });
@@ -100,7 +126,9 @@ export default function MesoEditorRoute() {
         footer={
           <MesoEditorFooter
             onContinue={() => setStep(2)}
-            continueDisabled={!canContinueFromBasics(draft.name, draft.lengthWeeks, draft.daysPerWeek)}
+            continueDisabled={
+              !canContinueFromBasics(draft.name, draft.lengthWeeks, draft.daysPerWeek)
+            }
           />
         }
       >
@@ -173,10 +201,22 @@ export default function MesoEditorRoute() {
         isPending={addExerciseQuery.isPending}
         search={addExerciseSearch}
         onSearchChange={setAddExerciseSearch}
+        filters={addExerciseFilters}
+        onRequestFilters={handleRequestAddExerciseFilters}
+        onResetFilters={() => setAddExerciseFilters({})}
         selectedIds={selectedExerciseIds}
         onChangeSelectedIds={setSelectedExerciseIds}
         onConfirm={handleConfirmAddExercise}
         onClose={() => setAddExerciseDay(null)}
+      />
+      <ExerciseFiltersSheet
+        visible={isAddExerciseFiltersSheetOpen}
+        filters={addExerciseDraftFilters}
+        onChangeFilters={setAddExerciseDraftFilters}
+        resultCount={addExerciseDraftQuery.data ? countEntries(addExerciseDraftQuery.data) : 0}
+        onReset={() => setAddExerciseDraftFilters({})}
+        onApply={handleApplyAddExerciseFilters}
+        onClose={() => setIsAddExerciseFiltersSheetOpen(false)}
       />
     </>
   );
