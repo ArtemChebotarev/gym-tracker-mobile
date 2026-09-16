@@ -1,17 +1,20 @@
-// Styles for MesoEditorAddExerciseSheet.tsx — see the code-style skill, "Screens keep the same
-// split, one level up".
+// Styles for ExercisePickerSheet.tsx — see the code-style skill, "Screens keep the same split,
+// one level up".
 
 import { StyleSheet } from 'react-native';
 
 import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
-  dayCaption: {
+  caption: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/faint'],
     marginBottom: SPACING['space/gap'],
   },
   searchField: {
+    marginBottom: SPACING['space/gap'],
+  },
+  filterRow: {
     marginBottom: SPACING['space/gap'],
   },
   status: {

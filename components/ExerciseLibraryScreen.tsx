@@ -12,25 +12,27 @@
 // ExerciseLibraryScreenLogic.ts, per AGENTS.md's "Code organization".
 
 import { useMemo } from 'react';
-import { Pressable, SectionList, Text, View } from 'react-native';
+import { SectionList, Text } from 'react-native';
 
-import type { ExerciseListEntry, ExerciseListQuery, ExerciseListGroup } from '@domain/catalogListing';
-import { Chip } from '@design/components/Chip';
+import type {
+  ExerciseListEntry,
+  ExerciseListQuery,
+  ExerciseListGroup,
+} from '@domain/catalogListing';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
 import { SectionHeader } from '@design/components/SectionHeader';
-import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
+import { ExerciseFilterRow } from './ExerciseFilterRow';
 import {
   buildSections,
   countEntries,
   formatSubtitle,
   hasActiveFilters,
   sectionDotColor,
-  sourceLabel,
   type ExerciseSection,
 } from './ExerciseLibraryScreenLogic';
 import { styles } from './ExerciseLibraryScreenStyles';
@@ -72,34 +74,23 @@ export function ExerciseLibraryScreen({
     <RootScreen
       title="Exercises"
       trailing={
-        <IconButton accessibilityLabel="Add exercise" variant="accent" onPress={() => onRequestCreate()}>
+        <IconButton
+          accessibilityLabel="Add exercise"
+          variant="accent"
+          onPress={() => onRequestCreate()}
+        >
           <Text style={styles.addIcon}>+</Text>
         </IconButton>
       }
     >
       <SearchField value={search} onChangeText={onSearchChange} placeholder="Search exercises" />
 
-      <View style={styles.filterRow}>
-        <Chip variant="selectable" label="Filters" selected={filtersActive} onPress={onRequestFilters} />
-        {filters.muscleGroups?.map((muscleGroup) => (
-          <Chip
-            key={`muscle-group-${muscleGroup}`}
-            variant="static"
-            label={getMuscleGroupLabel(muscleGroup)}
-            dotColor={sectionDotColor(muscleGroup)}
-          />
-        ))}
-        {filters.sources?.map((source) => (
-          <Chip key={`source-${source}`} variant="static" label={sourceLabel(source)} />
-        ))}
-        {filters.performedOnly && <Chip variant="static" label="Performed only" />}
-        <Chip variant="counter" label="Exercises" count={resultCount} />
-        {filtersActive && (
-          <Pressable accessibilityRole="button" style={styles.resetChip} onPress={onResetFilters}>
-            <Text style={styles.resetChipLabel}>Reset</Text>
-          </Pressable>
-        )}
-      </View>
+      <ExerciseFilterRow
+        filters={filters}
+        resultCount={resultCount}
+        onRequestFilters={onRequestFilters}
+        onResetFilters={onResetFilters}
+      />
 
       {isPending && <Text style={styles.status}>Loading…</Text>}
 
