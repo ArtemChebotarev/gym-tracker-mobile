@@ -11,6 +11,7 @@
 // назад, но выравнивание и т.д. остаются на месте." One mounted component, step-driven content,
 // is the only way to actually get that — see design/components/WizardScreen.tsx.
 import { useMemo, useState } from 'react';
+import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { toExerciseId, type ExerciseId } from '@domain/catalog';
@@ -29,14 +30,16 @@ import {
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
+import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
 import { WizardScreen } from '@design/components/WizardScreen';
+import { useConfirmMesocycleDraft } from '@state/useConfirmMesocycleDraft';
 import { useDraftStore } from '@state/draftStore';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { useExercisesByIds } from '@state/useExercisesByIds';
 
 const TOTAL_STEPS = 3;
 
-type Step = 1 | 2;
+type Step = 1 | 2 | 3;
 
 export default function MesoEditorRoute() {
   const router = useRouter();
@@ -45,6 +48,7 @@ export default function MesoEditorRoute() {
   const resetDraft = useDraftStore((state) => state.resetMesoBuilder);
   const [step, setStep] = useState<Step>(1);
   const [activeDay, setActiveDay] = useState(1);
+  const confirmMesocycleDraft = useConfirmMesocycleDraft();
 
   // Task 077's "Add exercise" sheet — a popup over step 2's own content, not a wizard step of its
   // own (see MesoEditorAddExerciseSheet.tsx's own comment). `addExerciseDay` is the day the sheet
@@ -116,6 +120,30 @@ export default function MesoEditorRoute() {
     router.back();
   }
 
+  // Step 3's chevron: back to step 2 with that day's tab active. The draft lives in the zustand
+  // store, not in step-local state, so every other day's exercises are untouched by the switch.
+  function handleEditDay(dayNumber: number) {
+    setActiveDay(dayNumber);
+    setStep(2);
+  }
+
+  // Task 078: Save mesocycle → Confirm (071), which saves a `planned` mesocycle and creates no
+  // sessions. On success the draft is reset and the modal closes back onto the Mesocycles tab it
+  // was opened from (074's list will show the new mesocycle under Planned once it exists). A
+  // failed save keeps the draft and shows a plain system alert so the user can simply try again
+  // (Artem's call on 08.5's open question about the save-failure state).
+  function handleSave() {
+    confirmMesocycleDraft.mutate(draft, {
+      onSuccess: () => {
+        resetDraft();
+        router.back();
+      },
+      onError: () => {
+        Alert.alert("Couldn't save mesocycle", 'Something went wrong. Please try again.');
+      },
+    });
+  }
+
   if (step === 1) {
     return (
       <WizardScreen
@@ -144,6 +172,33 @@ export default function MesoEditorRoute() {
     );
   }
 
+  if (step === 3) {
+    return (
+      <WizardScreen
+        title="Review"
+        currentStep={3}
+        totalSteps={TOTAL_STEPS}
+        onBack={() => setStep(2)}
+        footer={
+          <MesoEditorFooter
+            onContinue={handleSave}
+            continueDisabled={confirmMesocycleDraft.isPending}
+            continueLabel="Save mesocycle"
+          />
+        }
+      >
+        <MesoEditorReviewStep
+          name={draft.name}
+          lengthWeeks={draft.lengthWeeks}
+          daysPerWeek={draft.daysPerWeek}
+          exercisesByDay={draft.exercisesByDay}
+          exercisesById={exercisesQuery.data ?? {}}
+          onEditDay={handleEditDay}
+        />
+      </WizardScreen>
+    );
+  }
+
   return (
     <>
       <WizardScreen
@@ -153,10 +208,7 @@ export default function MesoEditorRoute() {
         onBack={() => setStep(1)}
         footer={
           <MesoEditorFooter
-            onContinue={() => {
-              // Step 3 (Review & confirm) doesn't exist yet — nothing to advance to. The route
-              // wiring for it lands with that task; the draft is already in place for it to read.
-            }}
+            onContinue={() => setStep(3)}
             continueDisabled={!canContinueFromDays(draft.daysPerWeek, draft.exercisesByDay)}
             hint="Every day needs at least one exercise"
           />
