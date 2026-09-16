@@ -1,5 +1,6 @@
 import type { Mesocycle, MesocycleOrigin } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import type { WeekPlan } from '@domain/plan';
 
 function describeOrigin(origin: MesocycleOrigin): string {
   switch (origin.type) {
@@ -59,6 +60,22 @@ describe('mesocycle domain types', () => {
   test('a full mesocycle fixture typechecks', () => {
     expect(mesocycleFixture.status).toBe('active');
     expect(mesocycleFixture.completedAt).toBeUndefined();
+  });
+
+  test('a planned mesocycle typechecks with no startDate and a draft weekPlan', () => {
+    const weekPlan: WeekPlan = {
+      days: [{ dayNumber: 1, name: '', exercises: [] }],
+    };
+    const plannedFixture: Mesocycle = {
+      ...mesocycleFixture,
+      status: 'planned',
+      startDate: undefined,
+      weekPlan,
+    };
+
+    expect(plannedFixture.status).toBe('planned');
+    expect(plannedFixture.startDate).toBeUndefined();
+    expect(plannedFixture.weekPlan).toEqual(weekPlan);
   });
 
   test('defaultProgressionSettings matches the spec defaults', () => {

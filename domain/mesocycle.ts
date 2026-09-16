@@ -1,7 +1,15 @@
 // Mesocycle — a training block. See 02 · Domain Model ("Mesocycle") and
 // 03 · Progression Engine ("progressionSettings").
 
-export type MesocycleStatus = 'active' | 'completed' | 'abandoned';
+import type { WeekPlan } from '@domain/plan';
+
+/**
+ * `planned` — saved by Confirm (071), fully editable, not yet running: no `startDate`, and
+ * `weekPlan` carries its draft week 1. `active` / `completed` / `abandoned` are unchanged from
+ * before task 038 — see 04 · Meso Creation Flows, "Сохранение при подтверждении (Confirm)" and
+ * "Запуск (Start)".
+ */
+export type MesocycleStatus = 'planned' | 'active' | 'completed' | 'abandoned';
 
 /**
  * How a mesocycle came into being, as a discriminated union on `type`:
@@ -53,6 +61,12 @@ export const defaultProgressionSettings: ProgressionSettings = {
  * - `lengthWeeks` and `daysPerWeek` are immutable after creation.
  * - `progressionSettings` is a snapshot copied in at creation, not read live
  *   from global settings.
+ * - `startDate` and `weekPlan` are mutually exclusive over the mesocycle's lifetime: while
+ *   `status: 'planned'`, `startDate` is absent and `weekPlan` carries the draft week 1; once
+ *   Start runs, `startDate` is set, `weekPlan` is cleared, and week 1 lives on as `Session` /
+ *   `SessionExercise` rows instead (04 · Meso Creation Flows, "Запуск (Start)"; 09 · Open
+ *   Questions & Decisions Log, "Planned-мезоцикл хранит свой черновичный weekPlan прямо на
+ *   себе" — a deliberate, temporary exception to 02 · Domain Model's "WeekPlan — не таблица").
  */
 export type Mesocycle = {
   id: string;
@@ -61,10 +75,17 @@ export type Mesocycle = {
   lengthWeeks: number;
   /** 1..7. */
   daysPerWeek: number;
-  startDate: string;
+  /** Absent while `status: 'planned'`; set by Start to the moment the mesocycle launches. */
+  startDate?: string;
   status: MesocycleStatus;
   origin: MesocycleOrigin;
   progressionSettings: ProgressionSettings;
+  /**
+   * Draft week 1, present only while `status: 'planned'`. Start materializes it into `Session` /
+   * `SessionExercise` and this field goes back to absent — it is never read once the mesocycle
+   * is `active`.
+   */
+  weekPlan?: WeekPlan;
   createdAt: string;
   completedAt?: string;
 };

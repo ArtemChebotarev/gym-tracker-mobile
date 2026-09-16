@@ -4,6 +4,7 @@
 // AGENTS.md.
 
 import type { Mesocycle } from '@domain/mesocycle';
+import type { WeekPlan } from '@domain/plan';
 
 // Exported so callers that need the same bounds (e.g. the mesocycle editor's Stepper props —
 // see 08.5 · Редактор мезоцикла — Flow A, "Шаг 1 — Basics") reuse them instead of hand-copying
@@ -47,6 +48,20 @@ export function validateSingleActiveMesocycle(mesocycles: readonly Mesocycle[]):
   const activeCount = mesocycles.filter((mesocycle) => mesocycle.status === 'active').length;
   if (activeCount > 1) {
     throw new Error(`Only one mesocycle may be active at a time, found ${activeCount}.`);
+  }
+}
+
+/**
+ * Throws if `weekPlan` doesn't have exactly one `WeekPlanDay` per day of the week (04 · Meso
+ * Creation Flows, Flow A, step 1: `daysPerWeek` and the days added on step 2 must agree —
+ * used by `buildScratchMesocycleDraft` in `domain/mesocycleBuilders.ts` before a draft is
+ * allowed to become a `Mesocycle`).
+ */
+export function validateWeekPlanDayCount(weekPlan: WeekPlan, daysPerWeek: number): void {
+  if (weekPlan.days.length !== daysPerWeek) {
+    throw new Error(
+      `WeekPlan must have exactly ${daysPerWeek} day(s) to match daysPerWeek, got ${weekPlan.days.length}.`,
+    );
   }
 }
 
