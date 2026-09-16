@@ -60,12 +60,12 @@ export function buildScratchMesocycleDraft(input: ScratchMesocycleDraftInput): M
  * `Mesocycle` without saving it. A planned mesocycle is fully editable until Start (04 · Meso
  * Creation Flows, "Сохранение при подтверждении (Confirm)": "дни, упражнения, `startSets` можно
  * менять как угодно"), so `name`, `lengthWeeks`, `daysPerWeek`, and `weekPlan` all come from
- * `input`. 02 · Domain Model's "`lengthWeeks` and `daysPerWeek` are immutable after creation"
- * (`validateMesocycleImmutableFields`) guards a running mesocycle, which this function never
- * touches. `id`, `origin`, `progressionSettings`, `status`, and `createdAt` are kept as they were.
+ * `input`. 02 · Domain Model's "`lengthWeeks` and `daysPerWeek` are immutable after Start"
+ * (`validateMesocycleImmutableFields`) only kicks in once the mesocycle is started. `id`, `origin`, `progressionSettings`, `status`, and `createdAt` are kept as they were.
  *
- * Throws `ConflictError` if `current` isn't `planned` — active and completed mesocycles can't be
- * edited this way.
+ * Throws `ConflictError` if `current` isn't `planned` — active and completed mesocycles can't go
+ * back through the editor. Exercise-level changes to an active one (add / replace / skip / reorder
+ * during a workout, 05 · Workout Execution & Logging) are separate operations, not this one.
  */
 export function applyPlannedMesocycleEdit(
   current: Mesocycle,
