@@ -195,7 +195,13 @@ export default function MesoEditorRoute() {
         />
       </WizardScreen>
       <MesoEditorAddExerciseSheet
-        visible={addExerciseDay !== null}
+        // Hidden (not unmounted — search/selection stay intact) while the Filters sheet is open,
+        // rather than visible underneath it. React Native's <Modal> presents each open Modal as
+        // its own native window; two visible at once (this sheet's own BottomSheet Modal plus
+        // ExerciseFiltersSheet's) leaves the first one's touch responder chain broken once the
+        // second is dismissed — the whole screen stops responding to taps. Only one Modal may be
+        // visible at a time.
+        visible={addExerciseDay !== null && !isAddExerciseFiltersSheetOpen}
         dayNumber={addExerciseDay ?? activeDay}
         groups={addExerciseQuery.data}
         isPending={addExerciseQuery.isPending}
