@@ -4,11 +4,11 @@
 // Several destinations don't exist yet, so they're explicit "not available yet" popups rather
 // than buttons that silently do nothing:
 // - Start → the Start scenario itself is task 042 (materializing week 1 into sessions).
-// - Edit → the editor (app/meso-editor/new.tsx) only creates; loading a saved planned mesocycle
-//   back into it isn't built.
 // - Completed Copy → Flow C, not yet specified as a screen (074: "можно оставить точку входа как
 //   заглушку").
 // - Completed `⋯` → a mesocycle's History screen.
+// Planned `⋯` → Edit opens the same editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
+// that mesocycle loaded into the editor draft first.
 // `+` goes straight to Flow A — Flows B and C have no screens yet to choose between (074's
 // temporary option; the final three-flow picker is still Artem's call).
 
@@ -16,6 +16,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { MesocyclesScreen } from '@components/MesocyclesScreen';
+import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesocycles } from '@state/useMesocycles';
 
@@ -23,6 +24,7 @@ export default function MesocyclesRoute() {
   const router = useRouter();
   const query = useMesocycles();
   const deleteMesocycle = useDeletePlannedMesocycle();
+  const setDraft = useDraftStore((state) => state.setMesoBuilder);
 
   function showNotAvailable(feature: string) {
     Alert.alert('Not available yet', `${feature} is coming in a later update.`);
@@ -35,7 +37,10 @@ export default function MesocyclesRoute() {
       onRequestCreate={() => router.push('/meso-editor/new')}
       onOpenActive={() => router.navigate('/')}
       onStart={() => showNotAvailable('Starting a mesocycle')}
-      onEdit={() => showNotAvailable('Editing a planned mesocycle')}
+      onEdit={(mesocycle) => {
+        setDraft(toMesoBuilderDraft(mesocycle));
+        router.push({ pathname: '/meso-editor/edit/[id]', params: { id: mesocycle.id } });
+      }}
       onDelete={(mesocycle) =>
         deleteMesocycle.mutate(mesocycle.id, {
           onError: () => {
