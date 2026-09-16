@@ -2,7 +2,7 @@
 
 exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
 <Modal
-  animationType="slide"
+  animationType="none"
   onRequestClose={[MockFunction]}
   transparent={true}
   visible={true}

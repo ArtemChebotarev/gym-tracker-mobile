@@ -49,6 +49,10 @@ export type ExerciseFiltersSheetProps = {
   onReset: () => void;
   onApply: () => void;
   onClose: () => void;
+  /** Forwarded to BottomSheet — see its own doc on this prop. Used by the "Add exercise" flow
+   * (app/meso-editor/new.tsx, task 079), where this sheet hands off with MesoEditorAddExerciseSheet
+   * in immediate succession; the library tab (app/(tabs)/library.tsx) leaves it at the default. */
+  animated?: boolean;
 };
 
 export function ExerciseFiltersSheet({
@@ -59,12 +63,14 @@ export function ExerciseFiltersSheet({
   onReset,
   onApply,
   onClose,
+  animated,
 }: ExerciseFiltersSheetProps) {
   return (
     <BottomSheet
       visible={visible}
       onClose={onClose}
       title="Filters"
+      animated={animated}
       action={
         <Pressable accessibilityRole="button" onPress={onReset}>
           <Text style={styles.reset}>Reset</Text>
@@ -72,7 +78,11 @@ export function ExerciseFiltersSheet({
       }
       footer={
         <View style={styles.footerButton}>
-          <Button label={applyButtonLabel(resultCount)} onPress={onApply} disabled={resultCount === 0} />
+          <Button
+            label={applyButtonLabel(resultCount)}
+            onPress={onApply}
+            disabled={resultCount === 0}
+          />
         </View>
       }
     >

@@ -217,6 +217,10 @@ export default function MesoEditorRoute() {
       />
       <ExerciseFiltersSheet
         visible={isAddExerciseFiltersSheetOpen}
+        // Instant, not sliding — this sheet hands off with MesoEditorAddExerciseSheet above in
+        // immediate succession (one hides the instant the other shows), so it matches that
+        // sheet's own `animated={false}`. See BottomSheet.tsx's doc on the prop.
+        animated={false}
         filters={addExerciseDraftFilters}
         onChangeFilters={setAddExerciseDraftFilters}
         resultCount={addExerciseDraftQuery.data ? countEntries(addExerciseDraftQuery.data) : 0}

@@ -55,6 +55,11 @@ export function MesoEditorAddExerciseSheet({
       visible={visible}
       title="Add exercise"
       caption={`Day ${dayNumber}`}
+      // This sheet and ExerciseFiltersSheet hand off to each other in immediate succession —
+      // one is hidden (not closed with its own slide-down) the instant the other becomes
+      // visible (see app/meso-editor/new.tsx). Animating both legs of that handoff read as a
+      // stutter, not a single deliberate motion, so both sheets in this flow open/close instantly.
+      animated={false}
       groups={groups}
       isPending={isPending}
       search={search}

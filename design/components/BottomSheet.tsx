@@ -30,7 +30,16 @@
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import type { GestureResponderEvent } from 'react-native';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
@@ -52,9 +61,22 @@ export type BottomSheetProps = {
   action?: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
+  /** Set to false to open/close instantly instead of sliding. Defaults to true (the normal
+   * slide-up/down transition). Used with false when one BottomSheet hands off to another in
+   * immediate succession (e.g. ExercisePickerSheet.tsx's Filters handoff, task 079) — two
+   * sequential slide transitions there read as a stutter rather than a single deliberate motion. */
+  animated?: boolean;
 };
 
-export function BottomSheet({ visible, onClose, title, action, footer, children }: BottomSheetProps) {
+export function BottomSheet({
+  visible,
+  onClose,
+  title,
+  action,
+  footer,
+  children,
+  animated = true,
+}: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
 
   function handleGrabberGrant(event: GestureResponderEvent) {
@@ -70,7 +92,12 @@ export function BottomSheet({ visible, onClose, title, action, footer, children 
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType={animated ? 'slide' : 'none'}
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
