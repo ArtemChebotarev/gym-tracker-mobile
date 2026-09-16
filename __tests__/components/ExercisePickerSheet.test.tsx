@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
@@ -143,6 +144,18 @@ describe('ExercisePickerSheet', () => {
 
       expect(onResetFilters).toHaveBeenCalledTimes(1);
     });
+  });
+
+  // Task 082: search narrows the list as the user types; the sheet must keep its height rather
+  // than shrink to the results, including when nothing matches.
+  test.each([
+    ['multi', BASE_MULTI_PROPS],
+    ['single', BASE_SINGLE_PROPS],
+  ])('%s mode keeps a fixed sheet height even with no results', (_mode, props) => {
+    renderSheet({ ...props, search: 'zzz', groups: [] });
+
+    const style = StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style);
+    expect(style.height).toBe('80%');
   });
 
   describe('multi mode (task 077 — Add exercise)', () => {

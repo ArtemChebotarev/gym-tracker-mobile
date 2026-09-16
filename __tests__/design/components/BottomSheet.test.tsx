@@ -1,6 +1,6 @@
 import { BottomSheet } from '@design/components/BottomSheet';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ScrollView, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
 describe('BottomSheet', () => {
   test('renders nothing when not visible', () => {
@@ -112,4 +112,41 @@ describe('BottomSheet', () => {
       left: 'off',
     });
   });
+
+  // Task 082: a content-sized sheet only caps its height; a fixed one pins it, in both
+  // presentations, so live-filtered content can't make the sheet jump.
+  test.each(['modal', 'overlay'] as const)(
+    '%s presentation: sizes to content by default, with only a max height',
+    (presentation) => {
+      render(
+        <BottomSheet visible onClose={() => {}} title="Filters" presentation={presentation}>
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+
+      const style = StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style);
+      expect(style.maxHeight).toBe('80%');
+      expect(style.height).toBeUndefined();
+    },
+  );
+
+  test.each(['modal', 'overlay'] as const)(
+    '%s presentation: height="fixed" pins the sheet height regardless of content',
+    (presentation) => {
+      render(
+        <BottomSheet
+          visible
+          onClose={() => {}}
+          title="Add exercise"
+          presentation={presentation}
+          height="fixed"
+        >
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+
+      const style = StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style);
+      expect(style.height).toBe('80%');
+    },
+  );
 });
