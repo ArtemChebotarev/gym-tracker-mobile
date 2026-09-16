@@ -13,6 +13,7 @@ const BENCH_PRESS: Exercise = {
   name: 'Bench Press',
   muscleGroup: 'chest',
   source: 'catalog',
+  equipment: 'dumbbell',
   isHidden: false,
 };
 
@@ -83,6 +84,18 @@ describe('ExercisePickerSheet', () => {
     expect(screen.getByText('Bench Press')).toBeTruthy();
     expect(screen.getByText('Quads')).toBeTruthy();
     expect(screen.getByText('Squat')).toBeTruthy();
+  });
+
+  // Task 081: same-named exercises are told apart by equipment; one without equipment gets no
+  // suffix at all. Both modes render the same row, so check each.
+  test.each([
+    ['multi', BASE_MULTI_PROPS],
+    ['single', BASE_SINGLE_PROPS],
+  ])('%s mode shows the equipment suffix only for exercises that have one', (_mode, props) => {
+    renderSheet(props);
+
+    expect(screen.getByText(' · Dumbbell')).toBeTruthy();
+    expect(screen.getAllByText(/^· /)).toHaveLength(1);
   });
 
   test('shows a loading status and no rows while pending', () => {

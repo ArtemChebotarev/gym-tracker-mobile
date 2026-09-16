@@ -463,18 +463,28 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     }
                   }
                 >
-                  <Text
-                    numberOfLines={1}
+                  <View
                     style={
                       {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
+                        "alignItems": "baseline",
+                        "flexDirection": "row",
                       }
                     }
                   >
-                    Bench Press
-                  </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={
+                        {
+                          "color": "#F5F5F4",
+                          "flexShrink": 1,
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        }
+                      }
+                    >
+                      Bench Press
+                    </Text>
+                  </View>
                   <Text
                     numberOfLines={1}
                     style={
@@ -629,18 +639,28 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     }
                   }
                 >
-                  <Text
-                    numberOfLines={1}
+                  <View
                     style={
                       {
-                        "color": "#F5F5F4",
-                        "fontSize": 14,
-                        "fontWeight": "400",
+                        "alignItems": "baseline",
+                        "flexDirection": "row",
                       }
                     }
                   >
-                    Squat
-                  </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={
+                        {
+                          "color": "#F5F5F4",
+                          "flexShrink": 1,
+                          "fontSize": 14,
+                          "fontWeight": "400",
+                        }
+                      }
+                    >
+                      Squat
+                    </Text>
+                  </View>
                   <Text
                     numberOfLines={1}
                     style={

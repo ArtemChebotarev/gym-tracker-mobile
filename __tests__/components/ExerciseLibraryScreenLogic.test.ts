@@ -6,6 +6,7 @@ import type { ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
 import {
   buildSections,
   countEntries,
+  equipmentSuffix,
   formatSubtitle,
   hasActiveFilters,
   sectionDotColor,
@@ -94,5 +95,21 @@ describe('buildSections', () => {
       { muscleGroup: 'back', title: 'Back', data: [] },
       { muscleGroup: 'chest', title: 'Chest', data: [] },
     ]);
+  });
+});
+
+describe('equipmentSuffix', () => {
+  test('the equipment label when the exercise has equipment', () => {
+    expect(
+      equipmentSuffix(
+        exercise({ id: toExerciseId('db-bench'), name: 'Bench Press', muscleGroup: 'chest', equipment: 'dumbbell' }),
+      ),
+    ).toBe('Dumbbell');
+  });
+
+  test('undefined when the exercise has no equipment', () => {
+    expect(
+      equipmentSuffix(exercise({ id: toExerciseId('my-fly'), name: 'My Fly', muscleGroup: 'chest' })),
+    ).toBeUndefined();
   });
 });
