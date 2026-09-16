@@ -1,5 +1,7 @@
+import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import {
   DEFAULT_MESO_BUILDER_DRAFT,
+  toMesoBuilderDraft,
   toScratchMesocycleDraftInput,
   useDraftStore,
 } from '@state/draftStore';
@@ -124,5 +126,46 @@ describe('toScratchMesocycleDraftInput', () => {
 
     expect(input.weekPlan.days).toHaveLength(1);
     expect(input.weekPlan.days[0]?.dayNumber).toBe(1);
+  });
+});
+
+describe('toMesoBuilderDraft', () => {
+  const planned: Mesocycle = {
+    id: 'meso-1',
+    name: 'Push/Pull',
+    lengthWeeks: 5,
+    daysPerWeek: 2,
+    status: 'planned',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    weekPlan: {
+      days: [
+        { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'squat', order: 0, sets: 4 }] },
+      ],
+    },
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+
+  test('loads name, length, days, and each day\'s exercises keyed by dayNumber', () => {
+    expect(toMesoBuilderDraft(planned)).toEqual({
+      name: 'Push/Pull',
+      lengthWeeks: 5,
+      daysPerWeek: 2,
+      exercisesByDay: {
+        1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
+        2: [{ exerciseId: 'squat', order: 0, sets: 4 }],
+      },
+    });
+  });
+
+  test('round-trips through toScratchMesocycleDraftInput back to the same weekPlan', () => {
+    expect(toScratchMesocycleDraftInput(toMesoBuilderDraft(planned)).weekPlan).toEqual(
+      planned.weekPlan,
+    );
+  });
+
+  test('loads a mesocycle without a weekPlan with no exercises', () => {
+    expect(toMesoBuilderDraft({ ...planned, weekPlan: undefined }).exercisesByDay).toEqual({});
   });
 });

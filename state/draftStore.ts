@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import type { Mesocycle } from '@domain/mesocycle';
 import type { ScratchMesocycleDraftInput } from '@domain/mesocycleBuilders';
 import type { WeekPlanExercise } from '@domain/plan';
 
@@ -50,6 +51,25 @@ export function toScratchMesocycleDraftInput(draft: MesoBuilderDraft): ScratchMe
         exercises: draft.exercisesByDay[index + 1] ?? [],
       })),
     },
+  };
+}
+
+/**
+ * The reverse of `toScratchMesocycleDraftInput`: loads a saved planned mesocycle into the editor's
+ * draft shape for Edit (task 072). Days are keyed by their `dayNumber`; a mesocycle without a
+ * `weekPlan` (never the case for `planned`, but the field is optional on the type) loads with no
+ * exercises.
+ */
+export function toMesoBuilderDraft(mesocycle: Mesocycle): MesoBuilderDraft {
+  const exercisesByDay: Record<number, WeekPlanExercise[]> = {};
+  for (const day of mesocycle.weekPlan?.days ?? []) {
+    exercisesByDay[day.dayNumber] = day.exercises;
+  }
+  return {
+    name: mesocycle.name,
+    lengthWeeks: mesocycle.lengthWeeks,
+    daysPerWeek: mesocycle.daysPerWeek,
+    exercisesByDay,
   };
 }
 

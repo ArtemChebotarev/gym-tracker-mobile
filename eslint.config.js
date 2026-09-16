@@ -41,7 +41,7 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/*', '.expo/*'],
   },
   {
     // domain/ is the portable core: no RN, no navigation, no storage, no screens.

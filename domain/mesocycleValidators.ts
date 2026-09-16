@@ -67,18 +67,20 @@ export function validateWeekPlanDayCount(weekPlan: WeekPlan, daysPerWeek: number
 
 /**
  * Throws if `next` changes `lengthWeeks` or `daysPerWeek` relative to `current`
- * (02 · Domain Model, "Mesocycle", invariants: "После создания нельзя менять
- * lengthWeeks и daysPerWeek").
+ * (02 · Domain Model, "Mesocycle", invariants: "После Start нельзя менять
+ * lengthWeeks и daysPerWeek"). Applies to a mesocycle that has been started
+ * (`active` and later) — a `planned` one is still fully editable, see
+ * `applyPlannedMesocycleEdit` in `domain/mesocycleBuilders.ts`.
  */
 export function validateMesocycleImmutableFields(current: Mesocycle, next: Mesocycle): void {
   if (current.lengthWeeks !== next.lengthWeeks) {
     throw new Error(
-      `Mesocycle lengthWeeks is immutable after creation: was ${current.lengthWeeks}, got ${next.lengthWeeks}.`,
+      `Mesocycle lengthWeeks is immutable after Start: was ${current.lengthWeeks}, got ${next.lengthWeeks}.`,
     );
   }
   if (current.daysPerWeek !== next.daysPerWeek) {
     throw new Error(
-      `Mesocycle daysPerWeek is immutable after creation: was ${current.daysPerWeek}, got ${next.daysPerWeek}.`,
+      `Mesocycle daysPerWeek is immutable after Start: was ${current.daysPerWeek}, got ${next.daysPerWeek}.`,
     );
   }
 }
