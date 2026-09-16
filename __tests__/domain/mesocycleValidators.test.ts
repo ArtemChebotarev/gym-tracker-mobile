@@ -5,7 +5,9 @@ import {
   validateMesocycleImmutableFields,
   validateMesocycleLengthWeeks,
   validateSingleActiveMesocycle,
+  validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
+import type { WeekPlan } from '@domain/plan';
 
 const mesocycleFixture: Mesocycle = {
   id: 'meso-1',
@@ -57,6 +59,31 @@ describe('validateSingleActiveMesocycle', () => {
     expect(() =>
       validateSingleActiveMesocycle([mesocycleFixture, secondActiveMeso, completedMeso]),
     ).toThrow(/Only one mesocycle may be active/);
+  });
+});
+
+describe('validateWeekPlanDayCount', () => {
+  const twoDayWeekPlan: WeekPlan = {
+    days: [
+      { dayNumber: 1, name: '', exercises: [] },
+      { dayNumber: 2, name: '', exercises: [] },
+    ],
+  };
+
+  test('accepts a weekPlan whose day count matches daysPerWeek', () => {
+    expect(() => validateWeekPlanDayCount(twoDayWeekPlan, 2)).not.toThrow();
+  });
+
+  test('rejects a weekPlan with too few days', () => {
+    expect(() => validateWeekPlanDayCount(twoDayWeekPlan, 3)).toThrow(
+      /WeekPlan must have exactly 3 day\(s\) to match daysPerWeek, got 2/,
+    );
+  });
+
+  test('rejects a weekPlan with too many days', () => {
+    expect(() => validateWeekPlanDayCount(twoDayWeekPlan, 1)).toThrow(
+      /WeekPlan must have exactly 1 day\(s\) to match daysPerWeek, got 2/,
+    );
   });
 });
 
