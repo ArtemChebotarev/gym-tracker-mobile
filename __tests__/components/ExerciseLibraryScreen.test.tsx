@@ -138,7 +138,12 @@ describe('ExerciseLibraryScreen', () => {
         muscleGroup: 'chest',
         entries: [
           entry(
-            exercise({ id: toExerciseId('bench-press'), name: 'Bench Press', muscleGroup: 'chest' }),
+            exercise({
+              id: toExerciseId('bench-press'),
+              name: 'Bench Press',
+              muscleGroup: 'chest',
+              equipment: 'barbell',
+            }),
             setLog({ weight: 85, reps: 8, completedAt: '2026-09-10T12:00:00.000Z' }),
           ),
           entry(
@@ -166,6 +171,10 @@ describe('ExerciseLibraryScreen', () => {
     expect(customRow).toBeTruthy();
     expect(screen.getByText('Custom')).toBeTruthy();
     expect(screen.getByText('Never performed')).toBeTruthy();
+
+    // Task 081: equipment qualifies the title only where the exercise has one.
+    expect(screen.getByText(' · Barbell')).toBeTruthy();
+    expect(screen.getAllByText(/^· /)).toHaveLength(1);
   });
 
   test('renders a chip for each active filter plus the result counter', () => {

@@ -534,18 +534,28 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       }
                     }
                   >
-                    <Text
-                      numberOfLines={1}
+                    <View
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "fontSize": 14,
-                          "fontWeight": "400",
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
                         }
                       }
                     >
-                      Strength Base
-                    </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 14,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Strength Base
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={
@@ -878,18 +888,28 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       }
                     }
                   >
-                    <Text
-                      numberOfLines={1}
+                    <View
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "fontSize": 14,
-                          "fontWeight": "400",
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
                         }
                       }
                     >
-                      Push/Pull/Legs
-                    </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 14,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Push/Pull/Legs
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={
@@ -1446,18 +1466,28 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       }
                     }
                   >
-                    <Text
-                      numberOfLines={1}
+                    <View
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "fontSize": 14,
-                          "fontWeight": "400",
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
                         }
                       }
                     >
-                      Push/Pull/Legs
-                    </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 14,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Push/Pull/Legs
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={
@@ -1655,18 +1685,28 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       }
                     }
                   >
-                    <Text
-                      numberOfLines={1}
+                    <View
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "fontSize": 14,
-                          "fontWeight": "400",
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
                         }
                       }
                     >
-                      Strength Base
-                    </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 14,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Strength Base
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={

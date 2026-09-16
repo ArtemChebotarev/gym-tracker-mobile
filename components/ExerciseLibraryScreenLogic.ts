@@ -5,6 +5,7 @@ import type { Exercise, MuscleGroup } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup } from '@domain/catalogListing';
 import type { SetLog } from '@domain/execution';
 import { parseUtcIso } from '@domain/time';
+import { getEquipmentLabel } from '@design/equipmentLabel';
 import { formatRelativeDate } from '@design/formatDate';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
@@ -33,6 +34,12 @@ export function formatSubtitle(lastSetLog: SetLog | null): string {
   }
   const when = formatRelativeDate(parseUtcIso(lastSetLog.completedAt));
   return `${lastSetLog.weight} kg × ${lastSetLog.reps} · ${when}`;
+}
+
+/** Title-line qualifier telling same-named exercises apart (task 081: `Bench Press · Dumbbell`).
+ * `undefined` when the exercise has no equipment, so the row shows no suffix at all. */
+export function equipmentSuffix(exercise: Exercise): string | undefined {
+  return exercise.equipment === undefined ? undefined : getEquipmentLabel(exercise.equipment);
 }
 
 export function sectionDotColor(muscleGroup: MuscleGroup): string | undefined {

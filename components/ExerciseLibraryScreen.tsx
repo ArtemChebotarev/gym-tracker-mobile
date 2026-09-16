@@ -30,6 +30,7 @@ import { ExerciseFilterRow } from './ExerciseFilterRow';
 import {
   buildSections,
   countEntries,
+  equipmentSuffix,
   formatSubtitle,
   hasActiveFilters,
   sectionDotColor,
@@ -127,6 +128,7 @@ export function ExerciseLibraryScreen({
           renderItem={({ item }) => (
             <ListRow
               title={item.exercise.name}
+              titleSuffix={equipmentSuffix(item.exercise)}
               subtitle={formatSubtitle(item.lastSetLog)}
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}

@@ -21,6 +21,11 @@
 // away from row taps because they competed with the adjacent action — so each accessory owns its
 // own press handler instead of the row's `onPress`. Both carry the row title in their accessibility
 // label so several rows' `Start`/`⋯` buttons stay distinguishable to a screen reader.
+//
+// `titleSuffix` is task 081's secondary qualifier on the title line (`Bench Press · Dumbbell`),
+// for rows whose titles alone collide. Rendered as a sibling Text in `text/faint` — the subtitle's
+// color at the title's size — rather than nested inside the title Text, so the title keeps its own
+// text node (and exact-match lookups) and truncates first while the short suffix stays whole.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
@@ -46,6 +51,7 @@ export type ListRowBadge = { label: string; variant?: BadgeVariant };
 
 export type ListRowProps = {
   title: string;
+  titleSuffix?: string;
   subtitle?: string;
   leading?: ListRowLeading;
   badge?: ListRowBadge;
@@ -53,14 +59,28 @@ export type ListRowProps = {
   onPress?: () => void;
 };
 
-export function ListRow({ title, subtitle, leading, badge, trailing, onPress }: ListRowProps) {
+export function ListRow({
+  title,
+  titleSuffix,
+  subtitle,   leading,
+  badge,
+  trailing,
+  onPress,
+}: ListRowProps) {
   const content = (
     <View style={styles.row}>
       {leading !== undefined && <Leading leading={leading} />}
       <View style={styles.main}>
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
+        <View style={styles.titleLine}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          {titleSuffix !== undefined && (
+            <Text style={styles.titleSuffix} numberOfLines={1}>
+              {` · ${titleSuffix}`}
+            </Text>
+          )}
+        </View>
         {subtitle !== undefined && (
           <Text style={styles.subtitle} numberOfLines={1}>
             {subtitle}
@@ -157,10 +177,21 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
   },
+  titleLine: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
   title: {
+    flexShrink: 1,
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
     color: COLORS['text/primary'],
+  },
+  titleSuffix: {
+    flexShrink: 0,
+    fontSize: TYPOGRAPHY['type/row-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
+    color: COLORS['text/faint'],
   },
   subtitle: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

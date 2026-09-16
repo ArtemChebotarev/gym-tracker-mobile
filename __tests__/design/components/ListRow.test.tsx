@@ -13,6 +13,17 @@ describe('ListRow', () => {
     expect(screen.getByText('Chest')).toBeTruthy();
   });
 
+  test('renders a title suffix after a separator on the title line', () => {
+    render(<ListRow title="Bench press" titleSuffix="Dumbbell" />);
+    expect(screen.getByText('Bench press')).toBeTruthy();
+    expect(screen.getByText(' · Dumbbell')).toBeTruthy();
+  });
+
+  test('renders no separator without a title suffix', () => {
+    render(<ListRow title="Bench press" />);
+    expect(screen.queryByText(/·/)).toBeNull();
+  });
+
   test('renders without a badge', () => {
     render(<ListRow title="Bench press" />);
     expect(screen.queryByText('Custom')).toBeNull();
