@@ -24,7 +24,8 @@ function daysBetween(from: Date, to: Date): number {
   return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / DAY_MS);
 }
 
-function formatAbsoluteDate(date: Date): string {
+/** Short absolute date, e.g. `3 Sep` — no year, same as the relative formatter's fallback. */
+export function formatAbsoluteDate(date: Date): string {
   return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
 }
 
