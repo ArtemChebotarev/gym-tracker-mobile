@@ -38,7 +38,12 @@ import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseFilterRow } from './ExerciseFilterRow';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
-import { countEntries, formatSubtitle, sectionDotColor } from './ExerciseLibraryScreenLogic';
+import {
+  countEntries,
+  equipmentSuffix,
+  formatSubtitle,
+  sectionDotColor,
+} from './ExerciseLibraryScreenLogic';
 import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
 import { styles } from './ExercisePickerSheetStyles';
 
@@ -138,6 +143,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
                 <ListRow
                   key={entry.exercise.id}
                   title={entry.exercise.name}
+                  titleSuffix={equipmentSuffix(entry.exercise)}
                   subtitle={formatSubtitle(entry.lastSetLog)}
                   leading={{
                     type: 'checkbox',
@@ -153,6 +159,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
                 <ListRow
                   key={entry.exercise.id}
                   title={entry.exercise.name}
+                  titleSuffix={equipmentSuffix(entry.exercise)}
                   subtitle={formatSubtitle(entry.lastSetLog)}
                   trailing={{ type: 'chevron' }}
                   onPress={() => {
