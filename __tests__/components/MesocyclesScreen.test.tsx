@@ -132,8 +132,8 @@ describe('MesocyclesScreen', () => {
     const labels = screen
       .getAllByText(/^(Active|Planned|Completed)$/)
       .map((node) => node.props.children);
-    // Group labels interleave with the Active / Planned badges: label, badge, label, badge, label.
-    expect(labels).toEqual(['Active', 'Active', 'Planned', 'Planned', 'Completed']);
+    // The Active card's badge follows its group label; Planned rows carry no badge of their own.
+    expect(labels).toEqual(['Active', 'Active', 'Planned', 'Completed']);
     expect(screen.getByText('Week 2 of 5 · started 6 Sep')).toBeTruthy();
     expect(screen.getByText('6 weeks · 3 days/week')).toBeTruthy();
     expect(screen.getByText('4 weeks · 18 Jul – 15 Aug')).toBeTruthy();
@@ -145,7 +145,7 @@ describe('MesocyclesScreen', () => {
   test('empty groups are not rendered', () => {
     renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [PLANNED] })} />);
 
-    expect(screen.getAllByText('Planned')).toHaveLength(2); // group label + badge
+    expect(screen.getAllByText('Planned')).toHaveLength(1); // group label only, no row badge
     expect(screen.queryByText('Active')).toBeNull();
     expect(screen.queryByText('Completed')).toBeNull();
     expect(screen.queryByText('Plan your first mesocycle')).toBeNull();

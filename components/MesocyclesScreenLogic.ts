@@ -74,7 +74,8 @@ export function formatActiveCaption(mesocycle: Mesocycle, now: Date): string {
 
 /** `N weeks · M days/week` */
 export function formatPlannedCaption(mesocycle: Mesocycle): string {
-  return `${mesocycle.lengthWeeks} weeks · ${mesocycle.daysPerWeek} days/week`;
+  const days = mesocycle.daysPerWeek === 1 ? 'day' : 'days';
+  return `${mesocycle.lengthWeeks} weeks · ${mesocycle.daysPerWeek} ${days}/week`;
 }
 
 /** `N weeks · {start} – {end}` */

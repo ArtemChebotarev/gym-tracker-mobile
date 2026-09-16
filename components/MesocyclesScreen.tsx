@@ -11,6 +11,10 @@
 // - Delete (from the Planned `⋯` menu) opens `Delete mesocycle? This can't be undone` and calls
 //   `onDelete` only from its destructive button.
 //
+// Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
+// Rows inside a group sit in their own gap-less View: the group's `gap` is for the label only, and
+// applied between rows it pushed each row's content below the visual middle of its divider band.
+//
 // The Planned `⋯` menu is a BottomSheet in `overlay` presentation rather than a native <Modal>:
 // Delete's confirmation popup is raised the moment the menu closes, and an iOS system alert
 // presented while a native modal is still dismissing can be swallowed along with it.
@@ -165,41 +169,44 @@ export function MesocyclesScreen({
             {groups.planned.length > 0 && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Planned</Text>
-                {groups.planned.map((mesocycle) => (
-                  <ListRow
-                    key={mesocycle.id}
-                    title={mesocycle.name}
-                    subtitle={formatPlannedCaption(mesocycle)}
-                    badge={{ label: 'Planned' }}
-                    trailing={{
-                      type: 'actions',
-                      actionLabel: 'Start',
-                      actionVariant: 'primary',
-                      onAction: () => handleStart(mesocycle),
-                      onMenu: () => setMenuTarget(mesocycle),
-                    }}
-                  />
-                ))}
+                <View>
+                  {groups.planned.map((mesocycle) => (
+                    <ListRow
+                      key={mesocycle.id}
+                      title={mesocycle.name}
+                      subtitle={formatPlannedCaption(mesocycle)}
+                      trailing={{
+                        type: 'actions',
+                        actionLabel: 'Start',
+                        actionVariant: 'primary',
+                        onAction: () => handleStart(mesocycle),
+                        onMenu: () => setMenuTarget(mesocycle),
+                      }}
+                    />
+                  ))}
+                </View>
               </View>
             )}
 
             {groups.completed.length > 0 && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Completed</Text>
-                {groups.completed.map((mesocycle) => (
-                  <ListRow
-                    key={mesocycle.id}
-                    title={mesocycle.name}
-                    subtitle={formatCompletedCaption(mesocycle)}
-                    trailing={{
-                      type: 'actions',
-                      actionLabel: 'Copy',
-                      actionVariant: 'secondary',
-                      onAction: () => onCopy(mesocycle),
-                      onMenu: () => onOpenHistory(mesocycle),
-                    }}
-                  />
-                ))}
+                <View>
+                  {groups.completed.map((mesocycle) => (
+                    <ListRow
+                      key={mesocycle.id}
+                      title={mesocycle.name}
+                      subtitle={formatCompletedCaption(mesocycle)}
+                      trailing={{
+                        type: 'actions',
+                        actionLabel: 'Copy',
+                        actionVariant: 'secondary',
+                        onAction: () => onCopy(mesocycle),
+                        onMenu: () => onOpenHistory(mesocycle),
+                      }}
+                    />
+                  ))}
+                </View>
               </View>
             )}
           </ScrollView>

@@ -89,6 +89,12 @@ describe('captions', () => {
     );
   });
 
+  test('planned, singular day', () => {
+    expect(formatPlannedCaption(makeMesocycle({ lengthWeeks: 3, daysPerWeek: 1 }))).toBe(
+      '3 weeks · 1 day/week',
+    );
+  });
+
   test('completed', () => {
     const mesocycle = makeMesocycle({
       status: 'completed',
