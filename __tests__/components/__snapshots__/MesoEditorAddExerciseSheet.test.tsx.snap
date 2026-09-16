@@ -1,11 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
-<Modal
-  animationType="none"
-  onRequestClose={[MockFunction]}
-  transparent={true}
-  visible={true}
+<View
+  collapsable={false}
+  pointerEvents="auto"
+  style={
+    {
+      "bottom": 0,
+      "left": 0,
+      "position": "absolute",
+      "right": 0,
+      "top": 0,
+      "transform": [
+        {
+          "translateY": 0,
+        },
+      ],
+    }
+  }
 >
   <View
     onLayout={[Function]}
@@ -735,5 +747,5 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
       </View>
     </RNCSafeAreaView>
   </View>
-</Modal>
+</View>
 `;

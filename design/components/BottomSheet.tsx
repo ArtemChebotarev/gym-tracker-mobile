@@ -28,9 +28,11 @@
 // a Dropdown option register in the same gesture instead of only dismissing the keyboard first.
 
 import type { ReactNode } from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GestureResponderEvent } from 'react-native';
 import {
+  Animated,
+  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -53,6 +55,8 @@ const GRABBER_HEIGHT = 4;
 // Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
 // overflowing past the screen — no token for this exists in 08.0 either.
 const MAX_SHEET_HEIGHT = '80%';
+// 'overlay' presentation's own slide, standing in for Modal's native `animationType="slide"`.
+const OVERLAY_ANIMATION_DURATION = 250;
 
 export type BottomSheetProps = {
   visible: boolean;
@@ -66,6 +70,16 @@ export type BottomSheetProps = {
    * immediate succession (e.g. ExercisePickerSheet.tsx's Filters handoff, task 079) — two
    * sequential slide transitions there read as a stutter rather than a single deliberate motion. */
   animated?: boolean;
+  /**
+   * 'modal' (default) presents through React Native's own <Modal> — a real OS-level window.
+   * 'overlay' instead renders as a plain absolutely-positioned view inside the normal component
+   * tree, with no native window of its own, so a second, genuinely modal BottomSheet (e.g.
+   * Filters) can open on top of it without two native modal windows ever coexisting — which is
+   * what actually froze touch handling when MesoEditorAddExerciseSheet and ExerciseFiltersSheet
+   * were both `<Modal>`s open at once (task 079). Only meaningful for a sheet another BottomSheet
+   * can open from within — a standalone sheet has no reason to give up the real Modal.
+   */
+  presentation?: 'modal' | 'overlay';
 };
 
 export function BottomSheet({
@@ -76,6 +90,7 @@ export function BottomSheet({
   footer,
   children,
   animated = true,
+  presentation = 'modal',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
 
@@ -89,6 +104,36 @@ export function BottomSheet({
     if (startY !== null && event.nativeEvent.pageY - startY > DISMISS_DISTANCE) {
       onClose();
     }
+  }
+
+  const sheetBody = (
+    <>
+      <View
+        testID="bottom-sheet-grabber-area"
+        style={styles.grabberArea}
+        onStartShouldSetResponder={() => true}
+        onResponderGrant={handleGrabberGrant}
+        onResponderRelease={handleGrabberRelease}
+      >
+        <View style={styles.grabber} />
+      </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>{title}</Text>
+        {action}
+      </View>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {children}
+      </ScrollView>
+      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
+    </>
+  );
+
+  if (presentation === 'overlay') {
+    return (
+      <OverlaySheet visible={visible} onClose={onClose} animated={animated}>
+        {sheetBody}
+      </OverlaySheet>
+    );
   }
 
   return (
@@ -109,26 +154,84 @@ export function BottomSheet({
           onPress={onClose}
         />
         <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={styles.sheet}>
-          <View
-            testID="bottom-sheet-grabber-area"
-            style={styles.grabberArea}
-            onStartShouldSetResponder={() => true}
-            onResponderGrant={handleGrabberGrant}
-            onResponderRelease={handleGrabberRelease}
-          >
-            <View style={styles.grabber} />
-          </View>
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            {action}
-          </View>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {children}
-          </ScrollView>
-          {footer !== undefined && <View style={styles.footer}>{footer}</View>}
+          {sheetBody}
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
+  );
+}
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+type OverlaySheetProps = {
+  visible: boolean;
+  onClose: () => void;
+  animated: boolean;
+  children: ReactNode;
+};
+
+// 'overlay' presentation's own stand-in for what <Modal> gives 'modal' presentation for free: not
+// rendering at all while closed, and a slide transition covering both open and close (native
+// `animationType="slide"` covers both directions too).
+//
+// `progress` is a stable Animated.Value read during render (the `translateY` it drives below) —
+// `useState(() => new Animated.Value(...))` rather than `useRef(...).current`, since a plain ref
+// read during render trips this codebase's react-hooks/refs rule; same reasoning as
+// components/MesoEditorDaysStep.tsx's own `dragY`, see its comment on the same pattern.
+function OverlaySheet({ visible, onClose, animated, children }: OverlaySheetProps) {
+  const [mounted, setMounted] = useState(visible);
+  const [progress] = useState(() => new Animated.Value(visible ? 1 : 0));
+
+  useEffect(() => {
+    if (visible) {
+      // Syncing `mounted` to a `visible` prop change is exactly what this effect exists to do —
+      // not a side effect layered on top of one. Setting it up-front (rather than only in the
+      // timing's completion callback, which already covers the *unmount* half below) is what
+      // gives the entrance animation something to animate from on its very first frame; deferring
+      // it to a follow-up render would show one stale frame with the sheet still absent.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMounted(true);
+    }
+    Animated.timing(progress, {
+      toValue: visible ? 1 : 0,
+      duration: animated ? OVERLAY_ANIMATION_DURATION : 0,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished && !visible) {
+        setMounted(false);
+      }
+    });
+  }, [visible, animated, progress]);
+
+  if (!mounted) {
+    return null;
+  }
+
+  // Slides the whole presented block (backdrop + sheet) together, the same way Modal's own
+  // `animationType="slide"` animates everything it presents as one unit rather than just the
+  // sheet — see that branch above, where the backdrop Pressable sits inside the same Modal.
+  const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [SCREEN_HEIGHT, 0] });
+
+  return (
+    <Animated.View
+      style={[StyleSheet.absoluteFill, { transform: [{ translateY }] }]}
+      pointerEvents={visible ? 'auto' : 'none'}
+    >
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          style={styles.backdrop}
+          onPress={onClose}
+        />
+        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={styles.sheet}>
+          {children}
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Animated.View>
   );
 }
 

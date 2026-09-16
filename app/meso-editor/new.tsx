@@ -195,13 +195,11 @@ export default function MesoEditorRoute() {
         />
       </WizardScreen>
       <MesoEditorAddExerciseSheet
-        // Hidden (not unmounted — search/selection stay intact) while the Filters sheet is open,
-        // rather than visible underneath it. React Native's <Modal> presents each open Modal as
-        // its own native window; two visible at once (this sheet's own BottomSheet Modal plus
-        // ExerciseFiltersSheet's) leaves the first one's touch responder chain broken once the
-        // second is dismissed — the whole screen stops responding to taps. Only one Modal may be
-        // visible at a time.
-        visible={addExerciseDay !== null && !isAddExerciseFiltersSheetOpen}
+        // Stays visible underneath Filters — it renders as a plain overlay
+        // (`presentation="overlay"` inside MesoEditorAddExerciseSheet.tsx), not its own <Modal>,
+        // so there's no second native modal window for ExerciseFiltersSheet's real Modal to
+        // clash with. See BottomSheet.tsx's own doc on the `presentation` prop.
+        visible={addExerciseDay !== null}
         dayNumber={addExerciseDay ?? activeDay}
         groups={addExerciseQuery.data}
         isPending={addExerciseQuery.isPending}
@@ -217,10 +215,6 @@ export default function MesoEditorRoute() {
       />
       <ExerciseFiltersSheet
         visible={isAddExerciseFiltersSheetOpen}
-        // Instant, not sliding — this sheet hands off with MesoEditorAddExerciseSheet above in
-        // immediate succession (one hides the instant the other shows), so it matches that
-        // sheet's own `animated={false}`. See BottomSheet.tsx's doc on the prop.
-        animated={false}
         filters={addExerciseDraftFilters}
         onChangeFilters={setAddExerciseDraftFilters}
         resultCount={addExerciseDraftQuery.data ? countEntries(addExerciseDraftQuery.data) : 0}

@@ -63,8 +63,9 @@ export type ExercisePickerSheetProps = {
   onRequestFilters: () => void;
   onResetFilters: () => void;
   onClose: () => void;
-  /** Forwarded to BottomSheet — see its own doc on this prop. */
+  /** Forwarded to BottomSheet — see its own doc on these two props. */
   animated?: boolean;
+  presentation?: 'modal' | 'overlay';
 } & ExercisePickerSelection;
 
 export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
@@ -81,6 +82,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
     onResetFilters,
     onClose,
     animated,
+    presentation,
   } = props;
   const resultCount = countEntries(groups ?? []);
 
@@ -90,6 +92,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       onClose={onClose}
       title={title}
       animated={animated}
+      presentation={presentation}
       footer={
         props.mode === 'multi' ? (
           <View style={styles.footerButton}>

@@ -49,9 +49,8 @@ export type ExerciseFiltersSheetProps = {
   onReset: () => void;
   onApply: () => void;
   onClose: () => void;
-  /** Forwarded to BottomSheet — see its own doc on this prop. Used by the "Add exercise" flow
-   * (app/meso-editor/new.tsx, task 079), where this sheet hands off with MesoEditorAddExerciseSheet
-   * in immediate succession; the library tab (app/(tabs)/library.tsx) leaves it at the default. */
+  /** Forwarded to BottomSheet — see its own doc on this prop. Not currently set by any caller
+   * (both app/(tabs)/library.tsx and app/meso-editor/new.tsx leave it at the default). */
   animated?: boolean;
 };
 

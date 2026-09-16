@@ -55,11 +55,12 @@ export function MesoEditorAddExerciseSheet({
       visible={visible}
       title="Add exercise"
       caption={`Day ${dayNumber}`}
-      // This sheet and ExerciseFiltersSheet hand off to each other in immediate succession —
-      // one is hidden (not closed with its own slide-down) the instant the other becomes
-      // visible (see app/meso-editor/new.tsx). Animating both legs of that handoff read as a
-      // stutter, not a single deliberate motion, so both sheets in this flow open/close instantly.
-      animated={false}
+      // Renders as a plain absolutely-positioned overlay rather than its own <Modal>, so
+      // ExerciseFiltersSheet (still a real Modal — app/meso-editor/new.tsx) can open on top of
+      // it without two native modal windows ever coexisting — the actual cause of the freeze this
+      // sheet used to hit when Filters opened from within it. See BottomSheet.tsx's own doc on
+      // the `presentation` prop.
+      presentation="overlay"
       groups={groups}
       isPending={isPending}
       search={search}
