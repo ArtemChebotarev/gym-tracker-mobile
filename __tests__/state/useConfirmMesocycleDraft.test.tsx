@@ -26,7 +26,10 @@ const DRAFT: MesoBuilderDraft = {
 let client: QueryClient;
 
 beforeEach(() => {
-  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
+  client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
+  });
 });
 
 afterEach(() => {

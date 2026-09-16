@@ -38,4 +38,16 @@ describe('MesoEditorFooter', () => {
 
     expect(screen.getByTestId('meso-editor-footer-hint-placeholder')).toBeTruthy();
   });
+
+  test('renders a custom continue label', () => {
+    const onContinue = jest.fn();
+    render(
+      <MesoEditorFooter onContinue={onContinue} continueDisabled={false} continueLabel="Save mesocycle" />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+
+    expect(onContinue).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
+  });
 });

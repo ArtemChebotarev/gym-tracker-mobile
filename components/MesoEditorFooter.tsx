@@ -23,9 +23,16 @@ export type MesoEditorFooterProps = {
   onContinue: () => void;
   continueDisabled: boolean;
   hint?: string;
+  /** Defaults to `Continue`; step 3 passes `Save mesocycle` (08.5, "Шаг 3"). */
+  continueLabel?: string;
 };
 
-export function MesoEditorFooter({ onContinue, continueDisabled, hint }: MesoEditorFooterProps) {
+export function MesoEditorFooter({
+  onContinue,
+  continueDisabled,
+  hint,
+  continueLabel = 'Continue',
+}: MesoEditorFooterProps) {
   return (
     <>
       {hint !== undefined ? (
@@ -33,7 +40,7 @@ export function MesoEditorFooter({ onContinue, continueDisabled, hint }: MesoEdi
       ) : (
         <View testID="meso-editor-footer-hint-placeholder" style={styles.hintPlaceholder} />
       )}
-      <Button label="Continue" onPress={onContinue} disabled={continueDisabled} />
+      <Button label={continueLabel} onPress={onContinue} disabled={continueDisabled} />
     </>
   );
 }
