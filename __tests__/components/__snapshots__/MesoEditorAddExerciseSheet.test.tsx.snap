@@ -86,13 +86,18 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
         }
       }
       style={
-        {
-          "backgroundColor": "#17191C",
-          "borderTopLeftRadius": 18,
-          "borderTopRightRadius": 18,
-          "maxHeight": "80%",
-          "paddingBottom": 16,
-        }
+        [
+          {
+            "backgroundColor": "#17191C",
+            "borderTopLeftRadius": 18,
+            "borderTopRightRadius": 18,
+            "maxHeight": "80%",
+            "paddingBottom": 16,
+          },
+          {
+            "height": "80%",
+          },
+        ]
       }
       testID="bottom-sheet"
     >

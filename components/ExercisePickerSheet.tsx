@@ -98,6 +98,9 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       title={title}
       animated={animated}
       presentation={presentation}
+      // Fixed height: live search shrinks the list on every keystroke, and a content-sized sheet
+      // would jump with it (task 082) — short results leave empty space below instead.
+      height="fixed"
       footer={
         props.mode === 'multi' ? (
           <View style={styles.footerButton}>

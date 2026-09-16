@@ -29,7 +29,7 @@
 
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { GestureResponderEvent } from 'react-native';
+import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import {
   Animated,
   Dimensions,
@@ -53,7 +53,8 @@ export const SCRIM_COLOR = 'rgba(0, 0, 0, 0.5)';
 const GRABBER_WIDTH = 36;
 const GRABBER_HEIGHT = 4;
 // Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
-// overflowing past the screen — no token for this exists in 08.0 either.
+// overflowing past the screen — no token for this exists in 08.0 either. `height="fixed"` sheets
+// use the same value as their exact height, so both kinds top out at the same line on screen.
 const MAX_SHEET_HEIGHT = '80%';
 // 'overlay' presentation's own slide, standing in for Modal's native `animationType="slide"`.
 const OVERLAY_ANIMATION_DURATION = 250;
@@ -80,6 +81,14 @@ export type BottomSheetProps = {
    * can open from within — a standalone sheet has no reason to give up the real Modal.
    */
   presentation?: 'modal' | 'overlay';
+  /**
+   * 'content' (default) sizes the sheet to its content, capped at MAX_SHEET_HEIGHT. 'fixed' pins
+   * it at MAX_SHEET_HEIGHT regardless of content, leaving empty space below short content — for a
+   * sheet whose content shrinks as the user types into it (ExercisePickerSheet.tsx's live search,
+   * task 082), where a content-sized sheet would jump in height on every keystroke. The content
+   * ScrollView takes the remaining space, so a footer stays pinned to the sheet's bottom.
+   */
+  height?: 'content' | 'fixed';
 };
 
 export function BottomSheet({
@@ -91,6 +100,7 @@ export function BottomSheet({
   children,
   animated = true,
   presentation = 'modal',
+  height = 'content',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
 
@@ -128,9 +138,11 @@ export function BottomSheet({
     </>
   );
 
+  const sheetStyle = [styles.sheet, height === 'fixed' && styles.sheetFixed];
+
   if (presentation === 'overlay') {
     return (
-      <OverlaySheet visible={visible} onClose={onClose} animated={animated}>
+      <OverlaySheet visible={visible} onClose={onClose} animated={animated} sheetStyle={sheetStyle}>
         {sheetBody}
       </OverlaySheet>
     );
@@ -153,7 +165,7 @@ export function BottomSheet({
           style={styles.backdrop}
           onPress={onClose}
         />
-        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={styles.sheet}>
+        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={sheetStyle}>
           {sheetBody}
         </SafeAreaView>
       </KeyboardAvoidingView>
@@ -167,6 +179,7 @@ type OverlaySheetProps = {
   visible: boolean;
   onClose: () => void;
   animated: boolean;
+  sheetStyle: StyleProp<ViewStyle>;
   children: ReactNode;
 };
 
@@ -178,7 +191,7 @@ type OverlaySheetProps = {
 // `useState(() => new Animated.Value(...))` rather than `useRef(...).current`, since a plain ref
 // read during render trips this codebase's react-hooks/refs rule; same reasoning as
 // components/MesoEditorDaysStep.tsx's own `dragY`, see its comment on the same pattern.
-function OverlaySheet({ visible, onClose, animated, children }: OverlaySheetProps) {
+function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: OverlaySheetProps) {
   const [mounted, setMounted] = useState(visible);
   const [progress] = useState(() => new Animated.Value(visible ? 1 : 0));
 
@@ -227,7 +240,7 @@ function OverlaySheet({ visible, onClose, animated, children }: OverlaySheetProp
           style={styles.backdrop}
           onPress={onClose}
         />
-        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={styles.sheet}>
+        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={sheetStyle}>
           {children}
         </SafeAreaView>
       </KeyboardAvoidingView>
@@ -250,6 +263,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: RADII['radius/sheet'],
     borderTopRightRadius: RADII['radius/sheet'],
     paddingBottom: SPACING['space/sheet'],
+  },
+  sheetFixed: {
+    height: MAX_SHEET_HEIGHT,
   },
   grabberArea: {
     alignItems: 'center',
