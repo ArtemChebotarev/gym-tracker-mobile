@@ -1,4 +1,6 @@
-import { buildScratchMesocycleDraft } from '@domain/mesocycleBuilders';
+import { isConflictError } from '@domain/errors';
+import type { Mesocycle } from '@domain/mesocycle';
+import { applyPlannedMesocycleEdit, buildScratchMesocycleDraft } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
 
@@ -93,5 +95,93 @@ describe('buildScratchMesocycleDraft', () => {
         weekPlan: twoDayWeekPlan,
       }),
     ).toThrow(/daysPerWeek must be between 1 and 7/);
+  });
+});
+
+describe('applyPlannedMesocycleEdit', () => {
+  const plannedMesocycle: Mesocycle = {
+    id: 'meso-1',
+    name: 'Push/Pull/Legs',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    status: 'planned',
+    origin: { type: 'template', templateId: 'template-1' },
+    progressionSettings: { ...defaultProgressionSettings, maxReps: 20 },
+    weekPlan: twoDayWeekPlan,
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+
+  const threeDayWeekPlan: WeekPlan = {
+    days: [
+      { dayNumber: 1, name: 'Push', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 5 }] },
+      { dayNumber: 2, name: 'Pull', exercises: [] },
+      { dayNumber: 3, name: 'Legs', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 2 }] },
+    ],
+  };
+
+  test('takes name, lengthWeeks, daysPerWeek, and weekPlan from the edit', () => {
+    const edited = applyPlannedMesocycleEdit(plannedMesocycle, {
+      name: 'PPL v2',
+      lengthWeeks: 8,
+      daysPerWeek: 3,
+      weekPlan: threeDayWeekPlan,
+    });
+
+    expect(edited.name).toBe('PPL v2');
+    expect(edited.lengthWeeks).toBe(8);
+    expect(edited.daysPerWeek).toBe(3);
+    expect(edited.weekPlan).toEqual(threeDayWeekPlan);
+  });
+
+  test('keeps id, status, origin, progressionSettings, and createdAt, and sets no startDate', () => {
+    const edited = applyPlannedMesocycleEdit(plannedMesocycle, {
+      name: 'PPL v2',
+      lengthWeeks: 8,
+      daysPerWeek: 3,
+      weekPlan: threeDayWeekPlan,
+    });
+
+    expect(edited.id).toBe(plannedMesocycle.id);
+    expect(edited.status).toBe('planned');
+    expect(edited.origin).toEqual(plannedMesocycle.origin);
+    expect(edited.progressionSettings).toEqual(plannedMesocycle.progressionSettings);
+    expect(edited.createdAt).toBe(plannedMesocycle.createdAt);
+    expect(edited.startDate).toBeUndefined();
+  });
+
+  test.each(['active', 'completed', 'abandoned'] as const)(
+    'rejects a %s mesocycle with a ConflictError',
+    (status) => {
+      const edit = { name: 'PPL v2', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
+      let thrown: unknown;
+      try {
+        applyPlannedMesocycleEdit({ ...plannedMesocycle, status, weekPlan: undefined }, edit);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(isConflictError(thrown)).toBe(true);
+    },
+  );
+
+  test('rejects a weekPlan whose day count does not match daysPerWeek', () => {
+    expect(() =>
+      applyPlannedMesocycleEdit(plannedMesocycle, {
+        name: 'PPL v2',
+        lengthWeeks: 6,
+        daysPerWeek: 3,
+        weekPlan: twoDayWeekPlan,
+      }),
+    ).toThrow(/WeekPlan must have exactly 3 day\(s\)/);
+  });
+
+  test('rejects an out-of-range lengthWeeks', () => {
+    expect(() =>
+      applyPlannedMesocycleEdit(plannedMesocycle, {
+        name: 'PPL v2',
+        lengthWeeks: 2,
+        daysPerWeek: 2,
+        weekPlan: twoDayWeekPlan,
+      }),
+    ).toThrow(/lengthWeeks must be between 3 and 8/);
   });
 });
