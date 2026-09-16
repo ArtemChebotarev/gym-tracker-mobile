@@ -1,4 +1,8 @@
-import { DEFAULT_MESO_BUILDER_DRAFT, useDraftStore } from '@state/draftStore';
+import {
+  DEFAULT_MESO_BUILDER_DRAFT,
+  toScratchMesocycleDraftInput,
+  useDraftStore,
+} from '@state/draftStore';
 
 describe('draftStore', () => {
   afterEach(() => {
@@ -71,5 +75,54 @@ describe('draftStore', () => {
     useDraftStore.getState().resetMesoBuilder();
 
     expect(useDraftStore.getState().mesoBuilder).toEqual(DEFAULT_MESO_BUILDER_DRAFT);
+  });
+});
+
+describe('toScratchMesocycleDraftInput', () => {
+  test('builds one week plan day per day of the week, carrying name/length/days through', () => {
+    const input = toScratchMesocycleDraftInput({
+      name: 'Block 6',
+      lengthWeeks: 5,
+      daysPerWeek: 2,
+      exercisesByDay: {
+        1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
+        2: [{ exerciseId: 'squat', order: 0, sets: 2 }],
+      },
+    });
+
+    expect(input).toEqual({
+      name: 'Block 6',
+      lengthWeeks: 5,
+      daysPerWeek: 2,
+      weekPlan: {
+        days: [
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
+          { dayNumber: 2, name: '', exercises: [{ exerciseId: 'squat', order: 0, sets: 2 }] },
+        ],
+      },
+    });
+  });
+
+  test('turns a day with no entry into an empty day', () => {
+    const input = toScratchMesocycleDraftInput({ ...DEFAULT_MESO_BUILDER_DRAFT, daysPerWeek: 2 });
+
+    expect(input.weekPlan.days).toEqual([
+      { dayNumber: 1, name: '', exercises: [] },
+      { dayNumber: 2, name: '', exercises: [] },
+    ]);
+  });
+
+  test('drops entries for days beyond daysPerWeek', () => {
+    const input = toScratchMesocycleDraftInput({
+      ...DEFAULT_MESO_BUILDER_DRAFT,
+      daysPerWeek: 1,
+      exercisesByDay: {
+        1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
+        3: [{ exerciseId: 'squat', order: 0, sets: 2 }],
+      },
+    });
+
+    expect(input.weekPlan.days).toHaveLength(1);
+    expect(input.weekPlan.days[0]?.dayNumber).toBe(1);
   });
 });

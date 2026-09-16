@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import type { ScratchMesocycleDraftInput } from '@domain/mesocycleBuilders';
 import type { WeekPlanExercise } from '@domain/plan';
 
 // Mesocycle builder draft (introduced by task 075 — see 08.5 · Редактор мезоцикла — Flow A) so
@@ -28,6 +29,29 @@ export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
   daysPerWeek: 4,
   exercisesByDay: {},
 };
+
+/**
+ * Converts the editor's draft into the input Confirm (task 071's `confirmScratchMesocycleDraft`)
+ * takes. Builds exactly one `WeekPlanDay` per day 1..`daysPerWeek`: a day with no entry becomes
+ * an empty day, and entries for days beyond `daysPerWeek` (left behind after lowering it on step
+ * 1 — see the `exercisesByDay` note above) are dropped rather than saved. Days have no names in
+ * Flow A (08.5, "Шаг 2", open question on day names), so `name` is always empty — the same
+ * convention `extractWeekPlan` uses for a session with no name.
+ */
+export function toScratchMesocycleDraftInput(draft: MesoBuilderDraft): ScratchMesocycleDraftInput {
+  return {
+    name: draft.name,
+    lengthWeeks: draft.lengthWeeks,
+    daysPerWeek: draft.daysPerWeek,
+    weekPlan: {
+      days: Array.from({ length: draft.daysPerWeek }, (_, index) => ({
+        dayNumber: index + 1,
+        name: '',
+        exercises: draft.exercisesByDay[index + 1] ?? [],
+      })),
+    },
+  };
+}
 
 type DraftState = {
   mesoBuilder: MesoBuilderDraft;
