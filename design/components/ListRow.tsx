@@ -14,12 +14,31 @@
 // checkbox row selects rather than navigates. No component for this exists yet in 08.0's table
 // (it predates task 077), so this stays a leading accessory on ListRow rather than a new
 // `Checkbox` design/components file.
+//
+// `trailing: { type: 'actions' }` is task 074's pill-plus-`⋯` pair (08.3 · Мезоциклы — список:
+// Planned rows get a primary `Start` pill, Completed rows a secondary outlined `Copy` pill, both
+// followed by a `⋯` IconButton). These rows are deliberately not tappable as a whole — 08.3 moved
+// away from row taps because they competed with the adjacent action — so each accessory owns its
+// own press handler instead of the row's `onPress`. Both carry the row title in their accessibility
+// label so several rows' `Start`/`⋯` buttons stay distinguishable to a screen reader.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 import { Badge, type BadgeVariant } from './Badge';
+import { IconButton } from './IconButton';
 
-export type ListRowTrailing = { type: 'chevron' } | { type: 'value'; value: string };
+export type ListRowActionVariant = 'primary' | 'secondary';
+
+export type ListRowTrailing =
+  | { type: 'chevron' }
+  | { type: 'value'; value: string }
+  | {
+      type: 'actions';
+      actionLabel: string;
+      actionVariant: ListRowActionVariant;
+      onAction: () => void;
+      onMenu: () => void;
+    };
 
 export type ListRowLeading = { type: 'checkbox'; checked: boolean };
 
@@ -49,7 +68,7 @@ export function ListRow({ title, subtitle, leading, badge, trailing, onPress }: 
         )}
       </View>
       {badge !== undefined && <Badge label={badge.label} variant={badge.variant} />}
-      {trailing !== undefined && <Trailing trailing={trailing} />}
+      {trailing !== undefined && <Trailing title={title} trailing={trailing} />}
     </View>
   );
 
@@ -78,11 +97,40 @@ function Leading({ leading }: { leading: ListRowLeading }) {
   );
 }
 
-function Trailing({ trailing }: { trailing: ListRowTrailing }) {
+function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailing }) {
   if (trailing.type === 'chevron') {
     return <Text style={styles.chevron}>›</Text>;
   }
-  return <Text style={styles.value}>{trailing.value}</Text>;
+  if (trailing.type === 'value') {
+    return <Text style={styles.value}>{trailing.value}</Text>;
+  }
+  const isPrimary = trailing.actionVariant === 'primary';
+  return (
+    <View style={styles.actions}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${trailing.actionLabel} ${title}`}
+        onPress={trailing.onAction}
+        style={({ pressed }) => [
+          styles.pill,
+          isPrimary ? styles.pillPrimary : styles.pillSecondary,
+          pressed && styles.pressed,
+        ]}
+      >
+        <Text
+          style={[
+            styles.pillLabel,
+            isPrimary ? styles.pillLabelPrimary : styles.pillLabelSecondary,
+          ]}
+        >
+          {trailing.actionLabel}
+        </Text>
+      </Pressable>
+      <IconButton accessibilityLabel={`More actions for ${title}`} onPress={trailing.onMenu}>
+        <Text style={styles.menuIcon}>⋯</Text>
+      </IconButton>
+    </View>
+  );
 }
 
 // No token exists yet for a checkbox's own size/corner radius — same exception
@@ -90,6 +138,7 @@ function Trailing({ trailing }: { trailing: ListRowTrailing }) {
 const CHECKBOX_SIZE = 20;
 const CHECKBOX_BORDER_WIDTH = 1;
 const CHECKBOX_RADIUS = 4;
+const PILL_BORDER_WIDTH = 1;
 
 const styles = StyleSheet.create({
   container: {
@@ -138,6 +187,38 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: COLORS.accent,
     borderColor: COLORS.accent,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/gap'],
+  },
+  pill: {
+    borderRadius: RADII['radius/pill'],
+    borderWidth: PILL_BORDER_WIDTH,
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/gap-tight'],
+  },
+  pillPrimary: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+  },
+  pillSecondary: {
+    borderColor: COLORS['border/default'],
+  },
+  pillLabel: {
+    fontSize: TYPOGRAPHY['type/body'].fontSize,
+    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+  },
+  pillLabelPrimary: {
+    color: COLORS['accent/on'],
+  },
+  pillLabelSecondary: {
+    color: COLORS['text/secondary'],
+  },
+  menuIcon: {
+    fontSize: TYPOGRAPHY['type/value'].fontSize,
+    color: COLORS['text/secondary'],
   },
   checkmark: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

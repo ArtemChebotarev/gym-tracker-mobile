@@ -1,4 +1,4 @@
-import { formatRelativeDate } from '@design/formatDate';
+import { formatAbsoluteDate, formatRelativeDate } from '@design/formatDate';
 
 const NOW = new Date(2026, 7, 25);
 
@@ -26,5 +26,11 @@ describe('formatRelativeDate', () => {
 
   test('1 day ago uses singular wording', () => {
     expect(formatRelativeDate(daysAgo(1), NOW)).toBe('1 day ago');
+  });
+});
+
+describe('formatAbsoluteDate', () => {
+  test('renders day and short month name without a year', () => {
+    expect(formatAbsoluteDate(new Date(2026, 8, 3))).toBe('3 Sep');
   });
 });

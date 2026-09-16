@@ -23,6 +23,30 @@ describe('ListRow', () => {
     expect(screen.getByText('Custom')).toBeTruthy();
   });
 
+  test('actions trailing accessory calls its own handlers, labeled with the row title', () => {
+    const onAction = jest.fn();
+    const onMenu = jest.fn();
+    render(
+      <ListRow
+        title="Push/Pull/Legs"
+        trailing={{
+          type: 'actions',
+          actionLabel: 'Start',
+          actionVariant: 'primary',
+          onAction,
+          onMenu,
+        }}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Start Push/Pull/Legs' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onMenu).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole('button', { name: 'More actions for Push/Pull/Legs' }));
+    expect(onMenu).toHaveBeenCalledTimes(1);
+  });
+
   test('renders a chevron trailing accessory', () => {
     render(<ListRow title="Bench press" trailing={{ type: 'chevron' }} />);
     expect(screen.getByText('›')).toBeTruthy();
@@ -53,7 +77,13 @@ describe('ListRow', () => {
   });
 
   test('renders an unchecked checkbox leading accessory as the checkbox role', () => {
-    render(<ListRow title="Bench press" leading={{ type: 'checkbox', checked: false }} onPress={jest.fn()} />);
+    render(
+      <ListRow
+        title="Bench press"
+        leading={{ type: 'checkbox', checked: false }}
+        onPress={jest.fn()}
+      />,
+    );
 
     const row = screen.getByRole('checkbox', { name: 'Bench press' });
     expect(row.props.accessibilityState).toEqual({ checked: false });
@@ -61,7 +91,13 @@ describe('ListRow', () => {
   });
 
   test('renders a checked checkbox leading accessory with its checkmark', () => {
-    render(<ListRow title="Bench press" leading={{ type: 'checkbox', checked: true }} onPress={jest.fn()} />);
+    render(
+      <ListRow
+        title="Bench press"
+        leading={{ type: 'checkbox', checked: true }}
+        onPress={jest.fn()}
+      />,
+    );
 
     const row = screen.getByRole('checkbox', { name: 'Bench press' });
     expect(row.props.accessibilityState).toEqual({ checked: true });
@@ -70,7 +106,13 @@ describe('ListRow', () => {
 
   test('pressing a checkbox row calls onPress, the same as any other row', () => {
     const onPress = jest.fn();
-    render(<ListRow title="Bench press" leading={{ type: 'checkbox', checked: false }} onPress={onPress} />);
+    render(
+      <ListRow
+        title="Bench press"
+        leading={{ type: 'checkbox', checked: false }}
+        onPress={onPress}
+      />,
+    );
 
     fireEvent.press(screen.getByRole('checkbox', { name: 'Bench press' }));
 
