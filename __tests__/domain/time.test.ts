@@ -1,4 +1,4 @@
-import { nowAsUtcIso, parseUtcIso } from '@domain/time';
+import { daysBefore, nowAsUtcIso, parseUtcIso } from '@domain/time';
 
 const UTC_ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -34,17 +34,34 @@ describe('parseUtcIso', () => {
     process.env.TZ = originalTz;
   });
 
-  test.each(TIMEZONES)('round-trips to the same instant regardless of local timezone (%s)', (tz) => {
-    process.env.TZ = tz;
-    const iso = '2026-01-15T12:30:45.678Z';
+  test.each(TIMEZONES)(
+    'round-trips to the same instant regardless of local timezone (%s)',
+    (tz) => {
+      process.env.TZ = tz;
+      const iso = '2026-01-15T12:30:45.678Z';
 
-    const parsed = parseUtcIso(iso);
+      const parsed = parseUtcIso(iso);
 
-    expect(parsed.getTime()).toBe(Date.UTC(2026, 0, 15, 12, 30, 45, 678));
-    expect(parsed.toISOString()).toBe(iso);
-  });
+      expect(parsed.getTime()).toBe(Date.UTC(2026, 0, 15, 12, 30, 45, 678));
+      expect(parsed.toISOString()).toBe(iso);
+    },
+  );
 
   test('throws on an invalid timestamp', () => {
     expect(() => parseUtcIso('not-a-date')).toThrow();
+  });
+});
+
+describe('daysBefore', () => {
+  test('steps back whole 24-hour days in UTC, across a month boundary', () => {
+    expect(daysBefore('2026-09-18T10:00:00.000Z', 30)).toBe('2026-08-19T10:00:00.000Z');
+  });
+
+  test('zero days is the same instant', () => {
+    expect(daysBefore('2026-09-18T10:00:00.000Z', 0)).toBe('2026-09-18T10:00:00.000Z');
+  });
+
+  test('throws on an invalid timestamp', () => {
+    expect(() => daysBefore('not-a-date', 30)).toThrow();
   });
 });
