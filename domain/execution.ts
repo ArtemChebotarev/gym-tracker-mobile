@@ -53,3 +53,11 @@ export type SetLog = {
   rir?: number;
   completedAt: string;
 };
+
+/**
+ * Hit/over/under marker shown after a set is logged (03 · Progression Engine, "Индикатор
+ * попадания в цель"; rendered as `✓` / `+N` / `−N` on 08.7). Purely visual: never stored and
+ * never fed into any calculation. `diff` is the absolute rep difference from `targetReps`.
+ */
+export type TargetIndicator =
+  { kind: 'hit' } | { kind: 'over'; diff: number } | { kind: 'under'; diff: number };
