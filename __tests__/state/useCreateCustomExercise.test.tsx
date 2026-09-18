@@ -13,8 +13,10 @@ jest.mock('expo-crypto', () => {
 let client: QueryClient;
 
 beforeEach(() => {
-  // gcTime: 0 avoids leaving a garbage-collection timer open past the test.
-  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
+  client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
+  });
 });
 
 afterEach(() => {
