@@ -59,3 +59,27 @@ export function validateAwaitingSourceSession(
     throw new Error(`Session "${session.id}" is awaiting_source and cannot be started.`);
   }
 }
+
+/** What the user entered in a set row: an empty field (only a placeholder showing) is `null`. */
+export type SetEntry = { weight: number | null; reps: number | null };
+
+/**
+ * Throws unless both fields of a set row hold a value (05 · Workout Execution & Logging, "Записать
+ * подход": the placeholder isn't a value, a set can be logged only once both fields are filled).
+ * `reps` must be a whole number of at least 1 and `weight` a finite number of at least 0 —
+ * bodyweight work is logged at 0.
+ */
+export function validateSetEntry(
+  entry: SetEntry,
+): asserts entry is { weight: number; reps: number } {
+  const { weight, reps } = entry;
+  if (weight === null || reps === null) {
+    throw new Error('A set can be logged only once both weight and reps are entered.');
+  }
+  if (!Number.isFinite(weight) || weight < 0) {
+    throw new Error(`Weight must be a finite number of at least 0, got ${weight}.`);
+  }
+  if (!Number.isInteger(reps) || reps < 1) {
+    throw new Error(`Reps must be a whole number of at least 1, got ${reps}.`);
+  }
+}
