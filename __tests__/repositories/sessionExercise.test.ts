@@ -100,7 +100,11 @@ describe('SessionExerciseRepository contract', () => {
   test('update and updateMany replace existing session exercises by id', async () => {
     const repo = createFakeSessionExerciseRepository([benchPressExercise, rowExercise]);
 
-    const updatedBench: SessionExercise = { ...benchPressExercise, order: 2, weightHint: 'increase' };
+    const updatedBench: SessionExercise = {
+      ...benchPressExercise,
+      order: 2,
+      setTargets: [{ setNumber: 1, targetReps: 9, weightHint: 'increase' }],
+    };
     await repo.update(updatedBench);
     await expect(repo.listBySessionId('session-1')).resolves.toContainEqual(updatedBench);
 

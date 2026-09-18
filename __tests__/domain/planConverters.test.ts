@@ -136,12 +136,11 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
       exerciseId: benchPress.exerciseId,
       order: benchPress.order,
       setTargets: [
-        { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+        { setNumber: 1, targetReps: 8, suggestedWeight: 60, weightHint: 'increase' },
         { setNumber: 2, targetReps: 8, suggestedWeight: 60 },
         { setNumber: 3, targetReps: 8, suggestedWeight: 60 },
       ],
       targetRir: 2,
-      weightHint: 'increase',
       status: 'completed',
     };
 
