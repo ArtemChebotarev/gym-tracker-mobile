@@ -1,16 +1,15 @@
 import type { Exercise, ExerciseId, MuscleGroup } from '@domain/catalog';
 import type { ExerciseRepository } from '@repositories/catalog';
 
+import { EXERCISE_COLLECTION } from './collectionNames';
 import { ConflictError } from './errors';
 import type { InMemoryStore } from './store';
-
-const EXERCISES_COLLECTION = 'Exercise';
 
 export class InMemoryExerciseRepository implements ExerciseRepository {
   constructor(private readonly store: InMemoryStore) {}
 
   private get exercises() {
-    return this.store.collection<Exercise>(EXERCISES_COLLECTION);
+    return this.store.collection<Exercise>(EXERCISE_COLLECTION);
   }
 
   async getAll(): Promise<Exercise[]> {
