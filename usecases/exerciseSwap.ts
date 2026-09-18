@@ -6,20 +6,18 @@
 
 import { NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
-import { assertSessionOpen } from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
 import { targetsFromHistory } from '@usecases/historyTargets';
+import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 
 export type ExerciseSwapDeps = {
   workout: WorkoutStore;
   mesocycleRepo: MesocycleRepository;
 };
 
-export type ExerciseSwapInput = {
-  sessionId: string;
-  sessionExerciseId: string;
+export type ExerciseSwapInput = SessionExerciseRef & {
   /** The exercise picked in `ExercisePickerSheet` (`single` mode). */
   exerciseId: string;
 };
@@ -46,19 +44,7 @@ export async function swapExercise(
   now: string = nowAsUtcIso(),
 ): Promise<SessionExercise> {
   return deps.workout.transaction(async (repos) => {
-    const session = await repos.sessionRepo.getById(input.sessionId);
-    if (!session) {
-      throw new NotFoundError(`Session "${input.sessionId}" does not exist.`);
-    }
-    assertSessionOpen(session);
-
-    const exercises = await repos.sessionExerciseRepo.listBySessionId(session.id);
-    const current = exercises.find((exercise) => exercise.id === input.sessionExerciseId);
-    if (!current) {
-      throw new NotFoundError(
-        `Session exercise "${input.sessionExerciseId}" is not part of session "${session.id}".`,
-      );
-    }
+    const { session, sessionExercise: current } = await openSessionExercise(input, repos);
     if (current.exerciseId === input.exerciseId) {
       return current;
     }
