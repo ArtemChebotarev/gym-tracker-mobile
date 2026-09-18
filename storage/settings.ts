@@ -1,4 +1,5 @@
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
 import type { Settings, SettingsRepository } from '@repositories/settings';
 
 import { runAsync } from './async';
@@ -21,8 +22,16 @@ const DEFAULT_SETTINGS: Settings = {
 export class InMemorySettingsRepository implements SettingsRepository {
   private current: Settings | null = null;
 
+  // Settings written before a `ProgressionSettings` field existed (e.g. `historyLookbackDays`,
+  // task 083) read back with the spec default for it filled in.
   async read(): Promise<Settings> {
-    return runAsync(() => deepClone(this.current ?? DEFAULT_SETTINGS));
+    return runAsync(() => {
+      const stored = deepClone(this.current ?? DEFAULT_SETTINGS);
+      return {
+        ...stored,
+        defaultProgressionSettings: withProgressionSettingsDefaults(stored.defaultProgressionSettings),
+      };
+    });
   }
 
   async write(settings: Settings): Promise<Settings> {

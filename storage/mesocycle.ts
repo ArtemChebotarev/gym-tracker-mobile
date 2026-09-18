@@ -1,5 +1,6 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
+import { normalizeStoredMesocycle } from '@domain/mesocycleConverters';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 
 import {
@@ -17,17 +18,21 @@ export class InMemoryMesocycleRepository implements MesocycleRepository {
     return this.store.collection<Mesocycle>(MESOCYCLE_COLLECTION);
   }
 
+  // Every read goes through `normalizeStoredMesocycle`, so a mesocycle saved before a
+  // `ProgressionSettings` field existed (e.g. `historyLookbackDays`, task 083) comes back with the
+  // spec default for it instead of `undefined`.
   async getAll(): Promise<Mesocycle[]> {
-    return this.mesocycles.list();
+    return (await this.mesocycles.list()).map(normalizeStoredMesocycle);
   }
 
   async getById(id: string): Promise<Mesocycle | null> {
-    return (await this.mesocycles.findById(id)) ?? null;
+    const stored = await this.mesocycles.findById(id);
+    return stored ? normalizeStoredMesocycle(stored) : null;
   }
 
   async getActive(): Promise<Mesocycle | null> {
     const [active] = await this.mesocycles.find((mesocycle) => mesocycle.status === 'active');
-    return active ?? null;
+    return active ? normalizeStoredMesocycle(active) : null;
   }
 
   async create(mesocycle: Mesocycle): Promise<Mesocycle> {

@@ -33,6 +33,18 @@ describe('buildScratchMesocycleDraft', () => {
     expect(draft.createdAt).toMatch(UTC_ISO_PATTERN);
   });
 
+  test('copies the given progressionSettings as a snapshot rather than referencing them', () => {
+    const globalSettings = { ...defaultProgressionSettings, historyLookbackDays: 45 };
+
+    const draft = buildScratchMesocycleDraft(
+      { name: 'Push/Pull/Legs', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan },
+      globalSettings,
+    );
+    globalSettings.historyLookbackDays = 90;
+
+    expect(draft.progressionSettings.historyLookbackDays).toBe(45);
+  });
+
   test('carries the given name, lengthWeeks, and daysPerWeek through unchanged', () => {
     const draft = buildScratchMesocycleDraft({
       name: 'Upper/Lower',

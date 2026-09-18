@@ -6,6 +6,7 @@
 
 import { buildMockMesocycles } from '@domain/mesocycleMocks';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
+import { InMemorySettingsRepository } from '@storage/settings';
 import type { MesocycleCreationDeps } from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
@@ -14,7 +15,11 @@ import { appStore } from './appStore';
 
 const mesocycleRepo = new InMemoryMesocycleRepository(appStore);
 
-export const mesocycleCreationDeps: MesocycleCreationDeps = { mesocycleRepo };
+// Settings is a single global record, not a collection of the shared store — see
+// storage/settings.ts — so it has its own instance rather than one built over `appStore`.
+const settingsRepo = new InMemorySettingsRepository();
+
+export const mesocycleCreationDeps: MesocycleCreationDeps = { mesocycleRepo, settingsRepo };
 
 export const mesocycleListDeps: MesocycleListDeps = { mesocycleRepo };
 
