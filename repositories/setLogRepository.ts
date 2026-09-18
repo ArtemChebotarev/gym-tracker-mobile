@@ -27,6 +27,19 @@ export type ListSetLogsByExerciseIdOptions = {
   order?: SetLogSortOrder;
 };
 
+export type FindLastPerformanceQuery = {
+  exerciseId: string;
+  /** A performance in this mesocycle qualifies regardless of how old it is. */
+  mesoId: string;
+  /**
+   * UTC ISO timestamp; a performance outside `mesoId` qualifies only if its sets were logged
+   * no earlier than this. The use-case layer computes it as `now − historyLookbackDays`.
+   */
+  since: string;
+  /** The session exercise asking for a reference — never returned as its own reference. */
+  excludeSessionExerciseId?: string;
+};
+
 export interface SetLogRepository {
   /** All set logs for one session exercise (a single exercise instance within a session). */
   listBySessionExerciseId(sessionExerciseId: string): Promise<SetLog[]>;
@@ -44,6 +57,17 @@ export interface SetLogRepository {
 
   /** Most recent set log for an exercise, or `null` when it has never been logged. */
   getLastByExerciseId(exerciseId: string): Promise<SetLog | null>;
+
+  /**
+   * The reference performance for rule 6 (03 · Progression Engine): every set log of the single
+   * most recent session exercise for `exerciseId` whose session is not a deload and either
+   * belongs to `mesoId` or was logged no earlier than `since`, sorted by `setNumber`. Empty
+   * when nothing qualifies, and also when a newer performance can't be joined to its session:
+   * with no trustworthy reference rule 6 recommends nothing and the screen shows only RIR. The
+   * SetLog → SessionExercise → Session join happens inside the repository
+   * (07 · Persistence Layer Contract, rule 4).
+   */
+  findLastPerformance(query: FindLastPerformanceQuery): Promise<SetLog[]>;
 
   /** Persists a set log that already carries its domain-generated id. */
   create(setLog: SetLog): Promise<SetLog>;

@@ -1,7 +1,15 @@
-import type { SessionExercise, SetLog } from '@domain/execution';
-import type { ListSetLogsByExerciseIdOptions, SetLogRepository } from '@repositories/setLogRepository';
+import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type {
+  FindLastPerformanceQuery,
+  ListSetLogsByExerciseIdOptions,
+  SetLogRepository,
+} from '@repositories/setLogRepository';
 
-import { SESSION_EXERCISE_COLLECTION, SET_LOG_COLLECTION } from './collectionNames';
+import {
+  SESSION_COLLECTION,
+  SESSION_EXERCISE_COLLECTION,
+  SET_LOG_COLLECTION,
+} from './collectionNames';
 import type { InMemoryStore } from './store';
 
 export class InMemorySetLogRepository implements SetLogRepository {
@@ -49,6 +57,55 @@ export class InMemorySetLogRepository implements SetLogRepository {
   async getLastByExerciseId(exerciseId: string): Promise<SetLog | null> {
     const [last] = await this.listByExerciseId(exerciseId, { order: 'desc', limit: 1 });
     return last ?? null;
+  }
+
+  // Walks performances newest first. A performance whose SessionExercise or Session is missing
+  // can't be checked for deload or mesocycle, so hitting one before a valid reference ends the
+  // search with no reference at all: without a trustworthy reference rule 6 recommends nothing
+  // and the screen shows only RIR, rather than falling back to an older, possibly wrong one.
+  async findLastPerformance({
+    exerciseId,
+    mesoId,
+    since,
+    excludeSessionExerciseId,
+  }: FindLastPerformanceQuery): Promise<SetLog[]> {
+    const logs = await this.setLogs.find(
+      (log) => log.exerciseId === exerciseId && log.sessionExerciseId !== excludeSessionExerciseId,
+    );
+    const logsBySessionExerciseId = new Map<string, SetLog[]>();
+    for (const log of logs) {
+      const group = logsBySessionExerciseId.get(log.sessionExerciseId) ?? [];
+      group.push(log);
+      logsBySessionExerciseId.set(log.sessionExerciseId, group);
+    }
+
+    const sessionExercises = await this.store
+      .collection<SessionExercise>(SESSION_EXERCISE_COLLECTION)
+      .listByIds([...logsBySessionExerciseId.keys()]);
+    const sessions = await this.store
+      .collection<Session>(SESSION_COLLECTION)
+      .listByIds([...new Set(sessionExercises.map((exercise) => exercise.sessionId))]);
+    const sessionIdBySessionExerciseId = new Map(
+      sessionExercises.map((exercise) => [exercise.id, exercise.sessionId]),
+    );
+    const sessionsById = new Map(sessions.map((session) => [session.id, session]));
+
+    const performances = [...logsBySessionExerciseId].map(([sessionExerciseId, group]) => ({
+      session: sessionsById.get(sessionIdBySessionExerciseId.get(sessionExerciseId) ?? ''),
+      logs: group,
+      completedAt: group.reduce((max, log) => (log.completedAt > max ? log.completedAt : max), ''),
+    }));
+    performances.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+
+    for (const { session, logs: performanceLogs, completedAt } of performances) {
+      if (session === undefined) {
+        return [];
+      }
+      if (!session.isDeload && (session.mesoId === mesoId || completedAt >= since)) {
+        return [...performanceLogs].sort((a, b) => a.setNumber - b.setNumber);
+      }
+    }
+    return [];
   }
 
   async create(setLog: SetLog): Promise<SetLog> {
