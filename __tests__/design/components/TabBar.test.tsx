@@ -1,26 +1,37 @@
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
+import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
+import { TabMesocyclesIcon } from '@design/icons/TabMesocyclesIcon';
+import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import type { IconProps } from '@design/icons/IconFrame';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 const ITEMS: TabBarItem[] = [
-  { key: 'today', label: 'Today', icon: (active) => <Text>{active ? '●' : '○'}</Text> },
-  { key: 'history', label: 'History', icon: (active) => <Text>{active ? '●' : '○'}</Text> },
-  { key: 'library', label: 'Library', icon: (active) => <Text>{active ? '●' : '○'}</Text> },
+  { key: 'today', label: 'Today', icon: TabTodayIcon },
+  { key: 'mesocycles', label: 'Mesocycles', icon: TabMesocyclesIcon },
+  { key: 'library', label: 'Library', icon: TabLibraryIcon },
 ];
+
+// Stand-in icon that prints the props TabBar hands it, so the size/color contract can be
+// asserted without digging through the SVG tree.
+function ProbeIcon({ size, color }: IconProps) {
+  return <Text>{`${size} ${String(color)}`}</Text>;
+}
 
 describe('TabBar', () => {
   test('renders every tab label', () => {
     render(<TabBar items={ITEMS} activeKey="today" onChange={() => {}} />);
 
     expect(screen.getByRole('button', { name: 'Today' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Mesocycles' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Library' })).toBeTruthy();
   });
 
   test('marks the active tab as selected', () => {
-    render(<TabBar items={ITEMS} activeKey="history" onChange={() => {}} />);
+    render(<TabBar items={ITEMS} activeKey="mesocycles" onChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'History' }).props.accessibilityState).toEqual(
+    expect(screen.getByRole('button', { name: 'Mesocycles' }).props.accessibilityState).toEqual(
       expect.objectContaining({ selected: true }),
     );
     expect(screen.getByRole('button', { name: 'Today' }).props.accessibilityState).toEqual(
@@ -37,13 +48,26 @@ describe('TabBar', () => {
     expect(onChange).toHaveBeenCalledWith('library');
   });
 
-  test('accepts a plain icon that does not vary with active state', () => {
+  test('renders each icon at the tab size, in accent when active and text/faint when not', () => {
     const items: TabBarItem[] = [
-      { key: 'today', label: 'Today', icon: <Text>●</Text> },
-      { key: 'history', label: 'History', icon: <Text>●</Text> },
+      { key: 'today', label: 'Today', icon: ProbeIcon },
+      { key: 'library', label: 'Library', icon: ProbeIcon },
     ];
     render(<TabBar items={items} activeKey="today" onChange={() => {}} />);
 
-    expect(screen.getAllByText('●')).toHaveLength(2);
+    expect(screen.getByText(`${ICON_SIZES['icon/tab']} ${COLORS.accent}`)).toBeTruthy();
+    expect(screen.getByText(`${ICON_SIZES['icon/tab']} ${COLORS['text/faint']}`)).toBeTruthy();
+  });
+
+  test('matches the snapshot with Today active', () => {
+    const { toJSON } = render(<TabBar items={ITEMS} activeKey="today" onChange={() => {}} />);
+
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  test('matches the snapshot with Library active', () => {
+    const { toJSON } = render(<TabBar items={ITEMS} activeKey="library" onChange={() => {}} />);
+
+    expect(toJSON()).toMatchSnapshot();
   });
 });

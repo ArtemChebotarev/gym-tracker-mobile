@@ -1,20 +1,20 @@
 // TabBar — see 08.0 · Design SDK, "Компоненты": 3 tabs, active tab in accent with icon and
 // label together (08.0: "Активная — акцентом, иконка и подпись вместе"). Background reuses
 // `surface/raised`, the same "sticky, don't blend during scroll" surface SectionHeader uses
-// (08.0: "surface/raised: Липкие заголовки секций, таб-бар"). Like IconButton, the project has
-// no icon library yet, so `icon` is caller-supplied — the caller renders an icon that already
-// matches the tab's active/inactive look, the same contract IconButton documents for its own
-// icon slot. `icon` accepts either a plain node (same icon regardless of state) or a function of
-// the active state, so a tab whose icon never changes look doesn't need to write a closure.
+// (08.0: "surface/raised: Липкие заголовки секций, таб-бар"). `icon` is one of the design/icons/
+// components (e.g. `TabTodayIcon`), not a rendered element: TabBar renders it itself at
+// `ICON_SIZES['icon/tab']` and in the same color as the label — `accent` when active,
+// `text/faint` when not — because 08.0 ("Иконки") sets an icon's state through its parent's
+// color rather than a separate active version of the icon.
 
-import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import type { IconComponent } from '../icons/IconFrame';
+import { COLORS, ICON_SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type TabBarItem = {
   key: string;
   label: string;
-  icon: ReactNode | ((active: boolean) => ReactNode);
+  icon: IconComponent;
 };
 
 export type TabBarProps = {
@@ -28,7 +28,7 @@ export function TabBar({ items, activeKey, onChange }: TabBarProps) {
     <View style={styles.container}>
       {items.map((item) => {
         const active = item.key === activeKey;
-        const icon = typeof item.icon === 'function' ? item.icon(active) : item.icon;
+        const Icon = item.icon;
         return (
           <Pressable
             key={item.key}
@@ -38,7 +38,7 @@ export function TabBar({ items, activeKey, onChange }: TabBarProps) {
             onPress={() => onChange(item.key)}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
           >
-            {icon}
+            <Icon size={ICON_SIZES['icon/tab']} color={active ? COLORS.accent : COLORS['text/faint']} />
             <Text style={active ? styles.activeLabel : styles.inactiveLabel}>{item.label}</Text>
           </Pressable>
         );
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
   inactiveLabel: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
-    color: COLORS['text/muted'],
+    color: COLORS['text/faint'],
   },
 });

@@ -5,7 +5,7 @@
 
 import { ConflictError } from '@domain/errors';
 import { generateId } from '@domain/id';
-import type { Mesocycle } from '@domain/mesocycle';
+import type { Mesocycle, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
   validateMesocycleDaysPerWeek,
@@ -36,8 +36,16 @@ export type ScratchMesocycleDraftInput = {
  * carrying `weekPlan` as its draft week 1 until Start materializes it (04 · Meso Creation Flows,
  * "Сохранение при подтверждении (Confirm)"; the actual save-through-Confirm is task 071, which
  * calls this and then `MesocycleRepository.create`).
+ *
+ * `progressionSettings` is the snapshot copied onto the mesocycle — Confirm passes the global
+ * `Settings.defaultProgressionSettings` read at that moment (03 · Progression Engine,
+ * "progressionSettings": "Снимок настроек, копируемый в каждый мезоцикл при создании"). It is
+ * copied, not referenced, so a later change to the object passed in doesn't reach the draft.
  */
-export function buildScratchMesocycleDraft(input: ScratchMesocycleDraftInput): Mesocycle {
+export function buildScratchMesocycleDraft(
+  input: ScratchMesocycleDraftInput,
+  progressionSettings: ProgressionSettings = defaultProgressionSettings,
+): Mesocycle {
   validateMesocycleLengthWeeks(input.lengthWeeks);
   validateMesocycleDaysPerWeek(input.daysPerWeek);
   validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
@@ -49,7 +57,7 @@ export function buildScratchMesocycleDraft(input: ScratchMesocycleDraftInput): M
     daysPerWeek: input.daysPerWeek,
     status: 'planned',
     origin: { type: 'scratch' },
-    progressionSettings: defaultProgressionSettings,
+    progressionSettings: { ...progressionSettings },
     weekPlan: input.weekPlan,
     createdAt: nowAsUtcIso(),
   };

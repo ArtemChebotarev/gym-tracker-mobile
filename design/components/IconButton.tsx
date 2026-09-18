@@ -1,9 +1,9 @@
 // IconButton — see 08.0 · Design SDK, "Компоненты": circular accent/neutral button, always
 // labeled for accessibility, 28–30pt (no dedicated size token exists for this yet, so the
 // diameter below is a plain number rather than a design/tokens.ts value). The icon glyph is
-// passed in as `children` rather than owned by this component — the project has not adopted an
-// icon library yet, so IconButton only owns the circular frame and background; the caller is
-// responsible for rendering an icon that already matches the chosen variant.
+// passed in as `children` rather than owned by this component — IconButton only owns the circular
+// frame and background; the caller renders one of the design/icons/ components at
+// `ICON_SIZES['icon/button']`, in a color that matches the chosen variant.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';

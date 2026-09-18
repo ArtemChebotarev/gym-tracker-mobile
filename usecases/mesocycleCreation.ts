@@ -10,14 +10,17 @@
 import { buildScratchMesocycleDraft, type ScratchMesocycleDraftInput } from '@domain/mesocycleBuilders';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { MesocycleRepository } from '@repositories/mesocycle';
+import type { SettingsRepository } from '@repositories/settings';
 
 export type MesocycleCreationDeps = {
   mesocycleRepo: MesocycleRepository;
+  settingsRepo: SettingsRepository;
 };
 
 /**
- * Confirms a Flow A draft: builds it (fresh id, `status: 'planned'`, no `startDate`) and saves
- * it via `MesocycleRepository.create`. `Session`/`SessionExercise` are never touched — that's
+ * Confirms a Flow A draft: builds it (fresh id, `status: 'planned'`, no `startDate`, and a snapshot
+ * of the global `defaultProgressionSettings` read right now) and saves it via
+ * `MesocycleRepository.create`. `Session`/`SessionExercise` are never touched — that's
  * Start's job (042), not Confirm's (04 · Meso Creation Flows, "Сохранение при подтверждении").
  *
  * Calling this again with the same `input` does not update anything: `buildScratchMesocycleDraft`
@@ -27,6 +30,7 @@ export async function confirmScratchMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   deps: MesocycleCreationDeps,
 ): Promise<Mesocycle> {
-  const draft = buildScratchMesocycleDraft(input);
+  const settings = await deps.settingsRepo.read();
+  const draft = buildScratchMesocycleDraft(input, settings.defaultProgressionSettings);
   return deps.mesocycleRepo.create(draft);
 }

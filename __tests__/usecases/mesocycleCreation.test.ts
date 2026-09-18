@@ -1,6 +1,7 @@
 import type { WeekPlan } from '@domain/plan';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemorySessionRepository } from '@storage/session';
+import { InMemorySettingsRepository } from '@storage/settings';
 import { InMemoryStore } from '@storage/store';
 import { confirmScratchMesocycleDraft } from '@usecases/mesocycleCreation';
 
@@ -21,8 +22,11 @@ function makeDeps() {
   return {
     mesocycleRepo: new InMemoryMesocycleRepository(store),
     sessionRepo: new InMemorySessionRepository(store),
+    settingsRepo: new InMemorySettingsRepository(),
   };
 }
+
+const draftInput = { name: 'Push/Pull/Legs', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
 
 describe('confirmScratchMesocycleDraft', () => {
   test('saves a planned mesocycle with the correct origin and no startDate', async () => {
@@ -62,5 +66,42 @@ describe('confirmScratchMesocycleDraft', () => {
       expect.arrayContaining([first, second]),
     );
     await expect(deps.mesocycleRepo.getAll()).resolves.toHaveLength(2);
+  });
+
+  test('a new mesocycle gets historyLookbackDays 30 from the default settings', async () => {
+    const deps = makeDeps();
+
+    const saved = await confirmScratchMesocycleDraft(draftInput, deps);
+
+    expect(saved.progressionSettings.historyLookbackDays).toBe(30);
+    const stored = await deps.mesocycleRepo.getById(saved.id);
+    expect(stored?.progressionSettings.historyLookbackDays).toBe(30);
+  });
+
+  test('snapshots the global progression settings as they are at creation time', async () => {
+    const deps = makeDeps();
+    const settings = await deps.settingsRepo.read();
+    await deps.settingsRepo.write({
+      ...settings,
+      defaultProgressionSettings: { ...settings.defaultProgressionSettings, historyLookbackDays: 45 },
+    });
+
+    const saved = await confirmScratchMesocycleDraft(draftInput, deps);
+
+    expect(saved.progressionSettings.historyLookbackDays).toBe(45);
+  });
+
+  test('changing the global setting afterwards does not change an already created mesocycle', async () => {
+    const deps = makeDeps();
+    const saved = await confirmScratchMesocycleDraft(draftInput, deps);
+
+    const settings = await deps.settingsRepo.read();
+    await deps.settingsRepo.write({
+      ...settings,
+      defaultProgressionSettings: { ...settings.defaultProgressionSettings, historyLookbackDays: 90 },
+    });
+
+    const stored = await deps.mesocycleRepo.getById(saved.id);
+    expect(stored?.progressionSettings.historyLookbackDays).toBe(30);
   });
 });

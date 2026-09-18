@@ -84,6 +84,7 @@ describe('mesocycle domain types', () => {
       maxReps: 30,
       deloadRir: 8,
       deloadWeightFactor: 0.5,
+      historyLookbackDays: 30,
     });
   });
 });
