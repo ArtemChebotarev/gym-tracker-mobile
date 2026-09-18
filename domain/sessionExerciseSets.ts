@@ -36,3 +36,9 @@ export function withoutLastSet(setTargets: readonly SetTarget[]): {
   }
   return { setTargets: setTargets.slice(0, -1), removed };
 }
+
+/**
+ * Rows an exercise added mid-session starts with (05 · Workout Execution & Logging, "Добавить
+ * внеплановое упражнение").
+ */
+export const ADDED_EXERCISE_SET_COUNT = 2;
