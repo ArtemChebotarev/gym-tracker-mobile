@@ -1,11 +1,12 @@
 import type {
   ColorToken,
+  IconSizeToken,
   RadiusToken,
   SpacingToken,
   TypographyToken,
   TypographyValue,
 } from '@design/tokens';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { COLORS, ICON_SIZES, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 const EXPECTED_COLOR_TOKENS = [
   'surface/page',
@@ -33,6 +34,7 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
   'type/screen-title',
   'type/entity-title',
   'type/sheet-title',
+  'type/card-title',
   'type/row-title',
   'type/body',
   'type/value',
@@ -73,6 +75,10 @@ function assertRadiusToken(token: RadiusToken): RadiusToken {
   return token;
 }
 
+function assertIconSizeToken(token: IconSizeToken): IconSizeToken {
+  return token;
+}
+
 function assertSpacingToken(token: SpacingToken): SpacingToken {
   return token;
 }
@@ -92,6 +98,19 @@ describe('design tokens', () => {
 
   test('SPACING exposes exactly the expected set of keys', () => {
     expect(sorted(Object.keys(SPACING))).toEqual(sorted(EXPECTED_SPACING_TOKENS));
+  });
+
+  test('type/card-title is 16 / 500', () => {
+    expect(TYPOGRAPHY['type/card-title']).toEqual({ fontSize: 16, fontWeight: '500' });
+  });
+
+  test('ICON_SIZES matches the tab bar and IconButton sizes from 08.0', () => {
+    expect(ICON_SIZES).toEqual({ 'icon/tab': 20, 'icon/button': 18 });
+  });
+
+  test('IconSizeToken rejects an arbitrary string', () => {
+    // @ts-expect-error - "icon/nonexistent" is not an IconSizeToken
+    assertIconSizeToken('icon/nonexistent');
   });
 
   test('only type/label carries letter-spacing and an uppercase transform', () => {

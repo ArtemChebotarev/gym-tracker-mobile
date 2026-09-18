@@ -44,6 +44,7 @@ export const TYPOGRAPHY = {
   'type/screen-title': { fontSize: 24, fontWeight: '500' },
   'type/entity-title': { fontSize: 22, fontWeight: '500' },
   'type/sheet-title': { fontSize: 19, fontWeight: '500' },
+  'type/card-title': { fontSize: 16, fontWeight: '500' },
   'type/row-title': { fontSize: 14, fontWeight: '400' },
   'type/body': { fontSize: 13, fontWeight: '400' },
   'type/value': { fontSize: 15, fontWeight: '400' },
@@ -78,3 +79,12 @@ export const SPACING = {
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;
+
+// Rendered icon sizes — 08.0 · Design SDK, "Иконки": "Размер в таб-баре — 20, в IconButton — 18".
+// Every icon in design/icons/ is drawn on the same 24×24 grid and scaled to one of these.
+export const ICON_SIZES = {
+  'icon/tab': 20,
+  'icon/button': 18,
+} as const;
+
+export type IconSizeToken = keyof typeof ICON_SIZES;
