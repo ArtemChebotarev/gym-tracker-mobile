@@ -1,7 +1,7 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { NotFoundError } from '@domain/errors';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { SET_LOG_COLLECTION } from '@storage/collectionNames';
+import { MESOCYCLE_COLLECTION, SET_LOG_COLLECTION } from '@storage/collectionNames';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionExerciseRepository } from '@storage/sessionExercise';
@@ -44,6 +44,25 @@ describe('InMemoryMesocycleRepository', () => {
     await repo.create(active);
 
     await expect(repo.getActive()).resolves.toEqual(active);
+  });
+
+  test('a mesocycle stored without historyLookbackDays reads back with the default of 30', async () => {
+    const store = new InMemoryStore();
+    const repo = new InMemoryMesocycleRepository(store);
+    // Written straight into the collection, the way a record saved before task 083 would sit
+    // in storage: its progressionSettings snapshot has no historyLookbackDays at all.
+    const { historyLookbackDays: _omitted, ...legacySettings } = defaultProgressionSettings;
+    await store
+      .collection<Mesocycle>(MESOCYCLE_COLLECTION)
+      .insert(makeMesocycle({ progressionSettings: legacySettings as Mesocycle['progressionSettings'] }));
+
+    const byId = await repo.getById('meso-a');
+    const [fromList] = await repo.getAll();
+    const active = await repo.getActive();
+
+    expect(byId?.progressionSettings.historyLookbackDays).toBe(30);
+    expect(fromList?.progressionSettings.historyLookbackDays).toBe(30);
+    expect(active?.progressionSettings.historyLookbackDays).toBe(30);
   });
 
   test('update replaces the stored mesocycle', async () => {

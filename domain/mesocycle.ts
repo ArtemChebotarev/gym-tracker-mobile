@@ -41,6 +41,12 @@ export type ProgressionSettings = {
   deloadRir: number;
   /** Fraction of the last working week's weight used during deload. */
   deloadWeightFactor: number;
+  /**
+   * How many days back rule 6 looks for a reference performance outside the current mesocycle
+   * (03 · Progression Engine, "Правило 6"). The use case layer turns it into
+   * `since = now − historyLookbackDays`; the engine itself never sees time.
+   */
+  historyLookbackDays: number;
 };
 
 /** Default `ProgressionSettings`, per 03 · Progression Engine. */
@@ -49,6 +55,7 @@ export const defaultProgressionSettings: ProgressionSettings = {
   maxReps: 30,
   deloadRir: 8,
   deloadWeightFactor: 0.5,
+  historyLookbackDays: 30,
 };
 
 /**

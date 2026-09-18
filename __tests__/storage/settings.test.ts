@@ -48,4 +48,19 @@ describe('InMemorySettingsRepository', () => {
       catalogVersion: 1,
     });
   });
+
+  test('settings written without historyLookbackDays read back with the default of 30', async () => {
+    const repo = new InMemorySettingsRepository();
+    const { historyLookbackDays: _omitted, ...legacyProgressionSettings } = defaultProgressionSettings;
+
+    await repo.write({
+      defaultProgressionSettings: legacyProgressionSettings as Settings['defaultProgressionSettings'],
+      weightUnit: 'kg',
+      schemaVersion: 1,
+      catalogVersion: 1,
+    });
+
+    const read = await repo.read();
+    expect(read.defaultProgressionSettings.historyLookbackDays).toBe(30);
+  });
 });
