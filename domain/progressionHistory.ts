@@ -9,7 +9,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { nextTargetReps } from '@domain/progressionReps';
 import { weightHintForReps } from '@domain/progressionWeightHint';
 
-type HistorySettings = Pick<ProgressionSettings, 'minReps' | 'maxReps' | 'deloadWeightFactor'>;
+type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
 /**
  * The reference set row `setNumber` (1-based) takes: the reference's N-th set in `setNumber`
@@ -25,24 +25,24 @@ export function referenceSetFor(
 }
 
 /**
- * Set targets for `rowCount` rows of an exercise added or swapped in mid-session, from the
- * `SetLog`s of its reference performance (`null` or empty when none was found):
+ * Set targets for `rowCount` rows of an exercise added or swapped in mid-session during a
+ * working week, from the `SetLog`s of its reference performance (`null` or empty when none was
+ * found):
  *
- * - Working week: `targetReps` = reference reps + 1 clamped to the corridor (as rule 2),
+ * - Reference found: `targetReps` = reference reps + 1 clamped to the corridor (as rule 2),
  *   `suggestedWeight` = the reference weight as is, and a weight hint from the reference reps
  *   (rule 3).
- * - Deload week: no `targetReps` and no hint, `suggestedWeight` = reference weight ×
- *   `deloadWeightFactor` (as rule 5).
  * - No reference: neither target — the screen falls back to showing `N RIR`.
  *
- * `targetRir` is not part of this: it always comes from the current week (rule 4, or 5 for
- * deload), never from the reference.
+ * Not called in the deload week: an exercise can't be added there, and one swapped in gets no
+ * weight or reps at all — the week isn't for progression, so its RIR is guidance enough and no
+ * reference is looked up. `targetRir` is not part of this either: it always comes from the
+ * current week (rule 4, or 5 for deload), never from the reference.
  */
 export function prescribeFromHistory(
   referenceLogs: readonly SetLog[] | null,
   rowCount: number,
-  isDeload: boolean,
-  settings: HistorySettings,
+  settings: RepCorridor,
 ): SetTarget[] {
   return Array.from({ length: rowCount }, (_, index): SetTarget => {
     const setNumber = index + 1;
@@ -50,9 +50,6 @@ export function prescribeFromHistory(
       referenceLogs === null ? undefined : referenceSetFor(referenceLogs, setNumber);
     if (reference === undefined) {
       return { setNumber };
-    }
-    if (isDeload) {
-      return { setNumber, suggestedWeight: reference.weight * settings.deloadWeightFactor };
     }
     return {
       setNumber,
