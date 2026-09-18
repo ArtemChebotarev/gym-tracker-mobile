@@ -62,8 +62,10 @@ export interface SetLogRepository {
    * The reference performance for rule 6 (03 · Progression Engine): every set log of the single
    * most recent session exercise for `exerciseId` whose session is not a deload and either
    * belongs to `mesoId` or was logged no earlier than `since`, sorted by `setNumber`. Empty
-   * when nothing qualifies. The SetLog → SessionExercise → Session join happens inside the
-   * repository (07 · Persistence Layer Contract, rule 4).
+   * when nothing qualifies, and also when a newer performance can't be joined to its session:
+   * with no trustworthy reference rule 6 recommends nothing and the screen shows only RIR. The
+   * SetLog → SessionExercise → Session join happens inside the repository
+   * (07 · Persistence Layer Contract, rule 4).
    */
   findLastPerformance(query: FindLastPerformanceQuery): Promise<SetLog[]>;
 

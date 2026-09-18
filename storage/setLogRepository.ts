@@ -59,11 +59,10 @@ export class InMemorySetLogRepository implements SetLogRepository {
     return last ?? null;
   }
 
-  // Groups by the SetLog's own `exerciseId`, not SessionExercise.exerciseId: after a mid-session
-  // swap the SessionExercise points at the new exercise while its earlier sets keep the old id
-  // (task 047), and only the sets actually performed with `exerciseId` are a valid reference.
-  // A group whose SessionExercise or Session is missing can't be proven non-deload, so it is
-  // skipped rather than guessed at.
+  // Walks performances newest first. A performance whose SessionExercise or Session is missing
+  // can't be checked for deload or mesocycle, so hitting one before a valid reference ends the
+  // search with no reference at all: without a trustworthy reference rule 6 recommends nothing
+  // and the screen shows only RIR, rather than falling back to an older, possibly wrong one.
   async findLastPerformance({
     exerciseId,
     mesoId,
@@ -86,26 +85,27 @@ export class InMemorySetLogRepository implements SetLogRepository {
     const sessions = await this.store
       .collection<Session>(SESSION_COLLECTION)
       .listByIds([...new Set(sessionExercises.map((exercise) => exercise.sessionId))]);
+    const sessionIdBySessionExerciseId = new Map(
+      sessionExercises.map((exercise) => [exercise.id, exercise.sessionId]),
+    );
     const sessionsById = new Map(sessions.map((session) => [session.id, session]));
 
-    let latest: { logs: SetLog[]; completedAt: string } | null = null;
-    for (const sessionExercise of sessionExercises) {
-      const session = sessionsById.get(sessionExercise.sessionId);
-      const group = logsBySessionExerciseId.get(sessionExercise.id) ?? [];
-      const completedAt = group.reduce(
-        (max, log) => (log.completedAt > max ? log.completedAt : max),
-        '',
-      );
-      const qualifies =
-        session !== undefined &&
-        !session.isDeload &&
-        (session.mesoId === mesoId || completedAt >= since);
-      if (qualifies && (latest === null || completedAt > latest.completedAt)) {
-        latest = { logs: group, completedAt };
+    const performances = [...logsBySessionExerciseId].map(([sessionExerciseId, group]) => ({
+      session: sessionsById.get(sessionIdBySessionExerciseId.get(sessionExerciseId) ?? ''),
+      logs: group,
+      completedAt: group.reduce((max, log) => (log.completedAt > max ? log.completedAt : max), ''),
+    }));
+    performances.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+
+    for (const { session, logs: performanceLogs, completedAt } of performances) {
+      if (session === undefined) {
+        return [];
+      }
+      if (!session.isDeload && (session.mesoId === mesoId || completedAt >= since)) {
+        return [...performanceLogs].sort((a, b) => a.setNumber - b.setNumber);
       }
     }
-
-    return latest ? [...latest.logs].sort((a, b) => a.setNumber - b.setNumber) : [];
+    return [];
   }
 
   async create(setLog: SetLog): Promise<SetLog> {
