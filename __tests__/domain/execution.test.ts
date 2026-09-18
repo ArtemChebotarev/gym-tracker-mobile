@@ -3,7 +3,7 @@ import type { Session, SessionExercise, SetLog, SetTarget } from '@domain/execut
 const benchPressTargetWithoutReps: SetTarget = { setNumber: 3, suggestedWeight: 60 };
 
 const benchPressTargets: SetTarget[] = [
-  { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+  { setNumber: 1, targetReps: 8, suggestedWeight: 60, weightHint: 'increase' },
   { setNumber: 2, targetReps: 8, suggestedWeight: 60 },
   benchPressTargetWithoutReps,
 ];
@@ -19,7 +19,6 @@ const benchPressExercise: SessionExercise = {
   order: 1,
   setTargets: benchPressTargets,
   targetRir: 2,
-  weightHint: 'increase',
   status: 'completed',
 };
 
@@ -80,6 +79,14 @@ describe('execution domain types', () => {
     expect(benchPressTargetWithoutReps.targetReps).toBeUndefined();
     expect(rowTargetWithoutRepsOrWeight.targetReps).toBeUndefined();
     expect(rowTargetWithoutRepsOrWeight.suggestedWeight).toBeUndefined();
+  });
+
+  test('weight hints live on individual set targets, not on the exercise', () => {
+    expect(benchPressTargets.map((target) => target.weightHint)).toEqual([
+      'increase',
+      undefined,
+      undefined,
+    ]);
   });
 
   test('set logs carry the denormalized exerciseId and an optional rir', () => {
