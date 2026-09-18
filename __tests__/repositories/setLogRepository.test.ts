@@ -1,5 +1,8 @@
 import type { SetLog } from '@domain/execution';
-import type { ListSetLogsByExerciseIdOptions, SetLogRepository } from '@repositories/setLogRepository';
+import type {
+  ListSetLogsByExerciseIdOptions,
+  SetLogRepository,
+} from '@repositories/setLogRepository';
 
 const benchSetOne: SetLog = {
   id: 'set-log-1',
@@ -40,6 +43,10 @@ const sessionExerciseToSession: Record<string, string> = {
   'session-exercise-row': 'session-1',
 };
 
+const sessionsById: Record<string, { mesoId: string; isDeload: boolean }> = {
+  'session-1': { mesoId: 'meso-1', isDeload: false },
+};
+
 function createFakeSetLogRepository(seed: SetLog[]): SetLogRepository {
   const logs = [...seed];
 
@@ -64,6 +71,22 @@ function createFakeSetLogRepository(seed: SetLog[]): SetLogRepository {
         .filter((log) => log.exerciseId === exerciseId)
         .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
       return matches[0] ?? null;
+    },
+    async findLastPerformance({ exerciseId, mesoId, since, excludeSessionExerciseId }) {
+      const candidates = logs.filter((log) => {
+        const session = sessionsById[sessionExerciseToSession[log.sessionExerciseId] ?? ''];
+        return (
+          log.exerciseId === exerciseId &&
+          log.sessionExerciseId !== excludeSessionExerciseId &&
+          session !== undefined &&
+          !session.isDeload &&
+          (session.mesoId === mesoId || log.completedAt >= since)
+        );
+      });
+      const [latest] = [...candidates].sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+      return candidates
+        .filter((log) => log.sessionExerciseId === latest?.sessionExerciseId)
+        .sort((a, b) => a.setNumber - b.setNumber);
     },
     async create(setLog) {
       logs.push(setLog);
@@ -121,6 +144,20 @@ describe('SetLogRepository contract', () => {
 
     await expect(repo.getLastByExerciseId('exercise-bench-press')).resolves.toEqual(benchSetTwo);
     await expect(repo.getLastByExerciseId('exercise-never-logged')).resolves.toBeNull();
+  });
+
+  test('findLastPerformance returns one session exercise sorted by setNumber, or an empty list', async () => {
+    const repo = createFakeSetLogRepository([benchSetTwo, benchSetOne, rowSet]);
+    const query = {
+      exerciseId: 'exercise-bench-press',
+      mesoId: 'meso-1',
+      since: '2026-09-01T00:00:00.000Z',
+    };
+
+    await expect(repo.findLastPerformance(query)).resolves.toEqual([benchSetOne, benchSetTwo]);
+    await expect(
+      repo.findLastPerformance({ ...query, excludeSessionExerciseId: 'session-exercise-bench' }),
+    ).resolves.toEqual([]);
   });
 
   test('create, update, and deleteById round-trip a set log by its domain-generated id', async () => {
