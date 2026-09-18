@@ -9,17 +9,13 @@ import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { type SetEntry, validateSetEntry } from '@domain/executionValidators';
 import { generateId } from '@domain/id';
 import { statusFromLogs } from '@domain/sessionExerciseStatus';
-import { assertSessionOpen } from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
+import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 import { startSessionOnFirstSet } from '@usecases/sessionStart';
 
 /** One set row of an exercise in a session. */
-export type SetRowRef = {
-  sessionId: string;
-  sessionExerciseId: string;
-  setNumber: number;
-};
+export type SetRowRef = SessionExerciseRef & { setNumber: number };
 
 export type LogSetResult =
   | { kind: 'logged'; setLog: SetLog; sessionExercise: SessionExercise; session: Session }
@@ -40,19 +36,7 @@ type OpenSetRow = {
  * Unskip, 05 "Пропустить упражнение"), and the row exists.
  */
 async function openSetRow(ref: SetRowRef, repos: WorkoutRepositories): Promise<OpenSetRow> {
-  const session = await repos.sessionRepo.getById(ref.sessionId);
-  if (!session) {
-    throw new NotFoundError(`Session "${ref.sessionId}" does not exist.`);
-  }
-  assertSessionOpen(session);
-
-  const exercises = await repos.sessionExerciseRepo.listBySessionId(ref.sessionId);
-  const sessionExercise = exercises.find((exercise) => exercise.id === ref.sessionExerciseId);
-  if (!sessionExercise) {
-    throw new NotFoundError(
-      `Session exercise "${ref.sessionExerciseId}" is not part of session "${ref.sessionId}".`,
-    );
-  }
+  const { sessionExercise } = await openSessionExercise(ref, repos);
   if (sessionExercise.status === 'skipped') {
     throw new ConflictError(
       `Session exercise "${sessionExercise.id}" is skipped; unskip it before changing its sets.`,
