@@ -17,8 +17,8 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "borderRadius": 20,
           "flexDirection": "row",
           "gap": 6,
-          "paddingHorizontal": 7,
-          "paddingVertical": 6,
+          "paddingHorizontal": 10,
+          "paddingVertical": 3,
         },
         {
           "backgroundColor": "#292116",
@@ -45,7 +45,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 10,
+            "fontSize": 11,
             "fontWeight": "400",
           },
           {
@@ -65,9 +65,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "borderColor": "#2A2D31",
           "borderRadius": 10,
           "borderWidth": 1,
-          "gap": 10,
+          "paddingBottom": 6,
           "paddingHorizontal": 16,
-          "paddingVertical": 10,
+          "paddingTop": 10,
         },
         false,
       ]
@@ -79,7 +79,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 6,
         }
       }
     >
@@ -87,7 +87,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "flex": 1,
-            "gap": 3,
           }
         }
       >
@@ -118,7 +117,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 6,
           }
         }
       >
@@ -462,21 +461,17 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "alignItems": "center",
           "flexDirection": "row",
           "gap": 7,
+          "marginTop": 10,
+          "paddingBottom": 6,
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 20,
-          }
-        }
-      />
       <Text
         style={
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -494,6 +489,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -509,60 +505,56 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "width": 22,
           }
         }
-      >
-        <Text
-          style={
+      />
+      <Text
+        style={
+          [
+            {
+              "textAlign": "right",
+              "width": 38,
+            },
             {
               "color": "#8A9099",
               "fontSize": 11,
               "fontWeight": "400",
               "letterSpacing": 0.04,
-            }
-          }
-        >
-          Log
-        </Text>
-      </View>
+            },
+          ]
+        }
+      >
+        Log
+      </Text>
     </View>
     <View
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          [
-            {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
@@ -571,8 +563,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
+              "fontSize": 17,
             }
           }
         >
@@ -583,57 +574,88 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "baseline",
-              "flexDirection": "row",
-              "gap": 6,
+              "color": "#F5F5F4",
+              "fontSize": 17,
             }
           }
         >
-          <Text
-            style={
-              {
-                "color": "#F5F5F4",
-                "fontSize": 15,
-                "fontWeight": "400",
-              }
-            }
-          >
-            10
-          </Text>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 13,
-              }
-            }
-          >
-            ✓
-          </Text>
-        </View>
+          10
+        </Text>
       </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            {
+              "color": "#C9CDD2",
+            },
+          ]
+        }
+      >
+        ✓
+      </Text>
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
         <View
+          accessibilityLabel="Set 1 logged"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": true,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -645,11 +667,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
               },
+              false,
             ]
           }
         >
@@ -731,94 +753,130 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-2"
     >
-      <Text
+      <TextInput
+        accessibilityLabel="Set 2 weight"
+        keyboardType="decimal-pad"
+        onBlur={[Function]}
+        onChangeText={[Function]}
+        onFocus={[Function]}
+        placeholder="–"
+        placeholderTextColor="#5A5F65"
         style={
           [
             {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        2
-      </Text>
-      <View
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
+              "alignItems": "center",
               "borderColor": "#2A2D31",
               "borderRadius": 9,
               "borderWidth": 1,
-              "height": 34,
+              "flex": 1,
+              "height": 40,
               "justifyContent": "center",
-              "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
+            {
+              "backgroundColor": "#141619",
+            },
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
-            }
-          }
-        >
-          62.5
-        </Text>
-      </View>
-      <View
+              "fontSize": 17,
+              "textAlign": "center",
+            },
+            false,
+          ]
+        }
+        value="62.5"
+      />
+      <TextInput
+        accessibilityLabel="Set 2 reps"
+        keyboardType="number-pad"
+        onBlur={[Function]}
+        onChangeText={[Function]}
+        onFocus={[Function]}
+        placeholder="10"
+        placeholderTextColor="#5A5F65"
         style={
           [
             {
-              "flex": 1,
-            },
-            {
+              "alignItems": "center",
               "borderColor": "#2A2D31",
               "borderRadius": 9,
               "borderWidth": 1,
-              "height": 34,
+              "flex": 1,
+              "height": 40,
               "justifyContent": "center",
-              "paddingHorizontal": 7,
             },
+            {
+              "backgroundColor": "#141619",
+            },
+            {
+              "color": "#F5F5F4",
+              "fontSize": 17,
+              "textAlign": "center",
+            },
+            false,
+            false,
           ]
         }
-      >
-        <Text
-          style={
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-              "fontWeight": "400",
-            }
+        value=""
+      />
+      <Text
+        style={
+          {
+            "color": "#8A9099",
+            "fontSize": 12,
+            "textAlign": "center",
+            "width": 22,
           }
-        >
-          10
-        </Text>
-      </View>
+        }
+      />
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
         <View
+          accessibilityLabel="Log set 2"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -843,94 +901,130 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-3"
     >
-      <Text
+      <TextInput
+        accessibilityLabel="Set 3 weight"
+        keyboardType="decimal-pad"
+        onBlur={[Function]}
+        onChangeText={[Function]}
+        onFocus={[Function]}
+        placeholder="–"
+        placeholderTextColor="#5A5F65"
         style={
           [
             {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        3
-      </Text>
-      <View
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
+              "alignItems": "center",
               "borderColor": "#2A2D31",
               "borderRadius": 9,
               "borderWidth": 1,
-              "height": 34,
+              "flex": 1,
+              "height": 40,
               "justifyContent": "center",
-              "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
+            {
+              "backgroundColor": "#141619",
+            },
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
-            }
-          }
-        >
-          62.5
-        </Text>
-      </View>
-      <View
+              "fontSize": 17,
+              "textAlign": "center",
+            },
+            false,
+          ]
+        }
+        value="62.5"
+      />
+      <TextInput
+        accessibilityLabel="Set 3 reps"
+        keyboardType="number-pad"
+        onBlur={[Function]}
+        onChangeText={[Function]}
+        onFocus={[Function]}
+        placeholder="10"
+        placeholderTextColor="#5A5F65"
         style={
           [
             {
-              "flex": 1,
-            },
-            {
+              "alignItems": "center",
               "borderColor": "#2A2D31",
               "borderRadius": 9,
               "borderWidth": 1,
-              "height": 34,
+              "flex": 1,
+              "height": 40,
               "justifyContent": "center",
-              "paddingHorizontal": 7,
             },
+            {
+              "backgroundColor": "#141619",
+            },
+            {
+              "color": "#F5F5F4",
+              "fontSize": 17,
+              "textAlign": "center",
+            },
+            false,
+            false,
           ]
         }
-      >
-        <Text
-          style={
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-              "fontWeight": "400",
-            }
+        value=""
+      />
+      <Text
+        style={
+          {
+            "color": "#8A9099",
+            "fontSize": 12,
+            "textAlign": "center",
+            "width": 22,
           }
-        >
-          10
-        </Text>
-      </View>
+        }
+      />
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
         <View
+          accessibilityLabel="Log set 3"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -970,8 +1064,8 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           "borderRadius": 20,
           "flexDirection": "row",
           "gap": 6,
-          "paddingHorizontal": 7,
-          "paddingVertical": 6,
+          "paddingHorizontal": 10,
+          "paddingVertical": 3,
         },
         {
           "backgroundColor": "#292116",
@@ -998,7 +1092,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 10,
+            "fontSize": 11,
             "fontWeight": "400",
           },
           {
@@ -1018,9 +1112,9 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           "borderColor": "#2A2D31",
           "borderRadius": 10,
           "borderWidth": 1,
-          "gap": 10,
+          "paddingBottom": 6,
           "paddingHorizontal": 16,
-          "paddingVertical": 10,
+          "paddingTop": 10,
         },
         false,
       ]
@@ -1032,7 +1126,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 6,
         }
       }
     >
@@ -1040,7 +1134,6 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         style={
           {
             "flex": 1,
-            "gap": 3,
           }
         }
       >
@@ -1071,7 +1164,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 6,
           }
         }
       >
@@ -1242,17 +1335,19 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           "borderWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "marginBottom": 7,
+          "marginTop": 10,
           "paddingHorizontal": 10,
-          "paddingVertical": 7,
+          "paddingVertical": 10,
         }
       }
     >
       <RNSVGSvgView
         align="xMidYMid"
-        bbHeight={16}
-        bbWidth={16}
+        bbHeight={15}
+        bbWidth={15}
         focusable={false}
-        height={16}
+        height={15}
         meetOrSlice={0}
         minX={0}
         minY={0}
@@ -1264,14 +1359,14 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
             },
             {
               "flex": 0,
-              "height": 16,
-              "width": 16,
+              "height": 15,
+              "width": 15,
             },
           ]
         }
         vbHeight={24}
         vbWidth={24}
-        width={16}
+        width={15}
       >
         <RNSVGGroup
           fill={
@@ -1333,8 +1428,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         style={
           {
             "color": "#8A9099",
-            "fontSize": 13,
-            "fontWeight": "400",
+            "fontSize": 12,
           }
         }
       >
@@ -1362,8 +1456,8 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "borderRadius": 20,
           "flexDirection": "row",
           "gap": 6,
-          "paddingHorizontal": 7,
-          "paddingVertical": 6,
+          "paddingHorizontal": 10,
+          "paddingVertical": 3,
         },
         {
           "backgroundColor": "#292116",
@@ -1390,7 +1484,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 10,
+            "fontSize": 11,
             "fontWeight": "400",
           },
           {
@@ -1410,9 +1504,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "borderColor": "#2A2D31",
           "borderRadius": 10,
           "borderWidth": 1,
-          "gap": 10,
+          "paddingBottom": 6,
           "paddingHorizontal": 16,
-          "paddingVertical": 10,
+          "paddingTop": 10,
         },
         false,
       ]
@@ -1424,7 +1518,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 6,
         }
       }
     >
@@ -1432,7 +1526,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           {
             "flex": 1,
-            "gap": 3,
           }
         }
       >
@@ -1463,7 +1556,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 6,
           }
         }
       >
@@ -1670,21 +1763,17 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "alignItems": "center",
           "flexDirection": "row",
           "gap": 7,
+          "marginTop": 10,
+          "paddingBottom": 6,
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 20,
-          }
-        }
-      />
       <Text
         style={
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -1702,6 +1791,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -1717,60 +1807,56 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "width": 22,
           }
         }
-      >
-        <Text
-          style={
+      />
+      <Text
+        style={
+          [
+            {
+              "textAlign": "right",
+              "width": 38,
+            },
             {
               "color": "#8A9099",
               "fontSize": 11,
               "fontWeight": "400",
               "letterSpacing": 0.04,
-            }
-          }
-        >
-          Log
-        </Text>
-      </View>
+            },
+          ]
+        }
+      >
+        Log
+      </Text>
     </View>
     <View
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          [
-            {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
@@ -1779,8 +1865,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
+              "fontSize": 17,
             }
           }
         >
@@ -1791,53 +1876,53 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "baseline",
-              "flexDirection": "row",
-              "gap": 6,
+              "color": "#F5F5F4",
+              "fontSize": 17,
             }
           }
         >
-          <Text
-            style={
-              {
-                "color": "#F5F5F4",
-                "fontSize": 15,
-                "fontWeight": "400",
-              }
-            }
-          >
-            10
-          </Text>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 13,
-              }
-            }
-          >
-            ✓
-          </Text>
-        </View>
+          10
+        </Text>
       </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            {
+              "color": "#C9CDD2",
+            },
+          ]
+        }
+      >
+        ✓
+      </Text>
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
@@ -1853,7 +1938,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -1939,37 +2023,29 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-2"
     >
-      <Text
-        style={
-          [
-            {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        2
-      </Text>
       <View
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
@@ -1978,8 +2054,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
+              "fontSize": 17,
             }
           }
         >
@@ -1990,53 +2065,53 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "baseline",
-              "flexDirection": "row",
-              "gap": 6,
+              "color": "#F5F5F4",
+              "fontSize": 17,
             }
           }
         >
-          <Text
-            style={
-              {
-                "color": "#F5F5F4",
-                "fontSize": 15,
-                "fontWeight": "400",
-              }
-            }
-          >
-            11
-          </Text>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 13,
-              }
-            }
-          >
-            +1
-          </Text>
-        </View>
+          11
+        </Text>
       </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            {
+              "color": "#C9CDD2",
+            },
+          ]
+        }
+      >
+        +1
+      </Text>
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
@@ -2052,7 +2127,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -2138,37 +2212,29 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-3"
     >
-      <Text
-        style={
-          [
-            {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        3
-      </Text>
       <View
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
@@ -2177,8 +2243,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
+              "fontSize": 17,
             }
           }
         >
@@ -2189,53 +2254,51 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "baseline",
-              "flexDirection": "row",
-              "gap": 6,
+              "color": "#F5F5F4",
+              "fontSize": 17,
             }
           }
         >
-          <Text
-            style={
-              {
-                "color": "#F5F5F4",
-                "fontSize": 15,
-                "fontWeight": "400",
-              }
-            }
-          >
-            9
-          </Text>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 13,
-              }
-            }
-          >
-            −1
-          </Text>
-        </View>
+          9
+        </Text>
       </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            false,
+          ]
+        }
+      >
+        −1
+      </Text>
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
@@ -2251,7 +2314,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -2354,8 +2416,8 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           "borderRadius": 20,
           "flexDirection": "row",
           "gap": 6,
-          "paddingHorizontal": 7,
-          "paddingVertical": 6,
+          "paddingHorizontal": 10,
+          "paddingVertical": 3,
         },
         {
           "backgroundColor": "#292116",
@@ -2382,7 +2444,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 10,
+            "fontSize": 11,
             "fontWeight": "400",
           },
           {
@@ -2402,9 +2464,9 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           "borderColor": "#2A2D31",
           "borderRadius": 10,
           "borderWidth": 1,
-          "gap": 10,
+          "paddingBottom": 6,
           "paddingHorizontal": 16,
-          "paddingVertical": 10,
+          "paddingTop": 10,
         },
         {
           "opacity": 0.5,
@@ -2418,7 +2480,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 6,
         }
       }
     >
@@ -2426,7 +2488,6 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         style={
           {
             "flex": 1,
-            "gap": 3,
           }
         }
       >
@@ -2457,7 +2518,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 6,
           }
         }
       >
@@ -2658,83 +2719,13 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         </View>
       </View>
     </View>
-    <View
-      style={
-        {
-          "alignItems": "center",
-          "flexDirection": "row",
-          "gap": 7,
-        }
-      }
-    >
-      <View
-        style={
-          {
-            "width": 20,
-          }
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "color": "#8A9099",
-              "fontSize": 11,
-              "fontWeight": "400",
-              "letterSpacing": 0.04,
-            },
-          ]
-        }
-      >
-        Weight, kg
-      </Text>
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "color": "#8A9099",
-              "fontSize": 11,
-              "fontWeight": "400",
-              "letterSpacing": 0.04,
-            },
-          ]
-        }
-      >
-        Reps
-      </Text>
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "width": 34,
-          }
-        }
-      >
-        <Text
-          style={
-            {
-              "color": "#8A9099",
-              "fontSize": 11,
-              "fontWeight": "400",
-              "letterSpacing": 0.04,
-            }
-          }
-        >
-          Log
-        </Text>
-      </View>
-    </View>
     <Text
       style={
         {
           "color": "#8A9099",
-          "fontSize": 13,
+          "fontSize": 12,
+          "paddingBottom": 7,
+          "paddingTop": 10,
         }
       }
     >
@@ -2761,8 +2752,8 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "borderRadius": 20,
           "flexDirection": "row",
           "gap": 6,
-          "paddingHorizontal": 7,
-          "paddingVertical": 6,
+          "paddingHorizontal": 10,
+          "paddingVertical": 3,
         },
         {
           "backgroundColor": "#292116",
@@ -2789,7 +2780,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       style={
         [
           {
-            "fontSize": 10,
+            "fontSize": 11,
             "fontWeight": "400",
           },
           {
@@ -2809,9 +2800,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "borderColor": "#2A2D31",
           "borderRadius": 10,
           "borderWidth": 1,
-          "gap": 10,
+          "paddingBottom": 6,
           "paddingHorizontal": 16,
-          "paddingVertical": 10,
+          "paddingTop": 10,
         },
         {
           "opacity": 0.5,
@@ -2825,7 +2816,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 6,
         }
       }
     >
@@ -2833,7 +2824,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           {
             "flex": 1,
-            "gap": 3,
           }
         }
       >
@@ -2864,7 +2854,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 6,
           }
         }
       >
@@ -3208,21 +3198,17 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "alignItems": "center",
           "flexDirection": "row",
           "gap": 7,
+          "marginTop": 10,
+          "paddingBottom": 6,
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 20,
-          }
-        }
-      />
       <Text
         style={
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -3240,6 +3226,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           [
             {
               "flex": 1,
+              "textAlign": "center",
             },
             {
               "color": "#8A9099",
@@ -3255,60 +3242,56 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "width": 22,
           }
         }
-      >
-        <Text
-          style={
+      />
+      <Text
+        style={
+          [
+            {
+              "textAlign": "right",
+              "width": 38,
+            },
             {
               "color": "#8A9099",
               "fontSize": 11,
               "fontWeight": "400",
               "letterSpacing": 0.04,
-            }
-          }
-        >
-          Log
-        </Text>
-      </View>
+            },
+          ]
+        }
+      >
+        Log
+      </Text>
     </View>
     <View
       style={
         {
           "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
           "flexDirection": "row",
           "gap": 7,
+          "paddingVertical": 6,
         }
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          [
-            {
-              "width": 20,
-            },
-            {
-              "color": "#6B7076",
-              "fontSize": 15,
-            },
-          ]
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
@@ -3317,8 +3300,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 15,
-              "fontWeight": "400",
+              "fontSize": 17,
             }
           }
         >
@@ -3329,53 +3311,53 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           [
             {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
               "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
             },
             {
-              "height": 34,
-              "justifyContent": "center",
-              "paddingHorizontal": 7,
+              "borderColor": "transparent",
             },
           ]
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "baseline",
-              "flexDirection": "row",
-              "gap": 6,
+              "color": "#F5F5F4",
+              "fontSize": 17,
             }
           }
         >
-          <Text
-            style={
-              {
-                "color": "#F5F5F4",
-                "fontSize": 15,
-                "fontWeight": "400",
-              }
-            }
-          >
-            10
-          </Text>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 13,
-              }
-            }
-          >
-            ✓
-          </Text>
-        </View>
+          10
+        </Text>
       </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            {
+              "color": "#C9CDD2",
+            },
+          ]
+        }
+      >
+        ✓
+      </Text>
       <View
         style={
           {
-            "alignItems": "center",
-            "width": 34,
+            "alignItems": "flex-end",
+            "width": 38,
           }
         }
       >
@@ -3391,7 +3373,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -3477,7 +3458,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       style={
         {
           "color": "#8A9099",
-          "fontSize": 13,
+          "fontSize": 12,
+          "paddingBottom": 7,
+          "paddingTop": 10,
         }
       }
     >

@@ -88,6 +88,9 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
     showGroupChip: true,
     onOpenHistory: jest.fn(),
     onOpenMenu: jest.fn(),
+    isSaving: false,
+    onLogSet: jest.fn(),
+    onUnlogSet: jest.fn(),
     ...overrides,
   };
 }
@@ -171,6 +174,13 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.getByText('Skipped')).toBeTruthy();
   });
 
+  test('a skipped exercise with nothing logged shows only the Skipped note, no column header', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: SKIPPED_NOTHING_LOGGED })} />);
+
+    expect(screen.getByText('Skipped')).toBeTruthy();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
   test('a card that is not skipped is not dimmed and has no Skipped row', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
@@ -189,26 +199,30 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.queryByTestId('set-row-1')).toBeNull();
   });
 
-  test('a logged row shows its values and target indicator', () => {
-    render(
-      <WorkoutExerciseCard
-        {...makeProps({ exercise: makeExercise({ rows: [loggedRow(1, 60, 11)] }) })}
-      />,
-    );
+  test('live rows are editable and hand the set number to the log and un-log handlers', () => {
+    const onLogSet = jest.fn();
+    const onUnlogSet = jest.fn();
+    render(<WorkoutExerciseCard {...makeProps({ onLogSet, onUnlogSet })} />);
 
-    expect(screen.getByText('60')).toBeTruthy();
-    expect(screen.getByText('11')).toBeTruthy();
-    expect(screen.getByText('+1')).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText('Set 2 reps'), '9');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 2' }));
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Set 1 logged' }));
+
+    expect(onLogSet).toHaveBeenCalledWith(2, { weight: 62.5, reps: 9 });
+    expect(onUnlogSet).toHaveBeenCalledWith(1);
   });
 
-  test('an unlogged row shows the suggested weight and the target reps as a placeholder', () => {
-    render(
-      <WorkoutExerciseCard
-        {...makeProps({ exercise: makeExercise({ rows: [unloggedRow(1)] }) })}
-      />,
-    );
+  test('read-only rows have nothing to type or press', () => {
+    render(<WorkoutExerciseCard {...makeProps({ mode: 'readonly' })} />);
 
-    expect(screen.getByText('62.5')).toBeTruthy();
-    expect(screen.getByText('10')).toBeTruthy();
+    expect(screen.queryByLabelText('Set 2 reps')).toBeNull();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+
+  test("a skipped exercise's rows stay read-only in live mode — unskip first", () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: SKIPPED_PARTLY_LOGGED })} />);
+
+    expect(screen.getByTestId('set-row-1')).toBeTruthy();
+    expect(screen.queryByRole('checkbox')).toBeNull();
   });
 });

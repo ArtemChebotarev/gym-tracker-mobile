@@ -131,7 +131,12 @@ describe('logSet', () => {
 
     const result = await logSet(row(1), { weight: 60, reps: 10 }, workout, FIRST_SET_AT);
 
-    expect(result).toEqual({ kind: 'conflict', inProgressSessionId: 'session-w1-d2' });
+    expect(result).toEqual({
+      kind: 'conflict',
+      inProgressSessionId: 'session-w1-d2',
+      weekNumber: 1,
+      dayNumber: 2,
+    });
     await expect(workout.repos.setLogRepo.listBySessionId(session.id)).resolves.toEqual([]);
     await expect(workout.repos.sessionRepo.getById(session.id)).resolves.toEqual(session);
   });

@@ -524,6 +524,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -531,6 +532,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View
@@ -549,8 +551,8 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                     "borderRadius": 20,
                     "flexDirection": "row",
                     "gap": 6,
-                    "paddingHorizontal": 7,
-                    "paddingVertical": 6,
+                    "paddingHorizontal": 10,
+                    "paddingVertical": 3,
                   },
                   {
                     "backgroundColor": "#292116",
@@ -577,7 +579,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                 style={
                   [
                     {
-                      "fontSize": 10,
+                      "fontSize": 11,
                       "fontWeight": "400",
                     },
                     {
@@ -597,9 +599,9 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                     "borderColor": "#2A2D31",
                     "borderRadius": 10,
                     "borderWidth": 1,
-                    "gap": 10,
+                    "paddingBottom": 6,
                     "paddingHorizontal": 16,
-                    "paddingVertical": 10,
+                    "paddingTop": 10,
                   },
                   false,
                 ]
@@ -611,7 +613,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                   {
                     "alignItems": "flex-start",
                     "flexDirection": "row",
-                    "gap": 7,
+                    "gap": 6,
                   }
                 }
               >
@@ -619,7 +621,6 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                   style={
                     {
                       "flex": 1,
-                      "gap": 3,
                     }
                   }
                 >
@@ -640,7 +641,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 7,
+                      "gap": 6,
                     }
                   }
                 >
@@ -839,78 +840,6 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                       </RNSVGGroup>
                     </RNSVGSvgView>
                   </View>
-                </View>
-              </View>
-              <View
-                style={
-                  {
-                    "alignItems": "center",
-                    "flexDirection": "row",
-                    "gap": 7,
-                  }
-                }
-              >
-                <View
-                  style={
-                    {
-                      "width": 20,
-                    }
-                  }
-                />
-                <Text
-                  style={
-                    [
-                      {
-                        "flex": 1,
-                      },
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      },
-                    ]
-                  }
-                >
-                  Weight, kg
-                </Text>
-                <Text
-                  style={
-                    [
-                      {
-                        "flex": 1,
-                      },
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      },
-                    ]
-                  }
-                >
-                  Reps
-                </Text>
-                <View
-                  style={
-                    {
-                      "alignItems": "center",
-                      "width": 34,
-                    }
-                  }
-                >
-                  <Text
-                    style={
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      }
-                    }
-                  >
-                    Log
-                  </Text>
                 </View>
               </View>
             </View>
@@ -1359,6 +1288,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -1366,6 +1296,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View
@@ -1384,8 +1315,8 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                     "borderRadius": 20,
                     "flexDirection": "row",
                     "gap": 6,
-                    "paddingHorizontal": 7,
-                    "paddingVertical": 6,
+                    "paddingHorizontal": 10,
+                    "paddingVertical": 3,
                   },
                   {
                     "backgroundColor": "#292116",
@@ -1412,7 +1343,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                 style={
                   [
                     {
-                      "fontSize": 10,
+                      "fontSize": 11,
                       "fontWeight": "400",
                     },
                     {
@@ -1432,9 +1363,9 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                     "borderColor": "#2A2D31",
                     "borderRadius": 10,
                     "borderWidth": 1,
-                    "gap": 10,
+                    "paddingBottom": 6,
                     "paddingHorizontal": 16,
-                    "paddingVertical": 10,
+                    "paddingTop": 10,
                   },
                   false,
                 ]
@@ -1446,7 +1377,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                   {
                     "alignItems": "flex-start",
                     "flexDirection": "row",
-                    "gap": 7,
+                    "gap": 6,
                   }
                 }
               >
@@ -1454,7 +1385,6 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                   style={
                     {
                       "flex": 1,
-                      "gap": 3,
                     }
                   }
                 >
@@ -1475,7 +1405,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 7,
+                      "gap": 6,
                     }
                   }
                 >
@@ -1811,78 +1741,6 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                       </RNSVGGroup>
                     </RNSVGSvgView>
                   </View>
-                </View>
-              </View>
-              <View
-                style={
-                  {
-                    "alignItems": "center",
-                    "flexDirection": "row",
-                    "gap": 7,
-                  }
-                }
-              >
-                <View
-                  style={
-                    {
-                      "width": 20,
-                    }
-                  }
-                />
-                <Text
-                  style={
-                    [
-                      {
-                        "flex": 1,
-                      },
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      },
-                    ]
-                  }
-                >
-                  Weight, kg
-                </Text>
-                <Text
-                  style={
-                    [
-                      {
-                        "flex": 1,
-                      },
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      },
-                    ]
-                  }
-                >
-                  Reps
-                </Text>
-                <View
-                  style={
-                    {
-                      "alignItems": "center",
-                      "width": 34,
-                    }
-                  }
-                >
-                  <Text
-                    style={
-                      {
-                        "color": "#8A9099",
-                        "fontSize": 11,
-                        "fontWeight": "400",
-                        "letterSpacing": 0.04,
-                      }
-                    }
-                  >
-                    Log
-                  </Text>
                 </View>
               </View>
             </View>
@@ -2331,6 +2189,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -2338,6 +2197,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View
@@ -2356,8 +2216,8 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                     "borderRadius": 20,
                     "flexDirection": "row",
                     "gap": 6,
-                    "paddingHorizontal": 7,
-                    "paddingVertical": 6,
+                    "paddingHorizontal": 10,
+                    "paddingVertical": 3,
                   },
                   {
                     "backgroundColor": "#292116",
@@ -2384,7 +2244,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                 style={
                   [
                     {
-                      "fontSize": 10,
+                      "fontSize": 11,
                       "fontWeight": "400",
                     },
                     {
@@ -2404,9 +2264,9 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                     "borderColor": "#2A2D31",
                     "borderRadius": 10,
                     "borderWidth": 1,
-                    "gap": 10,
+                    "paddingBottom": 6,
                     "paddingHorizontal": 16,
-                    "paddingVertical": 10,
+                    "paddingTop": 10,
                   },
                   false,
                 ]
@@ -2418,7 +2278,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                   {
                     "alignItems": "flex-start",
                     "flexDirection": "row",
-                    "gap": 7,
+                    "gap": 6,
                   }
                 }
               >
@@ -2426,7 +2286,6 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                   style={
                     {
                       "flex": 1,
-                      "gap": 3,
                     }
                   }
                 >
@@ -2447,7 +2306,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 7,
+                      "gap": 6,
                     }
                   }
                 >
@@ -2618,17 +2477,19 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                     "borderWidth": 1,
                     "flexDirection": "row",
                     "gap": 7,
+                    "marginBottom": 7,
+                    "marginTop": 10,
                     "paddingHorizontal": 10,
-                    "paddingVertical": 7,
+                    "paddingVertical": 10,
                   }
                 }
               >
                 <RNSVGSvgView
                   align="xMidYMid"
-                  bbHeight={16}
-                  bbWidth={16}
+                  bbHeight={15}
+                  bbWidth={15}
                   focusable={false}
-                  height={16}
+                  height={15}
                   meetOrSlice={0}
                   minX={0}
                   minY={0}
@@ -2640,14 +2501,14 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                       },
                       {
                         "flex": 0,
-                        "height": 16,
-                        "width": 16,
+                        "height": 15,
+                        "width": 15,
                       },
                     ]
                   }
                   vbHeight={24}
                   vbWidth={24}
-                  width={16}
+                  width={15}
                 >
                   <RNSVGGroup
                     fill={
@@ -2709,8 +2570,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                   style={
                     {
                       "color": "#8A9099",
-                      "fontSize": 13,
-                      "fontWeight": "400",
+                      "fontSize": 12,
                     }
                   }
                 >
@@ -2723,8 +2583,8 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
             style={
               {
                 "color": "#6B7076",
-                "fontSize": 13,
-                "fontWeight": "400",
+                "fontSize": 12,
+                "paddingTop": 7,
                 "textAlign": "center",
               }
             }

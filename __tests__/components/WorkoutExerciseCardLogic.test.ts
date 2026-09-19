@@ -1,11 +1,4 @@
-import {
-  exerciseCardView,
-  formatIndicator,
-  formatRir,
-  formatRowWeight,
-  repsPlaceholder,
-  showsGroupChip,
-} from '@components/WorkoutExerciseCardLogic';
+import { exerciseCardView, formatRir, showsGroupChip } from '@components/WorkoutExerciseCardLogic';
 
 describe('exerciseCardView', () => {
   test('live: the menu and the RIR badge, set rows, no plate', () => {
@@ -93,34 +86,5 @@ describe('formatRir', () => {
   test('reads `N RIR`', () => {
     expect(formatRir(2)).toBe('2 RIR');
     expect(formatRir(0)).toBe('0 RIR');
-  });
-});
-
-describe('formatRowWeight', () => {
-  test('a plain number, no unit', () => {
-    expect(formatRowWeight(60)).toBe('60');
-    expect(formatRowWeight(62.5)).toBe('62.5');
-  });
-});
-
-describe('repsPlaceholder', () => {
-  test('the target reps when the set has them', () => {
-    expect(repsPlaceholder({ targetReps: 10 }, 2)).toBe('10');
-  });
-
-  test("the exercise's target RIR when the set has no target reps", () => {
-    expect(repsPlaceholder({}, 3)).toBe('3 RIR');
-  });
-
-  test('a dash with neither', () => {
-    expect(repsPlaceholder({}, undefined)).toBe('–');
-  });
-});
-
-describe('formatIndicator', () => {
-  test('✓ on target, +N over, −N under', () => {
-    expect(formatIndicator({ kind: 'hit' })).toBe('✓');
-    expect(formatIndicator({ kind: 'over', diff: 2 })).toBe('+2');
-    expect(formatIndicator({ kind: 'under', diff: 1 })).toBe('−1');
   });
 });

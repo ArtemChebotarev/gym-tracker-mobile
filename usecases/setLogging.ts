@@ -19,8 +19,11 @@ export type SetRowRef = SessionExerciseRef & { setNumber: number };
 
 export type LogSetResult =
   | { kind: 'logged'; setLog: SetLog; sessionExercise: SessionExercise; session: Session }
-  /** Another session is `in_progress` — nothing was written; the screen offers to open it. */
-  | { kind: 'conflict'; inProgressSessionId: string };
+  /**
+   * Another session is `in_progress` — nothing was written; the screen names it (`Finish Week W Day
+   * D first`) and offers to open it.
+   */
+  | { kind: 'conflict'; inProgressSessionId: string; weekNumber: number; dayNumber: number };
 
 export type UnlogSetResult = { sessionExercise: SessionExercise };
 
@@ -71,7 +74,8 @@ async function syncStatus(
  * currently belongs to, `completedAt = now`. No actual RIR is recorded. Logging the last open row
  * marks the exercise `completed`, and the first set of a `planned` session starts it (044).
  *
- * If another session is `in_progress`, nothing is written and the result names it. Throws — also
+ * If another session is `in_progress`, nothing is written and the result names it, with its week
+ * and day for the alert. Throws — also
  * writing nothing — if weight or reps is missing or invalid, the row is already logged (un-log it
  * first: that's the only way to correct a set), or `openSetRow`'s checks fail.
  */
@@ -92,7 +96,16 @@ export async function logSet(
 
     const start = await startSessionOnFirstSet(ref.sessionId, repos, now);
     if (start.kind === 'conflict') {
-      return start;
+      const inProgress = await repos.sessionRepo.getById(start.inProgressSessionId);
+      if (!inProgress) {
+        throw new NotFoundError(`Session "${start.inProgressSessionId}" does not exist.`);
+      }
+      return {
+        kind: 'conflict',
+        inProgressSessionId: inProgress.id,
+        weekNumber: inProgress.weekNumber,
+        dayNumber: inProgress.dayNumber,
+      };
     }
 
     const setLog = await repos.setLogRepo.create({

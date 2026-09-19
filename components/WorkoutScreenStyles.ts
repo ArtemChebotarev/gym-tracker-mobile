@@ -8,6 +8,7 @@ import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 // "Шапка"), sized to sit inside the `type/screen-title` line.
 const COMPLETED_CHECK_SIZE = 22;
 export const COMPLETED_CHECK_ICON_SIZE = 14;
+const UNLOCKS_FONT_SIZE = 12;
 
 export const styles = StyleSheet.create({
   root: {
@@ -36,9 +37,9 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/row'],
   },
   unlocksCaption: {
+    paddingTop: SPACING['space/gap'],
     textAlign: 'center',
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: UNLOCKS_FONT_SIZE,
     color: COLORS['text/faint'],
   },
 });

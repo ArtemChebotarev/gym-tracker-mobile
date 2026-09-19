@@ -7,6 +7,7 @@ import { buildMockWorkout } from '@domain/workoutMocks';
 import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import type { WorkoutStore } from '@repositories/workout';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 
 import { appStore } from './appStore';
@@ -17,6 +18,9 @@ export const workoutSessionDeps: WorkoutSessionDeps = {
   sessionTreeRepo: new InMemorySessionTreeRepository(appStore),
   sessionRepo: new InMemorySessionRepository(appStore),
 };
+
+/** The workout store the workout mutations (set logging, 093) write through. */
+export const workoutStore: WorkoutStore = createInMemoryWorkoutStore(appStore);
 
 let seeded: Promise<void> | null = null;
 
@@ -31,7 +35,7 @@ export function ensureWorkoutMocksSeeded(): Promise<void> {
   if (!seeded) {
     seeded = (async () => {
       await Promise.all([ensureExerciseCatalogSeeded(), ensureMesocyclesSeeded()]);
-      const { repos } = createInMemoryWorkoutStore(appStore);
+      const { repos } = workoutStore;
       const mock = buildMockWorkout(new Date());
       const [first] = mock.sessions;
       if (first && (await repos.sessionRepo.getById(first.id))) {

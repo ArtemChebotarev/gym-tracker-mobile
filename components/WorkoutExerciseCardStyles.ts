@@ -1,20 +1,25 @@
 // Styles behind components/WorkoutExerciseCard.tsx — see the code-style skill.
+//
+// An exercise is an outlined, rounded `surface/card` card inside the screen padding, with the group
+// chip above it. The 08.7 mockup (08.7-workout-session.html) draws full-width bands instead;
+// Artem's review kept the cards and took only the mockup's centered set table.
 
 import { StyleSheet } from 'react-native';
 
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
-// No tokens for these — 08.7 sizes them directly: the equipment line is `text/faint 12`, the Log box
-// is a 34pt square, the group chip's dot is 6pt, and a skipped card sits at 50% opacity.
-const EQUIPMENT_FONT_SIZE = 12;
-const LOG_BOX_SIZE = 34;
+import {
+  INDICATOR_WIDTH,
+  LOG_COLUMN_WIDTH,
+  SMALL_FONT_SIZE,
+} from './WorkoutSetRowStyles';
+
+// No tokens for these — 08.7 sizes them directly: the group chip's dot is 6pt, a skipped card sits
+// at 50% opacity.
 const GROUP_DOT_SIZE = 6;
 const SKIPPED_OPACITY = 0.5;
-const CARD_BORDER_WIDTH = 1;
-// The set number column — wide enough for two digits.
-const SET_NUMBER_WIDTH = 20;
-export const LOG_CHECK_ICON_SIZE = 16;
-export const INFO_ICON_SIZE = 16;
+const BORDER_WIDTH = 1;
+export const INFO_ICON_SIZE = 15;
 
 export const styles = StyleSheet.create({
   root: {
@@ -26,8 +31,8 @@ export const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     gap: SPACING['space/gap-tight'],
     borderRadius: RADII['radius/pill'],
-    paddingHorizontal: SPACING['space/gap'],
-    paddingVertical: SPACING['space/gap-tight'],
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/gap-tight'] / 2,
   },
   groupDot: {
     width: GROUP_DOT_SIZE,
@@ -35,17 +40,17 @@ export const styles = StyleSheet.create({
     borderRadius: GROUP_DOT_SIZE / 2,
   },
   groupLabel: {
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
-    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
   },
   card: {
-    gap: SPACING['space/row'],
     backgroundColor: COLORS['surface/card'],
-    borderWidth: CARD_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTH,
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/control'],
     paddingHorizontal: SPACING['space/sheet'],
-    paddingVertical: SPACING['space/row'],
+    paddingTop: SPACING['space/row'],
+    paddingBottom: SPACING['space/gap-tight'],
   },
   skipped: {
     opacity: SKIPPED_OPACITY,
@@ -53,11 +58,10 @@ export const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: SPACING['space/gap'],
+    gap: SPACING['space/gap-tight'],
   },
   titleBlock: {
     flex: 1,
-    gap: SPACING['space/gap-tight'] / 2,
   },
   name: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,
@@ -65,29 +69,33 @@ export const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   equipment: {
-    fontSize: EQUIPMENT_FONT_SIZE,
+    fontSize: SMALL_FONT_SIZE,
     color: COLORS['text/faint'],
   },
   titleActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING['space/gap'],
+    gap: SPACING['space/gap-tight'],
   },
-  // Column header and set rows share one grid: number · Weight · Reps · Log.
-  row: {
+  // The column header, on the set rows' grid (WorkoutSetRowStyles.ts): Weight · Reps · indicator ·
+  // Log, centered, with Log flush right.
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
-  },
-  setNumberColumn: {
-    width: SET_NUMBER_WIDTH,
+    marginTop: SPACING['space/row'],
+    paddingBottom: SPACING['space/gap-tight'],
   },
   valueColumn: {
     flex: 1,
+    textAlign: 'center',
+  },
+  indicatorColumn: {
+    width: INDICATOR_WIDTH,
   },
   logColumn: {
-    width: LOG_BOX_SIZE,
-    alignItems: 'center',
+    width: LOG_COLUMN_WIDTH,
+    textAlign: 'right',
   },
   // `type/label` without its uppercase transform — the header stays `Weight, kg`, not `WEIGHT, KG`.
   columnLabel: {
@@ -96,76 +104,27 @@ export const styles = StyleSheet.create({
     letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
     color: COLORS['text/muted'],
   },
-  setNumber: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    color: COLORS['text/faint'],
-  },
-  field: {
-    height: LOG_BOX_SIZE,
-    justifyContent: 'center',
-    borderWidth: CARD_BORDER_WIDTH,
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
-    paddingHorizontal: SPACING['space/gap'],
-  },
-  loggedValue: {
-    height: LOG_BOX_SIZE,
-    justifyContent: 'center',
-    paddingHorizontal: SPACING['space/gap'],
-  },
-  value: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    fontWeight: TYPOGRAPHY['type/value'].fontWeight,
-    color: COLORS['text/primary'],
-  },
-  placeholder: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    fontWeight: TYPOGRAPHY['type/value'].fontWeight,
-    color: COLORS['text/faint'],
-  },
-  repsValue: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: SPACING['space/gap-tight'],
-  },
-  indicator: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    color: COLORS['text/muted'],
-  },
-  logBox: {
-    width: LOG_BOX_SIZE,
-    height: LOG_BOX_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: CARD_BORDER_WIDTH,
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
-  },
-  logBoxNext: {
-    borderColor: COLORS.accent,
-  },
-  logBoxLogged: {
-    backgroundColor: COLORS.accent,
-    borderColor: COLORS.accent,
-  },
-  skippedRow: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
+  skippedNote: {
+    paddingTop: SPACING['space/row'],
+    paddingBottom: SPACING['space/gap'],
+    fontSize: SMALL_FONT_SIZE,
     color: COLORS['text/muted'],
   },
   notProgrammed: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
+    marginTop: SPACING['space/row'],
+    marginBottom: SPACING['space/gap'],
     backgroundColor: COLORS['surface/page'],
-    borderWidth: CARD_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTH,
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/gap'],
+    paddingVertical: SPACING['space/row'],
   },
   notProgrammedText: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: SMALL_FONT_SIZE,
     color: COLORS['text/muted'],
   },
 });
