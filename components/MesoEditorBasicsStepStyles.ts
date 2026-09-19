@@ -7,16 +7,12 @@ import { StyleSheet } from 'react-native';
 
 import { SPACING } from '@design/tokens';
 
-// Mockup (01-new-meso-basics.html): .content's 4px top padding. No token exists at this size —
-// same exception ExerciseFormSheetStyles.ts's FIELDS_MIN_HEIGHT and
-// ExerciseFiltersSheetStyles.ts's BORDER_WIDTH/DOT_SIZE already take.
-const CONTENT_PADDING_TOP = 4;
-
 export const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: SPACING['space/screen'],
-    paddingTop: CONTENT_PADDING_TOP,
+    // Mockup (01-new-meso-basics.html): .content's 4px top padding.
+    paddingTop: SPACING['space/xs'],
   },
   section: {
     marginBottom: SPACING['space/section'],

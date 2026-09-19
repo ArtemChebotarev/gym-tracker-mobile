@@ -5,7 +5,7 @@
 // since that part genuinely differs between an editable TextInput and a static value/placeholder.
 
 import { StyleSheet } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
 export const fieldStyles = StyleSheet.create({
   label: {
@@ -17,7 +17,7 @@ export const fieldStyles = StyleSheet.create({
     marginBottom: SPACING['space/gap-tight'],
   },
   box: {
-    borderWidth: 1,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     backgroundColor: COLORS['surface/card'],

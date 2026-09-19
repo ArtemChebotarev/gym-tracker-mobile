@@ -7,18 +7,13 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { square } from '@design/shapes';
 
-// No tokens for these — the 08.7 mockup sizes them directly.
-export const INDICATOR_WIDTH = 22;
-export const LOG_COLUMN_WIDTH = 38;
-const LOG_BOX_SIZE = 34;
-const FIELD_HEIGHT = 40;
-const FIELD_FONT_SIZE = 17;
-/** The small secondary text of the workout screen: the indicator, equipment, notes. */
-export const SMALL_FONT_SIZE = 12;
-export const LOG_CHECK_ICON_SIZE = 16;
-const BORDER_WIDTH = 1;
+// The small secondary text of the workout screen (the indicator, equipment, notes) is `type/meta`;
+// the column widths are shared with the card's header row through `SIZES`.
+const META_FONT_SIZE = TYPOGRAPHY['type/meta'].fontSize;
+const VALUE_FONT_SIZE = TYPOGRAPHY['type/set-value'].fontSize;
 
 export const styles = StyleSheet.create({
   row: {
@@ -26,17 +21,17 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
-    borderTopWidth: BORDER_WIDTH,
+    borderTopWidth: BORDER_WIDTHS['border/default'],
     borderTopColor: COLORS['border/divider-subtle'],
   },
   // Weight and Reps: the field frame, also kept (without fill or outline) for a logged value so
   // the row doesn't jump when a set is logged.
   field: {
     flex: 1,
-    height: FIELD_HEIGHT,
+    height: SIZES['size/cell'],
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
   },
@@ -53,15 +48,15 @@ export const styles = StyleSheet.create({
   },
   input: {
     textAlign: 'center',
-    fontSize: FIELD_FONT_SIZE,
+    fontSize: VALUE_FONT_SIZE,
     color: COLORS['text/primary'],
   },
   value: {
-    fontSize: FIELD_FONT_SIZE,
+    fontSize: VALUE_FONT_SIZE,
     color: COLORS['text/primary'],
   },
   placeholder: {
-    fontSize: FIELD_FONT_SIZE,
+    fontSize: VALUE_FONT_SIZE,
     color: COLORS['text/disabled'],
   },
   // `N RIR` doesn't fit at the value size.
@@ -72,18 +67,18 @@ export const styles = StyleSheet.create({
   // lines up with the logged ones around it.
   skippedValues: {
     flex: 2,
-    height: FIELD_HEIGHT,
+    height: SIZES['size/cell'],
     alignItems: 'center',
     justifyContent: 'center',
   },
   skippedLabel: {
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/muted'],
   },
   indicator: {
-    width: INDICATOR_WIDTH,
+    width: SIZES['size/indicator-column'],
     textAlign: 'center',
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/muted'],
   },
   // On target or over it reads a step brighter than under it — still neutral text (08.7).
@@ -91,15 +86,14 @@ export const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   logColumn: {
-    width: LOG_COLUMN_WIDTH,
+    width: SIZES['size/log-column'],
     alignItems: 'flex-end',
   },
   logBox: {
-    width: LOG_BOX_SIZE,
-    height: LOG_BOX_SIZE,
+    ...square(SIZES['size/log-box']),
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
   },
@@ -111,7 +105,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.accent,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
 });
 

@@ -81,14 +81,26 @@ module.exports = defineConfig([
   {
     // app/ (screens) and components/ (screen-level components kept out of app/ only because
     // Expo Router treats every file directly under app/ as a route — see components/README.md)
-    // must go through usecases, never storage/ directly, and must never set a color or size
-    // themselves — see 08.0 · Design SDK, "Только токены".
+    // must go through usecases, never storage/ directly.
     files: ['app/**/*.{js,jsx,ts,tsx}', 'components/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
+    },
+  },
+  {
+    // Nothing that renders UI sets a color, size or opacity itself — screens, screen-level
+    // components, and the design system's own components and icons alike. Only design/tokens.ts
+    // holds the literal values (08.0 · Design SDK, "Только токены"; task 100).
+    files: [
+      'app/**/*.{js,jsx,ts,tsx}',
+      'components/**/*.{js,jsx,ts,tsx}',
+      'design/components/**/*.{js,jsx,ts,tsx}',
+      'design/icons/**/*.{js,jsx,ts,tsx}',
+    ],
     plugins: {
       design: { rules: { 'no-hardcoded-design-values': noHardcodedDesignValues } },
     },
     rules: {
-      'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
       'design/no-hardcoded-design-values': 'error',
     },
   },

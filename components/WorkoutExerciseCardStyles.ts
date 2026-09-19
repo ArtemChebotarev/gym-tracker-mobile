@@ -6,17 +6,11 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { circle } from '@design/shapes';
 
-import { INDICATOR_WIDTH, LOG_COLUMN_WIDTH, SMALL_FONT_SIZE } from './WorkoutSetRowStyles';
-
-// No tokens for these — 08.7 sizes them directly: the group chip's dot is 6pt, a skipped card sits
-// at 50% opacity.
-const GROUP_DOT_SIZE = 6;
-const SKIPPED_OPACITY = 0.5;
-const BORDER_WIDTH = 1;
-export const INFO_ICON_SIZE = 15;
-export const WEIGHT_HINT_ICON_SIZE = 15;
+// The small secondary text of the workout screen — same as the set rows (WorkoutSetRowStyles.ts).
+const META_FONT_SIZE = TYPOGRAPHY['type/meta'].fontSize;
 
 export const styles = StyleSheet.create({
   root: {
@@ -29,12 +23,10 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/gap-tight'],
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/gap-tight'] / 2,
+    paddingVertical: SPACING['space/chip-y'],
   },
   groupDot: {
-    width: GROUP_DOT_SIZE,
-    height: GROUP_DOT_SIZE,
-    borderRadius: GROUP_DOT_SIZE / 2,
+    ...circle(SIZES['size/dot']),
   },
   groupLabel: {
     fontSize: TYPOGRAPHY['type/label'].fontSize,
@@ -42,7 +34,7 @@ export const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS['surface/card'],
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/control'],
     paddingHorizontal: SPACING['space/sheet'],
@@ -50,7 +42,7 @@ export const styles = StyleSheet.create({
     paddingBottom: SPACING['space/gap-tight'],
   },
   skipped: {
-    opacity: SKIPPED_OPACITY,
+    opacity: OPACITY['opacity/dimmed'],
   },
   titleRow: {
     flexDirection: 'row',
@@ -66,7 +58,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   equipment: {
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/faint'],
   },
   titleActions: {
@@ -88,10 +80,10 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   indicatorColumn: {
-    width: INDICATOR_WIDTH,
+    width: SIZES['size/indicator-column'],
   },
   logColumn: {
-    width: LOG_COLUMN_WIDTH,
+    width: SIZES['size/log-column'],
     textAlign: 'right',
   },
   // `type/label` without its uppercase transform — the header stays `Weight, kg`, not `WEIGHT, KG`.
@@ -104,7 +96,7 @@ export const styles = StyleSheet.create({
   skippedNote: {
     paddingTop: SPACING['space/row'],
     paddingBottom: SPACING['space/gap'],
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/muted'],
   },
   weightHint: {
@@ -115,7 +107,7 @@ export const styles = StyleSheet.create({
   },
   weightHintText: {
     flex: 1,
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
   },
   notProgrammed: {
@@ -125,14 +117,14 @@ export const styles = StyleSheet.create({
     marginTop: SPACING['space/row'],
     marginBottom: SPACING['space/gap'],
     backgroundColor: COLORS['surface/page'],
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/row'],
     paddingVertical: SPACING['space/row'],
   },
   notProgrammedText: {
-    fontSize: SMALL_FONT_SIZE,
+    fontSize: META_FONT_SIZE,
     color: COLORS['text/muted'],
   },
 });

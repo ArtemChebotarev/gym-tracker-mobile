@@ -21,7 +21,8 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { circle } from '../shapes';
 import { fieldStyles } from './fieldStyles';
 
 export type StepperVariant = 'field' | 'inline';
@@ -41,14 +42,6 @@ export type StepperProps = {
   variant?: StepperVariant;
 };
 
-// No dedicated size token exists yet — same exception as IconButton's DIAMETER.
-const BUTTON_DIAMETER = 30;
-const INLINE_BUTTON_DIAMETER = 24;
-// Mockup (08.5's stepper-row): asymmetric row padding (10px top/bottom/right, 14px left — the
-// left edge lines up with the field/label above it) and a 2px gap between the value and its
-// caption. No token exists for either.
-const ROW_PADDING_RIGHT = 10;
-const CAPTION_MARGIN_TOP = 2;
 
 export function Stepper({
   label,
@@ -152,11 +145,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS['surface/card'],
-    borderWidth: 1,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingLeft: SPACING['space/screen'],
-    paddingRight: ROW_PADDING_RIGHT,
+    // Mockup (08.5's stepper-row): asymmetric row padding — 10 top/bottom/right, the screen's 14
+    // on the left so the edge lines up with the field/label above it.
+    paddingRight: SPACING['space/row'],
     paddingVertical: SPACING['space/row'],
   },
   value: {
@@ -168,25 +163,23 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
     color: COLORS['text/faint'],
-    marginTop: CAPTION_MARGIN_TOP,
+    marginTop: SPACING['space/xxs'],
   },
   controls: {
     flexDirection: 'row',
     gap: SPACING['space/gap-tight'],
   },
   button: {
-    width: BUTTON_DIAMETER,
-    height: BUTTON_DIAMETER,
-    borderRadius: BUTTON_DIAMETER / 2,
+    ...circle(SIZES['size/icon-button']),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS['surface/control-active'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: OPACITY['opacity/dimmed'],
   },
   glyph: {
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
@@ -212,12 +205,10 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     color: COLORS['text/faint'],
     textAlign: 'center',
-    marginTop: CAPTION_MARGIN_TOP,
+    marginTop: SPACING['space/xxs'],
   },
   buttonInline: {
-    width: INLINE_BUTTON_DIAMETER,
-    height: INLINE_BUTTON_DIAMETER,
-    borderRadius: INLINE_BUTTON_DIAMETER / 2,
+    ...circle(SIZES['size/control-inline']),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS['surface/control-active'],

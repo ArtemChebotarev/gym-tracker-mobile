@@ -3,16 +3,14 @@
 // values outside 0..1 are clamped so a bad ratio never overflows the track.
 
 import { StyleSheet, View } from 'react-native';
-import { COLORS } from '../tokens';
+import { COLORS, SIZES } from '../tokens';
+import { roundedBar } from '../shapes';
 
 export type ProgressBarProps = {
   /** Filled share, 0..1. */
   value: number;
   accessibilityLabel: string;
 };
-
-// No token for this yet — 08.7 specifies the bar as 3px.
-const HEIGHT = 3;
 
 function toPercent(value: number): number {
   return Math.round(Math.min(1, Math.max(0, value)) * 100);
@@ -36,13 +34,12 @@ export function ProgressBar({ value, accessibilityLabel }: ProgressBarProps) {
 
 const styles = StyleSheet.create({
   track: {
-    height: HEIGHT,
-    borderRadius: HEIGHT / 2,
+    ...roundedBar(SIZES['size/progress']),
     backgroundColor: COLORS['border/divider'],
     overflow: 'hidden',
   },
   fill: {
-    height: HEIGHT,
+    height: SIZES['size/progress'],
     backgroundColor: COLORS.accent,
   },
 });

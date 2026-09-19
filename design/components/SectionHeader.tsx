@@ -5,7 +5,8 @@
 // same pattern Chip uses for its static-variant dot — this file has no literal color of its own.
 
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { circle } from '../shapes';
 
 export type SectionHeaderProps = {
   title: string;
@@ -42,9 +43,7 @@ const styles = StyleSheet.create({
     gap: SPACING['space/gap-tight'],
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    ...circle(SIZES['size/dot']),
   },
   title: {
     fontSize: TYPOGRAPHY['type/label'].fontSize,

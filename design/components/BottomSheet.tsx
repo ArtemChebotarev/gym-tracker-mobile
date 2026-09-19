@@ -50,23 +50,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { capsule } from '../shapes';
 
 const DISMISS_DISTANCE = 60;
-// No token exists yet for a modal scrim or the grabber's own pill size — both are
-// implementation-only pixel details, same exception as IconButton's DIAMETER. SCRIM_COLOR is
-// exported so a future overlay/modal component can reuse it instead of hardcoding its own.
-export const SCRIM_COLOR = 'rgba(0, 0, 0, 0.5)';
-const GRABBER_WIDTH = 36;
-const GRABBER_HEIGHT = 4;
-// The subtitle under the title — 12 / `text/faint`, 2pt below it, per the 08.7 mockup's sheets.
-// No typography token sits at 12.
-const SUBTITLE_FONT_SIZE = 12;
-const SUBTITLE_GAP = 2;
-// Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
-// overflowing past the screen — no token for this exists in 08.0 either. `height="fixed"` sheets
-// use the same value as their exact height, so both kinds top out at the same line on screen.
-const MAX_SHEET_HEIGHT = '80%';
 // 'overlay' presentation's own slide, standing in for Modal's native `animationType="slide"`.
 const OVERLAY_ANIMATION_DURATION = 250;
 
@@ -277,25 +264,26 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: SCRIM_COLOR,
+    backgroundColor: COLORS['overlay/scrim'],
   },
   sheet: {
-    maxHeight: MAX_SHEET_HEIGHT,
+    // Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
+    // overflowing past the screen. `height="fixed"` sheets use the same value as their exact
+    // height, so both kinds top out at the same line on screen.
+    maxHeight: SIZES['size/sheet-max'],
     backgroundColor: COLORS['surface/sheet'],
     borderTopLeftRadius: RADII['radius/sheet'],
     borderTopRightRadius: RADII['radius/sheet'],
   },
   sheetFixed: {
-    height: MAX_SHEET_HEIGHT,
+    height: SIZES['size/sheet-max'],
   },
   grabberArea: {
     alignItems: 'center',
     paddingVertical: SPACING['space/gap-tight'],
   },
   grabber: {
-    width: GRABBER_WIDTH,
-    height: GRABBER_HEIGHT,
-    borderRadius: GRABBER_HEIGHT / 2,
+    ...capsule(SIZES['size/grabber-width'], SIZES['size/grabber-height']),
     backgroundColor: COLORS['border/default'],
   },
   header: {
@@ -314,8 +302,8 @@ const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   subtitle: {
-    marginTop: SUBTITLE_GAP,
-    fontSize: SUBTITLE_FONT_SIZE,
+    marginTop: SPACING['space/xxs'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/faint'],
   },
   content: {

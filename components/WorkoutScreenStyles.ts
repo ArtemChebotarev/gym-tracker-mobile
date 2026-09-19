@@ -2,13 +2,8 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
-
-// No tokens for these — the completed check is a small round accent mark next to the title (08.7,
-// "Шапка"), sized to sit inside the `type/screen-title` line.
-const COMPLETED_CHECK_SIZE = 22;
-export const COMPLETED_CHECK_ICON_SIZE = 14;
-const UNLOCKS_FONT_SIZE = 12;
+import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { circle } from '@design/shapes';
 
 export const styles = StyleSheet.create({
   root: {
@@ -20,9 +15,9 @@ export const styles = StyleSheet.create({
     color: COLORS['text/faint'],
   },
   completedCheck: {
-    width: COMPLETED_CHECK_SIZE,
-    height: COMPLETED_CHECK_SIZE,
-    borderRadius: COMPLETED_CHECK_SIZE / 2,
+    // A small round accent mark next to the title (08.7, "Шапка"), sized to sit inside the
+    // `type/screen-title` line.
+    ...circle(SIZES['size/badge']),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.accent,
@@ -42,7 +37,7 @@ export const styles = StyleSheet.create({
   unlocksCaption: {
     paddingTop: SPACING['space/gap'],
     textAlign: 'center',
-    fontSize: UNLOCKS_FONT_SIZE,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/faint'],
   },
 });

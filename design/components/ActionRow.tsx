@@ -11,13 +11,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import type { IconComponent } from '../icons/IconFrame';
-import { COLORS, ICON_SIZES, TYPOGRAPHY } from '../tokens';
-
-// No tokens for these — the 08.7 mockup's `.act` rows size them directly.
-const ROW_PADDING_VERTICAL = 13;
-const ICON_GAP = 12;
-const REASON_FONT_SIZE = 12;
-const DIVIDER_WIDTH = 1;
+import { BORDER_WIDTHS, COLORS, ICON_SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type ActionRowVariant = 'default' | 'danger';
 
@@ -72,9 +66,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: ICON_GAP,
-    paddingVertical: ROW_PADDING_VERTICAL,
-    borderTopWidth: DIVIDER_WIDTH,
+    gap: SPACING['space/md'],
+    paddingVertical: SPACING['space/action-row-y'],
+    borderTopWidth: BORDER_WIDTHS['border/default'],
     borderTopColor: COLORS['border/divider'],
   },
   label: {
@@ -90,7 +84,7 @@ const styles = StyleSheet.create({
     color: COLORS['text/disabled'],
   },
   reason: {
-    fontSize: REASON_FONT_SIZE,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/faint'],
   },
 });

@@ -23,6 +23,17 @@ Styles stay as typed `.ts` files (`StyleSheet.create(...)`), not `.css`. React N
 
 Every root tab screen (Today, Mesocycles, Library, ...) renders through `design/components/RootScreen` for its title and top frame — it owns the safe-area inset, screen padding, and title row so the title lands at the exact same position on every tab (08.0 · Design SDK documents `type/screen-title` as "Заголовок корневого экрана" — singular, one shared treatment). Never hand-roll a root screen's own `SafeAreaView` + title styling.
 
+## Design values: tokens only
+
+No color, size, spacing, radius, border width, opacity or shadow value is written anywhere outside `design/tokens.ts` — not in screens, not in `design/components/*`, not in icons. **That includes a local constant**: `const SUBTITLE_FONT_SIZE = 12;` followed by `fontSize: SUBTITLE_FONT_SIZE` is the same hardcode with a name on it, and the next change to the scale would have to hunt it down file by file. The same goes for arithmetic on a number (`borderRadius: DOT_SIZE / 2`), a component's default (`{ size = 18 }`), an exported number another file imports, and `rgba(...)` strings.
+
+- Reference the token directly: `fontSize: TYPOGRAPHY['type/meta'].fontSize`, `width: SIZES['size/log-box']`, `opacity: OPACITY['opacity/pressed']`, `...SHADOWS['shadow/lifted']`. A local alias *of a token* is fine (`const META = TYPOGRAPHY['type/meta'].fontSize`).
+- Derived geometry goes through `design/shapes.ts` (`circle`, `square`, `roundedBar`, `capsule`) instead of `/ 2` at the call site.
+- **No fitting token? Add one** to `design/tokens.ts` (and to 08.0 · Design SDK in Notion), in the group it belongs to, with a comment saying where it's used. Reuse an existing token when the value *means* the same thing; add a new one when it only happens to be the same number.
+- Not design values, so they stay local: flex ratios, `zIndex`, gesture thresholds, animation durations, step counts, and an icon's drawing geometry on its 24×24 grid. `0` is allowed anywhere.
+
+Lint-enforced by `design/no-hardcoded-design-values` (`eslint-rules/noHardcodedDesignValues.js`) over `app/**`, `components/**`, `design/components/**` and `design/icons/**`. Never silence it with an `eslint-disable` — add the token.
+
 ## Reuse existing models
 
 Reuse existing models, types, classes, and constants instead of recreating them. Before adding a new type or a runtime constant that represents a domain concept, check whether `domain/` (or the relevant sibling layer — `repositories/`, an existing `storage/` adapter, etc.) already defines it, and import that instead of writing a second copy — e.g. a repository that needs every value of a domain enum should reuse a constant exported from the domain module that owns that type, not hand-list the values again. A second hand-written copy of the same values silently drifts from the original the next time it changes. If you deliberately don't reuse an existing model (the shapes only look similar but represent different concepts, reusing it would violate a layer boundary, etc.), say why in the PR summary.

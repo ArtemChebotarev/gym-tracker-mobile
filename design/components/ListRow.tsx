@@ -28,7 +28,8 @@
 // text node (and exact-match lookups) and truncates first while the short suffix stays whole.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { square } from '../shapes';
 import { Badge, type BadgeVariant } from './Badge';
 import { IconButton } from './IconButton';
 
@@ -153,20 +154,14 @@ function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailin
   );
 }
 
-// No token exists yet for a checkbox's own size/corner radius — same exception
-// design/components/IconButton.tsx takes for its DIAMETER.
-const CHECKBOX_SIZE = 20;
-const CHECKBOX_BORDER_WIDTH = 1;
-const CHECKBOX_RADIUS = 4;
-const PILL_BORDER_WIDTH = 1;
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomWidth: 1,
+    borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   row: {
     flexDirection: 'row',
@@ -207,10 +202,9 @@ const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   checkbox: {
-    width: CHECKBOX_SIZE,
-    height: CHECKBOX_SIZE,
-    borderRadius: CHECKBOX_RADIUS,
-    borderWidth: CHECKBOX_BORDER_WIDTH,
+    ...square(SIZES['size/checkbox']),
+    borderRadius: RADII['radius/small'],
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     alignItems: 'center',
     justifyContent: 'center',
@@ -226,7 +220,7 @@ const styles = StyleSheet.create({
   },
   pill: {
     borderRadius: RADII['radius/pill'],
-    borderWidth: PILL_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     paddingHorizontal: SPACING['space/row'],
     paddingVertical: SPACING['space/gap-tight'],
   },

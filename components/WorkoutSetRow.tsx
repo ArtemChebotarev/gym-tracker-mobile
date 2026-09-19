@@ -25,7 +25,7 @@ import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { CheckIcon } from '@design/icons/CheckIcon';
-import { COLORS } from '@design/tokens';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSession';
 
 import {
@@ -37,7 +37,7 @@ import {
   repsPlaceholder,
   resolveSetEntry,
 } from './WorkoutSetRowLogic';
-import { LOG_CHECK_ICON_SIZE, PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
+import { PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
 
 export type WorkoutSetRowProps = {
   row: WorkoutSetRowModel;
@@ -118,11 +118,11 @@ export function WorkoutSetRow({
                 pressed && styles.pressed,
               ]}
             >
-              <CheckIcon size={LOG_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
+              <CheckIcon size={ICON_SIZES['icon/small']} color={COLORS['accent/on']} />
             </Pressable>
           ) : (
             <View style={[styles.logBox, styles.logBoxLogged]}>
-              <CheckIcon size={LOG_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
+              <CheckIcon size={ICON_SIZES['icon/small']} color={COLORS['accent/on']} />
             </View>
           )}
         </View>
