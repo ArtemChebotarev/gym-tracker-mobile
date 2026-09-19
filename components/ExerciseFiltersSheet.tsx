@@ -25,16 +25,12 @@ import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { Toggle } from '@design/components/Toggle';
+import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
-import {
-  applyButtonLabel,
-  muscleGroupChipColors,
-  toggleMuscleGroup,
-  toggleSource,
-} from './ExerciseFiltersSheetLogic';
+import { applyButtonLabel, toggleMuscleGroup, toggleSource } from './ExerciseFiltersSheetLogic';
 import { styles } from './ExerciseFiltersSheetStyles';
 
 // Source has exactly two values (domain/catalog.ts's ExerciseSource), so both buttons are just
@@ -132,7 +128,7 @@ type MuscleGroupChipProps = {
 };
 
 function MuscleGroupChip({ muscleGroup, selected, onPress }: MuscleGroupChipProps) {
-  const colors = muscleGroupChipColors(muscleGroup);
+  const colors = getMuscleGroupChipColors(muscleGroup);
 
   return (
     <Pressable

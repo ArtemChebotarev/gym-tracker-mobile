@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { COLORS } from '@design/tokens';
-import { muscleGroupChipColors } from '@components/ExerciseFiltersSheetLogic';
+import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import {
   ExerciseFiltersSheet,
   type ExerciseFiltersSheetProps,
@@ -76,7 +76,7 @@ describe('ExerciseFiltersSheet', () => {
 
     const backChip = screen.getByRole('button', { name: 'Back' });
     const flatStyle = Object.assign({}, ...backChip.props.style.filter(Boolean));
-    const colors = muscleGroupChipColors('back');
+    const colors = getMuscleGroupChipColors('back');
 
     expect(flatStyle.backgroundColor).toBe(colors.tint);
     expect(flatStyle.borderColor).toBe(colors.border);

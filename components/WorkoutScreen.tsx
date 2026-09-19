@@ -7,8 +7,8 @@
 // check for a completed session only (not pressable), and the grid and `⋯` buttons, which exist in
 // every mode. The progress ratio comes straight from the model (088) — nothing is computed here.
 //
-// The cards are stand-ins that show the exercise name only; tasks 092–094 fill in the real card,
-// its set rows, and Finish workout.
+// The list is one exercise card per exercise (WorkoutExerciseCard, task 092); tasks 093–094 fill in
+// the set row inputs and Finish workout.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
@@ -25,8 +25,10 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-import type { WorkoutSessionModel } from '@usecases/workoutSession';
+import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
+import { WorkoutExerciseCard } from './WorkoutExerciseCard';
+import { showsGroupChip } from './WorkoutExerciseCardLogic';
 import { formatUnlocksCaption, formatWorkoutSubtitle } from './WorkoutScreenLogic';
 import { COMPLETED_CHECK_ICON_SIZE, styles } from './WorkoutScreenStyles';
 
@@ -37,6 +39,10 @@ export type WorkoutScreenProps = {
   onOpenGrid: () => void;
   /** Opens the header menu sheet (08.7, "Лист «Меню шапки»"). */
   onOpenMenu: () => void;
+  /** Opens an exercise's history (06), from its card. */
+  onOpenExerciseHistory: (exercise: WorkoutExercise) => void;
+  /** Opens an exercise's menu sheet (08.7, "Лист «Меню упражнения»"), from its card. Live only. */
+  onOpenExerciseMenu: (exercise: WorkoutExercise) => void;
   /** The way forward when the session couldn't be loaded. */
   fallbackAction: { label: string; onPress: () => void };
 };
@@ -46,6 +52,8 @@ export function WorkoutScreen({
   isPending,
   onOpenGrid,
   onOpenMenu,
+  onOpenExerciseHistory,
+  onOpenExerciseMenu,
   fallbackAction,
 }: WorkoutScreenProps) {
   if (isPending) {
@@ -106,10 +114,15 @@ export function WorkoutScreen({
       >
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
         <ScrollView contentContainerStyle={styles.content}>
-          {model.exercises.map((exercise) => (
-            <View key={exercise.sessionExerciseId} style={styles.exerciseCard}>
-              <Text style={styles.exerciseName}>{exercise.name}</Text>
-            </View>
+          {model.exercises.map((exercise, index) => (
+            <WorkoutExerciseCard
+              key={exercise.sessionExerciseId}
+              exercise={exercise}
+              mode={model.mode}
+              showGroupChip={showsGroupChip(model.exercises, index)}
+              onOpenHistory={() => onOpenExerciseHistory(exercise)}
+              onOpenMenu={() => onOpenExerciseMenu(exercise)}
+            />
           ))}
           {model.unlocksAfter !== undefined && (
             <Text style={styles.unlocksCaption}>{formatUnlocksCaption(model.unlocksAfter)}</Text>

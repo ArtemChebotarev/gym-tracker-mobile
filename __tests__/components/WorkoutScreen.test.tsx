@@ -97,6 +97,8 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     isPending: false,
     onOpenGrid: jest.fn(),
     onOpenMenu: jest.fn(),
+    onOpenExerciseHistory: jest.fn(),
+    onOpenExerciseMenu: jest.fn(),
     fallbackAction: { label: 'Go back', onPress: jest.fn() },
     ...overrides,
   };
@@ -184,6 +186,36 @@ describe('WorkoutScreen list', () => {
 
     const names = screen.getAllByText(/Bench press|Barbell row/).map((node) => node.props.children);
     expect(names).toEqual(['Bench press', 'Barbell row']);
+  });
+
+  test('shows the group chip only where the muscle group changes', () => {
+    const model: WorkoutSessionModel = {
+      ...LIVE,
+      exercises: [
+        makeExercise({ sessionExerciseId: 'a', name: 'Bench press', muscleGroup: 'chest' }),
+        makeExercise({ sessionExerciseId: 'b', name: 'Incline press', muscleGroup: 'chest' }),
+        makeExercise({ sessionExerciseId: 'c', name: 'Barbell row', muscleGroup: 'back' }),
+      ],
+    };
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model })} />);
+
+    expect(screen.getAllByTestId('exercise-group-chip')).toHaveLength(2);
+    expect(screen.getByText('Chest')).toBeTruthy();
+    expect(screen.getByText('Back')).toBeTruthy();
+  });
+
+  test("hands the pressed card's exercise to the history and menu handlers", () => {
+    const onOpenExerciseHistory = jest.fn();
+    const onOpenExerciseMenu = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ onOpenExerciseHistory, onOpenExerciseMenu })} />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Bench press history' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Bench press menu' }));
+
+    expect(onOpenExerciseHistory).toHaveBeenCalledWith(LIVE.exercises[0]);
+    expect(onOpenExerciseMenu).toHaveBeenCalledWith(LIVE.exercises[0]);
   });
 
   test('a preview names the session that unlocks it', () => {

@@ -69,6 +69,31 @@ export function getCategoryTextOnTint(category: MuscleGroupColorCategory): strin
   return withLightness(CATEGORY_COLOR[category], TEXT_ON_TINT_LIGHTNESS);
 }
 
+// The colors of a muscle-group chip — `dot`, `tint` background, `border`, and `text` on the tint —
+// for the Filters sheet's selected option (08.6) and the workout screen's group chip (08.7, "Список
+// упражнений"). No dedicated "border" derivation exists, so the raw category color (the same one
+// the dot uses) doubles as the border. All `undefined` for a group with no category.
+export type MuscleGroupChipColors = {
+  dot: string | undefined;
+  tint: string | undefined;
+  border: string | undefined;
+  text: string | undefined;
+};
+
+export function getMuscleGroupChipColors(muscleGroupId: string): MuscleGroupChipColors {
+  const category = getMuscleGroupCategory(muscleGroupId);
+  if (!category) {
+    return { dot: undefined, tint: undefined, border: undefined, text: undefined };
+  }
+  const color = getCategoryColor(category);
+  return {
+    dot: color,
+    tint: getCategoryTint(category),
+    border: color,
+    text: getCategoryTextOnTint(category),
+  };
+}
+
 // --- color math, private to this module -------------------------------------------------
 
 type Rgb = [number, number, number];

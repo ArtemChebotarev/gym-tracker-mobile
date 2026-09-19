@@ -1,0 +1,90 @@
+// Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
+
+import type { TargetIndicator } from '@domain/execution';
+import type { WorkoutMode } from '@domain/workoutView';
+import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+
+/**
+ * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
+ * plus the exercise's own status:
+ * - live — everything, including `⋯`;
+ * - read-only — no `⋯`;
+ * - skipped (either mode) — the card at 50% opacity, logged rows plus one `Skipped` row;
+ * - preview — no RIR badge, no set rows, the `Not programmed yet` plate instead.
+ * The history button is there in every variant.
+ */
+export type ExerciseCardView = {
+  showMenu: boolean;
+  /** `2 RIR`, or `undefined` when the badge isn't shown. */
+  rirLabel: string | undefined;
+  isSkipped: boolean;
+  /** The column header and set rows — everything but preview. */
+  showSets: boolean;
+  showNotProgrammed: boolean;
+};
+
+export function exerciseCardView(
+  mode: WorkoutMode,
+  exercise: Pick<WorkoutExercise, 'status' | 'targetRir'>,
+): ExerciseCardView {
+  const isPreview = mode === 'preview';
+  return {
+    showMenu: mode === 'live',
+    rirLabel:
+      !isPreview && exercise.targetRir !== undefined ? formatRir(exercise.targetRir) : undefined,
+    isSkipped: !isPreview && exercise.status === 'skipped',
+    showSets: !isPreview,
+    showNotProgrammed: isPreview,
+  };
+}
+
+/** `2 RIR` — the badge, and the reps placeholder of a row with no `targetReps`. */
+export function formatRir(rir: number): string {
+  return `${rir} RIR`;
+}
+
+/**
+ * The group chip sits above a card only when its muscle group differs from the previous card's
+ * (08.7, "Список упражнений") — so the first card always gets one.
+ */
+export function showsGroupChip(
+  exercises: readonly Pick<WorkoutExercise, 'muscleGroup'>[],
+  index: number,
+): boolean {
+  const current = exercises[index];
+  if (current === undefined) {
+    return false;
+  }
+  return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
+}
+
+/** A weight as the row shows it — `62.5`, no unit (the column header says `kg`). */
+export function formatRowWeight(weight: number): string {
+  return String(weight);
+}
+
+/**
+ * An unlogged row's reps placeholder (08.7, "Строка подхода"): `targetReps` when the set has one,
+ * otherwise the exercise's target RIR.
+ */
+export function repsPlaceholder(
+  row: Pick<WorkoutSetRow, 'targetReps'>,
+  targetRir: number | undefined,
+): string {
+  if (row.targetReps !== undefined) {
+    return String(row.targetReps);
+  }
+  return targetRir !== undefined ? formatRir(targetRir) : '–';
+}
+
+/** `✓` hit, `+N` over the target, `−N` under it. */
+export function formatIndicator(indicator: TargetIndicator): string {
+  switch (indicator.kind) {
+    case 'hit':
+      return '✓';
+    case 'over':
+      return `+${indicator.diff}`;
+    case 'under':
+      return `−${indicator.diff}`;
+  }
+}

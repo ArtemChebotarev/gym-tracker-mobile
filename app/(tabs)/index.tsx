@@ -4,8 +4,9 @@
 // (042) and the real pick (099) exist, the current session is the stub in-progress one — see
 // `useTodayWorkoutSession`.
 //
-// The grid and `⋯` sheets are tasks 095 and 096, so until then both buttons explain that they're
-// not available yet rather than doing nothing.
+// The grid and `⋯` sheets are tasks 095 and 096, the exercise menu 097, and exercise history
+// isn't built yet, so until then those buttons explain that they're not available yet rather than
+// doing nothing.
 
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -28,6 +29,8 @@ export default function TodayScreen() {
       isPending={query.isPending}
       onOpenGrid={() => showNotAvailable('The mesocycle overview')}
       onOpenMenu={() => showNotAvailable('The workout menu')}
+      onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
+      onOpenExerciseMenu={() => showNotAvailable('The exercise menu')}
       fallbackAction={{ label: 'Open mesocycles', onPress: () => router.navigate('/mesocycles') }}
     />
   );
