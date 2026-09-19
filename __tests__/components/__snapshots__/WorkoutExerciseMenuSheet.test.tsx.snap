@@ -87,15 +87,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: a skipped exercise — Unsk
           }
         }
       />
-      <RNCSafeAreaView
-        edges={
-          {
-            "bottom": "additive",
-            "left": "off",
-            "right": "off",
-            "top": "off",
-          }
-        }
+      <View
         style={
           [
             {
@@ -103,9 +95,11 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: a skipped exercise — Unsk
               "borderTopLeftRadius": 18,
               "borderTopRightRadius": 18,
               "maxHeight": "80%",
-              "paddingBottom": 16,
             },
             false,
+            {
+              "paddingBottom": 50,
+            },
           ]
         }
         testID="bottom-sheet"
@@ -1139,7 +1133,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: a skipped exercise — Unsk
             </View>
           </View>
         </RCTScrollView>
-      </RNCSafeAreaView>
+      </View>
     </View>
   </View>
 </RNCSafeAreaProvider>
@@ -1232,15 +1226,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: the first exercise with a s
           }
         }
       />
-      <RNCSafeAreaView
-        edges={
-          {
-            "bottom": "additive",
-            "left": "off",
-            "right": "off",
-            "top": "off",
-          }
-        }
+      <View
         style={
           [
             {
@@ -1248,9 +1234,11 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: the first exercise with a s
               "borderTopLeftRadius": 18,
               "borderTopRightRadius": 18,
               "maxHeight": "80%",
-              "paddingBottom": 16,
             },
             false,
+            {
+              "paddingBottom": 50,
+            },
           ]
         }
         testID="bottom-sheet"
@@ -2296,7 +2284,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: the first exercise with a s
             </View>
           </View>
         </RCTScrollView>
-      </RNCSafeAreaView>
+      </View>
     </View>
   </View>
 </RNCSafeAreaProvider>
