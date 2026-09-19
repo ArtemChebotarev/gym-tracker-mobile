@@ -37,6 +37,22 @@ export function repsPlaceholder(
   return targetRir !== undefined ? formatRir(targetRir) : '–';
 }
 
+/**
+ * Whether the Reps placeholder is the `N RIR` fallback — it's set smaller than a number so it fits
+ * the field.
+ */
+export function isRirPlaceholder(
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  targetRir: number | undefined,
+): boolean {
+  return row.targetReps === undefined && row.referenceReps === undefined && targetRir !== undefined;
+}
+
+/** On target or over it reads a step brighter than under it (08.7 mockup) — both neutral text. */
+export function isStrongIndicator(indicator: TargetIndicator): boolean {
+  return indicator.kind !== 'under';
+}
+
 /** `✓` hit, `+N` over the target, `−N` under it. */
 export function formatIndicator(indicator: TargetIndicator): string {
   switch (indicator.kind) {

@@ -174,6 +174,13 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.getByText('Skipped')).toBeTruthy();
   });
 
+  test('a skipped exercise with nothing logged shows only the Skipped note, no column header', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: SKIPPED_NOTHING_LOGGED })} />);
+
+    expect(screen.getByText('Skipped')).toBeTruthy();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
   test('a card that is not skipped is not dimmed and has no Skipped row', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 

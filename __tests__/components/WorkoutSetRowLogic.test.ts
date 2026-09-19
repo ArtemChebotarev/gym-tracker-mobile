@@ -2,6 +2,8 @@ import {
   formatIndicator,
   formatRowWeight,
   initialWeightText,
+  isRirPlaceholder,
+  isStrongIndicator,
   parseReps,
   parseSetEntry,
   parseWeight,
@@ -97,5 +99,22 @@ describe('parseSetEntry', () => {
   test("the domain's rules decide what's valid: 0 kg is fine, 0 reps isn't", () => {
     expect(parseSetEntry('0', '12')).toEqual({ weight: 0, reps: 12 });
     expect(parseSetEntry('60', '0')).toBeNull();
+  });
+});
+
+describe('isRirPlaceholder', () => {
+  test('only when the placeholder falls back to `N RIR`', () => {
+    expect(isRirPlaceholder({}, 2)).toBe(true);
+    expect(isRirPlaceholder({ targetReps: 10 }, 2)).toBe(false);
+    expect(isRirPlaceholder({ referenceReps: 8 }, 8)).toBe(false);
+    expect(isRirPlaceholder({}, undefined)).toBe(false);
+  });
+});
+
+describe('isStrongIndicator', () => {
+  test('on target and over it read brighter than under it', () => {
+    expect(isStrongIndicator({ kind: 'hit' })).toBe(true);
+    expect(isStrongIndicator({ kind: 'over', diff: 1 })).toBe(true);
+    expect(isStrongIndicator({ kind: 'under', diff: 1 })).toBe(false);
   });
 });

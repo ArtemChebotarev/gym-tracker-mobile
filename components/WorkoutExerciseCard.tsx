@@ -3,7 +3,7 @@
 // name, equipment, the `N RIR` chip, the history button, `⋯` in live mode only, the `Weight, kg` ·
 // `Reps` · `Log` column header, and the set rows. Which of these show is `exerciseCardView`'s call
 // (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity, logged rows plus one
-// `Skipped` row), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
+// `Skipped` note — just the note when nothing was logged), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
 //
 // The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
 // skipped — a skipped exercise's rows are read-only until it's unskipped (05).
@@ -11,6 +11,9 @@
 // The RIR is a static `Chip`, not the neutral `Badge` 08.7 names: `Badge` neutral fills with
 // `surface/card`, the card's own background, so on the card it read as bare text. The chip's
 // `border/default` outline keeps it visibly a chip (Artem's review).
+//
+// Laid out after the 08.7 mockup: a full-width band rather than an outlined card, with the group
+// chip above it; see WorkoutExerciseCardStyles.ts.
 //
 // Presentational: the exercise, the screen mode, and the button handlers come in as props.
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
@@ -64,7 +67,7 @@ export function WorkoutExerciseCard({
   const editable = mode === 'live' && !view.isSkipped;
 
   return (
-    <View style={styles.root}>
+    <View>
       {showGroupChip && <GroupChip muscleGroup={exercise.muscleGroup} />}
       <View
         testID={`exercise-card-${exercise.sessionExerciseId}`}
@@ -103,31 +106,31 @@ export function WorkoutExerciseCard({
           </View>
         )}
 
-        {view.showSets && (
-          <>
-            <View style={styles.headerRow}>
-              <View style={styles.setNumberColumn} />
-              <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
-              <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
-              <View style={styles.logColumn}>
-                <Text style={styles.columnLabel}>Log</Text>
-              </View>
-            </View>
-            {exercise.rows.map((row) => (
-              // Keyed by the exercise too: a replaced exercise's rows start fresh from its new
-              // targets instead of keeping what was typed for the old one.
-              <WorkoutSetRow
-                key={`${exercise.exerciseId}-${row.setNumber}`}
-                row={row}
-                targetRir={exercise.targetRir}
-                editable={editable}
-                isSaving={isSaving}
-                onLog={(entry) => onLogSet(row.setNumber, entry)}
-                onUnlog={() => onUnlogSet(row.setNumber)}
-              />
-            ))}
-            {exercise.hasSkippedRows && <Text style={styles.skippedRow}>Skipped</Text>}
-          </>
+        {view.showSets && exercise.rows.length > 0 && (
+          <View style={styles.headerRow}>
+            <View style={styles.setNumberColumn} />
+            <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
+            <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
+            <View style={styles.indicatorColumn} />
+            <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
+          </View>
+        )}
+        {view.showSets &&
+          exercise.rows.map((row) => (
+            // Keyed by the exercise too: a replaced exercise's rows start fresh from its new
+            // targets instead of keeping what was typed for the old one.
+            <WorkoutSetRow
+              key={`${exercise.exerciseId}-${row.setNumber}`}
+              row={row}
+              targetRir={exercise.targetRir}
+              editable={editable}
+              isSaving={isSaving}
+              onLog={(entry) => onLogSet(row.setNumber, entry)}
+              onUnlog={() => onUnlogSet(row.setNumber)}
+            />
+          ))}
+        {view.showSets && exercise.hasSkippedRows && (
+          <Text style={styles.skippedNote}>Skipped</Text>
         )}
       </View>
     </View>

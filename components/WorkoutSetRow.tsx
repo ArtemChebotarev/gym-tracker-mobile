@@ -11,6 +11,9 @@
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
 // values with nothing to type or press.
 //
+// Laid out after the 08.7 mockup: number · Weight · Reps · indicator · Log, all centered; the
+// focused field's outline brightens.
+//
 // Typed-but-unlogged values live only in this component's state — they're never saved (05,
 // "Сохранение данных"). The screen does the writing through `onLog` / `onUnlog`.
 // JSX/rendering only — styles live in WorkoutSetRowStyles.ts and pure helpers in
@@ -27,6 +30,8 @@ import {
   formatIndicator,
   formatRowWeight,
   initialWeightText,
+  isRirPlaceholder,
+  isStrongIndicator,
   parseSetEntry,
   repsPlaceholder,
 } from './WorkoutSetRowLogic';
@@ -54,7 +59,10 @@ export function WorkoutSetRow({
 }: WorkoutSetRowProps) {
   const [weightText, setWeightText] = useState(() => initialWeightText(row));
   const [repsText, setRepsText] = useState('');
+  const [focused, setFocused] = useState<'weight' | 'reps' | null>(null);
   const { log, setNumber } = row;
+  const placeholder = repsPlaceholder(row, targetRir);
+  const rirPlaceholder = isRirPlaceholder(row, targetRir);
 
   function handleUnlog(logged: { weight: number; reps: number }) {
     // The row goes back to editable fields holding what was logged (05, "Снять отметку").
@@ -66,18 +74,23 @@ export function WorkoutSetRow({
   if (log) {
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
-        <Text style={[styles.setNumberColumn, styles.setNumber]}>{setNumber}</Text>
-        <View style={[styles.valueColumn, styles.loggedValue]}>
+        <Text style={styles.setNumber}>{setNumber}</Text>
+        <View style={[styles.field, styles.fieldLogged]}>
           <Text style={styles.value}>{formatRowWeight(log.weight)}</Text>
         </View>
-        <View style={[styles.valueColumn, styles.loggedValue]}>
-          <View style={styles.repsValue}>
-            <Text style={styles.value}>{log.reps}</Text>
-            {row.indicator !== undefined && (
-              <Text style={styles.indicator}>{formatIndicator(row.indicator)}</Text>
-            )}
-          </View>
+        <View style={[styles.field, styles.fieldLogged]}>
+          <Text style={styles.value}>{log.reps}</Text>
         </View>
+        <Text
+          style={[
+            styles.indicator,
+            row.indicator !== undefined &&
+              isStrongIndicator(row.indicator) &&
+              styles.indicatorStrong,
+          ]}
+        >
+          {row.indicator !== undefined ? formatIndicator(row.indicator) : ''}
+        </Text>
         <View style={styles.logColumn}>
           {editable ? (
             <Pressable
@@ -107,17 +120,20 @@ export function WorkoutSetRow({
   if (!editable) {
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
-        <Text style={[styles.setNumberColumn, styles.setNumber]}>{setNumber}</Text>
-        <View style={[styles.valueColumn, styles.field]}>
+        <Text style={styles.setNumber}>{setNumber}</Text>
+        <View style={styles.field}>
           {row.suggestedWeight !== undefined ? (
             <Text style={styles.value}>{formatRowWeight(row.suggestedWeight)}</Text>
           ) : (
             <Text style={styles.placeholder}>–</Text>
           )}
         </View>
-        <View style={[styles.valueColumn, styles.field]}>
-          <Text style={styles.placeholder}>{repsPlaceholder(row, targetRir)}</Text>
+        <View style={styles.field}>
+          <Text style={[styles.placeholder, rirPlaceholder && styles.placeholderRir]}>
+            {placeholder}
+          </Text>
         </View>
+        <Text style={styles.indicator} />
         <View style={styles.logColumn}>
           <View style={styles.logBox} />
         </View>
@@ -130,25 +146,42 @@ export function WorkoutSetRow({
 
   return (
     <View testID={`set-row-${setNumber}`} style={styles.row}>
-      <Text style={[styles.setNumberColumn, styles.setNumber]}>{setNumber}</Text>
+      <Text style={styles.setNumber}>{setNumber}</Text>
       <TextInput
         accessibilityLabel={`Set ${setNumber} weight`}
         value={weightText}
         onChangeText={setWeightText}
+        onFocus={() => setFocused('weight')}
+        onBlur={() => setFocused(null)}
         placeholder="–"
         placeholderTextColor={PLACEHOLDER_COLOR}
         keyboardType="decimal-pad"
-        style={[styles.valueColumn, styles.field, styles.input]}
+        style={[
+          styles.field,
+          styles.fieldEditable,
+          styles.input,
+          focused === 'weight' && styles.fieldFocused,
+        ]}
       />
       <TextInput
         accessibilityLabel={`Set ${setNumber} reps`}
         value={repsText}
         onChangeText={setRepsText}
-        placeholder={repsPlaceholder(row, targetRir)}
+        onFocus={() => setFocused('reps')}
+        onBlur={() => setFocused(null)}
+        placeholder={placeholder}
         placeholderTextColor={PLACEHOLDER_COLOR}
         keyboardType="number-pad"
-        style={[styles.valueColumn, styles.field, styles.input]}
+        style={[
+          styles.field,
+          styles.fieldEditable,
+          styles.input,
+          // A placeholder can't be sized on its own, so the empty field takes the smaller size.
+          repsText === '' && rirPlaceholder && styles.placeholderRir,
+          focused === 'reps' && styles.fieldFocused,
+        ]}
       />
+      <Text style={styles.indicator} />
       <View style={styles.logColumn}>
         <Pressable
           accessibilityRole="checkbox"

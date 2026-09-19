@@ -8,6 +8,7 @@ import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 // "Шапка"), sized to sit inside the `type/screen-title` line.
 const COMPLETED_CHECK_SIZE = 22;
 export const COMPLETED_CHECK_ICON_SIZE = 14;
+const UNLOCKS_FONT_SIZE = 12;
 
 export const styles = StyleSheet.create({
   root: {
@@ -30,15 +31,22 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING['space/gap'],
   },
+  // The progress bar and the exercise list run edge to edge (08.7 mockup), out of RootScreen's
+  // screen padding; the list's sections pad their own content.
+  fullBleed: {
+    marginHorizontal: -SPACING['space/screen'],
+  },
+  list: {
+    flex: 1,
+  },
   content: {
-    paddingTop: SPACING['space/gap'],
     paddingBottom: SPACING['space/section'],
-    gap: SPACING['space/row'],
   },
   unlocksCaption: {
+    paddingTop: SPACING['space/section'],
+    paddingHorizontal: SPACING['space/screen'],
     textAlign: 'center',
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: UNLOCKS_FONT_SIZE,
     color: COLORS['text/faint'],
   },
 });
