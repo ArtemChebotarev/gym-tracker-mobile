@@ -645,35 +645,44 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                   }
                 >
                   <View
-                    style={
-                      [
-                        {
-                          "alignSelf": "flex-start",
-                          "borderRadius": 20,
-                          "paddingHorizontal": 7,
-                          "paddingVertical": 6,
-                        },
-                        {
-                          "backgroundColor": "#1A1C1F",
-                        },
-                      ]
-                    }
+                    testID="exercise-rir"
                   >
-                    <Text
+                    <View
                       style={
                         [
                           {
-                            "fontSize": 10,
-                            "fontWeight": "400",
+                            "alignItems": "center",
+                            "alignSelf": "flex-start",
+                            "borderRadius": 20,
+                            "borderWidth": 1,
+                            "flexDirection": "row",
+                            "gap": 6,
+                            "paddingHorizontal": 7,
+                            "paddingVertical": 6,
                           },
                           {
-                            "color": "#C9CDD2",
+                            "backgroundColor": "#1A1C1F",
+                            "borderColor": "#2A2D31",
                           },
                         ]
                       }
                     >
-                      2 RIR
-                    </Text>
+                      <Text
+                        style={
+                          [
+                            {
+                              "fontSize": 10,
+                              "fontWeight": "400",
+                            },
+                            {
+                              "color": "#C9CDD2",
+                            },
+                          ]
+                        }
+                      >
+                        2 RIR
+                      </Text>
+                    </View>
                   </View>
                   <View
                     accessibilityLabel="Bench press history"
@@ -1471,35 +1480,44 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                   }
                 >
                   <View
-                    style={
-                      [
-                        {
-                          "alignSelf": "flex-start",
-                          "borderRadius": 20,
-                          "paddingHorizontal": 7,
-                          "paddingVertical": 6,
-                        },
-                        {
-                          "backgroundColor": "#1A1C1F",
-                        },
-                      ]
-                    }
+                    testID="exercise-rir"
                   >
-                    <Text
+                    <View
                       style={
                         [
                           {
-                            "fontSize": 10,
-                            "fontWeight": "400",
+                            "alignItems": "center",
+                            "alignSelf": "flex-start",
+                            "borderRadius": 20,
+                            "borderWidth": 1,
+                            "flexDirection": "row",
+                            "gap": 6,
+                            "paddingHorizontal": 7,
+                            "paddingVertical": 6,
                           },
                           {
-                            "color": "#C9CDD2",
+                            "backgroundColor": "#1A1C1F",
+                            "borderColor": "#2A2D31",
                           },
                         ]
                       }
                     >
-                      2 RIR
-                    </Text>
+                      <Text
+                        style={
+                          [
+                            {
+                              "fontSize": 10,
+                              "fontWeight": "400",
+                            },
+                            {
+                              "color": "#C9CDD2",
+                            },
+                          ]
+                        }
+                      >
+                        2 RIR
+                      </Text>
+                    </View>
                   </View>
                   <View
                     accessibilityLabel="Bench press history"

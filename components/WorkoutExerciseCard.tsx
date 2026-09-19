@@ -1,6 +1,6 @@
 // Exercise card — 08.7 · Тренировка, "Карточка упражнения" (task 092). One unit of the workout
 // screen's list: the muscle-group chip (only when the group changed from the previous card), the
-// name, equipment, the `N RIR` badge, the history button, `⋯` in live mode only, the `Weight, kg` ·
+// name, equipment, the `N RIR` chip, the history button, `⋯` in live mode only, the `Weight, kg` ·
 // `Reps` · `Log` column header, and the set rows. Which of these show is `exerciseCardView`'s call
 // (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity, logged rows plus one
 // `Skipped` row), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
@@ -8,13 +8,17 @@
 // The set rows here are static — they show the row's values, but nothing can be typed or logged
 // yet; task 093 replaces `SetRow` with the real inputs and the Log toggle.
 //
+// The RIR is a static `Chip`, not the neutral `Badge` 08.7 names: `Badge` neutral fills with
+// `surface/card`, the card's own background, so on the card it read as bare text. The chip's
+// `border/default` outline keeps it visibly a chip (Artem's review).
+//
 // Presentational: the exercise, the screen mode, and the button handlers come in as props.
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
 import { Text, View } from 'react-native';
 
-import { Badge } from '@design/components/Badge';
+import { Chip } from '@design/components/Chip';
 import { IconButton } from '@design/components/IconButton';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { CheckIcon } from '@design/icons/CheckIcon';
@@ -71,7 +75,13 @@ export function WorkoutExerciseCard({
             )}
           </View>
           <View style={styles.titleActions}>
-            {view.rirLabel !== undefined && <Badge label={view.rirLabel} />}
+            {view.rirLabel !== undefined && (
+              // Chip's own `alignSelf: flex-start` would pin it to the top of the row; the wrapper
+              // is what gets centered against the buttons.
+              <View testID="exercise-rir">
+                <Chip variant="static" label={view.rirLabel} />
+              </View>
+            )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>
               <HistoryIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
             </IconButton>
