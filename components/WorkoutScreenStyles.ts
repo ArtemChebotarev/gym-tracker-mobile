@@ -36,6 +36,9 @@ export const styles = StyleSheet.create({
     paddingBottom: SPACING['space/section'],
     gap: SPACING['space/row'],
   },
+  finish: {
+    paddingTop: SPACING['space/gap'],
+  },
   unlocksCaption: {
     paddingTop: SPACING['space/gap'],
     textAlign: 'center',

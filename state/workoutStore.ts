@@ -4,10 +4,13 @@
 // the app-wide store.
 
 import { buildMockWorkout } from '@domain/workoutMocks';
+import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
+import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import type { WorkoutStore } from '@repositories/workout';
+import type { SessionFinishDeps } from '@usecases/sessionFinish';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 
 import { appStore } from './appStore';
@@ -19,8 +22,15 @@ export const workoutSessionDeps: WorkoutSessionDeps = {
   sessionRepo: new InMemorySessionRepository(appStore),
 };
 
-/** The workout store the workout mutations (set logging, 093) write through. */
+/** The workout store the workout mutations (set logging 093, Finish 094) write through. */
 export const workoutStore: WorkoutStore = createInMemoryWorkoutStore(appStore);
+
+/** What Finish workout (094) needs: the workout store, plus what next-week generation reads. */
+export const sessionFinishDeps: SessionFinishDeps = {
+  workout: workoutStore,
+  mesocycleRepo: new InMemoryMesocycleRepository(appStore),
+  exerciseRepo: new InMemoryExerciseRepository(appStore),
+};
 
 let seeded: Promise<void> | null = null;
 

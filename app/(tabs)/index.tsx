@@ -7,6 +7,9 @@
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
 //
+// `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
+// the tab stays on it, and the re-read session comes back read-only.
+//
 // The grid and `⋯` sheets are tasks 095 and 096, the exercise menu 097, and exercise history
 // isn't built yet, so until then those buttons explain that they're not available yet rather than
 // doing nothing.
@@ -17,6 +20,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { formatInProgressConflict } from '@components/TodayScreenLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import { workoutHref } from '@components/workoutRoutes';
+import { useFinishSession } from '@state/useFinishSession';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useTodayWorkoutSession } from '@state/useWorkoutSession';
 
@@ -26,6 +30,7 @@ export default function TodayScreen() {
   const query = useTodayWorkoutSession(sessionId);
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
+  const finishSession = useFinishSession();
   const currentSessionId = query.data?.sessionId;
 
   function showNotAvailable(feature: string) {
@@ -82,6 +87,15 @@ export default function TodayScreen() {
           { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId, setNumber },
           { onError: showSaveError },
         );
+      }}
+      isFinishing={finishSession.isPending}
+      onFinish={() => {
+        if (currentSessionId === undefined) {
+          return;
+        }
+        finishSession.mutate(currentSessionId, {
+          onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
+        });
       }}
       fallbackAction={{ label: 'Open mesocycles', onPress: () => router.navigate('/mesocycles') }}
     />

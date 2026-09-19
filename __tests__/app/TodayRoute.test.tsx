@@ -20,6 +20,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
 }));
 
+// expo-crypto's native module isn't available under Jest, so every set log and generated session
+// would otherwise get the same `undefined` id — fine for one log at a time, not for Finish.
+jest.mock('expo-crypto', () => {
+  let counter = 0;
+  return { randomUUID: () => `generated-id-${(counter += 1)}` };
+});
+
 const TEST_SAFE_AREA_METRICS: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
   frame: { x: 0, y: 0, width: 402, height: 874 },
@@ -155,5 +162,79 @@ describe('Today tab — set logging', () => {
     buttons?.find((button: AlertButton) => button.text === 'Open')?.onPress?.();
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref(MOCK_SESSION_IDS.live));
     alert.mockRestore();
+  });
+});
+
+// Keep this block last: finishing is irreversible, so it leaves the shared stub session read-only.
+describe('Today tab — Finish workout', () => {
+  const card = (exerciseId: string) =>
+    screen.getByTestId(`exercise-card-${MOCK_SESSION_IDS.live}-${exerciseId}`);
+
+  async function logRecommended(exerciseId: string, setNumber: number) {
+    fireEvent.press(
+      within(card(exerciseId)).getByRole('checkbox', { name: `Log set ${setNumber}` }),
+    );
+    await within(card(exerciseId)).findByRole('checkbox', { name: `Set ${setNumber} logged` });
+  }
+
+  test('a skipped session opens read-only', async () => {
+    await ensureWorkoutMocksSeeded();
+    await workoutStore.repos.sessionRepo.createMany([
+      {
+        id: 'skipped-w1d2',
+        mesoId: MOCK_MESOCYCLE_IDS.active,
+        weekNumber: 1,
+        dayNumber: 2,
+        isDeload: false,
+        prescriptionStatus: 'ready',
+        status: 'skipped',
+      },
+    ]);
+    await workoutStore.repos.sessionExerciseRepo.createMany([
+      {
+        id: 'skipped-w1d2-bench',
+        sessionId: 'skipped-w1d2',
+        exerciseId: 'bench-press-barbell',
+        order: 1,
+        setTargets: [{ setNumber: 1, targetReps: 10, suggestedWeight: 60 }],
+        targetRir: 3,
+        status: 'skipped',
+      },
+    ]);
+    mockParams = { sessionId: 'skipped-w1d2' };
+    renderToday();
+
+    expect(await screen.findByText('Week 1 Day 2')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Bench Press menu' })).toBeNull();
+    expect(screen.queryAllByRole('checkbox')).toEqual([]);
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+  });
+
+  test('DoD: no button until every exercise is done; Finish leaves the screen read-only', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+
+    await logRecommended('bench-press-barbell', 3);
+    await logRecommended('barbell-row-barbell', 1);
+    await logRecommended('barbell-row-barbell', 2);
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+
+    await logRecommended('barbell-row-barbell', 3);
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish workout' }));
+
+    expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Bench Press menu' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Barbell Row menu' })).toBeNull();
+    expect(screen.queryAllByRole('checkbox')).toEqual([]);
+    expect(screen.queryByLabelText(/Set \d reps/)).toBeNull();
+
+    const session = await workoutStore.repos.sessionRepo.getById(MOCK_SESSION_IDS.live);
+    expect(session?.status).toBe('completed');
+    const week3 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
+      MOCK_MESOCYCLE_IDS.active,
+      3,
+    );
+    expect(week3.map((next) => next.dayNumber)).toEqual([1]);
   });
 });

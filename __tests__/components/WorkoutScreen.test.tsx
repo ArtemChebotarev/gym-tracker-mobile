@@ -102,6 +102,8 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
     isSaving: false,
+    onFinish: jest.fn(),
+    isFinishing: false,
     fallbackAction: { label: 'Go back', onPress: jest.fn() },
     ...overrides,
   };
@@ -231,6 +233,75 @@ describe('WorkoutScreen list', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps()} />);
 
     expect(screen.queryByText(/Unlocks when you finish/)).toBeNull();
+  });
+});
+
+describe('WorkoutScreen Finish workout', () => {
+  const DONE: WorkoutSessionModel = {
+    ...LIVE,
+    exercises: [
+      makeExercise({ sessionExerciseId: 'a', status: 'completed' }),
+      makeExercise({ sessionExerciseId: 'b', name: 'Barbell row', status: 'skipped' }),
+    ],
+    showFinish: true,
+  };
+
+  test('DoD: there is no button, not even a disabled one, while an exercise is planned', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps()} />);
+
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+  });
+
+  test('shows the button once every exercise is completed or skipped, and finishes on press', () => {
+    const onFinish = jest.fn();
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: DONE, onFinish })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finish workout' }));
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  test('disables the button while Finish is being saved', () => {
+    const onFinish = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: DONE, onFinish, isFinishing: true })} />,
+    );
+
+    const button = screen.getByRole('button', { name: 'Finish workout' });
+    fireEvent.press(button);
+
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true });
+    expect(onFinish).not.toHaveBeenCalled();
+  });
+
+  test('a read-only session has no Finish, no exercise ⋯, and nothing to edit', () => {
+    const readonly: WorkoutSessionModel = {
+      ...COMPLETED,
+      exercises: [
+        makeExercise({
+          status: 'completed',
+          rows: [
+            {
+              setNumber: 1,
+              targetReps: 10,
+              suggestedWeight: 60,
+              log: { weight: 60, reps: 10 },
+              indicator: { kind: 'hit' },
+              isFirstUnlogged: false,
+            },
+          ],
+          plannedSetCount: 1,
+          loggedSetCount: 1,
+          hasLoggedSets: true,
+        }),
+      ],
+    };
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: readonly })} />);
+
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Bench press menu' })).toBeNull();
+    expect(screen.queryAllByRole('checkbox')).toEqual([]);
+    expect(screen.queryByLabelText('Set 1 reps')).toBeNull();
   });
 });
 
