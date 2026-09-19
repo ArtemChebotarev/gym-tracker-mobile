@@ -55,8 +55,16 @@ const log: SetLog = {
   completedAt: '2026-09-18T09:30:00.000Z',
 };
 
+const row: SessionExercise = {
+  ...bench,
+  id: 'session-exercise-row',
+  exerciseId: 'bench',
+  order: 2,
+  setTargets: [{ setNumber: 1 }],
+};
+
 async function setUp(
-  options: { session?: Session; logs?: SetLog[] } = {},
+  options: { session?: Session; exercises?: SessionExercise[]; logs?: SetLog[] } = {},
 ): Promise<WorkoutSkipDeps> {
   const store = new InMemoryStore();
   const workout = createInMemoryWorkoutStore(store);
@@ -72,7 +80,7 @@ async function setUp(
   };
   await exerciseRepo.seedCatalog(1, [catalogBench]);
   await workout.repos.sessionRepo.create(options.session ?? weekOne);
-  await workout.repos.sessionExerciseRepo.create(bench);
+  await workout.repos.sessionExerciseRepo.createMany(options.exercises ?? [bench]);
   for (const setLog of options.logs ?? []) {
     await workout.repos.setLogRepo.create(setLog);
   }
@@ -113,18 +121,48 @@ describe('skipWorkout', () => {
     expect(planned?.setTargets).toEqual(bench.setTargets);
   });
 
-  test('DoD: rejected once a set is logged, and nothing is written', async () => {
+  test('skips every exercise, and a session with nothing logged becomes skipped', async () => {
+    const deps = await setUp({ exercises: [bench, row] });
+
+    await skipWorkout('session-w1', deps);
+
+    const exercises = await deps.workout.repos.sessionExerciseRepo.listBySessionId('session-w1');
+    expect(exercises.map((exercise) => exercise.status)).toEqual(['skipped', 'skipped']);
+  });
+
+  test('with sets logged: unfinished exercises are skipped, logs kept, the session completed', async () => {
     const inProgress: Session = {
       ...weekOne,
       status: 'in_progress',
       startedAt: '2026-09-18T09:00:00.000Z',
     };
-    const deps = await setUp({ session: inProgress, logs: [log] });
+    // The row is fully logged; bench has one of its three sets.
+    const rowLog: SetLog = {
+      ...log,
+      id: 'log-row',
+      sessionExerciseId: 'session-exercise-row',
+    };
+    const deps = await setUp({
+      session: inProgress,
+      exercises: [bench, { ...row, status: 'completed' }],
+      logs: [log, rowLog],
+    });
 
-    const error = await rejectionOf(skipWorkout('session-w1', deps));
+    const result = await skipWorkout('session-w1', deps, '2026-09-18T10:00:00.000Z');
 
-    expect(isConflictError(error)).toBe(true);
-    await expect(sessionsOf(deps)).resolves.toEqual([inProgress]);
+    expect(result.session).toEqual({
+      ...inProgress,
+      status: 'completed',
+      completedAt: '2026-09-18T10:00:00.000Z',
+    });
+    const exercises = await deps.workout.repos.sessionExerciseRepo.listBySessionId('session-w1');
+    expect(Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise.status]))).toEqual(
+      { 'session-exercise-bench': 'skipped', 'session-exercise-row': 'completed' },
+    );
+    await expect(deps.workout.repos.setLogRepo.listBySessionId('session-w1')).resolves.toHaveLength(
+      2,
+    );
+    expect(result.nextSession).toMatchObject({ weekNumber: 2, dayNumber: 1 });
   });
 
   test('rejected for an awaiting_source session', async () => {

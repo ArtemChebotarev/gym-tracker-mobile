@@ -10,9 +10,11 @@ import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import type { WorkoutStore } from '@repositories/workout';
+import type { ExerciseAdditionDeps } from '@usecases/exerciseAddition';
 import type { SessionFinishDeps } from '@usecases/sessionFinish';
 import type { TodayWorkoutDeps } from '@usecases/todayWorkout';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
+import type { WorkoutSkipDeps } from '@usecases/workoutSkip';
 
 import { appStore } from './appStore';
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
@@ -37,6 +39,15 @@ export const sessionFinishDeps: SessionFinishDeps = {
   workout: workoutStore,
   mesocycleRepo: new InMemoryMesocycleRepository(appStore),
   exerciseRepo: new InMemoryExerciseRepository(appStore),
+};
+
+/** What Skip workout (096, 049) needs — the same as Finish: it generates next week's day too. */
+export const workoutSkipDeps: WorkoutSkipDeps = sessionFinishDeps;
+
+/** What Add exercise (096, 048) needs: the workout store, plus the mesocycle for the week's RIR. */
+export const exerciseAdditionDeps: ExerciseAdditionDeps = {
+  workout: workoutStore,
+  mesocycleRepo: new InMemoryMesocycleRepository(appStore),
 };
 
 let seeded: Promise<void> | null = null;

@@ -17,15 +17,26 @@
 // mesocycle. A cell closes it and opens its day here: by `sessionId` when the session exists, else
 // by week and day (`workoutSlotHref`) — a preview of a day not programmed yet.
 //
-// The `⋯` sheet is task 096, the exercise menu 097, and exercise history isn't built yet, so until
-// then those buttons explain that they're not available yet rather than doing nothing.
+// The header `⋯` opens the header menu (096, `WorkoutMenuSheet`). Add exercise opens the exercise
+// picker (`WorkoutAddExerciseSheet`) and adds the picked exercises to the end of the session
+// (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
+// exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
+// now read-only. Mesocycle history opens the mesocycle detail stub (098).
+//
+// Rename mesocycle (087), Stop mesocycle (052), the exercise menu (097), and exercise history
+// aren't built yet, so until then they explain that they're not available yet rather than doing
+// nothing.
 
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
+import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
+import { WorkoutAddExerciseSheet } from '@components/WorkoutAddExerciseSheet';
+import { WorkoutMenuSheet } from '@components/WorkoutMenuSheet';
+import { formatWorkoutMenuTitle } from '@components/WorkoutMenuSheetLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import {
   mesoGridCellHref,
@@ -33,9 +44,11 @@ import {
   workoutPickFromParams,
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
+import { useAddExercises } from '@state/useAddExercises';
 import { useFinishSession } from '@state/useFinishSession';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
+import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 
 export default function TodayScreen() {
@@ -46,15 +59,29 @@ export default function TodayScreen() {
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
   const finishSession = useFinishSession();
+  const skipWorkout = useSkipWorkout();
+  const addExercises = useAddExercises();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
 
   function showNotAvailable(feature: string) {
     Alert.alert('Not available yet', `${feature} is coming in a later update.`);
+  }
+
+  /**
+   * Pins the tab to the shown session before an action that ends it (Finish, Skip): the
+   * current-session pick moves on to the next day, but the screen stays put and turns read-only.
+   */
+  function pinCurrentSession() {
+    if (sessionId === undefined && currentSessionId !== undefined) {
+      router.setParams({ sessionId: currentSessionId });
+    }
   }
 
   function showSaveError() {
@@ -67,7 +94,7 @@ export default function TodayScreen() {
         model={model}
         isPending={query.isPending}
         onOpenGrid={() => setIsGridOpen(true)}
-        onOpenMenu={() => showNotAvailable('The workout menu')}
+        onOpenMenu={() => setIsMenuOpen(true)}
         onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
         onOpenExerciseMenu={() => showNotAvailable('The exercise menu')}
         isSaving={logSet.isPending || unlogSet.isPending}
@@ -118,11 +145,7 @@ export default function TodayScreen() {
           if (currentSessionId === undefined) {
             return;
           }
-          // Pin the tab to this session first: finishing it moves the current-session pick on to
-          // the next day, but the screen stays put and turns read-only (08.7, "Finish workout").
-          if (sessionId === undefined) {
-            router.setParams({ sessionId: currentSessionId });
-          }
+          pinCurrentSession();
           finishSession.mutate(currentSessionId, {
             onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
           });
@@ -146,6 +169,44 @@ export default function TodayScreen() {
           if (grid.data !== undefined) {
             router.navigate(mesoGridCellHref(grid.data.mesoId, cell));
           }
+        }}
+      />
+      <WorkoutMenuSheet
+        visible={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        model={model}
+        onAddExercise={() => setIsAddExerciseOpen(true)}
+        onSkipWorkout={() => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          pinCurrentSession();
+          skipWorkout.mutate(currentSessionId, {
+            onError: () => Alert.alert("Couldn't skip the workout", 'Please try again.'),
+          });
+        }}
+        onRenameMesocycle={() => showNotAvailable('Renaming a mesocycle')}
+        onOpenMesocycleHistory={() => {
+          if (model !== undefined) {
+            router.push(mesocycleDetailHref(model.mesoId));
+          }
+        }}
+        onStopMesocycle={() => showNotAvailable('Stopping a mesocycle')}
+      />
+      <WorkoutAddExerciseSheet
+        visible={isAddExerciseOpen}
+        caption={model ? formatWorkoutMenuTitle(model.header) : ''}
+        onClose={() => setIsAddExerciseOpen(false)}
+        onConfirm={(exerciseIds) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          addExercises.mutate(
+            { sessionId: currentSessionId, exerciseIds },
+            {
+              onError: () => Alert.alert("Couldn't add the exercises", 'Please try again.'),
+            },
+          );
         }}
       />
     </>
