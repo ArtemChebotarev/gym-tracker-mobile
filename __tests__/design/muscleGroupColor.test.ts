@@ -4,6 +4,7 @@ import {
   getCategoryTextOnTint,
   getCategoryTint,
   getMuscleGroupCategory,
+  getMuscleGroupChipColors,
   MUSCLE_GROUP_COLOR_CATEGORIES,
 } from '@design/muscleGroupColor';
 
@@ -84,5 +85,21 @@ describe('getCategoryTextOnTint', () => {
     for (const textOnTint of textOnTints) {
       expect(textOnTint).toMatch(/^#[0-9A-F]{6}$/);
     }
+  });
+});
+
+describe('getMuscleGroupChipColors', () => {
+  test('resolves the dot and border to the raw category color, for a known muscle group', () => {
+    expect(getMuscleGroupChipColors('chest').dot).toBe(getCategoryColor('chest'));
+    expect(getMuscleGroupChipColors('chest').border).toBe(getCategoryColor('chest'));
+  });
+
+  test('resolves the tint and text colors from the same category', () => {
+    expect(getMuscleGroupChipColors('back').tint).toBe(getCategoryTint('back'));
+    expect(getMuscleGroupChipColors('back').text).toBe(getCategoryTextOnTint('back'));
+  });
+
+  test('groups sharing a family resolve to the same colors (traps shares "back" with back)', () => {
+    expect(getMuscleGroupChipColors('traps')).toEqual(getMuscleGroupChipColors('back'));
   });
 });

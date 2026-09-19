@@ -26,8 +26,8 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS.accent,
   },
-  // A muscle-group chip's selected colors are family-tinted (see muscleGroupChipColors in
-  // ExerciseFiltersSheetLogic.ts) and applied as an inline style override, the same pattern
+  // A muscle-group chip's selected colors are family-tinted (see getMuscleGroupChipColors in
+  // design/muscleGroupColor.ts) and applied as an inline style override, the same pattern
   // Chip's own static-variant dot already uses for a caller-supplied color.
   muscleGroupChip: {
     flexDirection: 'row',

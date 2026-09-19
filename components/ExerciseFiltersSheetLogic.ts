@@ -2,36 +2,7 @@
 // the same split, one level up".
 
 import type { ExerciseSource, MuscleGroup } from '@domain/catalog';
-import {
-  getCategoryColor,
-  getCategoryTextOnTint,
-  getCategoryTint,
-  getMuscleGroupCategory,
-} from '@design/muscleGroupColor';
-
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
-
-export type MuscleGroupChipColors = {
-  dot: string | undefined;
-  tint: string | undefined;
-  border: string | undefined;
-  text: string | undefined;
-};
-
-// A muscle-group filter chip's selected state is tinted by its own family color (04 ·
-// Экран-мокап "Filters — лист": each option carries a family dot, and the selected one takes on
-// that family's tint), not the generic accent used elsewhere — muscle group color carries
-// meaning, it doesn't decorate (08.0 · Design SDK, "Цвет группы мышц несёт значение"). No
-// dedicated "border" derivation exists in design/muscleGroupColor.ts, so the raw category color
-// (already exported, already used for the static dot elsewhere) doubles as the border.
-export function muscleGroupChipColors(muscleGroup: MuscleGroup): MuscleGroupChipColors {
-  const category = getMuscleGroupCategory(muscleGroup);
-  if (!category) {
-    return { dot: undefined, tint: undefined, border: undefined, text: undefined };
-  }
-  const color = getCategoryColor(category);
-  return { dot: color, tint: getCategoryTint(category), border: color, text: getCategoryTextOnTint(category) };
-}
 
 // Deselecting the last value clears the field to `undefined` rather than leaving `[]` — matches
 // `ExerciseListQuery`'s own contract ("empty or omitted means every group/source") so an empty
