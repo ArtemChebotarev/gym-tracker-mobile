@@ -8,11 +8,7 @@ import { editPlannedMesocycle } from '@usecases/mesocycleEditing';
 
 const originalWeekPlan: WeekPlan = {
   days: [
-    {
-      dayNumber: 1,
-      name: '',
-      exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }],
-    },
+    { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }] },
     { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 4 }] },
   ],
 };

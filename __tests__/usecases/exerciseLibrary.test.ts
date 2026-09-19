@@ -66,10 +66,7 @@ describe('createCustomExercise', () => {
   test('creates a custom exercise with a generated id and the system-assigned fields', async () => {
     const deps = makeDeps();
 
-    const created = await createCustomExercise(
-      { name: '  Garage Press  ', muscleGroup: 'chest' },
-      deps,
-    );
+    const created = await createCustomExercise({ name: '  Garage Press  ', muscleGroup: 'chest' }, deps);
 
     expect(created.name).toBe('Garage Press');
     expect(created.muscleGroup).toBe('chest');
@@ -114,10 +111,7 @@ describe('createCustomExercise', () => {
 describe('updateCustomExercise', () => {
   test('updates the name and muscle group of an existing custom exercise', async () => {
     const deps = makeDeps();
-    const created = await createCustomExercise(
-      { name: 'Garage Press', muscleGroup: 'chest' },
-      deps,
-    );
+    const created = await createCustomExercise({ name: 'Garage Press', muscleGroup: 'chest' }, deps);
 
     const updated = await updateCustomExercise(
       { id: created.id, name: '  Renamed Press  ', muscleGroup: 'shoulders' },
@@ -135,12 +129,7 @@ describe('updateCustomExercise', () => {
     );
 
     const updated = await updateCustomExercise(
-      {
-        id: created.id,
-        name: created.name,
-        muscleGroup: created.muscleGroup,
-        equipment: 'barbell',
-      },
+      { id: created.id, name: created.name, muscleGroup: created.muscleGroup, equipment: 'barbell' },
       deps,
     );
 
@@ -193,10 +182,7 @@ describe('hideExercise', () => {
   test('rejects an unknown exercise id', async () => {
     const deps = makeDeps();
 
-    await expectRejectsWithKind(
-      hideExercise(toExerciseId('does-not-exist'), deps),
-      isNotFoundError,
-    );
+    await expectRejectsWithKind(hideExercise(toExerciseId('does-not-exist'), deps), isNotFoundError);
   });
 });
 
@@ -245,7 +231,7 @@ describe('listExerciseGroups', () => {
     expect(groups[0]?.entries.map((entry) => entry.exercise.id)).toEqual(['e-performed']);
   });
 
-  test("attaches each exercise's last set log for the row caption", async () => {
+  test('attaches each exercise\'s last set log for the row caption', async () => {
     const deps = makeDeps();
     await deps.exerciseRepo.seedCatalog(1, [makeExercise()]);
     const older = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
@@ -263,11 +249,7 @@ describe('listExercisesByIds', () => {
   test('resolves the requested ids and silently skips ones that do not exist', async () => {
     const deps = makeDeps();
     const benchPress = makeExercise({ id: toExerciseId('e-bench-press') });
-    const legPress = makeExercise({
-      id: toExerciseId('e-leg-press'),
-      name: 'Leg Press',
-      muscleGroup: 'quads',
-    });
+    const legPress = makeExercise({ id: toExerciseId('e-leg-press'), name: 'Leg Press', muscleGroup: 'quads' });
     await deps.exerciseRepo.seedCatalog(1, [benchPress, legPress]);
 
     const found = await listExercisesByIds(
