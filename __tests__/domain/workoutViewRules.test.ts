@@ -1,6 +1,8 @@
 import type { Session, SessionExercise } from '@domain/execution';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
   canFinishSession,
+  exerciseWeightHints,
   previewSourceSession,
   sessionDisplayDate,
   sessionProgress,
@@ -130,5 +132,25 @@ describe('unlockingSlot', () => {
       weekNumber: 6,
       dayNumber: 3,
     });
+  });
+});
+
+describe('exerciseWeightHints', () => {
+  const corridor = { ...defaultProgressionSettings, minReps: 6, maxReps: 25 };
+
+  test('none when no row has a hint', () => {
+    expect(exerciseWeightHints([{}, {}], corridor)).toEqual([]);
+  });
+
+  test('each direction once, with the corridor bound behind it — go heavier first', () => {
+    expect(
+      exerciseWeightHints(
+        [{ weightHint: 'decrease' }, {}, { weightHint: 'increase' }, { weightHint: 'decrease' }],
+        corridor,
+      ),
+    ).toEqual([
+      { direction: 'increase', reps: 25 },
+      { direction: 'decrease', reps: 6 },
+    ]);
   });
 });

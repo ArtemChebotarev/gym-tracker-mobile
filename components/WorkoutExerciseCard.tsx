@@ -5,6 +5,11 @@
 // (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity; every row, the unlogged ones
 // as `Skipped` rows — just one `Skipped` note when nothing was logged), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
 //
+// Under the title, one line per weight hint (03, rule 3: `↑ Go heavier — 30+ reps last week` /
+// `↓ Go lighter — under 5 reps last week`), in live mode only. 08 · Screens & Navigation leaves it
+// off in v1; Artem brought it back: without it, a target clamped at the rep corridor's bound (30
+// again at the same weight) read as a wrong suggestion.
+//
 // The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
 // skipped — a skipped exercise's rows are read-only until it's unskipped (05).
 //
@@ -21,6 +26,8 @@ import { Text, View } from 'react-native';
 import { Chip } from '@design/components/Chip';
 import { IconButton } from '@design/components/IconButton';
 import { getEquipmentLabel } from '@design/equipmentLabel';
+import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
+import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
@@ -31,8 +38,8 @@ import type { MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { exerciseCardView } from './WorkoutExerciseCardLogic';
-import { INFO_ICON_SIZE, styles } from './WorkoutExerciseCardStyles';
+import { exerciseCardView, formatWeightHint } from './WorkoutExerciseCardLogic';
+import { INFO_ICON_SIZE, styles, WEIGHT_HINT_ICON_SIZE } from './WorkoutExerciseCardStyles';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
 export type WorkoutExerciseCardProps = {
@@ -95,6 +102,16 @@ export function WorkoutExerciseCard({
             )}
           </View>
         </View>
+
+        {exercise.weightHints?.map((hint) => {
+          const Icon = hint.direction === 'increase' ? ArrowUpIcon : ArrowDownIcon;
+          return (
+            <View key={hint.direction} testID="exercise-weight-hint" style={styles.weightHint}>
+              <Icon size={WEIGHT_HINT_ICON_SIZE} color={COLORS['text/secondary']} />
+              <Text style={styles.weightHintText}>{formatWeightHint(hint)}</Text>
+            </View>
+          );
+        })}
 
         {view.showNotProgrammed && (
           <View style={styles.notProgrammed}>

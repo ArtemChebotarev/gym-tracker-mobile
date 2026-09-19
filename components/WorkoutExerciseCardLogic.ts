@@ -1,6 +1,7 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
 import type { WorkoutMode } from '@domain/workoutView';
+import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
@@ -62,4 +63,11 @@ export function showsGroupChip(
     return false;
   }
   return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
+}
+
+/** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */
+export function formatWeightHint(hint: ExerciseWeightHint): string {
+  return hint.direction === 'increase'
+    ? `Go heavier — ${hint.reps}+ reps last week`
+    : `Go lighter — under ${hint.reps} reps last week`;
 }

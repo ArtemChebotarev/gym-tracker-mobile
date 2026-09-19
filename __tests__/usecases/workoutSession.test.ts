@@ -543,3 +543,44 @@ describe('storage is the source of truth', () => {
     expect(after.progress).toBeCloseTo((1 + 2) / 6);
   });
 });
+
+describe('getWorkoutSession — weight hints', () => {
+  const hinted = (sessionId: string, status: SessionExercise['status'] = 'planned') =>
+    planned(sessionId, 'bench', 1, [30, 30, 5], {
+      status,
+      setTargets: [
+        { setNumber: 1, targetReps: 30, suggestedWeight: 1, weightHint: 'increase' },
+        { setNumber: 2, targetReps: 30, suggestedWeight: 1, weightHint: 'increase' },
+        { setNumber: 3, targetReps: 5, suggestedWeight: 13, weightHint: 'decrease' },
+      ],
+    });
+
+  test("live: each direction once, with the mesocycle's rep bounds", async () => {
+    const { deps } = await setUp({ exercises: [hinted('w2d1'), row], logs: [] });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.exercises[0]?.weightHints).toEqual([
+      { direction: 'increase', reps: defaultProgressionSettings.maxReps },
+      { direction: 'decrease', reps: defaultProgressionSettings.minReps },
+    ]);
+    expect(model.exercises[1]).not.toHaveProperty('weightHints');
+  });
+
+  test('none on a skipped exercise', async () => {
+    const { deps } = await setUp({ exercises: [hinted('w2d1', 'skipped'), row], logs: [] });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.exercises[0]).not.toHaveProperty('weightHints');
+  });
+
+  test('none outside live mode', async () => {
+    const { deps } = await setUp({ exercises: [hinted('w1d1', 'completed')], logs: [] });
+
+    const model = await getWorkoutSession('w1d1', deps);
+
+    expect(model.mode).toBe('readonly');
+    expect(model.exercises[0]).not.toHaveProperty('weightHints');
+  });
+});
