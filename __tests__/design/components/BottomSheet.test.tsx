@@ -24,6 +24,27 @@ describe('BottomSheet', () => {
     expect(screen.getByText('Content')).toBeTruthy();
   });
 
+  test('renders the subtitle under the title only when given', () => {
+    const { rerender } = render(
+      <BottomSheet visible onClose={() => {}} title="Upper/lower">
+        <Text>Content</Text>
+      </BottomSheet>,
+    );
+    expect(screen.queryByText('Week 2 of 5 · 4 days a week')).toBeNull();
+
+    rerender(
+      <BottomSheet
+        visible
+        onClose={() => {}}
+        title="Upper/lower"
+        subtitle="Week 2 of 5 · 4 days a week"
+      >
+        <Text>Content</Text>
+      </BottomSheet>,
+    );
+    expect(screen.getByText('Week 2 of 5 · 4 days a week')).toBeTruthy();
+  });
+
   test('closes by button when the backdrop is pressed', () => {
     const onClose = jest.fn();
     render(

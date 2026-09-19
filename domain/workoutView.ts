@@ -15,3 +15,9 @@ export type WorkoutSlot = {
   weekNumber: number;
   dayNumber: number;
 };
+
+/**
+ * Which day the workout screen shows when one is picked (the mesocycle overview's cells, `Next
+ * workout`): a session by id, or a grid cell whose session may not exist yet.
+ */
+export type WorkoutPick = { sessionId: string } | { slot: WorkoutSlot };
