@@ -5,7 +5,7 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type SearchFieldProps = {
   value: string;
@@ -31,7 +31,7 @@ export function SearchField({ value, onChangeText, icon, placeholder }: SearchFi
           accessibilityRole="button"
           accessibilityLabel="Clear search"
           onPress={() => onChangeText('')}
-          hitSlop={8}
+          hitSlop={SIZES['size/hit-slop']}
           style={({ pressed }) => pressed && styles.pressed}
         >
           <Text style={styles.clear}>×</Text>
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],
     backgroundColor: COLORS['surface/card'],
-    borderWidth: 1,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/gap'],
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
     color: COLORS['text/faint'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
 });

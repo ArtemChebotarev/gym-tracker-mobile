@@ -14,7 +14,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { BottomSheet } from '@design/components/BottomSheet';
 import { CheckIcon } from '@design/icons/CheckIcon';
-import { COLORS } from '@design/tokens';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MesoGrid, MesoGridCell } from '@domain/mesoGrid';
 
 import {
@@ -24,7 +24,6 @@ import {
   mesoGridCellText,
 } from './MesoOverviewSheetLogic';
 import {
-  CELL_CHECK_ICON_SIZE,
   CELL_STATUS_STYLES,
   CELL_TEXT_STATUS_STYLES,
   LEGEND_ITEMS,
@@ -128,7 +127,7 @@ function MesoGridCellButton({ cell, isOpen, onPress }: MesoGridCellButtonProps) 
       ]}
     >
       {text === undefined ? (
-        <CheckIcon size={CELL_CHECK_ICON_SIZE} color={COLORS['text/primary']} />
+        <CheckIcon size={ICON_SIZES['icon/inline']} color={COLORS['text/primary']} />
       ) : (
         <Text style={[styles.cellText, CELL_TEXT_STATUS_STYLES[cell.status]]}>{text}</Text>
       )}

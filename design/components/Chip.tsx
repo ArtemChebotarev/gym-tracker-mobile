@@ -13,7 +13,8 @@
 // ExerciseFiltersSheet.tsx rather than folded into this component as another prop.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { circle } from '../shapes';
 
 type SelectableChipProps = {
   variant: 'selectable';
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    borderWidth: 1,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
@@ -108,11 +109,9 @@ const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    ...circle(SIZES['size/dot']),
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
 });

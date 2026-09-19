@@ -3,13 +3,8 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
-
-// No token exists for these — same exception MesoEditorReviewStepStyles.ts takes for its card
-// border and dot size.
-const CARD_BORDER_WIDTH = 1;
-const WEEK_DOT_SIZE = 8;
-const WEEK_DOTS_GAP = 5;
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { circle } from '@design/shapes';
 
 export const styles = StyleSheet.create({
   root: {
@@ -40,7 +35,7 @@ export const styles = StyleSheet.create({
   },
   activeCard: {
     backgroundColor: COLORS['surface/card'],
-    borderWidth: CARD_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['accent/border'],
     borderRadius: RADII['radius/control'],
     paddingHorizontal: SPACING['space/sheet'],
@@ -48,7 +43,7 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/row'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   activeHeader: {
     flexDirection: 'row',
@@ -64,12 +59,10 @@ export const styles = StyleSheet.create({
   },
   weekDots: {
     flexDirection: 'row',
-    gap: WEEK_DOTS_GAP,
+    gap: SPACING['space/dots'],
   },
   weekDot: {
-    width: WEEK_DOT_SIZE,
-    height: WEEK_DOT_SIZE,
-    borderRadius: WEEK_DOT_SIZE / 2,
+    ...circle(SIZES['size/dot-large']),
     backgroundColor: COLORS['surface/control-active'],
   },
   weekDotDone: {
@@ -85,7 +78,7 @@ export const styles = StyleSheet.create({
   },
   menuItem: {
     paddingVertical: SPACING['space/row'],
-    borderBottomWidth: CARD_BORDER_WIDTH,
+    borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
   },
   menuItemLabel: {

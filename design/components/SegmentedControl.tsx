@@ -5,10 +5,7 @@
 // (accessibilityRole="button" + accessibilityState.selected) for consistency across the SDK.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
-
-// No spacing token this tight exists yet — same exception as IconButton's DIAMETER.
-const CONTAINER_PADDING = 2;
+import { COLORS, OPACITY, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type SegmentedControlOption = {
   value: string;
@@ -51,7 +48,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS['surface/card'],
     borderRadius: RADII['radius/field'],
-    padding: CONTAINER_PADDING,
+    padding: SPACING['space/xxs'],
   },
   segment: {
     flex: 1,
@@ -64,7 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS['surface/control-active'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   label: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

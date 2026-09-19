@@ -26,7 +26,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { COLORS, SPACING } from '../tokens';
+import { BORDER_WIDTHS, COLORS, SPACING } from '../tokens';
 import { WizardHeader } from './WizardHeader';
 
 export type WizardScreenProps = {
@@ -36,9 +36,6 @@ export type WizardScreenProps = {
   footer: ReactNode;
   children: ReactNode;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
-
-const FOOTER_PADDING_BOTTOM = 24;
-const FOOTER_BORDER_WIDTH = 1;
 
 export function WizardScreen({
   title,
@@ -77,8 +74,8 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: SPACING['space/screen'],
     paddingTop: SPACING['space/screen'],
-    paddingBottom: FOOTER_PADDING_BOTTOM,
-    borderTopWidth: FOOTER_BORDER_WIDTH,
+    paddingBottom: SPACING['space/xl'],
+    borderTopWidth: BORDER_WIDTHS['border/default'],
     borderTopColor: COLORS['border/divider'],
   },
 });

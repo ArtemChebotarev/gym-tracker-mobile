@@ -8,19 +8,10 @@ import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 import type { MesoGridCellStatus } from '@domain/mesoGrid';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { square } from '@design/shapes';
 
-// No tokens for these — the 08.7 mockup sizes them directly.
-const WEEK_COLUMN_WIDTH = 52;
-const CELL_HEIGHT = 40;
-const CELL_BORDER_WIDTH = 1;
-const OPEN_RING_WIDTH = 2;
-const WEEK_FONT_SIZE = 12;
-const LEGEND_TOP = 14;
-const LEGEND_COLUMN_GAP = 14;
-const SWATCH_SIZE = 14;
-const SWATCH_RADIUS = 4;
-export const CELL_CHECK_ICON_SIZE = 15;
+const CELL_BORDER_WIDTH = BORDER_WIDTHS['border/default'];
 
 const SMALL_TEXT = TYPOGRAPHY['type/label'].fontSize;
 
@@ -38,7 +29,7 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/gap-tight'],
   },
   weekColumn: {
-    width: WEEK_COLUMN_WIDTH,
+    width: SIZES['size/week-column'],
   },
   dayHeader: {
     flex: 1,
@@ -47,7 +38,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/muted'],
   },
   weekLabel: {
-    fontSize: WEEK_FONT_SIZE,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/muted'],
   },
   deloadLabel: {
@@ -56,7 +47,7 @@ export const styles = StyleSheet.create({
   },
   cell: {
     flex: 1,
-    height: CELL_HEIGHT,
+    height: SIZES['size/cell'],
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: RADII['radius/field'],
@@ -76,12 +67,12 @@ export const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   cellPressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   openRing: {
     ...StyleSheet.absoluteFill,
     borderRadius: RADII['radius/field'] - CELL_BORDER_WIDTH,
-    borderWidth: OPEN_RING_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/emphasis'],
     borderColor: COLORS['text/muted'],
     pointerEvents: 'none',
   },
@@ -103,8 +94,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     rowGap: SPACING['space/row'],
-    columnGap: LEGEND_COLUMN_GAP,
-    marginTop: LEGEND_TOP,
+    columnGap: SPACING['space/legend'],
+    marginTop: SPACING['space/legend'],
   },
   legendItem: {
     flexDirection: 'row',
@@ -116,9 +107,8 @@ export const styles = StyleSheet.create({
     color: COLORS['text/faint'],
   },
   swatch: {
-    width: SWATCH_SIZE,
-    height: SWATCH_SIZE,
-    borderRadius: SWATCH_RADIUS,
+    ...square(SIZES['size/swatch']),
+    borderRadius: RADII['radius/small'],
     borderWidth: CELL_BORDER_WIDTH,
     borderColor: 'transparent',
   },

@@ -5,7 +5,7 @@
 // row, matching Button/IconButton's 0.5-opacity disabled treatment.
 
 import { StyleSheet, Switch, Text, View } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, OPACITY, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type ToggleProps = {
   label: string;
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     gap: SPACING['space/gap'],
   },
   disabled: {
-    opacity: 0.5,
+    opacity: OPACITY['opacity/dimmed'],
   },
   text: {
     flex: 1,

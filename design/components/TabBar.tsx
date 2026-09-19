@@ -9,7 +9,7 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { IconComponent } from '../icons/IconFrame';
-import { COLORS, ICON_SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, ICON_SIZES, OPACITY, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type TabBarItem = {
   key: string;
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING['space/row'],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   activeLabel: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

@@ -6,7 +6,18 @@ import type {
   TypographyToken,
   TypographyValue,
 } from '@design/tokens';
-import { COLORS, ICON_SIZES, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import {
+  BORDER_WIDTHS,
+  COLORS,
+  ICON_SIZES,
+  LINE_HEIGHTS,
+  OPACITY,
+  RADII,
+  SHADOWS,
+  SIZES,
+  SPACING,
+  TYPOGRAPHY,
+} from '@design/tokens';
 
 const EXPECTED_COLOR_TOKENS = [
   'surface/page',
@@ -28,6 +39,8 @@ const EXPECTED_COLOR_TOKENS = [
   'accent/border',
   'danger',
   'danger/border',
+  'overlay/scrim',
+  'shadow',
 ];
 
 const EXPECTED_TYPOGRAPHY_TOKENS = [
@@ -38,6 +51,8 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
   'type/row-title',
   'type/body',
   'type/value',
+  'type/meta',
+  'type/set-value',
   'type/label',
   'type/caption',
 ];
@@ -48,6 +63,8 @@ const EXPECTED_RADIUS_TOKENS = [
   'radius/control',
   'radius/field',
   'radius/segment-inner',
+  'radius/small',
+  'radius/progress',
 ];
 
 const EXPECTED_SPACING_TOKENS = [
@@ -57,6 +74,17 @@ const EXPECTED_SPACING_TOKENS = [
   'space/gap-tight',
   'space/gap',
   'space/row',
+  'space/xxs',
+  'space/chip-y',
+  'space/xs',
+  'space/dots',
+  'space/sm',
+  'space/md',
+  'space/action-row-y',
+  'space/legend',
+  'space/button',
+  'space/pill-x',
+  'space/xl',
 ];
 
 function sorted(values: string[]): string[] {
@@ -104,8 +132,34 @@ describe('design tokens', () => {
     expect(TYPOGRAPHY['type/card-title']).toEqual({ fontSize: 16, fontWeight: '500' });
   });
 
-  test('ICON_SIZES matches the tab bar and IconButton sizes from 08.0', () => {
-    expect(ICON_SIZES).toEqual({ 'icon/tab': 20, 'icon/button': 18 });
+  test('ICON_SIZES keeps the tab bar and IconButton sizes from 08.0', () => {
+    expect(ICON_SIZES['icon/tab']).toBe(20);
+    expect(ICON_SIZES['icon/button']).toBe(18);
+  });
+
+  // Task 100: every design value lives in a token group — each holds only its own kind of value.
+  test('every size, border width, line height and spacing token is a positive number', () => {
+    const numeric = { ...SPACING, ...RADII, ...ICON_SIZES, ...BORDER_WIDTHS, ...LINE_HEIGHTS };
+    for (const [token, value] of Object.entries(numeric)) {
+      expect([token, typeof value === 'number' && value > 0]).toEqual([token, true]);
+    }
+    for (const [token, value] of Object.entries(SIZES)) {
+      const valid =
+        (typeof value === 'number' && value > 0) ||
+        (typeof value === 'string' && /^\d+%$/.test(value));
+      expect([token, valid]).toEqual([token, true]);
+    }
+  });
+
+  test('OPACITY tokens are fractions of full opacity', () => {
+    for (const value of Object.values(OPACITY)) {
+      expect(value).toBeGreaterThan(0);
+      expect(value).toBeLessThan(1);
+    }
+  });
+
+  test('the lifted shadow uses the shadow color token', () => {
+    expect(SHADOWS['shadow/lifted'].shadowColor).toBe(COLORS.shadow);
   });
 
   test('IconSizeToken rejects an arbitrary string', () => {

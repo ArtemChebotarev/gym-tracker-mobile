@@ -40,7 +40,7 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
 import { formatUnlocksCaption, formatWorkoutSubtitle } from './WorkoutScreenLogic';
-import { COMPLETED_CHECK_ICON_SIZE, styles } from './WorkoutScreenStyles';
+import { styles } from './WorkoutScreenStyles';
 
 export type WorkoutScreenProps = {
   model: WorkoutSessionModel | undefined;
@@ -133,7 +133,7 @@ export function WorkoutScreen({
                 accessibilityLabel="Completed"
                 style={styles.completedCheck}
               >
-                <CheckIcon size={COMPLETED_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
+                <CheckIcon size={ICON_SIZES['icon/glyph']} color={COLORS['accent/on']} />
               </View>
             )}
           </>

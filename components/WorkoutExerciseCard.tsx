@@ -39,7 +39,7 @@ import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import { exerciseCardView, formatWeightHint } from './WorkoutExerciseCardLogic';
-import { INFO_ICON_SIZE, styles, WEIGHT_HINT_ICON_SIZE } from './WorkoutExerciseCardStyles';
+import { styles } from './WorkoutExerciseCardStyles';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
 export type WorkoutExerciseCardProps = {
@@ -107,7 +107,7 @@ export function WorkoutExerciseCard({
           const Icon = hint.direction === 'increase' ? ArrowUpIcon : ArrowDownIcon;
           return (
             <View key={hint.direction} testID="exercise-weight-hint" style={styles.weightHint}>
-              <Icon size={WEIGHT_HINT_ICON_SIZE} color={COLORS['text/secondary']} />
+              <Icon size={ICON_SIZES['icon/inline']} color={COLORS['text/secondary']} />
               <Text style={styles.weightHintText}>{formatWeightHint(hint)}</Text>
             </View>
           );
@@ -115,7 +115,7 @@ export function WorkoutExerciseCard({
 
         {view.showNotProgrammed && (
           <View style={styles.notProgrammed}>
-            <InfoIcon size={INFO_ICON_SIZE} color={COLORS['text/muted']} />
+            <InfoIcon size={ICON_SIZES['icon/inline']} color={COLORS['text/muted']} />
             <Text style={styles.notProgrammedText}>Not programmed yet</Text>
           </View>
         )}

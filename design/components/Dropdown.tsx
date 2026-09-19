@@ -15,18 +15,9 @@
 
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { circle } from '../shapes';
 import { fieldStyles } from './fieldStyles';
-
-// No token exists for a border width or a color dot's diameter — same exception
-// ExerciseFiltersSheetStyles.ts's BORDER_WIDTH/DOT_SIZE already take.
-const BORDER_WIDTH = 1;
-const DOT_SIZE = 8;
-const DOT_RADIUS = DOT_SIZE / 2;
-// Roughly 4.5 option rows tall — enough to preview the list without letting it dominate the
-// sheet; no token exists for this either. The half-row is deliberate: a visibly cut-off row is a
-// stronger "there's more, scroll" affordance than a clean break at a whole row boundary.
-const PANEL_MAX_HEIGHT = 190;
 
 export type DropdownOption = {
   value: string;
@@ -132,10 +123,13 @@ const styles = StyleSheet.create({
     color: COLORS['text/faint'],
   },
   panel: {
-    maxHeight: PANEL_MAX_HEIGHT,
+    // Roughly 4.5 option rows tall — enough to preview the list without letting it dominate the
+    // sheet. The half-row is deliberate: a visibly cut-off row is a stronger "there's more,
+    // scroll" affordance than a clean break at a whole row boundary.
+    maxHeight: SIZES['size/dropdown-panel'],
     marginTop: SPACING['space/gap-tight'],
     backgroundColor: COLORS['surface/card'],
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
   },
@@ -162,11 +156,9 @@ const styles = StyleSheet.create({
     color: COLORS.accent,
   },
   dot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_RADIUS,
+    ...circle(SIZES['size/dot-large']),
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
 });

@@ -8,6 +8,8 @@ import type { ReactNode } from 'react';
 import type { ColorValue } from 'react-native';
 import Svg, { G } from 'react-native-svg';
 
+import { ICON_STROKE_WIDTH } from '../tokens';
+
 export type IconProps = {
   /** Rendered width and height — `ICON_SIZES` in design/tokens.ts (20 in the tab bar, 18 in `IconButton`). */
   size: number;
@@ -21,12 +23,11 @@ export type IconProps = {
 export type IconComponent = (props: IconProps) => ReactNode;
 
 const VIEW_BOX = '0 0 24 24';
-const STROKE_WIDTH = 1.8;
 
 export function IconFrame({ size, color, children }: IconProps & { children: ReactNode }) {
   return (
     <Svg width={size} height={size} viewBox={VIEW_BOX}>
-      <G fill="none" stroke={color} strokeWidth={STROKE_WIDTH}>
+      <G fill="none" stroke={color} strokeWidth={ICON_STROKE_WIDTH}>
         {children}
       </G>
     </Svg>

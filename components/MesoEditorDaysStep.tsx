@@ -40,9 +40,9 @@
 // Nothing here touches the actual draft order until `onPanResponderRelease` — `hoverIndex` is a
 // pure display preview, so an abandoned drag (onPanResponderTerminate) costs nothing to discard.
 //
-// The drag distance-to-row-index math assumes every row is exactly `EXERCISE_ROW_HEIGHT` points
-// tall, so `exerciseRow`'s height is fixed (MesoEditorDaysStepStyles.ts) rather than left to
-// padding/content — the two numbers can't be allowed to drift apart.
+// The drag distance-to-row-index math assumes every row is exactly `size/exercise-row` points tall,
+// so `exerciseRow`'s height is fixed to that token (MesoEditorDaysStepStyles.ts) rather than left
+// to padding/content — the two can't be allowed to drift apart.
 //
 // Only the handle (the "≡" glyph) starts the drag, not the whole row — otherwise the pan
 // responder would claim touches meant for the Stepper's +/- buttons and the remove button.
@@ -72,6 +72,7 @@ import {
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
+import { SIZES } from '@design/tokens';
 
 import {
   dragTargetIndex,
@@ -86,7 +87,7 @@ import {
   type ExercisesByDay,
   type ExercisesById,
 } from './MesoEditorDaysStepLogic';
-import { EXERCISE_ROW_HEIGHT, styles } from './MesoEditorDaysStepStyles';
+import { styles } from './MesoEditorDaysStepStyles';
 
 export type MesoEditorDaysStepProps = {
   daysPerWeek: number;
@@ -149,7 +150,7 @@ export function MesoEditorDaysStep({
   useEffect(() => {
     rowShiftAnimations.forEach((animation, index) => {
       const shift = draggingIndex !== null && hoverIndex !== null ? rowShiftUnits(index, draggingIndex, hoverIndex) : 0;
-      Animated.spring(animation, { toValue: shift * EXERCISE_ROW_HEIGHT, useNativeDriver: false }).start();
+      Animated.spring(animation, { toValue: shift * SIZES['size/exercise-row'], useNativeDriver: false }).start();
     });
   }, [rowShiftAnimations, draggingIndex, hoverIndex]);
 
@@ -204,7 +205,7 @@ export function MesoEditorDaysStep({
         },
         onPanResponderMove: (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
           dragY.setValue(gestureState.dy);
-          latestHoverIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, EXERCISE_ROW_HEIGHT);
+          latestHoverIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, SIZES['size/exercise-row']);
           setHoverIndex(latestHoverIndex);
         },
         onPanResponderRelease: () => {

@@ -3,14 +3,8 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
-
-// No token exists yet for a chip/option border width or the muscle-group dot's own size — same
-// exception design/components/IconButton.tsx takes for its DIAMETER. Matches the dot size Chip's
-// own static variant and SectionHeader already use, for visual consistency.
-const BORDER_WIDTH = 1;
-const DOT_SIZE = 6;
-const DOT_RADIUS = DOT_SIZE / 2;
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { circle } from '@design/shapes';
 
 export const styles = StyleSheet.create({
   section: {
@@ -33,7 +27,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
@@ -50,9 +44,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   muscleGroupDot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_RADIUS,
+    ...circle(SIZES['size/dot']),
   },
   // Source is two equal-width options, not a wrapping row of pills — a different shape (and
   // larger tap target) from Chip's, borrowed from the field chrome radius rather than the pill
@@ -64,7 +56,7 @@ export const styles = StyleSheet.create({
   sourceOption: {
     flex: 1,
     alignItems: 'center',
-    borderWidth: BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingVertical: SPACING['space/row'],
   },
@@ -86,7 +78,7 @@ export const styles = StyleSheet.create({
     color: COLORS.accent,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: OPACITY['opacity/pressed'],
   },
   // Stretches the single confirm Button to the sheet's full width inside BottomSheet's
   // flex-row, flex-end footer.

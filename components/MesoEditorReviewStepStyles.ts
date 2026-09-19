@@ -4,26 +4,30 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
+import {
+  BORDER_WIDTHS,
+  COLORS,
+  ICON_SIZES,
+  RADII,
+  SIZES,
+  SPACING,
+  TYPOGRAPHY,
+} from '@design/tokens';
+import { circle } from '@design/shapes';
 
-// Same 4px content top padding and 8px group dot as steps 1 and 2 (MesoEditorBasicsStepStyles.ts,
+// Same 4px content top padding and group dot as steps 1 and 2 (MesoEditorBasicsStepStyles.ts,
 // MesoEditorDaysStepStyles.ts) — kept identical so the content doesn't shift between steps.
-const CONTENT_PADDING_TOP = 4;
-const DOT_SIZE = 8;
-const CARD_BORDER_WIDTH = 1;
-const SUMMARY_META_MARGIN_TOP = 4;
-const CHEVRON_SIZE = 20;
 
 export const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING['space/screen'],
-    paddingTop: CONTENT_PADDING_TOP,
+    paddingTop: SPACING['space/xs'],
     paddingBottom: SPACING['space/section'],
     gap: SPACING['space/section'],
   },
   card: {
     backgroundColor: COLORS['surface/card'],
-    borderWidth: CARD_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/control'],
     paddingHorizontal: SPACING['space/sheet'],
@@ -35,7 +39,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   summaryMeta: {
-    marginTop: SUMMARY_META_MARGIN_TOP,
+    marginTop: SPACING['space/xs'],
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS['text/muted'],
@@ -60,7 +64,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   chevron: {
-    fontSize: CHEVRON_SIZE,
+    fontSize: ICON_SIZES['icon/chevron'],
     color: COLORS['text/faint'],
   },
   exerciseRow: {
@@ -68,13 +72,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap'],
-    borderTopWidth: CARD_BORDER_WIDTH,
+    borderTopWidth: BORDER_WIDTHS['border/default'],
     borderTopColor: COLORS['border/divider'],
   },
   dot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
+    ...circle(SIZES['size/dot-large']),
   },
   exerciseName: {
     flex: 1,

@@ -11,7 +11,7 @@
 // — that's the caller's responsibility, same as every other prop-driven design component.
 
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { IconButton } from './IconButton';
 
 export type WizardHeaderProps = {
@@ -20,18 +20,8 @@ export type WizardHeaderProps = {
   totalSteps: number;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
 
-// No dedicated size token exists yet — same exception as IconButton's own DIAMETER.
-const ICON_SIZE = 16;
 // Mockup (01-new-meso-basics.html / 02-new-meso-days.html): .progress div{gap:4px;height:3px;
-// border-radius:2px}, .title's 6px/4px top/bottom padding, .header's 18px/6px top/bottom
-// padding. No token exists for any of these.
-const PROGRESS_GAP = 4;
-const PROGRESS_SEGMENT_HEIGHT = 3;
-const PROGRESS_SEGMENT_RADIUS = 2;
-const HEADER_PADDING_TOP = 18;
-const HEADER_PADDING_BOTTOM = 6;
-const TITLE_PADDING_TOP = 6;
-const TITLE_PADDING_BOTTOM = 4;
+// border-radius:2px}, .title's 6px/4px top/bottom padding, .header's 18px/6px top/bottom padding.
 
 export function WizardHeader({ title, currentStep, totalSteps, onClose, onBack }: WizardHeaderProps) {
   const isClose = onClose !== undefined;
@@ -65,11 +55,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING['space/screen'],
-    paddingTop: HEADER_PADDING_TOP,
-    paddingBottom: HEADER_PADDING_BOTTOM,
+    paddingTop: SPACING['space/section'],
+    paddingBottom: SPACING['space/gap-tight'],
   },
   icon: {
-    fontSize: ICON_SIZE,
+    fontSize: ICON_SIZES['icon/small'],
     color: COLORS['text/secondary'],
   },
   stepLabel: {
@@ -81,19 +71,19 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/sheet-title'].fontWeight,
     color: COLORS['text/primary'],
     paddingHorizontal: SPACING['space/screen'],
-    paddingTop: TITLE_PADDING_TOP,
-    paddingBottom: TITLE_PADDING_BOTTOM,
+    paddingTop: SPACING['space/gap-tight'],
+    paddingBottom: SPACING['space/xs'],
   },
   progress: {
     flexDirection: 'row',
-    gap: PROGRESS_GAP,
+    gap: SPACING['space/xs'],
     paddingHorizontal: SPACING['space/screen'],
     paddingBottom: SPACING['space/screen'],
   },
   progressSegment: {
     flex: 1,
-    height: PROGRESS_SEGMENT_HEIGHT,
-    borderRadius: PROGRESS_SEGMENT_RADIUS,
+    height: SIZES['size/progress'],
+    borderRadius: RADII['radius/progress'],
     backgroundColor: COLORS['border/divider-subtle'],
   },
   progressSegmentDone: {
