@@ -152,6 +152,23 @@ describe('WorkoutScreen header', () => {
     expect(screen.queryByTestId('workout-completed-check')).toBeNull();
   });
 
+  test('shows the Deload badge on a deload session only, next to the completed check', () => {
+    const deload: WorkoutSessionModel = {
+      ...COMPLETED,
+      header: { ...COMPLETED.header, isDeload: true },
+    };
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: deload })} />);
+    expect(screen.getByText('Deload')).toBeTruthy();
+    expect(screen.getByTestId('workout-completed-check')).toBeTruthy();
+
+    screen.rerender(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <WorkoutScreen {...makeProps({ model: LIVE })} />
+      </SafeAreaProvider>,
+    );
+    expect(screen.queryByTestId('workout-deload-badge')).toBeNull();
+  });
+
   test.each([
     ['live', LIVE, 40],
     ['completed', COMPLETED, 100],
