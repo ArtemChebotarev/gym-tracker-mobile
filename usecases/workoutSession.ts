@@ -8,11 +8,14 @@ import type { Equipment, MuscleGroup } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@domain/execution';
 import { currentSession } from '@domain/mesoGridBuilders';
+import type { ProgressionSettings } from '@domain/mesocycle';
 import { isDeloadWeek } from '@domain/progressionPlan';
 import { targetIndicator } from '@domain/progressionTargetIndicator';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
 import {
   canFinishSession,
+  type ExerciseWeightHint,
+  exerciseWeightHints,
   previewSourceSession,
   sessionDisplayDate,
   sessionProgress,
@@ -93,6 +96,11 @@ export type WorkoutExercise = {
   targetRir?: number;
   /** `planned` in preview. */
   status: SessionExerciseStatus;
+  /**
+   * Go heavier / go lighter, from last week's reps (03, rule 3). Live mode only, and not on a
+   * skipped exercise — it's advice for doing the sets; absent when there's none.
+   */
+  weightHints?: ExerciseWeightHint[];
   /**
    * Every set row — in a skipped exercise the unlogged ones flagged `isSkipped`; none in preview.
    */
@@ -231,6 +239,7 @@ function toExercise(
   count: number,
   mode: WorkoutMode,
   referenceLogs: ReferenceLogs,
+  settings: ProgressionSettings,
 ): WorkoutExercise {
   const { sessionExercise, exercise, setLogs } = tree;
   const skipped = sessionExercise.status === 'skipped';
@@ -267,6 +276,12 @@ function toExercise(
   if (exercise.equipment !== undefined) {
     model.equipment = exercise.equipment;
   }
+  if (mode === 'live' && !skipped) {
+    const weightHints = exerciseWeightHints(sessionExercise.setTargets, settings);
+    if (weightHints.length > 0) {
+      model.weightHints = weightHints;
+    }
+  }
   return model;
 }
 
@@ -302,7 +317,14 @@ function fromTree(
     header,
     progress: sessionProgress(session, exercises),
     exercises: exercises.map((exercise, index) =>
-      toExercise(exercise, index, exercises.length, mode, referenceLogsOf(source)),
+      toExercise(
+        exercise,
+        index,
+        exercises.length,
+        mode,
+        referenceLogsOf(source),
+        mesocycle.progressionSettings,
+      ),
     ),
     actions: {
       canAddExercise: live && !session.isDeload,

@@ -1,4 +1,9 @@
-import { exerciseCardView, formatRir, showsGroupChip } from '@components/WorkoutExerciseCardLogic';
+import {
+  exerciseCardView,
+  formatRir,
+  formatWeightHint,
+  showsGroupChip,
+} from '@components/WorkoutExerciseCardLogic';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 const ROW: WorkoutSetRow = { setNumber: 1, isFirstUnlogged: false, log: { weight: 60, reps: 10 } };
@@ -109,5 +114,19 @@ describe('formatRir', () => {
   test('reads `N RIR`', () => {
     expect(formatRir(2)).toBe('2 RIR');
     expect(formatRir(0)).toBe('0 RIR');
+  });
+});
+
+describe('formatWeightHint', () => {
+  test('go heavier names the upper bound reached', () => {
+    expect(formatWeightHint({ direction: 'increase', reps: 30 })).toBe(
+      'Go heavier — 30+ reps last week',
+    );
+  });
+
+  test('go lighter names the lower bound missed', () => {
+    expect(formatWeightHint({ direction: 'decrease', reps: 5 })).toBe(
+      'Go lighter — under 5 reps last week',
+    );
   });
 });

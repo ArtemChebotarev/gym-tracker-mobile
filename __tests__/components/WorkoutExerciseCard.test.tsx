@@ -230,4 +230,26 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.getByTestId('set-row-1')).toBeTruthy();
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
+
+  test('shows one line per weight hint, and none without hints', () => {
+    const { rerender } = render(
+      <WorkoutExerciseCard
+        {...makeProps({
+          exercise: makeExercise({
+            weightHints: [
+              { direction: 'increase', reps: 30 },
+              { direction: 'decrease', reps: 5 },
+            ],
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.getAllByTestId('exercise-weight-hint')).toHaveLength(2);
+    expect(screen.getByText('Go heavier — 30+ reps last week')).toBeTruthy();
+    expect(screen.getByText('Go lighter — under 5 reps last week')).toBeTruthy();
+
+    rerender(<WorkoutExerciseCard {...makeProps()} />);
+    expect(screen.queryByTestId('exercise-weight-hint')).toBeNull();
+  });
 });

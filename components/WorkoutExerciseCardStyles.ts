@@ -8,11 +8,7 @@ import { StyleSheet } from 'react-native';
 
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
-import {
-  INDICATOR_WIDTH,
-  LOG_COLUMN_WIDTH,
-  SMALL_FONT_SIZE,
-} from './WorkoutSetRowStyles';
+import { INDICATOR_WIDTH, LOG_COLUMN_WIDTH, SMALL_FONT_SIZE } from './WorkoutSetRowStyles';
 
 // No tokens for these — 08.7 sizes them directly: the group chip's dot is 6pt, a skipped card sits
 // at 50% opacity.
@@ -20,6 +16,7 @@ const GROUP_DOT_SIZE = 6;
 const SKIPPED_OPACITY = 0.5;
 const BORDER_WIDTH = 1;
 export const INFO_ICON_SIZE = 15;
+export const WEIGHT_HINT_ICON_SIZE = 15;
 
 export const styles = StyleSheet.create({
   root: {
@@ -109,6 +106,17 @@ export const styles = StyleSheet.create({
     paddingBottom: SPACING['space/gap'],
     fontSize: SMALL_FONT_SIZE,
     color: COLORS['text/muted'],
+  },
+  weightHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/gap-tight'],
+    marginTop: SPACING['space/gap-tight'],
+  },
+  weightHintText: {
+    flex: 1,
+    fontSize: SMALL_FONT_SIZE,
+    color: COLORS['text/secondary'],
   },
   notProgrammed: {
     flexDirection: 'row',

@@ -2,7 +2,8 @@
 // "Preview непосчитанного дня") and 05 · Workout Execution & Logging. Pure: the use case layer reads
 // the session tree and maps it with these.
 
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { Session, SessionExercise, SetLog, SetTarget, WeightHint } from '@domain/execution';
+import type { ProgressionSettings } from '@domain/mesocycle';
 import { isFinalSession } from '@domain/sessionLifecycle';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
 
@@ -97,4 +98,30 @@ export function previewSourceSession<S extends Session>(
  */
 export function unlockingSlot(slot: WorkoutSlot): WorkoutSlot {
   return { ...slot, weekNumber: slot.weekNumber - 1 };
+}
+
+/** A weight hint as the exercise card shows it: the direction, and the rep bound behind it. */
+export type ExerciseWeightHint = {
+  direction: WeightHint;
+  /** `maxReps` for `increase` (reps reached it), `minReps` for `decrease` (reps fell under it). */
+  reps: number;
+};
+
+/**
+ * The weight hints (03 · Progression Engine, rule 3) of an exercise's set rows, each direction
+ * once — `increase` first. A hint is set per row from that set's fact last week; the card names
+ * the direction once for the exercise, and the rows' reps show which sets it's about.
+ */
+export function exerciseWeightHints(
+  setTargets: readonly Pick<SetTarget, 'weightHint'>[],
+  settings: Pick<ProgressionSettings, 'minReps' | 'maxReps'>,
+): ExerciseWeightHint[] {
+  const hints: ExerciseWeightHint[] = [];
+  if (setTargets.some((target) => target.weightHint === 'increase')) {
+    hints.push({ direction: 'increase', reps: settings.maxReps });
+  }
+  if (setTargets.some((target) => target.weightHint === 'decrease')) {
+    hints.push({ direction: 'decrease', reps: settings.minReps });
+  }
+  return hints;
 }
