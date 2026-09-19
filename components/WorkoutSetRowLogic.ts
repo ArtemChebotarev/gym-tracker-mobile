@@ -81,16 +81,20 @@ export function parseReps(text: string): number | null {
 }
 
 /**
- * The entry the Log button would record, or `null` while it can't be logged — the button is
- * inactive then. Only what's typed counts: a placeholder isn't a value (05, "Записать подход"),
- * so an empty field is never filled in from it. The rules for a valid entry are the domain's
- * (`validateSetEntry`), not repeated here.
+ * The entry the Log button records, or `null` while it can't be logged — the button is inactive
+ * then. Weight is what the field holds (it starts with the suggested weight as a value). Reps are
+ * what was typed; an empty Reps field takes the set's `targetReps` — tapping Log on a row left as
+ * recommended fills it in and logs it (Artem's review). Only a real target does: the deload guide
+ * and `N RIR` aren't reps to log, so with those an empty field keeps Log inactive. The rules for a
+ * valid entry are the domain's (`validateSetEntry`), not repeated here.
  */
-export function parseSetEntry(
+export function resolveSetEntry(
   weightText: string,
   repsText: string,
+  row: Pick<WorkoutSetRow, 'targetReps'>,
 ): { weight: number; reps: number } | null {
-  const entry = { weight: parseWeight(weightText), reps: parseReps(repsText) };
+  const reps = repsText.trim() === '' ? (row.targetReps ?? null) : parseReps(repsText);
+  const entry = { weight: parseWeight(weightText), reps };
   try {
     validateSetEntry(entry);
     return entry;

@@ -83,17 +83,44 @@ describe('WorkoutSetRow — unlogged', () => {
     expect(screen.getByLabelText('Set 1 reps').props.keyboardType).toBe('number-pad');
   });
 
-  test('DoD: the placeholder is not a value — Log stays inactive until reps are typed', () => {
+  test('a row left as recommended logs with one tap — the target reps fill the empty field', () => {
     const onLog = jest.fn();
     render(<WorkoutSetRow {...makeProps({ onLog })} />);
+
+    expect(logButton().props.accessibilityState).toMatchObject({ disabled: false });
+    fireEvent.press(logButton());
+
+    expect(onLog).toHaveBeenCalledWith({ weight: 62.5, reps: 10 });
+    expect(screen.getByLabelText('Set 1 reps').props.value).toBe('10');
+  });
+
+  test('with no target reps, Log stays inactive until reps are typed', () => {
+    const onLog = jest.fn();
+    render(
+      <WorkoutSetRow
+        {...makeProps({ row: { setNumber: 1, suggestedWeight: 60, isFirstUnlogged: true }, onLog })}
+      />,
+    );
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
     fireEvent.press(logButton());
     expect(onLog).not.toHaveBeenCalled();
 
-    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '10');
+    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '9');
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: false });
+  });
+
+  test("a deload row's guide is not logged for you", () => {
+    render(
+      <WorkoutSetRow
+        {...makeProps({
+          row: { setNumber: 1, suggestedWeight: 30, referenceReps: 9, isFirstUnlogged: true },
+        })}
+      />,
+    );
+
+    expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
   });
 
   test('Log stays inactive with reps but no weight', () => {
@@ -118,8 +145,6 @@ describe('WorkoutSetRow — unlogged', () => {
 
   test('Log waits while a set is being saved', () => {
     render(<WorkoutSetRow {...makeProps({ isSaving: true })} />);
-
-    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '10');
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
   });

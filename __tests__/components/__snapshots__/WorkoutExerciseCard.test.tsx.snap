@@ -466,13 +466,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 18,
-          }
-        }
-      />
       <Text
         style={
           [
@@ -548,18 +541,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [
@@ -781,18 +762,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       }
       testID="set-row-2"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        2
-      </Text>
       <TextInput
         accessibilityLabel="Set 2 weight"
         keyboardType="decimal-pad"
@@ -883,7 +852,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "busy": undefined,
               "checked": false,
-              "disabled": true,
+              "disabled": false,
               "expanded": undefined,
               "selected": undefined,
             }
@@ -941,18 +910,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       }
       testID="set-row-3"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        3
-      </Text>
       <TextInput
         accessibilityLabel="Set 3 weight"
         keyboardType="decimal-pad"
@@ -1043,7 +1000,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "busy": undefined,
               "checked": false,
-              "disabled": true,
+              "disabled": false,
               "expanded": undefined,
               "selected": undefined,
             }
@@ -1811,13 +1768,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 18,
-          }
-        }
-      />
       <Text
         style={
           [
@@ -1893,18 +1843,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [
@@ -2094,18 +2032,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       }
       testID="set-row-2"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        2
-      </Text>
       <View
         style={
           [
@@ -2295,18 +2221,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       }
       testID="set-row-3"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        3
-      </Text>
       <View
         style={
           [
@@ -3289,13 +3203,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         }
       }
     >
-      <View
-        style={
-          {
-            "width": 18,
-          }
-        }
-      />
       <Text
         style={
           [
@@ -3371,18 +3278,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       }
       testID="set-row-1"
     >
-      <Text
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 12,
-            "textAlign": "center",
-            "width": 18,
-          }
-        }
-      >
-        1
-      </Text>
       <View
         style={
           [

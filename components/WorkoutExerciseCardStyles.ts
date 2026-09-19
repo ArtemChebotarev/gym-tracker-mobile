@@ -11,7 +11,6 @@ import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 import {
   INDICATOR_WIDTH,
   LOG_COLUMN_WIDTH,
-  SET_NUMBER_WIDTH,
   SMALL_FONT_SIZE,
 } from './WorkoutSetRowStyles';
 
@@ -78,17 +77,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],
   },
-  // The column header, on the set rows' grid (WorkoutSetRowStyles.ts): number · Weight · Reps ·
-  // indicator · Log, centered, with Log flush right.
+  // The column header, on the set rows' grid (WorkoutSetRowStyles.ts): Weight · Reps · indicator ·
+  // Log, centered, with Log flush right.
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
     marginTop: SPACING['space/row'],
     paddingBottom: SPACING['space/gap-tight'],
-  },
-  setNumberColumn: {
-    width: SET_NUMBER_WIDTH,
   },
   valueColumn: {
     flex: 1,

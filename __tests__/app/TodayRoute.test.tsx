@@ -97,6 +97,21 @@ describe('Today tab — set logging', () => {
     expect(within(benchCard()).getByLabelText('Set 3 reps').props.value).toBe('9');
   });
 
+  test('one tap logs a row left as recommended, with its target reps', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    const rowCard = () => screen.getByTestId('exercise-card-mock-session-w2d1-barbell-row-barbell');
+
+    fireEvent.press(within(rowCard()).getByRole('checkbox', { name: 'Log set 1' }));
+
+    const logged = await within(rowCard()).findByRole('checkbox', { name: 'Set 1 logged' });
+    expect(within(rowCard()).getByText('✓')).toBeTruthy();
+
+    // Put the shared stub session back the way the other tests expect it.
+    fireEvent.press(logged);
+    await within(rowCard()).findByRole('checkbox', { name: 'Log set 1' });
+  });
+
   test('DoD: another session in progress — nothing is logged, the alert names it and opens it', async () => {
     // A ready day of the same mesocycle, while the stub Week 2 Day 1 is in progress.
     await ensureWorkoutMocksSeeded();

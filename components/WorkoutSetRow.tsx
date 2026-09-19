@@ -4,15 +4,16 @@
 // Editable (live mode, exercise not skipped):
 // - unlogged — Weight starts with the **value** of `suggestedWeight` (else empty, `–` placeholder,
 //   decimal keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard).
-//   Log is inactive until both fields hold a value — a placeholder isn't one — and carries the
-//   accent outline on the exercise's first unlogged row.
+//   Log carries the accent outline on the exercise's first unlogged row. It logs what the fields
+//   hold, an empty Reps taking the set's target reps (`resolveSetEntry`) — so a row left as
+//   recommended logs with one tap. With no target to fall back on, Log waits for typed reps.
 // - logged — plain numbers, the `✓ / +N / −N` indicator (only for a set with `targetReps`), and a
 //   filled Log box. Tapping it un-logs the set, and the fields come back holding the logged values.
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
 // values with nothing to type or press.
 //
-// Laid out after the 08.7 mockup: number · Weight · Reps · indicator · Log, all centered; the
-// focused field's outline brightens.
+// Laid out after the 08.7 mockup's set table: Weight · Reps · indicator · Log, all centered (no set
+// number — Artem's review); the focused field's outline brightens.
 //
 // Typed-but-unlogged values live only in this component's state — they're never saved (05,
 // "Сохранение данных"). The screen does the writing through `onLog` / `onUnlog`.
@@ -32,8 +33,8 @@ import {
   initialWeightText,
   isRirPlaceholder,
   isStrongIndicator,
-  parseSetEntry,
   repsPlaceholder,
+  resolveSetEntry,
 } from './WorkoutSetRowLogic';
 import { LOG_CHECK_ICON_SIZE, PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
 
@@ -74,7 +75,6 @@ export function WorkoutSetRow({
   if (log) {
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
-        <Text style={styles.setNumber}>{setNumber}</Text>
         <View style={[styles.field, styles.fieldLogged]}>
           <Text style={styles.value}>{formatRowWeight(log.weight)}</Text>
         </View>
@@ -120,7 +120,6 @@ export function WorkoutSetRow({
   if (!editable) {
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
-        <Text style={styles.setNumber}>{setNumber}</Text>
         <View style={styles.field}>
           {row.suggestedWeight !== undefined ? (
             <Text style={styles.value}>{formatRowWeight(row.suggestedWeight)}</Text>
@@ -141,12 +140,11 @@ export function WorkoutSetRow({
     );
   }
 
-  const entry = parseSetEntry(weightText, repsText);
+  const entry = resolveSetEntry(weightText, repsText, row);
   const canLog = entry !== null && !isSaving;
 
   return (
     <View testID={`set-row-${setNumber}`} style={styles.row}>
-      <Text style={styles.setNumber}>{setNumber}</Text>
       <TextInput
         accessibilityLabel={`Set ${setNumber} weight`}
         value={weightText}
@@ -190,6 +188,8 @@ export function WorkoutSetRow({
           disabled={!canLog}
           onPress={() => {
             if (entry) {
+              // Show what's being logged — an empty Reps field fills in with the target.
+              setRepsText(String(entry.reps));
               onLog(entry);
             }
           }}

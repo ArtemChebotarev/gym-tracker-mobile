@@ -1,22 +1,21 @@
 // Styles behind components/WorkoutSetRow.tsx — see the code-style skill.
 //
-// Laid out after the 08.7 mockup (08.7-workout-session.html): a five-column grid — set number 18,
-// Weight and Reps sharing the rest, the indicator 22, Log 38 — with everything centered, and a
-// subtle divider above each row. The card's column header (WorkoutExerciseCardStyles.ts) reuses
-// the fixed column widths to line up with the rows.
+// Laid out after the 08.7 mockup's set table (08.7-workout-session.html), minus the set number
+// (Artem's review): Weight and Reps sharing the width, the indicator 22, Log 38 — everything
+// centered, with a subtle divider above each row. The card's column header
+// (WorkoutExerciseCardStyles.ts) reuses the fixed column widths to line up with the rows.
 
 import { StyleSheet } from 'react-native';
 
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 // No tokens for these — the 08.7 mockup sizes them directly.
-export const SET_NUMBER_WIDTH = 18;
 export const INDICATOR_WIDTH = 22;
 export const LOG_COLUMN_WIDTH = 38;
 const LOG_BOX_SIZE = 34;
 const FIELD_HEIGHT = 40;
 const FIELD_FONT_SIZE = 17;
-/** The small secondary text of the workout screen: set numbers, the indicator, equipment. */
+/** The small secondary text of the workout screen: the indicator, equipment, notes. */
 export const SMALL_FONT_SIZE = 12;
 export const LOG_CHECK_ICON_SIZE = 16;
 const BORDER_WIDTH = 1;
@@ -29,12 +28,6 @@ export const styles = StyleSheet.create({
     paddingVertical: SPACING['space/gap-tight'],
     borderTopWidth: BORDER_WIDTH,
     borderTopColor: COLORS['border/divider-subtle'],
-  },
-  setNumber: {
-    width: SET_NUMBER_WIDTH,
-    textAlign: 'center',
-    fontSize: SMALL_FONT_SIZE,
-    color: COLORS['text/faint'],
   },
   // Weight and Reps: the field frame, also kept (without fill or outline) for a logged value so
   // the row doesn't jump when a set is logged.

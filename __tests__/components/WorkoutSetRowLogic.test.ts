@@ -5,9 +5,9 @@ import {
   isRirPlaceholder,
   isStrongIndicator,
   parseReps,
-  parseSetEntry,
   parseWeight,
   repsPlaceholder,
+  resolveSetEntry,
 } from '@components/WorkoutSetRowLogic';
 
 describe('formatRowWeight', () => {
@@ -85,20 +85,34 @@ describe('parseReps', () => {
   });
 });
 
-describe('parseSetEntry', () => {
+describe('resolveSetEntry', () => {
+  const TARGETED = { targetReps: 10 };
+
   test('both fields filled — the entry to log', () => {
-    expect(parseSetEntry('62,5', '10')).toEqual({ weight: 62.5, reps: 10 });
+    expect(resolveSetEntry('62,5', '8', TARGETED)).toEqual({ weight: 62.5, reps: 8 });
   });
 
-  test('DoD: a placeholder is not a value — an empty field keeps Log inactive', () => {
-    // The Reps field shows `10` (or `2 RIR`) as a placeholder but holds nothing.
-    expect(parseSetEntry('62.5', '')).toBeNull();
-    expect(parseSetEntry('', '10')).toBeNull();
+  test('an empty Reps field takes the target reps — one tap logs a row left as recommended', () => {
+    expect(resolveSetEntry('62.5', '', TARGETED)).toEqual({ weight: 62.5, reps: 10 });
+    expect(resolveSetEntry('62.5', '  ', TARGETED)).toEqual({ weight: 62.5, reps: 10 });
+  });
+
+  test('without target reps an empty Reps field keeps Log inactive — N RIR and the deload guide are not reps', () => {
+    expect(resolveSetEntry('62.5', '', {})).toBeNull();
+  });
+
+  test('an empty Weight field is never filled in', () => {
+    expect(resolveSetEntry('', '10', TARGETED)).toBeNull();
+    expect(resolveSetEntry('', '', TARGETED)).toBeNull();
+  });
+
+  test('typed reps that are not a whole number are not replaced by the target', () => {
+    expect(resolveSetEntry('62.5', '8.5', TARGETED)).toBeNull();
   });
 
   test("the domain's rules decide what's valid: 0 kg is fine, 0 reps isn't", () => {
-    expect(parseSetEntry('0', '12')).toEqual({ weight: 0, reps: 12 });
-    expect(parseSetEntry('60', '0')).toBeNull();
+    expect(resolveSetEntry('0', '12', {})).toEqual({ weight: 0, reps: 12 });
+    expect(resolveSetEntry('60', '0', TARGETED)).toBeNull();
   });
 });
 

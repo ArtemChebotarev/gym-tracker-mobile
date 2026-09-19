@@ -105,7 +105,6 @@ export function WorkoutExerciseCard({
 
         {view.showSets && exercise.rows.length > 0 && (
           <View style={styles.headerRow}>
-            <View style={styles.setNumberColumn} />
             <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
             <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
             <View style={styles.indicatorColumn} />
