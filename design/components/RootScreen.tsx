@@ -14,12 +14,6 @@
 // shown by the Today tab): a faint `titleSuffix` in the same `type/screen-title` line (`Week 6` +
 // `Day 2`), a `titleAccessory` right after the title (the completed check), and a `subtitle` line
 // under it. They stay generic — the caller resolves their content.
-//
-// The header is a full-width `surface/raised` band from the top edge (status bar included) — the
-// same surface as the tab bar, so the page content sits between two raised bars (08.7 mockup,
-// applied to every root screen). Content goes below it on `surface/page`, inside the screen
-// padding — or, with `flushContent`, edge to edge right under the band (the workout screen's
-// progress bar and exercise list).
 
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -36,11 +30,6 @@ export type RootScreenProps = {
   /** A secondary line under the title. */
   subtitle?: string;
   trailing?: ReactNode;
-  /**
-   * Children run edge to edge, right under the header band, with no screen padding — they pad
-   * their own content.
-   */
-  flushContent?: boolean;
   children?: ReactNode;
 };
 
@@ -50,32 +39,27 @@ export function RootScreen({
   titleAccessory,
   subtitle,
   trailing,
-  flushContent = false,
   children,
 }: RootScreenProps) {
   return (
-    <View style={styles.container}>
-      <SafeAreaView testID="root-screen-header" style={styles.headerBand} edges={['top']}>
-        <View style={styles.header}>
-          <View style={styles.heading}>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>
-                {title}
-                {titleSuffix !== undefined && (
-                  <Text style={styles.titleSuffix}>{` ${titleSuffix}`}</Text>
-                )}
-              </Text>
-              {titleAccessory}
-            </View>
-            {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <View style={styles.heading}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>
+              {title}
+              {titleSuffix !== undefined && (
+                <Text style={styles.titleSuffix}>{` ${titleSuffix}`}</Text>
+              )}
+            </Text>
+            {titleAccessory}
           </View>
-          {trailing}
+          {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
-      </SafeAreaView>
-      <View testID="root-screen-body" style={flushContent ? styles.bodyFlush : styles.body}>
-        {children}
+        {trailing}
       </View>
-    </View>
+      {children}
+    </SafeAreaView>
   );
 }
 
@@ -83,21 +67,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS['surface/page'],
-  },
-  headerBand: {
-    backgroundColor: COLORS['surface/raised'],
-    paddingHorizontal: SPACING['space/screen'],
-    paddingTop: SPACING['space/row'],
-    paddingBottom: SPACING['space/row'],
-  },
-  body: {
-    flex: 1,
     paddingHorizontal: SPACING['space/screen'],
     paddingTop: SPACING['space/screen'],
     gap: SPACING['space/gap'],
-  },
-  bodyFlush: {
-    flex: 1,
   },
   header: {
     flexDirection: 'row',

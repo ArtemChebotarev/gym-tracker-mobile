@@ -114,7 +114,6 @@ export function WorkoutScreen({
           )
         }
         subtitle={formatWorkoutSubtitle(header)}
-        flushContent
         trailing={
           <View style={styles.actions}>
             <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
@@ -126,9 +125,11 @@ export function WorkoutScreen({
           </View>
         }
       >
-        <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
+        <View style={styles.fullBleed}>
+          <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
+        </View>
         <ScrollView
-          style={styles.list}
+          style={[styles.fullBleed, styles.list]}
           contentContainerStyle={styles.content}
           // A tap on Log while the keyboard is up logs the set rather than only closing the
           // keyboard; the inset keeps the focused row above the keyboard.

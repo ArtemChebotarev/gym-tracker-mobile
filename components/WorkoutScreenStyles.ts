@@ -31,8 +31,11 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING['space/gap'],
   },
-  // The progress bar and the exercise list run edge to edge (08.7 mockup) — RootScreen's
-  // `flushContent`; the list's sections pad their own content.
+  // The progress bar and the exercise list run edge to edge (08.7 mockup), out of RootScreen's
+  // screen padding; the list's sections pad their own content.
+  fullBleed: {
+    marginHorizontal: -SPACING['space/screen'],
+  },
   list: {
     flex: 1,
   },
