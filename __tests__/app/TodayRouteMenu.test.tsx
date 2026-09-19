@@ -169,9 +169,7 @@ describe('Today tab — header menu', () => {
     pressAlertButton('Skip');
 
     // Logged sets make it a completed session — still this one, now read-only.
-    expect(
-      await screen.findByTestId('workout-completed-check', {}, { timeout: 5000 }),
-    ).toBeTruthy();
+    expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
       MOCK_SESSION_IDS.live,
@@ -218,18 +216,13 @@ describe('Today tab — header menu', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
     pressAlertButton('Skip');
 
-    // Skipping also generates next week's day in the same transaction, which can take over
-    // waitFor's default second when the whole suite runs in parallel.
-    await waitFor(
-      async () =>
-        expect((await workoutStore.repos.sessionRepo.getById('ready-w1d2'))?.status).toBe(
-          'skipped',
-        ),
-      { timeout: 5000 },
-    );
-    // Still this session, now read-only: no Log boxes.
-    await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Log set 1' })).toBeNull());
+    // Still this session, now read-only: its one exercise skipped with nothing logged — the
+    // `Skipped` note in place of the rows, no Log boxes.
+    expect(await screen.findByText('Skipped')).toBeTruthy();
     expect(screen.getByText('Week 1 Day 2')).toBeTruthy();
+    expect(screen.queryByRole('checkbox', { name: 'Log set 1' })).toBeNull();
+    const session = await workoutStore.repos.sessionRepo.getById('ready-w1d2');
+    expect(session?.status).toBe('skipped');
     // Next week's Day 2 is generated, as after Finish.
     const week2 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
       MOCK_MESOCYCLE_IDS.active,

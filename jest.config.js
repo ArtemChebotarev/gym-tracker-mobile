@@ -1,10 +1,7 @@
 // https://docs.expo.dev/develop/unit-testing/
 module.exports = {
   preset: 'jest-expo',
-  setupFilesAfterEnv: [
-    '@react-native/jest-preset/jest/setup.js',
-    '<rootDir>/jest.setup.ts',
-  ],
+  setupFilesAfterEnv: ['@react-native/jest-preset/jest/setup.js', '<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@domain/(.*)$': '<rootDir>/domain/$1',
     '^@usecases/(.*)$': '<rootDir>/usecases/$1',
@@ -15,5 +12,8 @@ module.exports = {
     '^@app/(.*)$': '<rootDir>/app/$1',
     '^@state/(.*)$': '<rootDir>/state/$1',
   },
-  testPathIgnorePatterns: ['/node_modules/'],
+  // `.claude/worktrees/` holds other checkouts of this repo (parallel task sessions); their tests and
+  // modules aren't this checkout's.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'],
+  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
 };
