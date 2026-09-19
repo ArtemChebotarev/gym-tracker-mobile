@@ -7,8 +7,8 @@
 // check for a completed session only (not pressable), and the grid and `⋯` buttons, which exist in
 // every mode. The progress ratio comes straight from the model (088) — nothing is computed here.
 //
-// The list is one exercise card per exercise (WorkoutExerciseCard, task 092); tasks 093–094 fill in
-// the set row inputs and Finish workout.
+// The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
+// (WorkoutSetRow, 093); task 094 adds Finish workout.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
@@ -43,6 +43,16 @@ export type WorkoutScreenProps = {
   onOpenExerciseHistory: (exercise: WorkoutExercise) => void;
   /** Opens an exercise's menu sheet (08.7, "Лист «Меню упражнения»"), from its card. Live only. */
   onOpenExerciseMenu: (exercise: WorkoutExercise) => void;
+  /** Logs a set row with what was typed (05, "Записать подход"). Live only. */
+  onLogSet: (
+    exercise: WorkoutExercise,
+    setNumber: number,
+    entry: { weight: number; reps: number },
+  ) => void;
+  /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
+  onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** A log or un-log is being saved. */
+  isSaving: boolean;
   /** The way forward when the session couldn't be loaded. */
   fallbackAction: { label: string; onPress: () => void };
 };
@@ -54,6 +64,9 @@ export function WorkoutScreen({
   onOpenMenu,
   onOpenExerciseHistory,
   onOpenExerciseMenu,
+  onLogSet,
+  onUnlogSet,
+  isSaving,
   fallbackAction,
 }: WorkoutScreenProps) {
   if (isPending) {
@@ -113,7 +126,13 @@ export function WorkoutScreen({
         }
       >
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          // A tap on Log while the keyboard is up logs the set rather than only closing the
+          // keyboard; the inset keeps the focused row above the keyboard.
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
+        >
           {model.exercises.map((exercise, index) => (
             <WorkoutExerciseCard
               key={exercise.sessionExerciseId}
@@ -122,6 +141,9 @@ export function WorkoutScreen({
               showGroupChip={showsGroupChip(model.exercises, index)}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               onOpenMenu={() => onOpenExerciseMenu(exercise)}
+              isSaving={isSaving}
+              onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
+              onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
             />
           ))}
           {model.unlocksAfter !== undefined && (

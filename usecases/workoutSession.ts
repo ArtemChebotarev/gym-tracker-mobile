@@ -6,7 +6,7 @@
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
-import type { Session, SessionExerciseStatus, TargetIndicator } from '@domain/execution';
+import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@domain/execution';
 import { isDeloadWeek } from '@domain/progressionPlan';
 import { targetIndicator } from '@domain/progressionTargetIndicator';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
@@ -35,6 +35,12 @@ export type WorkoutSetRow = {
   setNumber: number;
   targetReps?: number;
   suggestedWeight?: number;
+  /**
+   * Deload only: the reps actually done in this set last working week — the same exercise and set
+   * number in the session the deload was planned from (05, "Deload-неделя"). The reps placeholder
+   * shows it as a guide; absent when that set wasn't logged there.
+   */
+  referenceReps?: number;
   /** What was logged, if the row is logged. */
   log?: { weight: number; reps: number };
   /** `✓` / `+N` / `−N` — only for a logged row whose set had `targetReps`. */
@@ -142,8 +148,30 @@ const NO_EXERCISE_ACTIONS: WorkoutExerciseActions = {
   canDelete: false,
 };
 
-function toRows(tree: SessionExerciseTree, mode: WorkoutMode): WorkoutSetRow[] {
+/**
+ * The set logs of the session a deload session was planned from, by exercise — where a deload
+ * row's `referenceReps` comes from. Empty for any other session.
+ */
+type ReferenceLogs = ReadonlyMap<string, readonly SetLog[]>;
+
+function referenceLogsOf(source: SessionTree | null): ReferenceLogs {
+  const byExercise = new Map<string, SetLog[]>();
+  for (const { sessionExercise, setLogs } of source?.exercises ?? []) {
+    byExercise.set(sessionExercise.exerciseId, [
+      ...(byExercise.get(sessionExercise.exerciseId) ?? []),
+      ...setLogs,
+    ]);
+  }
+  return byExercise;
+}
+
+function toRows(
+  tree: SessionExerciseTree,
+  mode: WorkoutMode,
+  referenceLogs: ReferenceLogs,
+): WorkoutSetRow[] {
   const { sessionExercise, setLogs } = tree;
+  const exerciseReferenceLogs = referenceLogs.get(sessionExercise.exerciseId) ?? [];
   const skipped = sessionExercise.status === 'skipped';
   const firstUnlogged =
     mode === 'live' && !skipped
@@ -168,6 +196,12 @@ function toRows(tree: SessionExerciseTree, mode: WorkoutMode): WorkoutSetRow[] {
     if (target.suggestedWeight !== undefined) {
       row.suggestedWeight = target.suggestedWeight;
     }
+    const reference = exerciseReferenceLogs.find(
+      (candidate) => candidate.setNumber === target.setNumber,
+    );
+    if (reference) {
+      row.referenceReps = reference.reps;
+    }
     if (log) {
       row.log = { weight: log.weight, reps: log.reps };
       const indicator = targetIndicator(target, log);
@@ -185,6 +219,7 @@ function toExercise(
   index: number,
   count: number,
   mode: WorkoutMode,
+  referenceLogs: ReferenceLogs,
 ): WorkoutExercise {
   const { sessionExercise, exercise, setLogs } = tree;
   const skipped = sessionExercise.status === 'skipped';
@@ -200,7 +235,7 @@ function toExercise(
     muscleGroup: exercise.muscleGroup,
     targetRir: sessionExercise.targetRir,
     status: sessionExercise.status,
-    rows: toRows(tree, mode),
+    rows: toRows(tree, mode, referenceLogs),
     hasSkippedRows: skipped && loggedSetCount < plannedSetCount,
     plannedSetCount,
     loggedSetCount,
@@ -225,8 +260,11 @@ function toExercise(
   return model;
 }
 
-/** A live or read-only session, from its own tree. */
-function fromTree(tree: SessionTree): WorkoutSessionModel {
+/**
+ * A live or read-only session, from its own tree. `source` is the tree of the session a deload
+ * session was planned from (`null` otherwise) — see `referenceReps`.
+ */
+function fromTree(tree: SessionTree, source: SessionTree | null): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
   const mode = workoutMode(session);
   const live = mode === 'live';
@@ -249,7 +287,7 @@ function fromTree(tree: SessionTree): WorkoutSessionModel {
     header,
     progress: sessionProgress(session, exercises),
     exercises: exercises.map((exercise, index) =>
-      toExercise(exercise, index, exercises.length, mode),
+      toExercise(exercise, index, exercises.length, mode, referenceLogsOf(source)),
     ),
     actions: {
       canAddExercise: live && !session.isDeload,
@@ -336,7 +374,12 @@ export async function getWorkoutSession(
     const { mesoId, weekNumber, dayNumber } = tree.session;
     return previewOf({ mesoId, weekNumber, dayNumber }, tree.session, deps);
   }
-  return fromTree(tree);
+  const { isDeload, sourceSessionId } = tree.session;
+  const source =
+    isDeload && sourceSessionId !== undefined
+      ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
+      : null;
+  return fromTree(tree, source);
 }
 
 /**

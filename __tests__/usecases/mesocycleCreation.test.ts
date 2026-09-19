@@ -12,7 +12,11 @@ jest.mock('expo-crypto', () => {
 
 const twoDayWeekPlan: WeekPlan = {
   days: [
-    { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }] },
+    {
+      dayNumber: 1,
+      name: '',
+      exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }],
+    },
     { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 4 }] },
   ],
 };
@@ -26,7 +30,12 @@ function makeDeps() {
   };
 }
 
-const draftInput = { name: 'Push/Pull/Legs', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
+const draftInput = {
+  name: 'Push/Pull/Legs',
+  lengthWeeks: 6,
+  daysPerWeek: 2,
+  weekPlan: twoDayWeekPlan,
+};
 
 describe('confirmScratchMesocycleDraft', () => {
   test('saves a planned mesocycle with the correct origin and no startDate', async () => {
@@ -56,7 +65,12 @@ describe('confirmScratchMesocycleDraft', () => {
 
   test('confirming the same draft input twice creates two independent records, not an update', async () => {
     const deps = makeDeps();
-    const input = { name: 'Push/Pull/Legs', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
+    const input = {
+      name: 'Push/Pull/Legs',
+      lengthWeeks: 6,
+      daysPerWeek: 2,
+      weekPlan: twoDayWeekPlan,
+    };
 
     const first = await confirmScratchMesocycleDraft(input, deps);
     const second = await confirmScratchMesocycleDraft(input, deps);
@@ -83,7 +97,10 @@ describe('confirmScratchMesocycleDraft', () => {
     const settings = await deps.settingsRepo.read();
     await deps.settingsRepo.write({
       ...settings,
-      defaultProgressionSettings: { ...settings.defaultProgressionSettings, historyLookbackDays: 45 },
+      defaultProgressionSettings: {
+        ...settings.defaultProgressionSettings,
+        historyLookbackDays: 45,
+      },
     });
 
     const saved = await confirmScratchMesocycleDraft(draftInput, deps);
@@ -98,7 +115,10 @@ describe('confirmScratchMesocycleDraft', () => {
     const settings = await deps.settingsRepo.read();
     await deps.settingsRepo.write({
       ...settings,
-      defaultProgressionSettings: { ...settings.defaultProgressionSettings, historyLookbackDays: 90 },
+      defaultProgressionSettings: {
+        ...settings.defaultProgressionSettings,
+        historyLookbackDays: 90,
+      },
     });
 
     const stored = await deps.mesocycleRepo.getById(saved.id);

@@ -1,8 +1,7 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
-import type { TargetIndicator } from '@domain/execution';
 import type { WorkoutMode } from '@domain/workoutView';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
  * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
@@ -38,7 +37,7 @@ export function exerciseCardView(
   };
 }
 
-/** `2 RIR` — the badge, and the reps placeholder of a row with no `targetReps`. */
+/** `2 RIR` — the chip, and the reps placeholder of a row with no `targetReps`. */
 export function formatRir(rir: number): string {
   return `${rir} RIR`;
 }
@@ -56,35 +55,4 @@ export function showsGroupChip(
     return false;
   }
   return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
-}
-
-/** A weight as the row shows it — `62.5`, no unit (the column header says `kg`). */
-export function formatRowWeight(weight: number): string {
-  return String(weight);
-}
-
-/**
- * An unlogged row's reps placeholder (08.7, "Строка подхода"): `targetReps` when the set has one,
- * otherwise the exercise's target RIR.
- */
-export function repsPlaceholder(
-  row: Pick<WorkoutSetRow, 'targetReps'>,
-  targetRir: number | undefined,
-): string {
-  if (row.targetReps !== undefined) {
-    return String(row.targetReps);
-  }
-  return targetRir !== undefined ? formatRir(targetRir) : '–';
-}
-
-/** `✓` hit, `+N` over the target, `−N` under it. */
-export function formatIndicator(indicator: TargetIndicator): string {
-  switch (indicator.kind) {
-    case 'hit':
-      return '✓';
-    case 'over':
-      return `+${indicator.diff}`;
-    case 'under':
-      return `−${indicator.diff}`;
-  }
 }

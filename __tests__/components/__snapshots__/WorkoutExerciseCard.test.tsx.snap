@@ -634,6 +634,37 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Set 1 logged"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": true,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -645,11 +676,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
               },
+              false,
             ]
           }
         >
@@ -752,7 +783,12 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       >
         2
       </Text>
-      <View
+      <TextInput
+        accessibilityLabel="Set 2 weight"
+        keyboardType="decimal-pad"
+        onChangeText={[Function]}
+        placeholder="–"
+        placeholderTextColor="#6B7076"
         style={
           [
             {
@@ -766,22 +802,21 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "justifyContent": "center",
               "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
             {
               "color": "#F5F5F4",
               "fontSize": 15,
               "fontWeight": "400",
-            }
-          }
-        >
-          62.5
-        </Text>
-      </View>
-      <View
+            },
+          ]
+        }
+        value="62.5"
+      />
+      <TextInput
+        accessibilityLabel="Set 2 reps"
+        keyboardType="number-pad"
+        onChangeText={[Function]}
+        placeholder="10"
+        placeholderTextColor="#6B7076"
         style={
           [
             {
@@ -795,21 +830,15 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "justifyContent": "center",
               "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
             {
-              "color": "#6B7076",
+              "color": "#F5F5F4",
               "fontSize": 15,
               "fontWeight": "400",
-            }
-          }
-        >
-          10
-        </Text>
-      </View>
+            },
+          ]
+        }
+        value=""
+      />
       <View
         style={
           {
@@ -819,6 +848,37 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Log set 2"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": true,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -864,7 +924,12 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       >
         3
       </Text>
-      <View
+      <TextInput
+        accessibilityLabel="Set 3 weight"
+        keyboardType="decimal-pad"
+        onChangeText={[Function]}
+        placeholder="–"
+        placeholderTextColor="#6B7076"
         style={
           [
             {
@@ -878,22 +943,21 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "justifyContent": "center",
               "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
             {
               "color": "#F5F5F4",
               "fontSize": 15,
               "fontWeight": "400",
-            }
-          }
-        >
-          62.5
-        </Text>
-      </View>
-      <View
+            },
+          ]
+        }
+        value="62.5"
+      />
+      <TextInput
+        accessibilityLabel="Set 3 reps"
+        keyboardType="number-pad"
+        onChangeText={[Function]}
+        placeholder="10"
+        placeholderTextColor="#6B7076"
         style={
           [
             {
@@ -907,21 +971,15 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "justifyContent": "center",
               "paddingHorizontal": 7,
             },
-          ]
-        }
-      >
-        <Text
-          style={
             {
-              "color": "#6B7076",
+              "color": "#F5F5F4",
               "fontSize": 15,
               "fontWeight": "400",
-            }
-          }
-        >
-          10
-        </Text>
-      </View>
+            },
+          ]
+        }
+        value=""
+      />
       <View
         style={
           {
@@ -931,6 +989,37 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Log set 3"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": true,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -1853,7 +1942,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -2052,7 +2140,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -2251,7 +2338,6 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",
@@ -3391,7 +3477,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 "justifyContent": "center",
                 "width": 34,
               },
-              false,
               {
                 "backgroundColor": "#CDFF57",
                 "borderColor": "#CDFF57",

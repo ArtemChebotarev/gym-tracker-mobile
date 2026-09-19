@@ -99,6 +99,9 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onOpenMenu: jest.fn(),
     onOpenExerciseHistory: jest.fn(),
     onOpenExerciseMenu: jest.fn(),
+    onLogSet: jest.fn(),
+    onUnlogSet: jest.fn(),
+    isSaving: false,
     fallbackAction: { label: 'Go back', onPress: jest.fn() },
     ...overrides,
   };

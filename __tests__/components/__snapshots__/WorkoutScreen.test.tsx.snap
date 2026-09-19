@@ -524,6 +524,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -531,6 +532,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View
@@ -1359,6 +1361,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -1366,6 +1369,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View
@@ -2331,6 +2335,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
         />
       </View>
       <RCTScrollView
+        automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
           {
             "gap": 10,
@@ -2338,6 +2343,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
             "paddingTop": 7,
           }
         }
+        keyboardShouldPersistTaps="handled"
       >
         <View>
           <View

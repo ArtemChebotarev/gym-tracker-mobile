@@ -281,6 +281,37 @@ describe('getWorkoutSession — live', () => {
     expect(model.header.isDeload).toBe(true);
     expect(model.actions.canAddExercise).toBe(false);
   });
+
+  test("deload rows carry last working week's actual reps of the same exercise and set", async () => {
+    const w3d1 = slotSession(3, 1, {
+      status: 'completed',
+      completedAt: '2026-09-15T10:00:00.000Z',
+    });
+    const w3Bench = planned('w3d1', 'bench', 1, [10, 10, 10], { status: 'completed' });
+    const w3Row = planned('w3d1', 'row', 2, [10], { status: 'completed' });
+    const deloadBench = planned('w4d1', 'bench', 1, [undefined, undefined]);
+    const deloadCurl = planned('w4d1', 'curl', 2, [undefined]);
+    const { deps } = await setUp({
+      sessions: [w3d1, slotSession(4, 1, { isDeload: true, sourceSessionId: 'w3d1' })],
+      exercises: [w3Bench, w3Row, deloadBench, deloadCurl],
+      logs: [logOf(w3Bench, 1, 11), logOf(w3Bench, 3, 8), logOf(w3Row, 1, 12)],
+    });
+
+    const [benchModel, curlModel] = (await getWorkoutSession('w4d1', deps)).exercises;
+
+    // Set 2 wasn't logged last week — no guide for it rather than a guess.
+    expect(benchModel?.rows.map((r) => r.referenceReps)).toEqual([11, undefined]);
+    // The curl wasn't in last week's session at all.
+    expect(curlModel?.rows.map((r) => r.referenceReps)).toEqual([undefined]);
+  });
+
+  test('rows of a session that is not a deload carry no reference reps', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.exercises.flatMap((e) => e.rows).some((r) => 'referenceReps' in r)).toBe(false);
+  });
 });
 
 describe('getWorkoutSession — Finish', () => {

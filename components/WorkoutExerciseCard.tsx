@@ -5,8 +5,8 @@
 // (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity, logged rows plus one
 // `Skipped` row), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
 //
-// The set rows here are static — they show the row's values, but nothing can be typed or logged
-// yet; task 093 replaces `SetRow` with the real inputs and the Log toggle.
+// The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
+// skipped — a skipped exercise's rows are read-only until it's unskipped (05).
 //
 // The RIR is a static `Chip`, not the neutral `Badge` 08.7 names: `Badge` neutral fills with
 // `surface/card`, the card's own background, so on the card it read as bare text. The chip's
@@ -21,7 +21,6 @@ import { Text, View } from 'react-native';
 import { Chip } from '@design/components/Chip';
 import { IconButton } from '@design/components/IconButton';
 import { getEquipmentLabel } from '@design/equipmentLabel';
-import { CheckIcon } from '@design/icons/CheckIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
@@ -30,15 +29,11 @@ import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import {
-  exerciseCardView,
-  formatIndicator,
-  formatRowWeight,
-  repsPlaceholder,
-} from './WorkoutExerciseCardLogic';
-import { INFO_ICON_SIZE, LOG_CHECK_ICON_SIZE, styles } from './WorkoutExerciseCardStyles';
+import { exerciseCardView } from './WorkoutExerciseCardLogic';
+import { INFO_ICON_SIZE, styles } from './WorkoutExerciseCardStyles';
+import { WorkoutSetRow } from './WorkoutSetRow';
 
 export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
@@ -49,6 +44,10 @@ export type WorkoutExerciseCardProps = {
   onOpenHistory: () => void;
   /** Opens the "Меню упражнения" sheet. Live mode only — the button isn't there otherwise. */
   onOpenMenu: () => void;
+  /** A log or un-log is being saved — every Log box waits for it. */
+  isSaving: boolean;
+  onLogSet: (setNumber: number, entry: { weight: number; reps: number }) => void;
+  onUnlogSet: (setNumber: number) => void;
 };
 
 export function WorkoutExerciseCard({
@@ -57,8 +56,12 @@ export function WorkoutExerciseCard({
   showGroupChip,
   onOpenHistory,
   onOpenMenu,
+  isSaving,
+  onLogSet,
+  onUnlogSet,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
+  const editable = mode === 'live' && !view.isSkipped;
 
   return (
     <View style={styles.root}>
@@ -102,7 +105,7 @@ export function WorkoutExerciseCard({
 
         {view.showSets && (
           <>
-            <View style={styles.row}>
+            <View style={styles.headerRow}>
               <View style={styles.setNumberColumn} />
               <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
               <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
@@ -111,7 +114,17 @@ export function WorkoutExerciseCard({
               </View>
             </View>
             {exercise.rows.map((row) => (
-              <SetRow key={row.setNumber} row={row} targetRir={exercise.targetRir} />
+              // Keyed by the exercise too: a replaced exercise's rows start fresh from its new
+              // targets instead of keeping what was typed for the old one.
+              <WorkoutSetRow
+                key={`${exercise.exerciseId}-${row.setNumber}`}
+                row={row}
+                targetRir={exercise.targetRir}
+                editable={editable}
+                isSaving={isSaving}
+                onLog={(entry) => onLogSet(row.setNumber, entry)}
+                onUnlog={() => onUnlogSet(row.setNumber)}
+              />
             ))}
             {exercise.hasSkippedRows && <Text style={styles.skippedRow}>Skipped</Text>}
           </>
@@ -135,64 +148,6 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
       <Text style={[styles.groupLabel, { color: colors.text ?? COLORS['text/secondary'] }]}>
         {getMuscleGroupLabel(muscleGroup)}
       </Text>
-    </View>
-  );
-}
-
-type SetRowProps = {
-  row: WorkoutSetRow;
-  targetRir: number | undefined;
-};
-
-// Static stand-in for the set row — task 093 turns the fields into inputs and the Log box into the
-// logging toggle.
-function SetRow({ row, targetRir }: SetRowProps) {
-  const { log } = row;
-
-  return (
-    <View testID={`set-row-${row.setNumber}`} style={styles.row}>
-      <Text style={[styles.setNumberColumn, styles.setNumber]}>{row.setNumber}</Text>
-      {log ? (
-        <>
-          <View style={[styles.valueColumn, styles.loggedValue]}>
-            <Text style={styles.value}>{formatRowWeight(log.weight)}</Text>
-          </View>
-          <View style={[styles.valueColumn, styles.loggedValue]}>
-            <View style={styles.repsValue}>
-              <Text style={styles.value}>{log.reps}</Text>
-              {row.indicator !== undefined && (
-                <Text style={styles.indicator}>{formatIndicator(row.indicator)}</Text>
-              )}
-            </View>
-          </View>
-        </>
-      ) : (
-        <>
-          <View style={[styles.valueColumn, styles.field]}>
-            {row.suggestedWeight !== undefined ? (
-              <Text style={styles.value}>{formatRowWeight(row.suggestedWeight)}</Text>
-            ) : (
-              <Text style={styles.placeholder}>–</Text>
-            )}
-          </View>
-          <View style={[styles.valueColumn, styles.field]}>
-            <Text style={styles.placeholder}>{repsPlaceholder(row, targetRir)}</Text>
-          </View>
-        </>
-      )}
-      <View style={styles.logColumn}>
-        <View
-          style={[
-            styles.logBox,
-            row.isFirstUnlogged && styles.logBoxNext,
-            log !== undefined && styles.logBoxLogged,
-          ]}
-        >
-          {log !== undefined && (
-            <CheckIcon size={LOG_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
-          )}
-        </View>
-      </View>
     </View>
   );
 }

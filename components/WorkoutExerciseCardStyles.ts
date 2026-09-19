@@ -4,16 +4,14 @@ import { StyleSheet } from 'react-native';
 
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
-// No tokens for these — 08.7 sizes them directly: the equipment line is `text/faint 12`, the Log box
-// is a 34pt square, the group chip's dot is 6pt, and a skipped card sits at 50% opacity.
+import { LOG_BOX_SIZE, SET_NUMBER_WIDTH } from './WorkoutSetRowStyles';
+
+// No tokens for these — 08.7 sizes them directly: the equipment line is `text/faint 12`, the group
+// chip's dot is 6pt, and a skipped card sits at 50% opacity.
 const EQUIPMENT_FONT_SIZE = 12;
-const LOG_BOX_SIZE = 34;
 const GROUP_DOT_SIZE = 6;
 const SKIPPED_OPACITY = 0.5;
 const CARD_BORDER_WIDTH = 1;
-// The set number column — wide enough for two digits.
-const SET_NUMBER_WIDTH = 20;
-export const LOG_CHECK_ICON_SIZE = 16;
 export const INFO_ICON_SIZE = 16;
 
 export const styles = StyleSheet.create({
@@ -73,8 +71,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap'],
   },
-  // Column header and set rows share one grid: number · Weight · Reps · Log.
-  row: {
+  // The column header lines up with the set rows' grid (WorkoutSetRowStyles.ts): number · Weight ·
+  // Reps · Log.
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
@@ -95,58 +94,6 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/label'].fontWeight,
     letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
     color: COLORS['text/muted'],
-  },
-  setNumber: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    color: COLORS['text/faint'],
-  },
-  field: {
-    height: LOG_BOX_SIZE,
-    justifyContent: 'center',
-    borderWidth: CARD_BORDER_WIDTH,
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
-    paddingHorizontal: SPACING['space/gap'],
-  },
-  loggedValue: {
-    height: LOG_BOX_SIZE,
-    justifyContent: 'center',
-    paddingHorizontal: SPACING['space/gap'],
-  },
-  value: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    fontWeight: TYPOGRAPHY['type/value'].fontWeight,
-    color: COLORS['text/primary'],
-  },
-  placeholder: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    fontWeight: TYPOGRAPHY['type/value'].fontWeight,
-    color: COLORS['text/faint'],
-  },
-  repsValue: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: SPACING['space/gap-tight'],
-  },
-  indicator: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    color: COLORS['text/muted'],
-  },
-  logBox: {
-    width: LOG_BOX_SIZE,
-    height: LOG_BOX_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: CARD_BORDER_WIDTH,
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
-  },
-  logBoxNext: {
-    borderColor: COLORS.accent,
-  },
-  logBoxLogged: {
-    backgroundColor: COLORS.accent,
-    borderColor: COLORS.accent,
   },
   skippedRow: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
