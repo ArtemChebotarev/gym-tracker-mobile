@@ -1,9 +1,10 @@
 // Mesocycles tab route — wires components/MesocyclesScreen.tsx (08.3 · Мезоциклы — список, task
 // 074) to real data and navigation.
 //
+// Start (042) materializes week 1 and the list refreshes in place: the mesocycle moves up into the
+// Active card, which leads on to the Today tab.
 // Several destinations don't exist yet, so they're explicit "not available yet" popups rather
 // than buttons that silently do nothing:
-// - Start → the Start scenario itself is task 042 (materializing week 1 into sessions).
 // - Completed Copy → Flow C, not yet specified as a screen (074: "можно оставить точку входа как
 //   заглушку").
 // - Completed `⋯` → a mesocycle's History screen.
@@ -22,6 +23,7 @@ import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
+import { useStartMesocycle } from '@state/useStartMesocycle';
 
 export default function MesocyclesRoute() {
   const router = useRouter();
@@ -29,6 +31,7 @@ export default function MesocyclesRoute() {
   const activeId = query.data?.find((mesocycle) => mesocycle.status === 'active')?.id;
   const activeGrid = useMesoGrid(activeId);
   const deleteMesocycle = useDeletePlannedMesocycle();
+  const startMesocycle = useStartMesocycle();
   const setDraft = useDraftStore((state) => state.setMesoBuilder);
 
   function showNotAvailable(feature: string) {
@@ -42,7 +45,13 @@ export default function MesocyclesRoute() {
       activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
       onRequestCreate={() => router.push('/meso-editor/new')}
       onOpenActive={() => router.navigate('/')}
-      onStart={() => showNotAvailable('Starting a mesocycle')}
+      onStart={(mesocycle) =>
+        startMesocycle.mutate(mesocycle.id, {
+          onError: () => {
+            Alert.alert("Couldn't start mesocycle", 'Something went wrong. Please try again.');
+          },
+        })
+      }
       onEdit={(mesocycle) => {
         setDraft(toMesoBuilderDraft(mesocycle));
         router.push({ pathname: '/meso-editor/edit/[id]', params: { id: mesocycle.id } });

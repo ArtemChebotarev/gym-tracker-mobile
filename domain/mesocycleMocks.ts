@@ -1,11 +1,14 @@
-// Stub mesocycles — task 074 ("Мезоциклы — список"). Until Start (042) and finishing a mesocycle
-// exist, nothing in the app can produce an `active` or `completed` mesocycle, so the list screen
-// would only ever show Planned. These three (one per status the list renders) are seeded into the
-// app-wide store alongside whatever the user saves through Flow A — see state/mesocycleStore.ts.
-// Same role as ./exerciseCatalog.ts: plain data, no side effects, no repository calls.
+// Stub mesocycles — task 074 ("Мезоциклы — список"). Until finishing a mesocycle exists, nothing
+// in the app can produce a `completed` one, so the list screen would never show that group. Seeded
+// into the app-wide store alongside whatever the user saves through Flow A — see
+// state/mesocycleStore.ts. Same role as ./exerciseCatalog.ts: plain data, no side effects, no
+// repository calls.
+// The Planned one is small on purpose (3 weeks × 2 days, 3 + 1 exercises), so starting it (042) and
+// training through it by hand is quick. There is no active stub: an active mesocycle, with its
+// sessions, is what Start produces from a planned one.
 //
-// Dates are relative to `now` so the Active card always lands mid-block (week 2) no matter when
-// the app is launched, instead of a hardcoded start date drifting past `lengthWeeks`.
+// Dates are relative to `now`, so the Completed card reads as a block finished a month ago no
+// matter when the app is launched.
 
 import type { Mesocycle } from './mesocycle';
 import { defaultProgressionSettings } from './mesocycle';
@@ -18,7 +21,6 @@ function daysBefore(now: Date, days: number): string {
 
 /** Stable ids, so seeding twice (or re-seeding after a reload) never duplicates a mock. */
 export const MOCK_MESOCYCLE_IDS = {
-  active: 'mock-mesocycle-active',
   planned: 'mock-mesocycle-planned',
   completed: 'mock-mesocycle-completed',
 } as const;
@@ -26,21 +28,10 @@ export const MOCK_MESOCYCLE_IDS = {
 export function buildMockMesocycles(now: Date): Mesocycle[] {
   return [
     {
-      id: MOCK_MESOCYCLE_IDS.active,
-      name: 'Upper/Lower',
-      lengthWeeks: 5,
-      daysPerWeek: 4,
-      startDate: daysBefore(now, 10),
-      status: 'active',
-      origin: { type: 'scratch' },
-      progressionSettings: defaultProgressionSettings,
-      createdAt: daysBefore(now, 12),
-    },
-    {
       id: MOCK_MESOCYCLE_IDS.planned,
-      name: 'Push/Pull/Legs',
-      lengthWeeks: 6,
-      daysPerWeek: 3,
+      name: 'Upper/Lower',
+      lengthWeeks: 3,
+      daysPerWeek: 2,
       status: 'planned',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
@@ -51,24 +42,14 @@ export function buildMockMesocycles(now: Date): Mesocycle[] {
             name: '',
             exercises: [
               { exerciseId: 'bench-press-barbell', order: 0, sets: 3 },
-              { exerciseId: 'shoulder-press-dumbbell', order: 1, sets: 3 },
+              { exerciseId: 'barbell-row-barbell', order: 1, sets: 3 },
+              { exerciseId: 'shoulder-press-dumbbell', order: 2, sets: 2 },
             ],
           },
           {
             dayNumber: 2,
             name: '',
-            exercises: [
-              { exerciseId: 'barbell-row-barbell', order: 0, sets: 3 },
-              { exerciseId: 'bicep-curl-dumbbell', order: 1, sets: 2 },
-            ],
-          },
-          {
-            dayNumber: 3,
-            name: '',
-            exercises: [
-              { exerciseId: 'squat-barbell', order: 0, sets: 3 },
-              { exerciseId: 'leg-press-machine', order: 1, sets: 2 },
-            ],
+            exercises: [{ exerciseId: 'squat-barbell', order: 0, sets: 3 }],
           },
         ],
       },

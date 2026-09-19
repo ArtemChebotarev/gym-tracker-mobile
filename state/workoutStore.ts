@@ -3,7 +3,6 @@
 // 07 · Persistence Layer Contract), so the repositories a workout query needs are built here, over
 // the app-wide store.
 
-import { buildMockWorkout } from '@domain/workoutMocks';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemorySessionRepository } from '@storage/session';
@@ -18,8 +17,6 @@ import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 import type { WorkoutSkipDeps } from '@usecases/workoutSkip';
 
 import { appStore } from './appStore';
-import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
-import { ensureMesocyclesSeeded } from './mesocycleStore';
 
 export const workoutSessionDeps: WorkoutSessionDeps = {
   sessionTreeRepo: new InMemorySessionTreeRepository(appStore),
@@ -53,32 +50,3 @@ export const exerciseAdditionDeps: ExerciseAdditionDeps = {
 
 /** What Replace exercise (097, 047) needs — the same as Add: rule 6 targets need the mesocycle. */
 export const exerciseSwapDeps: ExerciseSwapDeps = exerciseAdditionDeps;
-
-let seeded: Promise<void> | null = null;
-
-/**
- * Seeds the stub workout sessions (domain/workoutMocks.ts) into the shared store, once per app
- * session — after the catalog and mock mesocycles they reference. Called only by the Today tab's
- * query (`useTodayWorkout`), not by `useWorkoutSession`, so a test driving the other workout
- * queries never meets an `in_progress` mock it didn't ask for. Mocks already present are skipped.
- * Kept until Start (042) creates real sessions — until then they're the only workouts to open.
- */
-export function ensureWorkoutMocksSeeded(): Promise<void> {
-  if (!seeded) {
-    seeded = (async () => {
-      await Promise.all([ensureExerciseCatalogSeeded(), ensureMesocyclesSeeded()]);
-      const { repos } = workoutStore;
-      const mock = buildMockWorkout(new Date());
-      const [first] = mock.sessions;
-      if (first && (await repos.sessionRepo.getById(first.id))) {
-        return;
-      }
-      await repos.sessionRepo.createMany(mock.sessions);
-      await repos.sessionExerciseRepo.createMany(mock.sessionExercises);
-      for (const setLog of mock.setLogs) {
-        await repos.setLogRepo.create(setLog);
-      }
-    })();
-  }
-  return seeded;
-}

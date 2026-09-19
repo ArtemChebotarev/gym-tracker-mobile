@@ -6,8 +6,8 @@ import TodayScreen from '@app/(tabs)/index';
 import type { TodayWorkout } from '@usecases/todayWorkout';
 
 // The pick itself (every branch) is covered by __tests__/usecases/todayWorkout.test.ts; this only
-// checks how the tab renders the two outcomes that have no session. The app-wide store always
-// holds the stub workout's in-progress session, so those outcomes can't be reached through it.
+// checks how the tab renders the two outcomes that have no session, with the pick mocked so each
+// one is reached directly rather than set up in the app-wide store.
 let mockToday: TodayWorkout = { kind: 'noActiveMesocycle' };
 
 jest.mock('@usecases/todayWorkout', () => ({

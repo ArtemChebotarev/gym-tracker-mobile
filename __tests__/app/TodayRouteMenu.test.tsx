@@ -5,13 +5,13 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
 import { mesocycleDetailHref } from '@components/historyRoutes';
-import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
-import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 import { SKIP_WORKOUT_WARNING } from '@components/WorkoutMenuSheetLogic';
-import { ensureWorkoutMocksSeeded, workoutStore } from '@state/workoutStore';
+import { workoutStore } from '@state/workoutStore';
 
-// The header menu (096) on the Today tab, over the stub sessions. Its own file, apart from
-// TodayRoute.test.tsx: skipping and adding change the shared stub sessions for good, and a
+import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
+
+// The header menu (096) on the Today tab, over the fixture sessions. Its own file, apart from
+// TodayRoute.test.tsx: skipping and adding change the shared fixture sessions for good, and a
 // separate file gets a fresh store. Mocked expo-router, for the reason TodayRoute.test.tsx gives.
 let mockParams: Record<string, string | undefined> = {};
 const mockNavigate = jest.fn();
@@ -43,7 +43,8 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 let client: QueryClient;
 let alertSpy: jest.SpyInstance;
 
-beforeEach(() => {
+beforeEach(async () => {
+  await seedWorkoutFixture();
   client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
   });
@@ -84,11 +85,11 @@ function pressAlertButton(text: string) {
 }
 
 const liveCard = (exerciseId: string) =>
-  screen.getByTestId(`exercise-card-${MOCK_SESSION_IDS.live}-${exerciseId}`);
+  screen.getByTestId(`exercise-card-${WORKOUT_FIXTURE_IDS.live}-${exerciseId}`);
 
 describe('Today tab — header menu', () => {
   test('a read-only session keeps only the mesocycle actions', async () => {
-    mockParams = { sessionId: MOCK_SESSION_IDS.completed };
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
     renderToday();
     await screen.findByText('Week 1 Day 1');
 
@@ -108,7 +109,7 @@ describe('Today tab — header menu', () => {
     openMenu();
     fireEvent.press(screen.getByRole('button', { name: 'Mesocycle history' }));
 
-    expect(mockPush).toHaveBeenCalledWith(mesocycleDetailHref(MOCK_MESOCYCLE_IDS.active));
+    expect(mockPush).toHaveBeenCalledWith(mesocycleDetailHref(WORKOUT_FIXTURE_IDS.mesocycle));
   });
 
   test.each(['Rename mesocycle', 'Stop mesocycle'])(
@@ -136,7 +137,7 @@ describe('Today tab — header menu', () => {
 
     await waitFor(async () => {
       const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
-        MOCK_SESSION_IDS.live,
+        WORKOUT_FIXTURE_IDS.live,
       );
       expect(exercises.map((exercise) => exercise.exerciseId)).toEqual([
         'bench-press-barbell',
@@ -145,7 +146,7 @@ describe('Today tab — header menu', () => {
       ]);
     });
     const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
-      MOCK_SESSION_IDS.live,
+      WORKOUT_FIXTURE_IDS.live,
     );
     const added = exercises.at(-1);
     expect(await screen.findByTestId(`exercise-card-${added?.id}`)).toBeTruthy();
@@ -172,7 +173,7 @@ describe('Today tab — header menu', () => {
     expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
-      MOCK_SESSION_IDS.live,
+      WORKOUT_FIXTURE_IDS.live,
     );
     expect(exercises.map((exercise) => [exercise.exerciseId, exercise.status])).toEqual([
       ['bench-press-barbell', 'completed'],
@@ -180,16 +181,15 @@ describe('Today tab — header menu', () => {
       ['squat-barbell', 'skipped'],
     ]);
     await expect(
-      workoutStore.repos.setLogRepo.listBySessionId(MOCK_SESSION_IDS.live),
+      workoutStore.repos.setLogRepo.listBySessionId(WORKOUT_FIXTURE_IDS.live),
     ).resolves.toHaveLength(3);
   });
 
   test('Skip workout, once confirmed, skips the session and leaves it read-only', async () => {
-    await ensureWorkoutMocksSeeded();
     await workoutStore.repos.sessionRepo.createMany([
       {
         id: 'ready-w1d2',
-        mesoId: MOCK_MESOCYCLE_IDS.active,
+        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
         weekNumber: 1,
         dayNumber: 2,
         isDeload: false,
@@ -225,7 +225,7 @@ describe('Today tab — header menu', () => {
     expect(session?.status).toBe('skipped');
     // Next week's Day 2 is generated, as after Finish.
     const week2 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
-      MOCK_MESOCYCLE_IDS.active,
+      WORKOUT_FIXTURE_IDS.mesocycle,
       2,
     );
     expect(week2.map((next) => next.dayNumber).sort()).toEqual([1, 2]);
@@ -235,7 +235,7 @@ describe('Today tab — header menu', () => {
     await workoutStore.repos.sessionRepo.createMany([
       {
         id: 'ready-w1d3',
-        mesoId: MOCK_MESOCYCLE_IDS.active,
+        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
         weekNumber: 1,
         dayNumber: 3,
         isDeload: false,
