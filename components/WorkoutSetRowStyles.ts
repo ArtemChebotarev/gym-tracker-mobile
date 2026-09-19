@@ -41,8 +41,11 @@ export const styles = StyleSheet.create({
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/gap'],
   },
-  // The TextInput is the field itself (with `field`), the way TextField does it.
+  // The TextInput is the field itself (with `field`), the way TextField does it. One tone darker
+  // than the card, so an editable field reads as a place to type (Artem's review); read-only rows
+  // keep the bare outline.
   input: {
+    backgroundColor: COLORS['surface/raised'],
     fontSize: TYPOGRAPHY['type/value'].fontSize,
     fontWeight: TYPOGRAPHY['type/value'].fontWeight,
     color: COLORS['text/primary'],
