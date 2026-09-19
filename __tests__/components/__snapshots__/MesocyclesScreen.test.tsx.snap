@@ -43,21 +43,41 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "gap": 7,
             "justifyContent": "space-between",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#F5F5F4",
-              "fontSize": 24,
-              "fontWeight": "500",
+              "flexShrink": 1,
             }
           }
         >
-          Mesocycles
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "gap": 7,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "flexShrink": 1,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Mesocycles
+            </Text>
+          </View>
+        </View>
         <View
           accessibilityLabel="New mesocycle"
           accessibilityRole="button"
@@ -402,21 +422,41 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "gap": 7,
             "justifyContent": "space-between",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#F5F5F4",
-              "fontSize": 24,
-              "fontWeight": "500",
+              "flexShrink": 1,
             }
           }
         >
-          Mesocycles
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "gap": 7,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "flexShrink": 1,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Mesocycles
+            </Text>
+          </View>
+        </View>
         <View
           accessibilityLabel="New mesocycle"
           accessibilityRole="button"
@@ -756,21 +796,41 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "gap": 7,
             "justifyContent": "space-between",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#F5F5F4",
-              "fontSize": 24,
-              "fontWeight": "500",
+              "flexShrink": 1,
             }
           }
         >
-          Mesocycles
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "gap": 7,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "flexShrink": 1,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Mesocycles
+            </Text>
+          </View>
+        </View>
         <View
           accessibilityLabel="New mesocycle"
           accessibilityRole="button"
@@ -1111,21 +1171,41 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "gap": 7,
             "justifyContent": "space-between",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#F5F5F4",
-              "fontSize": 24,
-              "fontWeight": "500",
+              "flexShrink": 1,
             }
           }
         >
-          Mesocycles
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "gap": 7,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "flexShrink": 1,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Mesocycles
+            </Text>
+          </View>
+        </View>
         <View
           accessibilityLabel="New mesocycle"
           accessibilityRole="button"
@@ -1907,21 +1987,41 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
+            "gap": 7,
             "justifyContent": "space-between",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#F5F5F4",
-              "fontSize": 24,
-              "fontWeight": "500",
+              "flexShrink": 1,
             }
           }
         >
-          Mesocycles
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "gap": 7,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "flexShrink": 1,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Mesocycles
+            </Text>
+          </View>
+        </View>
         <View
           accessibilityLabel="New mesocycle"
           accessibilityRole="button"

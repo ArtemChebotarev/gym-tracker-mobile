@@ -1,4 +1,4 @@
-import { formatAbsoluteDate, formatRelativeDate } from '@design/formatDate';
+import { formatAbsoluteDate, formatRelativeDate, formatWeekdayDate } from '@design/formatDate';
 
 const NOW = new Date(2026, 7, 25);
 
@@ -32,5 +32,15 @@ describe('formatRelativeDate', () => {
 describe('formatAbsoluteDate', () => {
   test('renders day and short month name without a year', () => {
     expect(formatAbsoluteDate(new Date(2026, 8, 3))).toBe('3 Sep');
+  });
+});
+
+describe('formatWeekdayDate', () => {
+  test('prefixes the short date with the weekday', () => {
+    expect(formatWeekdayDate(new Date(2026, 8, 15))).toBe('Tue, 15 Sep');
+  });
+
+  test('uses the local calendar day', () => {
+    expect(formatWeekdayDate(new Date(2026, 8, 20, 23, 30))).toBe('Sun, 20 Sep');
   });
 });

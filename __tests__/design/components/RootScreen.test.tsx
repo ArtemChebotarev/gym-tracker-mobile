@@ -44,4 +44,24 @@ describe('RootScreen', () => {
     expect(screen.getByText('Today')).toBeTruthy();
     expect(screen.getByText('Nothing planned')).toBeTruthy();
   });
+
+  test('renders an optional title suffix in the same title line', () => {
+    renderWithSafeArea(<RootScreen title="Week 6" titleSuffix="Day 2" />);
+
+    expect(screen.getByText('Week 6 Day 2')).toBeTruthy();
+    expect(screen.getByText('Day 2')).toBeTruthy();
+  });
+
+  test('renders an optional accessory after the title and a subtitle under it', () => {
+    renderWithSafeArea(
+      <RootScreen
+        title="Week 6"
+        titleAccessory={<Text>✓</Text>}
+        subtitle="Tue, 15 Sep · Upper/lower"
+      />,
+    );
+
+    expect(screen.getByText('✓')).toBeTruthy();
+    expect(screen.getByText('Tue, 15 Sep · Upper/lower')).toBeTruthy();
+  });
 });

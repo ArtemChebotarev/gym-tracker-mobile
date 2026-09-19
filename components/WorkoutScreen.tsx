@@ -1,0 +1,120 @@
+// Workout screen frame — 08.7 · Тренировка, "Шапка" (task 091). One layout for all three modes
+// (live, read-only, preview — 088's `mode`): the header, the 3pt progress bar, and a single
+// ScrollView of exercise cards.
+//
+// Header: `Week N` + faint `Day N` in RootScreen's title line (the Today tab shows this screen, so
+// it shares the root screens' title treatment), the subtitle `date · mesocycle`, a round accent
+// check for a completed session only (not pressable), and the grid and `⋯` buttons, which exist in
+// every mode. The progress ratio comes straight from the model (088) — nothing is computed here.
+//
+// The cards are stand-ins that show the exercise name only; tasks 092–094 fill in the real card,
+// its set rows, and Finish workout.
+//
+// Presentational: the model and every outcome come in as props from app/workout/[sessionId].tsx.
+// JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
+// WorkoutScreenLogic.ts, per the code-style skill.
+
+import { ScrollView, Text, View } from 'react-native';
+
+import { EmptyState } from '@design/components/EmptyState';
+import { IconButton } from '@design/components/IconButton';
+import { ProgressBar } from '@design/components/ProgressBar';
+import { RootScreen } from '@design/components/RootScreen';
+import { CheckIcon } from '@design/icons/CheckIcon';
+import { GridIcon } from '@design/icons/GridIcon';
+import { MoreIcon } from '@design/icons/MoreIcon';
+import { COLORS, ICON_SIZES } from '@design/tokens';
+import type { WorkoutSessionModel } from '@usecases/workoutSession';
+
+import { formatUnlocksCaption, formatWorkoutSubtitle } from './WorkoutScreenLogic';
+import { COMPLETED_CHECK_ICON_SIZE, styles } from './WorkoutScreenStyles';
+
+export type WorkoutScreenProps = {
+  model: WorkoutSessionModel | undefined;
+  isPending: boolean;
+  /** Opens the mesocycle overview sheet (08.7, "Лист «Обзор мезоцикла»"). */
+  onOpenGrid: () => void;
+  /** Opens the header menu sheet (08.7, "Лист «Меню шапки»"). */
+  onOpenMenu: () => void;
+  /** Leaves the screen when the session couldn't be loaded. */
+  onBack: () => void;
+};
+
+export function WorkoutScreen({
+  model,
+  isPending,
+  onOpenGrid,
+  onOpenMenu,
+  onBack,
+}: WorkoutScreenProps) {
+  if (isPending) {
+    return (
+      <View style={styles.root}>
+        <RootScreen title="Workout">
+          <Text style={styles.status}>Loading…</Text>
+        </RootScreen>
+      </View>
+    );
+  }
+
+  if (model === undefined) {
+    return (
+      <View style={styles.root}>
+        <RootScreen title="Workout">
+          <EmptyState
+            title="Pick another workout"
+            description="This workout isn't available anymore. Head back and choose a day to train."
+            actionLabel="Go back"
+            onAction={onBack}
+          />
+        </RootScreen>
+      </View>
+    );
+  }
+
+  const { header } = model;
+
+  return (
+    <View style={styles.root}>
+      <RootScreen
+        title={`Week ${header.weekNumber}`}
+        titleSuffix={`Day ${header.dayNumber}`}
+        titleAccessory={
+          header.isCompleted && (
+            <View
+              testID="workout-completed-check"
+              accessible
+              accessibilityLabel="Completed"
+              style={styles.completedCheck}
+            >
+              <CheckIcon size={COMPLETED_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
+            </View>
+          )
+        }
+        subtitle={formatWorkoutSubtitle(header)}
+        trailing={
+          <View style={styles.actions}>
+            <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
+              <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+            </IconButton>
+            <IconButton accessibilityLabel="Workout menu" onPress={onOpenMenu}>
+              <MoreIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+            </IconButton>
+          </View>
+        }
+      >
+        <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
+        <ScrollView contentContainerStyle={styles.content}>
+          {model.exercises.map((exercise) => (
+            <View key={exercise.sessionExerciseId} style={styles.exerciseCard}>
+              <Text style={styles.exerciseName}>{exercise.name}</Text>
+            </View>
+          ))}
+          {model.unlocksAfter !== undefined && (
+            <Text style={styles.unlocksCaption}>{formatUnlocksCaption(model.unlocksAfter)}</Text>
+          )}
+        </ScrollView>
+      </RootScreen>
+    </View>
+  );
+}
