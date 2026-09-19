@@ -1,9 +1,9 @@
 import { workoutHref } from '@components/workoutRoutes';
 
 describe('workoutRoutes', () => {
-  test('workoutHref points at workout/[sessionId] with the session id', () => {
+  test('workoutHref opens the session inside the Today tab', () => {
     expect(workoutHref('session-1')).toEqual({
-      pathname: '/workout/[sessionId]',
+      pathname: '/',
       params: { sessionId: 'session-1' },
     });
   });

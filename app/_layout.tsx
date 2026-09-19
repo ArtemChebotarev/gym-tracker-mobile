@@ -18,8 +18,6 @@ export default function RootLayout() {
           name="meso-editor/edit/[id]"
           options={{ headerShown: false, presentation: 'fullScreenModal' }}
         />
-        {/* The workout screen (08.7, task 091) — draws its own header, like the root screens. */}
-        <Stack.Screen name="workout/[sessionId]" options={{ headerShown: false }} />
         {/* History stubs (task 098) — pushed from the workout screen, each with its own Go back. */}
         <Stack.Screen name="exercise/[id]/history" options={{ headerShown: false }} />
         <Stack.Screen name="meso/[id]" options={{ headerShown: false }} />

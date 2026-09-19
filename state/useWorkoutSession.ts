@@ -47,17 +47,18 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
 }
 
 /**
- * The session the Today tab shows (08.7, "Навигация"). Temporary: Start (042) doesn't exist yet,
- * so there are no real sessions — this seeds the stub workout (domain/workoutMocks.ts) and shows
- * its in-progress session. Task 099 replaces it with the real pick: the `in_progress` session,
- * otherwise the next `ready` one of the active mesocycle.
+ * The session the Today tab shows (08.7, "Навигация"): `sessionId` when a day was picked (the
+ * mesocycle overview, 095), otherwise the current session. Temporary: Start (042) doesn't exist
+ * yet, so there are no real sessions — this seeds the stub workout (domain/workoutMocks.ts) and its
+ * in-progress session stands in for the current one. Task 099 replaces that with the real pick:
+ * the `in_progress` session, otherwise the next `ready` one of the active mesocycle.
  */
-export function useTodayWorkoutSession() {
+export function useTodayWorkoutSession(sessionId?: string) {
   return useQuery({
-    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today'],
+    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', sessionId ?? 'current'],
     queryFn: async () => {
       await ensureWorkoutMocksSeeded();
-      return getWorkoutSession(MOCK_SESSION_IDS.live, workoutSessionDeps);
+      return getWorkoutSession(sessionId ?? MOCK_SESSION_IDS.live, workoutSessionDeps);
     },
   });
 }

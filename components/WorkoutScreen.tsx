@@ -10,9 +10,8 @@
 // The cards are stand-ins that show the exercise name only; tasks 092–094 fill in the real card,
 // its set rows, and Finish workout.
 //
-// Presentational: the model and every outcome come in as props — from the Today tab
-// (app/(tabs)/index.tsx) for the current session, and from app/workout/[sessionId].tsx for any
-// other day.
+// Presentational: the model and every outcome come in as props from the Today tab
+// (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
@@ -38,10 +37,7 @@ export type WorkoutScreenProps = {
   onOpenGrid: () => void;
   /** Opens the header menu sheet (08.7, "Лист «Меню шапки»"). */
   onOpenMenu: () => void;
-  /**
-   * The way forward when the session couldn't be loaded — `Go back` on a pushed route, somewhere
-   * useful on the Today tab, which has nothing to go back to.
-   */
+  /** The way forward when the session couldn't be loaded. */
   fallbackAction: { label: string; onPress: () => void };
 };
 

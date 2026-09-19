@@ -3,11 +3,16 @@ import { render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
+import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 
-// Mocked for the same reason as WorkoutRoute.test.tsx: renderRouter's fake timers would stall the
-// storage calls.
+// Mocked rather than driven through expo-router's renderRouter: that turns on jest's fake timers,
+// which also fake the `queueMicrotask` every storage call resolves through (storage/async.ts), so
+// the query would never settle. The href itself is covered by workoutRoutes.test.ts.
+let mockParams: { sessionId?: string } = {};
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ navigate: jest.fn() }),
+  useLocalSearchParams: () => mockParams,
 }));
 
 const TEST_SAFE_AREA_METRICS: Metrics = {
@@ -21,6 +26,7 @@ beforeEach(() => {
   client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
   });
+  mockParams = {};
 });
 
 afterEach(() => {
@@ -28,19 +34,39 @@ afterEach(() => {
   client.unmount();
 });
 
+function renderToday() {
+  render(
+    <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+      <QueryClientProvider client={client}>
+        <TodayScreen />
+      </QueryClientProvider>
+    </SafeAreaProvider>,
+  );
+}
+
 describe('Today tab', () => {
   test('is the workout screen on the current (stub) session, not a list of days', async () => {
-    render(
-      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-        <QueryClientProvider client={client}>
-          <TodayScreen />
-        </QueryClientProvider>
-      </SafeAreaProvider>,
-    );
+    renderToday();
 
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
     expect(screen.getByRole('progressbar', { name: 'Workout progress' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Mesocycle overview' })).toBeTruthy();
     expect(screen.getByText('Bench Press')).toBeTruthy();
+    expect(screen.queryByTestId('workout-completed-check')).toBeNull();
+  });
+
+  test('shows a picked day — a completed one read-only — in the same tab', async () => {
+    mockParams = { sessionId: MOCK_SESSION_IDS.completed };
+    renderToday();
+
+    expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
+    expect(screen.getByTestId('workout-completed-check')).toBeTruthy();
+  });
+
+  test('offers a way out when the picked session does not exist', async () => {
+    mockParams = { sessionId: 'missing-session' };
+    renderToday();
+
+    expect(await screen.findByRole('button', { name: 'Open mesocycles' })).toBeTruthy();
   });
 });

@@ -4,8 +4,8 @@
 // - Week 1 Day 1 — `completed` → read-only, with the completed check and a full progress bar.
 // - Week 2 Day 1 — `in_progress`, 2 of 6 sets logged → live, with a date and a partial bar.
 // - Week 3 Day 1 — `awaiting_source` → preview of Week 2 Day 1's exercises.
-// The Today tab shows the live one (until 099); the others open through `workoutHref`. Seeded by
-// state/workoutStore.ts on demand, not on every workout query. Same role as ./mesocycleMocks.ts: plain data, no side effects, no repository calls.
+// The Today tab shows the live one as the current session (until 099); the others open in the same
+// tab through `workoutHref`. Seeded by state/workoutStore.ts on demand, not on every workout query. Same role as ./mesocycleMocks.ts: plain data, no side effects, no repository calls.
 //
 // Dates are relative to `now` so the live session always reads as today.
 
