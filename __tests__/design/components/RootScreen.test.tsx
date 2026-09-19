@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { RootScreen } from '@design/components/RootScreen';
+import { COLORS, SPACING } from '@design/tokens';
 
 // SafeAreaView (used for the top safe-area inset) throws without a SafeAreaProvider ancestor.
 // initialMetrics makes it resolve synchronously instead of waiting on a native onLayout that
@@ -14,9 +15,7 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 };
 
 function renderWithSafeArea(ui: ReactElement) {
-  return render(
-    <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>{ui}</SafeAreaProvider>,
-  );
+  return render(<SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>{ui}</SafeAreaProvider>);
 }
 
 describe('RootScreen', () => {
@@ -27,9 +26,7 @@ describe('RootScreen', () => {
   });
 
   test('renders an optional trailing accessory next to the title', () => {
-    renderWithSafeArea(
-      <RootScreen title="Exercises" trailing={<Text>+</Text>} />,
-    );
+    renderWithSafeArea(<RootScreen title="Exercises" trailing={<Text>+</Text>} />);
 
     expect(screen.getByText('+')).toBeTruthy();
   });
@@ -63,5 +60,32 @@ describe('RootScreen', () => {
 
     expect(screen.getByText('✓')).toBeTruthy();
     expect(screen.getByText('Tue, 15 Sep · Upper/lower')).toBeTruthy();
+  });
+
+  test('the header is a raised band, like the tab bar, over the page', () => {
+    renderWithSafeArea(<RootScreen title="Exercises" />);
+
+    const band = screen.getByTestId('root-screen-header');
+    expect(StyleSheet.flatten(band.props.style).backgroundColor).toBe(COLORS['surface/raised']);
+    // The body stays on the screen's own `surface/page`.
+    expect(
+      StyleSheet.flatten(screen.getByTestId('root-screen-body').props.style).backgroundColor,
+    ).toBeUndefined();
+  });
+
+  test('pads its children by default, and not with flushContent', () => {
+    renderWithSafeArea(<RootScreen title="Mesocycles" />);
+    expect(
+      StyleSheet.flatten(screen.getByTestId('root-screen-body').props.style).paddingHorizontal,
+    ).toBe(SPACING['space/screen']);
+
+    screen.rerender(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <RootScreen title="Week 6" flushContent />
+      </SafeAreaProvider>,
+    );
+    expect(
+      StyleSheet.flatten(screen.getByTestId('root-screen-body').props.style).paddingHorizontal,
+    ).toBeUndefined();
   });
 });
