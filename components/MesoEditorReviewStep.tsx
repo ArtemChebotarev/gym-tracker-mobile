@@ -42,7 +42,11 @@ export function MesoEditorReviewStep({
   onEditDay,
 }: MesoEditorReviewStepProps) {
   return (
-    <ScrollView contentContainerStyle={styles.content} bounces={false}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      bounces={false}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.card}>
         <Text style={styles.summaryName}>{name}</Text>
         <Text style={styles.summaryMeta}>{formatReviewSummary(lengthWeeks, daysPerWeek)}</Text>

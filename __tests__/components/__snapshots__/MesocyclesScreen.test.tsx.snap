@@ -148,6 +148,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
             "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
@@ -528,6 +529,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
             "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
@@ -643,7 +645,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
-                      hitSlop={4}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -658,10 +660,9 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
+                            "height": 32,
                             "justifyContent": "center",
-                            "minHeight": 36,
                             "paddingHorizontal": 12,
-                            "paddingVertical": 8,
                           },
                           {
                             "borderColor": "#2A2D31",
@@ -907,6 +908,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
             "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
@@ -1022,7 +1024,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
-                      hitSlop={4}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1037,10 +1039,9 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
+                            "height": 32,
                             "justifyContent": "center",
-                            "minHeight": 36,
                             "paddingHorizontal": 12,
-                            "paddingVertical": 8,
                           },
                           {
                             "backgroundColor": "#CDFF57",
@@ -1287,6 +1288,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
             "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
@@ -1625,7 +1627,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
-                      hitSlop={4}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1640,10 +1642,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
+                            "height": 32,
                             "justifyContent": "center",
-                            "minHeight": 36,
                             "paddingHorizontal": 12,
-                            "paddingVertical": 8,
                           },
                           {
                             "backgroundColor": "#CDFF57",
@@ -1848,7 +1849,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
-                      hitSlop={4}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1863,10 +1864,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
+                            "height": 32,
                             "justifyContent": "center",
-                            "minHeight": 36,
                             "paddingHorizontal": 12,
-                            "paddingVertical": 8,
                           },
                           {
                             "borderColor": "#2A2D31",

@@ -176,6 +176,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -1066,6 +1067,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -1677,6 +1679,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View

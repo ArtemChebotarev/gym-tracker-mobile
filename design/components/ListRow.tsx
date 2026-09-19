@@ -132,7 +132,7 @@ function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailin
         accessibilityRole="button"
         accessibilityLabel={`${trailing.actionLabel} ${title}`}
         onPress={trailing.onAction}
-        hitSlop={tapTargetSlop(SIZES['size/chip'])}
+        hitSlop={tapTargetSlop(SIZES['size/pill'])}
         style={({ pressed }) => [
           styles.pill,
           isPrimary ? styles.pillPrimary : styles.pillSecondary,
@@ -221,12 +221,11 @@ const styles = StyleSheet.create({
     gap: SPACING['space/gap'],
   },
   pill: {
-    minHeight: SIZES['size/chip'],
+    height: SIZES['size/pill'],
     justifyContent: 'center',
     borderRadius: RADII['radius/pill'],
     borderWidth: BORDER_WIDTHS['border/default'],
     paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/gap-tight'],
   },
   pillPrimary: {
     backgroundColor: COLORS.accent,

@@ -164,6 +164,7 @@ exports[`MesoOverviewSheet DoD: matches the snapshot of a grid with all five cel
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View

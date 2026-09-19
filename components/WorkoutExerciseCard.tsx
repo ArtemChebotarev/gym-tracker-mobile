@@ -89,7 +89,7 @@ export function WorkoutExerciseCard({
               // Chip's own `alignSelf: flex-start` would pin it to the top of the row; the wrapper
               // is what gets centered against the buttons.
               <View testID="exercise-rir">
-                <Chip variant="static" label={view.rirLabel} />
+                <Chip variant="static" label={view.rirLabel} compact />
               </View>
             )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>

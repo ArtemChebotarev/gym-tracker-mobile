@@ -156,6 +156,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
           }
         }
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <Text

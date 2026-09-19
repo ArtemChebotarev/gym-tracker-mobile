@@ -257,6 +257,7 @@ export function MesoEditorDaysStep({
               accessibilityLabel={`Day ${day}`}
               accessibilityState={{ selected: isActive }}
               onPress={() => onChangeActiveDay(day)}
+              hitSlop={tapTargetSlop(SIZES['size/chip'])}
               style={[styles.dayTab, isActive && styles.dayTabActive]}
             >
               <Text style={[styles.dayTabLabel, isActive && styles.dayTabLabelActive]}>{`Day ${day}`}</Text>
@@ -265,7 +266,7 @@ export function MesoEditorDaysStep({
         })}
       </ScrollView>
 
-      <ScrollView style={styles.content} bounces={false}>
+      <ScrollView style={styles.content} bounces={false} showsVerticalScrollIndicator={false}>
         {activeDayExercises.length > 0 && (
           <View style={styles.columnHeader}>
             <View style={styles.columnHeaderHandleSpacer} />

@@ -11,6 +11,7 @@ exports[`MesoEditorReviewStep matches the step 3 content snapshot 1`] = `
       "paddingTop": 4,
     }
   }
+  showsVerticalScrollIndicator={false}
 >
   <View>
     <View

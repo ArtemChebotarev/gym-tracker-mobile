@@ -107,9 +107,10 @@ export const SPACING = {
   // A small step scale for the gaps the semantic tokens above don't name.
   'space/xxs': 2,
   'space/chip-y': 4,
+  /** Set row: above and below its 44pt fields — kept tight, the fields already carry the height. */
+  'space/set-row-y': 6,
   'space/xs': 4,
   'space/dots': 6,
-  'space/sm': 10,
   'space/md': 14,
   'space/action-row-y': 14,
   'space/legend': 16,
@@ -174,16 +175,18 @@ export const SIZES = {
   'size/badge': 28,
   /** Stepper's inline round buttons; the editor's drag handle. */
   'size/control-inline': 32,
-  /** A chip's and a pill's minimum height — Chip, the filter chips, ListRow's action pill. */
+  /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
   'size/chip': 36,
+  /** ListRow's action pill (Start, Copy) — drawn smaller, 44pt to the touch. */
+  'size/pill': 32,
   /** Round IconButton and Stepper buttons (08.0: "Размер 36", tap area 44). */
   'size/icon-button': 36,
   /** Set row: the target indicator column. */
   'size/indicator-column': 24,
-  /** Set row: the Log checkbox. */
-  'size/log-box': 44,
-  /** Set row: the Log column. */
-  'size/log-column': 48,
+  /** Set row: the Log checkbox — drawn at 32, 44pt to the touch (`tapTargetSlop`). */
+  'size/log-box': 32,
+  /** Set row: the Log column — as wide as the checkbox's tap target. */
+  'size/log-column': 44,
   /** Set row fields and mesocycle overview cells. */
   'size/cell': 44,
   /** Mesocycle overview: the week label column. */

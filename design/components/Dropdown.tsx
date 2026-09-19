@@ -64,7 +64,12 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
       {hasError && <Text style={fieldStyles.error}>{error}</Text>}
 
       {isOpen && (
-        <ScrollView style={styles.panel} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.panel}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           {options.map((option) => {
             const selected = option.value === value;
             return (

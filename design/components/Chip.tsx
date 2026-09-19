@@ -27,6 +27,12 @@ type StaticChipProps = {
   variant: 'static';
   label: string;
   dotColor?: string;
+  /**
+   * Drops the `size/chip` height for the tighter padding of the workout's group chip. A static chip
+   * is never tapped, so it needs no tap target — for a lone mark like the workout card's RIR, not
+   * for a chip sitting in a row next to a selectable one.
+   */
+  compact?: boolean;
 };
 
 type CounterChipProps = {
@@ -60,7 +66,7 @@ export function Chip(props: ChipProps) {
 
   if (props.variant === 'static') {
     return (
-      <View style={[styles.container, styles.unselected]}>
+      <View style={[styles.container, props.compact && styles.compact, styles.unselected]}>
         {props.dotColor !== undefined && (
           <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
         )}
@@ -91,6 +97,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
     gap: SPACING['space/gap-tight'],
+  },
+  compact: {
+    minHeight: 0,
+    paddingVertical: SPACING['space/chip-y'],
   },
   // Solid accent fill — the same treatment as the accent IconButton (e.g. the list's "+" and
   // "Filters" chip), not the muted accent/bg + accent/border pair used for a muscle-group tint.

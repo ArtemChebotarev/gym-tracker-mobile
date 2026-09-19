@@ -9,6 +9,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
         "gap": 8,
         "paddingBottom": 24,
         "paddingHorizontal": 16,
+        "paddingTop": 4,
       }
     }
     horizontal={true}
@@ -43,6 +44,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        hitSlop={4}
         onBlur={[Function]}
         onClick={[Function]}
         onFocus={[Function]}
@@ -59,10 +61,9 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
               "borderColor": "#2A2D31",
               "borderRadius": 20,
               "borderWidth": 1,
+              "height": 36,
               "justifyContent": "center",
-              "minHeight": 44,
               "paddingHorizontal": 18,
-              "paddingVertical": 10,
             },
             {
               "backgroundColor": "#232B0A",
@@ -111,6 +112,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        hitSlop={4}
         onBlur={[Function]}
         onClick={[Function]}
         onFocus={[Function]}
@@ -127,10 +129,9 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
               "borderColor": "#2A2D31",
               "borderRadius": 20,
               "borderWidth": 1,
+              "height": 36,
               "justifyContent": "center",
-              "minHeight": 44,
               "paddingHorizontal": 18,
-              "paddingVertical": 10,
             },
             false,
           ]
@@ -155,6 +156,7 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
   </RCTScrollView>,
   <RCTScrollView
     bounces={false}
+    showsVerticalScrollIndicator={false}
     style={
       {
         "flex": 1,

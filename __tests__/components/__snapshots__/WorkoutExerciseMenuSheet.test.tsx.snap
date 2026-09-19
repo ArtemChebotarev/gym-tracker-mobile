@@ -176,6 +176,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: a skipped exercise — Unsk
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -1315,6 +1316,7 @@ exports[`WorkoutExerciseMenuSheet — snapshots DoD: the first exercise with a s
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View

@@ -152,6 +152,7 @@ export function WorkoutScreen({
       >
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
         <ScrollView
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
           // A tap on Log while the keyboard is up logs the set rather than only closing the
           // keyboard; the inset keeps the focused row above the keyboard.
