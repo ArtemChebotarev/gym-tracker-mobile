@@ -13,7 +13,8 @@ module.exports = {
     '^@state/(.*)$': '<rootDir>/state/$1',
   },
   // `.claude/worktrees/` holds other checkouts of this repo (parallel task sessions); their tests and
-  // modules aren't this checkout's.
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'],
+  // modules aren't this checkout's. `__tests__/fixtures/` is shared test data, imported by tests
+  // rather than run as one.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/', '/__tests__/fixtures/'],
   modulePathIgnorePatterns: ['<rootDir>/.claude/'],
 };

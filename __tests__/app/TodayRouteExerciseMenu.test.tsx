@@ -4,12 +4,13 @@ import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
-import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 import { workoutStore } from '@state/workoutStore';
 
-// The exercise menu (097) on the Today tab, over the stub session in progress: Bench Press (2 of 3
-// sets logged), then Barbell Row (nothing logged). Its own file, apart from TodayRoute.test.tsx:
-// the actions change the shared stub session for good, and a separate file gets a fresh store.
+import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
+
+// The exercise menu (097) on the Today tab, over the fixture session in progress: Bench Press (2 of
+// 3 sets logged), then Barbell Row (nothing logged). Its own file, apart from TodayRoute.test.tsx:
+// the actions change the shared fixture session for good, and a separate file gets a fresh store.
 // Tests run in order on the same session. Mocked expo-router, for the reason TodayRoute.test.tsx
 // gives.
 let mockParams: Record<string, string | undefined> = {};
@@ -36,13 +37,14 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 874 },
 };
 
-const BENCH = `${MOCK_SESSION_IDS.live}-bench-press-barbell`;
-const ROW = `${MOCK_SESSION_IDS.live}-barbell-row-barbell`;
+const BENCH = `${WORKOUT_FIXTURE_IDS.live}-bench-press-barbell`;
+const ROW = `${WORKOUT_FIXTURE_IDS.live}-barbell-row-barbell`;
 
 let client: QueryClient;
 let alertSpy: jest.SpyInstance;
 
-beforeEach(() => {
+beforeEach(async () => {
+  await seedWorkoutFixture();
   client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
   });
@@ -83,7 +85,7 @@ function pressAlertButton(text: string) {
 
 async function sessionExercises() {
   const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
-    MOCK_SESSION_IDS.live,
+    WORKOUT_FIXTURE_IDS.live,
   );
   return [...exercises].sort((a, b) => a.order - b.order);
 }

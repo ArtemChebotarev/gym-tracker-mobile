@@ -1,6 +1,10 @@
 import { isConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
-import { applyPlannedMesocycleEdit, buildScratchMesocycleDraft } from '@domain/mesocycleBuilders';
+import {
+  applyPlannedMesocycleEdit,
+  buildMesocycleStart,
+  buildScratchMesocycleDraft,
+} from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
 
@@ -195,5 +199,151 @@ describe('applyPlannedMesocycleEdit', () => {
         weekPlan: twoDayWeekPlan,
       }),
     ).toThrow(/lengthWeeks must be between 3 and 8/);
+  });
+});
+
+describe('buildMesocycleStart', () => {
+  const NOW = '2026-09-19T09:00:00.000Z';
+
+  // Orders as the editor writes them: from 0, and out of array order on day 1.
+  const plannedMesocycle: Mesocycle = {
+    id: 'meso-1',
+    name: 'Upper/Lower',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    status: 'planned',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: 'Upper',
+          exercises: [
+            { exerciseId: 'exercise-row', order: 1, sets: 2 },
+            { exerciseId: 'exercise-bench-press', order: 0, sets: 3 },
+          ],
+        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 4 }] },
+      ],
+    },
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+
+  test('makes the mesocycle active from now and drops its week plan, keeping the rest', () => {
+    const { mesocycle } = buildMesocycleStart(plannedMesocycle, null, NOW);
+
+    expect(mesocycle.status).toBe('active');
+    expect(mesocycle.startDate).toBe(NOW);
+    expect(mesocycle).not.toHaveProperty('weekPlan');
+    const { weekPlan: _weekPlan, ...unchanged } = plannedMesocycle;
+    expect(mesocycle).toEqual({ ...unchanged, status: 'active', startDate: NOW });
+  });
+
+  test('materializes one planned, ready week 1 session per day of the plan', () => {
+    const { week } = buildMesocycleStart(plannedMesocycle, null, NOW);
+
+    expect(week.map(({ session }) => session)).toEqual([
+      expect.objectContaining({
+        mesoId: 'meso-1',
+        weekNumber: 1,
+        dayNumber: 1,
+        name: 'Upper',
+        isDeload: false,
+        prescriptionStatus: 'ready',
+        status: 'planned',
+      }),
+      expect.objectContaining({ mesoId: 'meso-1', weekNumber: 1, dayNumber: 2 }),
+    ]);
+    for (const { session, exercises } of week) {
+      expect(exercises.every((exercise) => exercise.sessionId === session.id)).toBe(true);
+    }
+  });
+
+  test("gives every exercise week 1's RIR and one set target per startSets, without reps", () => {
+    const { week } = buildMesocycleStart(plannedMesocycle, null, NOW);
+    const exercises = week.flatMap((day) => day.exercises);
+
+    // 6 weeks: 5 working weeks, startRir = min(3, 5 − 1) = 3 on week 1.
+    expect(exercises.map((exercise) => exercise.targetRir)).toEqual([3, 3, 3]);
+    expect(exercises.map((exercise) => exercise.status)).toEqual(['planned', 'planned', 'planned']);
+    expect(exercises.find((e) => e.exerciseId === 'exercise-bench-press')?.setTargets).toEqual([
+      { setNumber: 1, targetReps: undefined },
+      { setNumber: 2, targetReps: undefined },
+      { setNumber: 3, targetReps: undefined },
+    ]);
+  });
+
+  test('carries Flow C reps into every set target of the exercise', () => {
+    const withReps: Mesocycle = {
+      ...plannedMesocycle,
+      daysPerWeek: 1,
+      weekPlan: {
+        days: [
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2, reps: 7 }] },
+        ],
+      },
+    };
+
+    const [day] = buildMesocycleStart(withReps, null, NOW).week;
+
+    expect(day?.exercises[0]?.setTargets).toEqual([
+      { setNumber: 1, targetReps: 7 },
+      { setNumber: 2, targetReps: 7 },
+    ]);
+  });
+
+  test("renumbers each session's exercises 1..n, in the plan's order", () => {
+    const { week } = buildMesocycleStart(plannedMesocycle, null, NOW);
+
+    expect(
+      week.map(({ exercises }) => exercises.map(({ exerciseId, order }) => [exerciseId, order])),
+    ).toEqual([
+      [
+        ['exercise-bench-press', 1],
+        ['exercise-row', 2],
+      ],
+      [['exercise-squat', 1]],
+    ]);
+  });
+
+  test.each(['active', 'completed', 'abandoned'] as const)(
+    'rejects a %s mesocycle with a ConflictError',
+    (status) => {
+      let thrown: unknown;
+      try {
+        buildMesocycleStart({ ...plannedMesocycle, status }, null, NOW);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(isConflictError(thrown)).toBe(true);
+    },
+  );
+
+  test('rejects with a ConflictError while another mesocycle is active', () => {
+    const active: Mesocycle = {
+      ...plannedMesocycle,
+      id: 'meso-active',
+      status: 'active',
+      startDate: '2026-09-01T12:00:00.000Z',
+      weekPlan: undefined,
+    };
+    let thrown: unknown;
+    try {
+      buildMesocycleStart(plannedMesocycle, active, NOW);
+    } catch (error) {
+      thrown = error;
+    }
+    expect(isConflictError(thrown)).toBe(true);
+  });
+
+  test('rejects a planned mesocycle without a week plan with a ConflictError', () => {
+    let thrown: unknown;
+    try {
+      buildMesocycleStart({ ...plannedMesocycle, weekPlan: undefined }, null, NOW);
+    } catch (error) {
+      thrown = error;
+    }
+    expect(isConflictError(thrown)).toBe(true);
   });
 });

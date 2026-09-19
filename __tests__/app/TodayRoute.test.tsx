@@ -4,10 +4,10 @@ import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
-import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
-import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 import { workoutHref, workoutSlotHref } from '@components/workoutRoutes';
-import { ensureWorkoutMocksSeeded, workoutStore } from '@state/workoutStore';
+import { workoutStore } from '@state/workoutStore';
+
+import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 
 // Mocked rather than driven through expo-router's renderRouter: that turns on jest's fake timers,
 // which also fake the `queueMicrotask` every storage call resolves through (storage/async.ts), so
@@ -39,7 +39,8 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 
 let client: QueryClient;
 
-beforeEach(() => {
+beforeEach(async () => {
+  await seedWorkoutFixture();
   client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
   });
@@ -63,7 +64,7 @@ function renderToday() {
 }
 
 describe('Today tab', () => {
-  test('is the workout screen on the current session — the stub one in progress', async () => {
+  test('is the workout screen on the current session — the fixture one in progress', async () => {
     renderToday();
 
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
@@ -74,7 +75,7 @@ describe('Today tab', () => {
   });
 
   test('shows a picked day — a completed one read-only — in the same tab', async () => {
-    mockParams = { sessionId: MOCK_SESSION_IDS.completed };
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
     renderToday();
 
     expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
@@ -111,7 +112,7 @@ describe('Today tab — mesocycle overview', () => {
 
     fireEvent.press(await screen.findByRole('button', { name: 'Week 1 Day 1, completed' }));
 
-    expect(mockNavigate).toHaveBeenCalledWith(workoutHref(MOCK_SESSION_IDS.completed));
+    expect(mockNavigate).toHaveBeenCalledWith(workoutHref(WORKOUT_FIXTURE_IDS.completed));
     expect(screen.queryByText('Week 2 of 5 · 4 days a week')).toBeNull();
   });
 
@@ -126,7 +127,7 @@ describe('Today tab — mesocycle overview', () => {
     );
 
     const href = workoutSlotHref({
-      mesoId: MOCK_MESOCYCLE_IDS.active,
+      mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
       weekNumber: 3,
       dayNumber: 1,
     });
@@ -134,7 +135,7 @@ describe('Today tab — mesocycle overview', () => {
     expect(screen.queryByText('Week 2 of 5 · 4 days a week')).toBeNull();
 
     // The router lands back on this tab with the cell's params (see workoutRoutes.test.ts).
-    mockParams = { mesoId: MOCK_MESOCYCLE_IDS.active, week: '3', day: '1' };
+    mockParams = { mesoId: WORKOUT_FIXTURE_IDS.mesocycle, week: '3', day: '1' };
     view.rerender(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
         <QueryClientProvider client={client}>
@@ -151,7 +152,8 @@ describe('Today tab — mesocycle overview', () => {
 });
 
 describe('Today tab — set logging', () => {
-  const benchCard = () => screen.getByTestId('exercise-card-mock-session-w2d1-bench-press-barbell');
+  const benchCard = () =>
+    screen.getByTestId('exercise-card-fixture-session-w2d1-bench-press-barbell');
 
   test('logs a set and un-logs it, the row coming back with the logged values', async () => {
     renderToday();
@@ -173,25 +175,25 @@ describe('Today tab — set logging', () => {
   test('one tap logs a row left as recommended, with its target reps', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
-    const rowCard = () => screen.getByTestId('exercise-card-mock-session-w2d1-barbell-row-barbell');
+    const rowCard = () =>
+      screen.getByTestId('exercise-card-fixture-session-w2d1-barbell-row-barbell');
 
     fireEvent.press(within(rowCard()).getByRole('checkbox', { name: 'Log set 1' }));
 
     const logged = await within(rowCard()).findByRole('checkbox', { name: 'Set 1 logged' });
     expect(within(rowCard()).getByText('✓')).toBeTruthy();
 
-    // Put the shared stub session back the way the other tests expect it.
+    // Put the shared fixture session back the way the other tests expect it.
     fireEvent.press(logged);
     await within(rowCard()).findByRole('checkbox', { name: 'Log set 1' });
   });
 
   test('DoD: another session in progress — nothing is logged, the alert names it and opens it', async () => {
-    // A ready day of the same mesocycle, while the stub Week 2 Day 1 is in progress.
-    await ensureWorkoutMocksSeeded();
+    // A ready day of the same mesocycle, while the fixture Week 2 Day 1 is in progress.
     await workoutStore.repos.sessionRepo.createMany([
       {
         id: 'ready-w2d2',
-        mesoId: MOCK_MESOCYCLE_IDS.active,
+        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
         weekNumber: 2,
         dayNumber: 2,
         isDeload: false,
@@ -226,15 +228,15 @@ describe('Today tab — set logging', () => {
     expect(screen.getByRole('checkbox', { name: 'Log set 1' })).toBeTruthy();
 
     buttons?.find((button: AlertButton) => button.text === 'Open')?.onPress?.();
-    expect(mockNavigate).toHaveBeenCalledWith(workoutHref(MOCK_SESSION_IDS.live));
+    expect(mockNavigate).toHaveBeenCalledWith(workoutHref(WORKOUT_FIXTURE_IDS.live));
     alert.mockRestore();
   });
 });
 
-// Keep this block last: finishing is irreversible, so it leaves the shared stub session read-only.
+// Keep this block last: finishing is irreversible, so it leaves the shared fixture session read-only.
 describe('Today tab — Finish workout', () => {
   const card = (exerciseId: string) =>
-    screen.getByTestId(`exercise-card-${MOCK_SESSION_IDS.live}-${exerciseId}`);
+    screen.getByTestId(`exercise-card-${WORKOUT_FIXTURE_IDS.live}-${exerciseId}`);
 
   async function logRecommended(exerciseId: string, setNumber: number) {
     fireEvent.press(
@@ -244,11 +246,10 @@ describe('Today tab — Finish workout', () => {
   }
 
   test('a skipped session opens read-only', async () => {
-    await ensureWorkoutMocksSeeded();
     await workoutStore.repos.sessionRepo.createMany([
       {
         id: 'skipped-w1d2',
-        mesoId: MOCK_MESOCYCLE_IDS.active,
+        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
         weekNumber: 1,
         dayNumber: 2,
         isDeload: false,
@@ -297,10 +298,10 @@ describe('Today tab — Finish workout', () => {
     expect(screen.queryAllByRole('checkbox')).toEqual([]);
     expect(screen.queryByLabelText(/Set \d reps/)).toBeNull();
 
-    const session = await workoutStore.repos.sessionRepo.getById(MOCK_SESSION_IDS.live);
+    const session = await workoutStore.repos.sessionRepo.getById(WORKOUT_FIXTURE_IDS.live);
     expect(session?.status).toBe('completed');
     const week3 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
-      MOCK_MESOCYCLE_IDS.active,
+      WORKOUT_FIXTURE_IDS.mesocycle,
       3,
     );
     expect(week3.map((next) => next.dayNumber)).toEqual([1]);
@@ -328,7 +329,7 @@ describe('Today tab — Finish workout', () => {
 
     // Pinned to another day — as Finish or `Next workout` do — then back to the current one, as
     // the Mesocycles tab's Active card does. The pick is read again, not served from the cache.
-    mockParams = { sessionId: MOCK_SESSION_IDS.completed };
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
     view.rerender(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
         <QueryClientProvider client={client}>

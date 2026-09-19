@@ -13,7 +13,7 @@ import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
 import { ensureMesocyclesSeeded } from './mesocycleStore';
 import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
-import { ensureWorkoutMocksSeeded, todayWorkoutDeps, workoutSessionDeps } from './workoutStore';
+import { todayWorkoutDeps, workoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
@@ -75,8 +75,6 @@ function todayKey(pick: WorkoutPick | undefined): readonly unknown[] {
  * (`Next workout`, a grid cell with a session) or a grid cell by week and day (095; a preview when
  * its session doesn't exist yet) — otherwise the current one — the session in progress, else the
  * next day of the active mesocycle (`getTodayWorkout`, 099) — or why there's none.
- * Seeds the stub workout (domain/workoutMocks.ts) first: until Start (042) creates real sessions,
- * its in-progress Week 2 Day 1 is what the pick lands on.
  */
 export function useTodayWorkout(pick?: WorkoutPick) {
   const pinnedSessionId = pick !== undefined && 'sessionId' in pick ? pick.sessionId : undefined;
@@ -95,7 +93,7 @@ export function useTodayWorkout(pick?: WorkoutPick) {
         ? previous
         : undefined,
     queryFn: async (): Promise<TodayWorkout> => {
-      await ensureWorkoutMocksSeeded();
+      await ensureSeeded();
       if (pick === undefined) {
         return getTodayWorkout(todayWorkoutDeps);
       }
