@@ -11,6 +11,7 @@ import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import type { WorkoutStore } from '@repositories/workout';
 import type { ExerciseAdditionDeps } from '@usecases/exerciseAddition';
+import type { ExerciseSwapDeps } from '@usecases/exerciseSwap';
 import type { SessionFinishDeps } from '@usecases/sessionFinish';
 import type { TodayWorkoutDeps } from '@usecases/todayWorkout';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
@@ -49,6 +50,9 @@ export const exerciseAdditionDeps: ExerciseAdditionDeps = {
   workout: workoutStore,
   mesocycleRepo: new InMemoryMesocycleRepository(appStore),
 };
+
+/** What Replace exercise (097, 047) needs — the same as Add: rule 6 targets need the mesocycle. */
+export const exerciseSwapDeps: ExerciseSwapDeps = exerciseAdditionDeps;
 
 let seeded: Promise<void> | null = null;
 

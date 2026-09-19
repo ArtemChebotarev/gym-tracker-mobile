@@ -3454,18 +3454,248 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         </View>
       </View>
     </View>
-    <Text
+    <View
       style={
         {
-          "color": "#8A9099",
-          "fontSize": 12,
-          "paddingBottom": 7,
-          "paddingTop": 10,
+          "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
+          "flexDirection": "row",
+          "gap": 7,
+          "paddingVertical": 6,
         }
       }
+      testID="set-row-2"
     >
-      Skipped
-    </Text>
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
+              "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
+            },
+            {
+              "borderColor": "transparent",
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#F5F5F4",
+              "fontSize": 17,
+            }
+          }
+        >
+          62.5
+        </Text>
+      </View>
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderColor": "#2A2D31",
+              "borderRadius": 9,
+              "borderWidth": 1,
+              "flex": 1,
+              "height": 40,
+              "justifyContent": "center",
+            },
+            {
+              "borderColor": "transparent",
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#F5F5F4",
+              "fontSize": 17,
+            }
+          }
+        >
+          10
+        </Text>
+      </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+              "textAlign": "center",
+              "width": 22,
+            },
+            {
+              "color": "#C9CDD2",
+            },
+          ]
+        }
+      >
+        ✓
+      </Text>
+      <View
+        style={
+          {
+            "alignItems": "flex-end",
+            "width": 38,
+          }
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "borderColor": "#2A2D31",
+                "borderRadius": 9,
+                "borderWidth": 1,
+                "height": 34,
+                "justifyContent": "center",
+                "width": 34,
+              },
+              {
+                "backgroundColor": "#CDFF57",
+                "borderColor": "#CDFF57",
+              },
+            ]
+          }
+        >
+          <RNSVGSvgView
+            align="xMidYMid"
+            bbHeight={16}
+            bbWidth={16}
+            focusable={false}
+            height={16}
+            meetOrSlice={0}
+            minX={0}
+            minY={0}
+            style={
+              [
+                {
+                  "backgroundColor": "transparent",
+                  "borderWidth": 0,
+                },
+                {
+                  "flex": 0,
+                  "height": 16,
+                  "width": 16,
+                },
+              ]
+            }
+            vbHeight={24}
+            vbWidth={24}
+            width={16}
+          >
+            <RNSVGGroup
+              fill={
+                {
+                  "payload": 4278190080,
+                  "type": 0,
+                }
+              }
+            >
+              <RNSVGGroup
+                fill={null}
+                propList={
+                  [
+                    "fill",
+                    "stroke",
+                    "strokeWidth",
+                  ]
+                }
+                stroke={
+                  {
+                    "payload": 4280494858,
+                    "type": 0,
+                  }
+                }
+                strokeWidth={1.8}
+              >
+                <RNSVGPath
+                  d="M5 12.5l4.5 4.5L19 7.5"
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                  propList={
+                    [
+                      "strokeLinecap",
+                      "strokeLinejoin",
+                    ]
+                  }
+                  strokeLinecap={1}
+                  strokeLinejoin={1}
+                />
+              </RNSVGGroup>
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "borderTopColor": "#232629",
+          "borderTopWidth": 1,
+          "flexDirection": "row",
+          "gap": 7,
+          "paddingVertical": 6,
+        }
+      }
+      testID="set-row-3"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flex": 2,
+            "height": 40,
+            "justifyContent": "center",
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 12,
+            }
+          }
+        >
+          Skipped
+        </Text>
+      </View>
+      <Text
+        style={
+          {
+            "color": "#8A9099",
+            "fontSize": 12,
+            "textAlign": "center",
+            "width": 22,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "alignItems": "flex-end",
+            "width": 38,
+          }
+        }
+      />
+    </View>
   </View>
 </View>
 `;

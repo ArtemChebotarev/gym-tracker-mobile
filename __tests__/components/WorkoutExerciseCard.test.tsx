@@ -42,7 +42,6 @@ function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     targetRir: 2,
     status: 'planned',
     rows: [loggedRow(1, 62.5, 10), unloggedRow(2, true), unloggedRow(3)],
-    hasSkippedRows: false,
     plannedSetCount: 3,
     loggedSetCount: 1,
     hasLoggedSets: true,
@@ -59,18 +58,21 @@ const COMPLETED_EXERCISE = makeExercise({
   loggedSetCount: 3,
 });
 
+function skippedRow(setNumber: number): WorkoutSetRow {
+  return { ...unloggedRow(setNumber), isSkipped: true };
+}
+
 const SKIPPED_NOTHING_LOGGED = makeExercise({
   status: 'skipped',
-  rows: [],
-  hasSkippedRows: true,
+  rows: [skippedRow(1), skippedRow(2), skippedRow(3)],
   loggedSetCount: 0,
   hasLoggedSets: false,
 });
 
 const SKIPPED_PARTLY_LOGGED = makeExercise({
   status: 'skipped',
-  rows: [loggedRow(1, 62.5, 10)],
-  hasSkippedRows: true,
+  rows: [loggedRow(1, 62.5, 10), loggedRow(2, 62.5, 10), skippedRow(3)],
+  loggedSetCount: 2,
 });
 
 const PREVIEW_EXERCISE = makeExercise({
@@ -163,22 +165,25 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 
-  test('a skipped card is dimmed and keeps its logged rows, with one Skipped row for the rest', () => {
+  test('a skipped card with sets logged is dimmed and shows every row, the unlogged one Skipped', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: SKIPPED_PARTLY_LOGGED })} />);
 
     const card = screen.getByTestId('exercise-card-session-exercise-1');
     const flatStyle = Object.assign({}, ...card.props.style.filter(Boolean));
     expect(flatStyle.opacity).toBe(0.5);
+    expect(screen.getByText('Weight, kg')).toBeTruthy();
     expect(screen.getByTestId('set-row-1')).toBeTruthy();
-    expect(screen.queryByTestId('set-row-2')).toBeNull();
-    expect(screen.getByText('Skipped')).toBeTruthy();
+    expect(screen.getByTestId('set-row-2')).toBeTruthy();
+    expect(screen.getByTestId('set-row-3')).toHaveTextContent('Skipped');
+    expect(screen.getAllByText('Skipped')).toHaveLength(1);
   });
 
   test('a skipped exercise with nothing logged shows only the Skipped note, no column header', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: SKIPPED_NOTHING_LOGGED })} />);
 
-    expect(screen.getByText('Skipped')).toBeTruthy();
+    expect(screen.getAllByText('Skipped')).toHaveLength(1);
     expect(screen.queryByText('Weight, kg')).toBeNull();
+    expect(screen.queryByTestId('set-row-1')).toBeNull();
   });
 
   test('a card that is not skipped is not dimmed and has no Skipped row', () => {

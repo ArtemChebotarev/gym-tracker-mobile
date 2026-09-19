@@ -18,14 +18,19 @@
 // by week and day (`workoutSlotHref`) — a preview of a day not programmed yet.
 //
 // The header `⋯` opens the header menu (096, `WorkoutMenuSheet`). Add exercise opens the exercise
-// picker (`WorkoutAddExerciseSheet`) and adds the picked exercises to the end of the session
-// (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
+// picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the
+// session (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
 // exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
 // now read-only. Mesocycle history opens the mesocycle detail stub (098).
 //
-// Rename mesocycle (087), Stop mesocycle (052), the exercise menu (097), and exercise history
-// aren't built yet, so until then they explain that they're not available yet rather than doing
-// nothing.
+// An exercise card's `⋯` opens the exercise menu (097, `WorkoutExerciseMenuSheet`) for that
+// exercise. Its one-tap actions — add or remove a set, move, skip or unskip, delete — run through
+// `useExerciseCommand`; Replace exercise opens the picker in `single` mode, and the pick swaps the
+// exercise (`useSwapExercise`, 047). Delete, Skip and — with logged sets — Replace are confirmed in
+// the menu first.
+//
+// Rename mesocycle (087), Stop mesocycle (052), and exercise history aren't built yet, so until
+// then they explain that they're not available yet rather than doing nothing.
 
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -34,7 +39,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
-import { WorkoutAddExerciseSheet } from '@components/WorkoutAddExerciseSheet';
+import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
+import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
 import { WorkoutMenuSheet } from '@components/WorkoutMenuSheet';
 import { formatWorkoutMenuTitle } from '@components/WorkoutMenuSheetLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
@@ -45,11 +51,13 @@ import {
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
 import { useAddExercises } from '@state/useAddExercises';
+import { useExerciseCommand, useSwapExercise } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -61,11 +69,18 @@ export default function TodayScreen() {
   const finishSession = useFinishSession();
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
+  const exerciseCommand = useExerciseCommand();
+  const swapExercise = useSwapExercise();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  // The exercise whose menu was opened last. Kept after its menu closes, so the sheet keeps its
+  // content while sliding away and Replace's picker knows which exercise it replaces.
+  const [menuExercise, setMenuExercise] = useState<WorkoutExercise | undefined>(undefined);
+  const [isExerciseMenuOpen, setIsExerciseMenuOpen] = useState(false);
+  const [isReplaceOpen, setIsReplaceOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
@@ -88,6 +103,20 @@ export default function TodayScreen() {
     Alert.alert("Couldn't save the set", 'Please try again.');
   }
 
+  function showExerciseError() {
+    Alert.alert("Couldn't update the exercise", 'Please try again.');
+  }
+
+  function replaceExercise(exercise: WorkoutExercise, exerciseId: string) {
+    if (currentSessionId === undefined) {
+      return;
+    }
+    swapExercise.mutate(
+      { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId, exerciseId },
+      { onError: showExerciseError },
+    );
+  }
+
   return (
     <>
       <WorkoutScreen
@@ -96,7 +125,10 @@ export default function TodayScreen() {
         onOpenGrid={() => setIsGridOpen(true)}
         onOpenMenu={() => setIsMenuOpen(true)}
         onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
-        onOpenExerciseMenu={() => showNotAvailable('The exercise menu')}
+        onOpenExerciseMenu={(exercise) => {
+          setMenuExercise(exercise);
+          setIsExerciseMenuOpen(true);
+        }}
         isSaving={logSet.isPending || unlogSet.isPending}
         onLogSet={(exercise, setNumber, entry) => {
           if (currentSessionId === undefined) {
@@ -193,8 +225,10 @@ export default function TodayScreen() {
         }}
         onStopMesocycle={() => showNotAvailable('Stopping a mesocycle')}
       />
-      <WorkoutAddExerciseSheet
+      <WorkoutExercisePickerSheet
+        mode="multi"
         visible={isAddExerciseOpen}
+        title="Add exercise"
         caption={model ? formatWorkoutMenuTitle(model.header) : ''}
         onClose={() => setIsAddExerciseOpen(false)}
         onConfirm={(exerciseIds) => {
@@ -207,6 +241,39 @@ export default function TodayScreen() {
               onError: () => Alert.alert("Couldn't add the exercises", 'Please try again.'),
             },
           );
+        }}
+      />
+      <WorkoutExerciseMenuSheet
+        visible={isExerciseMenuOpen}
+        onClose={() => setIsExerciseMenuOpen(false)}
+        exercise={menuExercise}
+        onReplace={() => setIsReplaceOpen(true)}
+        onCommand={(command) => {
+          if (currentSessionId === undefined || menuExercise === undefined) {
+            return;
+          }
+          exerciseCommand.mutate(
+            {
+              command,
+              ref: {
+                sessionId: currentSessionId,
+                sessionExerciseId: menuExercise.sessionExerciseId,
+              },
+            },
+            { onError: showExerciseError },
+          );
+        }}
+      />
+      <WorkoutExercisePickerSheet
+        mode="single"
+        visible={isReplaceOpen}
+        title="Replace exercise"
+        caption={menuExercise?.name ?? ''}
+        onClose={() => setIsReplaceOpen(false)}
+        onSelect={(exerciseId) => {
+          if (menuExercise !== undefined) {
+            replaceExercise(menuExercise, exerciseId);
+          }
         }}
       />
     </>

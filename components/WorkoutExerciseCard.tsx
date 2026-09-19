@@ -2,8 +2,8 @@
 // screen's list: the muscle-group chip (only when the group changed from the previous card), the
 // name, equipment, the `N RIR` chip, the history button, `⋯` in live mode only, the `Weight, kg` ·
 // `Reps` · `Log` column header, and the set rows. Which of these show is `exerciseCardView`'s call
-// (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity, logged rows plus one
-// `Skipped` note — just the note when nothing was logged), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
+// (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity; every row, the unlogged ones
+// as `Skipped` rows — just one `Skipped` note when nothing was logged), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
 //
 // The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
 // skipped — a skipped exercise's rows are read-only until it's unskipped (05).
@@ -103,7 +103,7 @@ export function WorkoutExerciseCard({
           </View>
         )}
 
-        {view.showSets && exercise.rows.length > 0 && (
+        {view.showSets && (
           <View style={styles.headerRow}>
             <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
             <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
@@ -125,9 +125,7 @@ export function WorkoutExerciseCard({
               onUnlog={() => onUnlogSet(row.setNumber)}
             />
           ))}
-        {view.showSets && exercise.hasSkippedRows && (
-          <Text style={styles.skippedNote}>Skipped</Text>
-        )}
+        {view.showSkippedNote && <Text style={styles.skippedNote}>Skipped</Text>}
       </View>
     </View>
   );

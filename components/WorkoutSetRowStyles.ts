@@ -68,6 +68,18 @@ export const styles = StyleSheet.create({
   placeholderRir: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
   },
+  // A skipped row's `Skipped` spans the Weight and Reps columns, at the fields' height so the row
+  // lines up with the logged ones around it.
+  skippedValues: {
+    flex: 2,
+    height: FIELD_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skippedLabel: {
+    fontSize: SMALL_FONT_SIZE,
+    color: COLORS['text/muted'],
+  },
   indicator: {
     width: INDICATOR_WIDTH,
     textAlign: 'center',

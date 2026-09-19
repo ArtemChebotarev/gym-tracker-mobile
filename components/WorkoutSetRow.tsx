@@ -10,7 +10,8 @@
 // - logged — plain numbers, the `✓ / +N / −N` indicator (only for a set with `targetReps`), and a
 //   filled Log box. Tapping it un-logs the set, and the fields come back holding the logged values.
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
-// values with nothing to type or press.
+// values with nothing to type or press. An unlogged row of a skipped exercise reads `Skipped` across
+// Weight and Reps, with no Log box (05, "Пропустить упражнение").
 //
 // Laid out after the 08.7 mockup's set table: Weight · Reps · indicator · Log, all centered (no set
 // number — Artem's review); the focused field's outline brightens.
@@ -70,6 +71,18 @@ export function WorkoutSetRow({
     setWeightText(formatRowWeight(logged.weight));
     setRepsText(String(logged.reps));
     onUnlog();
+  }
+
+  if (row.isSkipped) {
+    return (
+      <View testID={`set-row-${setNumber}`} style={styles.row}>
+        <View style={styles.skippedValues}>
+          <Text style={styles.skippedLabel}>Skipped</Text>
+        </View>
+        <Text style={styles.indicator} />
+        <View style={styles.logColumn} />
+      </View>
+    );
   }
 
   if (log) {

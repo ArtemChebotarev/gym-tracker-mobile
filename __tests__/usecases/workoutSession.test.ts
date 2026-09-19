@@ -173,7 +173,6 @@ describe('getWorkoutSession — live', () => {
       plannedSetCount: 3,
       loggedSetCount: 2,
       hasLoggedSets: true,
-      hasSkippedRows: false,
     });
     expect(benchCard?.rows).toEqual([
       {
@@ -233,7 +232,7 @@ describe('getWorkoutSession — live', () => {
     expect(benchCard?.actions.canDelete).toBe(true);
   });
 
-  test('a skipped exercise keeps only its logged rows and flags the rest as skipped', async () => {
+  test('a skipped exercise keeps every row and flags the unlogged ones as skipped', async () => {
     const { deps } = await setUp({
       exercises: [{ ...bench, status: 'skipped' }, row],
       logs: [logOf(bench, 1, 11)],
@@ -241,9 +240,12 @@ describe('getWorkoutSession — live', () => {
 
     const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(benchCard?.rows.map((setRow) => setRow.setNumber)).toEqual([1]);
-    expect(benchCard?.rows[0]?.isFirstUnlogged).toBe(false);
-    expect(benchCard?.hasSkippedRows).toBe(true);
+    expect(benchCard?.rows.map((setRow) => [setRow.setNumber, setRow.isSkipped ?? false])).toEqual([
+      [1, false],
+      [2, true],
+      [3, true],
+    ]);
+    expect(benchCard?.rows.some((setRow) => setRow.isFirstUnlogged)).toBe(false);
     expect(benchCard?.actions).toMatchObject({ canSkip: false, canUnskip: true, canDelete: true });
   });
 
@@ -256,7 +258,7 @@ describe('getWorkoutSession — live', () => {
     const [rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
     expect(rowCard?.rows).toHaveLength(2);
-    expect(rowCard?.hasSkippedRows).toBe(false);
+    expect(rowCard?.rows.some((setRow) => setRow.isSkipped)).toBe(false);
   });
 
   test('a ready session not started yet has no date and can be skipped', async () => {
@@ -444,7 +446,6 @@ describe('getWorkoutSession — preview', () => {
       equipment: 'barbell',
       status: 'planned',
       rows: [],
-      hasSkippedRows: false,
       plannedSetCount: 0,
       loggedSetCount: 0,
       hasLoggedSets: false,
@@ -529,7 +530,8 @@ describe('storage is the source of truth', () => {
       'w2d1-bench',
     ]);
     const [rowCard, benchCard] = after.exercises;
-    expect(rowCard).toMatchObject({ status: 'skipped', hasSkippedRows: true, loggedSetCount: 1 });
+    expect(rowCard).toMatchObject({ status: 'skipped', loggedSetCount: 1 });
+    expect(rowCard?.rows.map((setRow) => setRow.isSkipped ?? false)).toEqual([false, true]);
     expect(benchCard?.plannedSetCount).toBe(4);
     expect(benchCard?.rows.map((setRow) => setRow.log?.weight)).toEqual([
       62.5,
