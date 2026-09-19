@@ -6,7 +6,7 @@
     "scheme": "gymtracker",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.gym-tracker-mobile"
