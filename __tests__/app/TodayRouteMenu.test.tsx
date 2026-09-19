@@ -7,6 +7,7 @@ import TodayScreen from '@app/(tabs)/index';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
 import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
+import { SKIP_WORKOUT_WARNING } from '@components/WorkoutMenuSheetLogic';
 import { ensureWorkoutMocksSeeded, workoutStore } from '@state/workoutStore';
 
 // The header menu (096) on the Today tab, over the stub sessions. Its own file, apart from
@@ -123,32 +124,6 @@ describe('Today tab — header menu', () => {
     },
   );
 
-  test('DoD: Skip workout is offered only while no set is logged', async () => {
-    renderToday();
-    await screen.findByText('Week 2 Day 1');
-    const bench = () => within(liveCard('bench-press-barbell'));
-
-    // The stub session has two sets logged — no Skip.
-    openMenu();
-    expect(screen.queryByRole('button', { name: 'Skip workout' })).toBeNull();
-    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
-
-    // Un-logged, nothing is left — Skip is back.
-    fireEvent.press(bench().getByRole('checkbox', { name: 'Set 2 logged' }));
-    await bench().findByRole('checkbox', { name: 'Log set 2' });
-    fireEvent.press(bench().getByRole('checkbox', { name: 'Set 1 logged' }));
-    await bench().findByRole('checkbox', { name: 'Log set 1' });
-    openMenu();
-    expect(screen.getByRole('button', { name: 'Skip workout' })).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
-
-    // One set logged again — Skip is gone.
-    fireEvent.press(bench().getByRole('checkbox', { name: 'Log set 1' }));
-    await bench().findByRole('checkbox', { name: 'Set 1 logged' });
-    openMenu();
-    expect(screen.queryByRole('button', { name: 'Skip workout' })).toBeNull();
-  });
-
   test('Add exercise adds the picked exercises to the end of the session', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
@@ -175,6 +150,40 @@ describe('Today tab — header menu', () => {
     const added = exercises.at(-1);
     expect(await screen.findByTestId(`exercise-card-${added?.id}`)).toBeTruthy();
     expect(added?.setTargets).toHaveLength(2);
+  });
+
+  test('DoD: Skip workout with sets logged warns, skips what is unfinished, and completes the session', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    // Bench done (its last set logged here); the row and the squat added above untouched.
+    fireEvent.press(
+      within(liveCard('bench-press-barbell')).getByRole('checkbox', { name: 'Log set 3' }),
+    );
+    await within(liveCard('bench-press-barbell')).findByRole('checkbox', {
+      name: 'Set 3 logged',
+    });
+
+    openMenu();
+    fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
+    expect(alertSpy).toHaveBeenCalledWith('Skip workout?', SKIP_WORKOUT_WARNING, expect.any(Array));
+    pressAlertButton('Skip');
+
+    // Logged sets make it a completed session — still this one, now read-only.
+    expect(
+      await screen.findByTestId('workout-completed-check', {}, { timeout: 5000 }),
+    ).toBeTruthy();
+    expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
+    const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
+      MOCK_SESSION_IDS.live,
+    );
+    expect(exercises.map((exercise) => [exercise.exerciseId, exercise.status])).toEqual([
+      ['bench-press-barbell', 'completed'],
+      ['barbell-row-barbell', 'skipped'],
+      ['squat-barbell', 'skipped'],
+    ]);
+    await expect(
+      workoutStore.repos.setLogRepo.listBySessionId(MOCK_SESSION_IDS.live),
+    ).resolves.toHaveLength(3);
   });
 
   test('Skip workout, once confirmed, skips the session and leaves it read-only', async () => {
@@ -207,7 +216,6 @@ describe('Today tab — header menu', () => {
 
     openMenu();
     fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
-    expect(alertSpy).toHaveBeenCalledWith('Skip workout?', expect.any(String), expect.any(Array));
     pressAlertButton('Skip');
 
     // Skipping also generates next week's day in the same transaction, which can take over
@@ -228,5 +236,40 @@ describe('Today tab — header menu', () => {
       2,
     );
     expect(week2.map((next) => next.dayNumber).sort()).toEqual([1, 2]);
+  });
+
+  test('no Skip workout once every exercise is done — Finish takes its place', async () => {
+    await workoutStore.repos.sessionRepo.createMany([
+      {
+        id: 'ready-w1d3',
+        mesoId: MOCK_MESOCYCLE_IDS.active,
+        weekNumber: 1,
+        dayNumber: 3,
+        isDeload: false,
+        prescriptionStatus: 'ready',
+        status: 'planned',
+      },
+    ]);
+    await workoutStore.repos.sessionExerciseRepo.createMany([
+      {
+        id: 'ready-w1d3-bench',
+        sessionId: 'ready-w1d3',
+        exerciseId: 'bench-press-barbell',
+        order: 1,
+        setTargets: [{ setNumber: 1, targetReps: 10, suggestedWeight: 60 }],
+        targetRir: 3,
+        status: 'planned',
+      },
+    ]);
+    mockParams = { sessionId: 'ready-w1d3' };
+    renderToday();
+    await screen.findByText('Week 1 Day 3');
+
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
+    expect(await screen.findByRole('button', { name: 'Finish workout' })).toBeTruthy();
+
+    openMenu();
+    expect(screen.queryByRole('button', { name: 'Skip workout' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add exercise' })).toBeTruthy();
   });
 });

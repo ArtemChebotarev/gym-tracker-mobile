@@ -19,9 +19,9 @@
 //
 // The header `⋯` opens the header menu (096, `WorkoutMenuSheet`). Add exercise opens the exercise
 // picker (`WorkoutAddExerciseSheet`) and adds the picked exercises to the end of the session
-// (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips the session
-// (`useSkipWorkout`, 049) and, like Finish, pins the tab to it, now read-only. Mesocycle history
-// opens the mesocycle detail stub (098).
+// (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
+// exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
+// now read-only. Mesocycle history opens the mesocycle detail stub (098).
 //
 // Rename mesocycle (087), Stop mesocycle (052), the exercise menu (097), and exercise history
 // aren't built yet, so until then they explain that they're not available yet rather than doing

@@ -159,7 +159,8 @@ describe('getWorkoutSession — live', () => {
     });
     expect(model.progress).toBeCloseTo(2 / 5);
     expect(model.showFinish).toBe(false);
-    expect(model.actions).toEqual({ canAddExercise: true, canSkipWorkout: false });
+    // A set is logged, but an exercise is left to do — Skip workout skips it.
+    expect(model.actions).toEqual({ canAddExercise: true, canSkipWorkout: true });
 
     const [benchCard, rowCard] = model.exercises;
     expect(benchCard).toMatchObject({
@@ -319,7 +320,9 @@ describe('getWorkoutSession — Finish', () => {
     const notYet = await setUp({
       exercises: [{ ...bench, status: 'completed' }, row],
     });
-    expect((await getWorkoutSession('w2d1', notYet.deps)).showFinish).toBe(false);
+    const notYetModel = await getWorkoutSession('w2d1', notYet.deps);
+    expect(notYetModel.showFinish).toBe(false);
+    expect(notYetModel.actions.canSkipWorkout).toBe(true);
 
     const done = await setUp({
       exercises: [
@@ -327,7 +330,10 @@ describe('getWorkoutSession — Finish', () => {
         { ...row, status: 'skipped' },
       ],
     });
-    expect((await getWorkoutSession('w2d1', done.deps)).showFinish).toBe(true);
+    const doneModel = await getWorkoutSession('w2d1', done.deps);
+    expect(doneModel.showFinish).toBe(true);
+    // Nothing left to skip: Skip workout gives way to Finish.
+    expect(doneModel.actions.canSkipWorkout).toBe(false);
   });
 
   test('DoD: Finish never shows outside live mode', async () => {

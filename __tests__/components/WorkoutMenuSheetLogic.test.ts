@@ -15,7 +15,7 @@ describe('workoutMenuItems', () => {
     ]);
   });
 
-  test('DoD: no Skip workout once a set is logged', () => {
+  test('no Skip workout once every exercise is done — Finish takes its place', () => {
     expect(workoutMenuItems({ canAddExercise: true, canSkipWorkout: false })).toEqual([
       'addExercise',
       'renameMesocycle',

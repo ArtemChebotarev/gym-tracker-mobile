@@ -118,7 +118,10 @@ export type WorkoutHeader = {
 export type WorkoutSessionActions = {
   /** Live, and not a deload session — nothing can be added there (03, rule 6). */
   canAddExercise: boolean;
-  /** Live, with no set logged in the session. */
+  /**
+   * Live, with an exercise still `planned` — Skip workout skips those (05, "Пропустить
+   * тренировку"). Once every exercise is done, Finish takes its place.
+   */
   canSkipWorkout: boolean;
 };
 
@@ -302,7 +305,7 @@ function fromTree(
     ),
     actions: {
       canAddExercise: live && !session.isDeload,
-      canSkipWorkout: live && exercises.every((exercise) => exercise.setLogs.length === 0),
+      canSkipWorkout: live && !canFinishSession(sessionExercises),
     },
     showFinish: live && canFinishSession(sessionExercises),
   };

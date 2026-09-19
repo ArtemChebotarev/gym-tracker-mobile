@@ -4,6 +4,7 @@ import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { WorkoutMenuSheet, type WorkoutMenuSheetProps } from '@components/WorkoutMenuSheet';
+import { SKIP_WORKOUT_WARNING } from '@components/WorkoutMenuSheetLogic';
 import type { WorkoutSessionModel } from '@usecases/workoutSession';
 
 // BottomSheet's SafeAreaView throws without a SafeAreaProvider ancestor.
@@ -24,8 +25,8 @@ const HEADER: WorkoutSessionModel['header'] = {
   isCompleted: false,
 };
 
-// What 088 allows in each mode: everything live with nothing logged, nothing session-level in
-// read-only or preview.
+// What 088 allows in each mode: everything live with an exercise left to do, nothing
+// session-level in read-only or preview.
 const LIVE = { header: HEADER, actions: { canAddExercise: true, canSkipWorkout: true } };
 const READ_ONLY = {
   header: { ...HEADER, isCompleted: true },
@@ -102,7 +103,7 @@ describe('WorkoutMenuSheet', () => {
     expect(screen.getByText('Upper/lower')).toBeTruthy();
   });
 
-  test('DoD: no Skip workout once a set is logged', () => {
+  test('no Skip workout once every exercise is done', () => {
     renderWithSafeArea(
       <WorkoutMenuSheet
         {...makeProps({
@@ -137,7 +138,7 @@ describe('WorkoutMenuSheet', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
 
     expect(props.onClose).toHaveBeenCalledTimes(1);
-    expect(alertSpy).toHaveBeenCalledWith('Skip workout?', expect.any(String), expect.any(Array));
+    expect(alertSpy).toHaveBeenCalledWith('Skip workout?', SKIP_WORKOUT_WARNING, expect.any(Array));
     expect(props.onSkipWorkout).not.toHaveBeenCalled();
 
     const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[];

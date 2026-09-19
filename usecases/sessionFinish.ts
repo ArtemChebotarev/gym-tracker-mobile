@@ -7,7 +7,7 @@ import { ConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { nowAsUtcIso } from '@domain/time';
 import { canFinishSession } from '@domain/workoutViewRules';
-import type { WorkoutStore } from '@repositories/workout';
+import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 import {
   generateNextSession,
   type NextSessionGenerationDeps,
@@ -46,12 +46,27 @@ export async function finishSession(
       );
     }
 
-    const logs = await repos.setLogRepo.listBySessionId(sessionId);
-    const finished = await repos.sessionRepo.update(
-      logs.length > 0
-        ? { ...session, status: 'completed', completedAt: now }
-        : { ...session, status: 'skipped' },
-    );
-    return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
+    return closeSession(session, repos, deps, now);
   });
+}
+
+/**
+ * The step Finish and Skip workout share, once every exercise of `session` is `completed` or
+ * `skipped`: with at least one logged set the session becomes `completed` with `completedAt =
+ * now`, with none `skipped`; then next week's session of the same day is generated (none after
+ * deload). Runs inside the caller's transaction, with its repositories.
+ */
+export async function closeSession(
+  session: Session,
+  repos: WorkoutRepositories,
+  deps: NextSessionGenerationDeps,
+  now: string,
+): Promise<SessionFinishResult> {
+  const logs = await repos.setLogRepo.listBySessionId(session.id);
+  const finished = await repos.sessionRepo.update(
+    logs.length > 0
+      ? { ...session, status: 'completed', completedAt: now }
+      : { ...session, status: 'skipped' },
+  );
+  return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
 }

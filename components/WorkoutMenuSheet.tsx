@@ -1,11 +1,12 @@
 // Header menu sheet — 08.7 · Тренировка, "Лист «Меню шапки»" (task 096). Opened by the workout
 // header's `⋯`: the title `Week N Day N`, the mesocycle's name under it, and one ActionRow per
-// action with its icon on the left. Live sessions get Add exercise and — with no set logged yet —
-// Skip workout; every mode gets Rename mesocycle, Mesocycle history, and the danger Stop mesocycle
-// (`workoutMenuItems` picks them from the model's actions).
+// action with its icon on the left. Live sessions get Add exercise and — while an exercise is left
+// unfinished — Skip workout; every mode gets Rename mesocycle, Mesocycle history, and the danger
+// Stop mesocycle (`workoutMenuItems` picks them from the model's actions).
 //
-// Every action closes the sheet first. Skip workout can't be undone, so it asks for confirmation
-// here, the same way the Mesocycles tab gates Delete, and calls `onSkipWorkout` only once accepted.
+// Every action closes the sheet first. Skip workout can't be undone and skips every unfinished
+// exercise, dropping whatever wasn't logged in them, so it warns about that here — the same way
+// the Mesocycles tab gates Delete — and calls `onSkipWorkout` only once accepted.
 // The sheet is an `overlay` BottomSheet rather than a native <Modal>: that confirmation is raised
 // the moment the menu closes, and an iOS alert presented while a native modal is still dismissing
 // can be swallowed with it; Add exercise likewise opens the exercise picker right away, whose
@@ -23,6 +24,7 @@ import type { WorkoutSessionModel } from '@usecases/workoutSession';
 
 import {
   formatWorkoutMenuTitle,
+  SKIP_WORKOUT_WARNING,
   WORKOUT_MENU_ACTIONS,
   type WorkoutMenuItem,
   workoutMenuItems,
@@ -55,7 +57,7 @@ export function WorkoutMenuSheet({
   const handlers: Record<WorkoutMenuItem, () => void> = {
     addExercise: onAddExercise,
     skipWorkout: () =>
-      Alert.alert('Skip workout?', "It will be marked as skipped. This can't be undone.", [
+      Alert.alert('Skip workout?', SKIP_WORKOUT_WARNING, [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Skip', style: 'destructive', onPress: onSkipWorkout },
       ]),

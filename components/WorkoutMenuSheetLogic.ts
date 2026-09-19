@@ -26,9 +26,9 @@ export const WORKOUT_MENU_ACTIONS: Record<
 
 /**
  * The actions the header menu lists for a session. The mesocycle ones are there in every mode;
- * Add exercise and Skip workout only when the model allows them — live, and for Skip with no set
- * logged (088 works both out, including that a deload session takes no additions). An action that
- * isn't allowed is left out rather than shown disabled.
+ * Add exercise and Skip workout only when the model allows them — live, and for Skip while an
+ * exercise is still unfinished (088 works both out, including that a deload session takes no
+ * additions). An action that isn't allowed is left out rather than shown disabled.
  */
 export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuItem[] {
   const items: WorkoutMenuItem[] = [];
@@ -41,6 +41,13 @@ export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuIte
   items.push('renameMesocycle', 'mesocycleHistory', 'stopMesocycle');
   return items;
 }
+
+/**
+ * The Skip workout confirmation's message (05, "Пропустить тренировку"): every exercise not yet
+ * completed is skipped, so rows left unlogged in them — and anything typed there — are gone.
+ */
+export const SKIP_WORKOUT_WARNING =
+  "Exercises you haven't finished will be skipped, and anything not logged in them will be lost. This can't be undone.";
 
 /** The sheet's title (08.7, "Меню шапки"): `Week 6 Day 2`. */
 export function formatWorkoutMenuTitle(
