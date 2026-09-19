@@ -1,8 +1,8 @@
 // Styles behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 //
-// Laid out after the 08.7 mockup (08.7-workout-session.html): an exercise is a full-width
-// `surface/card` band — no outline, no rounded corners — and the bands are split by a hairline of
-// the page showing through. The group chip sits on the page above its band.
+// An exercise is an outlined, rounded `surface/card` card inside the screen padding, with the group
+// chip above it. The 08.7 mockup (08.7-workout-session.html) draws full-width bands instead;
+// Artem's review kept the cards and took only the mockup's centered set table.
 
 import { StyleSheet } from 'react-native';
 
@@ -19,10 +19,13 @@ import {
 // at 50% opacity.
 const GROUP_DOT_SIZE = 6;
 const SKIPPED_OPACITY = 0.5;
-const PLATE_BORDER_WIDTH = 1;
+const BORDER_WIDTH = 1;
 export const INFO_ICON_SIZE = 15;
 
 export const styles = StyleSheet.create({
+  root: {
+    gap: SPACING['space/gap'],
+  },
   groupChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -31,9 +34,6 @@ export const styles = StyleSheet.create({
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/row'],
     paddingVertical: SPACING['space/gap-tight'] / 2,
-    marginTop: SPACING['space/sheet'],
-    marginBottom: SPACING['space/gap-tight'],
-    marginHorizontal: SPACING['space/screen'],
   },
   groupDot: {
     width: GROUP_DOT_SIZE,
@@ -46,8 +46,10 @@ export const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS['surface/card'],
-    marginBottom: StyleSheet.hairlineWidth,
-    paddingHorizontal: SPACING['space/screen'],
+    borderWidth: BORDER_WIDTH,
+    borderColor: COLORS['border/default'],
+    borderRadius: RADII['radius/control'],
+    paddingHorizontal: SPACING['space/sheet'],
     paddingTop: SPACING['space/row'],
     paddingBottom: SPACING['space/gap-tight'],
   },
@@ -119,7 +121,7 @@ export const styles = StyleSheet.create({
     marginTop: SPACING['space/row'],
     marginBottom: SPACING['space/gap'],
     backgroundColor: COLORS['surface/page'],
-    borderWidth: PLATE_BORDER_WIDTH,
+    borderWidth: BORDER_WIDTH,
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/row'],

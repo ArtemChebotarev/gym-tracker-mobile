@@ -125,11 +125,8 @@ export function WorkoutScreen({
           </View>
         }
       >
-        <View style={styles.fullBleed}>
-          <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
-        </View>
+        <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
         <ScrollView
-          style={[styles.fullBleed, styles.list]}
           contentContainerStyle={styles.content}
           // A tap on Log while the keyboard is up logs the set rather than only closing the
           // keyboard; the inset keeps the focused row above the keyboard.

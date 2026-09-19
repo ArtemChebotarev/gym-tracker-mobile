@@ -12,9 +12,6 @@
 // `surface/card`, the card's own background, so on the card it read as bare text. The chip's
 // `border/default` outline keeps it visibly a chip (Artem's review).
 //
-// Laid out after the 08.7 mockup: a full-width band rather than an outlined card, with the group
-// chip above it; see WorkoutExerciseCardStyles.ts.
-//
 // Presentational: the exercise, the screen mode, and the button handlers come in as props.
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
@@ -67,7 +64,7 @@ export function WorkoutExerciseCard({
   const editable = mode === 'live' && !view.isSkipped;
 
   return (
-    <View>
+    <View style={styles.root}>
       {showGroupChip && <GroupChip muscleGroup={exercise.muscleGroup} />}
       <View
         testID={`exercise-card-${exercise.sessionExerciseId}`}

@@ -31,20 +31,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING['space/gap'],
   },
-  // The progress bar and the exercise list run edge to edge (08.7 mockup), out of RootScreen's
-  // screen padding; the list's sections pad their own content.
-  fullBleed: {
-    marginHorizontal: -SPACING['space/screen'],
-  },
-  list: {
-    flex: 1,
-  },
   content: {
+    paddingTop: SPACING['space/gap'],
     paddingBottom: SPACING['space/section'],
+    gap: SPACING['space/row'],
   },
   unlocksCaption: {
-    paddingTop: SPACING['space/section'],
-    paddingHorizontal: SPACING['space/screen'],
+    paddingTop: SPACING['space/gap'],
     textAlign: 'center',
     fontSize: UNLOCKS_FONT_SIZE,
     color: COLORS['text/faint'],
