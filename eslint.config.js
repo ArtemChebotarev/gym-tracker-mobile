@@ -41,7 +41,8 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', '.expo/*'],
+    // `.claude/worktrees/` holds other checkouts of this repo (parallel task sessions).
+    ignores: ['dist/*', '.expo/*', '.claude/*'],
   },
   {
     // domain/ is the portable core: no RN, no navigation, no storage, no screens.

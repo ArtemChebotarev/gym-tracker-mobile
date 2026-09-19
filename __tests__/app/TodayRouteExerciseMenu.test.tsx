@@ -222,6 +222,7 @@ describe('Today tab — exercise menu', () => {
     await waitFor(async () =>
       expect((await sessionExercises()).map((exercise) => exercise.id)).toEqual([BENCH]),
     );
-    await waitFor(() => expect(screen.queryByText('Barbell Row')).toBeNull());
+    // A count, not the element: a failing check on an element prints its whole fiber on every poll.
+    await waitFor(() => expect(screen.queryAllByText('Barbell Row').length).toBe(0));
   });
 });
