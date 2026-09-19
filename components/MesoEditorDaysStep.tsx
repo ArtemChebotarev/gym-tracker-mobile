@@ -72,6 +72,7 @@ import {
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
+import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 import {
@@ -293,6 +294,7 @@ export function MesoEditorDaysStep({
               <View
                 {...handleResponders.getHandleResponder(index).panHandlers}
                 accessibilityLabel={`Reorder ${title}`}
+                hitSlop={tapTargetSlop(SIZES['size/control-inline'])}
                 style={styles.dragHandle}
               >
                 <Text style={styles.dragHandleGlyph}>≡</Text>

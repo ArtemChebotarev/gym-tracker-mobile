@@ -38,6 +38,8 @@ export const styles = StyleSheet.create({
     paddingBottom: SPACING['space/section'],
   },
   dayTab: {
+    minHeight: SIZES['size/tap-target'],
+    justifyContent: 'center',
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/pill'],

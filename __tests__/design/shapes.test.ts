@@ -1,4 +1,5 @@
-import { capsule, circle, roundedBar, square } from '@design/shapes';
+import { capsule, circle, roundedBar, square, tapTargetSlop } from '@design/shapes';
+import { SIZES } from '@design/tokens';
 
 describe('shapes', () => {
   test('circle: equal sides, radius half the diameter', () => {
@@ -15,5 +16,13 @@ describe('shapes', () => {
 
   test('capsule: fixed width and a rounded bar', () => {
     expect(capsule(36, 4)).toEqual({ width: 36, height: 4, borderRadius: 2 });
+  });
+
+  test('tapTargetSlop grows a control to the 44pt tap target, and never shrinks one', () => {
+    expect(SIZES['size/tap-target']).toBe(44);
+    expect(tapTargetSlop(36)).toBe(4);
+    expect(tapTargetSlop(20)).toBe(12);
+    expect(tapTargetSlop(44)).toBe(0);
+    expect(tapTargetSlop(48)).toBe(0);
   });
 });

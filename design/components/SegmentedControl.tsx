@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING['space/gap-tight'],
+    paddingVertical: SPACING['space/row'],
     borderRadius: RADII['radius/segment-inner'],
   },
   activeSegment: {

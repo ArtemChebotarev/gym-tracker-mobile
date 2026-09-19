@@ -40,8 +40,8 @@ export const styles = StyleSheet.create({
   },
   summaryMeta: {
     marginTop: SPACING['space/xs'],
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
   },
   sectionLabel: {

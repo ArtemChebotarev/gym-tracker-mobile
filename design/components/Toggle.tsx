@@ -58,8 +58,9 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
     color: COLORS['text/primary'],
   },
+  // The explanation line reads like a ListRow subtitle — the same step under the label.
   description: {
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/faint'],
   },
 });

@@ -29,7 +29,7 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
-import { square } from '../shapes';
+import { square, tapTargetSlop } from '../shapes';
 import { Badge, type BadgeVariant } from './Badge';
 import { IconButton } from './IconButton';
 
@@ -132,6 +132,7 @@ function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailin
         accessibilityRole="button"
         accessibilityLabel={`${trailing.actionLabel} ${title}`}
         onPress={trailing.onAction}
+        hitSlop={tapTargetSlop(SIZES['size/chip'])}
         style={({ pressed }) => [
           styles.pill,
           isPrimary ? styles.pillPrimary : styles.pillSecondary,
@@ -188,9 +189,10 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
     color: COLORS['text/faint'],
   },
+  // A step under the title (Subheadline under Body), so the two lines don't read as one size.
   subtitle: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/faint'],
   },
   chevron: {
@@ -219,6 +221,8 @@ const styles = StyleSheet.create({
     gap: SPACING['space/gap'],
   },
   pill: {
+    minHeight: SIZES['size/chip'],
+    justifyContent: 'center',
     borderRadius: RADII['radius/pill'],
     borderWidth: BORDER_WIDTHS['border/default'],
     paddingHorizontal: SPACING['space/row'],

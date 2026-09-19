@@ -72,18 +72,19 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
   },
   activeCaption: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
   },
+  // Sized like an ActionRow — the rows of every other action sheet.
   menuItem: {
-    paddingVertical: SPACING['space/row'],
+    paddingVertical: SPACING['space/action-row-y'],
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
   },
   menuItemLabel: {
-    fontSize: TYPOGRAPHY['type/value'].fontSize,
-    fontWeight: TYPOGRAPHY['type/value'].fontWeight,
+    fontSize: TYPOGRAPHY['type/row-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
     color: COLORS['text/primary'],
   },
   menuItemLabelDanger: {
