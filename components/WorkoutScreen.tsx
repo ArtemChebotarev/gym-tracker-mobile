@@ -5,7 +5,8 @@
 // Header: `Week N` + faint `Day N` in RootScreen's title line (the Today tab shows this screen, so
 // it shares the root screens' title treatment), the subtitle `date · mesocycle`, a round accent
 // check for a completed session only (not pressable), and the grid and `⋯` buttons, which exist in
-// every mode. The progress ratio comes straight from the model (088) — nothing is computed here.
+// every mode. A deload session gets a neutral `Deload` badge right after the title, ahead of the
+// check — lighter weights and fewer sets otherwise read like a mistake. The progress ratio comes straight from the model (088) — nothing is computed here.
 //
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
 // (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — only when
@@ -23,6 +24,7 @@
 
 import { ScrollView, Text, View } from 'react-native';
 
+import { Badge } from '@design/components/Badge';
 import { Button } from '@design/components/Button';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
@@ -118,16 +120,24 @@ export function WorkoutScreen({
         title={`Week ${header.weekNumber}`}
         titleSuffix={`Day ${header.dayNumber}`}
         titleAccessory={
-          header.isCompleted && (
-            <View
-              testID="workout-completed-check"
-              accessible
-              accessibilityLabel="Completed"
-              style={styles.completedCheck}
-            >
-              <CheckIcon size={COMPLETED_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
-            </View>
-          )
+          <>
+            {header.isDeload && (
+              // Badge pins itself to the top (alignSelf); the wrapper keeps it centred on the title.
+              <View testID="workout-deload-badge">
+                <Badge label="Deload" />
+              </View>
+            )}
+            {header.isCompleted && (
+              <View
+                testID="workout-completed-check"
+                accessible
+                accessibilityLabel="Completed"
+                style={styles.completedCheck}
+              >
+                <CheckIcon size={COMPLETED_CHECK_ICON_SIZE} color={COLORS['accent/on']} />
+              </View>
+            )}
+          </>
         }
         subtitle={formatWorkoutSubtitle(header)}
         trailing={
