@@ -7,11 +7,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { WorkoutSlot } from '@domain/workoutView';
+import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
 import { ensureMesocyclesSeeded } from './mesocycleStore';
-import { workoutSessionDeps } from './workoutStore';
+import { ensureWorkoutMocksSeeded, workoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
@@ -41,6 +42,23 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
     queryFn: async () => {
       await ensureSeeded();
       return getWorkoutSlot(slot, workoutSessionDeps);
+    },
+  });
+}
+
+/**
+ * The session the Today tab shows (08.7, "Навигация"): `sessionId` when a day was picked (the
+ * mesocycle overview, 095), otherwise the current session. Temporary: Start (042) doesn't exist
+ * yet, so there are no real sessions — this seeds the stub workout (domain/workoutMocks.ts) and its
+ * in-progress session stands in for the current one. Task 099 replaces that with the real pick:
+ * the `in_progress` session, otherwise the next `ready` one of the active mesocycle.
+ */
+export function useTodayWorkoutSession(sessionId?: string) {
+  return useQuery({
+    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', sessionId ?? 'current'],
+    queryFn: async () => {
+      await ensureWorkoutMocksSeeded();
+      return getWorkoutSession(sessionId ?? MOCK_SESSION_IDS.live, workoutSessionDeps);
     },
   });
 }

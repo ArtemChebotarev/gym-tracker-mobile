@@ -3,13 +3,46 @@
 // 07 · Persistence Layer Contract), so the repositories a workout query needs are built here, over
 // the app-wide store.
 
+import { buildMockWorkout } from '@domain/workoutMocks';
 import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionTreeRepository } from '@storage/sessionTree';
+import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 
 import { appStore } from './appStore';
+import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
+import { ensureMesocyclesSeeded } from './mesocycleStore';
 
 export const workoutSessionDeps: WorkoutSessionDeps = {
   sessionTreeRepo: new InMemorySessionTreeRepository(appStore),
   sessionRepo: new InMemorySessionRepository(appStore),
 };
+
+let seeded: Promise<void> | null = null;
+
+/**
+ * Seeds the stub workout sessions (domain/workoutMocks.ts) into the shared store, once per app
+ * session — after the catalog and mock mesocycles they reference. Called only by the Today tab's
+ * query (`useTodayWorkoutSession`, until 099), not by `useWorkoutSession`, so a test driving the
+ * other workout queries never meets an `in_progress` mock it didn't ask for. Mocks already present
+ * are skipped.
+ */
+export function ensureWorkoutMocksSeeded(): Promise<void> {
+  if (!seeded) {
+    seeded = (async () => {
+      await Promise.all([ensureExerciseCatalogSeeded(), ensureMesocyclesSeeded()]);
+      const { repos } = createInMemoryWorkoutStore(appStore);
+      const mock = buildMockWorkout(new Date());
+      const [first] = mock.sessions;
+      if (first && (await repos.sessionRepo.getById(first.id))) {
+        return;
+      }
+      await repos.sessionRepo.createMany(mock.sessions);
+      await repos.sessionExerciseRepo.createMany(mock.sessionExercises);
+      for (const setLog of mock.setLogs) {
+        await repos.setLogRepo.create(setLog);
+      }
+    })();
+  }
+  return seeded;
+}

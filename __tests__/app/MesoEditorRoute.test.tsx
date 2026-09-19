@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -59,6 +59,18 @@ afterEach(() => {
   useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
 });
 
+/**
+ * Lets TanStack Query deliver the save mutation's settled state to the screen inside act(). The
+ * per-call `onSuccess` / `onError` (router.back, the alert) run first, and the observer's own
+ * re-render is batched onto a `setTimeout(0)` scheduled right after them — a test that ended on
+ * the callback let that re-render land after it, outside act(), and log a warning once the
+ * console guard in jest.setup.ts was already restored. A zero-delay timer queued now fires after
+ * the one already pending.
+ */
+async function flushQueryNotifications() {
+  await act(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+}
+
 async function renderAtReviewStep() {
   render(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
@@ -79,6 +91,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    await flushQueryNotifications();
 
     const saved = (await mesocycleCreationDeps.mesocycleRepo.getAll()).find(
       (mesocycle) => mesocycle.name === 'Route Test Block',
@@ -116,6 +129,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
         'Something went wrong. Please try again.',
       ),
     );
+    await flushQueryNotifications();
     expect(mockBack).not.toHaveBeenCalled();
     expect(useDraftStore.getState().mesoBuilder).toEqual(FILLED_DRAFT);
   });
