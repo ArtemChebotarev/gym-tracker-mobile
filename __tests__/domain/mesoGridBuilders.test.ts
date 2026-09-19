@@ -1,6 +1,11 @@
 import type { Session } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { buildMesoGrid, currentWeekNumber, mesoGridCellStatus } from '@domain/mesoGridBuilders';
+import {
+  buildMesoGrid,
+  currentSession,
+  currentWeekNumber,
+  mesoGridCellStatus,
+} from '@domain/mesoGridBuilders';
 
 const mesocycle: Mesocycle = {
   id: 'meso',
@@ -43,7 +48,45 @@ describe('mesoGridCellStatus', () => {
   });
 });
 
+describe('currentSession', () => {
+  test('the session in progress, even ahead of an earlier ready one', () => {
+    const inProgress = session(2, 2, { status: 'in_progress' });
+
+    expect(currentSession([session(2, 1), inProgress])).toBe(inProgress);
+  });
+
+  test('otherwise the earliest ready session, by week then day', () => {
+    const earliest = session(2, 1);
+
+    expect(
+      currentSession([
+        session(3, 1),
+        session(2, 2),
+        earliest,
+        session(1, 1, { status: 'completed' }),
+        session(1, 2, { prescriptionStatus: 'awaiting_source' }),
+      ]),
+    ).toBe(earliest);
+  });
+
+  test('none once everything is final', () => {
+    expect(
+      currentSession([
+        session(1, 1, { status: 'completed' }),
+        session(1, 2, { status: 'skipped' }),
+      ]),
+    ).toBeUndefined();
+  });
+});
+
 describe('currentWeekNumber', () => {
+  test('moves with the workouts done, not the calendar', () => {
+    // Week 1 has a day left — however long ago it was planned, the block is still on week 1.
+    expect(
+      currentWeekNumber([session(1, 1, { status: 'completed' }), session(1, 2), session(2, 1)]),
+    ).toBe(1);
+  });
+
   test('the week of the session in progress', () => {
     expect(
       currentWeekNumber([

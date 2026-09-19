@@ -1,9 +1,10 @@
 // Stub workout sessions — task 091 ("до 042 работать на stub-данных"). Until Start (042) exists,
 // nothing in the app creates sessions, so the workout screen (08.7) has nothing to open. These
-// cover its three modes on the active mock mesocycle (./mesocycleMocks.ts, 5 weeks × 4 days):
+// cover its modes on the active mock mesocycle (./mesocycleMocks.ts, 5 weeks × 4 days):
 // - Week 1 Day 1 — `completed` → read-only, with the completed check and a full progress bar.
 // - Week 2 Day 1 — `in_progress`, 2 of 6 sets logged → live, with a date and a partial bar.
-// - Week 3 Day 1 — `awaiting_source` → preview of Week 2 Day 1's exercises.
+// Week 3 Day 1 has no session: its grid cell opens a preview of Week 2 Day 1's exercises, and
+// finishing Week 2 Day 1 (094) generates it — a stub session there would make that a conflict.
 // The Today tab shows the live one as the current session (until 099); the others open in the same
 // tab through `workoutHref`. Seeded by state/workoutStore.ts on demand, not on every workout query. Same role as ./mesocycleMocks.ts: plain data, no side effects, no repository calls.
 //
@@ -23,7 +24,6 @@ function minutesBefore(now: Date, minutes: number): string {
 export const MOCK_SESSION_IDS = {
   completed: 'mock-session-w1d1',
   live: 'mock-session-w2d1',
-  preview: 'mock-session-w3d1',
 } as const;
 
 export type MockWorkout = {
@@ -104,15 +104,6 @@ export function buildMockWorkout(now: Date): MockWorkout {
         status: 'in_progress',
         sourceSessionId: MOCK_SESSION_IDS.completed,
         startedAt: minutesBefore(now, 15),
-      },
-      {
-        id: MOCK_SESSION_IDS.preview,
-        mesoId,
-        weekNumber: 3,
-        dayNumber: 1,
-        isDeload: false,
-        prescriptionStatus: 'awaiting_source',
-        status: 'planned',
       },
     ],
     sessionExercises: [...completedExercises, ...liveExercises],

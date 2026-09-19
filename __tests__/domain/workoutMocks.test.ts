@@ -30,10 +30,16 @@ describe('buildMockWorkout', () => {
     }
   });
 
-  test('covers the three workout screen modes', () => {
+  test('covers the read-only and live workout screen modes', () => {
     expect(workoutMode(sessionById(MOCK_SESSION_IDS.completed))).toBe('readonly');
     expect(workoutMode(sessionById(MOCK_SESSION_IDS.live))).toBe('live');
-    expect(workoutMode(sessionById(MOCK_SESSION_IDS.preview))).toBe('preview');
+  });
+
+  test('has no session in Week 3 Day 1, so finishing the live one can generate it', () => {
+    const next = buildMockWorkout(NOW).sessions.filter(
+      (session) => session.weekNumber === 3 && session.dayNumber === 1,
+    );
+    expect(next).toEqual([]);
   });
 
   test('the completed session is fully logged and the live one is partly logged', () => {

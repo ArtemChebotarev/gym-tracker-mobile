@@ -4,7 +4,7 @@
 // (044–049, 086) writes to storage and then invalidates `WORKOUT_SESSION_QUERY_KEY`, which covers
 // both hooks below.
 
-import { useQuery } from '@tanstack/react-query';
+import { type QueryClient, useQuery } from '@tanstack/react-query';
 
 import type { WorkoutSlot } from '@domain/workoutView';
 import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
@@ -12,10 +12,23 @@ import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
 import { ensureMesocyclesSeeded } from './mesocycleStore';
+import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
 import { ensureWorkoutMocksSeeded, workoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
+
+/**
+ * Invalidates what a workout mutation can change: the workout screen, and the mesocycle grid —
+ * whose current week the Mesocycles tab's Active card shows — since starting or finishing a
+ * session can move it.
+ */
+export function invalidateWorkoutQueries(queryClient: QueryClient): Promise<unknown> {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: MESO_GRID_QUERY_KEY }),
+  ]);
+}
 
 async function ensureSeeded(): Promise<void> {
   await Promise.all([ensureExerciseCatalogSeeded(), ensureMesocyclesSeeded()]);

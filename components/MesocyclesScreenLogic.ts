@@ -5,9 +5,6 @@ import type { Mesocycle } from '@domain/mesocycle';
 import { parseUtcIso } from '@domain/time';
 import { formatAbsoluteDate } from '@design/formatDate';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const DAYS_PER_WEEK = 7;
-
 export type MesocycleGroups = {
   active: Mesocycle | null;
   planned: Mesocycle[];
@@ -35,21 +32,6 @@ export function isEmptyGroups(groups: MesocycleGroups): boolean {
   return groups.active === null && groups.planned.length === 0 && groups.completed.length === 0;
 }
 
-/**
- * 1-based week the active mesocycle is in, counted in whole 7-day spans from `startDate` and
- * clamped to `1..lengthWeeks` (a block that ran past its last week still reads as its last week).
- */
-export function getCurrentWeekNumber(mesocycle: Mesocycle, now: Date): number {
-  if (mesocycle.startDate === undefined) {
-    return 1;
-  }
-  const elapsedDays = Math.floor(
-    (now.getTime() - parseUtcIso(mesocycle.startDate).getTime()) / DAY_MS,
-  );
-  const week = Math.floor(elapsedDays / DAYS_PER_WEEK) + 1;
-  return Math.min(Math.max(week, 1), mesocycle.lengthWeeks);
-}
-
 export type WeekDotState = 'done' | 'current' | 'upcoming';
 
 /** One entry per week of the block, for the Active card's progress dots. */
@@ -62,9 +44,12 @@ export function getWeekDots(lengthWeeks: number, currentWeek: number): WeekDotSt
   });
 }
 
-/** `Week N of M · started {date}` */
-export function formatActiveCaption(mesocycle: Mesocycle, now: Date): string {
-  const week = getCurrentWeekNumber(mesocycle, now);
+/**
+ * `Week N of M · started {date}` — `week` is the mesocycle's current week, read from its sessions
+ * (see `currentWeekNumber` in domain/mesoGridBuilders.ts), not from the calendar: a few days' break
+ * between workouts doesn't move the block forward.
+ */
+export function formatActiveCaption(mesocycle: Mesocycle, week: number): string {
   const base = `Week ${week} of ${mesocycle.lengthWeeks}`;
   if (mesocycle.startDate === undefined) {
     return base;

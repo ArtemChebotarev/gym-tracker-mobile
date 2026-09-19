@@ -4,7 +4,6 @@ import {
   formatActiveCaption,
   formatCompletedCaption,
   formatPlannedCaption,
-  getCurrentWeekNumber,
   getWeekDots,
   groupMesocycles,
   isEmptyGroups,
@@ -23,8 +22,6 @@ function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
     ...overrides,
   };
 }
-
-const NOW = new Date('2026-09-16T12:00:00.000Z');
 
 describe('groupMesocycles', () => {
   test('splits by status, drops abandoned, and orders completed newest-finished first', () => {
@@ -56,31 +53,15 @@ describe('groupMesocycles', () => {
   });
 });
 
-describe('getCurrentWeekNumber', () => {
-  test('counts whole weeks since startDate, 1-based', () => {
-    expect(
-      getCurrentWeekNumber(makeMesocycle({ startDate: '2026-09-16T00:00:00.000Z' }), NOW),
-    ).toBe(1);
-    expect(
-      getCurrentWeekNumber(makeMesocycle({ startDate: '2026-09-06T12:00:00.000Z' }), NOW),
-    ).toBe(2);
-  });
-
-  test('clamps to lengthWeeks once the block has run past its end', () => {
-    expect(
-      getCurrentWeekNumber(makeMesocycle({ startDate: '2026-01-01T00:00:00.000Z' }), NOW),
-    ).toBe(5);
-  });
-});
-
 test('getWeekDots marks weeks before, at, and after the current one', () => {
   expect(getWeekDots(4, 2)).toEqual(['done', 'current', 'upcoming', 'upcoming']);
 });
 
 describe('captions', () => {
-  test('active', () => {
+  test('active — the week is given, not derived from the start date', () => {
     const mesocycle = makeMesocycle({ status: 'active', startDate: '2026-09-06T12:00:00.000Z' });
-    expect(formatActiveCaption(mesocycle, NOW)).toBe('Week 2 of 5 · started 6 Sep');
+    expect(formatActiveCaption(mesocycle, 1)).toBe('Week 1 of 5 · started 6 Sep');
+    expect(formatActiveCaption(mesocycle, 3)).toBe('Week 3 of 5 · started 6 Sep');
   });
 
   test('planned', () => {

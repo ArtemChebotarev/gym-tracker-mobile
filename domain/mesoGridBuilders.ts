@@ -26,22 +26,31 @@ function byWeekThenDay(a: Session, b: Session): number {
 }
 
 /**
- * The week the mesocycle is on — the week of the session the Today tab opens (08.7, "Навигация"):
- * the one `in_progress`, otherwise the earliest `ready` one. Once nothing is left to do, the latest
- * week that has a session; week 1 before the mesocycle has any.
+ * The session to train now — the one the Today tab opens (08.7, "Навигация") and `Next workout`
+ * leads to: the one `in_progress`, otherwise the earliest `ready` one. `undefined` once nothing is
+ * left to do (or before anything is programmed).
  */
-export function currentWeekNumber(sessions: readonly Session[]): number {
+export function currentSession<S extends Session>(sessions: readonly S[]): S | undefined {
   const inProgress = sessions.find((session) => session.status === 'in_progress');
   if (inProgress) {
-    return inProgress.weekNumber;
+    return inProgress;
   }
   const [nextReady] = sessions
     .filter((session) => mesoGridCellStatus(session) === 'ready')
     .sort(byWeekThenDay);
-  if (nextReady) {
-    return nextReady.weekNumber;
-  }
-  return Math.max(1, ...sessions.map((session) => session.weekNumber));
+  return nextReady;
+}
+
+/**
+ * The week the mesocycle is on — the week of `currentSession`, so it moves with the workouts done,
+ * not with the calendar. Once nothing is left to do, the latest week that has a session; week 1
+ * before the mesocycle has any.
+ */
+export function currentWeekNumber(sessions: readonly Session[]): number {
+  return (
+    currentSession(sessions)?.weekNumber ??
+    Math.max(1, ...sessions.map((session) => session.weekNumber))
+  );
 }
 
 /**

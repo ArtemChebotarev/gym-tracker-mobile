@@ -11,12 +11,17 @@ import { ensureMesocyclesSeeded, mesoGridDeps } from './mesocycleStore';
 /** Prefix of every grid query — invalidate it after any change to a session's status. */
 export const MESO_GRID_QUERY_KEY = ['mesoGrid'] as const;
 
-export function useMesoGrid(mesoId: string) {
+/** The grid of mesocycle `mesoId`; idle while `mesoId` is `undefined` (e.g. no active one). */
+export function useMesoGrid(mesoId: string | undefined) {
   return useQuery({
     queryKey: [...MESO_GRID_QUERY_KEY, mesoId],
     queryFn: async () => {
+      if (mesoId === undefined) {
+        throw new Error('useMesoGrid ran without a mesocycle id.');
+      }
       await ensureMesocyclesSeeded();
       return getMesoGrid(mesoId, mesoGridDeps);
     },
+    enabled: mesoId !== undefined,
   });
 }

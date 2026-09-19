@@ -8,7 +8,13 @@
 // every mode. The progress ratio comes straight from the model (088) — nothing is computed here.
 //
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
-// (WorkoutSetRow, 093); task 094 adds Finish workout.
+// (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — only when
+// the model's `showFinish` says every exercise is `completed` or `skipped`; before that it isn't
+// there at all (not disabled). Finishing needs no confirmation: the screen stays put and re-reads
+// the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
+// header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
+// A read-only session shows a secondary `Next workout` button in the same place when the model has
+// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
@@ -17,6 +23,7 @@
 
 import { ScrollView, Text, View } from 'react-native';
 
+import { Button } from '@design/components/Button';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ProgressBar } from '@design/components/ProgressBar';
@@ -53,6 +60,12 @@ export type WorkoutScreenProps = {
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
   /** A log or un-log is being saved. */
   isSaving: boolean;
+  /** Finishes the session (05, "Завершение тренировки"). Only offered when `showFinish`. */
+  onFinish: () => void;
+  /** Finish is being saved — the button is disabled so it can't be pressed twice. */
+  isFinishing: boolean;
+  /** Opens the session `Next workout` points at. Read-only only. */
+  onOpenNext: (sessionId: string) => void;
   /** The way forward when the session couldn't be loaded. */
   fallbackAction: { label: string; onPress: () => void };
 };
@@ -67,6 +80,9 @@ export function WorkoutScreen({
   onLogSet,
   onUnlogSet,
   isSaving,
+  onFinish,
+  isFinishing,
+  onOpenNext,
   fallbackAction,
 }: WorkoutScreenProps) {
   if (isPending) {
@@ -94,7 +110,7 @@ export function WorkoutScreen({
     );
   }
 
-  const { header } = model;
+  const { header, nextSessionId } = model;
 
   return (
     <View style={styles.root}>
@@ -146,6 +162,20 @@ export function WorkoutScreen({
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
             />
           ))}
+          {model.showFinish && (
+            <View style={styles.finish}>
+              <Button label="Finish workout" onPress={onFinish} disabled={isFinishing} />
+            </View>
+          )}
+          {nextSessionId !== undefined && (
+            <View style={styles.finish}>
+              <Button
+                label="Next workout"
+                variant="secondary"
+                onPress={() => onOpenNext(nextSessionId)}
+              />
+            </View>
+          )}
           {model.unlocksAfter !== undefined && (
             <Text style={styles.unlocksCaption}>{formatUnlocksCaption(model.unlocksAfter)}</Text>
           )}
