@@ -87,15 +87,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
           }
         }
       />
-      <RNCSafeAreaView
-        edges={
-          {
-            "bottom": "additive",
-            "left": "off",
-            "right": "off",
-            "top": "off",
-          }
-        }
+      <View
         style={
           [
             {
@@ -103,9 +95,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
               "borderTopLeftRadius": 18,
               "borderTopRightRadius": 18,
               "maxHeight": "80%",
-              "paddingBottom": 16,
             },
             false,
+            {
+              "paddingBottom": 50,
+            },
           ]
         }
         testID="bottom-sheet"
@@ -890,7 +884,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
             </View>
           </View>
         </RCTScrollView>
-      </RNCSafeAreaView>
+      </View>
     </View>
   </View>
 </RNCSafeAreaProvider>
@@ -983,15 +977,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
           }
         }
       />
-      <RNCSafeAreaView
-        edges={
-          {
-            "bottom": "additive",
-            "left": "off",
-            "right": "off",
-            "top": "off",
-          }
-        }
+      <View
         style={
           [
             {
@@ -999,9 +985,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
               "borderTopLeftRadius": 18,
               "borderTopRightRadius": 18,
               "maxHeight": "80%",
-              "paddingBottom": 16,
             },
             false,
+            {
+              "paddingBottom": 50,
+            },
           ]
         }
         testID="bottom-sheet"
@@ -1507,7 +1495,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
             </View>
           </View>
         </RCTScrollView>
-      </RNCSafeAreaView>
+      </View>
     </View>
   </View>
 </RNCSafeAreaProvider>
@@ -1600,15 +1588,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
           }
         }
       />
-      <RNCSafeAreaView
-        edges={
-          {
-            "bottom": "additive",
-            "left": "off",
-            "right": "off",
-            "top": "off",
-          }
-        }
+      <View
         style={
           [
             {
@@ -1616,9 +1596,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
               "borderTopLeftRadius": 18,
               "borderTopRightRadius": 18,
               "maxHeight": "80%",
-              "paddingBottom": 16,
             },
             false,
+            {
+              "paddingBottom": 50,
+            },
           ]
         }
         testID="bottom-sheet"
@@ -2124,7 +2106,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
             </View>
           </View>
         </RCTScrollView>
-      </RNCSafeAreaView>
+      </View>
     </View>
   </View>
 </RNCSafeAreaProvider>

@@ -1,6 +1,16 @@
 import { BottomSheet } from '@design/components/BottomSheet';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { ScrollView, StyleSheet, Text } from 'react-native';
+import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
+
+import { SPACING } from '@design/tokens';
+
+// initialMetrics makes the provider resolve synchronously instead of waiting on a native
+// onLayout that jest's test renderer never fires.
+const TEST_SAFE_AREA_METRICS: Metrics = {
+  insets: { top: 47, left: 0, right: 0, bottom: 34 },
+  frame: { x: 0, y: 0, width: 402, height: 874 },
+};
 
 describe('BottomSheet', () => {
   test('renders nothing when not visible', () => {
@@ -115,23 +125,34 @@ describe('BottomSheet', () => {
     expect(screen.getByText('Apply')).toBeTruthy();
   });
 
-  test('pads for the device bottom safe-area inset (e.g. the home indicator), on top of the base sheet padding — only the bottom edge, not top/left/right', () => {
-    // The actual inset value is computed natively and isn't observable through a style prop
-    // under the test renderer (SafeAreaView renders a native host component whose insets are
-    // resolved on the device, not in JS) — so this asserts the sheet requests bottom-only
-    // "additive" padding from it, which is what actually produces the fix on a real device.
+  // Task 102: the inset comes from the root SafeAreaProvider, so it's there on the very first
+  // opening — a SafeAreaView inside the Modal got a zero inset until the sheet was reopened.
+  test.each(['modal', 'overlay'] as const)(
+    '%s presentation: pads its bottom by the root safe-area inset on top of space/sheet',
+    (presentation) => {
+      render(
+        <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+          <BottomSheet visible onClose={() => {}} title="Filters" presentation={presentation}>
+            <Text>Content</Text>
+          </BottomSheet>
+        </SafeAreaProvider>,
+      );
+
+      const style = StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style);
+      expect(style.paddingBottom).toBe(SPACING['space/sheet'] + 34);
+      expect(style.paddingTop).toBeUndefined();
+    },
+  );
+
+  test('without a SafeAreaProvider, pads by space/sheet alone', () => {
     render(
       <BottomSheet visible onClose={() => {}} title="Filters">
         <Text>Content</Text>
       </BottomSheet>,
     );
 
-    expect(screen.getByTestId('bottom-sheet').props.edges).toEqual({
-      top: 'off',
-      right: 'off',
-      bottom: 'additive',
-      left: 'off',
-    });
+    const style = StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style);
+    expect(style.paddingBottom).toBe(SPACING['space/sheet']);
   });
 
   // Task 082: a content-sized sheet only caps its height; a fixed one pins it, in both

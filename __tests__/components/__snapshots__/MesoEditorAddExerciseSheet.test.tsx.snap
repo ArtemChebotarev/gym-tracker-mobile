@@ -76,15 +76,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
         }
       }
     />
-    <RNCSafeAreaView
-      edges={
-        {
-          "bottom": "additive",
-          "left": "off",
-          "right": "off",
-          "top": "off",
-        }
-      }
+    <View
       style={
         [
           {
@@ -92,10 +84,12 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
             "borderTopLeftRadius": 18,
             "borderTopRightRadius": 18,
             "maxHeight": "80%",
-            "paddingBottom": 16,
           },
           {
             "height": "80%",
+          },
+          {
+            "paddingBottom": 16,
           },
         ]
       }
@@ -778,7 +772,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
           </View>
         </View>
       </View>
-    </RNCSafeAreaView>
+    </View>
   </View>
 </View>
 `;

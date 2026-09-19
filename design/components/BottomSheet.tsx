@@ -13,12 +13,18 @@
 // has no direct dependency on that library (see package.json) — and a plain
 // distance-since-touch-start check is all a dismiss threshold needs.
 //
-// The sheet itself is a SafeAreaView (bottom edge only — the Modal already covers the full
-// screen, and the grabber/header at the top have nothing near the top inset to protect against).
-// Without it, the last row of content or the footer button sits right against the home indicator
-// on any device that has one, and can read as visually cropped. The same paddingBottom below
-// still applies underneath the inset, exactly as RootScreen layers `space/screen` under the top
-// inset — see that file's own SafeAreaView usage.
+// The sheet pads its bottom by the device's bottom safe-area inset (the top has nothing to protect
+// — the grabber/header sit far from it). Without it, the last row of content or the footer button
+// sits right against the home indicator on any device that has one, and can read as visually
+// cropped. `space/sheet` still applies on top of the inset, exactly as RootScreen layers
+// `space/screen` under the top inset.
+//
+// The inset comes from the app's root SafeAreaProvider (read through SafeAreaInsetsContext), not
+// from a SafeAreaView inside the sheet: a native SafeAreaView inside <Modal> measures against the
+// modal's own window, which on iOS isn't laid out yet the first time the modal presents — so the
+// first opening of every sheet came out with a zero inset, and only later openings had it (task
+// 102). The root inset is the same number and is known from the first frame. Outside any provider
+// (component tests that render a sheet on its own) the context is null and the inset is 0.
 //
 // KeyboardAvoidingView wraps the overlay so a focused TextField (e.g. the New/Edit exercise
 // sheet's Name field) doesn't end up hidden behind the keyboard — `behavior: 'padding'` pads the
@@ -29,7 +35,7 @@
 // a Dropdown option register in the same gesture instead of only dismissing the keyboard first.
 
 import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import {
   Animated,
@@ -43,7 +49,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 
 const DISMISS_DISTANCE = 60;
@@ -111,6 +117,7 @@ export function BottomSheet({
   height = 'content',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
+  const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
 
   function handleGrabberGrant(event: GestureResponderEvent) {
     dragStartY.current = event.nativeEvent.pageY;
@@ -149,7 +156,11 @@ export function BottomSheet({
     </>
   );
 
-  const sheetStyle = [styles.sheet, height === 'fixed' && styles.sheetFixed];
+  const sheetStyle = [
+    styles.sheet,
+    height === 'fixed' && styles.sheetFixed,
+    { paddingBottom: SPACING['space/sheet'] + bottomInset },
+  ];
 
   if (presentation === 'overlay') {
     return (
@@ -176,9 +187,9 @@ export function BottomSheet({
           style={styles.backdrop}
           onPress={onClose}
         />
-        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle}>
           {sheetBody}
-        </SafeAreaView>
+        </View>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -251,9 +262,9 @@ function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: Over
           style={styles.backdrop}
           onPress={onClose}
         />
-        <SafeAreaView testID="bottom-sheet" edges={['bottom']} style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle}>
           {children}
-        </SafeAreaView>
+        </View>
       </KeyboardAvoidingView>
     </Animated.View>
   );
@@ -273,7 +284,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS['surface/sheet'],
     borderTopLeftRadius: RADII['radius/sheet'],
     borderTopRightRadius: RADII['radius/sheet'],
-    paddingBottom: SPACING['space/sheet'],
   },
   sheetFixed: {
     height: MAX_SHEET_HEIGHT,
