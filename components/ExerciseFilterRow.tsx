@@ -17,6 +17,8 @@ import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
+import { tapTargetSlop } from '@design/shapes';
+import { SIZES } from '@design/tokens';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { hasActiveFilters, sectionDotColor, sourceLabel } from './ExerciseLibraryScreenLogic';
@@ -59,7 +61,12 @@ export function ExerciseFilterRow({
       {filters.performedOnly && <Chip variant="static" label="Performed only" />}
       <Chip variant="counter" label="Exercises" count={resultCount} />
       {filtersActive && (
-        <Pressable accessibilityRole="button" style={styles.resetChip} onPress={onResetFilters}>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={tapTargetSlop(SIZES['size/chip'])}
+          style={styles.resetChip}
+          onPress={onResetFilters}
+        >
           <Text style={styles.resetChipLabel}>Reset</Text>
         </Pressable>
       )}

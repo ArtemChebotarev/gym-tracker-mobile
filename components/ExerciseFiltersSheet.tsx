@@ -27,6 +27,8 @@ import { fieldStyles } from '@design/components/fieldStyles';
 import { Toggle } from '@design/components/Toggle';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
+import { tapTargetSlop } from '@design/shapes';
+import { SIZES } from '@design/tokens';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
@@ -67,7 +69,12 @@ export function ExerciseFiltersSheet({
       title="Filters"
       animated={animated}
       action={
-        <Pressable accessibilityRole="button" onPress={onReset}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onReset}
+          hitSlop={tapTargetSlop(SIZES['size/chip'])}
+          style={styles.resetButton}
+        >
           <Text style={styles.reset}>Reset</Text>
         </Pressable>
       }
@@ -135,6 +142,7 @@ function MuscleGroupChip({ muscleGroup, selected, onPress }: MuscleGroupChipProp
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
+      hitSlop={tapTargetSlop(SIZES['size/chip'])}
       style={({ pressed }) => [
         styles.muscleGroupChip,
         selected

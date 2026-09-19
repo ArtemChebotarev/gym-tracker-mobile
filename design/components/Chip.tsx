@@ -14,7 +14,7 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
-import { circle } from '../shapes';
+import { circle, tapTargetSlop } from '../shapes';
 
 type SelectableChipProps = {
   variant: 'selectable';
@@ -44,6 +44,7 @@ export function Chip(props: ChipProps) {
         accessibilityRole="button"
         accessibilityState={{ selected: props.selected }}
         onPress={props.onPress}
+        hitSlop={tapTargetSlop(SIZES['size/chip'])}
         style={({ pressed }) => [
           styles.container,
           props.selected ? styles.selected : styles.unselected,
@@ -82,6 +83,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
+    // Every variant is `size/chip` tall, so a static chip lines up with a selectable one — and a
+    // selectable one reaches the 44pt tap target through `tapTargetSlop`.
+    minHeight: SIZES['size/chip'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/gap'],
