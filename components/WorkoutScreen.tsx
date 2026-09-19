@@ -13,6 +13,8 @@
 // there at all (not disabled). Finishing needs no confirmation: the screen stays put and re-reads
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
+// A read-only session shows a secondary `Next workout` button in the same place when the model has
+// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
@@ -62,6 +64,8 @@ export type WorkoutScreenProps = {
   onFinish: () => void;
   /** Finish is being saved — the button is disabled so it can't be pressed twice. */
   isFinishing: boolean;
+  /** Opens the session `Next workout` points at. Read-only only. */
+  onOpenNext: (sessionId: string) => void;
   /** The way forward when the session couldn't be loaded. */
   fallbackAction: { label: string; onPress: () => void };
 };
@@ -78,6 +82,7 @@ export function WorkoutScreen({
   isSaving,
   onFinish,
   isFinishing,
+  onOpenNext,
   fallbackAction,
 }: WorkoutScreenProps) {
   if (isPending) {
@@ -105,7 +110,7 @@ export function WorkoutScreen({
     );
   }
 
-  const { header } = model;
+  const { header, nextSessionId } = model;
 
   return (
     <View style={styles.root}>
@@ -160,6 +165,15 @@ export function WorkoutScreen({
           {model.showFinish && (
             <View style={styles.finish}>
               <Button label="Finish workout" onPress={onFinish} disabled={isFinishing} />
+            </View>
+          )}
+          {nextSessionId !== undefined && (
+            <View style={styles.finish}>
+              <Button
+                label="Next workout"
+                variant="secondary"
+                onPress={() => onOpenNext(nextSessionId)}
+              />
             </View>
           )}
           {model.unlocksAfter !== undefined && (

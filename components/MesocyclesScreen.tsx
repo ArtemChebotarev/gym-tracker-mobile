@@ -39,7 +39,6 @@ import {
   formatPlannedCaption,
   formatStartBlockedMessage,
   formatStartConfirmMessage,
-  getCurrentWeekNumber,
   getWeekDots,
   groupMesocycles,
   isEmptyGroups,
@@ -49,8 +48,11 @@ import { styles } from './MesocyclesScreenStyles';
 export type MesocyclesScreenProps = {
   mesocycles: Mesocycle[] | undefined;
   isPending: boolean;
-  /** Reference time for the Active card's current week; defaults to the real clock. */
-  now?: Date;
+  /**
+   * The Active card's current week — from the mesocycle's sessions (the week of the one in
+   * progress, else of the next ready one), not the calendar. Unused without an active mesocycle.
+   */
+  activeWeekNumber: number;
   onRequestCreate: () => void;
   onOpenActive: () => void;
   onStart: (mesocycle: Mesocycle) => void;
@@ -63,7 +65,7 @@ export type MesocyclesScreenProps = {
 export function MesocyclesScreen({
   mesocycles,
   isPending,
-  now = new Date(),
+  activeWeekNumber,
   onRequestCreate,
   onOpenActive,
   onStart,
@@ -147,21 +149,21 @@ export function MesocyclesScreen({
                     <Badge label="Active" variant="accent" />
                   </View>
                   <View style={styles.weekDots}>
-                    {getWeekDots(active.lengthWeeks, getCurrentWeekNumber(active, now)).map(
-                      (state, index) => (
-                        <View
-                          key={index}
-                          testID={`week-dot-${state}`}
-                          style={[
-                            styles.weekDot,
-                            state === 'done' && styles.weekDotDone,
-                            state === 'current' && styles.weekDotCurrent,
-                          ]}
-                        />
-                      ),
-                    )}
+                    {getWeekDots(active.lengthWeeks, activeWeekNumber).map((state, index) => (
+                      <View
+                        key={index}
+                        testID={`week-dot-${state}`}
+                        style={[
+                          styles.weekDot,
+                          state === 'done' && styles.weekDotDone,
+                          state === 'current' && styles.weekDotCurrent,
+                        ]}
+                      />
+                    ))}
                   </View>
-                  <Text style={styles.activeCaption}>{formatActiveCaption(active, now)}</Text>
+                  <Text style={styles.activeCaption}>
+                    {formatActiveCaption(active, activeWeekNumber)}
+                  </Text>
                 </Pressable>
               </View>
             )}

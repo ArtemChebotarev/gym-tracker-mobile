@@ -36,4 +36,11 @@ describe('useMesoGrid', () => {
       grid.weeks.flatMap((week) => week.cells).every((cell) => cell.status === 'awaiting'),
     ).toBe(true);
   });
+
+  test('stays idle without a mesocycle id', () => {
+    const { result } = renderHook(() => useMesoGrid(undefined), { wrapper });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(result.current.data).toBeUndefined();
+  });
 });

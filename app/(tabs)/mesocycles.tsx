@@ -9,6 +9,8 @@
 // - Completed `⋯` → a mesocycle's History screen.
 // Planned `⋯` → Edit opens the same editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
+// The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
+// not the calendar — so a break of a few days between workouts doesn't move it.
 // `+` goes straight to Flow A — Flows B and C have no screens yet to choose between (074's
 // temporary option; the final three-flow picker is still Artem's call).
 
@@ -18,11 +20,14 @@ import { useRouter } from 'expo-router';
 import { MesocyclesScreen } from '@components/MesocyclesScreen';
 import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
+import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 
 export default function MesocyclesRoute() {
   const router = useRouter();
   const query = useMesocycles();
+  const activeId = query.data?.find((mesocycle) => mesocycle.status === 'active')?.id;
+  const activeGrid = useMesoGrid(activeId);
   const deleteMesocycle = useDeletePlannedMesocycle();
   const setDraft = useDraftStore((state) => state.setMesoBuilder);
 
@@ -33,7 +38,8 @@ export default function MesocyclesRoute() {
   return (
     <MesocyclesScreen
       mesocycles={query.data}
-      isPending={query.isPending}
+      isPending={query.isPending || (activeId !== undefined && activeGrid.isPending)}
+      activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
       onRequestCreate={() => router.push('/meso-editor/new')}
       onOpenActive={() => router.navigate('/')}
       onStart={() => showNotAvailable('Starting a mesocycle')}

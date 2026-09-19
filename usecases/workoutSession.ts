@@ -7,6 +7,7 @@
 import type { Equipment, MuscleGroup } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@domain/execution';
+import { currentSession } from '@domain/mesoGridBuilders';
 import { isDeloadWeek } from '@domain/progressionPlan';
 import { targetIndicator } from '@domain/progressionTargetIndicator';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
@@ -133,6 +134,11 @@ export type WorkoutSessionModel = {
   actions: WorkoutSessionActions;
   /** The `Finish workout` button: live, and every exercise `completed` or `skipped`. */
   showFinish: boolean;
+  /**
+   * Read-only only: the session the `Next workout` button opens — the mesocycle's current one (in
+   * progress, else the earliest ready; see `currentSession`). Absent when nothing is left to do.
+   */
+  nextSessionId?: string;
   /** Preview only — `Unlocks when you finish Week W Day D`. */
   unlocksAfter?: { weekNumber: number; dayNumber: number };
 };
@@ -262,9 +268,14 @@ function toExercise(
 
 /**
  * A live or read-only session, from its own tree. `source` is the tree of the session a deload
- * session was planned from (`null` otherwise) — see `referenceReps`.
+ * session was planned from (`null` otherwise) — see `referenceReps`. `next` is the mesocycle's
+ * current session, for `nextSessionId`.
  */
-function fromTree(tree: SessionTree, source: SessionTree | null): WorkoutSessionModel {
+function fromTree(
+  tree: SessionTree,
+  source: SessionTree | null,
+  next: Session | undefined,
+): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
   const mode = workoutMode(session);
   const live = mode === 'live';
@@ -280,7 +291,7 @@ function fromTree(tree: SessionTree, source: SessionTree | null): WorkoutSession
     header.date = date;
   }
   const sessionExercises = exercises.map((exercise) => exercise.sessionExercise);
-  return {
+  const model: WorkoutSessionModel = {
     sessionId: session.id,
     mesoId: session.mesoId,
     mode,
@@ -295,6 +306,10 @@ function fromTree(tree: SessionTree, source: SessionTree | null): WorkoutSession
     },
     showFinish: live && canFinishSession(sessionExercises),
   };
+  if (mode === 'readonly' && next !== undefined) {
+    model.nextSessionId = next.id;
+  }
+  return model;
 }
 
 /**
@@ -374,12 +389,16 @@ export async function getWorkoutSession(
     const { mesoId, weekNumber, dayNumber } = tree.session;
     return previewOf({ mesoId, weekNumber, dayNumber }, tree.session, deps);
   }
-  const { isDeload, sourceSessionId } = tree.session;
+  const { isDeload, sourceSessionId, mesoId } = tree.session;
   const source =
     isDeload && sourceSessionId !== undefined
       ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
       : null;
-  return fromTree(tree, source);
+  const next =
+    workoutMode(tree.session) === 'readonly'
+      ? currentSession(await deps.sessionRepo.listByMesoId(mesoId))
+      : undefined;
+  return fromTree(tree, source, next);
 }
 
 /**

@@ -18,8 +18,6 @@ function renderWithSafeArea(ui: ReactElement) {
   return render(<SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>{ui}</SafeAreaProvider>);
 }
 
-const NOW = new Date('2026-09-16T12:00:00.000Z');
-
 const ACTIVE: Mesocycle = {
   id: 'active',
   name: 'Upper/Lower',
@@ -61,7 +59,7 @@ function makeProps(overrides: Partial<MesocyclesScreenProps> = {}): MesocyclesSc
   return {
     mesocycles: [ACTIVE, PLANNED, COMPLETED],
     isPending: false,
-    now: NOW,
+    activeWeekNumber: 2,
     onRequestCreate: jest.fn(),
     onOpenActive: jest.fn(),
     onStart: jest.fn(),

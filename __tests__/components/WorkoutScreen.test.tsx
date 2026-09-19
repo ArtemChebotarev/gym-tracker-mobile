@@ -104,6 +104,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     isSaving: false,
     onFinish: jest.fn(),
     isFinishing: false,
+    onOpenNext: jest.fn(),
     fallbackAction: { label: 'Go back', onPress: jest.fn() },
     ...overrides,
   };
@@ -302,6 +303,27 @@ describe('WorkoutScreen Finish workout', () => {
     expect(screen.queryByRole('button', { name: 'Bench press menu' })).toBeNull();
     expect(screen.queryAllByRole('checkbox')).toEqual([]);
     expect(screen.queryByLabelText('Set 1 reps')).toBeNull();
+  });
+});
+
+describe('WorkoutScreen Next workout', () => {
+  test('a read-only session with a next one offers it, and opens it on press', () => {
+    const onOpenNext = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({ model: { ...COMPLETED, nextSessionId: 'session-2' }, onOpenNext })}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Next workout' }));
+
+    expect(onOpenNext).toHaveBeenCalledWith('session-2');
+  });
+
+  test('no Next workout without a next session', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
+
+    expect(screen.queryByRole('button', { name: 'Next workout' })).toBeNull();
   });
 });
 

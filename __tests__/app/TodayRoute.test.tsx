@@ -236,5 +236,10 @@ describe('Today tab — Finish workout', () => {
       3,
     );
     expect(week3.map((next) => next.dayNumber)).toEqual([1]);
+
+    // Next workout goes to the earliest ready day — Week 2 Day 2 (seeded by the conflict test
+    // above) comes before the Week 3 Day 1 that Finish just generated.
+    fireEvent.press(screen.getByRole('button', { name: 'Next workout' }));
+    expect(mockNavigate).toHaveBeenCalledWith(workoutHref('ready-w2d2'));
   });
 });

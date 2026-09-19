@@ -360,6 +360,25 @@ describe('getWorkoutSession — read-only', () => {
     expect(model.exercises[0]?.rows.every((setRow) => !setRow.isFirstUnlogged)).toBe(true);
   });
 
+  test('points Next workout at the session in progress, else the earliest ready one', async () => {
+    const { deps } = await setUp();
+    expect((await getWorkoutSession('w1d1', deps)).nextSessionId).toBe('w2d1');
+
+    const noneInProgress = await setUp({
+      sessions: [w1d1, w1d2, slotSession(2, 2), slotSession(2, 1)],
+      exercises: [w1Bench, w1Squat, bench, w2Squat],
+    });
+    expect((await getWorkoutSession('w1d2', noneInProgress.deps)).nextSessionId).toBe('w2d1');
+  });
+
+  test('no Next workout once nothing is left, nor outside read-only mode', async () => {
+    const done = await setUp({ sessions: [w1d1, w1d2], exercises: [w1Bench, w1Squat] });
+    expect((await getWorkoutSession('w1d2', done.deps)).nextSessionId).toBeUndefined();
+
+    const { deps } = await setUp();
+    expect((await getWorkoutSession('w2d2', deps)).nextSessionId).toBeUndefined();
+  });
+
   test('a skipped session is read-only without the check', async () => {
     const { deps } = await setUp({
       sessions: [slotSession(2, 2, { status: 'skipped' })],

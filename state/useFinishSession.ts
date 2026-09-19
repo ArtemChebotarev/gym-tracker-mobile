@@ -8,8 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { finishSession } from '@usecases/sessionFinish';
 
-import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
-import { WORKOUT_SESSION_QUERY_KEY } from './useWorkoutSession';
+import { invalidateWorkoutQueries } from './useWorkoutSession';
 import { sessionFinishDeps } from './workoutStore';
 
 export function useFinishSession() {
@@ -17,10 +16,6 @@ export function useFinishSession() {
 
   return useMutation({
     mutationFn: (sessionId: string) => finishSession(sessionId, sessionFinishDeps),
-    onSuccess: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }),
-        queryClient.invalidateQueries({ queryKey: MESO_GRID_QUERY_KEY }),
-      ]),
+    onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }
