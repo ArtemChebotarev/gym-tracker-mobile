@@ -1,15 +1,17 @@
 // Today tab — the workout screen (08.7 · Тренировка, "Навигация"). Shows the current session, or
 // the day picked through `workoutHref` (the `sessionId` param) — every session, completed and
-// preview ones included, opens here with the tab bar rather than as a separate page. Until Start
-// (042) and the real pick (099) exist, the current session is the stub in-progress one — see
-// `useTodayWorkoutSession`.
+// preview ones included, opens here with the tab bar rather than as a separate page. The current
+// session (099, `useTodayWorkout`) is the one in progress, else the next day of the active
+// mesocycle — a preview if that day isn't programmed yet. With no active mesocycle the tab invites
+// creating one (08, "Сегодня"); once the active one has nothing left, it leads to the mesocycles.
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
-// the tab stays on it, and the re-read session comes back read-only, with `Next workout` leading
-// to the mesocycle's current session.
+// the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
+// re-read session comes back read-only, with `Next workout` leading to the mesocycle's current
+// session.
 //
 // The grid and `⋯` sheets are tasks 095 and 096, the exercise menu 097, and exercise history
 // isn't built yet, so until then those buttons explain that they're not available yet rather than
@@ -18,21 +20,24 @@
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { formatInProgressConflict } from '@components/TodayScreenLogic';
+import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import { workoutHref } from '@components/workoutRoutes';
 import { useFinishSession } from '@state/useFinishSession';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
-import { useTodayWorkoutSession } from '@state/useWorkoutSession';
+import { useTodayWorkout } from '@state/useWorkoutSession';
 
 export default function TodayScreen() {
   const router = useRouter();
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
-  const query = useTodayWorkoutSession(sessionId);
+  const query = useTodayWorkout(sessionId);
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
   const finishSession = useFinishSession();
-  const currentSessionId = query.data?.sessionId;
+  const model = query.data?.kind === 'session' ? query.data.model : undefined;
+  const currentSessionId = model?.sessionId;
+  const emptyReason =
+    query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
 
   function showNotAvailable(feature: string) {
     Alert.alert('Not available yet', `${feature} is coming in a later update.`);
@@ -44,7 +49,7 @@ export default function TodayScreen() {
 
   return (
     <WorkoutScreen
-      model={query.data}
+      model={model}
       isPending={query.isPending}
       onOpenGrid={() => showNotAvailable('The mesocycle overview')}
       onOpenMenu={() => showNotAvailable('The workout menu')}
@@ -94,12 +99,23 @@ export default function TodayScreen() {
         if (currentSessionId === undefined) {
           return;
         }
+        // Pin the tab to this session first: finishing it moves the current-session pick on to
+        // the next day, but the screen stays put and turns read-only (08.7, "Finish workout").
+        if (sessionId === undefined) {
+          router.setParams({ sessionId: currentSessionId });
+        }
         finishSession.mutate(currentSessionId, {
           onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
         });
       }}
       onOpenNext={(nextSessionId) => router.navigate(workoutHref(nextSessionId))}
-      fallbackAction={{ label: 'Open mesocycles', onPress: () => router.navigate('/mesocycles') }}
+      fallback={{
+        ...todayEmptyCopy(emptyReason),
+        onAction: () =>
+          emptyReason === 'noActiveMesocycle'
+            ? router.push('/meso-editor/new')
+            : router.navigate('/mesocycles'),
+      }}
     />
   );
 }

@@ -18,7 +18,8 @@
 // a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
-// (app/(tabs)/index.tsx), which shows every session — the current one or a picked day.
+// (app/(tabs)/index.tsx), which shows every session — the current one or a picked day. With no
+// model, an EmptyState whose copy the tab supplies (no active mesocycle, nothing left, not found).
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
@@ -68,8 +69,11 @@ export type WorkoutScreenProps = {
   isFinishing: boolean;
   /** Opens the session `Next workout` points at. Read-only only. */
   onOpenNext: (sessionId: string) => void;
-  /** The way forward when the session couldn't be loaded. */
-  fallbackAction: { label: string; onPress: () => void };
+  /**
+   * The EmptyState shown in place of the screen when there's no session to show — none to pick,
+   * or it couldn't be loaded. The caller knows which, so it supplies the copy and the way forward.
+   */
+  fallback: { title: string; description: string; actionLabel: string; onAction: () => void };
 };
 
 export function WorkoutScreen({
@@ -85,7 +89,7 @@ export function WorkoutScreen({
   onFinish,
   isFinishing,
   onOpenNext,
-  fallbackAction,
+  fallback,
 }: WorkoutScreenProps) {
   if (isPending) {
     return (
@@ -101,12 +105,7 @@ export function WorkoutScreen({
     return (
       <View style={styles.root}>
         <RootScreen title="Workout">
-          <EmptyState
-            title="Pick another workout"
-            description="This workout isn't available anymore. Choose another day to train."
-            actionLabel={fallbackAction.label}
-            onAction={fallbackAction.onPress}
-          />
+          <EmptyState {...fallback} />
         </RootScreen>
       </View>
     );

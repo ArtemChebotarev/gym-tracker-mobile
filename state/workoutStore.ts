@@ -11,6 +11,7 @@ import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import type { WorkoutStore } from '@repositories/workout';
 import type { SessionFinishDeps } from '@usecases/sessionFinish';
+import type { TodayWorkoutDeps } from '@usecases/todayWorkout';
 import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 
 import { appStore } from './appStore';
@@ -20,6 +21,12 @@ import { ensureMesocyclesSeeded } from './mesocycleStore';
 export const workoutSessionDeps: WorkoutSessionDeps = {
   sessionTreeRepo: new InMemorySessionTreeRepository(appStore),
   sessionRepo: new InMemorySessionRepository(appStore),
+};
+
+/** What the Today tab's pick (099) reads: the workout screen's repositories, plus the mesocycles. */
+export const todayWorkoutDeps: TodayWorkoutDeps = {
+  ...workoutSessionDeps,
+  mesocycleRepo: new InMemoryMesocycleRepository(appStore),
 };
 
 /** The workout store the workout mutations (set logging 093, Finish 094) write through. */
@@ -37,9 +44,9 @@ let seeded: Promise<void> | null = null;
 /**
  * Seeds the stub workout sessions (domain/workoutMocks.ts) into the shared store, once per app
  * session — after the catalog and mock mesocycles they reference. Called only by the Today tab's
- * query (`useTodayWorkoutSession`, until 099), not by `useWorkoutSession`, so a test driving the
- * other workout queries never meets an `in_progress` mock it didn't ask for. Mocks already present
- * are skipped.
+ * query (`useTodayWorkout`), not by `useWorkoutSession`, so a test driving the other workout
+ * queries never meets an `in_progress` mock it didn't ask for. Mocks already present are skipped.
+ * Kept until Start (042) creates real sessions — until then they're the only workouts to open.
  */
 export function ensureWorkoutMocksSeeded(): Promise<void> {
   if (!seeded) {

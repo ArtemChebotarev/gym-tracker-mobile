@@ -16,7 +16,12 @@ let mockParams: { sessionId?: string } = {};
 const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ navigate: mockNavigate }),
+  useRouter: () => ({
+    navigate: mockNavigate,
+    setParams: (params: { sessionId?: string }) => {
+      mockParams = { ...mockParams, ...params };
+    },
+  }),
   useLocalSearchParams: () => mockParams,
 }));
 
@@ -58,7 +63,7 @@ function renderToday() {
 }
 
 describe('Today tab', () => {
-  test('is the workout screen on the current (stub) session, not a list of days', async () => {
+  test('is the workout screen on the current session — the stub one in progress', async () => {
     renderToday();
 
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
@@ -223,6 +228,8 @@ describe('Today tab — Finish workout', () => {
     fireEvent.press(await screen.findByRole('button', { name: 'Finish workout' }));
 
     expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
+    // Still the finished session — not the next day the current-session pick has moved on to.
+    expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Bench Press menu' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Barbell Row menu' })).toBeNull();

@@ -5,6 +5,7 @@ import {
   currentSession,
   currentWeekNumber,
   mesoGridCellStatus,
+  todaySession,
 } from '@domain/mesoGridBuilders';
 
 const mesocycle: Mesocycle = {
@@ -75,6 +76,42 @@ describe('currentSession', () => {
         session(1, 1, { status: 'completed' }),
         session(1, 2, { status: 'skipped' }),
       ]),
+    ).toBeUndefined();
+  });
+});
+
+describe('todaySession', () => {
+  test('the session in progress, even ahead of an earlier ready one', () => {
+    const inProgress = session(2, 2, { status: 'in_progress' });
+
+    expect(todaySession([session(2, 1), inProgress])).toBe(inProgress);
+  });
+
+  test('otherwise the earliest ready session, by week then day', () => {
+    const earliest = session(2, 1);
+
+    expect(
+      todaySession([
+        session(3, 1),
+        session(2, 2),
+        earliest,
+        session(1, 1, { status: 'completed' }),
+        session(1, 2, { status: 'skipped' }),
+      ]),
+    ).toBe(earliest);
+  });
+
+  test('an earlier awaiting_source session rather than a later ready one', () => {
+    const awaiting = session(1, 2, { prescriptionStatus: 'awaiting_source' });
+
+    expect(todaySession([session(2, 1), awaiting, session(1, 1, { status: 'completed' })])).toBe(
+      awaiting,
+    );
+  });
+
+  test('none once everything is final', () => {
+    expect(
+      todaySession([session(1, 1, { status: 'completed' }), session(1, 2, { status: 'skipped' })]),
     ).toBeUndefined();
   });
 });
