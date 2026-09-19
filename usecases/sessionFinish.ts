@@ -6,6 +6,7 @@
 import { ConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { nowAsUtcIso } from '@domain/time';
+import { canFinishSession } from '@domain/workoutViewRules';
 import type { WorkoutStore } from '@repositories/workout';
 import {
   generateNextSession,
@@ -38,8 +39,8 @@ export async function finishSession(
 ): Promise<SessionFinishResult> {
   return deps.workout.transaction(async (repos) => {
     const { session, sessionExercises } = await openSession(sessionId, repos);
-    const unfinished = sessionExercises.filter((exercise) => exercise.status === 'planned');
-    if (unfinished.length > 0) {
+    if (!canFinishSession(sessionExercises)) {
+      const unfinished = sessionExercises.filter((exercise) => exercise.status === 'planned');
       throw new ConflictError(
         `Session "${sessionId}" has ${unfinished.length} exercise(s) neither completed nor skipped.`,
       );
