@@ -39,7 +39,6 @@ function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     targetRir: 2,
     status: 'planned',
     rows: [],
-    hasSkippedRows: false,
     plannedSetCount: 0,
     loggedSetCount: 0,
     hasLoggedSets: false,

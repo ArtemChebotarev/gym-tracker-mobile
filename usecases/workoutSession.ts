@@ -48,6 +48,11 @@ export type WorkoutSetRow = {
   indicator?: TargetIndicator;
   /** The exercise's first unlogged row, whose Log box gets the accent outline. Live mode only. */
   isFirstUnlogged: boolean;
+  /**
+   * An unlogged row of a skipped exercise — skipped along with it (05, "Пропустить упражнение").
+   * The card shows it as a `Skipped` row; absent otherwise.
+   */
+  isSkipped?: true;
 };
 
 /**
@@ -89,12 +94,9 @@ export type WorkoutExercise = {
   /** `planned` in preview. */
   status: SessionExerciseStatus;
   /**
-   * The set rows. A skipped exercise lists only its logged rows (`hasSkippedRows` stands in for the
-   * rest); none in preview.
+   * Every set row — in a skipped exercise the unlogged ones flagged `isSkipped`; none in preview.
    */
   rows: WorkoutSetRow[];
-  /** Skipped with rows left unlogged — the card shows a single `Skipped` row for them. */
-  hasSkippedRows: boolean;
   /** Rows planned, for the menu subtitle `2 sets planned · 1 logged`. */
   plannedSetCount: number;
   loggedSetCount: number;
@@ -192,13 +194,13 @@ function toRows(
   const rows: WorkoutSetRow[] = [];
   for (const target of sessionExercise.setTargets) {
     const log = setLogs.find((candidate) => candidate.setNumber === target.setNumber);
-    if (skipped && !log) {
-      continue;
-    }
     const row: WorkoutSetRow = {
       setNumber: target.setNumber,
       isFirstUnlogged: target === firstUnlogged,
     };
+    if (skipped && !log) {
+      row.isSkipped = true;
+    }
     if (target.targetReps !== undefined) {
       row.targetReps = target.targetReps;
     }
@@ -245,7 +247,6 @@ function toExercise(
     targetRir: sessionExercise.targetRir,
     status: sessionExercise.status,
     rows: toRows(tree, mode, referenceLogs),
-    hasSkippedRows: skipped && loggedSetCount < plannedSetCount,
     plannedSetCount,
     loggedSetCount,
     hasLoggedSets: loggedSetCount > 0,
@@ -352,7 +353,6 @@ async function previewOf(
         muscleGroup: exercise.muscleGroup,
         status: 'planned',
         rows: [],
-        hasSkippedRows: false,
         plannedSetCount: 0,
         loggedSetCount: 0,
         hasLoggedSets: false,

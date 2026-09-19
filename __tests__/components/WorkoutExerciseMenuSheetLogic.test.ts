@@ -4,6 +4,7 @@ import {
   formatDeleteExerciseWarning,
   formatExerciseMenuSubtitle,
   formatReplaceExerciseWarning,
+  formatSkipExerciseWarning,
 } from '@components/WorkoutExerciseMenuSheetLogic';
 import type { WorkoutExerciseActions } from '@usecases/workoutSession';
 
@@ -86,6 +87,22 @@ describe('formatDeleteExerciseWarning', () => {
     expect(formatDeleteExerciseWarning(2)).toBe(
       "Its 2 sets logged will be deleted too. It won't carry over to next week.",
     );
+  });
+});
+
+describe('formatSkipExerciseWarning', () => {
+  test('with nothing logged, every set is skipped', () => {
+    expect(formatSkipExerciseWarning(3, 0)).toBe('All 3 sets will be skipped.');
+  });
+
+  test('with some sets logged, those stay and the rest are skipped', () => {
+    expect(formatSkipExerciseWarning(3, 2)).toBe(
+      'Its 2 sets logged will stay; 1 set not logged will be skipped.',
+    );
+  });
+
+  test('with every set logged, nothing is lost', () => {
+    expect(formatSkipExerciseWarning(2, 2)).toBe('All 2 sets are logged and will stay.');
   });
 });
 

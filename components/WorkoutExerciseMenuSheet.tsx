@@ -4,10 +4,12 @@
 // down, Skip or Unskip exercise, and the danger Delete exercise. An action that isn't available
 // right now stays listed, greyed out with the reason on the right (`exerciseMenuRows`).
 //
-// Every action closes the sheet first. Delete can't be undone, so it asks for a danger
-// confirmation here — warning that logged sets go with it, if there are any — and calls
-// `onCommand('delete')` only once accepted. Replace hands over to the exercise picker; the danger
-// confirmation for logged sets comes after the pick, from the caller. The sheet is an `overlay`
+// Every action closes the sheet first. Three of them ask first:
+// - Delete — a danger confirmation, warning that logged sets go with it if there are any;
+// - Skip — a confirmation saying what's skipped and what stays logged;
+// - Replace — only with logged sets: a danger confirmation that the swap deletes them, before the
+//   exercise picker opens (`onReplace`).
+// The command runs only once its confirmation is accepted. The sheet is an `overlay`
 // BottomSheet for the reasons WorkoutMenuSheet gives: an alert raised as it closes, and a picker
 // with its own Filters modal opened right after.
 //
@@ -24,9 +26,12 @@ import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import {
   EXERCISE_MENU_ACTIONS,
+  type ExerciseMenuItem,
   exerciseMenuRows,
   formatDeleteExerciseWarning,
   formatExerciseMenuSubtitle,
+  formatReplaceExerciseWarning,
+  formatSkipExerciseWarning,
 } from './WorkoutExerciseMenuSheetLogic';
 
 export type WorkoutExerciseMenuSheetProps = {
@@ -34,9 +39,9 @@ export type WorkoutExerciseMenuSheetProps = {
   onClose: () => void;
   /** The exercise whose `⋯` was tapped. */
   exercise: WorkoutExercise | undefined;
-  /** Opens the exercise picker to replace the exercise (047). */
+  /** Opens the exercise picker to replace the exercise (047) — after the confirmation, if any. */
   onReplace: () => void;
-  /** Runs a one-tap action; `delete` only after its confirmation is accepted. */
+  /** Runs a one-tap action; `delete` and `skip` only after their confirmation is accepted. */
   onCommand: (command: ExerciseCommand) => void;
 };
 
@@ -47,11 +52,52 @@ export function WorkoutExerciseMenuSheet({
   onReplace,
   onCommand,
 }: WorkoutExerciseMenuSheetProps) {
-  function confirmDelete(loggedSetCount: number) {
-    Alert.alert('Delete exercise?', formatDeleteExerciseWarning(loggedSetCount), [
+  function confirm(
+    title: string,
+    message: string,
+    action: { text: string; destructive: boolean; onPress: () => void },
+  ) {
+    Alert.alert(title, message, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => onCommand('delete') },
+      {
+        text: action.text,
+        style: action.destructive ? 'destructive' : 'default',
+        onPress: action.onPress,
+      },
     ]);
+  }
+
+  function handlePress(item: ExerciseMenuItem, target: WorkoutExercise) {
+    onClose();
+    switch (item) {
+      case 'replace':
+        if (!target.hasLoggedSets) {
+          onReplace();
+          return;
+        }
+        confirm(
+          'Replace exercise?',
+          formatReplaceExerciseWarning(target.name, target.loggedSetCount),
+          { text: 'Replace', destructive: true, onPress: onReplace },
+        );
+        return;
+      case 'skip':
+        confirm(
+          'Skip exercise?',
+          formatSkipExerciseWarning(target.plannedSetCount, target.loggedSetCount),
+          { text: 'Skip', destructive: false, onPress: () => onCommand('skip') },
+        );
+        return;
+      case 'delete':
+        confirm('Delete exercise?', formatDeleteExerciseWarning(target.loggedSetCount), {
+          text: 'Delete',
+          destructive: true,
+          onPress: () => onCommand('delete'),
+        });
+        return;
+      default:
+        onCommand(item);
+    }
   }
 
   return (
@@ -74,16 +120,7 @@ export function WorkoutExerciseMenuSheet({
               label={label}
               variant={variant}
               disabledReason={disabledReason}
-              onPress={() => {
-                onClose();
-                if (item === 'replace') {
-                  onReplace();
-                } else if (item === 'delete') {
-                  confirmDelete(exercise.loggedSetCount);
-                } else {
-                  onCommand(item);
-                }
-              }}
+              onPress={() => handlePress(item, exercise)}
             />
           );
         })}

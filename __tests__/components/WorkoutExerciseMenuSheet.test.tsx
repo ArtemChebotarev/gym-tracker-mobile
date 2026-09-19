@@ -39,7 +39,6 @@ const FIRST_STARTED: WorkoutExercise = {
     },
     { setNumber: 2, targetReps: 11, suggestedWeight: 77, isFirstUnlogged: true },
   ],
-  hasSkippedRows: false,
   plannedSetCount: 2,
   loggedSetCount: 1,
   hasLoggedSets: true,
@@ -63,7 +62,6 @@ const SKIPPED: WorkoutExercise = {
   name: 'Bulgarian split squat',
   status: 'skipped',
   rows: [],
-  hasSkippedRows: true,
   loggedSetCount: 0,
   hasLoggedSets: false,
   actions: { ...FIRST_STARTED.actions, canMoveUp: true, canSkip: false, canUnskip: true },
@@ -141,7 +139,6 @@ describe('WorkoutExerciseMenuSheet', () => {
     ['Add set', 'addSet'],
     ['Remove last set', 'removeLastSet'],
     ['Move down', 'moveDown'],
-    ['Skip exercise', 'skip'],
   ] as const)('%s closes the sheet and runs %s', (label, command) => {
     const props = makeProps();
     renderWithSafeArea(<WorkoutExerciseMenuSheet {...props} />);
@@ -161,14 +158,62 @@ describe('WorkoutExerciseMenuSheet', () => {
     expect(props.onCommand).toHaveBeenCalledWith('unskip');
   });
 
-  test('Replace exercise closes the sheet and hands over to the picker', () => {
+  test('Replace exercise with nothing logged goes straight to the picker', () => {
+    const props = makeProps({ exercise: SKIPPED });
+    renderWithSafeArea(<WorkoutExerciseMenuSheet {...props} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
+
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(props.onReplace).toHaveBeenCalledTimes(1);
+  });
+
+  test('Replace exercise with a set logged warns before the picker opens', () => {
     const props = makeProps();
     renderWithSafeArea(<WorkoutExerciseMenuSheet {...props} />);
 
     fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
 
     expect(props.onClose).toHaveBeenCalledTimes(1);
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Replace exercise?',
+      'The 1 set logged for Leg extension will be deleted.',
+      expect.any(Array),
+    );
+    expect(props.onReplace).not.toHaveBeenCalled();
+
+    pressAlertButton('Replace');
+
     expect(props.onReplace).toHaveBeenCalledTimes(1);
+  });
+
+  test('Skip exercise skips only once confirmed, saying what stays logged', () => {
+    const props = makeProps();
+    renderWithSafeArea(<WorkoutExerciseMenuSheet {...props} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Skip exercise?',
+      'Its 1 set logged will stay; 1 set not logged will be skipped.',
+      expect.any(Array),
+    );
+    expect(props.onCommand).not.toHaveBeenCalled();
+
+    pressAlertButton('Skip');
+
+    expect(props.onCommand).toHaveBeenCalledWith('skip');
+  });
+
+  test('Skip exercise cancelled skips nothing', () => {
+    const props = makeProps();
+    renderWithSafeArea(<WorkoutExerciseMenuSheet {...props} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pressAlertButton('Cancel');
+
     expect(props.onCommand).not.toHaveBeenCalled();
   });
 

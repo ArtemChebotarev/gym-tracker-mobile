@@ -18,16 +18,16 @@
 // by week and day (`workoutSlotHref`) — a preview of a day not programmed yet.
 //
 // The header `⋯` opens the header menu (096, `WorkoutMenuSheet`). Add exercise opens the exercise
-// picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the session
-// (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
+// picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the
+// session (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
 // exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
 // now read-only. Mesocycle history opens the mesocycle detail stub (098).
 //
 // An exercise card's `⋯` opens the exercise menu (097, `WorkoutExerciseMenuSheet`) for that
-// exercise. Its one-tap actions — add or remove a set, move, skip or unskip, delete (confirmed in
-// the menu) — run through `useExerciseCommand`. Replace exercise opens the picker in `single` mode;
-// if the exercise has logged sets, a danger confirmation that they'll be deleted comes after the
-// pick, and the swap (`useSwapExercise`, 047) only once it's accepted.
+// exercise. Its one-tap actions — add or remove a set, move, skip or unskip, delete — run through
+// `useExerciseCommand`; Replace exercise opens the picker in `single` mode, and the pick swaps the
+// exercise (`useSwapExercise`, 047). Delete, Skip and — with logged sets — Replace are confirmed in
+// the menu first.
 //
 // Rename mesocycle (087), Stop mesocycle (052), and exercise history aren't built yet, so until
 // then they explain that they're not available yet rather than doing nothing.
@@ -40,7 +40,6 @@ import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScree
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
-import { formatReplaceExerciseWarning } from '@components/WorkoutExerciseMenuSheetLogic';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
 import { WorkoutMenuSheet } from '@components/WorkoutMenuSheet';
 import { formatWorkoutMenuTitle } from '@components/WorkoutMenuSheetLogic';
@@ -272,28 +271,9 @@ export default function TodayScreen() {
         caption={menuExercise?.name ?? ''}
         onClose={() => setIsReplaceOpen(false)}
         onSelect={(exerciseId) => {
-          const target = menuExercise;
-          if (target === undefined) {
-            return;
+          if (menuExercise !== undefined) {
+            replaceExercise(menuExercise, exerciseId);
           }
-          if (!target.hasLoggedSets) {
-            replaceExercise(target, exerciseId);
-            return;
-          }
-          // Swapping an exercise already started deletes its logged sets (05, "Заменить
-          // упражнение") — only after a danger confirmation.
-          Alert.alert(
-            'Replace exercise?',
-            formatReplaceExerciseWarning(target.name, target.loggedSetCount),
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Replace',
-                style: 'destructive',
-                onPress: () => replaceExercise(target, exerciseId),
-              },
-            ],
-          );
         }}
       />
     </>

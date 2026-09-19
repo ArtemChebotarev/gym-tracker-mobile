@@ -77,8 +77,23 @@ export function formatDeleteExerciseWarning(loggedSetCount: number): string {
 }
 
 /**
- * The Replace exercise danger confirmation's message (05, "Заменить упражнение"), shown after the
- * pick only when the exercise has logged sets: they're deleted by the swap.
+ * The Skip exercise confirmation's message (05, "Пропустить упражнение"): logged sets stay, the
+ * rest of the rows are skipped. The exercise carries over to next week either way.
+ */
+export function formatSkipExerciseWarning(plannedSetCount: number, loggedSetCount: number) {
+  const unlogged = plannedSetCount - loggedSetCount;
+  if (loggedSetCount === 0) {
+    return `All ${formatSetCount(plannedSetCount)} will be skipped.`;
+  }
+  if (unlogged === 0) {
+    return `All ${formatSetCount(loggedSetCount)} are logged and will stay.`;
+  }
+  return `Its ${formatSetCount(loggedSetCount)} logged will stay; ${formatSetCount(unlogged)} not logged will be skipped.`;
+}
+
+/**
+ * The Replace exercise danger confirmation's message (05, "Заменить упражнение"), shown before the
+ * picker opens and only when the exercise has logged sets: they're deleted by the swap.
  */
 export function formatReplaceExerciseWarning(exerciseName: string, loggedSetCount: number) {
   return `The ${formatSetCount(loggedSetCount)} logged for ${exerciseName} will be deleted.`;

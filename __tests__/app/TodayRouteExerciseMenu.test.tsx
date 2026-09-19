@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -129,6 +129,12 @@ describe('Today tab — exercise menu', () => {
 
     openMenu('Barbell Row');
     fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Skip exercise?',
+      'All 3 sets will be skipped.',
+      expect.any(Array),
+    );
+    pressAlertButton('Skip');
     await waitFor(async () =>
       expect((await sessionExercises()).find((e) => e.id === ROW)?.status).toBe('skipped'),
     );
@@ -141,23 +147,62 @@ describe('Today tab — exercise menu', () => {
     );
   });
 
-  test('Replace exercise with sets logged swaps it only after the danger confirmation', async () => {
+  test('a skipped exercise shows its logged rows, the rest as Skipped rows — one line if none', async () => {
+    await renderToday();
+    const card = (id: string) => within(screen.getByTestId(`exercise-card-${id}`));
+
+    // Bench: 2 of 3 logged.
+    openMenu('Bench Press');
+    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pressAlertButton('Skip');
+    // Waits on what appears: a failing assertion on an element pretty-prints its whole fiber on
+    // every poll, slow enough to starve the re-read it's waiting for.
+    expect(await card(BENCH).findByText('Skipped')).toBeTruthy();
+    expect(card(BENCH).getByTestId('set-row-3')).toHaveTextContent('Skipped');
+    expect(card(BENCH).getByTestId('set-row-1')).not.toHaveTextContent('Skipped');
+    expect(card(BENCH).getByTestId('set-row-2')).not.toHaveTextContent('Skipped');
+
+    // Row: nothing logged.
+    openMenu('Barbell Row');
+    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pressAlertButton('Skip');
+    expect(await card(ROW).findByText('Skipped')).toBeTruthy();
+    expect(card(ROW).queryByTestId('set-row-1')).toBeNull();
+    expect(card(ROW).getAllByText('Skipped')).toHaveLength(1);
+
+    for (const name of ['Bench Press', 'Barbell Row']) {
+      openMenu(name);
+      fireEvent.press(await screen.findByRole('button', { name: 'Unskip exercise' }));
+    }
+    await waitFor(async () =>
+      expect((await sessionExercises()).map((exercise) => exercise.status)).toEqual([
+        'planned',
+        'planned',
+      ]),
+    );
+    expect(await screen.findByRole('checkbox', { name: 'Log set 1' })).toBeTruthy();
+    for (const id of [BENCH, ROW]) {
+      expect(card(id).queryByText('Skipped')).toBeNull();
+    }
+  });
+
+  test('Replace exercise with sets logged warns first, then swaps to the pick', async () => {
     await renderToday();
 
     openMenu('Bench Press');
     fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
-    fireEvent.press(await screen.findByRole('button', { name: 'Squat' }));
 
+    // The warning comes before the picker.
     expect(alertSpy).toHaveBeenCalledWith(
       'Replace exercise?',
       'The 2 sets logged for Bench Press will be deleted.',
       expect.any(Array),
     );
-    expect((await sessionExercises()).find((e) => e.id === BENCH)?.exerciseId).toBe(
-      'bench-press-barbell',
-    );
-
+    expect(screen.queryByRole('button', { name: 'Squat' })).toBeNull();
     pressAlertButton('Replace');
+
+    fireEvent.press(await screen.findByRole('button', { name: 'Squat' }));
+    expect(alertSpy).toHaveBeenCalledTimes(1);
 
     await waitFor(async () =>
       expect((await sessionExercises()).find((e) => e.id === BENCH)?.exerciseId).toBe(
