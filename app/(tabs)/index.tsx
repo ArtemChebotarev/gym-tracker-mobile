@@ -13,29 +13,43 @@
 // re-read session comes back read-only, with `Next workout` leading to the mesocycle's current
 // session.
 //
-// The grid and `⋯` sheets are tasks 095 and 096, the exercise menu 097, and exercise history
-// isn't built yet, so until then those buttons explain that they're not available yet rather than
-// doing nothing.
+// The grid button opens the mesocycle overview (095, `MesoOverviewSheet`) over the shown session's
+// mesocycle. A cell closes it and opens its day here: by `sessionId` when the session exists, else
+// by week and day (`workoutSlotHref`) — a preview of a day not programmed yet.
+//
+// The `⋯` sheet is task 096, the exercise menu 097, and exercise history isn't built yet, so until
+// then those buttons explain that they're not available yet rather than doing nothing.
 
+import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
+import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import { WorkoutScreen } from '@components/WorkoutScreen';
-import { workoutHref } from '@components/workoutRoutes';
+import {
+  mesoGridCellHref,
+  workoutHref,
+  workoutPickFromParams,
+  type WorkoutRouteParams,
+} from '@components/workoutRoutes';
 import { useFinishSession } from '@state/useFinishSession';
+import { useMesoGrid } from '@state/useMesoGrid';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 
 export default function TodayScreen() {
   const router = useRouter();
-  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
-  const query = useTodayWorkout(sessionId);
+  const params = useLocalSearchParams<WorkoutRouteParams>();
+  const { sessionId } = params;
+  const query = useTodayWorkout(workoutPickFromParams(params));
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
   const finishSession = useFinishSession();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   const currentSessionId = model?.sessionId;
+  const [isGridOpen, setIsGridOpen] = useState(false);
+  const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
 
@@ -48,74 +62,92 @@ export default function TodayScreen() {
   }
 
   return (
-    <WorkoutScreen
-      model={model}
-      isPending={query.isPending}
-      onOpenGrid={() => showNotAvailable('The mesocycle overview')}
-      onOpenMenu={() => showNotAvailable('The workout menu')}
-      onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
-      onOpenExerciseMenu={() => showNotAvailable('The exercise menu')}
-      isSaving={logSet.isPending || unlogSet.isPending}
-      onLogSet={(exercise, setNumber, entry) => {
-        if (currentSessionId === undefined) {
-          return;
-        }
-        logSet.mutate(
-          {
-            ref: {
+    <>
+      <WorkoutScreen
+        model={model}
+        isPending={query.isPending}
+        onOpenGrid={() => setIsGridOpen(true)}
+        onOpenMenu={() => showNotAvailable('The workout menu')}
+        onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
+        onOpenExerciseMenu={() => showNotAvailable('The exercise menu')}
+        isSaving={logSet.isPending || unlogSet.isPending}
+        onLogSet={(exercise, setNumber, entry) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          logSet.mutate(
+            {
+              ref: {
+                sessionId: currentSessionId,
+                sessionExerciseId: exercise.sessionExerciseId,
+                setNumber,
+              },
+              entry,
+            },
+            {
+              onSuccess: (result) => {
+                if (result.kind === 'conflict') {
+                  Alert.alert(formatInProgressConflict(result), undefined, [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Open',
+                      onPress: () => router.navigate(workoutHref(result.inProgressSessionId)),
+                    },
+                  ]);
+                }
+              },
+              onError: showSaveError,
+            },
+          );
+        }}
+        onUnlogSet={(exercise, setNumber) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          unlogSet.mutate(
+            {
               sessionId: currentSessionId,
               sessionExerciseId: exercise.sessionExerciseId,
               setNumber,
             },
-            entry,
-          },
-          {
-            onSuccess: (result) => {
-              if (result.kind === 'conflict') {
-                Alert.alert(formatInProgressConflict(result), undefined, [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Open',
-                    onPress: () => router.navigate(workoutHref(result.inProgressSessionId)),
-                  },
-                ]);
-              }
-            },
-            onError: showSaveError,
-          },
-        );
-      }}
-      onUnlogSet={(exercise, setNumber) => {
-        if (currentSessionId === undefined) {
-          return;
-        }
-        unlogSet.mutate(
-          { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId, setNumber },
-          { onError: showSaveError },
-        );
-      }}
-      isFinishing={finishSession.isPending}
-      onFinish={() => {
-        if (currentSessionId === undefined) {
-          return;
-        }
-        // Pin the tab to this session first: finishing it moves the current-session pick on to
-        // the next day, but the screen stays put and turns read-only (08.7, "Finish workout").
-        if (sessionId === undefined) {
-          router.setParams({ sessionId: currentSessionId });
-        }
-        finishSession.mutate(currentSessionId, {
-          onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
-        });
-      }}
-      onOpenNext={(nextSessionId) => router.navigate(workoutHref(nextSessionId))}
-      fallback={{
-        ...todayEmptyCopy(emptyReason),
-        onAction: () =>
-          emptyReason === 'noActiveMesocycle'
-            ? router.push('/meso-editor/new')
-            : router.navigate('/mesocycles'),
-      }}
-    />
+            { onError: showSaveError },
+          );
+        }}
+        isFinishing={finishSession.isPending}
+        onFinish={() => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          // Pin the tab to this session first: finishing it moves the current-session pick on to
+          // the next day, but the screen stays put and turns read-only (08.7, "Finish workout").
+          if (sessionId === undefined) {
+            router.setParams({ sessionId: currentSessionId });
+          }
+          finishSession.mutate(currentSessionId, {
+            onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
+          });
+        }}
+        onOpenNext={(nextSessionId) => router.navigate(workoutHref(nextSessionId))}
+        fallback={{
+          ...todayEmptyCopy(emptyReason),
+          onAction: () =>
+            emptyReason === 'noActiveMesocycle'
+              ? router.push('/meso-editor/new')
+              : router.navigate('/mesocycles'),
+        }}
+      />
+      <MesoOverviewSheet
+        visible={isGridOpen}
+        onClose={() => setIsGridOpen(false)}
+        grid={grid.data}
+        openDay={model?.header}
+        onOpenCell={(cell) => {
+          setIsGridOpen(false);
+          if (grid.data !== undefined) {
+            router.navigate(mesoGridCellHref(grid.data.mesoId, cell));
+          }
+        }}
+      />
+    </>
   );
 }

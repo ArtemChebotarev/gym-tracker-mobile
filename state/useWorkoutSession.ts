@@ -6,7 +6,7 @@
 
 import { type QueryClient, useQuery } from '@tanstack/react-query';
 
-import type { WorkoutSlot } from '@domain/workoutView';
+import type { WorkoutPick, WorkoutSlot } from '@domain/workoutView';
 import { getTodayWorkout, type TodayWorkout } from '@usecases/todayWorkout';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
@@ -59,30 +59,51 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
   });
 }
 
+/** The query key of the Today tab's pick — the current session when nothing is picked. */
+function todayKey(pick: WorkoutPick | undefined): readonly unknown[] {
+  if (pick === undefined) {
+    return ['current'];
+  }
+  if ('sessionId' in pick) {
+    return ['session', pick.sessionId];
+  }
+  return ['slot', pick.slot.mesoId, pick.slot.weekNumber, pick.slot.dayNumber];
+}
+
 /**
- * What the Today tab shows (08.7, "Навигация"): session `sessionId` when a day was picked (the
- * mesocycle overview 095, `Next workout`), otherwise the current one — the session in progress,
- * else the next day of the active mesocycle (`getTodayWorkout`, 099) — or why there's none.
+ * What the Today tab shows (08.7, "Навигация"): the picked day when there is one — a session by id
+ * (`Next workout`, a grid cell with a session) or a grid cell by week and day (095; a preview when
+ * its session doesn't exist yet) — otherwise the current one — the session in progress, else the
+ * next day of the active mesocycle (`getTodayWorkout`, 099) — or why there's none.
  * Seeds the stub workout (domain/workoutMocks.ts) first: until Start (042) creates real sessions,
  * its in-progress Week 2 Day 1 is what the pick lands on.
  */
-export function useTodayWorkout(sessionId?: string) {
+export function useTodayWorkout(pick?: WorkoutPick) {
+  const pinnedSessionId = pick !== undefined && 'sessionId' in pick ? pick.sessionId : undefined;
   return useQuery({
-    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', sessionId ?? 'current'],
+    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', ...todayKey(pick)],
     // The current-session pick isn't kept once the tab leaves it (pinned by Finish, `Next workout`,
     // a grid day): it's read again on the way back. A cached one would show the day it was then —
     // stale once a session has been finished since — for a moment before the refetch replaced it.
-    ...(sessionId === undefined ? { gcTime: 0 } : {}),
-    // Pinning the current session to its id (Finish, see app/(tabs)/index.tsx) keeps showing it
+    ...(pick === undefined ? { gcTime: 0 } : {}),
+    // Pinning the shown session to its id (Finish, see app/(tabs)/index.tsx) keeps showing it
     // while its own query loads, instead of flashing the loading state.
     placeholderData: (previous) =>
-      previous?.kind === 'session' && previous.model.sessionId === sessionId ? previous : undefined,
+      pinnedSessionId !== undefined &&
+      previous?.kind === 'session' &&
+      previous.model.sessionId === pinnedSessionId
+        ? previous
+        : undefined,
     queryFn: async (): Promise<TodayWorkout> => {
       await ensureWorkoutMocksSeeded();
-      if (sessionId === undefined) {
+      if (pick === undefined) {
         return getTodayWorkout(todayWorkoutDeps);
       }
-      return { kind: 'session', model: await getWorkoutSession(sessionId, workoutSessionDeps) };
+      const model =
+        'sessionId' in pick
+          ? await getWorkoutSession(pick.sessionId, workoutSessionDeps)
+          : await getWorkoutSlot(pick.slot, workoutSessionDeps);
+      return { kind: 'session', model };
     },
   });
 }

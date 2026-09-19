@@ -1,5 +1,6 @@
 // BottomSheet — see 08.0 · Design SDK, "Компоненты": grabber, title, optional action, content,
-// footer. Actions belong in the footer, with the confirming one primary on the right (08.0:
+// footer. An optional subtitle sits under the title — `text/faint`, as in the 08.7 sheets
+// (`Week 6 of 7 · 4 days a week` under the mesocycle name). Actions belong in the footer, with the confirming one primary on the right (08.0:
 // "Действия внизу. Подтверждающее — primary справа") — that ordering is up to the caller
 // composing the footer, not something this component enforces.
 //
@@ -52,6 +53,10 @@ const DISMISS_DISTANCE = 60;
 export const SCRIM_COLOR = 'rgba(0, 0, 0, 0.5)';
 const GRABBER_WIDTH = 36;
 const GRABBER_HEIGHT = 4;
+// The subtitle under the title — 12 / `text/faint`, 2pt below it, per the 08.7 mockup's sheets.
+// No typography token sits at 12.
+const SUBTITLE_FONT_SIZE = 12;
+const SUBTITLE_GAP = 2;
 // Caps the sheet so tall content (e.g. Dropdown's option list) scrolls inside it instead of
 // overflowing past the screen — no token for this exists in 08.0 either. `height="fixed"` sheets
 // use the same value as their exact height, so both kinds top out at the same line on screen.
@@ -63,6 +68,8 @@ export type BottomSheetProps = {
   visible: boolean;
   onClose: () => void;
   title: string;
+  /** A short line under the title (08.7: the overview's `Week 6 of 7 · 4 days a week`). */
+  subtitle?: string;
   action?: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
@@ -95,6 +102,7 @@ export function BottomSheet({
   visible,
   onClose,
   title,
+  subtitle,
   action,
   footer,
   children,
@@ -128,7 +136,10 @@ export function BottomSheet({
         <View style={styles.grabber} />
       </View>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
+        </View>
         {action}
       </View>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -284,10 +295,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/sheet'],
     paddingBottom: SPACING['space/gap'],
   },
+  titleBlock: {
+    flexShrink: 1,
+  },
   title: {
     fontSize: TYPOGRAPHY['type/sheet-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/sheet-title'].fontWeight,
     color: COLORS['text/primary'],
+  },
+  subtitle: {
+    marginTop: SUBTITLE_GAP,
+    fontSize: SUBTITLE_FONT_SIZE,
+    color: COLORS['text/faint'],
   },
   content: {
     paddingHorizontal: SPACING['space/sheet'],

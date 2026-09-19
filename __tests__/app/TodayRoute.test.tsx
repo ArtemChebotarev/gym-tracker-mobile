@@ -6,13 +6,13 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import TodayScreen from '@app/(tabs)/index';
 import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
 import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
-import { workoutHref } from '@components/workoutRoutes';
+import { workoutHref, workoutSlotHref } from '@components/workoutRoutes';
 import { ensureWorkoutMocksSeeded, workoutStore } from '@state/workoutStore';
 
 // Mocked rather than driven through expo-router's renderRouter: that turns on jest's fake timers,
 // which also fake the `queueMicrotask` every storage call resolves through (storage/async.ts), so
 // the query would never settle. The href itself is covered by workoutRoutes.test.ts.
-let mockParams: { sessionId?: string } = {};
+let mockParams: Record<string, string | undefined> = {};
 const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 function renderToday() {
-  render(
+  return render(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
       <QueryClientProvider client={client}>
         <TodayScreen />
@@ -86,6 +86,67 @@ describe('Today tab', () => {
     renderToday();
 
     expect(await screen.findByRole('button', { name: 'Open mesocycles' })).toBeTruthy();
+  });
+});
+
+describe('Today tab — mesocycle overview', () => {
+  test("the grid button opens the overview of the shown session's mesocycle", async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+
+    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+
+    expect(await screen.findByText('Week 2 of 5 · 4 days a week')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Week 1 Day 1, completed' })).toBeTruthy();
+    // The open day is ringed.
+    expect(
+      within(screen.getByTestId('meso-grid-cell-2-1')).getByTestId('meso-grid-open-ring'),
+    ).toBeTruthy();
+  });
+
+  test('a cell with a session closes the sheet and opens that session', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+
+    fireEvent.press(await screen.findByRole('button', { name: 'Week 1 Day 1, completed' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith(workoutHref(MOCK_SESSION_IDS.completed));
+    expect(screen.queryByText('Week 2 of 5 · 4 days a week')).toBeNull();
+  });
+
+  test('DoD: an awaiting cell closes the sheet and opens that day as a preview', async () => {
+    const view = renderToday();
+    await screen.findByText('Week 2 Day 1');
+    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+
+    // Week 3 Day 1 has no session yet — it's generated when Week 2 Day 1 is finished.
+    fireEvent.press(
+      await screen.findByRole('button', { name: 'Week 3 Day 1, not programmed yet' }),
+    );
+
+    const href = workoutSlotHref({
+      mesoId: MOCK_MESOCYCLE_IDS.active,
+      weekNumber: 3,
+      dayNumber: 1,
+    });
+    expect(mockNavigate).toHaveBeenCalledWith(href);
+    expect(screen.queryByText('Week 2 of 5 · 4 days a week')).toBeNull();
+
+    // The router lands back on this tab with the cell's params (see workoutRoutes.test.ts).
+    mockParams = { mesoId: MOCK_MESOCYCLE_IDS.active, week: '3', day: '1' };
+    view.rerender(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <QueryClientProvider client={client}>
+          <TodayScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(await screen.findByText('Week 3 Day 1')).toBeTruthy();
+    expect(screen.getAllByText('Not programmed yet')).toHaveLength(2);
+    expect(screen.getByText('Unlocks when you finish Week 2 Day 1')).toBeTruthy();
+    expect(screen.queryByRole('checkbox')).toBeNull();
   });
 });
 
