@@ -1,0 +1,487 @@
+import { type Equipment, type MuscleGroup, toExerciseId } from '@domain/catalog';
+import { NotFoundError } from '@domain/errors';
+import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
+import { InMemoryMesocycleRepository } from '@storage/mesocycle';
+import { InMemorySessionRepository } from '@storage/session';
+import { InMemorySessionTreeRepository } from '@storage/sessionTree';
+import { InMemoryStore } from '@storage/store';
+import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { skipExercise } from '@usecases/exerciseSkipping';
+import { moveExercise } from '@usecases/exerciseReorder';
+import { logSet, unlogSet } from '@usecases/setLogging';
+import { addSet } from '@usecases/setRows';
+import {
+  getWorkoutSession,
+  getWorkoutSlot,
+  type WorkoutSessionDeps,
+} from '@usecases/workoutSession';
+
+jest.mock('expo-crypto', () => {
+  let counter = 0;
+  return { randomUUID: () => `generated-id-${(counter += 1)}` };
+});
+
+const NOW = '2026-09-18T11:00:00.000Z';
+
+const mesocycle: Mesocycle = {
+  id: 'meso',
+  name: 'Upper/lower',
+  lengthWeeks: 4,
+  daysPerWeek: 2,
+  startDate: '2026-09-01T08:00:00.000Z',
+  status: 'active',
+  origin: { type: 'scratch' },
+  progressionSettings: defaultProgressionSettings,
+  createdAt: '2026-09-01T08:00:00.000Z',
+};
+
+const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
+  ['bench', 'Bench press', 'chest', 'barbell'],
+  ['row', 'Cable row', 'back', 'cable'],
+  ['squat', 'Back squat', 'quads', 'barbell'],
+  ['curl', 'Leg curl', 'hamstrings', undefined],
+];
+
+function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
+  return {
+    id: `w${week}d${day}`,
+    mesoId: 'meso',
+    weekNumber: week,
+    dayNumber: day,
+    isDeload: false,
+    prescriptionStatus: 'ready',
+    status: 'planned',
+    ...overrides,
+  };
+}
+
+function planned(
+  sessionId: string,
+  exerciseId: string,
+  order: number,
+  targetReps: (number | undefined)[],
+  overrides: Partial<SessionExercise> = {},
+): SessionExercise {
+  return {
+    id: `${sessionId}-${exerciseId}`,
+    sessionId,
+    exerciseId,
+    order,
+    setTargets: targetReps.map((reps, index) =>
+      reps === undefined
+        ? { setNumber: index + 1, suggestedWeight: 60 }
+        : { setNumber: index + 1, targetReps: reps, suggestedWeight: 60 },
+    ),
+    targetRir: 2,
+    status: 'planned',
+    ...overrides,
+  };
+}
+
+function logOf(sessionExercise: SessionExercise, setNumber: number, reps: number): SetLog {
+  return {
+    id: `${sessionExercise.id}-log-${setNumber}`,
+    sessionExerciseId: sessionExercise.id,
+    exerciseId: sessionExercise.exerciseId,
+    setNumber,
+    weight: 60,
+    reps,
+    completedAt: NOW,
+  };
+}
+
+// Week 1 is done; week 2 day 1 is in progress, week 2 day 2 is ready and gained a leg curl.
+const w1d1 = slotSession(1, 1, { status: 'completed', completedAt: '2026-09-01T10:00:00.000Z' });
+const w1d2 = slotSession(1, 2, { status: 'completed', completedAt: '2026-09-03T10:00:00.000Z' });
+const w2d1 = slotSession(2, 1, { status: 'in_progress', startedAt: '2026-09-18T10:00:00.000Z' });
+const w2d2 = slotSession(2, 2);
+
+const w1Bench = planned('w1d1', 'bench', 1, [10, 10], { status: 'completed' });
+const w1Squat = planned('w1d2', 'squat', 1, [8], { status: 'completed' });
+const bench = planned('w2d1', 'bench', 1, [11, 10, 9]);
+const row = planned('w2d1', 'row', 2, [undefined, undefined]);
+const w2Squat = planned('w2d2', 'squat', 1, [9]);
+const w2Curl = planned('w2d2', 'curl', 2, [12, 12]);
+
+type Setup = { sessions?: Session[]; exercises?: SessionExercise[]; logs?: SetLog[] };
+
+async function setUp(setup: Setup = {}) {
+  const store = new InMemoryStore();
+  await new InMemoryMesocycleRepository(store).create(mesocycle);
+  const catalog = new InMemoryExerciseRepository(store);
+  for (const [id, name, muscleGroup, equipment] of CATALOG) {
+    await catalog.createCustom({
+      id: toExerciseId(id),
+      name,
+      muscleGroup,
+      source: 'catalog',
+      isHidden: false,
+      ...(equipment ? { equipment } : {}),
+    });
+  }
+  const workout = createInMemoryWorkoutStore(store);
+  await workout.repos.sessionRepo.createMany(setup.sessions ?? [w1d1, w1d2, w2d1, w2d2]);
+  await workout.repos.sessionExerciseRepo.createMany(
+    setup.exercises ?? [w1Bench, w1Squat, bench, row, w2Squat, w2Curl],
+  );
+  for (const log of setup.logs ?? [logOf(w1Bench, 1, 10), logOf(w1Squat, 1, 8)]) {
+    await workout.repos.setLogRepo.create(log);
+  }
+  return { store, workout, deps: depsOver(store) };
+}
+
+function depsOver(store: InMemoryStore): WorkoutSessionDeps {
+  return {
+    sessionTreeRepo: new InMemorySessionTreeRepository(store),
+    sessionRepo: new InMemorySessionRepository(store),
+  };
+}
+
+describe('getWorkoutSession — live', () => {
+  test('maps header, exercises, rows and flags of a session in progress', async () => {
+    const { deps } = await setUp({
+      logs: [logOf(bench, 1, 12), logOf(bench, 2, 10)],
+    });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.mode).toBe('live');
+    expect(model.sessionId).toBe('w2d1');
+    expect(model.header).toEqual({
+      weekNumber: 2,
+      dayNumber: 1,
+      date: '2026-09-18T10:00:00.000Z',
+      mesocycleName: 'Upper/lower',
+      isDeload: false,
+      isCompleted: false,
+    });
+    expect(model.progress).toBeCloseTo(2 / 5);
+    expect(model.showFinish).toBe(false);
+    expect(model.actions).toEqual({ canAddExercise: true, canSkipWorkout: false });
+
+    const [benchCard, rowCard] = model.exercises;
+    expect(benchCard).toMatchObject({
+      sessionExerciseId: 'w2d1-bench',
+      name: 'Bench press',
+      muscleGroup: 'chest',
+      equipment: 'barbell',
+      targetRir: 2,
+      status: 'planned',
+      plannedSetCount: 3,
+      loggedSetCount: 2,
+      hasLoggedSets: true,
+      hasSkippedRows: false,
+    });
+    expect(benchCard?.rows).toEqual([
+      {
+        setNumber: 1,
+        targetReps: 11,
+        suggestedWeight: 60,
+        log: { weight: 60, reps: 12 },
+        indicator: { kind: 'over', diff: 1 },
+        isFirstUnlogged: false,
+      },
+      {
+        setNumber: 2,
+        targetReps: 10,
+        suggestedWeight: 60,
+        log: { weight: 60, reps: 10 },
+        indicator: { kind: 'hit' },
+        isFirstUnlogged: false,
+      },
+      { setNumber: 3, targetReps: 9, suggestedWeight: 60, isFirstUnlogged: true },
+    ]);
+    expect(rowCard?.equipment).toBe('cable');
+    expect(rowCard?.rows[0]).toEqual({ setNumber: 1, suggestedWeight: 60, isFirstUnlogged: true });
+    expect(rowCard?.rows[1]?.isFirstUnlogged).toBe(false);
+  });
+
+  test('exercise menu flags follow position and row count', async () => {
+    const { deps } = await setUp({
+      exercises: [bench, planned('w2d1', 'row', 2, [10])],
+    });
+
+    const [first, last] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(first?.actions).toEqual({
+      canReplace: true,
+      canAddSet: true,
+      canRemoveLastSet: true,
+      canMoveUp: false,
+      canMoveDown: true,
+      canSkip: true,
+      canUnskip: false,
+      canDelete: true,
+    });
+    expect(last?.actions).toMatchObject({
+      canRemoveLastSet: false,
+      canMoveUp: true,
+      canMoveDown: false,
+    });
+  });
+
+  test('DoD: Skip and Delete are both available once the exercise has a SetLog', async () => {
+    const { deps } = await setUp({ logs: [logOf(bench, 1, 11)] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard?.hasLoggedSets).toBe(true);
+    expect(benchCard?.actions.canSkip).toBe(true);
+    expect(benchCard?.actions.canDelete).toBe(true);
+  });
+
+  test('a skipped exercise keeps only its logged rows and flags the rest as skipped', async () => {
+    const { deps } = await setUp({
+      exercises: [{ ...bench, status: 'skipped' }, row],
+      logs: [logOf(bench, 1, 11)],
+    });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard?.rows.map((setRow) => setRow.setNumber)).toEqual([1]);
+    expect(benchCard?.rows[0]?.isFirstUnlogged).toBe(false);
+    expect(benchCard?.hasSkippedRows).toBe(true);
+    expect(benchCard?.actions).toMatchObject({ canSkip: false, canUnskip: true, canDelete: true });
+  });
+
+  test('a skipped exercise with every row logged has no skipped rows', async () => {
+    const { deps } = await setUp({
+      exercises: [{ ...row, status: 'skipped' }],
+      logs: [logOf(row, 1, 10), logOf(row, 2, 10)],
+    });
+
+    const [rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(rowCard?.rows).toHaveLength(2);
+    expect(rowCard?.hasSkippedRows).toBe(false);
+  });
+
+  test('a ready session not started yet has no date and can be skipped', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSession('w2d2', deps);
+
+    expect(model.mode).toBe('live');
+    expect(model.header.date).toBeUndefined();
+    expect(model.actions.canSkipWorkout).toBe(true);
+    expect(model.progress).toBe(0);
+  });
+
+  test('nothing can be added to a deload session', async () => {
+    const { deps } = await setUp({
+      sessions: [slotSession(4, 1, { isDeload: true })],
+      exercises: [planned('w4d1', 'bench', 1, [undefined])],
+      logs: [],
+    });
+
+    const model = await getWorkoutSession('w4d1', deps);
+
+    expect(model.header.isDeload).toBe(true);
+    expect(model.actions.canAddExercise).toBe(false);
+  });
+});
+
+describe('getWorkoutSession — Finish', () => {
+  test('DoD: Finish shows only once every exercise is completed or skipped', async () => {
+    const notYet = await setUp({
+      exercises: [{ ...bench, status: 'completed' }, row],
+    });
+    expect((await getWorkoutSession('w2d1', notYet.deps)).showFinish).toBe(false);
+
+    const done = await setUp({
+      exercises: [
+        { ...bench, status: 'completed' },
+        { ...row, status: 'skipped' },
+      ],
+    });
+    expect((await getWorkoutSession('w2d1', done.deps)).showFinish).toBe(true);
+  });
+
+  test('DoD: Finish never shows outside live mode', async () => {
+    const { deps } = await setUp();
+
+    expect((await getWorkoutSession('w1d1', deps)).showFinish).toBe(false);
+  });
+});
+
+describe('getWorkoutSession — read-only', () => {
+  test('a completed session is full, dated by completedAt, checked, with no actions', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSession('w1d1', deps);
+
+    expect(model.mode).toBe('readonly');
+    expect(model.header).toMatchObject({ date: '2026-09-01T10:00:00.000Z', isCompleted: true });
+    expect(model.progress).toBe(1);
+    expect(model.actions).toEqual({ canAddExercise: false, canSkipWorkout: false });
+    expect(model.exercises[0]?.actions).toEqual({
+      canReplace: false,
+      canAddSet: false,
+      canRemoveLastSet: false,
+      canMoveUp: false,
+      canMoveDown: false,
+      canSkip: false,
+      canUnskip: false,
+      canDelete: false,
+    });
+    expect(model.exercises[0]?.rows.every((setRow) => !setRow.isFirstUnlogged)).toBe(true);
+  });
+
+  test('a skipped session is read-only without the check', async () => {
+    const { deps } = await setUp({
+      sessions: [slotSession(2, 2, { status: 'skipped' })],
+      exercises: [w2Squat],
+      logs: [],
+    });
+
+    const model = await getWorkoutSession('w2d2', deps);
+
+    expect(model.mode).toBe('readonly');
+    expect(model.header.isCompleted).toBe(false);
+    expect(model.actions.canSkipWorkout).toBe(false);
+  });
+});
+
+describe('getWorkoutSession — preview', () => {
+  test('DoD: an awaiting_source session previews the latest programmed session of its day', async () => {
+    const { deps } = await setUp({
+      sessions: [
+        w1d1,
+        w1d2,
+        w2d1,
+        slotSession(2, 2, { status: 'completed', completedAt: NOW }),
+        slotSession(3, 2, { prescriptionStatus: 'awaiting_source' }),
+      ],
+    });
+
+    const model = await getWorkoutSession('w3d2', deps);
+
+    expect(model.mode).toBe('preview');
+    expect(model.sessionId).toBe('w3d2');
+    expect(model.header).toEqual({
+      weekNumber: 3,
+      dayNumber: 2,
+      mesocycleName: 'Upper/lower',
+      isDeload: false,
+      isCompleted: false,
+    });
+    expect(model.exercises.map((exercise) => exercise.name)).toEqual(['Back squat', 'Leg curl']);
+    expect(model.unlocksAfter).toEqual({ weekNumber: 2, dayNumber: 2 });
+    expect(model.showFinish).toBe(false);
+    expect(model.progress).toBe(0);
+  });
+
+  test('preview exercises carry no rows, targets or actions', async () => {
+    const { deps } = await setUp();
+
+    const [squat, curl] = (
+      await getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 2 }, deps)
+    ).exercises;
+
+    expect(squat).toEqual({
+      sessionExerciseId: 'w2d2-squat',
+      exerciseId: 'squat',
+      name: 'Back squat',
+      muscleGroup: 'quads',
+      equipment: 'barbell',
+      status: 'planned',
+      rows: [],
+      hasSkippedRows: false,
+      plannedSetCount: 0,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+      actions: expect.objectContaining({ canSkip: false, canDelete: false }),
+    });
+    expect(squat?.targetRir).toBeUndefined();
+    expect(curl?.equipment).toBeUndefined();
+  });
+});
+
+describe('getWorkoutSlot', () => {
+  test('DoD: a day with no session yet previews the latest session of the same day', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 2 }, deps);
+
+    expect(model.mode).toBe('preview');
+    expect(model.sessionId).toBeUndefined();
+    expect(model.exercises.map((exercise) => exercise.sessionExerciseId)).toEqual([
+      'w2d2-squat',
+      'w2d2-curl',
+    ]);
+    expect(model.unlocksAfter).toEqual({ weekNumber: 2, dayNumber: 2 });
+  });
+
+  test('the deload week preview is flagged as deload', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 4, dayNumber: 1 }, deps);
+
+    expect(model.header.isDeload).toBe(true);
+    expect(model.exercises.map((exercise) => exercise.exerciseId)).toEqual(['bench', 'row']);
+  });
+
+  test('a day whose session exists opens that session', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 2, dayNumber: 1 }, deps);
+
+    expect(model.mode).toBe('live');
+    expect(model.sessionId).toBe('w2d1');
+  });
+});
+
+describe('errors', () => {
+  test('rejects with NotFoundError for a missing session', async () => {
+    const { deps } = await setUp();
+
+    await expect(getWorkoutSession('missing', deps)).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  test('rejects with NotFoundError when a preview has nothing to show', async () => {
+    const { deps } = await setUp();
+
+    await expect(
+      getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 5 }, deps),
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe('storage is the source of truth', () => {
+  test('DoD: reloading after mutations restores the same state (simulated restart)', async () => {
+    const { store, workout, deps } = await setUp();
+    const benchRef = { sessionId: 'w2d1', sessionExerciseId: 'w2d1-bench' };
+    const rowRef = { sessionId: 'w2d1', sessionExerciseId: 'w2d1-row' };
+
+    await logSet({ ...benchRef, setNumber: 1 }, { weight: 62.5, reps: 11 }, workout, NOW);
+    await logSet({ ...benchRef, setNumber: 2 }, { weight: 62.5, reps: 9 }, workout, NOW);
+    await unlogSet({ ...benchRef, setNumber: 2 }, workout);
+    await addSet(benchRef, workout);
+    await logSet({ ...rowRef, setNumber: 1 }, { weight: 50, reps: 12 }, workout, NOW);
+    await skipExercise(rowRef, workout);
+    await moveExercise(rowRef, 'up', workout);
+
+    const before = await getWorkoutSession('w2d1', deps);
+    // A restart drops every in-memory object but storage: fresh repositories over the same data.
+    const after = await getWorkoutSession('w2d1', depsOver(store));
+
+    expect(after).toEqual(before);
+    expect(after.exercises.map((exercise) => exercise.sessionExerciseId)).toEqual([
+      'w2d1-row',
+      'w2d1-bench',
+    ]);
+    const [rowCard, benchCard] = after.exercises;
+    expect(rowCard).toMatchObject({ status: 'skipped', hasSkippedRows: true, loggedSetCount: 1 });
+    expect(benchCard?.plannedSetCount).toBe(4);
+    expect(benchCard?.rows.map((setRow) => setRow.log?.weight)).toEqual([
+      62.5,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    expect(benchCard?.rows.find((setRow) => setRow.isFirstUnlogged)?.setNumber).toBe(2);
+    expect(after.progress).toBeCloseTo((1 + 2) / 6);
+  });
+});
