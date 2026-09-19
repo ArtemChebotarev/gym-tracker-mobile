@@ -10,7 +10,9 @@
 // The cards are stand-ins that show the exercise name only; tasks 092–094 fill in the real card,
 // its set rows, and Finish workout.
 //
-// Presentational: the model and every outcome come in as props from app/workout/[sessionId].tsx.
+// Presentational: the model and every outcome come in as props — from the Today tab
+// (app/(tabs)/index.tsx) for the current session, and from app/workout/[sessionId].tsx for any
+// other day.
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
@@ -36,8 +38,11 @@ export type WorkoutScreenProps = {
   onOpenGrid: () => void;
   /** Opens the header menu sheet (08.7, "Лист «Меню шапки»"). */
   onOpenMenu: () => void;
-  /** Leaves the screen when the session couldn't be loaded. */
-  onBack: () => void;
+  /**
+   * The way forward when the session couldn't be loaded — `Go back` on a pushed route, somewhere
+   * useful on the Today tab, which has nothing to go back to.
+   */
+  fallbackAction: { label: string; onPress: () => void };
 };
 
 export function WorkoutScreen({
@@ -45,7 +50,7 @@ export function WorkoutScreen({
   isPending,
   onOpenGrid,
   onOpenMenu,
-  onBack,
+  fallbackAction,
 }: WorkoutScreenProps) {
   if (isPending) {
     return (
@@ -63,9 +68,9 @@ export function WorkoutScreen({
         <RootScreen title="Workout">
           <EmptyState
             title="Pick another workout"
-            description="This workout isn't available anymore. Head back and choose a day to train."
-            actionLabel="Go back"
-            onAction={onBack}
+            description="This workout isn't available anymore. Choose another day to train."
+            actionLabel={fallbackAction.label}
+            onAction={fallbackAction.onPress}
           />
         </RootScreen>
       </View>

@@ -7,11 +7,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { WorkoutSlot } from '@domain/workoutView';
+import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
 import { ensureMesocyclesSeeded } from './mesocycleStore';
-import { workoutSessionDeps } from './workoutStore';
+import { ensureWorkoutMocksSeeded, workoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
@@ -41,6 +42,22 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
     queryFn: async () => {
       await ensureSeeded();
       return getWorkoutSlot(slot, workoutSessionDeps);
+    },
+  });
+}
+
+/**
+ * The session the Today tab shows (08.7, "Навигация"). Temporary: Start (042) doesn't exist yet,
+ * so there are no real sessions — this seeds the stub workout (domain/workoutMocks.ts) and shows
+ * its in-progress session. Task 099 replaces it with the real pick: the `in_progress` session,
+ * otherwise the next `ready` one of the active mesocycle.
+ */
+export function useTodayWorkoutSession() {
+  return useQuery({
+    queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today'],
+    queryFn: async () => {
+      await ensureWorkoutMocksSeeded();
+      return getWorkoutSession(MOCK_SESSION_IDS.live, workoutSessionDeps);
     },
   });
 }

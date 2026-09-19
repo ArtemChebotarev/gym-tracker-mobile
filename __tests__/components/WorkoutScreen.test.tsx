@@ -97,7 +97,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     isPending: false,
     onOpenGrid: jest.fn(),
     onOpenMenu: jest.fn(),
-    onBack: jest.fn(),
+    fallbackAction: { label: 'Go back', onPress: jest.fn() },
     ...overrides,
   };
 }
@@ -207,12 +207,16 @@ describe('WorkoutScreen states', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
-  test('offers a way back when the session could not be loaded', () => {
-    const onBack = jest.fn();
-    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: undefined, onBack })} />);
+  test('offers the fallback action when the session could not be loaded', () => {
+    const onPress = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({ model: undefined, fallbackAction: { label: 'Open mesocycles', onPress } })}
+      />,
+    );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Go back' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
 
-    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });

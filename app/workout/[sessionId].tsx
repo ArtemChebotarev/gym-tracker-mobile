@@ -1,6 +1,7 @@
-// Workout screen route — wires components/WorkoutScreen.tsx (08.7 · Тренировка, task 091) to the
-// session model of 088, addressed by `sessionId`. Build its href with `workoutHref`
-// (components/workoutRoutes.ts).
+// Workout screen on any session, addressed by `sessionId` — wires components/WorkoutScreen.tsx
+// (08.7 · Тренировка, task 091) to the session model of 088. The Today tab shows the current
+// session itself; this route is for opening another day (the mesocycle overview's cells, 095).
+// Build its href with `workoutHref` (components/workoutRoutes.ts).
 //
 // The grid and `⋯` sheets are tasks 095 and 096, so until then both buttons explain that they're
 // not available yet rather than doing nothing.
@@ -26,7 +27,7 @@ export default function WorkoutRoute() {
       isPending={query.isPending}
       onOpenGrid={() => showNotAvailable('The mesocycle overview')}
       onOpenMenu={() => showNotAvailable('The workout menu')}
-      onBack={() => router.back()}
+      fallbackAction={{ label: 'Go back', onPress: () => router.back() }}
     />
   );
 }
