@@ -69,6 +69,10 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
 export function useTodayWorkout(sessionId?: string) {
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', sessionId ?? 'current'],
+    // The current-session pick isn't kept once the tab leaves it (pinned by Finish, `Next workout`,
+    // a grid day): it's read again on the way back. A cached one would show the day it was then —
+    // stale once a session has been finished since — for a moment before the refetch replaced it.
+    ...(sessionId === undefined ? { gcTime: 0 } : {}),
     // Pinning the current session to its id (Finish, see app/(tabs)/index.tsx) keeps showing it
     // while its own query loads, instead of flashing the loading state.
     placeholderData: (previous) =>
