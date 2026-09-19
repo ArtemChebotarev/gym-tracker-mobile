@@ -16,7 +16,12 @@ let mockParams: { sessionId?: string } = {};
 const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ navigate: mockNavigate }),
+  useRouter: () => ({
+    navigate: mockNavigate,
+    setParams: (params: { sessionId?: string }) => {
+      mockParams = { ...mockParams, ...params };
+    },
+  }),
   useLocalSearchParams: () => mockParams,
 }));
 
@@ -58,7 +63,7 @@ function renderToday() {
 }
 
 describe('Today tab', () => {
-  test('is the workout screen on the current (stub) session, not a list of days', async () => {
+  test('is the workout screen on the current session — the stub one in progress', async () => {
     renderToday();
 
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
@@ -223,6 +228,8 @@ describe('Today tab — Finish workout', () => {
     fireEvent.press(await screen.findByRole('button', { name: 'Finish workout' }));
 
     expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
+    // Still the finished session — not the next day the current-session pick has moved on to.
+    expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Bench Press menu' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Barbell Row menu' })).toBeNull();
@@ -241,5 +248,48 @@ describe('Today tab — Finish workout', () => {
     // above) comes before the Week 3 Day 1 that Finish just generated.
     fireEvent.press(screen.getByRole('button', { name: 'Next workout' }));
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref('ready-w2d2'));
+  });
+
+  test('back on the current session after Finish, never shows the stale pick first', async () => {
+    // By now Week 2 Day 1 is finished (test above) and Week 2 Day 2 is the earliest ready day.
+    // Keep the cache like the app's client does — the default `gcTime: 0` above would hide this.
+    client = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: 0 } },
+    });
+    const view = render(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <QueryClientProvider client={client}>
+          <TodayScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+    expect(await screen.findByText('Week 2 Day 2')).toBeTruthy();
+
+    // Pinned to another day — as Finish or `Next workout` do — then back to the current one, as
+    // the Mesocycles tab's Active card does. The pick is read again, not served from the cache.
+    mockParams = { sessionId: MOCK_SESSION_IDS.completed };
+    view.rerender(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <QueryClientProvider client={client}>
+          <TodayScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+    expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
+    await workoutStore.repos.sessionRepo.update({
+      ...(await workoutStore.repos.sessionRepo.getById('ready-w2d2'))!,
+      status: 'skipped',
+    });
+
+    mockParams = {};
+    view.rerender(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <QueryClientProvider client={client}>
+          <TodayScreen />
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+    expect(screen.queryByText('Week 2 Day 2')).toBeNull();
+    expect(await screen.findByText('Week 3 Day 1')).toBeTruthy();
   });
 });

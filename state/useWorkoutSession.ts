@@ -7,13 +7,13 @@
 import { type QueryClient, useQuery } from '@tanstack/react-query';
 
 import type { WorkoutSlot } from '@domain/workoutView';
-import { MOCK_SESSION_IDS } from '@domain/workoutMocks';
+import { getTodayWorkout, type TodayWorkout } from '@usecases/todayWorkout';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
 import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
 import { ensureMesocyclesSeeded } from './mesocycleStore';
 import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
-import { ensureWorkoutMocksSeeded, workoutSessionDeps } from './workoutStore';
+import { ensureWorkoutMocksSeeded, todayWorkoutDeps, workoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
@@ -60,18 +60,29 @@ export function useWorkoutSlot(slot: WorkoutSlot) {
 }
 
 /**
- * The session the Today tab shows (08.7, "Навигация"): `sessionId` when a day was picked (the
- * mesocycle overview, 095), otherwise the current session. Temporary: Start (042) doesn't exist
- * yet, so there are no real sessions — this seeds the stub workout (domain/workoutMocks.ts) and its
- * in-progress session stands in for the current one. Task 099 replaces that with the real pick:
- * the `in_progress` session, otherwise the next `ready` one of the active mesocycle.
+ * What the Today tab shows (08.7, "Навигация"): session `sessionId` when a day was picked (the
+ * mesocycle overview 095, `Next workout`), otherwise the current one — the session in progress,
+ * else the next day of the active mesocycle (`getTodayWorkout`, 099) — or why there's none.
+ * Seeds the stub workout (domain/workoutMocks.ts) first: until Start (042) creates real sessions,
+ * its in-progress Week 2 Day 1 is what the pick lands on.
  */
-export function useTodayWorkoutSession(sessionId?: string) {
+export function useTodayWorkout(sessionId?: string) {
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', sessionId ?? 'current'],
-    queryFn: async () => {
+    // The current-session pick isn't kept once the tab leaves it (pinned by Finish, `Next workout`,
+    // a grid day): it's read again on the way back. A cached one would show the day it was then —
+    // stale once a session has been finished since — for a moment before the refetch replaced it.
+    ...(sessionId === undefined ? { gcTime: 0 } : {}),
+    // Pinning the current session to its id (Finish, see app/(tabs)/index.tsx) keeps showing it
+    // while its own query loads, instead of flashing the loading state.
+    placeholderData: (previous) =>
+      previous?.kind === 'session' && previous.model.sessionId === sessionId ? previous : undefined,
+    queryFn: async (): Promise<TodayWorkout> => {
       await ensureWorkoutMocksSeeded();
-      return getWorkoutSession(sessionId ?? MOCK_SESSION_IDS.live, workoutSessionDeps);
+      if (sessionId === undefined) {
+        return getTodayWorkout(todayWorkoutDeps);
+      }
+      return { kind: 'session', model: await getWorkoutSession(sessionId, workoutSessionDeps) };
     },
   });
 }

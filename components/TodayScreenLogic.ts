@@ -11,3 +11,40 @@ export function formatInProgressConflict(session: {
 }): string {
   return `Finish Week ${session.weekNumber} Day ${session.dayNumber} first`;
 }
+
+/**
+ * Why the Today tab has no session to show: no active mesocycle, the active one has nothing left
+ * (`getTodayWorkout`, 099), or the session couldn't be loaded — a picked day that no longer exists.
+ */
+export type TodayEmptyReason = 'noActiveMesocycle' | 'allDone' | 'unavailable';
+
+/**
+ * The EmptyState copy for `reason` — an invitation, not an apology (08.0, "EmptyState"). Without an
+ * active mesocycle it invites creating one (08, "Сегодня"); otherwise it leads to the mesocycles.
+ */
+export function todayEmptyCopy(reason: TodayEmptyReason): {
+  title: string;
+  description: string;
+  actionLabel: string;
+} {
+  switch (reason) {
+    case 'noActiveMesocycle':
+      return {
+        title: 'Plan your training block',
+        description: 'Create a mesocycle and start it — its workouts show up here.',
+        actionLabel: 'Create mesocycle',
+      };
+    case 'allDone':
+      return {
+        title: 'Block complete',
+        description: 'Every workout of this mesocycle is done. Plan what comes next.',
+        actionLabel: 'Open mesocycles',
+      };
+    case 'unavailable':
+      return {
+        title: 'Pick another workout',
+        description: "This workout isn't available anymore. Choose another day to train.",
+        actionLabel: 'Open mesocycles',
+      };
+  }
+}

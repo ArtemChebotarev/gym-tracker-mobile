@@ -42,6 +42,22 @@ export function currentSession<S extends Session>(sessions: readonly S[]): S | u
 }
 
 /**
+ * The session the Today tab opens (task 099; 08 · Screens & Navigation, "Сегодня"): the one
+ * `in_progress`, otherwise the earliest not-yet-done one by week then day. That one is usually
+ * `ready`; when it's still `awaiting_source` it's returned all the same — the tab opens it in
+ * preview, naming the workout that unlocks it — rather than jumping past it to a later ready day,
+ * as `currentSession` does. `undefined` once nothing is left to do.
+ */
+export function todaySession<S extends Session>(sessions: readonly S[]): S | undefined {
+  const inProgress = sessions.find((session) => session.status === 'in_progress');
+  if (inProgress) {
+    return inProgress;
+  }
+  const [next] = sessions.filter((session) => session.status === 'planned').sort(byWeekThenDay);
+  return next;
+}
+
+/**
  * The week the mesocycle is on — the week of `currentSession`, so it moves with the workouts done,
  * not with the calendar. Once nothing is left to do, the latest week that has a session; week 1
  * before the mesocycle has any.

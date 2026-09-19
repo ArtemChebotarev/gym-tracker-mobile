@@ -105,7 +105,12 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onFinish: jest.fn(),
     isFinishing: false,
     onOpenNext: jest.fn(),
-    fallbackAction: { label: 'Go back', onPress: jest.fn() },
+    fallback: {
+      title: 'Pick another workout',
+      description: 'Choose another day to train.',
+      actionLabel: 'Go back',
+      onAction: jest.fn(),
+    },
     ...overrides,
   };
 }
@@ -352,16 +357,26 @@ describe('WorkoutScreen states', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
-  test('offers the fallback action when the session could not be loaded', () => {
-    const onPress = jest.fn();
+  test('shows the fallback EmptyState when there is no session to show', () => {
+    const onAction = jest.fn();
     renderWithSafeArea(
       <WorkoutScreen
-        {...makeProps({ model: undefined, fallbackAction: { label: 'Open mesocycles', onPress } })}
+        {...makeProps({
+          model: undefined,
+          fallback: {
+            title: 'Block complete',
+            description: 'Every workout is done.',
+            actionLabel: 'Open mesocycles',
+            onAction,
+          },
+        })}
       />,
     );
 
+    expect(screen.getByText('Block complete')).toBeTruthy();
+    expect(screen.getByText('Every workout is done.')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
 
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledTimes(1);
   });
 });

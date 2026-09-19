@@ -5,7 +5,7 @@
 // - Week 2 Day 1 — `in_progress`, 2 of 6 sets logged → live, with a date and a partial bar.
 // Week 3 Day 1 has no session: its grid cell opens a preview of Week 2 Day 1's exercises, and
 // finishing Week 2 Day 1 (094) generates it — a stub session there would make that a conflict.
-// The Today tab shows the live one as the current session (until 099); the others open in the same
+// The Today tab's pick (099) lands on the live one, being in progress; the others open in the same
 // tab through `workoutHref`. Seeded by state/workoutStore.ts on demand, not on every workout query. Same role as ./mesocycleMocks.ts: plain data, no side effects, no repository calls.
 //
 // Dates are relative to `now` so the live session always reads as today.
