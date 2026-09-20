@@ -22,16 +22,20 @@ type Performance = {
   isDeload?: boolean;
 };
 
-/** One past session per performance, each with one session exercise of `BARBELL` and its logs. */
+/**
+ * One past session per performance, each with one session exercise of `BARBELL` and its logs.
+ * Each lands on a day of its own — `(mesoId, weekNumber, dayNumber)` identifies a session
+ * (02 · Domain Model), and which day these happened on is not what any test here is about.
+ */
 async function setLogRepoWith(performances: Performance[]) {
   const workout = createInMemoryWorkoutStore(new InMemoryStore());
-  for (const performance of performances) {
+  for (const [index, performance] of performances.entries()) {
     const session: Session = {
       ...STAMPS,
       id: `session-${performance.key}`,
       mesoId: performance.mesoId,
       weekNumber: 1,
-      dayNumber: 1,
+      dayNumber: index + 1,
       isDeload: performance.isDeload ?? false,
       prescriptionStatus: 'ready',
       status: 'completed',

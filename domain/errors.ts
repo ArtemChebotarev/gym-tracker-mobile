@@ -19,12 +19,19 @@
  */
 export type DomainErrorKind = 'not-found' | 'conflict' | 'storage-unavailable';
 
-/** Base type for every error a storage adapter is allowed to throw. */
+/**
+ * Base type for every error a storage adapter is allowed to throw.
+ *
+ * `options.cause` carries the failure the adapter normalized away — the driver's own error, with
+ * its message and stack. Rule 5 says a caller must never have to *handle* a storage-specific
+ * error; it doesn't say the evidence should be thrown out, and without it a `ConflictError` from
+ * a real database says nothing about which constraint actually failed.
+ */
 abstract class DomainError extends Error {
   abstract readonly kind: DomainErrorKind;
 
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = new.target.name;
   }
 }

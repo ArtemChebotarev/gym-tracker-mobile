@@ -1,8 +1,10 @@
 import type { Session } from '@domain/execution';
+import { validateUniqueSessionSlots } from '@domain/executionValidators';
 import type { Incoming } from '@domain/timestamps';
 import type { SessionRepository } from '@repositories/session';
 
 import { SESSION_COLLECTION } from './collectionNames';
+import { ConflictError } from './errors';
 import { stampCreated, stampUpdated } from './timestamps';
 import type { InMemoryStore } from './store';
 
@@ -50,14 +52,41 @@ export class InMemorySessionRepository implements SessionRepository {
   }
 
   async create(session: Incoming<Session>): Promise<Session> {
-    return this.sessions.insert(stampCreated(session));
+    const [created] = await this.createMany([session]);
+    // `createMany` writes exactly as many rows as it is given, so the first one is always there.
+    return created!;
   }
 
   async createMany(sessions: readonly Incoming<Session>[]): Promise<Session[]> {
-    return Promise.all(sessions.map((session) => this.sessions.insert(stampCreated(session))));
+    const incoming = sessions.map(stampCreated);
+    await this.assertSlotsFree(incoming, new Set());
+    return Promise.all(incoming.map((session) => this.sessions.insert(session)));
   }
 
   async update(session: Session): Promise<Session> {
+    await this.assertSlotsFree([session], new Set([session.id]));
     return this.sessions.update(session.id, (stored) => stampUpdated(stored, session));
+  }
+
+  /**
+   * Refuses a write that would put two sessions in the same `(mesoId, weekNumber, dayNumber)`
+   * slot — 02 · Domain Model, Session invariants. The SQLite adapter gets this from a unique
+   * index; with no such thing here, the check is the domain's own validator run over the
+   * collection as it would look after the write, `replacing` naming the rows being overwritten.
+   *
+   * The validator throws a plain `Error`, as every domain validator does. Turning it into the
+   * storage layer's own vocabulary is this layer's job either way (rule 5) — it is the same
+   * translation `storage/sqlite/errors.ts` performs on what the driver throws.
+   */
+  private async assertSlotsFree(
+    incoming: readonly Session[],
+    replacing: ReadonlySet<string>,
+  ): Promise<void> {
+    const kept = (await this.sessions.list()).filter((session) => !replacing.has(session.id));
+    try {
+      validateUniqueSessionSlots([...kept, ...incoming]);
+    } catch (error) {
+      throw new ConflictError(error instanceof Error ? error.message : String(error));
+    }
   }
 }

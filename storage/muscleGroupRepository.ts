@@ -8,7 +8,10 @@ import { runAsync } from './async';
 // "Группа мышц — фиксированный enum прямо на упражнении, не отдельная сущность") — there is
 // nothing to seed or persist, so this repository just reads the domain's own MUSCLE_GROUPS
 // constant instead of an InMemoryCollection (or a second, hand-written copy of the list).
-export class InMemoryMuscleGroupRepository implements MuscleGroupRepository {
+//
+// Which is also why it carries no engine in its name: with nothing stored, there is nothing for
+// an engine to differ about, and every adapter uses this one class rather than a copy of it.
+export class MuscleGroupCatalogRepository implements MuscleGroupRepository {
   async getAll(): Promise<MuscleGroup[]> {
     return runAsync(() => [...MUSCLE_GROUPS]);
   }
