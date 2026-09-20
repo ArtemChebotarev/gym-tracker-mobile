@@ -1,371 +1,72 @@
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
-import { SESSION_COLLECTION, SESSION_EXERCISE_COLLECTION } from '@storage/collectionNames';
+import { InMemorySessionRepository } from '@storage/session';
+import { InMemorySessionExerciseRepository } from '@storage/sessionExercise';
 import { InMemorySetLogRepository } from '@storage/setLogRepository';
 import { InMemoryStore } from '@storage/store';
 
-function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
-  return {
-    id: 'set-log-1',
-    sessionExerciseId: 'session-exercise-1',
-    exerciseId: 'exercise-bench-press',
-    setNumber: 1,
-    weight: 60,
-    reps: 8,
-    completedAt: '2026-08-26T08:00:00.000Z',
-    ...overrides,
-  };
-}
+import { makeSession, makeSessionExercise, makeSetLog } from '../contracts/fixtures';
 
-function makeSessionExercise(overrides: Partial<SessionExercise> = {}): SessionExercise {
-  return {
-    id: 'session-exercise-1',
-    sessionId: 'session-1',
-    exerciseId: 'exercise-bench-press',
-    order: 1,
-    setTargets: [{ setNumber: 1, targetReps: 8 }],
-    targetRir: 2,
-    status: 'completed',
-    ...overrides,
-  };
-}
+// `findLastPerformance` as a whole belongs to the shared repository contract (task 109, run from
+// inMemoryContract.test.ts). What stays here is its behaviour on a set log whose session
+// exercise doesn't resolve: rule 6 of 03 · Progression Engine recommends nothing rather than
+// guess when the newest performance can't be joined to a session, and there is no telling
+// whether it was a deload or which mesocycle it belonged to.
+//
+// This isn't stated for every implementation on purpose — an adapter that enforces referential
+// integrity makes such a row impossible to write in the first place, so the contract would be
+// asking it to reproduce a state it forbids.
 
-function makeSession(overrides: Partial<Session> = {}): Session {
-  return {
-    id: 'session-1',
-    mesoId: 'meso-current',
-    weekNumber: 1,
-    dayNumber: 1,
-    isDeload: false,
-    prescriptionStatus: 'ready',
-    status: 'completed',
-    ...overrides,
-  };
-}
-
-// `since` = now − 30 days, with "now" pinned to 2026-09-18.
-const SINCE = '2026-08-19T00:00:00.000Z';
+const BENCH_PRESS = 'exercise-bench-press';
 const OLDER_THAN_SINCE = '2026-07-01T08:00:00.000Z';
 const NEWER_THAN_SINCE = '2026-09-01T08:00:00.000Z';
 
-type Performance = {
-  sessionExerciseId: string;
-  session: Partial<Session>;
-  completedAt: string;
-  setNumbers?: number[];
-};
-
-// Seeds one Session + SessionExercise per performance and one SetLog per set number, so each
-// test reads as a list of past performances rather than three collections of rows.
-async function seedPerformances(performances: Performance[]) {
+async function seededWithWorkingPerformance(completedAt: string) {
   const store = new InMemoryStore();
-  const repo = new InMemorySetLogRepository(store);
-  const sessions = store.collection<Session>(SESSION_COLLECTION);
-  const sessionExercises = store.collection<SessionExercise>(SESSION_EXERCISE_COLLECTION);
-  for (const performance of performances) {
-    const sessionId = `session-${performance.sessionExerciseId}`;
-    await sessions.insert(makeSession({ id: sessionId, ...performance.session }));
-    await sessionExercises.insert(
-      makeSessionExercise({ id: performance.sessionExerciseId, sessionId }),
-    );
-    for (const setNumber of performance.setNumbers ?? [1]) {
-      await repo.create(
-        makeSetLog({
-          id: `${performance.sessionExerciseId}-set-${setNumber}`,
-          sessionExerciseId: performance.sessionExerciseId,
-          setNumber,
-          completedAt: performance.completedAt,
-        }),
-      );
-    }
-  }
-  return repo;
+  const setLogs = new InMemorySetLogRepository(store);
+  await new InMemorySessionRepository(store).create(makeSession({ status: 'completed' }));
+  await new InMemorySessionExerciseRepository(store).create(
+    makeSessionExercise({ id: 'se-working', status: 'completed' }),
+  );
+  await setLogs.create(
+    makeSetLog({ id: 'log-working', sessionExerciseId: 'se-working', completedAt }),
+  );
+  return setLogs;
 }
 
-function findBenchReference(
-  repo: InMemorySetLogRepository,
-  excludeSessionExerciseId?: string,
-): Promise<SetLog[]> {
-  return repo.findLastPerformance({
-    exerciseId: 'exercise-bench-press',
-    mesoId: 'meso-current',
-    since: SINCE,
-    excludeSessionExerciseId,
+function findBenchReference(setLogs: InMemorySetLogRepository) {
+  return setLogs.findLastPerformance({
+    exerciseId: BENCH_PRESS,
+    mesoId: 'meso-a',
+    since: '2026-08-19T00:00:00.000Z',
   });
-}
-
-function sessionExerciseIdsOf(logs: SetLog[]): string[] {
-  return [...new Set(logs.map((log) => log.sessionExerciseId))];
 }
 
 describe('InMemorySetLogRepository', () => {
-  test('listBySessionExerciseId returns only sets for that session exercise', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    await repo.create(makeSetLog({ id: 'log-1', sessionExerciseId: 'se-bench' }));
-    await repo.create(makeSetLog({ id: 'log-2', sessionExerciseId: 'se-row' }));
-
-    await expect(repo.listBySessionExerciseId('se-row')).resolves.toEqual([
-      makeSetLog({ id: 'log-2', sessionExerciseId: 'se-row' }),
-    ]);
-  });
-
-  test('listBySessionId joins through SessionExercise to assemble every set logged in a session', async () => {
-    const store = new InMemoryStore();
-    const repo = new InMemorySetLogRepository(store);
-    const sessionExercises = store.collection<SessionExercise>(SESSION_EXERCISE_COLLECTION);
-    await sessionExercises.insert(makeSessionExercise({ id: 'se-bench', sessionId: 'session-1' }));
-    await sessionExercises.insert(makeSessionExercise({ id: 'se-row', sessionId: 'session-1' }));
-    await sessionExercises.insert(
-      makeSessionExercise({ id: 'se-other-session', sessionId: 'session-2' }),
+  test('returns an empty list when a newer performance cannot be joined to its session', async () => {
+    const setLogs = await seededWithWorkingPerformance(OLDER_THAN_SINCE);
+    // No session exercise row for this one: its deload flag and mesocycle are unknown.
+    await setLogs.create(
+      makeSetLog({
+        id: 'log-orphan',
+        sessionExerciseId: 'se-orphan',
+        completedAt: NEWER_THAN_SINCE,
+      }),
     );
 
-    await repo.create(makeSetLog({ id: 'log-1', sessionExerciseId: 'se-bench' }));
-    await repo.create(makeSetLog({ id: 'log-2', sessionExerciseId: 'se-row' }));
-    await repo.create(makeSetLog({ id: 'log-3', sessionExerciseId: 'se-other-session' }));
-
-    const result = await repo.listBySessionId('session-1');
-
-    expect(result.map((log) => log.id).sort()).toEqual(['log-1', 'log-2']);
+    await expect(findBenchReference(setLogs)).resolves.toEqual([]);
   });
 
-  test('listByExerciseId sorts by completedAt descending by default and honors limit and order', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    const oldest = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
-    const middle = makeSetLog({ id: 'log-2', completedAt: '2026-08-15T08:00:00.000Z' });
-    const newest = makeSetLog({ id: 'log-3', completedAt: '2026-08-26T08:00:00.000Z' });
-    await repo.create(oldest);
-    await repo.create(middle);
-    await repo.create(newest);
+  test('ignores a broken performance older than the reference it already found', async () => {
+    const setLogs = await seededWithWorkingPerformance(NEWER_THAN_SINCE);
+    await setLogs.create(
+      makeSetLog({
+        id: 'log-orphan',
+        sessionExerciseId: 'se-orphan',
+        completedAt: OLDER_THAN_SINCE,
+      }),
+    );
 
-    await expect(repo.listByExerciseId('exercise-bench-press')).resolves.toEqual([
-      newest,
-      middle,
-      oldest,
-    ]);
-    await expect(repo.listByExerciseId('exercise-bench-press', { order: 'asc' })).resolves.toEqual([
-      oldest,
-      middle,
-      newest,
-    ]);
-    await expect(repo.listByExerciseId('exercise-bench-press', { limit: 2 })).resolves.toEqual([
-      newest,
-      middle,
-    ]);
-  });
+    const reference = await findBenchReference(setLogs);
 
-  test('listByExerciseId returns an empty array when the exercise has never been logged', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    await repo.create(makeSetLog());
-
-    await expect(repo.listByExerciseId('exercise-never-logged')).resolves.toEqual([]);
-  });
-
-  test('listByExerciseId spans every mesocycle the exercise was logged in', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    const fromFirstMeso = makeSetLog({
-      id: 'log-meso-1',
-      sessionExerciseId: 'se-meso-1',
-      completedAt: '2026-06-01T08:00:00.000Z',
-    });
-    const fromSecondMeso = makeSetLog({
-      id: 'log-meso-2',
-      sessionExerciseId: 'se-meso-2',
-      completedAt: '2026-08-01T08:00:00.000Z',
-    });
-    await repo.create(fromFirstMeso);
-    await repo.create(fromSecondMeso);
-
-    const history = await repo.listByExerciseId('exercise-bench-press');
-
-    expect(history).toEqual([fromSecondMeso, fromFirstMeso]);
-  });
-
-  test('getLastByExerciseId returns the most recent set, or null when there is no history', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    await expect(repo.getLastByExerciseId('exercise-bench-press')).resolves.toBeNull();
-
-    const older = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
-    const newer = makeSetLog({ id: 'log-2', completedAt: '2026-08-26T08:00:00.000Z' });
-    await repo.create(older);
-    await repo.create(newer);
-
-    await expect(repo.getLastByExerciseId('exercise-bench-press')).resolves.toEqual(newer);
-  });
-
-  test('create, update, and deleteById round-trip a set log by its domain-generated id', async () => {
-    const repo = new InMemorySetLogRepository(new InMemoryStore());
-    const setLog = makeSetLog();
-    await repo.create(setLog);
-
-    const updated = await repo.update({ ...setLog, weight: 65 });
-    await expect(repo.getLastByExerciseId(setLog.exerciseId)).resolves.toEqual(updated);
-
-    await repo.deleteById(setLog.id);
-    await expect(repo.listBySessionExerciseId(setLog.sessionExerciseId)).resolves.toEqual([]);
-  });
-
-  describe('findLastPerformance', () => {
-    test('finds a performance in the current mesocycle even when it is older than since', async () => {
-      const repo = await seedPerformances([
-        { sessionExerciseId: 'se-current-old', session: {}, completedAt: OLDER_THAN_SINCE },
-      ]);
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo))).toEqual(['se-current-old']);
-    });
-
-    test('finds a performance in a past mesocycle that is newer than since', async () => {
-      const repo = await seedPerformances([
-        {
-          sessionExerciseId: 'se-past-recent',
-          session: { mesoId: 'meso-past' },
-          completedAt: NEWER_THAN_SINCE,
-        },
-      ]);
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo))).toEqual(['se-past-recent']);
-    });
-
-    test('ignores a performance in a past mesocycle that is older than since', async () => {
-      const repo = await seedPerformances([
-        {
-          sessionExerciseId: 'se-past-old',
-          session: { mesoId: 'meso-past' },
-          completedAt: OLDER_THAN_SINCE,
-        },
-      ]);
-
-      await expect(findBenchReference(repo)).resolves.toEqual([]);
-    });
-
-    test('excludes the session exercise asking for the reference', async () => {
-      const repo = await seedPerformances([
-        { sessionExerciseId: 'se-previous', session: {}, completedAt: '2026-09-10T08:00:00.000Z' },
-        { sessionExerciseId: 'se-today', session: {}, completedAt: '2026-09-18T08:00:00.000Z' },
-      ]);
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo, 'se-today'))).toEqual([
-        'se-previous',
-      ]);
-    });
-
-    test('takes the most recent of several qualifying performances, sorted by setNumber', async () => {
-      const repo = await seedPerformances([
-        {
-          sessionExerciseId: 'se-older',
-          session: {},
-          completedAt: '2026-09-01T08:00:00.000Z',
-          setNumbers: [1, 2],
-        },
-        {
-          sessionExerciseId: 'se-newest',
-          session: { mesoId: 'meso-past' },
-          completedAt: '2026-09-15T08:00:00.000Z',
-          setNumbers: [3, 1, 2],
-        },
-        {
-          sessionExerciseId: 'se-middle',
-          session: {},
-          completedAt: '2026-09-08T08:00:00.000Z',
-          setNumbers: [1],
-        },
-      ]);
-
-      const result = await findBenchReference(repo);
-
-      expect(result.map((log) => log.id)).toEqual([
-        'se-newest-set-1',
-        'se-newest-set-2',
-        'se-newest-set-3',
-      ]);
-    });
-
-    test('skips a deload performance even when it is newer, falling back to the previous working one', async () => {
-      const repo = await seedPerformances([
-        { sessionExerciseId: 'se-working', session: {}, completedAt: '2026-09-01T08:00:00.000Z' },
-        {
-          sessionExerciseId: 'se-deload',
-          session: { isDeload: true },
-          completedAt: '2026-09-15T08:00:00.000Z',
-        },
-      ]);
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo))).toEqual(['se-working']);
-    });
-
-    test('returns an empty list when only deload performances fall in the window', async () => {
-      const repo = await seedPerformances([
-        {
-          sessionExerciseId: 'se-deload-current',
-          session: { isDeload: true },
-          completedAt: OLDER_THAN_SINCE,
-        },
-        {
-          sessionExerciseId: 'se-deload-past',
-          session: { mesoId: 'meso-past', isDeload: true },
-          completedAt: NEWER_THAN_SINCE,
-        },
-      ]);
-
-      await expect(findBenchReference(repo)).resolves.toEqual([]);
-    });
-
-    test('references the exercise performed last, not whatever was done in the same slot', async () => {
-      // Week 1: dumbbell press; week 2: the slot swapped to barbell bench press.
-      const repo = await seedPerformances([
-        { sessionExerciseId: 'se-week-2-bench', session: {}, completedAt: NEWER_THAN_SINCE },
-      ]);
-      await repo.create(
-        makeSetLog({
-          id: 'se-week-1-dumbbell-set-1',
-          sessionExerciseId: 'se-week-1-dumbbell',
-          exerciseId: 'exercise-dumbbell-press',
-          completedAt: '2026-08-25T08:00:00.000Z',
-        }),
-      );
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo))).toEqual(['se-week-2-bench']);
-    });
-
-    test('returns an empty list when a newer performance cannot be joined to its session', async () => {
-      const store = new InMemoryStore();
-      const repo = new InMemorySetLogRepository(store);
-      await store
-        .collection<Session>(SESSION_COLLECTION)
-        .insert(makeSession({ id: 'session-working' }));
-      await store
-        .collection<SessionExercise>(SESSION_EXERCISE_COLLECTION)
-        .insert(makeSessionExercise({ id: 'se-working', sessionId: 'session-working' }));
-      await repo.create(
-        makeSetLog({
-          id: 'log-working',
-          sessionExerciseId: 'se-working',
-          completedAt: OLDER_THAN_SINCE,
-        }),
-      );
-      // No SessionExercise row for this one: its deload flag and mesocycle are unknown.
-      await repo.create(
-        makeSetLog({
-          id: 'log-orphan',
-          sessionExerciseId: 'se-orphan',
-          completedAt: NEWER_THAN_SINCE,
-        }),
-      );
-
-      await expect(findBenchReference(repo)).resolves.toEqual([]);
-    });
-
-    test('ignores a broken performance older than the reference it already found', async () => {
-      const repo = await seedPerformances([
-        { sessionExerciseId: 'se-working', session: {}, completedAt: NEWER_THAN_SINCE },
-      ]);
-      await repo.create(
-        makeSetLog({
-          id: 'log-orphan',
-          sessionExerciseId: 'se-orphan',
-          completedAt: OLDER_THAN_SINCE,
-        }),
-      );
-
-      expect(sessionExerciseIdsOf(await findBenchReference(repo))).toEqual(['se-working']);
-    });
+    expect(reference.map((setLog) => setLog.id)).toEqual(['log-working']);
   });
 });
