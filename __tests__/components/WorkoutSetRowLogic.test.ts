@@ -1,5 +1,6 @@
 import {
   formatIndicator,
+  formatLoggedWeight,
   formatRowWeight,
   initialWeightText,
   isRirPlaceholder,
@@ -146,5 +147,53 @@ describe('isStrongIndicator', () => {
     expect(isStrongIndicator({ kind: 'hit' })).toBe(true);
     expect(isStrongIndicator({ kind: 'over', diff: 1 })).toBe(true);
     expect(isStrongIndicator({ kind: 'under', diff: 1 })).toBe(false);
+  });
+});
+
+describe('the Weight column on a bodyweight exercise (task 105)', () => {
+  describe('formatLoggedWeight', () => {
+    test('DoD: a weighted set reads as the body weight and what was added, kept apart', () => {
+      expect(formatLoggedWeight({ weight: 10, bodyWeight: 80 }, 'bodyweight-weighted')).toBe(
+        '80 (+10)',
+      );
+      expect(formatLoggedWeight({ weight: 5, bodyWeight: 83 }, 'bodyweight-weighted')).toBe(
+        '83 (+5)',
+      );
+    });
+
+    test('DoD: a pure bodyweight set is a plain number — its weight is already the load', () => {
+      expect(formatLoggedWeight({ weight: 80 }, 'bodyweight')).toBe('80');
+    });
+
+    test('DoD: an ordinary exercise is unchanged', () => {
+      expect(formatLoggedWeight({ weight: 62.5 }, 'barbell')).toBe('62.5');
+      expect(formatLoggedWeight({ weight: 62.5 }, undefined)).toBe('62.5');
+    });
+
+    test('with no body weight recorded there is only the added weight to show', () => {
+      expect(formatLoggedWeight({ weight: 10 }, 'bodyweight-weighted')).toBe('(+10)');
+    });
+  });
+
+  describe('initialWeightText', () => {
+    test("DoD: a pure bodyweight field starts at the block's body weight", () => {
+      expect(initialWeightText({}, 'bodyweight', 80)).toBe('80');
+    });
+
+    test('empty until the body weight has been asked for', () => {
+      expect(initialWeightText({}, 'bodyweight', undefined)).toBe('');
+    });
+
+    test("a pure bodyweight exercise has no suggested weight to prefer anyway", () => {
+      expect(initialWeightText({ suggestedWeight: 62.5 }, 'bodyweight', 80)).toBe('80');
+    });
+
+    test('DoD: a weighted one starts at its suggested added weight, not the body weight', () => {
+      expect(initialWeightText({ suggestedWeight: 10 }, 'bodyweight-weighted', 80)).toBe('10');
+    });
+
+    test('an ordinary exercise ignores the body weight entirely', () => {
+      expect(initialWeightText({ suggestedWeight: 60 }, 'barbell', 80)).toBe('60');
+    });
   });
 });

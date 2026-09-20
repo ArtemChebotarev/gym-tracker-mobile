@@ -35,6 +35,7 @@ import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
+import { isBodyWeightExercise, isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -52,6 +53,7 @@ import {
   weightFieldText,
 } from './WorkoutExerciseCardLogic';
 import { styles } from './WorkoutExerciseCardStyles';
+import { parseWeight } from './WorkoutSetRowLogic';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
 export type WorkoutExerciseCardProps = {
@@ -63,9 +65,21 @@ export type WorkoutExerciseCardProps = {
   onOpenHistory: () => void;
   /** Opens the "Меню упражнения" sheet. Live mode only — the button isn't there otherwise. */
   onOpenMenu: () => void;
+  /** The block's body weight (task 105) — fills a pure bodyweight row and tops up a weighted one. */
+  bodyWeight?: number;
+  /**
+   * The Weight field of a pure bodyweight exercise *is* the block's body weight, so editing it
+   * sets a new one (task 105, Artem's call — there's no separate place to change it).
+   */
+  onBodyWeightChange?: (bodyWeight: number) => void;
+  /** Opens the body weight sheet — the Weight cell asks for it until the block has one (105). */
+  onRequestBodyWeight?: () => void;
   /** A log or un-log is being saved — every Log box waits for it. */
   isSaving: boolean;
-  onLogSet: (setNumber: number, entry: { weight: number; reps: number }) => void;
+  onLogSet: (
+    setNumber: number,
+    entry: { weight: number; reps: number; bodyWeight?: number },
+  ) => void;
   onUnlogSet: (setNumber: number) => void;
 };
 
@@ -75,6 +89,9 @@ export function WorkoutExerciseCard({
   showGroupChip,
   onOpenHistory,
   onOpenMenu,
+  bodyWeight,
+  onBodyWeightChange,
+  onRequestBodyWeight,
   isSaving,
   onLogSet,
   onUnlogSet,
@@ -134,7 +151,9 @@ export function WorkoutExerciseCard({
 
         {view.showSets && (
           <View style={styles.headerRow}>
-            <Text style={[styles.valueColumn, styles.columnLabel]}>Weight, kg</Text>
+            <Text style={[styles.valueColumn, styles.columnLabel]}>
+              {usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg'}
+            </Text>
             <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
             <View style={styles.indicatorColumn} />
             <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
@@ -147,6 +166,9 @@ export function WorkoutExerciseCard({
             key={exercise.exerciseId}
             exercise={exercise}
             editable={editable}
+            bodyWeight={bodyWeight}
+            onBodyWeightChange={onBodyWeightChange}
+            onRequestBodyWeight={onRequestBodyWeight}
             isSaving={isSaving}
             onLogSet={onLogSet}
             onUnlogSet={onUnlogSet}
@@ -179,14 +201,44 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
 function SetRows({
   exercise,
   editable,
+  bodyWeight,
+  onBodyWeightChange,
+  onRequestBodyWeight,
   isSaving,
   onLogSet,
   onUnlogSet,
-}: Pick<WorkoutExerciseCardProps, 'exercise' | 'isSaving' | 'onLogSet' | 'onUnlogSet'> & {
+}: Pick<
+  WorkoutExerciseCardProps,
+  | 'exercise'
+  | 'bodyWeight'
+  | 'onBodyWeightChange'
+  | 'onRequestBodyWeight'
+  | 'isSaving'
+  | 'onLogSet'
+  | 'onUnlogSet'
+> & {
   editable: boolean;
 }) {
   const [weights, setWeights] = useState<WeightEdits>({});
   const { rows } = exercise;
+  const isBodyWeightField = isPureBodyWeight(exercise.equipment);
+  // Until the block has a body weight, a bodyweight exercise's Weight cell asks for one rather
+  // than taking a number: there's nothing meaningful to type there yet (task 105).
+  const asksForBodyWeight =
+    isBodyWeightExercise(exercise.equipment) && bodyWeight === undefined && editable;
+
+  function handleWeightBlur(setNumber: number, text: string) {
+    setWeights((edits) => carryWeightForward(edits, rows, setNumber));
+    if (!isBodyWeightField || onBodyWeightChange === undefined) {
+      return;
+    }
+    // On a pure bodyweight exercise this field holds the body weight itself, so what was typed
+    // here is the block's new one — it reaches every bodyweight set still to be logged (task 105).
+    const entered = parseWeight(text);
+    if (entered !== null && entered > 0 && entered !== bodyWeight) {
+      onBodyWeightChange(entered);
+    }
+  }
 
   return (
     <>
@@ -195,11 +247,18 @@ function SetRows({
           key={row.setNumber}
           row={row}
           targetRir={exercise.targetRir}
-          weightText={weightFieldText(weights, row)}
+          equipment={exercise.equipment}
+          bodyWeight={bodyWeight}
+          {...(asksForBodyWeight && onRequestBodyWeight !== undefined
+            ? { onRequestBodyWeight }
+            : {})}
+          weightText={weightFieldText(weights, row, exercise.equipment, bodyWeight)}
           onChangeWeight={(text) =>
             setWeights((edits) => editWeightText(edits, row.setNumber, text))
           }
-          onBlurWeight={() => setWeights((edits) => carryWeightForward(edits, rows, row.setNumber))}
+          onBlurWeight={() =>
+            handleWeightBlur(row.setNumber, weightFieldText(weights, row, exercise.equipment, bodyWeight))
+          }
           editable={editable}
           isSaving={isSaving}
           onLog={(entry) => onLogSet(row.setNumber, entry)}

@@ -88,7 +88,7 @@ export const EXERCISE_CATALOG: readonly Exercise[] = [
     name: 'Dips Chest Focused Weighted',
     muscleGroup: 'chest',
     source: 'catalog',
-    equipment: 'bodyweight',
+    equipment: 'bodyweight-weighted',
     isHidden: false,
   },
 
@@ -254,7 +254,7 @@ export const EXERCISE_CATALOG: readonly Exercise[] = [
     name: 'Pull Up Weighted',
     muscleGroup: 'back',
     source: 'catalog',
-    equipment: 'bodyweight',
+    equipment: 'bodyweight-weighted',
     isHidden: false,
   },
   {
@@ -516,7 +516,7 @@ export const EXERCISE_CATALOG: readonly Exercise[] = [
     name: 'Sissy Squat Weighted',
     muscleGroup: 'quads',
     source: 'catalog',
-    equipment: 'bodyweight',
+    equipment: 'bodyweight-weighted',
     isHidden: false,
   },
 

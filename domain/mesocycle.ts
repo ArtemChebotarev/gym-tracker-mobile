@@ -89,6 +89,13 @@ export type Mesocycle = {
   origin: MesocycleOrigin;
   progressionSettings: ProgressionSettings;
   /**
+   * Body weight in kg, for the block's bodyweight exercises (task 105). Asked for the first time
+   * one of them comes up and then filled into every later one, so it isn't retyped set after set.
+   * Absent until then. Changing it moves only the sets still to come — a logged set keeps what it
+   * was logged with (05, "История неизменяема").
+   */
+  bodyWeight?: number;
+  /**
    * Draft week 1, present only while `status: 'planned'`. Start materializes it into `Session` /
    * `SessionExercise` and this field goes back to absent — it is never read once the mesocycle
    * is `active`.

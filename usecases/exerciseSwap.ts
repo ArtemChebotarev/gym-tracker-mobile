@@ -4,9 +4,11 @@
 // ever holds sets of one exercise. Orchestration only — the targets come from rule 6
 // (`targetsFromHistory`).
 
+import { toExerciseId } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
 import { nowAsUtcIso } from '@domain/time';
+import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
 import { targetsFromHistory } from '@usecases/historyTargets';
@@ -15,6 +17,8 @@ import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSess
 export type ExerciseSwapDeps = {
   workout: WorkoutStore;
   mesocycleRepo: MesocycleRepository;
+  /** Reads the new exercise's equipment — a pure bodyweight one gets no weight target (105). */
+  exerciseRepo: ExerciseRepository;
 };
 
 export type ExerciseSwapInput = SessionExerciseRef & {
@@ -59,6 +63,7 @@ export async function swapExercise(
       await repos.setLogRepo.deleteById(setLog.id);
     }
 
+    const swappedIn = await deps.exerciseRepo.getById(toExerciseId(input.exerciseId));
     const setTargets = await targetsFromHistory(
       {
         exerciseId: input.exerciseId,
@@ -66,6 +71,7 @@ export async function swapExercise(
         rowCount: current.setTargets.length,
         sessionExerciseId: current.id,
         settings: mesocycle.progressionSettings,
+        equipment: swappedIn?.equipment,
         now,
       },
       repos.setLogRepo,

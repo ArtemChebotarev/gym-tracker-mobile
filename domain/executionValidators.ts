@@ -60,8 +60,13 @@ export function validateAwaitingSourceSession(
   }
 }
 
-/** What the user entered in a set row: an empty field (only a placeholder showing) is `null`. */
-export type SetEntry = { weight: number | null; reps: number | null };
+/**
+ * What the user entered in a set row: an empty field (only a placeholder showing) is `null`.
+ * `bodyWeight` rides along on a `bodyweight-weighted` exercise — `weight` is then the added weight
+ * and this is what it was added to, kept so the set still reads the same after the block's body
+ * weight changes (task 105). It isn't entered and isn't validated.
+ */
+export type SetEntry = { weight: number | null; reps: number | null; bodyWeight?: number };
 
 /**
  * Throws unless both fields of a set row hold a value (05 · Workout Execution & Logging, "Записать
@@ -71,7 +76,7 @@ export type SetEntry = { weight: number | null; reps: number | null };
  */
 export function validateSetEntry(
   entry: SetEntry,
-): asserts entry is { weight: number; reps: number } {
+): asserts entry is SetEntry & { weight: number; reps: number } {
   const { weight, reps } = entry;
   if (weight === null || reps === null) {
     throw new Error('A set can be logged only once both weight and reps are entered.');

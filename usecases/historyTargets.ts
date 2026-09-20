@@ -3,6 +3,7 @@
 // reference performance and the time bound is the use case layer's job, the engine only turns the
 // result into targets (`prescribeFromHistory`, task 084).
 
+import type { Equipment } from '@domain/catalog';
 import type { Session, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { prescribeFromHistory } from '@domain/progressionHistory';
@@ -18,6 +19,11 @@ export type HistoryTargetsQuery = {
   sessionExerciseId?: string;
   /** The session's mesocycle settings: rep corridor and `historyLookbackDays`. */
   settings: ProgressionSettings;
+  /**
+   * The exercise's equipment, when its catalog entry names one. A pure `bodyweight` exercise gets
+   * reps but no weight target (task 105) — the engine decides, this only carries the fact.
+   */
+  equipment?: Equipment;
   now: string;
 };
 
@@ -34,9 +40,9 @@ export async function targetsFromHistory(
   query: HistoryTargetsQuery,
   setLogRepo: SetLogRepository,
 ): Promise<SetTarget[]> {
-  const { exerciseId, session, rowCount, sessionExerciseId, settings, now } = query;
+  const { exerciseId, session, rowCount, sessionExerciseId, settings, equipment, now } = query;
   if (session.isDeload) {
-    return prescribeFromHistory(null, rowCount, settings);
+    return prescribeFromHistory(null, rowCount, settings, equipment);
   }
   const reference = await setLogRepo.findLastPerformance({
     exerciseId,
@@ -44,5 +50,5 @@ export async function targetsFromHistory(
     since: daysBefore(now, settings.historyLookbackDays),
     excludeSessionExerciseId: sessionExerciseId,
   });
-  return prescribeFromHistory(reference, rowCount, settings);
+  return prescribeFromHistory(reference, rowCount, settings, equipment);
 }

@@ -4,6 +4,7 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { WorkoutStore } from '@repositories/workout';
+import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
@@ -102,7 +103,9 @@ async function setUp(
   for (const log of [...weekOneLogs, ...(current.logs ?? [])]) {
     await workout.repos.setLogRepo.create(log);
   }
-  return { workout, mesocycleRepo };
+  // The swapped-in exercises here aren't catalog entries, so the repo answers `null` and the
+  // equipment stays undefined — which is exactly the non-bodyweight path these tests exercise.
+  return { workout, mesocycleRepo, exerciseRepo: new InMemoryExerciseRepository(new InMemoryStore()) };
 }
 
 const swapToBarbell = {

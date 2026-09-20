@@ -1,5 +1,6 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
+import type { Equipment } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
@@ -93,12 +94,17 @@ export type WeightField = {
  */
 export type WeightEdits = Readonly<Record<number, WeightField>>;
 
-/** The text a row's Weight field shows: the edit made to it, else its suggested weight. */
+/**
+ * The text a row's Weight field shows: the edit made to it, else what the row starts with —
+ * its suggested weight, or the block's body weight on a pure bodyweight exercise (task 105).
+ */
 export function weightFieldText(
   edits: WeightEdits,
   row: Pick<WorkoutSetRow, 'setNumber' | 'suggestedWeight'>,
+  equipment?: Equipment,
+  bodyWeight?: number,
 ): string {
-  return edits[row.setNumber]?.text ?? initialWeightText(row);
+  return edits[row.setNumber]?.text ?? initialWeightText(row, equipment, bodyWeight);
 }
 
 /** Typing in a Weight field — the value becomes the user's own, so later carry-overs skip it. */

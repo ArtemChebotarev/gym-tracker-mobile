@@ -42,11 +42,18 @@ export const sessionFinishDeps: SessionFinishDeps = {
 /** What Skip workout (096, 049) needs — the same as Finish: it generates next week's day too. */
 export const workoutSkipDeps: WorkoutSkipDeps = sessionFinishDeps;
 
-/** What Add exercise (096, 048) needs: the workout store, plus the mesocycle for the week's RIR. */
+/**
+ * What Add exercise (096, 048) needs: the workout store, the mesocycle for the week's RIR, and the
+ * catalog for each exercise's equipment — a pure bodyweight one gets no weight target (105).
+ */
 export const exerciseAdditionDeps: ExerciseAdditionDeps = {
   workout: workoutStore,
   mesocycleRepo: new InMemoryMesocycleRepository(appStore),
+  exerciseRepo: new InMemoryExerciseRepository(appStore),
 };
+
+/** The mesocycle the block's body weight is written to (105). */
+export const bodyWeightDeps = new InMemoryMesocycleRepository(appStore);
 
 /** What Replace exercise (097, 047) needs — the same as Add: rule 6 targets need the mesocycle. */
 export const exerciseSwapDeps: ExerciseSwapDeps = exerciseAdditionDeps;

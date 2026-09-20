@@ -48,7 +48,18 @@ export type SetLog = {
   sessionExerciseId: string;
   exerciseId: string;
   setNumber: number;
+  /**
+   * For an ordinary exercise, the weight lifted. For `bodyweight-weighted`, the **added** weight
+   * only — the total is `bodyWeight + weight` (task 105), and it's the added weight the engine
+   * progresses. A pure `bodyweight` set logs the body weight itself here: that is its whole load.
+   */
   weight: number;
+  /**
+   * The body weight this set was logged with, on a `bodyweight-weighted` exercise (task 105).
+   * Stored rather than read from the mesocycle so a later change of body weight doesn't restate
+   * what was already done — history is immutable (05, "Сохранение данных").
+   */
+  bodyWeight?: number;
   reps: number;
   rir?: number;
   completedAt: string;

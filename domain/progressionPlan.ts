@@ -49,10 +49,10 @@ export function prescribeNextSession(input: NextSessionInput): ExercisePrescript
   const rir = targetRir(lengthWeeks, weekNumber);
   return [...exercises]
     .sort((a, b) => a.sessionExercise.order - b.sessionExercise.order)
-    .map(({ sessionExercise }) => ({
+    .map(({ sessionExercise, equipment }) => ({
       exerciseId: sessionExercise.exerciseId,
       order: sessionExercise.order,
-      setTargets: nextSetTargets(sessionExercise, logs, settings),
+      setTargets: nextSetTargets(sessionExercise, logs, settings, equipment),
       targetRir: rir,
     }));
 }

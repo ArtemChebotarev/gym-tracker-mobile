@@ -36,6 +36,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { BodyWeightSheet } from '@components/BodyWeightSheet';
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
@@ -55,6 +56,7 @@ import { useExerciseCommand, useSwapExercise } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
+import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import type { WorkoutExercise } from '@usecases/workoutSession';
@@ -71,6 +73,7 @@ export default function TodayScreen() {
   const addExercises = useAddExercises();
   const exerciseCommand = useExerciseCommand();
   const swapExercise = useSwapExercise();
+  const setBodyWeight = useSetBodyWeight();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
@@ -81,6 +84,10 @@ export default function TodayScreen() {
   const [menuExercise, setMenuExercise] = useState<WorkoutExercise | undefined>(undefined);
   const [isExerciseMenuOpen, setIsExerciseMenuOpen] = useState(false);
   const [isReplaceOpen, setIsReplaceOpen] = useState(false);
+  // The body weight sheet (105) opens from the Weight cell of a bodyweight exercise, never by
+  // itself: that cell stays on screen, so closing the sheet costs nothing and is never a dead end.
+  const [bodyWeightText, setBodyWeightText] = useState('');
+  const [isBodyWeightOpen, setIsBodyWeightOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
@@ -107,6 +114,17 @@ export default function TodayScreen() {
     Alert.alert("Couldn't update the exercise", 'Please try again.');
   }
 
+  /** The body weight belongs to the mesocycle, not the session (105). */
+  function saveBodyWeight(bodyWeight: number) {
+    if (model === undefined) {
+      return;
+    }
+    setBodyWeight.mutate(
+      { mesoId: model.mesoId, bodyWeight },
+      { onError: () => Alert.alert("Couldn't save your body weight", 'Please try again.') },
+    );
+  }
+
   function replaceExercise(exercise: WorkoutExercise, exerciseId: string) {
     if (currentSessionId === undefined) {
       return;
@@ -130,6 +148,8 @@ export default function TodayScreen() {
           setIsExerciseMenuOpen(true);
         }}
         isSaving={logSet.isPending || unlogSet.isPending}
+        onBodyWeightChange={saveBodyWeight}
+        onRequestBodyWeight={() => setIsBodyWeightOpen(true)}
         onLogSet={(exercise, setNumber, entry) => {
           if (currentSessionId === undefined) {
             return;
@@ -263,6 +283,18 @@ export default function TodayScreen() {
             { onError: showExerciseError },
           );
         }}
+      />
+      <BodyWeightSheet
+        visible={isBodyWeightOpen}
+        onClose={() => setIsBodyWeightOpen(false)}
+        value={bodyWeightText}
+        onChangeValue={setBodyWeightText}
+        onSave={(bodyWeight) => {
+          saveBodyWeight(bodyWeight);
+          setBodyWeightText('');
+          setIsBodyWeightOpen(false);
+        }}
+        isSaving={setBodyWeight.isPending}
       />
       <WorkoutExercisePickerSheet
         mode="single"

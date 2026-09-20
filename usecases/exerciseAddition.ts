@@ -4,6 +4,7 @@
 // факта"). Orchestration only — targets come from rule 6 (`targetsFromHistory`), the week's RIR
 // from rule 4.
 
+import { toExerciseId, type Equipment } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
@@ -11,6 +12,7 @@ import { targetRir } from '@domain/progressionRir';
 import { nextOrder } from '@domain/sessionExerciseOrder';
 import { ADDED_EXERCISE_SET_COUNT } from '@domain/sessionExerciseSets';
 import { nowAsUtcIso } from '@domain/time';
+import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
 import { targetsFromHistory } from '@usecases/historyTargets';
@@ -19,6 +21,8 @@ import { openSession } from '@usecases/openSession';
 export type ExerciseAdditionDeps = {
   workout: WorkoutStore;
   mesocycleRepo: MesocycleRepository;
+  /** Reads each added exercise's equipment — a pure bodyweight one gets no weight target (105). */
+  exerciseRepo: ExerciseRepository;
 };
 
 export type ExerciseAdditionInput = {
@@ -54,6 +58,10 @@ export async function addExercises(
       throw new NotFoundError(`Mesocycle "${session.mesoId}" does not exist.`);
     }
 
+    const catalog = await deps.exerciseRepo.listByIds(input.exerciseIds.map(toExerciseId));
+    const equipmentById = new Map<string, Equipment | undefined>(
+      catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
+    );
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
     const added: SessionExercise[] = [];
@@ -69,6 +77,7 @@ export async function addExercises(
             session,
             rowCount: ADDED_EXERCISE_SET_COUNT,
             settings: mesocycle.progressionSettings,
+            equipment: equipmentById.get(exerciseId),
             now,
           },
           repos.setLogRepo,

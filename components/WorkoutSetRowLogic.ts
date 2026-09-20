@@ -1,5 +1,7 @@
 // Pure helpers behind components/WorkoutSetRow.tsx — see the code-style skill.
 
+import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
+import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
@@ -14,9 +16,40 @@ export function formatRowWeight(weight: number): string {
 /**
  * What the Weight field starts with (08.7, "Строка подхода"): the **value** of `suggestedWeight`,
  * or empty — the field then shows its `–` placeholder.
+ *
+ * A pure bodyweight exercise has no `suggestedWeight` at all (task 105) and takes the block's body
+ * weight instead: its load is you, and the block already knows what you weigh. A
+ * `bodyweight-weighted` one is ordinary here — its `suggestedWeight` *is* the added weight.
  */
-export function initialWeightText(row: Pick<WorkoutSetRow, 'suggestedWeight'>): string {
+export function initialWeightText(
+  row: Pick<WorkoutSetRow, 'suggestedWeight'>,
+  equipment?: Equipment,
+  bodyWeight?: number,
+): string {
+  if (isPureBodyWeight(equipment)) {
+    return bodyWeight !== undefined ? formatRowWeight(bodyWeight) : '';
+  }
   return row.suggestedWeight !== undefined ? formatRowWeight(row.suggestedWeight) : '';
+}
+
+/**
+ * What a logged row shows in the Weight column. On a `bodyweight-weighted` exercise, the body
+ * weight it was logged with and the weight hung on it, kept apart — `83 (+5)`, not their sum
+ * (task 105, Artem's review: the sum hides both numbers you actually want to read back). With no
+ * body weight recorded there's only the added weight to show. Everything else reads as the plain
+ * number it always did.
+ */
+export function formatLoggedWeight(
+  log: { weight: number; bodyWeight?: number },
+  equipment?: Equipment,
+): string {
+  if (!usesAddedWeight(equipment)) {
+    return formatRowWeight(log.weight);
+  }
+  const added = `(+${formatRowWeight(log.weight)})`;
+  return log.bodyWeight === undefined
+    ? added
+    : `${formatRowWeight(log.bodyWeight)} ${added}`;
 }
 
 /**

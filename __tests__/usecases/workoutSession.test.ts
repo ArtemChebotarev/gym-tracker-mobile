@@ -584,3 +584,32 @@ describe('getWorkoutSession — weight hints', () => {
     expect(model.exercises[0]).not.toHaveProperty('weightHints');
   });
 });
+
+describe('the block body weight on the workout model (task 105)', () => {
+  test('DoD: the model carries the mesocycle body weight, so the rows can fill it in', async () => {
+    const { store, deps } = await setUp();
+    await new InMemoryMesocycleRepository(store).update({ ...mesocycle, bodyWeight: 80 });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.bodyWeight).toBe(80);
+  });
+
+  test('absent until it has been asked for', async () => {
+    const { deps } = await setUp();
+
+    expect((await getWorkoutSession('w2d1', deps)).bodyWeight).toBeUndefined();
+  });
+
+  test('DoD: a logged set keeps the body weight it was logged with', async () => {
+    const { store, deps } = await setUp({
+      logs: [{ ...logOf(bench, 1, 12), weight: 10, bodyWeight: 80 }],
+    });
+    // The block weighs more today than when the set was logged (05, "История неизменяема").
+    await new InMemoryMesocycleRepository(store).update({ ...mesocycle, bodyWeight: 82 });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 10, reps: 12, bodyWeight: 80 });
+  });
+});
