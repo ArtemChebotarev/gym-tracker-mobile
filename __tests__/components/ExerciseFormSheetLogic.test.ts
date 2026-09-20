@@ -1,8 +1,10 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import { canSubmitExerciseForm, isExerciseEditableInSheet } from '@components/ExerciseFormSheetLogic';
+import { STAMPS } from '../fixtures/stamps';
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId('exercise-bench-press'),
     name: 'Bench Press',
     muscleGroup: 'chest',

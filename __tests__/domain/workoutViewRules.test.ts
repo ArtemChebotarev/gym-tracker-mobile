@@ -9,9 +9,11 @@ import {
   unlockingSlot,
   workoutMode,
 } from '@domain/workoutViewRules';
+import { STAMPS } from '../fixtures/stamps';
 
 function session(overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: 'session',
     mesoId: 'meso',
     weekNumber: 1,

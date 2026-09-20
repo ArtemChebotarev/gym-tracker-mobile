@@ -8,6 +8,7 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
 import { DEFAULT_MESO_BUILDER_DRAFT, toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { mesocycleEditingDeps } from '@state/mesocycleStore';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 const mockBack = jest.fn();
 let mockId = '';
@@ -28,6 +29,7 @@ const [FIRST_EXERCISE, SECOND_EXERCISE] = EXERCISE_CATALOG;
 
 function makePlanned(id: string): Mesocycle {
   return {
+    ...STAMPS,
     id,
     name: 'Edit Route Block',
     lengthWeeks: 6,
@@ -101,6 +103,7 @@ describe('EditMesocycleRoute', () => {
 
     await expect(mesocycleEditingDeps.mesocycleRepo.getById(planned.id)).resolves.toEqual({
       ...planned,
+      ...ANY_STAMPS,
       name: 'Renamed Block',
     });
     expect(useDraftStore.getState().mesoBuilder).toEqual(DEFAULT_MESO_BUILDER_DRAFT);

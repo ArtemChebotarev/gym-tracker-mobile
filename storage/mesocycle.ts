@@ -10,6 +10,8 @@ import {
   SET_LOG_COLLECTION,
 } from './collectionNames';
 import type { InMemoryStore } from './store';
+import type { Incoming } from '@domain/timestamps';
+import { stampCreated, stampUpdated } from './timestamps';
 
 export class InMemoryMesocycleRepository implements MesocycleRepository {
   constructor(private readonly store: InMemoryStore) {}
@@ -35,12 +37,12 @@ export class InMemoryMesocycleRepository implements MesocycleRepository {
     return active ? normalizeStoredMesocycle(active) : null;
   }
 
-  async create(mesocycle: Mesocycle): Promise<Mesocycle> {
-    return this.mesocycles.insert(mesocycle);
+  async create(mesocycle: Incoming<Mesocycle>): Promise<Mesocycle> {
+    return this.mesocycles.insert(stampCreated(mesocycle));
   }
 
   async update(mesocycle: Mesocycle): Promise<Mesocycle> {
-    return this.mesocycles.update(mesocycle.id, () => mesocycle);
+    return this.mesocycles.update(mesocycle.id, (stored) => stampUpdated(stored, mesocycle));
   }
 
   /**

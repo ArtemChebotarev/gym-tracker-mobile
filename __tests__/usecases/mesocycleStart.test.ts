@@ -4,6 +4,7 @@ import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositor
 import { createInMemoryMesocycleStartStore } from '@storage/mesocycleStartStore';
 import { InMemoryStore } from '@storage/store';
 import { startMesocycle } from '@usecases/mesocycleStart';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -13,6 +14,7 @@ jest.mock('expo-crypto', () => {
 const NOW = '2026-09-19T09:00:00.000Z';
 
 const planned: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/Lower',
   lengthWeeks: 3,

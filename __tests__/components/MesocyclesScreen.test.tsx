@@ -6,6 +6,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/MesocyclesScreen';
+import { STAMPS } from '../fixtures/stamps';
 
 // SafeAreaView (used by RootScreen and BottomSheet) throws without a SafeAreaProvider ancestor —
 // same fixture RootScreen.test.tsx uses.
@@ -19,6 +20,7 @@ function renderWithSafeArea(ui: ReactElement) {
 }
 
 const ACTIVE: Mesocycle = {
+  ...STAMPS,
   id: 'active',
   name: 'Upper/Lower',
   lengthWeeks: 5,
@@ -31,6 +33,7 @@ const ACTIVE: Mesocycle = {
 };
 
 const PLANNED: Mesocycle = {
+  ...STAMPS,
   id: 'planned',
   name: 'Push/Pull/Legs',
   lengthWeeks: 6,
@@ -43,6 +46,7 @@ const PLANNED: Mesocycle = {
 };
 
 const COMPLETED: Mesocycle = {
+  ...STAMPS,
   id: 'completed',
   name: 'Strength Base',
   lengthWeeks: 4,

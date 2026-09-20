@@ -3,6 +3,7 @@ import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { logSet, type SetRowRef, unlogSet } from '@usecases/setLogging';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -13,6 +14,7 @@ const FIRST_SET_AT = '2026-09-18T10:00:00.000Z';
 const LATER_SET_AT = '2026-09-18T10:05:00.000Z';
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-w1-d1',
   mesoId: 'meso',
   weekNumber: 1,
@@ -23,6 +25,7 @@ const session: Session = {
 };
 
 const benchPress: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench-press',
   sessionId: 'session-w1-d1',
   exerciseId: 'exercise-bench-press',
@@ -69,6 +72,7 @@ describe('logSet', () => {
     const result = await logSet(row(1), { weight: 62.5, reps: 11 }, workout, FIRST_SET_AT);
 
     const expectedLog: SetLog = {
+      ...ANY_STAMPS,
       id: expect.any(String) as string,
       sessionExerciseId: benchPress.id,
       exerciseId: 'exercise-bench-press',

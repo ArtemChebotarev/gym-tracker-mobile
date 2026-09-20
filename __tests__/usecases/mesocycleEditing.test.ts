@@ -5,6 +5,7 @@ import type { WeekPlan } from '@domain/plan';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { editPlannedMesocycle } from '@usecases/mesocycleEditing';
+import { STAMPS } from '../fixtures/stamps';
 
 const originalWeekPlan: WeekPlan = {
   days: [
@@ -15,6 +16,7 @@ const originalWeekPlan: WeekPlan = {
 
 function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
   return {
+    ...STAMPS,
     id: 'meso',
     name: 'Push/Pull',
     lengthWeeks: 6,

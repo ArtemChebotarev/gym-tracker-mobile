@@ -8,9 +8,11 @@ import { InMemorySessionTreeRepository } from '@storage/sessionTree';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { getTodayWorkout, type TodayWorkout, type TodayWorkoutDeps } from '@usecases/todayWorkout';
+import { STAMPS } from '../fixtures/stamps';
 
 function mesocycleOf(id: string, status: Mesocycle['status']): Mesocycle {
   return {
+    ...STAMPS,
     id,
     name: `Meso ${id}`,
     lengthWeeks: 4,
@@ -25,6 +27,7 @@ function mesocycleOf(id: string, status: Mesocycle['status']): Mesocycle {
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `w${week}d${day}`,
     mesoId: 'active',
     weekNumber: week,
@@ -38,6 +41,7 @@ function slotSession(week: number, day: number, overrides: Partial<Session> = {}
 
 function benchOf(session: Session): SessionExercise {
   return {
+    ...STAMPS,
     id: `${session.id}-bench`,
     sessionId: session.id,
     exerciseId: 'bench',

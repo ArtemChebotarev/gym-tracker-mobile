@@ -11,10 +11,10 @@ describe('createInMemoryWorkoutStore', () => {
   test('two workout stores over the same InMemoryStore share its rows', async () => {
     const store = new InMemoryStore();
 
-    await createInMemoryWorkoutStore(store).repos.sessionRepo.create(makeSession());
+    const created = await createInMemoryWorkoutStore(store).repos.sessionRepo.create(makeSession());
 
     await expect(
       createInMemoryWorkoutStore(store).repos.sessionRepo.getById('session-1'),
-    ).resolves.toEqual(makeSession());
+    ).resolves.toEqual(created);
   });
 });

@@ -1,4 +1,5 @@
 import type { Session, SessionExercise, SetLog, SetTarget } from '@domain/execution';
+import { STAMPS } from '../fixtures/stamps';
 
 const benchPressTargetWithoutReps: SetTarget = { setNumber: 3, suggestedWeight: 60 };
 
@@ -13,6 +14,7 @@ const rowTargetWithoutRepsOrWeight: SetTarget = { setNumber: 2 };
 const rowTargets: SetTarget[] = [{ setNumber: 1, targetReps: 10 }, rowTargetWithoutRepsOrWeight];
 
 const benchPressExercise: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench-press',
   sessionId: 'session-1',
   exerciseId: 'exercise-bench-press',
@@ -23,6 +25,7 @@ const benchPressExercise: SessionExercise = {
 };
 
 const rowExercise: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-row',
   sessionId: 'session-1',
   exerciseId: 'exercise-row',
@@ -33,6 +36,7 @@ const rowExercise: SessionExercise = {
 };
 
 const sessionFixture: Session = {
+  ...STAMPS,
   id: 'session-1',
   mesoId: 'meso-1',
   weekNumber: 1,
@@ -44,6 +48,7 @@ const sessionFixture: Session = {
 };
 
 const setLogWithRir: SetLog = {
+  ...STAMPS,
   id: 'set-log-1',
   sessionExerciseId: benchPressExercise.id,
   exerciseId: benchPressExercise.exerciseId,
@@ -55,6 +60,7 @@ const setLogWithRir: SetLog = {
 };
 
 const setLogWithoutRir: SetLog = {
+  ...STAMPS,
   id: 'set-log-2',
   sessionExerciseId: benchPressExercise.id,
   exerciseId: benchPressExercise.exerciseId,

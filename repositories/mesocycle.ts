@@ -1,4 +1,5 @@
 import type { Mesocycle } from '@domain/mesocycle';
+import type { Incoming } from '@domain/timestamps';
 
 /**
  * Access to mesocycles (training blocks).
@@ -25,7 +26,7 @@ export interface MesocycleRepository {
   getActive(): Promise<Mesocycle | null>;
 
   /** Persists a new mesocycle that already carries its domain-generated id. */
-  create(mesocycle: Mesocycle): Promise<Mesocycle>;
+  create(mesocycle: Incoming<Mesocycle>): Promise<Mesocycle>;
 
   /** Persists changes to an existing mesocycle, addressed by its id. */
   update(mesocycle: Mesocycle): Promise<Mesocycle>;

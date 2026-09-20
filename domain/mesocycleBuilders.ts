@@ -16,7 +16,7 @@ import type { WeekPlan } from '@domain/plan';
 import { materializeWeekPlan, type SessionWithExercises } from '@domain/planConverters';
 import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
-import { nowAsUtcIso } from '@domain/time';
+import type { Unsaved } from '@domain/timestamps';
 
 export type ScratchMesocycleDraftInput = {
   name: string;
@@ -48,7 +48,7 @@ export type ScratchMesocycleDraftInput = {
 export function buildScratchMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
-): Mesocycle {
+): Unsaved<Mesocycle> {
   validateMesocycleLengthWeeks(input.lengthWeeks);
   validateMesocycleDaysPerWeek(input.daysPerWeek);
   validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
@@ -62,7 +62,6 @@ export function buildScratchMesocycleDraft(
     origin: { type: 'scratch' },
     progressionSettings: { ...progressionSettings },
     weekPlan: input.weekPlan,
-    createdAt: nowAsUtcIso(),
   };
 }
 

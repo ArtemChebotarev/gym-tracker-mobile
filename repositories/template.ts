@@ -1,4 +1,5 @@
 import type { MesoTemplate } from '@domain/plan';
+import type { Incoming } from '@domain/timestamps';
 
 /**
  * Access to the mesocycle template catalog and to the user's custom
@@ -32,7 +33,7 @@ export interface TemplateRepository {
    * `MesoTemplate` (id already generated) — this method only writes it, it
    * does not construct or validate the entity.
    */
-  create(template: MesoTemplate): Promise<MesoTemplate>;
+  create(template: Incoming<MesoTemplate>): Promise<MesoTemplate>;
 
   /**
    * Replaces an existing template with the given entity (matched by `id`).

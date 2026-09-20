@@ -7,6 +7,7 @@ import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { skipWorkout, type WorkoutSkipDeps } from '@usecases/workoutSkip';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -14,6 +15,7 @@ jest.mock('expo-crypto', () => {
 });
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Full body',
   lengthWeeks: 4,
@@ -26,6 +28,7 @@ const mesocycle: Mesocycle = {
 };
 
 const weekOne: Session = {
+  ...STAMPS,
   id: 'session-w1',
   mesoId: 'meso',
   weekNumber: 1,
@@ -36,6 +39,7 @@ const weekOne: Session = {
 };
 
 const bench: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench',
   sessionId: 'session-w1',
   exerciseId: 'bench',
@@ -46,6 +50,7 @@ const bench: SessionExercise = {
 };
 
 const log: SetLog = {
+  ...STAMPS,
   id: 'log-1',
   sessionExerciseId: 'session-exercise-bench',
   exerciseId: 'bench',
@@ -72,6 +77,7 @@ async function setUp(
   const exerciseRepo = new InMemoryExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   const catalogBench: Exercise = {
+    ...STAMPS,
     id: toExerciseId('bench'),
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -107,7 +113,7 @@ describe('skipWorkout', () => {
 
     const result = await skipWorkout('session-w1', deps);
 
-    expect(result.session).toEqual({ ...weekOne, status: 'skipped' });
+    expect(result.session).toEqual({ ...weekOne, ...ANY_STAMPS, status: 'skipped' });
     expect(result.nextSession).toMatchObject({
       weekNumber: 2,
       dayNumber: 1,
@@ -152,6 +158,7 @@ describe('skipWorkout', () => {
 
     expect(result.session).toEqual({
       ...inProgress,
+      ...ANY_STAMPS,
       status: 'completed',
       completedAt: '2026-09-18T10:00:00.000Z',
     });

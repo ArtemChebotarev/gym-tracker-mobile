@@ -8,6 +8,8 @@ import type {
 import { SESSION_EXERCISE_COLLECTION, SET_LOG_COLLECTION } from './collectionNames';
 import { readExercisePerformances } from './exerciseHistory';
 import type { InMemoryStore } from './store';
+import type { Incoming } from '@domain/timestamps';
+import { stampCreated, stampUpdated } from './timestamps';
 
 export class InMemorySetLogRepository implements SetLogRepository {
   constructor(private readonly store: InMemoryStore) {}
@@ -95,12 +97,12 @@ export class InMemorySetLogRepository implements SetLogRepository {
     return [];
   }
 
-  async create(setLog: SetLog): Promise<SetLog> {
-    return this.setLogs.insert(setLog);
+  async create(setLog: Incoming<SetLog>): Promise<SetLog> {
+    return this.setLogs.insert(stampCreated(setLog));
   }
 
   async update(setLog: SetLog): Promise<SetLog> {
-    return this.setLogs.update(setLog.id, () => setLog);
+    return this.setLogs.update(setLog.id, (stored) => stampUpdated(stored, setLog));
   }
 
   async deleteById(id: string): Promise<void> {

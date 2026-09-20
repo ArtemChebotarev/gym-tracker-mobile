@@ -1,3 +1,5 @@
+import type { Timestamps } from './timestamps';
+
 // Mesocycle — a training block. See 02 · Domain Model ("Mesocycle") and
 // 03 · Progression Engine ("progressionSettings").
 
@@ -76,7 +78,7 @@ export const defaultProgressionSettings: ProgressionSettings = {
  *   Questions & Decisions Log, "Planned-мезоцикл хранит свой черновичный weekPlan прямо на
  *   себе" — a deliberate, temporary exception to 02 · Domain Model's "WeekPlan — не таблица").
  */
-export type Mesocycle = {
+export type Mesocycle = Timestamps & {
   id: string;
   name: string;
   /** 3..8, deload week included. */
@@ -101,6 +103,5 @@ export type Mesocycle = {
    * is `active`.
    */
   weekPlan?: WeekPlan;
-  createdAt: string;
   completedAt?: string;
 };

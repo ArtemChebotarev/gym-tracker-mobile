@@ -1,3 +1,5 @@
+import type { Timestamps } from './timestamps';
+
 /**
  * A single exercise slot within a `WeekPlanDay`.
  *
@@ -40,7 +42,7 @@ export type MesoTemplateSource = 'catalog' | 'custom';
  * hidden; `source: 'custom'` ones are saved by the user from their own
  * mesocycles and are freely editable.
  */
-export type MesoTemplate = {
+export type MesoTemplate = Timestamps & {
   id: string;
   name: string;
   source: MesoTemplateSource;
@@ -48,6 +50,4 @@ export type MesoTemplate = {
   defaultLengthWeeks: number;
   weekPlan: WeekPlan;
   isHidden: boolean;
-  /** UTC ISO string, see `domain/time.ts`. */
-  createdAt: string;
 };

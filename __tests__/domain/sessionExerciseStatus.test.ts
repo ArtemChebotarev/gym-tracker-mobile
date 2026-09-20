@@ -1,5 +1,6 @@
 import type { SessionExercise, SetLog } from '@domain/execution';
 import { statusFromLogs } from '@domain/sessionExerciseStatus';
+import { STAMPS } from '../fixtures/stamps';
 
 const benchPress: Pick<SessionExercise, 'id' | 'setTargets'> = {
   id: 'session-exercise-bench-press',
@@ -8,6 +9,7 @@ const benchPress: Pick<SessionExercise, 'id' | 'setTargets'> = {
 
 function logFor(setNumber: number, sessionExerciseId = benchPress.id): SetLog {
   return {
+    ...STAMPS,
     id: `log-${sessionExerciseId}-${setNumber}`,
     sessionExerciseId,
     exerciseId: 'exercise-bench-press',

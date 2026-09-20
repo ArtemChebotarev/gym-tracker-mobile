@@ -3,6 +3,7 @@ import { ConflictError } from '@domain/errors';
 
 import { makeCatalogExercise, makeCustomExercise } from './fixtures';
 import { type RepositoryHarness, useRepositories } from './harness';
+import { withoutStamps } from '../fixtures/stamps';
 
 // MuscleGroupRepository and ExerciseRepository — see 07 · Persistence Layer Contract,
 // "Репозитории и их операции", and repositories/catalog.ts for the contracts themselves.
@@ -40,10 +41,10 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
       await exerciseRepo.seedCatalog(1, [benchPress, legPress]);
       await exerciseRepo.createCustom(customCurl);
 
-      await expect(exerciseRepo.getAll()).resolves.toEqual(
+      expect(withoutStamps(await exerciseRepo.getAll())).toEqual(
         expect.arrayContaining([benchPress, legPress, customCurl]),
       );
-      await expect(exerciseRepo.getById(benchPress.id)).resolves.toEqual(benchPress);
+      expect(withoutStamps((await exerciseRepo.getById(benchPress.id))!)).toEqual(benchPress);
       await expect(exerciseRepo.getById(toExerciseId('missing'))).resolves.toBeNull();
     });
 
@@ -67,7 +68,7 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
       await exerciseRepo.seedCatalog(1, [benchPress, legPress]);
       await exerciseRepo.createCustom(customCurl);
 
-      await expect(exerciseRepo.filterByMuscleGroup('chest')).resolves.toEqual([benchPress]);
+      expect(withoutStamps(await exerciseRepo.filterByMuscleGroup('chest'))).toEqual([benchPress]);
       await expect(exerciseRepo.filterByMuscleGroup('calves')).resolves.toEqual([]);
     });
 
@@ -89,9 +90,9 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
 
     test('updateCustom replaces a custom exercise', async () => {
       const { exerciseRepo } = repositories();
-      await exerciseRepo.createCustom(customCurl);
+      const stored = await exerciseRepo.createCustom(customCurl);
 
-      const updated = await exerciseRepo.updateCustom({ ...customCurl, name: 'Renamed Curl' });
+      const updated = await exerciseRepo.updateCustom({ ...stored, name: 'Renamed Curl' });
 
       expect(updated.name).toBe('Renamed Curl');
       await expect(exerciseRepo.getById(customCurl.id)).resolves.toEqual(updated);
@@ -100,11 +101,12 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
     test('updateCustom rejects editing a catalog exercise, leaving it untouched', async () => {
       const { exerciseRepo } = repositories();
       await exerciseRepo.seedCatalog(1, [benchPress]);
+      const stored = (await exerciseRepo.getById(benchPress.id))!;
 
       await expect(
-        exerciseRepo.updateCustom({ ...benchPress, name: 'Hacked Bench Press' }),
+        exerciseRepo.updateCustom({ ...stored, name: 'Hacked Bench Press' }),
       ).rejects.toBeInstanceOf(ConflictError);
-      await expect(exerciseRepo.getById(benchPress.id)).resolves.toEqual(benchPress);
+      expect(withoutStamps((await exerciseRepo.getById(benchPress.id))!)).toEqual(benchPress);
     });
 
     test('createCustom rejects a duplicate id', async () => {
@@ -125,8 +127,8 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
 
       await expect(exerciseRepo.getAll()).resolves.toHaveLength(3);
       await expect(exerciseRepo.getById(benchPress.id)).resolves.toMatchObject({ isHidden: true });
-      await expect(exerciseRepo.getById(legPress.id)).resolves.toEqual(legPress);
-      await expect(exerciseRepo.getById(customCurl.id)).resolves.toEqual(customCurl);
+      expect(withoutStamps((await exerciseRepo.getById(legPress.id))!)).toEqual(legPress);
+      expect(withoutStamps((await exerciseRepo.getById(customCurl.id))!)).toEqual(customCurl);
     });
   });
 }

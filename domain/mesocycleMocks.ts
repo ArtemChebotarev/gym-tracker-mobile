@@ -12,6 +12,7 @@
 
 import type { Mesocycle } from './mesocycle';
 import { defaultProgressionSettings } from './mesocycle';
+import type { Unsaved } from '@domain/timestamps';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -25,7 +26,7 @@ export const MOCK_MESOCYCLE_IDS = {
   completed: 'mock-mesocycle-completed',
 } as const;
 
-export function buildMockMesocycles(now: Date): Mesocycle[] {
+export function buildMockMesocycles(now: Date): Unsaved<Mesocycle>[] {
   return [
     {
       id: MOCK_MESOCYCLE_IDS.planned,
@@ -53,7 +54,6 @@ export function buildMockMesocycles(now: Date): Mesocycle[] {
           },
         ],
       },
-      createdAt: daysBefore(now, 2),
     },
     {
       id: MOCK_MESOCYCLE_IDS.completed,
@@ -64,7 +64,6 @@ export function buildMockMesocycles(now: Date): Mesocycle[] {
       status: 'completed',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
-      createdAt: daysBefore(now, 62),
       completedAt: daysBefore(now, 32),
     },
   ];

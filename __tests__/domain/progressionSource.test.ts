@@ -1,5 +1,6 @@
 import type { Session, SessionStatus } from '@domain/execution';
 import { resolveBaseSession } from '@domain/progressionSource';
+import { STAMPS } from '../fixtures/stamps';
 
 function session(
   weekNumber: number,
@@ -7,6 +8,7 @@ function session(
   overrides: Partial<Session> = {},
 ): Session {
   return {
+    ...STAMPS,
     id: `meso-1-w${weekNumber}-d1`,
     mesoId: 'meso-1',
     weekNumber,

@@ -1,7 +1,9 @@
 import type { Session } from '@domain/execution';
+import type { Incoming } from '@domain/timestamps';
 import type { SessionRepository } from '@repositories/session';
 
 import { SESSION_COLLECTION } from './collectionNames';
+import { stampCreated, stampUpdated } from './timestamps';
 import type { InMemoryStore } from './store';
 
 export class InMemorySessionRepository implements SessionRepository {
@@ -47,15 +49,15 @@ export class InMemorySessionRepository implements SessionRepository {
     return inProgress ?? null;
   }
 
-  async create(session: Session): Promise<Session> {
-    return this.sessions.insert(session);
+  async create(session: Incoming<Session>): Promise<Session> {
+    return this.sessions.insert(stampCreated(session));
   }
 
-  async createMany(sessions: readonly Session[]): Promise<Session[]> {
-    return Promise.all(sessions.map((session) => this.sessions.insert(session)));
+  async createMany(sessions: readonly Incoming<Session>[]): Promise<Session[]> {
+    return Promise.all(sessions.map((session) => this.sessions.insert(stampCreated(session))));
   }
 
   async update(session: Session): Promise<Session> {
-    return this.sessions.update(session.id, () => session);
+    return this.sessions.update(session.id, (stored) => stampUpdated(stored, session));
   }
 }

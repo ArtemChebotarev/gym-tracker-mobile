@@ -4,9 +4,11 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { deletePlannedMesocycle, listMesocycles } from '@usecases/mesocycleList';
+import { STAMPS } from '../fixtures/stamps';
 
 function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
   return {
+    ...STAMPS,
     id: 'meso',
     name: 'Meso',
     lengthWeeks: 5,

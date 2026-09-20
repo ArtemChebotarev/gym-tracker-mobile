@@ -1,6 +1,7 @@
 import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { nextSetTarget, nextSetTargets, nextTargetReps } from '@domain/progressionReps';
+import { STAMPS } from '../fixtures/stamps';
 
 const SOURCE_ID = 'session-exercise-bench-press';
 
@@ -10,6 +11,7 @@ function source(setTargets: SetTarget[]): Pick<SessionExercise, 'id' | 'setTarge
 
 function log(setNumber: number, reps: number, weight = 60): SetLog {
   return {
+    ...STAMPS,
     id: `set-log-${setNumber}`,
     sessionExerciseId: SOURCE_ID,
     exerciseId: 'exercise-bench-press',

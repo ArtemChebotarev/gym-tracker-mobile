@@ -1,7 +1,9 @@
 import type { Exercise, MuscleGroup } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
+import { STAMPS } from '../fixtures/stamps';
 
 const catalogExerciseFixture: Exercise = {
+  ...STAMPS,
   id: toExerciseId('exercise-bench-press'),
   name: 'Bench Press',
   muscleGroup: 'chest',
@@ -11,6 +13,7 @@ const catalogExerciseFixture: Exercise = {
 };
 
 const customExerciseFixture: Exercise = {
+  ...STAMPS,
   id: toExerciseId('exercise-custom-1'),
   name: 'My Garage Press',
   muscleGroup: 'hamstrings',

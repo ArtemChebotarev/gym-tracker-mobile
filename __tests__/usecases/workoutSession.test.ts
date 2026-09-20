@@ -17,6 +17,7 @@ import {
   getWorkoutSlot,
   type WorkoutSessionDeps,
 } from '@usecases/workoutSession';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -26,6 +27,7 @@ jest.mock('expo-crypto', () => {
 const NOW = '2026-09-18T11:00:00.000Z';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/lower',
   lengthWeeks: 4,
@@ -46,6 +48,7 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `w${week}d${day}`,
     mesoId: 'meso',
     weekNumber: week,
@@ -65,6 +68,7 @@ function planned(
   overrides: Partial<SessionExercise> = {},
 ): SessionExercise {
   return {
+    ...STAMPS,
     id: `${sessionId}-${exerciseId}`,
     sessionId,
     exerciseId,
@@ -82,6 +86,7 @@ function planned(
 
 function logOf(sessionExercise: SessionExercise, setNumber: number, reps: number): SetLog {
   return {
+    ...STAMPS,
     id: `${sessionExercise.id}-log-${setNumber}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,

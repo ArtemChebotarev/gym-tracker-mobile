@@ -6,6 +6,7 @@ import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { addExercises, type ExerciseAdditionDeps } from '@usecases/exerciseAddition';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -17,6 +18,7 @@ const CURL = 'exercise-curl';
 
 /** 5 weeks: working weeks at RIR 3, 2, 1, 0 — week 2 is RIR 2. */
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/Lower',
   lengthWeeks: 5,
@@ -29,6 +31,7 @@ const mesocycle: Mesocycle = {
 };
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-w2',
   mesoId: 'meso',
   weekNumber: 2,
@@ -40,6 +43,7 @@ const session: Session = {
 };
 
 const bench: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench',
   sessionId: 'session-w2',
   exerciseId: 'exercise-bench',
@@ -87,6 +91,7 @@ async function curlPerformedIn(
   await deps.workout.repos.sessionExerciseRepo.create(pastExercise);
   for (const [index, rep] of reps.entries()) {
     const log: SetLog = {
+      ...STAMPS,
       id: `log-${mesoId}-${index + 1}`,
       sessionExerciseId: pastExercise.id,
       exerciseId: CURL,

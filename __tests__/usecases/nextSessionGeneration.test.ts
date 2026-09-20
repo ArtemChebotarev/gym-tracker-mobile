@@ -8,6 +8,7 @@ import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -16,6 +17,7 @@ jest.mock('expo-crypto', () => {
 
 /** 5 weeks: working weeks 1–4 at RIR 3, 2, 1, 0; week 5 is deload. */
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/Lower',
   lengthWeeks: 5,
@@ -35,6 +37,7 @@ const catalog: [string, MuscleGroup][] = [
 
 function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `session-w${weekNumber}`,
     mesoId: 'meso',
     weekNumber,
@@ -49,6 +52,7 @@ function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Sess
 
 function makeExercise(weekNumber: number, exerciseId: string, order: number): SessionExercise {
   return {
+    ...STAMPS,
     id: `session-exercise-w${weekNumber}-${exerciseId}`,
     sessionId: `session-w${weekNumber}`,
     exerciseId,
@@ -64,6 +68,7 @@ function makeExercise(weekNumber: number, exerciseId: string, order: number): Se
 
 function logsFor(sessionExercise: SessionExercise, reps: number[], weight: number): SetLog[] {
   return reps.map((rep, index) => ({
+    ...STAMPS,
     id: `log-${sessionExercise.id}-${index + 1}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,
@@ -87,6 +92,7 @@ async function setUp(
   await exerciseRepo.seedCatalog(
     1,
     catalog.map(([id, muscleGroup]): Exercise => ({
+      ...STAMPS,
       id: toExerciseId(id),
       name: id,
       muscleGroup,

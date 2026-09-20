@@ -32,7 +32,6 @@ beforeAll(async () => {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
-    createdAt: '2026-09-01T08:00:00.000Z',
   });
   await new InMemoryExerciseRepository(appStore).createCustom({
     id: toExerciseId('hook-exercise'),

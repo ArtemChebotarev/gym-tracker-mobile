@@ -3,8 +3,10 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
 import { MesoEditorDaysStep, type MesoEditorDaysStepProps } from '@components/MesoEditorDaysStep';
+import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
+  ...STAMPS,
   id: toExerciseId('bench-press'),
   name: 'Bench Press',
   muscleGroup: 'chest',
@@ -13,6 +15,7 @@ const BENCH_PRESS: Exercise = {
 };
 
 const SQUAT: Exercise = {
+  ...STAMPS,
   id: toExerciseId('squat'),
   name: 'Squat',
   muscleGroup: 'quads',

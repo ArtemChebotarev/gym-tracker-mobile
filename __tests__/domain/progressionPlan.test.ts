@@ -3,6 +3,7 @@ import type { SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { SourceExercise } from '@domain/progression';
 import { isDeloadWeek, prescribeNextSession, type NextSessionInput } from '@domain/progressionPlan';
+import { STAMPS } from '../fixtures/stamps';
 
 const threeSets: SetTarget[] = [
   { setNumber: 1, targetReps: 10, suggestedWeight: 60 },
@@ -22,6 +23,7 @@ function sourceExercise(
 
 function log(sessionExerciseId: string, setNumber: number, weight: number, reps: number): SetLog {
   return {
+    ...STAMPS,
     id: `${sessionExerciseId}-log-${setNumber}`,
     sessionExerciseId,
     exerciseId: `exercise-${sessionExerciseId}`,

@@ -9,6 +9,7 @@ import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { getMesoGrid, type MesoGridDeps } from '@usecases/mesoGrid';
 import { finishSession } from '@usecases/sessionFinish';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -18,6 +19,7 @@ jest.mock('expo-crypto', () => {
 const NOW = '2026-09-18T11:00:00.000Z';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Four days',
   lengthWeeks: 4,
@@ -31,6 +33,7 @@ const mesocycle: Mesocycle = {
 
 function weekOneDay(day: number): Session {
   return {
+    ...STAMPS,
     id: `w1d${day}`,
     mesoId: 'meso',
     weekNumber: 1,
@@ -43,6 +46,7 @@ function weekOneDay(day: number): Session {
 
 function exerciseOf(day: number, status: SessionExercise['status']): SessionExercise {
   return {
+    ...STAMPS,
     id: `w1d${day}-press`,
     sessionId: `w1d${day}`,
     exerciseId: 'press',

@@ -1,7 +1,9 @@
 import type { SessionExercise } from '@domain/execution';
+import type { Incoming } from '@domain/timestamps';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 
 import { SESSION_EXERCISE_COLLECTION } from './collectionNames';
+import { stampCreated, stampUpdated } from './timestamps';
 import type { InMemoryStore } from './store';
 
 export class InMemorySessionExerciseRepository implements SessionExerciseRepository {
@@ -15,21 +17,29 @@ export class InMemorySessionExerciseRepository implements SessionExerciseReposit
     return this.sessionExercises.find((exercise) => exercise.sessionId === sessionId);
   }
 
-  async create(sessionExercise: SessionExercise): Promise<SessionExercise> {
-    return this.sessionExercises.insert(sessionExercise);
+  async create(sessionExercise: Incoming<SessionExercise>): Promise<SessionExercise> {
+    return this.sessionExercises.insert(stampCreated(sessionExercise));
   }
 
-  async createMany(sessionExercises: readonly SessionExercise[]): Promise<SessionExercise[]> {
-    return Promise.all(sessionExercises.map((exercise) => this.sessionExercises.insert(exercise)));
+  async createMany(
+    sessionExercises: readonly Incoming<SessionExercise>[],
+  ): Promise<SessionExercise[]> {
+    return Promise.all(
+      sessionExercises.map((exercise) => this.sessionExercises.insert(stampCreated(exercise))),
+    );
   }
 
   async update(sessionExercise: SessionExercise): Promise<SessionExercise> {
-    return this.sessionExercises.update(sessionExercise.id, () => sessionExercise);
+    return this.sessionExercises.update(sessionExercise.id, (stored) =>
+      stampUpdated(stored, sessionExercise),
+    );
   }
 
   async updateMany(sessionExercises: readonly SessionExercise[]): Promise<SessionExercise[]> {
     return Promise.all(
-      sessionExercises.map((exercise) => this.sessionExercises.update(exercise.id, () => exercise)),
+      sessionExercises.map((exercise) =>
+        this.sessionExercises.update(exercise.id, (stored) => stampUpdated(stored, exercise)),
+      ),
     );
   }
 

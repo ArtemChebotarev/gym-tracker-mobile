@@ -24,10 +24,10 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
       const { mesocycleRepo } = repositories();
       const mesocycle = makeMesocycle();
 
-      await mesocycleRepo.create(mesocycle);
+      const created = await mesocycleRepo.create(mesocycle);
 
-      await expect(mesocycleRepo.getById(mesocycle.id)).resolves.toEqual(mesocycle);
-      await expect(mesocycleRepo.getAll()).resolves.toEqual([mesocycle]);
+      await expect(mesocycleRepo.getById(mesocycle.id)).resolves.toEqual(created);
+      await expect(mesocycleRepo.getAll()).resolves.toEqual([created]);
       await expect(mesocycleRepo.getById('missing')).resolves.toBeNull();
     });
 
@@ -37,19 +37,20 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
 
       await expect(mesocycleRepo.getActive()).resolves.toBeNull();
 
-      const active = makeMesocycle({ id: 'meso-active', status: 'active' });
-      await mesocycleRepo.create(active);
+      const active = await mesocycleRepo.create(makeMesocycle({ id: 'meso-active', status: 'active' }));
 
       await expect(mesocycleRepo.getActive()).resolves.toEqual(active);
     });
 
     test('update replaces the stored mesocycle', async () => {
       const { mesocycleRepo } = repositories();
-      await mesocycleRepo.create(makeMesocycle());
+      const stored = await mesocycleRepo.create(makeMesocycle());
 
-      const updated = await mesocycleRepo.update(
-        makeMesocycle({ status: 'completed', completedAt: '2026-02-16T00:00:00.000Z' }),
-      );
+      const updated = await mesocycleRepo.update({
+        ...stored,
+        status: 'completed',
+        completedAt: '2026-02-16T00:00:00.000Z',
+      });
 
       expect(updated.status).toBe('completed');
       await expect(mesocycleRepo.getById('meso-a')).resolves.toEqual(updated);
@@ -63,10 +64,10 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
       await setLogRepo.create(makeSetLog());
 
       // A sibling mesocycle's data must survive the cascade untouched.
-      const otherMesocycle = makeMesocycle({ id: 'meso-b' });
-      const otherSession = makeSession({ id: 'session-2', mesoId: 'meso-b' });
-      await mesocycleRepo.create(otherMesocycle);
-      await sessionRepo.create(otherSession);
+      const otherMesocycle = await mesocycleRepo.create(makeMesocycle({ id: 'meso-b' }));
+      const otherSession = await sessionRepo.create(
+        makeSession({ id: 'session-2', mesoId: 'meso-b' }),
+      );
 
       await mesocycleRepo.deleteWithChildren('meso-a');
 
@@ -81,16 +82,16 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
 
     test('deleteWithChildren rejects with NotFoundError for a mesocycle that does not exist', async () => {
       const { mesocycleRepo, sessionRepo } = repositories();
-      await mesocycleRepo.create(makeMesocycle());
-      await sessionRepo.create(makeSession());
+      const mesocycle = await mesocycleRepo.create(makeMesocycle());
+      const session = await sessionRepo.create(makeSession());
 
       await expect(mesocycleRepo.deleteWithChildren('missing')).rejects.toBeInstanceOf(
         NotFoundError,
       );
 
       // Nothing of the mesocycle it never found may be gone either.
-      await expect(mesocycleRepo.getById('meso-a')).resolves.toEqual(makeMesocycle());
-      await expect(sessionRepo.getById('session-1')).resolves.toEqual(makeSession());
+      await expect(mesocycleRepo.getById('meso-a')).resolves.toEqual(mesocycle);
+      await expect(sessionRepo.getById('session-1')).resolves.toEqual(session);
     });
   });
 }

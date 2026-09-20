@@ -4,11 +4,13 @@ import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryStore } from '@storage/store';
 import { loadExerciseOverview } from '@usecases/exerciseOverview';
+import { STAMPS } from '../fixtures/stamps';
 
 const BENCH = toExerciseId('bench-press');
 
 function exercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: BENCH,
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -57,6 +59,7 @@ describe('loadExerciseOverview', () => {
         [
           {
             session: {
+              ...STAMPS,
               id: 'session-1',
               mesoId: 'meso-1',
               weekNumber: 2,
@@ -68,6 +71,7 @@ describe('loadExerciseOverview', () => {
             },
             setLogs: [
               {
+                ...STAMPS,
                 id: 'log-1',
                 sessionExerciseId: 'se-1',
                 exerciseId: BENCH,

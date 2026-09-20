@@ -1,11 +1,13 @@
 import { isConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { assertSessionOpen, decideSessionStart, isFinalSession } from '@domain/sessionLifecycle';
+import { STAMPS } from '../fixtures/stamps';
 
 const NOW = '2026-09-18T10:00:00.000Z';
 
 function makeSession(overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: 'session-w1-d1',
     mesoId: 'meso',
     weekNumber: 1,

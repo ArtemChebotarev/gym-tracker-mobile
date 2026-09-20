@@ -6,6 +6,7 @@ import {
   validateSingleActiveMesocycle,
   validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
+import { STAMPS } from '../fixtures/stamps';
 
 const NOW = new Date('2026-09-16T12:00:00.000Z');
 
@@ -29,7 +30,9 @@ describe('buildMockMesocycles', () => {
   test('every mock satisfies the domain invariants', () => {
     const mocks = buildMockMesocycles(NOW);
 
-    expect(() => validateSingleActiveMesocycle(mocks)).not.toThrow();
+    expect(() =>
+      validateSingleActiveMesocycle(mocks.map((mesocycle) => ({ ...STAMPS, ...mesocycle }))),
+    ).not.toThrow();
     for (const mesocycle of mocks) {
       expect(() => validateMesocycleLengthWeeks(mesocycle.lengthWeeks)).not.toThrow();
       expect(() => validateMesocycleDaysPerWeek(mesocycle.daysPerWeek)).not.toThrow();

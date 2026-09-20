@@ -3,11 +3,13 @@ import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import { loadExerciseHistory } from '@usecases/exerciseHistory';
+import { STAMPS } from '../fixtures/stamps';
 
 const BENCH = toExerciseId('bench-press');
 
 const PERFORMANCE: ExerciseHistoryPerformance = {
   mesocycle: {
+    ...STAMPS,
     id: 'meso-1',
     name: 'Upper/Lower',
     lengthWeeks: 4,
@@ -18,6 +20,7 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
     createdAt: '2026-08-01T08:00:00.000Z',
   },
   session: {
+    ...STAMPS,
     id: 'session-1',
     mesoId: 'meso-1',
     weekNumber: 2,
@@ -29,6 +32,7 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
   },
   setLogs: [
     {
+      ...STAMPS,
       id: 'log-1',
       sessionExerciseId: 'se-1',
       exerciseId: BENCH,

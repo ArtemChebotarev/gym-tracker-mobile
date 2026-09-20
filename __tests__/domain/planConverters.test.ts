@@ -2,6 +2,7 @@ import type { Session, SessionExercise } from '@domain/execution';
 import type { WeekPlan, WeekPlanDay, WeekPlanExercise } from '@domain/plan';
 import type { SessionWithExercises } from '@domain/planConverters';
 import { extractWeekPlan, materializeWeekPlan } from '@domain/planConverters';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -116,6 +117,7 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
 
   test('drops execution fields when extracting back to a week plan', () => {
     const completedSession: Session = {
+      ...STAMPS,
       id: 'session-completed',
       mesoId: 'meso-1',
       weekNumber: 1,
@@ -131,6 +133,7 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
     };
 
     const completedExercise: SessionExercise = {
+      ...STAMPS,
       id: 'session-exercise-completed',
       sessionId: completedSession.id,
       exerciseId: benchPress.exerciseId,

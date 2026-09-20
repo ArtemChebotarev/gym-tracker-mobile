@@ -7,8 +7,10 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesoBuilderDraft } from '@state/draftStore';
 import { mesocycleEditingDeps } from '@state/mesocycleStore';
 import { useEditPlannedMesocycleDraft } from '@state/useEditPlannedMesocycleDraft';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 const PLANNED: Mesocycle = {
+  ...STAMPS,
   id: 'edit-hook-planned',
   name: 'Push/Pull',
   lengthWeeks: 6,
@@ -62,6 +64,7 @@ describe('useEditPlannedMesocycleDraft', () => {
     const saved = await mesocycleEditingDeps.mesocycleRepo.getById(PLANNED.id);
     expect(saved).toEqual({
       ...PLANNED,
+      ...ANY_STAMPS,
       name: 'Push/Pull v2',
       lengthWeeks: 5,
       daysPerWeek: 2,

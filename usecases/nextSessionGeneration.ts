@@ -95,7 +95,7 @@ export async function generateNextSession(
       settings: mesocycle.progressionSettings,
     }),
   });
-  await repos.sessionRepo.create(draft.session);
+  const created = await repos.sessionRepo.create(draft.session);
   await repos.sessionExerciseRepo.createMany(draft.sessionExercises);
-  return draft.session;
+  return created;
 }

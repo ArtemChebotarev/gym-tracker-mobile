@@ -16,6 +16,7 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { ensureExerciseCatalogSeeded } from '@state/exerciseLibraryStore';
 import { mesocycleListDeps } from '@state/mesocycleStore';
 import { workoutStore } from '@state/workoutStore';
+import { STAMPS } from './stamps';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MINUTE_MS = 60 * 1000;
@@ -43,6 +44,7 @@ function exercisesOf(
   reps: number,
 ): SessionExercise[] {
   return EXERCISES.map((exerciseId, index) => ({
+    ...STAMPS,
     id: `${sessionId}-${exerciseId}`,
     sessionId,
     exerciseId,
@@ -61,6 +63,7 @@ function logsOf(
   completedAt: string,
 ): SetLog[] {
   return sessionExercise.setTargets.slice(0, count).map(({ setNumber }) => ({
+    ...STAMPS,
     id: `${sessionExercise.id}-log-${setNumber}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,
@@ -76,6 +79,7 @@ function buildWorkoutFixture(now: Date) {
   const mesoId = WORKOUT_FIXTURE_IDS.mesocycle;
 
   const mesocycle: Mesocycle = {
+    ...STAMPS,
     id: mesoId,
     name: 'Upper/Lower',
     lengthWeeks: 5,
@@ -93,6 +97,7 @@ function buildWorkoutFixture(now: Date) {
 
   const sessions: Session[] = [
     {
+      ...STAMPS,
       id: WORKOUT_FIXTURE_IDS.completed,
       mesoId,
       weekNumber: 1,
@@ -104,6 +109,7 @@ function buildWorkoutFixture(now: Date) {
       completedAt: weekAgo.toISOString(),
     },
     {
+      ...STAMPS,
       id: WORKOUT_FIXTURE_IDS.live,
       mesoId,
       weekNumber: 2,

@@ -29,36 +29,34 @@ export function describeTransactionContract(harness: RepositoryHarness): void {
     test('writes made inside a transaction are visible through repos once it resolves', async () => {
       const { workoutStore } = repositories();
 
-      await workoutStore.transaction(async (repos) => {
-        await repos.sessionRepo.create(makeSession());
+      const written = await workoutStore.transaction(async (repos) => {
+        const session = await repos.sessionRepo.create(makeSession());
         await repos.sessionExerciseRepo.create(makeSessionExercise());
-        await repos.setLogRepo.create(makeSetLog());
+        return { session, setLog: await repos.setLogRepo.create(makeSetLog()) };
       });
 
       await expect(workoutStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(
-        makeSession(),
+        written.session,
       );
       await expect(workoutStore.repos.setLogRepo.listBySessionId('session-1')).resolves.toEqual([
-        makeSetLog(),
+        written.setLog,
       ]);
     });
 
     test('a failure partway through rolls back writes across every workout repository', async () => {
       const { workoutStore } = repositories();
-      await workoutStore.repos.sessionRepo.create(makeSession());
+      const session = await workoutStore.repos.sessionRepo.create(makeSession());
       await workoutStore.repos.sessionExerciseRepo.create(makeSessionExercise());
 
       await expect(
         workoutStore.transaction(async (repos) => {
-          await repos.sessionRepo.update(makeSession({ status: 'in_progress' }));
+          await repos.sessionRepo.update({ ...session, status: 'in_progress' });
           await repos.setLogRepo.create(makeSetLog());
           throw new Error('failure partway through');
         }),
       ).rejects.toThrow('failure partway through');
 
-      await expect(workoutStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(
-        makeSession(),
-      );
+      await expect(workoutStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(session);
       await expect(workoutStore.repos.setLogRepo.listBySessionId('session-1')).resolves.toEqual([]);
     });
   });
@@ -68,16 +66,18 @@ export function describeTransactionContract(harness: RepositoryHarness): void {
 
     test('writes made inside a transaction are visible through repos once it resolves', async () => {
       const { mesocycleStartStore } = repositories();
-      const planned = makeMesocycle({ status: 'planned' });
-      await mesocycleStartStore.repos.mesocycleRepo.create(planned);
+      const planned = await mesocycleStartStore.repos.mesocycleRepo.create(
+        makeMesocycle({ status: 'planned' }),
+      );
 
-      await mesocycleStartStore.transaction(async (repos) => {
-        await repos.sessionRepo.create(makeSession());
+      const session = await mesocycleStartStore.transaction(async (repos) => {
+        const created = await repos.sessionRepo.create(makeSession());
         await repos.mesocycleRepo.update({ ...planned, status: 'active' });
+        return created;
       });
 
       await expect(mesocycleStartStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(
-        makeSession(),
+        session,
       );
       await expect(mesocycleStartStore.repos.mesocycleRepo.getActive()).resolves.toMatchObject({
         id: planned.id,
@@ -86,8 +86,9 @@ export function describeTransactionContract(harness: RepositoryHarness): void {
 
     test('a failure partway through rolls back the mesocycle and its sessions alike', async () => {
       const { mesocycleStartStore } = repositories();
-      const planned = makeMesocycle({ status: 'planned' });
-      await mesocycleStartStore.repos.mesocycleRepo.create(planned);
+      const planned = await mesocycleStartStore.repos.mesocycleRepo.create(
+        makeMesocycle({ status: 'planned' }),
+      );
 
       await expect(
         mesocycleStartStore.transaction(async (repos) => {

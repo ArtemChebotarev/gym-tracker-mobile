@@ -134,12 +134,15 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
       const { sessionRepo, sessionExerciseRepo, setLogRepo } = repositories();
       await sessionRepo.create(makeSession());
       await sessionExerciseRepo.create(makeSessionExercise());
-      const oldest = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
-      const middle = makeSetLog({ id: 'log-2', completedAt: '2026-08-15T08:00:00.000Z' });
-      const newest = makeSetLog({ id: 'log-3', completedAt: '2026-08-26T08:00:00.000Z' });
-      await setLogRepo.create(oldest);
-      await setLogRepo.create(middle);
-      await setLogRepo.create(newest);
+      const oldest = await setLogRepo.create(
+        makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' }),
+      );
+      const middle = await setLogRepo.create(
+        makeSetLog({ id: 'log-2', completedAt: '2026-08-15T08:00:00.000Z' }),
+      );
+      const newest = await setLogRepo.create(
+        makeSetLog({ id: 'log-3', completedAt: '2026-08-26T08:00:00.000Z' }),
+      );
 
       await expect(setLogRepo.listByExerciseId(BENCH_PRESS)).resolves.toEqual([
         newest,
@@ -184,9 +187,10 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
 
       await sessionRepo.create(makeSession());
       await sessionExerciseRepo.create(makeSessionExercise());
-      const newer = makeSetLog({ id: 'log-2', completedAt: '2026-08-26T08:00:00.000Z' });
       await setLogRepo.create(makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' }));
-      await setLogRepo.create(newer);
+      const newer = await setLogRepo.create(
+        makeSetLog({ id: 'log-2', completedAt: '2026-08-26T08:00:00.000Z' }),
+      );
 
       await expect(setLogRepo.getLastByExerciseId(BENCH_PRESS)).resolves.toEqual(newer);
     });
@@ -195,8 +199,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
       const { sessionRepo, sessionExerciseRepo, setLogRepo } = repositories();
       await sessionRepo.create(makeSession());
       await sessionExerciseRepo.create(makeSessionExercise());
-      const setLog = makeSetLog();
-      await setLogRepo.create(setLog);
+      const setLog = await setLogRepo.create(makeSetLog());
 
       const updated = await setLogRepo.update({ ...setLog, weight: 65 });
       await expect(setLogRepo.getLastByExerciseId(setLog.exerciseId)).resolves.toEqual(updated);

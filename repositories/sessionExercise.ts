@@ -1,4 +1,5 @@
 import type { SessionExercise } from '@domain/execution';
+import type { Incoming } from '@domain/timestamps';
 
 /**
  * Access to `SessionExercise` — the plan for one exercise within a session, a
@@ -15,10 +16,10 @@ export interface SessionExerciseRepository {
   listBySessionId(sessionId: string): Promise<SessionExercise[]>;
 
   /** Persists a session exercise that already carries its domain-generated id. */
-  create(sessionExercise: SessionExercise): Promise<SessionExercise>;
+  create(sessionExercise: Incoming<SessionExercise>): Promise<SessionExercise>;
 
   /** Persists several session exercises in one call — used when materializing a session. */
-  createMany(sessionExercises: readonly SessionExercise[]): Promise<SessionExercise[]>;
+  createMany(sessionExercises: readonly Incoming<SessionExercise>[]): Promise<SessionExercise[]>;
 
   /** Persists changes to an existing session exercise, addressed by its id. */
   update(sessionExercise: SessionExercise): Promise<SessionExercise>;
