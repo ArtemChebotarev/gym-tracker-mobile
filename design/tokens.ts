@@ -13,16 +13,25 @@ export const COLORS = {
   'surface/sheet': '#17191C',
   'surface/card': '#1A1C1F',
   'surface/control-active': '#2C3036',
+  /** A completed day's cell in the mesocycle overview (08.7, task 107) — 3.2:1 on `surface/sheet`. */
+  'surface/cell-done': '#626973',
 
   'border/default': '#2A2D31',
   'border/divider': '#1E2125',
   'border/divider-subtle': '#232629',
+
+  // The frame of a day still to do, in the mesocycle overview (08.7, task 107). The sheet's own
+  // `border/*` greys sit at ~1.3:1 against `surface/sheet`, so a cell drawn in them was invisible
+  // on a phone; this one clears WCAG 1.4.11's 3:1 for meaningful graphics at 3.5:1.
+  'border/cell-quiet': '#6B7076',
 
   'text/primary': '#F5F5F4',
   'text/secondary': '#C9CDD2',
   'text/muted': '#8A9099',
   'text/faint': '#6B7076',
   'text/disabled': '#5A5F65',
+  /** A glyph drawn on a light fill, e.g. the check of a completed cell — 3.5:1 on `surface/cell-done`. */
+  'text/on-light': '#0E0F11',
 
   accent: '#CDFF57',
   'accent/on': '#232B0A',
@@ -167,8 +176,11 @@ export const SIZES = {
   'size/dot': 8,
   /** The larger group dot of the mesocycle editor and the mesocycle list's week dots. */
   'size/dot-large': 10,
-  /** Legend swatch of the mesocycle overview grid. */
-  'size/swatch': 16,
+  /**
+   * Legend swatch of the mesocycle overview grid. It shows a cell's own treatment, so it grew from
+   * 16 to 22 with task 107 — at 16 an outline and a filled square read as the same grey dot.
+   */
+  'size/swatch': 22,
   /** ListRow's multi-select checkbox. */
   'size/checkbox': 24,
   /** A small round mark: the workout's completed check, the editor's add-exercise "+". */

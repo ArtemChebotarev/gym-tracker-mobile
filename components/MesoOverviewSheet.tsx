@@ -1,7 +1,15 @@
 // Mesocycle overview sheet — 08.7 · Тренировка, "Лист «Обзор мезоцикла»" (task 095). Opened by the
 // workout header's grid button: the mesocycle's name, `Week N of M · K days a week`, and the week ×
-// day grid from `useMesoGrid` (089) — the deload week's row labelled `Deload`, each cell styled by
-// its state, and the day the workout screen has open ringed. A legend sits under the grid.
+// day grid from `useMesoGrid` (089) — the deload week's row labelled `Deload`. A legend sits under
+// the grid.
+//
+// The grid answers three questions and no more (task 107, Artem's call): which days are behind you
+// — trained or skipped alike, a filled cell with a check; which are still to come — a plain
+// outline, whether or not they're programmed yet; and which day you have open — a white ring
+// over either. Telling `ready` from `awaiting`, or a skipped day from a trained one, was detail he
+// didn't want on the grid, and six near-identical greys made none of it readable anyway. A cell
+// carries no day number — the column header above it already says the day. Every status still
+// reaches a screen reader through the cell's accessibility label.
 //
 // Every cell is pressable, whatever its state: the caller closes the sheet and opens that day in
 // the mode its session calls for — live, read-only, or preview for a day not programmed yet.
@@ -10,7 +18,7 @@
 // (app/(tabs)/index.tsx). JSX/rendering only — styles live in MesoOverviewSheetStyles.ts and pure
 // helpers in MesoOverviewSheetLogic.ts, per the code-style skill.
 
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, type ViewStyle } from 'react-native';
 
 import { BottomSheet } from '@design/components/BottomSheet';
 import { CheckIcon } from '@design/icons/CheckIcon';
@@ -19,14 +27,13 @@ import type { MesoGrid, MesoGridCell } from '@domain/mesoGrid';
 
 import {
   formatMesoOverviewSubtitle,
+  isFinishedMesoGridCell,
   isOpenMesoGridCell,
   mesoGridCellAccessibilityLabel,
-  mesoGridCellText,
 } from './MesoOverviewSheetLogic';
 import {
-  CELL_STATUS_STYLES,
-  CELL_TEXT_STATUS_STYLES,
-  LEGEND_ITEMS,
+  CELL_FINISHED_STYLE,
+  CELL_LEFT_STYLE,
   styles,
 } from './MesoOverviewSheetStyles';
 
@@ -94,12 +101,9 @@ export function MesoOverviewSheet({
         ))}
       </View>
       <View style={styles.legend}>
-        {LEGEND_ITEMS.map(({ label, swatch }) => (
-          <View key={label} style={styles.legendItem}>
-            <View style={[styles.swatch, swatch]} />
-            <Text style={styles.legendLabel}>{label}</Text>
-          </View>
-        ))}
+        <LegendItem label="Done" style={CELL_FINISHED_STYLE} showCheck />
+        <LegendItem label="Left to do" style={CELL_LEFT_STYLE} />
+        <LegendItem label="Open now" style={CELL_LEFT_STYLE} showRing />
       </View>
     </BottomSheet>
   );
@@ -112,7 +116,7 @@ type MesoGridCellButtonProps = {
 };
 
 function MesoGridCellButton({ cell, isOpen, onPress }: MesoGridCellButtonProps) {
-  const text = mesoGridCellText(cell);
+  const isFinished = isFinishedMesoGridCell(cell);
   return (
     <Pressable
       testID={`meso-grid-cell-${cell.weekNumber}-${cell.dayNumber}`}
@@ -122,16 +126,36 @@ function MesoGridCellButton({ cell, isOpen, onPress }: MesoGridCellButtonProps) 
       onPress={onPress}
       style={({ pressed }) => [
         styles.cell,
-        CELL_STATUS_STYLES[cell.status],
+        isFinished ? CELL_FINISHED_STYLE : CELL_LEFT_STYLE,
         pressed && styles.cellPressed,
       ]}
     >
-      {text === undefined ? (
-        <CheckIcon size={ICON_SIZES['icon/inline']} color={COLORS['text/primary']} />
-      ) : (
-        <Text style={[styles.cellText, CELL_TEXT_STATUS_STYLES[cell.status]]}>{text}</Text>
+      {isFinished && (
+        <CheckIcon size={ICON_SIZES['icon/inline']} color={COLORS['text/on-light']} />
       )}
       {isOpen && <View testID="meso-grid-open-ring" style={styles.openRing} />}
     </Pressable>
+  );
+}
+
+function LegendItem({
+  label,
+  style,
+  showCheck = false,
+  showRing = false,
+}: {
+  label: string;
+  style: ViewStyle;
+  showCheck?: boolean;
+  showRing?: boolean;
+}) {
+  return (
+    <View style={styles.legendItem}>
+      <View style={[styles.swatch, style]}>
+        {showCheck && <CheckIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/on-light']} />}
+        {showRing && <View style={styles.openRing} />}
+      </View>
+      <Text style={styles.legendLabel}>{label}</Text>
+    </View>
   );
 }

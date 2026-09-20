@@ -1,8 +1,8 @@
 import {
   formatMesoOverviewSubtitle,
+  isFinishedMesoGridCell,
   isOpenMesoGridCell,
   mesoGridCellAccessibilityLabel,
-  mesoGridCellText,
 } from '@components/MesoOverviewSheetLogic';
 
 describe('formatMesoOverviewSubtitle', () => {
@@ -19,22 +19,21 @@ describe('formatMesoOverviewSubtitle', () => {
   });
 });
 
-describe('mesoGridCellText', () => {
-  test.each([
-    ['in_progress', 'Now'],
-    ['ready', 'D3'],
-    ['skipped', 'Skip'],
-    ['awaiting', '—'],
-  ] as const)('a %s cell reads %s', (status, text) => {
-    expect(mesoGridCellText({ status, dayNumber: 3 })).toBe(text);
+describe('isFinishedMesoGridCell', () => {
+  test.each(['completed', 'skipped'] as const)('a %s day is behind you', (status) => {
+    expect(isFinishedMesoGridCell({ status })).toBe(true);
   });
 
-  test('a completed cell has no text — it shows a check', () => {
-    expect(mesoGridCellText({ status: 'completed', dayNumber: 3 })).toBeUndefined();
-  });
+  test.each(['ready', 'in_progress', 'awaiting'] as const)(
+    'a %s day is still to do — the grid draws them alike',
+    (status) => {
+      expect(isFinishedMesoGridCell({ status })).toBe(false);
+    },
+  );
 });
 
 describe('mesoGridCellAccessibilityLabel', () => {
+  // The grid draws three looks, but a screen reader still gets the real status (task 107).
   test('names the day and its state', () => {
     expect(
       mesoGridCellAccessibilityLabel({ weekNumber: 3, dayNumber: 1, status: 'awaiting' }),
