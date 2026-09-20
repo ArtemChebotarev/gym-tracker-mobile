@@ -1,14 +1,21 @@
-// Navigation targets for the two history screens the workout screen links to (08.7 · Тренировка):
-// the exercise card's history button opens "История упражнения", the header menu's `Mesocycle
-// history` opens "Мезоцикл (деталь)" (08 · Screens & Navigation, 06 · History & Analytics). Both
-// routes are EmptyState stubs for now (task 098); callers build their hrefs here so the path and
-// its `[id]` param live in one place, not spelled out at every call site.
+// Navigation targets for the screens the workout screen and the library link to: an exercise's own
+// screen ("Exercise", 08.6 · Библиотека упражнений) and "Мезоцикл (деталь)" (08 · Screens &
+// Navigation, 06 · History & Analytics), still an EmptyState stub (task 098). Callers build their
+// hrefs here so each path and its `[id]` param live in one place, not spelled out at every call
+// site.
 
 import type { Href } from 'expo-router';
 
-/** "История упражнения" for `exerciseId` — `app/exercise/[id]/history.tsx`. */
-export function exerciseHistoryHref(exerciseId: string): Href {
-  return { pathname: '/exercise/[id]/history', params: { id: exerciseId } };
+/**
+ * The Exercise screen for `exerciseId` — `app/exercise/[id]/index.tsx`.
+ *
+ * It opens on Overview wherever it's entered from, and its History tab is reachable only through
+ * the switcher on the screen itself (08.6: "Прямого перехода в History с других экранов нет,
+ * включая экран тренировки") — so the workout card's history button comes here too, where the
+ * last-session block is what it was really after.
+ */
+export function exerciseDetailHref(exerciseId: string): Href {
+  return { pathname: '/exercise/[id]', params: { id: exerciseId } };
 }
 
 /** "Мезоцикл (деталь)" for `mesoId` — `app/meso/[id].tsx`. */

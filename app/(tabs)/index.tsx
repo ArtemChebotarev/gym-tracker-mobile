@@ -38,7 +38,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BodyWeightSheet } from '@components/BodyWeightSheet';
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
-import { mesocycleDetailHref } from '@components/historyRoutes';
+import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
@@ -142,7 +142,10 @@ export default function TodayScreen() {
         isPending={query.isPending}
         onOpenGrid={() => setIsGridOpen(true)}
         onOpenMenu={() => setIsMenuOpen(true)}
-        onOpenExerciseHistory={() => showNotAvailable('Exercise history')}
+        // The card's history button opens the exercise's own screen, on Overview — 08.6 asks
+        // for exactly that from a workout: its last-session block is the quick check you came
+        // for, and History is one tap further in from there.
+        onOpenExerciseHistory={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
         onOpenExerciseMenu={(exercise) => {
           setMenuExercise(exercise);
           setIsExerciseMenuOpen(true);

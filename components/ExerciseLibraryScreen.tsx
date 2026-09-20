@@ -3,6 +3,9 @@
 // in the caller, so this component can be rendered and asserted on with plain props, the same
 // way design/components are tested — no QueryProvider or real repositories needed here.
 //
+// A row opens that exercise's own screen (065, `onOpenExercise`) — the chevron's promise, and
+// the library's job as "точка входа в историю" (08.6).
+//
 // The "+" button and the search-empty state's "Create" action open 066 · New/Edit exercise (see
 // ExerciseFormSheet.tsx); `onRequestFilters` opens 064 · Filters (see ExerciseFiltersSheet.tsx).
 // The caller composes both sheets as siblings rather than this component rendering them
@@ -49,6 +52,8 @@ export type ExerciseLibraryScreenProps = {
   onResetFilters: () => void;
   onRequestCreate: (prefillName?: string) => void;
   onRequestFilters: () => void;
+  /** Opens an exercise's own screen (08.6, "Exercise — вкладка Overview"), from its row. */
+  onOpenExercise: (entry: ExerciseListEntry) => void;
 };
 
 export function ExerciseLibraryScreen({
@@ -60,6 +65,7 @@ export function ExerciseLibraryScreen({
   onResetFilters,
   onRequestCreate,
   onRequestFilters,
+  onOpenExercise,
 }: ExerciseLibraryScreenProps) {
   const trimmedSearch = search.trim();
   const filtersActive = hasActiveFilters(filters);
@@ -133,6 +139,7 @@ export function ExerciseLibraryScreen({
               subtitle={formatSubtitle(item.lastSetLog)}
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}
+              onPress={() => onOpenExercise(item)}
             />
           )}
         />

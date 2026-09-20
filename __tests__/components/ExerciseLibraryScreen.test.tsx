@@ -36,6 +36,7 @@ const BASE_PROPS: ExerciseLibraryScreenProps = {
   onResetFilters: jest.fn(),
   onRequestCreate: jest.fn(),
   onRequestFilters: jest.fn(),
+  onOpenExercise: jest.fn(),
 };
 
 // SafeAreaView (used for the screen's top inset — see components/ExerciseLibraryScreen.tsx)
@@ -213,5 +214,22 @@ describe('ExerciseLibraryScreen', () => {
     renderScreen({ filters: {} });
 
     expect(screen.queryByRole('button', { name: 'Reset' })).toBeNull();
+  });
+
+  test("a row opens that exercise's own screen (065)", () => {
+    const benchPress = exercise({
+      id: toExerciseId('bench-press'),
+      name: 'Bench Press',
+      muscleGroup: 'chest',
+    });
+    const onOpenExercise = jest.fn();
+    renderScreen({
+      groups: [{ muscleGroup: 'chest', entries: [entry(benchPress)] }],
+      onOpenExercise,
+    });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Bench Press' }));
+
+    expect(onOpenExercise).toHaveBeenCalledWith(entry(benchPress));
   });
 });

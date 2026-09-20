@@ -18,8 +18,10 @@ export default function RootLayout() {
           name="meso-editor/edit/[id]"
           options={{ headerShown: false, presentation: 'fullScreenModal' }}
         />
-        {/* History stubs (task 098) — pushed from the workout screen, each with its own Go back. */}
-        <Stack.Screen name="exercise/[id]/history" options={{ headerShown: false }} />
+        {/* The Exercise screen (08.6, task 065) — pushed from the library and from a workout's
+            exercise card, with its own back button in the header. */}
+        <Stack.Screen name="exercise/[id]/index" options={{ headerShown: false }} />
+        {/* Mesocycle history, still a stub (task 098), with its own Go back. */}
         <Stack.Screen name="meso/[id]" options={{ headerShown: false }} />
       </Stack>
     </QueryProvider>

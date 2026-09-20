@@ -1,9 +1,9 @@
-import { exerciseHistoryHref, mesocycleDetailHref } from '@components/historyRoutes';
+import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 
 describe('historyRoutes', () => {
-  test('exerciseHistoryHref points at exercise/[id]/history with the exercise id', () => {
-    expect(exerciseHistoryHref('exercise-bench-press')).toEqual({
-      pathname: '/exercise/[id]/history',
+  test('exerciseDetailHref points at exercise/[id] with the exercise id', () => {
+    expect(exerciseDetailHref('exercise-bench-press')).toEqual({
+      pathname: '/exercise/[id]',
       params: { id: 'exercise-bench-press' },
     });
   });

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
 import {
@@ -9,10 +10,12 @@ import {
 } from '@components/ExerciseFormSheet';
 import { ExerciseLibraryScreen, type ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
+import { exerciseDetailHref } from '@components/historyRoutes';
 import { useCreateCustomExercise } from '@state/useCreateCustomExercise';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 
 export default function LibraryScreen() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
   const [draftFilters, setDraftFilters] = useState<ExerciseLibraryFilters>({});
@@ -56,6 +59,7 @@ export default function LibraryScreen() {
         onResetFilters={() => setFilters({})}
         onRequestCreate={handleRequestCreate}
         onRequestFilters={handleRequestFilters}
+        onOpenExercise={(entry) => router.push(exerciseDetailHref(entry.exercise.id))}
       />
       <ExerciseFiltersSheet
         visible={isFiltersSheetOpen}
