@@ -3,8 +3,10 @@ import type { Session, SessionExercise } from '@domain/execution';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { openSession, openSessionExercise } from '@usecases/openSession';
+import { STAMPS } from '../fixtures/stamps';
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-1',
   mesoId: 'meso',
   weekNumber: 1,
@@ -16,6 +18,7 @@ const session: Session = {
 };
 
 const benchPress: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-1',
   sessionId: 'session-1',
   exerciseId: 'exercise-bench-press',

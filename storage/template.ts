@@ -1,7 +1,9 @@
 import type { MesoTemplate } from '@domain/plan';
+import type { Incoming } from '@domain/timestamps';
 import type { TemplateRepository } from '@repositories/template';
 
 import type { InMemoryStore } from './store';
+import { stampCreated, stampUpdated } from './timestamps';
 
 const TEMPLATE_COLLECTION = 'MesoTemplate';
 
@@ -20,12 +22,12 @@ export class InMemoryTemplateRepository implements TemplateRepository {
     return (await this.templates.findById(id)) ?? null;
   }
 
-  async create(template: MesoTemplate): Promise<MesoTemplate> {
-    return this.templates.insert(template);
+  async create(template: Incoming<MesoTemplate>): Promise<MesoTemplate> {
+    return this.templates.insert(stampCreated(template));
   }
 
   async update(template: MesoTemplate): Promise<MesoTemplate> {
-    return this.templates.update(template.id, () => template);
+    return this.templates.update(template.id, (stored) => stampUpdated(stored, template));
   }
 
   async deleteById(id: string): Promise<void> {

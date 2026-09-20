@@ -8,9 +8,11 @@ import {
   type ExerciseFormSheetProps,
   type ExerciseFormValues,
 } from '@components/ExerciseFormSheet';
+import { STAMPS } from '../fixtures/stamps';
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId('exercise-bench-press'),
     name: 'Bench Press',
     muscleGroup: 'chest',

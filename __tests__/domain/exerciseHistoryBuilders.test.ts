@@ -2,11 +2,13 @@ import type { Session, SetLog } from '@domain/execution';
 import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
 import { buildExerciseHistory } from '@domain/exerciseHistoryBuilders';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { STAMPS } from '../fixtures/stamps';
 
 const EXERCISE_ID = 'bench-press';
 
 function mesocycle(id: string, name: string): Mesocycle {
   return {
+    ...STAMPS,
     id,
     name,
     lengthWeeks: 4,
@@ -20,6 +22,7 @@ function mesocycle(id: string, name: string): Mesocycle {
 
 function session(overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: 'session-1',
     mesoId: 'meso-1',
     weekNumber: 1,
@@ -34,6 +37,7 @@ function session(overrides: Partial<Session> = {}): Session {
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'log-1',
     sessionExerciseId: 'se-1',
     exerciseId: EXERCISE_ID,

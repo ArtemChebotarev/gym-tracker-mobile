@@ -7,10 +7,10 @@ import {
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
+import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'generated-id-1' }));
 
-const UTC_ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 const twoDayWeekPlan: WeekPlan = {
   days: [
@@ -34,7 +34,6 @@ describe('buildScratchMesocycleDraft', () => {
     expect(draft.origin).toEqual({ type: 'scratch' });
     expect(draft.progressionSettings).toEqual(defaultProgressionSettings);
     expect(draft.id).toBe('generated-id-1');
-    expect(draft.createdAt).toMatch(UTC_ISO_PATTERN);
   });
 
   test('copies the given progressionSettings as a snapshot rather than referencing them', () => {
@@ -116,6 +115,7 @@ describe('buildScratchMesocycleDraft', () => {
 
 describe('applyPlannedMesocycleEdit', () => {
   const plannedMesocycle: Mesocycle = {
+    ...STAMPS,
     id: 'meso-1',
     name: 'Push/Pull/Legs',
     lengthWeeks: 6,
@@ -207,6 +207,7 @@ describe('buildMesocycleStart', () => {
 
   // Orders as the editor writes them: from 0, and out of array order on day 1.
   const plannedMesocycle: Mesocycle = {
+    ...STAMPS,
     id: 'meso-1',
     name: 'Upper/Lower',
     lengthWeeks: 6,

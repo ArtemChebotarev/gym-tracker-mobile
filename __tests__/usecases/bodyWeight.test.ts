@@ -3,8 +3,10 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { setBodyWeight } from '@usecases/bodyWeight';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso-1',
   name: 'Upper/Lower',
   lengthWeeks: 4,
@@ -46,7 +48,11 @@ describe('setBodyWeight', () => {
 
     const saved = await setBodyWeight({ mesoId: 'meso-1', bodyWeight: 80 }, repo);
 
-    expect({ ...saved, bodyWeight: undefined }).toEqual({ ...mesocycle, bodyWeight: undefined });
+    expect({ ...saved, bodyWeight: undefined }).toEqual({
+      ...mesocycle,
+      ...ANY_STAMPS,
+      bodyWeight: undefined,
+    });
   });
 
   test.each([0, -1, Number.NaN])('rejects %p — that is not a body weight', async (weight) => {

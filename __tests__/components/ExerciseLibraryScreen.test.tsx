@@ -5,13 +5,15 @@ import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup } from '@domain/catalogListing';
 import type { SetLog } from '@domain/execution';
 import { ExerciseLibraryScreen, type ExerciseLibraryScreenProps } from '@components/ExerciseLibraryScreen';
+import { STAMPS } from '../fixtures/stamps';
 
 function exercise(overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>): Exercise {
-  return { source: 'catalog', isHidden: false, ...overrides };
+  return { ...STAMPS, source: 'catalog', isHidden: false, ...overrides };
 }
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'set-1',
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'bench-press',

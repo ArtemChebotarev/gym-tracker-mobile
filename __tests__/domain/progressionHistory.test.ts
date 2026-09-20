@@ -1,9 +1,11 @@
 import type { SetLog } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { prescribeFromHistory, referenceSetFor } from '@domain/progressionHistory';
+import { STAMPS } from '../fixtures/stamps';
 
 function log(setNumber: number, weight: number, reps: number): SetLog {
   return {
+    ...STAMPS,
     id: `ref-log-${setNumber}`,
     sessionExerciseId: 'ref',
     exerciseId: 'exercise-curl',

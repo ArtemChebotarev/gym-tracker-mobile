@@ -12,13 +12,15 @@ import {
   sectionDotColor,
   sourceLabel,
 } from '@components/ExerciseLibraryScreenLogic';
+import { STAMPS } from '../fixtures/stamps';
 
 function exercise(overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>): Exercise {
-  return { source: 'catalog', isHidden: false, ...overrides };
+  return { ...STAMPS, source: 'catalog', isHidden: false, ...overrides };
 }
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'set-1',
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'bench-press',

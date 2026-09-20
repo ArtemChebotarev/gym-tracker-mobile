@@ -1,3 +1,5 @@
+import type { Timestamps } from './timestamps';
+
 export type SessionPrescriptionStatus = 'awaiting_source' | 'ready';
 
 export type SessionStatus = 'planned' | 'in_progress' | 'completed' | 'skipped';
@@ -6,7 +8,7 @@ export type SessionExerciseStatus = 'planned' | 'completed' | 'skipped';
 
 export type WeightHint = 'decrease' | 'increase';
 
-export type Session = {
+export type Session = Timestamps & {
   id: string;
   mesoId: string;
   weekNumber: number;
@@ -33,7 +35,7 @@ export type SetTarget = {
   weightHint?: WeightHint;
 };
 
-export type SessionExercise = {
+export type SessionExercise = Timestamps & {
   id: string;
   sessionId: string;
   exerciseId: string;
@@ -43,7 +45,7 @@ export type SessionExercise = {
   status: SessionExerciseStatus;
 };
 
-export type SetLog = {
+export type SetLog = Timestamps & {
   id: string;
   sessionExerciseId: string;
   exerciseId: string;

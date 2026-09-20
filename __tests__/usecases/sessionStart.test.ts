@@ -3,12 +3,14 @@ import type { Session } from '@domain/execution';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { startSessionOnFirstSet } from '@usecases/sessionStart';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 const FIRST_SET_AT = '2026-09-18T10:00:00.000Z';
 const SECOND_SET_AT = '2026-09-18T10:03:00.000Z';
 
 function makeSession(overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: 'session-w1-d1',
     mesoId: 'meso',
     weekNumber: 1,
@@ -41,7 +43,12 @@ describe('startSessionOnFirstSet', () => {
 
     const result = await startSessionOnFirstSet('session-w1-d1', workout.repos, FIRST_SET_AT);
 
-    const started = { ...makeSession(), status: 'in_progress', startedAt: FIRST_SET_AT };
+    const started = {
+      ...makeSession(),
+      ...ANY_STAMPS,
+      status: 'in_progress',
+      startedAt: FIRST_SET_AT,
+    };
     expect(result).toEqual({ kind: 'started', session: started });
     await expect(workout.repos.sessionRepo.getById('session-w1-d1')).resolves.toEqual(started);
   });

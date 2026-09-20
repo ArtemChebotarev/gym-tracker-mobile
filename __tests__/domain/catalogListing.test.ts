@@ -2,9 +2,11 @@ import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import { buildExerciseListGroups } from '@domain/catalogListing';
 import type { SetLog } from '@domain/execution';
+import { STAMPS } from '../fixtures/stamps';
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId('exercise-bench-press'),
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -16,6 +18,7 @@ function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
 
 function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'set-log-1',
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',

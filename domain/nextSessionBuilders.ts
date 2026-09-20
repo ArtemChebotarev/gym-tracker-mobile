@@ -7,6 +7,7 @@ import type { Session, SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
 import type { ExercisePrescription } from '@domain/progression';
 import { isDeloadWeek } from '@domain/progressionPlan';
+import type { Unsaved } from '@domain/timestamps';
 
 /**
  * The week the session after `trigger` belongs to, or `null` when there is none: a deload session
@@ -34,8 +35,8 @@ export type NextSessionInput = {
 };
 
 export type NextSessionDraft = {
-  session: Session;
-  sessionExercises: SessionExercise[];
+  session: Unsaved<Session>;
+  sessionExercises: Unsaved<SessionExercise>[];
 };
 
 /**
@@ -45,7 +46,7 @@ export type NextSessionDraft = {
  */
 export function buildNextSession(input: NextSessionInput): NextSessionDraft {
   const { trigger, base, weekNumber, lengthWeeks, prescriptions } = input;
-  const session: Session = {
+  const session: Unsaved<Session> = {
     id: generateId(),
     mesoId: trigger.mesoId,
     weekNumber,
@@ -58,7 +59,7 @@ export function buildNextSession(input: NextSessionInput): NextSessionDraft {
   if (trigger.name !== undefined) {
     session.name = trigger.name;
   }
-  const sessionExercises = prescriptions.map((prescription): SessionExercise => ({
+  const sessionExercises = prescriptions.map((prescription): Unsaved<SessionExercise> => ({
     id: generateId(),
     sessionId: session.id,
     exerciseId: prescription.exerciseId,

@@ -7,9 +7,11 @@ import type { WorkoutStore } from '@repositories/workout';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { removeExercise } from '@usecases/exerciseRemoval';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `session-w${weekNumber}`,
     mesoId: 'meso',
     weekNumber,
@@ -24,6 +26,7 @@ function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Sess
 
 function makeExercise(weekNumber: number, exerciseId: string, order: number): SessionExercise {
   return {
+    ...STAMPS,
     id: `session-exercise-w${weekNumber}-${exerciseId}`,
     sessionId: `session-w${weekNumber}`,
     exerciseId,
@@ -39,6 +42,7 @@ function makeExercise(weekNumber: number, exerciseId: string, order: number): Se
 
 function logsFor(sessionExercise: SessionExercise, reps: number[]): SetLog[] {
   return reps.map((rep, index) => ({
+    ...STAMPS,
     id: `log-${sessionExercise.id}-${index + 1}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,
@@ -111,7 +115,7 @@ describe('removeExercise', () => {
 
     const remaining = await removeExercise(refTo(row), workout);
 
-    const expected = [bench, { ...curl, order: 2 }];
+    const expected = [bench, { ...curl, ...ANY_STAMPS, order: 2 }];
     expect(remaining).toEqual(expected);
     await expect(storedWeekTwo(workout)).resolves.toEqual(expected);
   });
@@ -126,8 +130,8 @@ describe('removeExercise', () => {
       workout.repos.setLogRepo.listBySessionExerciseId(weekOneBench.id),
     ).resolves.toEqual(weekOneLogs);
     await expect(storedWeekTwo(workout)).resolves.toEqual([
-      { ...row, order: 1 },
-      { ...curl, order: 2 },
+      { ...row, ...ANY_STAMPS, order: 1 },
+      { ...curl, ...ANY_STAMPS, order: 2 },
     ]);
   });
 

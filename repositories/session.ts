@@ -1,4 +1,5 @@
 import type { Session } from '@domain/execution';
+import type { Incoming } from '@domain/timestamps';
 
 /**
  * Access to `Session` — one workout within a mesocycle, materialized lazily
@@ -38,10 +39,10 @@ export interface SessionRepository {
   getCurrentInProgress(): Promise<Session | null>;
 
   /** Persists a session that already carries its domain-generated id. */
-  create(session: Session): Promise<Session>;
+  create(session: Incoming<Session>): Promise<Session>;
 
   /** Persists several sessions in one call — used when materializing a week's worth of days. */
-  createMany(sessions: readonly Session[]): Promise<Session[]>;
+  createMany(sessions: readonly Incoming<Session>[]): Promise<Session[]>;
 
   /** Persists changes to an existing session, addressed by its id. */
   update(session: Session): Promise<Session>;

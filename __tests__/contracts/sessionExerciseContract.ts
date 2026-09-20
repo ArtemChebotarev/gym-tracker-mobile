@@ -32,11 +32,13 @@ export function describeSessionExerciseContract(harness: RepositoryHarness): voi
     test('create and update round-trip a session exercise', async () => {
       const { sessionRepo, sessionExerciseRepo } = repositories();
       await sessionRepo.create(makeSession());
-      await sessionExerciseRepo.create(makeSessionExercise());
+      const stored = await sessionExerciseRepo.create(makeSessionExercise());
 
-      const updated = await sessionExerciseRepo.update(
-        makeSessionExercise({ order: 3, status: 'completed' }),
-      );
+      const updated = await sessionExerciseRepo.update({
+        ...stored,
+        order: 3,
+        status: 'completed',
+      });
 
       await expect(sessionExerciseRepo.listBySessionId('session-1')).resolves.toEqual([updated]);
     });
@@ -44,15 +46,14 @@ export function describeSessionExerciseContract(harness: RepositoryHarness): voi
     test('updateMany replaces several session exercises in one call, e.g. a reorder', async () => {
       const { sessionRepo, sessionExerciseRepo } = repositories();
       await sessionRepo.create(makeSession());
-      await sessionExerciseRepo.createMany([
+      const created = await sessionExerciseRepo.createMany([
         makeSessionExercise({ id: 'se-1', order: 1 }),
         makeSessionExercise({ id: 'se-2', order: 2 }),
       ]);
 
-      const reordered = await sessionExerciseRepo.updateMany([
-        makeSessionExercise({ id: 'se-1', order: 2 }),
-        makeSessionExercise({ id: 'se-2', order: 1 }),
-      ]);
+      const reordered = await sessionExerciseRepo.updateMany(
+        created.map((exercise) => ({ ...exercise, order: exercise.order === 1 ? 2 : 1 })),
+      );
 
       expect(reordered.map((exercise) => exercise.order)).toEqual([2, 1]);
       const stored = await sessionExerciseRepo.listBySessionId('session-1');

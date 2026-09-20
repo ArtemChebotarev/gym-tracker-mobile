@@ -1,4 +1,5 @@
 import type { MesoTemplate, WeekPlan, WeekPlanDay, WeekPlanExercise } from '@domain/plan';
+import { STAMPS } from '../fixtures/stamps';
 
 const benchPress: WeekPlanExercise = { exerciseId: 'exercise-bench-press', order: 1, sets: 3 };
 
@@ -28,6 +29,7 @@ const weekPlanFixture: WeekPlan = {
 };
 
 const templateFixture: MesoTemplate = {
+  ...STAMPS,
   id: 'template-1',
   name: 'Push/Legs Starter',
   source: 'catalog',
@@ -38,6 +40,7 @@ const templateFixture: MesoTemplate = {
 };
 
 const customTemplateFixture: MesoTemplate = {
+  ...STAMPS,
   id: 'template-custom-1',
   name: 'My Custom Meso',
   source: 'custom',

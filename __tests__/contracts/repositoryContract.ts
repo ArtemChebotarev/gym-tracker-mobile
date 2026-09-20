@@ -8,6 +8,7 @@ import { describeSessionTreeContract } from './sessionTreeContract';
 import { describeSetLogContract } from './setLogContract';
 import { describeSettingsContract } from './settingsContract';
 import { describeTemplateContract } from './templateContract';
+import { describeTimestampsContract } from './timestampsContract';
 import { describeTransactionContract } from './transactionContract';
 
 /**
@@ -40,5 +41,6 @@ export function describeRepositoryContract(
     describeExerciseHistoryContract(harness);
     describeSessionTreeContract(harness);
     describeTransactionContract(harness);
+    describeTimestampsContract(harness);
   });
 }

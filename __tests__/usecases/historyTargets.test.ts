@@ -3,6 +3,7 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { targetsFromHistory } from '@usecases/historyTargets';
+import { STAMPS } from '../fixtures/stamps';
 
 const NOW = '2026-09-18T10:00:00.000Z';
 const BARBELL = 'exercise-barbell-bench-press';
@@ -26,6 +27,7 @@ async function setLogRepoWith(performances: Performance[]) {
   const workout = createInMemoryWorkoutStore(new InMemoryStore());
   for (const performance of performances) {
     const session: Session = {
+      ...STAMPS,
       id: `session-${performance.key}`,
       mesoId: performance.mesoId,
       weekNumber: 1,
@@ -36,6 +38,7 @@ async function setLogRepoWith(performances: Performance[]) {
       completedAt: performance.loggedAt,
     };
     const sessionExercise: SessionExercise = {
+      ...STAMPS,
       id: `session-exercise-${performance.key}`,
       sessionId: session.id,
       exerciseId: BARBELL,
@@ -45,6 +48,7 @@ async function setLogRepoWith(performances: Performance[]) {
       status: 'completed',
     };
     const logs: SetLog[] = performance.reps.map((reps, index) => ({
+      ...STAMPS,
       id: `log-${performance.key}-${index + 1}`,
       sessionExerciseId: sessionExercise.id,
       exerciseId: BARBELL,

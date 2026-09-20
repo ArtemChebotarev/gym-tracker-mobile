@@ -4,8 +4,10 @@ import type { WorkoutStore } from '@repositories/workout';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { addSet, removeLastSet } from '@usecases/setRows';
+import { STAMPS } from '../fixtures/stamps';
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-1',
   mesoId: 'meso',
   weekNumber: 2,
@@ -17,6 +19,7 @@ const session: Session = {
 };
 
 const benchPress: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-1',
   sessionId: 'session-1',
   exerciseId: 'exercise-bench-press',
@@ -33,6 +36,7 @@ const ref = { sessionId: 'session-1', sessionExerciseId: 'session-exercise-1' };
 
 function logFor(setNumber: number): SetLog {
   return {
+    ...STAMPS,
     id: `log-${setNumber}`,
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',

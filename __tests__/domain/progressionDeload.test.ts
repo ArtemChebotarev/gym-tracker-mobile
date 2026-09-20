@@ -3,6 +3,7 @@ import type { SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 import { deloadSetCount, deloadWeight, prescribeDeloadDay } from '@domain/progressionDeload';
+import { STAMPS } from '../fixtures/stamps';
 
 function sourceExercise(
   id: string,
@@ -22,6 +23,7 @@ function sourceExercise(
 
 function log(sessionExerciseId: string, setNumber: number, weight: number, reps = 10): SetLog {
   return {
+    ...STAMPS,
     id: `${sessionExerciseId}-log-${setNumber}`,
     sessionExerciseId,
     exerciseId: `exercise-${sessionExerciseId}`,

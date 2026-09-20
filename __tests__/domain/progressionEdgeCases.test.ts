@@ -11,6 +11,7 @@ import {
 import type { SourceExercise } from '@domain/progression';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import { resolveBaseSession } from '@domain/progressionSource';
+import { STAMPS } from '../fixtures/stamps';
 
 const LENGTH_WEEKS = 5;
 
@@ -22,6 +23,7 @@ const startTargets: SetTarget[] = [
 
 function session(weekNumber: number, status: SessionStatus): Session {
   return {
+    ...STAMPS,
     id: `w${weekNumber}`,
     mesoId: 'meso-1',
     weekNumber,
@@ -41,6 +43,7 @@ function bench(id: string, setTargets: SetTarget[] = startTargets): SourceExerci
 
 function log(sessionExerciseId: string, setNumber: number, weight: number, reps: number): SetLog {
   return {
+    ...STAMPS,
     id: `${sessionExerciseId}-log-${setNumber}`,
     sessionExerciseId,
     exerciseId: 'exercise-bench',

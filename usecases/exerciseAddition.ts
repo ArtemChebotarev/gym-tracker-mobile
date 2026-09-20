@@ -17,6 +17,7 @@ import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
 import { targetsFromHistory } from '@usecases/historyTargets';
 import { openSession } from '@usecases/openSession';
+import type { Unsaved } from '@domain/timestamps';
 
 export type ExerciseAdditionDeps = {
   workout: WorkoutStore;
@@ -64,7 +65,7 @@ export async function addExercises(
     );
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
-    const added: SessionExercise[] = [];
+    const added: Unsaved<SessionExercise>[] = [];
     for (const [index, exerciseId] of input.exerciseIds.entries()) {
       added.push({
         id: generateId(),

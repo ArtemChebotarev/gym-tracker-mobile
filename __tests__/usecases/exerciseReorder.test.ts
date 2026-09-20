@@ -6,8 +6,10 @@ import type { WorkoutStore } from '@repositories/workout';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { moveExercise } from '@usecases/exerciseReorder';
+import { STAMPS } from '../fixtures/stamps';
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-w2',
   mesoId: 'meso',
   weekNumber: 2,
@@ -20,6 +22,7 @@ const session: Session = {
 
 function makeExercise(exerciseId: string, order: number): SessionExercise {
   return {
+    ...STAMPS,
     id: `session-exercise-${exerciseId}`,
     sessionId: 'session-w2',
     exerciseId,

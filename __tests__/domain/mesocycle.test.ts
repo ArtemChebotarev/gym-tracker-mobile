@@ -1,6 +1,7 @@
 import type { Mesocycle, MesocycleOrigin } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
+import { STAMPS } from '../fixtures/stamps';
 
 function describeOrigin(origin: MesocycleOrigin): string {
   switch (origin.type) {
@@ -24,6 +25,7 @@ const copyWeekOrigin: MesocycleOrigin = {
 };
 
 const mesocycleFixture: Mesocycle = {
+  ...STAMPS,
   id: 'meso-1',
   name: 'Push/Pull/Legs',
   lengthWeeks: 6,

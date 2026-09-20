@@ -16,9 +16,7 @@ export function describeSessionContract(harness: RepositoryHarness): void {
 
     test('getById round-trips a session and resolves null for an unknown id', async () => {
       const { sessionRepo } = repositories();
-      const session = makeSession();
-
-      await sessionRepo.create(session);
+      const session = await sessionRepo.create(makeSession());
 
       await expect(sessionRepo.getById(session.id)).resolves.toEqual(session);
       await expect(sessionRepo.getById('missing')).resolves.toBeNull();
@@ -64,7 +62,7 @@ export function describeSessionContract(harness: RepositoryHarness): void {
         status: 'completed',
         completedAt: '2026-01-12T10:00:00.000Z',
       });
-      await sessionRepo.createMany([
+      const [, storedLater] = await sessionRepo.createMany([
         makeSession({
           id: 's-week1',
           weekNumber: 1,
@@ -85,7 +83,7 @@ export function describeSessionContract(harness: RepositoryHarness): void {
       ]);
 
       await expect(sessionRepo.getLastCompletedByMesoIdAndDayNumber('meso-a', 1)).resolves.toEqual(
-        later,
+        storedLater,
       );
     });
 
@@ -93,8 +91,10 @@ export function describeSessionContract(harness: RepositoryHarness): void {
       const { sessionRepo } = repositories();
       await expect(sessionRepo.getCurrentInProgress()).resolves.toBeNull();
 
-      const inProgress = makeSession({ id: 's-active', status: 'in_progress' });
-      await sessionRepo.createMany([makeSession({ id: 's-planned' }), inProgress]);
+      const [, inProgress] = await sessionRepo.createMany([
+        makeSession({ id: 's-planned' }),
+        makeSession({ id: 's-active', status: 'in_progress' }),
+      ]);
 
       await expect(sessionRepo.getCurrentInProgress()).resolves.toEqual(inProgress);
     });
@@ -114,11 +114,13 @@ export function describeSessionContract(harness: RepositoryHarness): void {
 
     test('update replaces the stored session', async () => {
       const { sessionRepo } = repositories();
-      await sessionRepo.create(makeSession());
+      const stored = await sessionRepo.create(makeSession());
 
-      const updated = await sessionRepo.update(
-        makeSession({ status: 'in_progress', startedAt: '2026-01-05T09:00:00.000Z' }),
-      );
+      const updated = await sessionRepo.update({
+        ...stored,
+        status: 'in_progress',
+        startedAt: '2026-01-05T09:00:00.000Z',
+      });
 
       await expect(sessionRepo.getById('session-1')).resolves.toEqual(updated);
     });

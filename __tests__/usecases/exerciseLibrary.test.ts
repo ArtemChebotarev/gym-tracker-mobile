@@ -12,6 +12,7 @@ import {
   listExercisesByIds,
   updateCustomExercise,
 } from '@usecases/exerciseLibrary';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -20,6 +21,7 @@ jest.mock('expo-crypto', () => {
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId('exercise-bench-press'),
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -31,6 +33,7 @@ function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
 
 function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'set-log-1',
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',
@@ -118,7 +121,12 @@ describe('updateCustomExercise', () => {
       deps,
     );
 
-    expect(updated).toEqual({ ...created, name: 'Renamed Press', muscleGroup: 'shoulders' });
+    expect(updated).toEqual({
+      ...created,
+      ...ANY_STAMPS,
+      name: 'Renamed Press',
+      muscleGroup: 'shoulders',
+    });
   });
 
   test('updates the equipment of an existing custom exercise', async () => {

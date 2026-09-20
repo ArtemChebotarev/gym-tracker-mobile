@@ -5,8 +5,10 @@ import {
   MesoEditorReviewStep,
   type MesoEditorReviewStepProps,
 } from '@components/MesoEditorReviewStep';
+import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
+  ...STAMPS,
   id: toExerciseId('bench-press'),
   name: 'Bench Press',
   muscleGroup: 'chest',
@@ -15,6 +17,7 @@ const BENCH_PRESS: Exercise = {
 };
 
 const SQUAT: Exercise = {
+  ...STAMPS,
   id: toExerciseId('squat'),
   name: 'Squat',
   muscleGroup: 'quads',

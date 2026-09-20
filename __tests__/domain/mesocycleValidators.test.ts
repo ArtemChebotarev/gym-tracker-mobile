@@ -8,8 +8,10 @@ import {
   validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
 import type { WeekPlan } from '@domain/plan';
+import { STAMPS } from '../fixtures/stamps';
 
 const mesocycleFixture: Mesocycle = {
+  ...STAMPS,
   id: 'meso-1',
   name: 'Push/Pull/Legs',
   lengthWeeks: 6,

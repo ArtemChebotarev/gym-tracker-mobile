@@ -9,12 +9,14 @@ import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { swapExercise } from '@usecases/exerciseSwap';
+import { STAMPS } from '../fixtures/stamps';
 
 const NOW = '2026-09-18T10:00:00.000Z';
 const DUMBBELL = 'exercise-dumbbell-bench-press';
 const BARBELL = 'exercise-barbell-bench-press';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/Lower',
   lengthWeeks: 5,
@@ -28,6 +30,7 @@ const mesocycle: Mesocycle = {
 
 function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `session-w${weekNumber}`,
     mesoId: 'meso',
     weekNumber,
@@ -44,6 +47,7 @@ function makeExercise(
   overrides: Partial<SessionExercise> = {},
 ): SessionExercise {
   return {
+    ...STAMPS,
     id: `session-exercise-w${weekNumber}`,
     sessionId: `session-w${weekNumber}`,
     exerciseId: DUMBBELL,
@@ -66,6 +70,7 @@ function logsFor(
   completedAt: string,
 ): SetLog[] {
   return reps.map((rep, index) => ({
+    ...STAMPS,
     id: `log-${sessionExercise.id}-${sessionExercise.exerciseId}-${index + 1}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,

@@ -7,8 +7,10 @@ import {
   mesoGridCellStatus,
   todaySession,
 } from '@domain/mesoGridBuilders';
+import { STAMPS } from '../fixtures/stamps';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Upper/lower',
   lengthWeeks: 3,
@@ -22,6 +24,7 @@ const mesocycle: Mesocycle = {
 
 function session(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: `w${week}d${day}`,
     mesoId: 'meso',
     weekNumber: week,

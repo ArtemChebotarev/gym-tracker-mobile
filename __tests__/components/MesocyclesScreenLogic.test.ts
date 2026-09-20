@@ -8,9 +8,11 @@ import {
   groupMesocycles,
   isEmptyGroups,
 } from '@components/MesocyclesScreenLogic';
+import { STAMPS } from '../fixtures/stamps';
 
 function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
   return {
+    ...STAMPS,
     id: 'meso',
     name: 'Meso',
     lengthWeeks: 5,

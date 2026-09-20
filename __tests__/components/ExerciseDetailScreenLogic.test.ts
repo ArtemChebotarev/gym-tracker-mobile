@@ -10,9 +10,11 @@ import {
   formatSetRirTail,
   formatSetValue,
 } from '@components/ExerciseDetailScreenLogic';
+import { STAMPS } from '../fixtures/stamps';
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'log-1',
     sessionExerciseId: 'se-1',
     exerciseId: 'bench-press',

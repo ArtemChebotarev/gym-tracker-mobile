@@ -1,4 +1,5 @@
 import type { Exercise, ExerciseId, MuscleGroup } from '@domain/catalog';
+import type { Incoming } from '@domain/timestamps';
 
 /**
  * Read-only access to the muscle group catalog.
@@ -52,7 +53,7 @@ export interface ExerciseRepository {
    * `Exercise` (id already generated, `source: 'custom'`) — this method only
    * writes it, it does not construct or validate the entity.
    */
-  createCustom(exercise: Exercise): Promise<Exercise>;
+  createCustom(exercise: Incoming<Exercise>): Promise<Exercise>;
 
   /**
    * Replaces an existing custom exercise with the given entity (matched by
@@ -72,5 +73,5 @@ export interface ExerciseRepository {
    * records — catalog or custom — are left untouched, only missing catalog
    * ids are inserted. See 02 · Domain Model, "catalogVersion".
    */
-  seedCatalog(catalogVersion: number, exercises: readonly Exercise[]): Promise<void>;
+  seedCatalog(catalogVersion: number, exercises: readonly Incoming<Exercise>[]): Promise<void>;
 }

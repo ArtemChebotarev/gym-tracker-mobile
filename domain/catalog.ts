@@ -1,3 +1,5 @@
+import type { Timestamps } from './timestamps';
+
 // The single source of truth for the fixed muscle group catalog (02 · Domain Model:
 // "Группа мышц — фиксированный enum прямо на упражнении, не отдельная сущность"). The type
 // is derived from this array — rather than hand-written separately — so a repository that
@@ -54,7 +56,7 @@ export function toExerciseId(id: string): ExerciseId {
   return id as ExerciseId;
 }
 
-export type Exercise = {
+export type Exercise = Timestamps & {
   id: ExerciseId;
   name: string;
   muscleGroup: MuscleGroup;

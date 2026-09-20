@@ -6,11 +6,17 @@
 import type { Session, SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
 import type { WeekPlan, WeekPlanDay, WeekPlanExercise } from '@domain/plan';
+import type { Unsaved } from '@domain/timestamps';
 
-/** A `Session` paired with the `SessionExercise`s planned within it. */
+/**
+ * A `Session` paired with the `SessionExercise`s planned within it, before either has been
+ * stored — the domain builds records, the adapter stamps them (domain/timestamps.ts). Entities
+ * read back out of a repository carry their stamps on top and fit this shape too, which is what
+ * lets `extractWeekPlan` take what `materializeWeekPlan` produced or what storage returned.
+ */
 export type SessionWithExercises = {
-  session: Session;
-  exercises: SessionExercise[];
+  session: Unsaved<Session>;
+  exercises: Unsaved<SessionExercise>[];
 };
 
 /**
@@ -29,7 +35,7 @@ export function materializeWeekPlan(
   params: { mesoId: string; weekNumber: number; isDeload: boolean; targetRir: number },
 ): SessionWithExercises[] {
   return plan.days.map((day) => {
-    const session: Session = {
+    const session: Unsaved<Session> = {
       id: generateId(),
       mesoId: params.mesoId,
       weekNumber: params.weekNumber,
@@ -40,7 +46,7 @@ export function materializeWeekPlan(
       status: 'planned',
     };
 
-    const exercises: SessionExercise[] = day.exercises.map((exercise) => ({
+    const exercises: Unsaved<SessionExercise>[] = day.exercises.map((exercise) => ({
       id: generateId(),
       sessionId: session.id,
       exerciseId: exercise.exerciseId,

@@ -8,8 +8,9 @@
 // own and does not call the repository.
 import type { Exercise } from './catalog';
 import { toExerciseId } from './catalog';
+import type { Unsaved } from './timestamps';
 
-export const EXERCISE_CATALOG: readonly Exercise[] = [
+export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
   // Chest
   {
     id: toExerciseId('bench-press-barbell'),

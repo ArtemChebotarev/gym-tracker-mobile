@@ -1,4 +1,5 @@
 import type { SetLog } from '@domain/execution';
+import type { Incoming } from '@domain/timestamps';
 
 // SetLogRepository — contract for the SetLog slice of the execution repositories.
 //
@@ -70,7 +71,7 @@ export interface SetLogRepository {
   findLastPerformance(query: FindLastPerformanceQuery): Promise<SetLog[]>;
 
   /** Persists a set log that already carries its domain-generated id. */
-  create(setLog: SetLog): Promise<SetLog>;
+  create(setLog: Incoming<SetLog>): Promise<SetLog>;
 
   /** Persists changes to an existing set log, addressed by its id. */
   update(setLog: SetLog): Promise<SetLog>;

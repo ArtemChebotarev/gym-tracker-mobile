@@ -6,11 +6,13 @@ import {
   EARLIER_SESSION_LIMIT,
   exerciseOverviewActions,
 } from '@domain/exerciseOverviewBuilders';
+import { STAMPS } from '../fixtures/stamps';
 
 const EXERCISE_ID = 'bench-press';
 
 function exercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId(EXERCISE_ID),
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -22,6 +24,7 @@ function exercise(overrides: Partial<Exercise> = {}): Exercise {
 
 function session(overrides: Partial<Session> = {}): Session {
   return {
+    ...STAMPS,
     id: 'session-1',
     mesoId: 'meso-1',
     weekNumber: 1,
@@ -36,6 +39,7 @@ function session(overrides: Partial<Session> = {}): Session {
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'set-1',
     sessionExerciseId: 'session-exercise-1',
     exerciseId: EXERCISE_ID,

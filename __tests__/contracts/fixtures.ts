@@ -3,6 +3,8 @@ import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesoTemplate } from '@domain/plan';
 
+import type { Unsaved } from '@domain/timestamps';
+
 import type { RepositorySet } from './harness';
 
 // Entity builders shared by every suite of the repository contract (task 109). They produce
@@ -10,7 +12,7 @@ import type { RepositorySet } from './harness';
 // Contract: "Идентификаторы генерирует домен, не хранилище" — so a contract suite can hand the
 // same record to any implementation without knowing how it stores it.
 
-export function makeMesocycle(overrides: Partial<Mesocycle> = {}): Mesocycle {
+export function makeMesocycle(overrides: Partial<Unsaved<Mesocycle>> = {}): Unsaved<Mesocycle> {
   return {
     id: 'meso-a',
     name: 'Push Pull Legs',
@@ -20,12 +22,11 @@ export function makeMesocycle(overrides: Partial<Mesocycle> = {}): Mesocycle {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
-    createdAt: '2026-01-05T00:00:00.000Z',
     ...overrides,
   };
 }
 
-export function makeSession(overrides: Partial<Session> = {}): Session {
+export function makeSession(overrides: Partial<Unsaved<Session>> = {}): Unsaved<Session> {
   return {
     id: 'session-1',
     mesoId: 'meso-a',
@@ -38,7 +39,7 @@ export function makeSession(overrides: Partial<Session> = {}): Session {
   };
 }
 
-export function makeSessionExercise(overrides: Partial<SessionExercise> = {}): SessionExercise {
+export function makeSessionExercise(overrides: Partial<Unsaved<SessionExercise>> = {}): Unsaved<SessionExercise> {
   return {
     id: 'session-exercise-1',
     sessionId: 'session-1',
@@ -51,7 +52,7 @@ export function makeSessionExercise(overrides: Partial<SessionExercise> = {}): S
   };
 }
 
-export function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
+export function makeSetLog(overrides: Partial<Unsaved<SetLog>> = {}): Unsaved<SetLog> {
   return {
     id: 'set-log-1',
     sessionExerciseId: 'session-exercise-1',
@@ -68,7 +69,7 @@ export function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
  * A `source: 'catalog'` exercise — shipped with the app, immutable, and written through
  * `seedCatalog` rather than `createCustom` (02 · Domain Model, "catalogVersion").
  */
-export function makeCatalogExercise(id: string, overrides: Partial<Exercise> = {}): Exercise {
+export function makeCatalogExercise(id: string, overrides: Partial<Unsaved<Exercise>> = {}): Unsaved<Exercise> {
   return {
     id: toExerciseId(id),
     name: id,
@@ -81,11 +82,11 @@ export function makeCatalogExercise(id: string, overrides: Partial<Exercise> = {
 }
 
 /** A `source: 'custom'` exercise — the user's own, freely editable. */
-export function makeCustomExercise(id: string, overrides: Partial<Exercise> = {}): Exercise {
+export function makeCustomExercise(id: string, overrides: Partial<Unsaved<Exercise>> = {}): Unsaved<Exercise> {
   return makeCatalogExercise(id, { source: 'custom', equipment: 'cable', ...overrides });
 }
 
-export function makeTemplate(overrides: Partial<MesoTemplate> = {}): MesoTemplate {
+export function makeTemplate(overrides: Partial<Unsaved<MesoTemplate>> = {}): Unsaved<MesoTemplate> {
   return {
     id: 'template-ppl',
     name: 'Push Pull Legs',
@@ -93,7 +94,6 @@ export function makeTemplate(overrides: Partial<MesoTemplate> = {}): MesoTemplat
     defaultLengthWeeks: 6,
     weekPlan: { days: [] },
     isHidden: false,
-    createdAt: '2026-08-26T08:00:00.000Z',
     ...overrides,
   };
 }

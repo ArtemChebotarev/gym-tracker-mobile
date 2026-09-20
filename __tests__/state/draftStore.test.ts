@@ -5,6 +5,7 @@ import {
   toScratchMesocycleDraftInput,
   useDraftStore,
 } from '@state/draftStore';
+import { STAMPS } from '../fixtures/stamps';
 
 describe('draftStore', () => {
   afterEach(() => {
@@ -131,6 +132,7 @@ describe('toScratchMesocycleDraftInput', () => {
 
 describe('toMesoBuilderDraft', () => {
   const planned: Mesocycle = {
+    ...STAMPS,
     id: 'meso-1',
     name: 'Push/Pull',
     lengthWeeks: 5,

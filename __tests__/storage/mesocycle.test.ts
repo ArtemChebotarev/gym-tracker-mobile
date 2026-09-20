@@ -6,6 +6,7 @@ import { InMemorySessionRepository } from '@storage/session';
 import { InMemoryStore } from '@storage/store';
 
 import { makeMesocycle, makeSession } from '../contracts/fixtures';
+import { STAMPS } from '../fixtures/stamps';
 
 // What `InMemoryMesocycleRepository` does beyond the shared repository contract (task 109, run
 // from inMemoryContract.test.ts) — behaviour that can only be set up by reaching into this
@@ -23,8 +24,9 @@ describe('InMemoryMesocycleRepository', () => {
     const { historyLookbackDays: _omitted, ...legacySettings } = defaultProgressionSettings;
     await store.collection<Mesocycle>(MESOCYCLE_COLLECTION).insert(
       makeMesocycle({
+        ...STAMPS,
         progressionSettings: legacySettings as Mesocycle['progressionSettings'],
-      }),
+      }) as Mesocycle,
     );
 
     const byId = await repo.getById('meso-a');
@@ -41,8 +43,7 @@ describe('InMemoryMesocycleRepository', () => {
     const mesocycles = new InMemoryMesocycleRepository(store);
     const sessions = new InMemorySessionRepository(store);
     // An orphan: its mesocycle never existed, so the cascade reaches it before the lookup fails.
-    const survivor = makeSession({ id: 'session-survivor', mesoId: 'missing' });
-    await sessions.create(survivor);
+    const survivor = await sessions.create(makeSession({ id: 'session-survivor', mesoId: 'missing' }));
 
     await expect(mesocycles.deleteWithChildren('missing')).rejects.toBeInstanceOf(NotFoundError);
 

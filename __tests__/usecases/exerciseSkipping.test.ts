@@ -6,8 +6,10 @@ import type { WorkoutStore } from '@repositories/workout';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { skipExercise, unskipExercise } from '@usecases/exerciseSkipping';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-w2',
   mesoId: 'meso',
   weekNumber: 2,
@@ -19,6 +21,7 @@ const session: Session = {
 };
 
 const bench: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench',
   sessionId: 'session-w2',
   exerciseId: 'exercise-bench',
@@ -36,6 +39,7 @@ const ref = { sessionId: 'session-w2', sessionExerciseId: 'session-exercise-benc
 
 function logFor(setNumber: number, reps = 12): SetLog {
   return {
+    ...STAMPS,
     id: `log-${setNumber}`,
     sessionExerciseId: 'session-exercise-bench',
     exerciseId: 'exercise-bench',
@@ -78,7 +82,7 @@ describe('skipExercise', () => {
 
     const skipped = await skipExercise(ref, workout);
 
-    expect(skipped).toEqual({ ...bench, status: 'skipped' });
+    expect(skipped).toEqual({ ...bench, ...ANY_STAMPS, status: 'skipped' });
     await expect(stored(workout)).resolves.toEqual(skipped);
   });
 

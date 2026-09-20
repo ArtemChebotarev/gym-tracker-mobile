@@ -9,6 +9,7 @@ import {
   ExerciseDetailScreen,
   type ExerciseDetailScreenProps,
 } from '@components/ExerciseDetailScreen';
+import { STAMPS } from '../fixtures/stamps';
 
 // SafeAreaView (the screen's own top inset) throws without a provider; initialMetrics resolves it
 // synchronously instead of waiting on an onLayout jest never fires.
@@ -19,6 +20,7 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 
 function exercise(overrides: Partial<Exercise> = {}): Exercise {
   return {
+    ...STAMPS,
     id: toExerciseId('bench-press'),
     name: 'Bench Press',
     muscleGroup: 'chest',
@@ -30,6 +32,7 @@ function exercise(overrides: Partial<Exercise> = {}): Exercise {
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
   return {
+    ...STAMPS,
     id: 'log-1',
     sessionExerciseId: 'se-1',
     exerciseId: 'bench-press',

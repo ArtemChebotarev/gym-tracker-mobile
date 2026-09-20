@@ -7,6 +7,7 @@ import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { finishSession, type SessionFinishDeps } from '@usecases/sessionFinish';
+import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -16,6 +17,7 @@ jest.mock('expo-crypto', () => {
 const NOW = '2026-09-18T11:00:00.000Z';
 
 const mesocycle: Mesocycle = {
+  ...STAMPS,
   id: 'meso',
   name: 'Full body',
   lengthWeeks: 4,
@@ -28,6 +30,7 @@ const mesocycle: Mesocycle = {
 };
 
 const session: Session = {
+  ...STAMPS,
   id: 'session-w2',
   mesoId: 'meso',
   weekNumber: 2,
@@ -44,6 +47,7 @@ function makeExercise(
   status: SessionExercise['status'],
 ): SessionExercise {
   return {
+    ...STAMPS,
     id: `session-exercise-${exerciseId}`,
     sessionId: 'session-w2',
     exerciseId,
@@ -56,6 +60,7 @@ function makeExercise(
 
 function logFor(sessionExercise: SessionExercise): SetLog {
   return {
+    ...STAMPS,
     id: `log-${sessionExercise.id}`,
     sessionExerciseId: sessionExercise.id,
     exerciseId: sessionExercise.exerciseId,
@@ -78,6 +83,7 @@ async function setUp(
   await exerciseRepo.seedCatalog(
     1,
     libraryIds.map((id): Exercise => ({
+      ...STAMPS,
       id: toExerciseId(id),
       name: id,
       muscleGroup: 'chest',
@@ -130,7 +136,12 @@ describe('finishSession', () => {
 
     const result = await finishSession('session-w2', deps, NOW);
 
-    expect(result.session).toEqual({ ...session, status: 'completed', completedAt: NOW });
+    expect(result.session).toEqual({
+      ...session,
+      ...ANY_STAMPS,
+      status: 'completed',
+      completedAt: NOW,
+    });
     expect(result.nextSession).toMatchObject({
       weekNumber: 3,
       dayNumber: 1,

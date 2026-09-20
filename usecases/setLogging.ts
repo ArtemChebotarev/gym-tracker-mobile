@@ -13,6 +13,7 @@ import { nowAsUtcIso } from '@domain/time';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 import { startSessionOnFirstSet } from '@usecases/sessionStart';
+import type { Unsaved } from '@domain/timestamps';
 
 /** One set row of an exercise in a session. */
 export type SetRowRef = SessionExerciseRef & { setNumber: number };
@@ -108,7 +109,7 @@ export async function logSet(
       };
     }
 
-    const draft: SetLog = {
+    const draft: Unsaved<SetLog> = {
       id: generateId(),
       sessionExerciseId: sessionExercise.id,
       exerciseId: sessionExercise.exerciseId,

@@ -5,8 +5,10 @@ import {
   validateSingleInProgressSession,
   validateUniqueSessionSlots,
 } from '@domain/executionValidators';
+import { STAMPS } from '../fixtures/stamps';
 
 const benchPressExercise: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-bench-press',
   sessionId: 'session-1',
   exerciseId: 'exercise-bench-press',
@@ -17,6 +19,7 @@ const benchPressExercise: SessionExercise = {
 };
 
 const rowExercise: SessionExercise = {
+  ...STAMPS,
   id: 'session-exercise-row',
   sessionId: 'session-1',
   exerciseId: 'exercise-row',
@@ -27,6 +30,7 @@ const rowExercise: SessionExercise = {
 };
 
 const sessionFixture: Session = {
+  ...STAMPS,
   id: 'session-1',
   mesoId: 'meso-1',
   weekNumber: 1,

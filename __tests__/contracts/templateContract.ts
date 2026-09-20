@@ -10,9 +10,8 @@ export function describeTemplateContract(harness: RepositoryHarness): void {
 
     test('create, getById and getAll round-trip a template', async () => {
       const { templateRepo } = repositories();
-      const template = makeTemplate();
 
-      await templateRepo.create(template);
+      const template = await templateRepo.create(makeTemplate());
 
       await expect(templateRepo.getById(template.id)).resolves.toEqual(template);
       await expect(templateRepo.getAll()).resolves.toEqual([template]);
@@ -21,11 +20,13 @@ export function describeTemplateContract(harness: RepositoryHarness): void {
 
     test('update replaces the stored template', async () => {
       const { templateRepo } = repositories();
-      await templateRepo.create(makeTemplate());
+      const stored = await templateRepo.create(makeTemplate());
 
-      const updated = await templateRepo.update(
-        makeTemplate({ name: 'Upper Lower', isHidden: true }),
-      );
+      const updated = await templateRepo.update({
+        ...stored,
+        name: 'Upper Lower',
+        isHidden: true,
+      });
 
       await expect(templateRepo.getById('template-ppl')).resolves.toEqual(updated);
     });
