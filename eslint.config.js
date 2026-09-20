@@ -88,6 +88,16 @@ module.exports = defineConfig([
     },
   },
   {
+    // The repository contract suite (task 109) states what every implementation of the
+    // repositories must do, so it may only reach them through the interfaces in repositories/.
+    // One import from storage/ and it would stop being a contract and start being a test of one
+    // adapter — the runner that picks an implementation is the `.test.ts` file, not the suite.
+    files: ['__tests__/contracts/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [STORAGE_RESTRICTION] }],
+    },
+  },
+  {
     // Nothing that renders UI sets a color, size or opacity itself — screens, screen-level
     // components, and the design system's own components and icons alike. Only design/tokens.ts
     // holds the literal values (08.0 · Design SDK, "Только токены"; task 100).
