@@ -122,7 +122,6 @@ export const SPACING = {
   'space/dots': 6,
   'space/md': 14,
   'space/action-row-y': 14,
-  'space/legend': 16,
   'space/button': 15,
   'space/pill-x': 18,
   'space/xl': 24,
@@ -176,11 +175,6 @@ export const SIZES = {
   'size/dot': 8,
   /** The larger group dot of the mesocycle editor and the mesocycle list's week dots. */
   'size/dot-large': 10,
-  /**
-   * Legend swatch of the mesocycle overview grid. It shows a cell's own treatment, so it grew from
-   * 16 to 22 with task 107 — at 16 an outline and a filled square read as the same grey dot.
-   */
-  'size/swatch': 22,
   /** ListRow's multi-select checkbox. */
   'size/checkbox': 24,
   /** A small round mark: the workout's completed check, the editor's add-exercise "+". */

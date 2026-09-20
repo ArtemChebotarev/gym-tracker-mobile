@@ -162,13 +162,19 @@ describe('MesoOverviewSheet', () => {
     ).toBe(rings[0]);
   });
 
-  test('DoD 107: the legend covers all three looks, and nothing else', () => {
+  test('DoD 107: no legend — three looks this far apart need no key', () => {
     renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
 
-    for (const label of ['Done', 'Left to do', 'Open now']) {
-      expect(screen.getByText(label)).toBeTruthy();
-    }
-    for (const gone of ['Completed', 'In progress', 'Ready', 'Not programmed yet', 'Skipped']) {
+    for (const gone of [
+      'Done',
+      'Left to do',
+      'Open now',
+      'Completed',
+      'In progress',
+      'Ready',
+      'Not programmed yet',
+      'Skipped',
+    ]) {
       expect(screen.queryByText(gone)).toBeNull();
     }
   });

@@ -84,7 +84,6 @@ const EXPECTED_SPACING_TOKENS = [
   'space/dots',
   'space/md',
   'space/action-row-y',
-  'space/legend',
   'space/button',
   'space/pill-x',
   'space/xl',
