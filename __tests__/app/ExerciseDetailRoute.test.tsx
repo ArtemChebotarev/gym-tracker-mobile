@@ -88,6 +88,17 @@ describe('Exercise screen route', () => {
     expect(screen.queryByText('Best set')).toBeNull();
   });
 
+  test('the History tab loads on the first switch and lists the mesocycle', async () => {
+    mockParams = { id: 'bench-press-barbell' };
+    renderRoute();
+    await screen.findByText('Bench Press');
+
+    fireEvent.press(screen.getByText('History'));
+
+    expect(await screen.findByText('Upper/Lower')).toBeTruthy();
+    expect(screen.getByText('Week 1 · Day 1')).toBeTruthy();
+  });
+
   test("a catalog exercise's menu offers only Hide", async () => {
     mockParams = { id: 'bench-press-barbell' };
     renderRoute();

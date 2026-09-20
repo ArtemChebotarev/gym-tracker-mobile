@@ -1,8 +1,10 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
-import type { ExercisePerformance } from '@domain/exerciseOverview';
+import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
+import type { Mesocycle } from '@domain/mesocycle';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 
 import {
+  MESOCYCLE_COLLECTION,
   SESSION_COLLECTION,
   SESSION_EXERCISE_COLLECTION,
   SET_LOG_COLLECTION,
@@ -82,14 +84,27 @@ export async function readExercisePerformances(
   }));
 }
 
-// See repositories/exerciseHistory.ts for the contract. All of the reading is `readExercisePerformances`
-// above; this only drops what it couldn't resolve — an aggregate can't say which mesocycle or week
-// a performance belongs to without its session.
+// See repositories/exerciseHistory.ts for the contract. The set-log side is
+// `readExercisePerformances` above; this adds the last hop — each session's `Mesocycle`, which the
+// History tab groups and names its sections by — and drops whatever it couldn't resolve: without a
+// session there is no week to show, and without a mesocycle no section to show it under.
 export class InMemoryExerciseHistoryRepository implements ExerciseHistoryRepository {
   constructor(private readonly store: InMemoryStore) {}
 
-  async listByExerciseId(exerciseId: string): Promise<ExercisePerformance[]> {
+  async listByExerciseId(exerciseId: string): Promise<ExerciseHistoryPerformance[]> {
     const performances = await readExercisePerformances(this.store, exerciseId);
-    return performances.flatMap(({ session, setLogs }) => (session ? [{ session, setLogs }] : []));
+    const mesocycles = await this.store
+      .collection<Mesocycle>(MESOCYCLE_COLLECTION)
+      .listByIds([
+        ...new Set(
+          performances.flatMap(({ session }) => (session ? [session.mesoId] : [])),
+        ),
+      ]);
+    const mesocyclesById = new Map(mesocycles.map((mesocycle) => [mesocycle.id, mesocycle]));
+
+    return performances.flatMap(({ session, setLogs }) => {
+      const mesocycle = session && mesocyclesById.get(session.mesoId);
+      return session && mesocycle ? [{ session, mesocycle, setLogs }] : [];
+    });
   }
 }
