@@ -253,3 +253,128 @@ describe('WorkoutExerciseCard', () => {
     expect(screen.queryByTestId('exercise-weight-hint')).toBeNull();
   });
 });
+
+describe('WorkoutExerciseCard — the weight carries into the later sets (task 106)', () => {
+  /** Artem's example: biceps curls, three sets, nothing suggested and nothing logged yet. */
+  const THREE_EMPTY_SETS = makeExercise({
+    name: 'Biceps curl',
+    rows: [1, 2, 3].map((setNumber) => ({
+      setNumber,
+      targetReps: 10,
+      isFirstUnlogged: setNumber === 1,
+    })),
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  function weightFields() {
+    return [1, 2, 3].map((n) => screen.getByLabelText(`Set ${n} weight`).props.value);
+  }
+
+  function enterWeight(setNumber: number, text: string) {
+    const field = screen.getByLabelText(`Set ${setNumber} weight`);
+    fireEvent.changeText(field, text);
+    fireEvent(field, 'blur');
+  }
+
+  test('DoD: 20 kg in set 1 fills all three sets once the cursor leaves the field', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS })} />);
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '20');
+    expect(weightFields()).toEqual(['20', '', '']);
+
+    fireEvent(screen.getByLabelText('Set 1 weight'), 'blur');
+    expect(weightFields()).toEqual(['20', '20', '20']);
+  });
+
+  test('DoD: with set 1 logged, 25 kg in set 2 moves set 3 only', () => {
+    const exercise = makeExercise({
+      ...THREE_EMPTY_SETS,
+      rows: [
+        { setNumber: 1, targetReps: 10, log: { weight: 20, reps: 10 }, isFirstUnlogged: false },
+        { setNumber: 2, targetReps: 10, isFirstUnlogged: true },
+        { setNumber: 3, targetReps: 10, isFirstUnlogged: false },
+      ],
+      loggedSetCount: 1,
+      hasLoggedSets: true,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise })} />);
+
+    enterWeight(2, '25');
+
+    expect(screen.getByLabelText('Set 2 weight').props.value).toBe('25');
+    expect(screen.getByLabelText('Set 3 weight').props.value).toBe('25');
+    // Set 1 is logged — it has no field at all, and still reads what was logged.
+    expect(screen.queryByLabelText('Set 1 weight')).toBeNull();
+    expect(screen.getByText('20')).toBeTruthy();
+  });
+
+  test('DoD: a set the user set by hand is not overwritten by a later correction', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS })} />);
+
+    enterWeight(3, '30');
+    enterWeight(1, '20');
+
+    expect(weightFields()).toEqual(['20', '20', '30']);
+  });
+
+  test('un-logging a set brings its logged weight back into the field', () => {
+    const exercise = makeExercise({
+      ...THREE_EMPTY_SETS,
+      rows: [
+        { setNumber: 1, targetReps: 10, log: { weight: 65, reps: 11 }, isFirstUnlogged: false },
+        { setNumber: 2, targetReps: 10, isFirstUnlogged: true },
+        { setNumber: 3, targetReps: 10, isFirstUnlogged: false },
+      ],
+      loggedSetCount: 1,
+      hasLoggedSets: true,
+    });
+    const onUnlogSet = jest.fn();
+    const { rerender } = render(
+      <WorkoutExerciseCard {...makeProps({ exercise, onUnlogSet })} />,
+    );
+
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Set 1 logged' }));
+    expect(onUnlogSet).toHaveBeenCalledWith(1);
+
+    // Storage answers: the set is no longer logged.
+    rerender(
+      <WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS, onUnlogSet })} />,
+    );
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('65');
+  });
+
+  test('reps do not carry — only the weight does', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS })} />);
+
+    const reps = screen.getByLabelText('Set 1 reps');
+    fireEvent.changeText(reps, '12');
+    fireEvent(reps, 'blur');
+
+    expect([2, 3].map((n) => screen.getByLabelText(`Set ${n} reps`).props.value)).toEqual(['', '']);
+  });
+
+  test('replacing the exercise starts the fields over from the new suggestions', () => {
+    const { rerender } = render(
+      <WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS })} />,
+    );
+    enterWeight(1, '20');
+    expect(weightFields()).toEqual(['20', '20', '20']);
+
+    // Same slot in the session, a different exercise in it (08.7, "Replace exercise").
+    rerender(
+      <WorkoutExerciseCard
+        {...makeProps({
+          exercise: makeExercise({
+            ...THREE_EMPTY_SETS,
+            exerciseId: 'exercise-hammer-curl',
+            name: 'Hammer curl',
+          }),
+        })}
+      />,
+    );
+
+    expect(weightFields()).toEqual(['', '', '']);
+  });
+});
