@@ -97,7 +97,23 @@ describe('resolveSetEntry', () => {
     expect(resolveSetEntry('62.5', '  ', TARGETED)).toEqual({ weight: 62.5, reps: 10 });
   });
 
-  test('without target reps an empty Reps field keeps Log inactive — N RIR and the deload guide are not reps', () => {
+  test('DoD 104: in a deload an empty Reps field takes the reference reps — the same one tap', () => {
+    expect(resolveSetEntry('30', '', { referenceReps: 9 })).toEqual({ weight: 30, reps: 9 });
+    expect(resolveSetEntry('30', '  ', { referenceReps: 9 })).toEqual({ weight: 30, reps: 9 });
+  });
+
+  test('DoD 104: target reps win over the deload reference, as the placeholder does', () => {
+    expect(resolveSetEntry('62.5', '', { targetReps: 10, referenceReps: 9 })).toEqual({
+      weight: 62.5,
+      reps: 10,
+    });
+  });
+
+  test('DoD 104: typed reps win over both', () => {
+    expect(resolveSetEntry('30', '7', { referenceReps: 9 })).toEqual({ weight: 30, reps: 7 });
+  });
+
+  test('DoD 104: with neither, an empty Reps field keeps Log inactive — `N RIR` is not a rep count', () => {
     expect(resolveSetEntry('62.5', '', {})).toBeNull();
   });
 

@@ -11,7 +11,10 @@
 // again at the same weight) read as a wrong suggestion.
 //
 // The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
-// skipped — a skipped exercise's rows are read-only until it's unskipped (05).
+// skipped — a skipped exercise's rows are read-only until it's unskipped (05). Their Weight fields
+// are held here, in `SetRows`, rather than in each row: a weight typed in one set carries into the
+// exercise's later unlogged sets (task 106, `carryWeightForward`). Reps stay in the row — they
+// don't carry.
 //
 // The RIR is a static `Chip`, not the neutral `Badge` 08.7 names: `Badge` neutral fills with
 // `surface/card`, the card's own background, so on the card it read as bare text. The chip's
@@ -21,6 +24,7 @@
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
@@ -38,7 +42,15 @@ import type { MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { exerciseCardView, formatWeightHint } from './WorkoutExerciseCardLogic';
+import {
+  type WeightEdits,
+  carryWeightForward,
+  editWeightText,
+  exerciseCardView,
+  formatWeightHint,
+  holdLoggedWeight,
+  weightFieldText,
+} from './WorkoutExerciseCardLogic';
 import { styles } from './WorkoutExerciseCardStyles';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
@@ -128,20 +140,18 @@ export function WorkoutExerciseCard({
             <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
           </View>
         )}
-        {view.showSets &&
-          exercise.rows.map((row) => (
-            // Keyed by the exercise too: a replaced exercise's rows start fresh from its new
-            // targets instead of keeping what was typed for the old one.
-            <WorkoutSetRow
-              key={`${exercise.exerciseId}-${row.setNumber}`}
-              row={row}
-              targetRir={exercise.targetRir}
-              editable={editable}
-              isSaving={isSaving}
-              onLog={(entry) => onLogSet(row.setNumber, entry)}
-              onUnlog={() => onUnlogSet(row.setNumber)}
-            />
-          ))}
+        {view.showSets && (
+          // Keyed by the exercise: a replaced exercise's rows start fresh from its new targets and
+          // an empty set of weight edits, instead of keeping what was typed for the old one.
+          <SetRows
+            key={exercise.exerciseId}
+            exercise={exercise}
+            editable={editable}
+            isSaving={isSaving}
+            onLogSet={onLogSet}
+            onUnlogSet={onUnlogSet}
+          />
+        )}
         {view.showSkippedNote && <Text style={styles.skippedNote}>Skipped</Text>}
       </View>
     </View>
@@ -163,5 +173,45 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
         {getMuscleGroupLabel(muscleGroup)}
       </Text>
     </View>
+  );
+}
+
+function SetRows({
+  exercise,
+  editable,
+  isSaving,
+  onLogSet,
+  onUnlogSet,
+}: Pick<WorkoutExerciseCardProps, 'exercise' | 'isSaving' | 'onLogSet' | 'onUnlogSet'> & {
+  editable: boolean;
+}) {
+  const [weights, setWeights] = useState<WeightEdits>({});
+  const { rows } = exercise;
+
+  return (
+    <>
+      {rows.map((row) => (
+        <WorkoutSetRow
+          key={row.setNumber}
+          row={row}
+          targetRir={exercise.targetRir}
+          weightText={weightFieldText(weights, row)}
+          onChangeWeight={(text) =>
+            setWeights((edits) => editWeightText(edits, row.setNumber, text))
+          }
+          onBlurWeight={() => setWeights((edits) => carryWeightForward(edits, rows, row.setNumber))}
+          editable={editable}
+          isSaving={isSaving}
+          onLog={(entry) => onLogSet(row.setNumber, entry)}
+          onUnlog={() => {
+            const logged = row.log;
+            if (logged !== undefined) {
+              setWeights((edits) => holdLoggedWeight(edits, row.setNumber, logged.weight));
+            }
+            onUnlogSet(row.setNumber);
+          }}
+        />
+      ))}
+    </>
   );
 }

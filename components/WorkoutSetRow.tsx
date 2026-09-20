@@ -2,11 +2,12 @@
 // One row per `SetTarget`: the set number, Weight and Reps, the target indicator, and the Log box.
 //
 // Editable (live mode, exercise not skipped):
-// - unlogged — Weight starts with the **value** of `suggestedWeight` (else empty, `–` placeholder,
-//   decimal keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard).
+// - unlogged — Weight holds the **value** the card gives it (`suggestedWeight`, what was typed, or
+//   a weight carried over from an earlier set — task 106; else empty, `–` placeholder, decimal
+//   keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard).
 //   Log carries the accent outline on the exercise's first unlogged row. It logs what the fields
-//   hold, an empty Reps taking the set's target reps (`resolveSetEntry`) — so a row left as
-//   recommended logs with one tap. With no target to fall back on, Log waits for typed reps.
+//   hold, an empty Reps taking the number the placeholder shows (`resolveSetEntry`) — so a row left
+//   as recommended logs with one tap. With only `N RIR` to fall back on, Log waits for typed reps.
 // - logged — plain numbers, the `✓ / +N / −N` indicator (only for a set with `targetReps`), and a
 //   filled Log box. Tapping it un-logs the set, and the fields come back holding the logged values.
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
@@ -16,8 +17,9 @@
 // Laid out after the 08.7 mockup's set table: Weight · Reps · indicator · Log, all centered (no set
 // number — Artem's review); the focused field's outline brightens.
 //
-// Typed-but-unlogged values live only in this component's state — they're never saved (05,
-// "Сохранение данных"). The screen does the writing through `onLog` / `onUnlog`.
+// Typed-but-unlogged values are never saved (05, "Сохранение данных"). Reps live in this
+// component's state; Weight lives one level up, in the exercise card, because it carries into the
+// exercise's later sets (task 106). The screen does the writing through `onLog` / `onUnlog`.
 // JSX/rendering only — styles live in WorkoutSetRowStyles.ts and pure helpers in
 // WorkoutSetRowLogic.ts, per the code-style skill.
 
@@ -32,7 +34,6 @@ import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSessi
 import {
   formatIndicator,
   formatRowWeight,
-  initialWeightText,
   isRirPlaceholder,
   isStrongIndicator,
   repsPlaceholder,
@@ -44,6 +45,11 @@ export type WorkoutSetRowProps = {
   row: WorkoutSetRowModel;
   /** The exercise's target RIR — the Reps placeholder when the set has no other. */
   targetRir: number | undefined;
+  /** What the Weight field holds — the card owns it, so it can carry into the later sets (106). */
+  weightText: string;
+  onChangeWeight: (text: string) => void;
+  /** The cursor left the Weight field — when the card carries its value forward. */
+  onBlurWeight: () => void;
   /** Live mode and the exercise isn't skipped — the fields and the Log box work. */
   editable: boolean;
   /** A log or un-log is being saved — Log is held until it lands, so a double tap can't repeat it. */
@@ -55,12 +61,14 @@ export type WorkoutSetRowProps = {
 export function WorkoutSetRow({
   row,
   targetRir,
+  weightText,
+  onChangeWeight,
+  onBlurWeight,
   editable,
   isSaving,
   onLog,
   onUnlog,
 }: WorkoutSetRowProps) {
-  const [weightText, setWeightText] = useState(() => initialWeightText(row));
   const [repsText, setRepsText] = useState('');
   const [focused, setFocused] = useState<'weight' | 'reps' | null>(null);
   const { log, setNumber } = row;
@@ -68,8 +76,8 @@ export function WorkoutSetRow({
   const rirPlaceholder = isRirPlaceholder(row, targetRir);
 
   function handleUnlog(logged: { weight: number; reps: number }) {
-    // The row goes back to editable fields holding what was logged (05, "Снять отметку").
-    setWeightText(formatRowWeight(logged.weight));
+    // The row goes back to editable fields holding what was logged (05, "Снять отметку") — the
+    // card puts the weight back into its own state, this only has the reps.
     setRepsText(String(logged.reps));
     onUnlog();
   }
@@ -163,9 +171,12 @@ export function WorkoutSetRow({
       <TextInput
         accessibilityLabel={`Set ${setNumber} weight`}
         value={weightText}
-        onChangeText={setWeightText}
+        onChangeText={onChangeWeight}
         onFocus={() => setFocused('weight')}
-        onBlur={() => setFocused(null)}
+        onBlur={() => {
+          setFocused(null);
+          onBlurWeight();
+        }}
         placeholder="–"
         placeholderTextColor={PLACEHOLDER_COLOR}
         keyboardType="decimal-pad"
@@ -204,7 +215,7 @@ export function WorkoutSetRow({
           hitSlop={tapTargetSlop(SIZES['size/log-box'])}
           onPress={() => {
             if (entry) {
-              // Show what's being logged — an empty Reps field fills in with the target.
+              // Show what's being logged — an empty Reps field fills in with its placeholder.
               setRepsText(String(entry.reps));
               onLog(entry);
             }
