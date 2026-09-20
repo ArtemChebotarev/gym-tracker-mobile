@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "28d604dc-af4f-4c68-b724-8a2f30aa96f9",
+  "id": "382b956b-ad60-46b1-9bba-048f6997297d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exercise": {
@@ -596,13 +596,6 @@
         "weight_unit": {
           "name": "weight_unit",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "schema_version": {
-          "name": "schema_version",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
