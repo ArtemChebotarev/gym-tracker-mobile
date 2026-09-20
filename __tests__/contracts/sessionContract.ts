@@ -1,3 +1,5 @@
+import { ConflictError } from '@domain/errors';
+
 import { makeSession, seedParents } from './fixtures';
 import { type RepositoryHarness, useRepositories } from './harness';
 
@@ -93,7 +95,7 @@ export function describeSessionContract(harness: RepositoryHarness): void {
 
       const [, inProgress] = await sessionRepo.createMany([
         makeSession({ id: 's-planned' }),
-        makeSession({ id: 's-active', status: 'in_progress' }),
+        makeSession({ id: 's-active', dayNumber: 2, status: 'in_progress' }),
       ]);
 
       await expect(sessionRepo.getCurrentInProgress()).resolves.toEqual(inProgress);
@@ -110,6 +112,32 @@ export function describeSessionContract(harness: RepositoryHarness): void {
 
       expect(created.map((session) => session.id)).toEqual(['s-d1', 's-d2', 's-d3']);
       await expect(sessionRepo.listByMesoId('meso-a')).resolves.toHaveLength(3);
+    });
+
+    test('a second session in the same (mesoId, weekNumber, dayNumber) slot is rejected', async () => {
+      const { sessionRepo } = repositories();
+      await sessionRepo.create(makeSession({ id: 's-first' }));
+
+      await expect(sessionRepo.create(makeSession({ id: 's-second' }))).rejects.toBeInstanceOf(
+        ConflictError,
+      );
+      // The same triple under another mesocycle is a different slot.
+      await expect(
+        sessionRepo.create(makeSession({ id: 's-other-meso', mesoId: 'meso-b' })),
+      ).resolves.toMatchObject({ id: 's-other-meso' });
+    });
+
+    test('update is refused when it would move a session onto an occupied slot', async () => {
+      const { sessionRepo } = repositories();
+      const [, dayTwo] = await sessionRepo.createMany([
+        makeSession({ id: 's-day-1', dayNumber: 1 }),
+        makeSession({ id: 's-day-2', dayNumber: 2 }),
+      ]);
+
+      await expect(sessionRepo.update({ ...dayTwo!, dayNumber: 1 })).rejects.toBeInstanceOf(
+        ConflictError,
+      );
+      await expect(sessionRepo.getById('s-day-2')).resolves.toEqual(dayTwo);
     });
 
     test('update replaces the stored session', async () => {

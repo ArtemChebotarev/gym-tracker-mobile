@@ -62,7 +62,7 @@ CREATE TABLE `session` (
 --> statement-breakpoint
 CREATE INDEX `session_meso_day_status` ON `session` (`meso_id`,`day_number`,`status`);--> statement-breakpoint
 CREATE INDEX `session_status` ON `session` (`status`);--> statement-breakpoint
-CREATE INDEX `session_meso_week_day` ON `session` (`meso_id`,`week_number`,`day_number`);--> statement-breakpoint
+CREATE UNIQUE INDEX `session_meso_week_day` ON `session` (`meso_id`,`week_number`,`day_number`);--> statement-breakpoint
 CREATE TABLE `set_log` (
 	`id` text PRIMARY KEY NOT NULL,
 	`session_exercise_id` text NOT NULL,

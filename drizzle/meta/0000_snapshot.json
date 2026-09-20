@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "dbe0d7b2-8462-44d1-824a-e1f3b01fe8ba",
+  "id": "28d604dc-af4f-4c68-b724-8a2f30aa96f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exercise": {
@@ -422,7 +422,7 @@
             "week_number",
             "day_number"
           ],
-          "isUnique": false
+          "isUnique": true
         }
       },
       "foreignKeys": {

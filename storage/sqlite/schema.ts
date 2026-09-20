@@ -1,4 +1,4 @@
-import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import type { Exercise } from '@domain/catalog';
 import type { Session, SessionExercise, SetTarget } from '@domain/execution';
@@ -100,12 +100,13 @@ export const sessions = sqliteTable(
     // The source-session lookup of every generation: last completed session of a day.
     index('session_meso_day_status').on(table.mesoId, table.dayNumber, table.status),
     index('session_status').on(table.status),
-    // (mesoId, weekNumber, dayNumber) identifies a session within its mesocycle, but the index
-    // over it is deliberately *not* unique: that is a domain invariant, enforced by the domain's
-    // validators, and a storage adapter enforcing it on its own would make the two adapters
-    // disagree — the in-memory engine accepts such rows, and the shared repository contract must
-    // pass on both unchanged (07 · Persistence Layer Contract, rule 2: no business logic here).
-    index('session_meso_week_day').on(table.mesoId, table.weekNumber, table.dayNumber),
+    // "Пара (mesoId, weekNumber, dayNumber) уникальна" — 02 · Domain Model, Session invariants.
+    // Enforced here rather than left to the callers: the two places that write sessions are Start
+    // and next-week generation, and the second one guards the slot with a read-then-write check
+    // that only this index makes airtight. The in-memory adapter enforces the same rule through
+    // `validateUniqueSessionSlots`, so the two implementations agree and the shared contract
+    // states it once for both.
+    uniqueIndex('session_meso_week_day').on(table.mesoId, table.weekNumber, table.dayNumber),
   ],
 );
 

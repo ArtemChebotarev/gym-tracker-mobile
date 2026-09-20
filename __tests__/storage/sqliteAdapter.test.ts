@@ -78,7 +78,9 @@ describe('the SQLite adapter’s normalized errors', () => {
 
     expect(isConflictError(error)).toBe(true);
     expect((error as Error).message).toMatch(/UNIQUE constraint failed/i);
-    expect((error as Error).cause).toBeInstanceOf(Error);
+    // Checked by what the cause says, not by `instanceof`: better-sqlite3 is a native module, so
+    // its own error class does not reliably match the test sandbox's `Error` constructor.
+    expect((error as { cause?: Error }).cause?.message).toMatch(/UNIQUE constraint failed/i);
     sqlite.close();
   });
 

@@ -31,18 +31,23 @@ type Performance = {
  * a test reads as a list of past performances rather than as rows of three collections. Written
  * entirely through the repositories — the join `findLastPerformance` walks is the thing under
  * test, so the data it walks has to arrive the way the app would write it.
+ *
+ * Each performance lands on a day of its own: `(mesoId, weekNumber, dayNumber)` identifies a
+ * session (02 · Domain Model), and which day a past performance happened on is not what any test
+ * here is about — it just must not be the same one twice.
  */
 async function seedPerformances(
   repositories: RepositorySet,
   performances: Performance[],
 ): Promise<void> {
-  for (const performance of performances) {
+  for (const [index, performance] of performances.entries()) {
     const sessionId = `session-${performance.sessionExerciseId}`;
     const exerciseId = performance.exerciseId ?? BENCH_PRESS;
     await repositories.sessionRepo.create(
       makeSession({
         id: sessionId,
         mesoId: performance.mesoId ?? CURRENT_MESO,
+        dayNumber: index + 1,
         isDeload: performance.isDeload ?? false,
         status: 'completed',
         completedAt: performance.completedAt,
