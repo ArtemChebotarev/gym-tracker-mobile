@@ -1,5 +1,8 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
-import { InMemoryExerciseHistoryRepository } from '@storage/exerciseHistory';
+import {
+  InMemoryExerciseHistoryRepository,
+  readExercisePerformances,
+} from '@storage/exerciseHistory';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 
@@ -60,12 +63,12 @@ async function seeded() {
   await repos.setLogRepo.create(log('log-squat', 'se-2', 'squat', 1));
   await repos.setLogRepo.create(log('log-3', 'se-3', BENCH, 1));
   await repos.setLogRepo.create(log('log-orphan', 'se-orphan', BENCH, 1));
-  return new InMemoryExerciseHistoryRepository(store);
+  return { store, repo: new InMemoryExerciseHistoryRepository(store) };
 }
 
 describe('InMemoryExerciseHistoryRepository', () => {
   test('groups the exercise’s set logs by performance and joins each to its session', async () => {
-    const repo = await seeded();
+    const { repo } = await seeded();
 
     const performances = await repo.listByExerciseId(BENCH);
 
@@ -77,7 +80,7 @@ describe('InMemoryExerciseHistoryRepository', () => {
   });
 
   test('sorts each performance’s set logs by set number', async () => {
-    const repo = await seeded();
+    const { repo } = await seeded();
 
     const performances = await repo.listByExerciseId(BENCH);
 
@@ -86,7 +89,7 @@ describe('InMemoryExerciseHistoryRepository', () => {
   });
 
   test("leaves out another exercise's sets", async () => {
-    const repo = await seeded();
+    const { repo } = await seeded();
 
     const performances = await repo.listByExerciseId(BENCH);
 
@@ -96,7 +99,7 @@ describe('InMemoryExerciseHistoryRepository', () => {
   });
 
   test('drops a performance whose session cannot be resolved', async () => {
-    const repo = await seeded();
+    const { repo } = await seeded();
 
     const performances = await repo.listByExerciseId(BENCH);
 
@@ -106,8 +109,35 @@ describe('InMemoryExerciseHistoryRepository', () => {
   });
 
   test('returns nothing for an exercise that was never logged', async () => {
-    const repo = await seeded();
+    const { repo } = await seeded();
 
     await expect(repo.listByExerciseId('deadlift')).resolves.toEqual([]);
+  });
+});
+
+// The join both exercise history and rule 6's reference lookup (findLastPerformance) read through
+// — see storage/exerciseHistory.ts. It reports an unresolved session rather than deciding for
+// them, because the two want opposite things from one.
+describe('readExercisePerformances', () => {
+  test('hands an unresolved session over as undefined instead of dropping it', async () => {
+    const { store } = await seeded();
+
+    const performances = await readExercisePerformances(store, BENCH);
+
+    const orphan = performances.find(
+      (performance) => performance.sessionExerciseId === 'se-orphan',
+    );
+    expect(orphan?.session).toBeUndefined();
+    expect(orphan?.setLogs.map((setLog) => setLog.id)).toEqual(['log-orphan']);
+  });
+
+  test('leaves out the performance the caller excludes', async () => {
+    const { store } = await seeded();
+
+    const performances = await readExercisePerformances(store, BENCH, {
+      excludeSessionExerciseId: 'se-1',
+    });
+
+    expect(performances.map((performance) => performance.sessionExerciseId)).not.toContain('se-1');
   });
 });

@@ -1,15 +1,12 @@
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { SessionExercise, SetLog } from '@domain/execution';
 import type {
   FindLastPerformanceQuery,
   ListSetLogsByExerciseIdOptions,
   SetLogRepository,
 } from '@repositories/setLogRepository';
 
-import {
-  SESSION_COLLECTION,
-  SESSION_EXERCISE_COLLECTION,
-  SET_LOG_COLLECTION,
-} from './collectionNames';
+import { SESSION_EXERCISE_COLLECTION, SET_LOG_COLLECTION } from './collectionNames';
+import { readExercisePerformances } from './exerciseHistory';
 import type { InMemoryStore } from './store';
 
 export class InMemorySetLogRepository implements SetLogRepository {
@@ -59,50 +56,40 @@ export class InMemorySetLogRepository implements SetLogRepository {
     return last ?? null;
   }
 
-  // Walks performances newest first. A performance whose SessionExercise or Session is missing
-  // can't be checked for deload or mesocycle, so hitting one before a valid reference ends the
-  // search with no reference at all: without a trustworthy reference rule 6 recommends nothing
-  // and the screen shows only RIR, rather than falling back to an older, possibly wrong one.
+  // Rule 6's reference (03 · Progression Engine): the newest performance that qualifies. The
+  // Session join it needs is the same one exercise history starts from, so it comes from
+  // `readExercisePerformances` rather than being written out a second time here — this method only
+  // adds the rule's own narrowing on top.
+  //
+  // A performance whose SessionExercise or Session is missing can't be checked for deload or
+  // mesocycle, so hitting one before a valid reference ends the search with no reference at all:
+  // without a trustworthy reference rule 6 recommends nothing and the screen shows only RIR,
+  // rather than falling back to an older, possibly wrong one. (Exercise history, reading the same
+  // join, simply drops such a performance — it has nothing to be wrong about.)
   async findLastPerformance({
     exerciseId,
     mesoId,
     since,
     excludeSessionExerciseId,
   }: FindLastPerformanceQuery): Promise<SetLog[]> {
-    const logs = await this.setLogs.find(
-      (log) => log.exerciseId === exerciseId && log.sessionExerciseId !== excludeSessionExerciseId,
-    );
-    const logsBySessionExerciseId = new Map<string, SetLog[]>();
-    for (const log of logs) {
-      const group = logsBySessionExerciseId.get(log.sessionExerciseId) ?? [];
-      group.push(log);
-      logsBySessionExerciseId.set(log.sessionExerciseId, group);
-    }
-
-    const sessionExercises = await this.store
-      .collection<SessionExercise>(SESSION_EXERCISE_COLLECTION)
-      .listByIds([...logsBySessionExerciseId.keys()]);
-    const sessions = await this.store
-      .collection<Session>(SESSION_COLLECTION)
-      .listByIds([...new Set(sessionExercises.map((exercise) => exercise.sessionId))]);
-    const sessionIdBySessionExerciseId = new Map(
-      sessionExercises.map((exercise) => [exercise.id, exercise.sessionId]),
-    );
-    const sessionsById = new Map(sessions.map((session) => [session.id, session]));
-
-    const performances = [...logsBySessionExerciseId].map(([sessionExerciseId, group]) => ({
-      session: sessionsById.get(sessionIdBySessionExerciseId.get(sessionExerciseId) ?? ''),
-      logs: group,
-      completedAt: group.reduce((max, log) => (log.completedAt > max ? log.completedAt : max), ''),
+    const performances = (
+      await readExercisePerformances(this.store, exerciseId, { excludeSessionExerciseId })
+    ).map(({ session, setLogs }) => ({
+      session,
+      setLogs,
+      completedAt: setLogs.reduce(
+        (max, log) => (log.completedAt > max ? log.completedAt : max),
+        '',
+      ),
     }));
     performances.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
 
-    for (const { session, logs: performanceLogs, completedAt } of performances) {
+    for (const { session, setLogs, completedAt } of performances) {
       if (session === undefined) {
         return [];
       }
       if (!session.isDeload && (session.mesoId === mesoId || completedAt >= since)) {
-        return [...performanceLogs].sort((a, b) => a.setNumber - b.setNumber);
+        return setLogs;
       }
     }
     return [];
