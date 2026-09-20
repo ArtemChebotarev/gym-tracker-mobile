@@ -1,6 +1,7 @@
 import { enableForeignKeys, type SqliteDatabase } from '@storage/sqlite/db';
 import { migrateToLatest, type MigrationBundle } from '@storage/sqlite/migrations';
 import Database from 'better-sqlite3';
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -48,9 +49,25 @@ export function openTestDatabase(): TestDatabase {
   return { db, close: () => sqlite.close() };
 }
 
-/** The same, brought up to the app's current schema. */
+/** The same, migrated exactly as the app migrates its own — schema and shipped content alike. */
 export async function migratedTestDatabase(): Promise<TestDatabase> {
   const database = openTestDatabase();
   await migrateToLatest(database.db, readMigrationBundle());
+  return database;
+}
+
+/**
+ * Migrated, then emptied of everything the app ships with — today that is the exercise catalog,
+ * which arrives as a migration of its own (task 067(2)).
+ *
+ * A repository contract states what an implementation does starting from nothing, and eighty-odd
+ * catalog rows are not nothing: a test that seeds three exercises and counts them would be
+ * counting the catalog too. Clearing after migrating rather than skipping the migration that
+ * carries the content keeps this from having to know which migrations those are — a list that
+ * would need updating every time the catalog changes.
+ */
+export async function emptyTestDatabase(): Promise<TestDatabase> {
+  const database = await migratedTestDatabase();
+  await database.db.run(sql`DELETE FROM exercise`);
   return database;
 }

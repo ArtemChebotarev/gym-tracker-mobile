@@ -39,6 +39,7 @@
     "jest-expo": "~57.0.4",
     "prettier": "^3.9.6",
     "react-test-renderer": "19.2.3",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "overrides": {
@@ -66,7 +67,8 @@
     "test:watch": "jest --watch",
     "verify": "npm run lint && npm run typecheck && npm run test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "catalog:migration": "tsx scripts/generateCatalogMigration.ts"
   },
   "private": true
 }
