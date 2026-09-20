@@ -37,7 +37,6 @@ import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BodyWeightSheet } from '@components/BodyWeightSheet';
-import { asksForBodyWeight } from '@components/BodyWeightSheetLogic';
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
@@ -85,10 +84,10 @@ export default function TodayScreen() {
   const [menuExercise, setMenuExercise] = useState<WorkoutExercise | undefined>(undefined);
   const [isExerciseMenuOpen, setIsExerciseMenuOpen] = useState(false);
   const [isReplaceOpen, setIsReplaceOpen] = useState(false);
-  // The body weight sheet asks until it's answered (105). Closing it by the backdrop leaves the
-  // session usable — the question comes back the next time the screen opens.
+  // The body weight sheet (105) opens from the Weight cell of a bodyweight exercise, never by
+  // itself: that cell stays on screen, so closing the sheet costs nothing and is never a dead end.
   const [bodyWeightText, setBodyWeightText] = useState('');
-  const [isBodyWeightDismissed, setIsBodyWeightDismissed] = useState(false);
+  const [isBodyWeightOpen, setIsBodyWeightOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
@@ -150,6 +149,7 @@ export default function TodayScreen() {
         }}
         isSaving={logSet.isPending || unlogSet.isPending}
         onBodyWeightChange={saveBodyWeight}
+        onRequestBodyWeight={() => setIsBodyWeightOpen(true)}
         onLogSet={(exercise, setNumber, entry) => {
           if (currentSessionId === undefined) {
             return;
@@ -285,13 +285,14 @@ export default function TodayScreen() {
         }}
       />
       <BodyWeightSheet
-        visible={asksForBodyWeight(model) && !isBodyWeightDismissed}
-        onClose={() => setIsBodyWeightDismissed(true)}
+        visible={isBodyWeightOpen}
+        onClose={() => setIsBodyWeightOpen(false)}
         value={bodyWeightText}
         onChangeValue={setBodyWeightText}
         onSave={(bodyWeight) => {
           saveBodyWeight(bodyWeight);
           setBodyWeightText('');
+          setIsBodyWeightOpen(false);
         }}
         isSaving={setBodyWeight.isPending}
       />

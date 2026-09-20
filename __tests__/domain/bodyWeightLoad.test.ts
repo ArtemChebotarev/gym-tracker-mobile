@@ -1,7 +1,6 @@
 import {
   isBodyWeightExercise,
   isPureBodyWeight,
-  totalLoad,
   usesAddedWeight,
 } from '@domain/bodyWeightLoad';
 
@@ -27,24 +26,5 @@ describe('telling the bodyweight exercises apart', () => {
     expect(usesAddedWeight('bodyweight-weighted')).toBe(true);
     expect(usesAddedWeight('bodyweight')).toBe(false);
     expect(usesAddedWeight('machine')).toBe(false);
-  });
-});
-
-describe('totalLoad', () => {
-  test('DoD: a weighted set loads the body plus what was hung on it', () => {
-    expect(totalLoad({ weight: 10, bodyWeight: 80 }, 'bodyweight-weighted')).toBe(90);
-  });
-
-  test("a pure bodyweight set's weight is already the whole load", () => {
-    expect(totalLoad({ weight: 80 }, 'bodyweight')).toBe(80);
-  });
-
-  test('an ordinary exercise never picks up the body weight', () => {
-    expect(totalLoad({ weight: 60, bodyWeight: 80 }, 'barbell')).toBe(60);
-    expect(totalLoad({ weight: 60 }, undefined)).toBe(60);
-  });
-
-  test('a weighted set with no body weight recorded reports the added weight alone', () => {
-    expect(totalLoad({ weight: 10 }, 'bodyweight-weighted')).toBe(10);
   });
 });

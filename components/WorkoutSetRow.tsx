@@ -51,6 +51,12 @@ export type WorkoutSetRowProps = {
   equipment?: Equipment;
   /** The block's body weight, added onto a `bodyweight-weighted` set's total when it's logged. */
   bodyWeight?: number;
+  /**
+   * Given while the block has no body weight yet and this is a bodyweight exercise: the Weight
+   * cell becomes a button that asks for it instead of a field to type in (task 105). Nothing else
+   * can be entered here until it's answered — the load is the body weight.
+   */
+  onRequestBodyWeight?: () => void;
   /** What the Weight field holds — the card owns it, so it can carry into the later sets (106). */
   weightText: string;
   onChangeWeight: (text: string) => void;
@@ -69,6 +75,7 @@ export function WorkoutSetRow({
   targetRir,
   equipment,
   bodyWeight,
+  onRequestBodyWeight,
   weightText,
   onChangeWeight,
   onBlurWeight,
@@ -176,25 +183,40 @@ export function WorkoutSetRow({
 
   return (
     <View testID={`set-row-${setNumber}`} style={styles.row}>
-      <TextInput
-        accessibilityLabel={`Set ${setNumber} weight`}
-        value={weightText}
-        onChangeText={onChangeWeight}
-        onFocus={() => setFocused('weight')}
-        onBlur={() => {
-          setFocused(null);
-          onBlurWeight();
-        }}
-        placeholder="–"
-        placeholderTextColor={PLACEHOLDER_COLOR}
-        keyboardType="decimal-pad"
-        style={[
-          styles.field,
-          styles.fieldEditable,
-          styles.input,
-          focused === 'weight' && styles.fieldFocused,
-        ]}
-      />
+      {onRequestBodyWeight === undefined ? (
+        <TextInput
+          accessibilityLabel={`Set ${setNumber} weight`}
+          value={weightText}
+          onChangeText={onChangeWeight}
+          onFocus={() => setFocused('weight')}
+          onBlur={() => {
+            setFocused(null);
+            onBlurWeight();
+          }}
+          placeholder="–"
+          placeholderTextColor={PLACEHOLDER_COLOR}
+          keyboardType="decimal-pad"
+          style={[
+            styles.field,
+            styles.fieldEditable,
+            styles.input,
+            focused === 'weight' && styles.fieldFocused,
+          ]}
+        />
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Set your body weight"
+          onPress={onRequestBodyWeight}
+          style={({ pressed }) => [
+            styles.field,
+            styles.fieldEditable,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.placeholder}>–</Text>
+        </Pressable>
+      )}
       <TextInput
         accessibilityLabel={`Set ${setNumber} reps`}
         value={repsText}

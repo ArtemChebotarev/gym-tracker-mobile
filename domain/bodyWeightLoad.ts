@@ -8,7 +8,9 @@
 //   `suggestedWeight`, no weight hint and no deload weight: half your body weight is not a
 //   training target. Its reps progress like any other exercise's.
 // - `bodyweight-weighted` — `SetLog.weight` is the **added** weight alone, and that is what the
-//   engine progresses; the total is `bodyWeight + weight`, which is what a screen shows.
+//   engine progresses. A screen shows the two apart — `83 (+5)`, the body weight and what was
+//   hung on it — rather than their sum: what you want to read back is what you weighed and what
+//   you added, and the sum hides both (Artem's review).
 // - Anything else — `weight` is the weight lifted, and body weight never enters.
 
 import type { Equipment } from '@domain/catalog';
@@ -26,16 +28,4 @@ export function isPureBodyWeight(equipment: Equipment | undefined): boolean {
 /** `weight` means added weight, on top of the body weight. */
 export function usesAddedWeight(equipment: Equipment | undefined): boolean {
   return equipment === 'bodyweight-weighted';
-}
-
-/**
- * What the set actually loaded: the added weight on top of the body weight it was logged with,
- * or the weight as is for everything else. A `bodyweight-weighted` set with no `bodyWeight`
- * recorded can only report the added weight — see "Не уверен — не рекомендуй" (03).
- */
-export function totalLoad(
-  set: { weight: number; bodyWeight?: number },
-  equipment: Equipment | undefined,
-): number {
-  return usesAddedWeight(equipment) ? set.weight + (set.bodyWeight ?? 0) : set.weight;
 }

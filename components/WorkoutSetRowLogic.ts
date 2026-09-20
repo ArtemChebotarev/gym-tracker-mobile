@@ -1,6 +1,6 @@
 // Pure helpers behind components/WorkoutSetRow.tsx — see the code-style skill.
 
-import { isPureBodyWeight, totalLoad, usesAddedWeight } from '@domain/bodyWeightLoad';
+import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
@@ -33,16 +33,23 @@ export function initialWeightText(
 }
 
 /**
- * What a logged row shows in the Weight column: the total load, with the added weight spelled out
- * after it on a `bodyweight-weighted` exercise — `90 (+10)` for 10 kg hung on an 80 kg body
- * (Artem's call, task 105). Everything else reads as the plain number it always did.
+ * What a logged row shows in the Weight column. On a `bodyweight-weighted` exercise, the body
+ * weight it was logged with and the weight hung on it, kept apart — `83 (+5)`, not their sum
+ * (task 105, Artem's review: the sum hides both numbers you actually want to read back). With no
+ * body weight recorded there's only the added weight to show. Everything else reads as the plain
+ * number it always did.
  */
 export function formatLoggedWeight(
   log: { weight: number; bodyWeight?: number },
   equipment?: Equipment,
 ): string {
-  const total = formatRowWeight(totalLoad(log, equipment));
-  return usesAddedWeight(equipment) ? `${total} (+${formatRowWeight(log.weight)})` : total;
+  if (!usesAddedWeight(equipment)) {
+    return formatRowWeight(log.weight);
+  }
+  const added = `(+${formatRowWeight(log.weight)})`;
+  return log.bodyWeight === undefined
+    ? added
+    : `${formatRowWeight(log.bodyWeight)} ${added}`;
 }
 
 /**

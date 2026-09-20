@@ -1,11 +1,12 @@
 // Body weight sheet — task 105 (05 · Workout Execution & Logging, "Ввод веса и повторов"). Asked
-// once per mesocycle, the first time a bodyweight exercise comes up in a live session
-// (`asksForBodyWeight`): its exercises are loaded by your own weight, and without it their Weight
-// column has nothing to put in front of you.
+// once per mesocycle: its bodyweight exercises are loaded by your own weight, and without it their
+// Weight column has nothing to put in front of you.
 //
-// There's no Cancel. The value is what makes a bodyweight set loggable, so the sheet asks until
-// it's answered — but it doesn't block the rest of the workout: closing it by the backdrop leaves
-// the session usable and the question comes back next time the screen opens.
+// It does not open by itself. The Weight field of a bodyweight exercise opens it while the block
+// has no body weight yet, and that field is always on screen — so closing the sheet, by accident
+// or on purpose, is never a dead end and never costs the workout (Artem's review: the first
+// version popped up on opening the session and one stray tap on the backdrop retired the question
+// for good).
 //
 // Fully controlled, like ExerciseFormSheet: the caller owns the in-progress text and the save.
 // JSX/rendering only — styles live in BodyWeightSheetStyles.ts and pure helpers in

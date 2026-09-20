@@ -63,6 +63,8 @@ export type WorkoutScreenProps = {
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
   /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
   onBodyWeightChange?: (bodyWeight: number) => void;
+  /** A bodyweight exercise's Weight cell was tapped while the block has no body weight yet (105). */
+  onRequestBodyWeight?: () => void;
   /** A log or un-log is being saved. */
   isSaving: boolean;
   /** Finishes the session (05, "Завершение тренировки"). Only offered when `showFinish`. */
@@ -88,6 +90,7 @@ export function WorkoutScreen({
   onLogSet,
   onUnlogSet,
   onBodyWeightChange,
+  onRequestBodyWeight,
   isSaving,
   onFinish,
   isFinishing,
@@ -173,6 +176,7 @@ export function WorkoutScreen({
               isSaving={isSaving}
               bodyWeight={model.bodyWeight}
               onBodyWeightChange={onBodyWeightChange}
+              onRequestBodyWeight={onRequestBodyWeight}
               onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
             />

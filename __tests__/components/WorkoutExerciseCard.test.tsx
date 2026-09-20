@@ -407,10 +407,49 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
     expect(screen.getByLabelText('Set 2 weight').props.value).toBe('80');
   });
 
-  test('empty until the body weight has been asked for', () => {
-    render(<WorkoutExerciseCard {...makeProps({ exercise: PULL_UP })} />);
+  test('DoD: with no body weight yet, the Weight cell asks for one instead of taking a number', () => {
+    const onRequestBodyWeight = jest.fn();
+    render(
+      <WorkoutExerciseCard {...makeProps({ exercise: PULL_UP, onRequestBodyWeight })} />,
+    );
 
-    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('');
+    // No field to type into — the load is your body weight, and the block doesn't know it yet.
+    expect(screen.queryByLabelText('Set 1 weight')).toBeNull();
+    fireEvent.press(screen.getAllByRole('button', { name: 'Set your body weight' })[0]!);
+
+    expect(onRequestBodyWeight).toHaveBeenCalledTimes(1);
+  });
+
+  test('DoD: a weighted exercise asks too — its total needs the body weight', () => {
+    const onRequestBodyWeight = jest.fn();
+    render(<WorkoutExerciseCard {...makeProps({ exercise: WEIGHTED, onRequestBodyWeight })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Set your body weight' }));
+
+    expect(onRequestBodyWeight).toHaveBeenCalledTimes(1);
+  });
+
+  test('DoD: once the block has a body weight the cell is an ordinary field again', () => {
+    const onRequestBodyWeight = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, bodyWeight: 80, onRequestBodyWeight })}
+      />,
+    );
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('80');
+    expect(screen.queryByRole('button', { name: 'Set your body weight' })).toBeNull();
+  });
+
+  test('a read-only card never asks — there is nothing to log there', () => {
+    const onRequestBodyWeight = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, mode: 'readonly', onRequestBodyWeight })}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Set your body weight' })).toBeNull();
   });
 
   test("DoD: editing a pure bodyweight row sets the block's body weight", () => {
@@ -470,7 +509,7 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
     expect(onLogSet).toHaveBeenCalledWith(1, { weight: 10, reps: 8, bodyWeight: 80 });
   });
 
-  test('DoD: a logged weighted set reads as the total, with the added weight after it', () => {
+  test('DoD: a logged weighted set reads as the body weight it was logged with, plus what was added', () => {
     const logged = makeExercise({
       ...WEIGHTED,
       rows: [
@@ -487,7 +526,7 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: logged, bodyWeight: 82 })} />);
 
     // 80, the body weight it was logged with — not 82, today's (05, "История неизменяема").
-    expect(screen.getByText('90 (+10)')).toBeTruthy();
+    expect(screen.getByText('80 (+10)')).toBeTruthy();
   });
 
   test('an ordinary exercise keeps the plain Weight column', () => {

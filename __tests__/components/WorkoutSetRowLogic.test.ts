@@ -152,9 +152,12 @@ describe('isStrongIndicator', () => {
 
 describe('the Weight column on a bodyweight exercise (task 105)', () => {
   describe('formatLoggedWeight', () => {
-    test("DoD: a weighted set reads as the total, with what was added after it", () => {
+    test('DoD: a weighted set reads as the body weight and what was added, kept apart', () => {
       expect(formatLoggedWeight({ weight: 10, bodyWeight: 80 }, 'bodyweight-weighted')).toBe(
-        '90 (+10)',
+        '80 (+10)',
+      );
+      expect(formatLoggedWeight({ weight: 5, bodyWeight: 83 }, 'bodyweight-weighted')).toBe(
+        '83 (+5)',
       );
     });
 
@@ -167,8 +170,8 @@ describe('the Weight column on a bodyweight exercise (task 105)', () => {
       expect(formatLoggedWeight({ weight: 62.5 }, undefined)).toBe('62.5');
     });
 
-    test('bodyweight added onto nothing recorded shows the added weight alone', () => {
-      expect(formatLoggedWeight({ weight: 10 }, 'bodyweight-weighted')).toBe('10 (+10)');
+    test('with no body weight recorded there is only the added weight to show', () => {
+      expect(formatLoggedWeight({ weight: 10 }, 'bodyweight-weighted')).toBe('(+10)');
     });
   });
 
