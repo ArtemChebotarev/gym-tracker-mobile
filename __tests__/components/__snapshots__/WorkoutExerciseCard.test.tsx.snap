@@ -4,7 +4,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
 <View
   style={
     {
-      "gap": 7,
+      "gap": 10,
     }
   }
 >
@@ -16,9 +16,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "alignSelf": "flex-start",
           "borderRadius": 20,
           "flexDirection": "row",
-          "gap": 6,
-          "paddingHorizontal": 10,
-          "paddingVertical": 3,
+          "gap": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
         },
         {
           "backgroundColor": "#292116",
@@ -31,9 +31,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       style={
         [
           {
-            "borderRadius": 3,
-            "height": 6,
-            "width": 6,
+            "borderRadius": 4,
+            "height": 8,
+            "width": 8,
           },
           {
             "backgroundColor": "#F0A537",
@@ -45,7 +45,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 11,
+            "fontSize": 13,
             "fontWeight": "400",
           },
           {
@@ -63,11 +63,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         {
           "backgroundColor": "#1A1C1F",
           "borderColor": "#2A2D31",
-          "borderRadius": 10,
+          "borderRadius": 12,
           "borderWidth": 1,
-          "paddingBottom": 6,
-          "paddingHorizontal": 16,
-          "paddingTop": 10,
+          "paddingBottom": 8,
+          "paddingHorizontal": 20,
+          "paddingTop": 12,
         },
         false,
       ]
@@ -79,7 +79,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 6,
+          "gap": 8,
         }
       }
     >
@@ -94,7 +94,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 16,
+              "fontSize": 17,
               "fontWeight": "500",
             }
           }
@@ -105,7 +105,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           style={
             {
               "color": "#6B7076",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -117,7 +117,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 6,
+            "gap": 8,
           }
         }
       >
@@ -133,9 +133,14 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                   "borderRadius": 20,
                   "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
-                  "paddingHorizontal": 7,
-                  "paddingVertical": 6,
+                  "gap": 8,
+                  "minHeight": 36,
+                  "paddingHorizontal": 10,
+                  "paddingVertical": 8,
+                },
+                {
+                  "minHeight": 0,
+                  "paddingVertical": 4,
                 },
                 {
                   "backgroundColor": "#1A1C1F",
@@ -148,7 +153,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               style={
                 [
                   {
-                    "fontSize": 10,
+                    "fontSize": 12,
                     "fontWeight": "400",
                   },
                   {
@@ -184,6 +189,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -197,10 +203,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -212,10 +218,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -227,14 +233,14 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -339,6 +345,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -352,10 +359,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -367,10 +374,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -382,14 +389,14 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -460,9 +467,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "gap": 7,
-          "marginTop": 10,
-          "paddingBottom": 6,
+          "gap": 10,
+          "marginTop": 12,
+          "paddingBottom": 8,
         }
       }
     >
@@ -475,9 +482,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -493,9 +500,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -505,7 +512,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
       <View
         style={
           {
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -514,13 +521,13 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           [
             {
               "textAlign": "right",
-              "width": 38,
+              "width": 44,
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -535,7 +542,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -547,10 +554,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -563,7 +570,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -576,10 +583,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -592,7 +599,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -604,9 +611,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             {
               "color": "#C9CDD2",
@@ -620,7 +627,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -647,6 +654,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={6}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -661,11 +669,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -677,10 +685,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -692,14 +700,14 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -756,7 +764,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -775,10 +783,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -786,7 +794,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
               "textAlign": "center",
             },
             false,
@@ -807,10 +815,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -818,7 +826,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
               "textAlign": "center",
             },
             false,
@@ -831,9 +839,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "color": "#8A9099",
-            "fontSize": 12,
+            "fontSize": 15,
             "textAlign": "center",
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -841,7 +849,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -868,6 +876,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={6}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -882,11 +891,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "borderColor": "#CDFF57",
@@ -904,7 +913,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -923,10 +932,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -934,7 +943,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
               "textAlign": "center",
             },
             false,
@@ -955,10 +964,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -966,7 +975,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             },
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
               "textAlign": "center",
             },
             false,
@@ -979,9 +988,9 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "color": "#8A9099",
-            "fontSize": 12,
+            "fontSize": 15,
             "textAlign": "center",
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -989,7 +998,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -1016,6 +1025,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={6}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -1030,11 +1040,11 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               false,
               false,
@@ -1051,7 +1061,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
 <View
   style={
     {
-      "gap": 7,
+      "gap": 10,
     }
   }
 >
@@ -1063,9 +1073,9 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           "alignSelf": "flex-start",
           "borderRadius": 20,
           "flexDirection": "row",
-          "gap": 6,
-          "paddingHorizontal": 10,
-          "paddingVertical": 3,
+          "gap": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
         },
         {
           "backgroundColor": "#292116",
@@ -1078,9 +1088,9 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
       style={
         [
           {
-            "borderRadius": 3,
-            "height": 6,
-            "width": 6,
+            "borderRadius": 4,
+            "height": 8,
+            "width": 8,
           },
           {
             "backgroundColor": "#F0A537",
@@ -1092,7 +1102,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 11,
+            "fontSize": 13,
             "fontWeight": "400",
           },
           {
@@ -1110,11 +1120,11 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         {
           "backgroundColor": "#1A1C1F",
           "borderColor": "#2A2D31",
-          "borderRadius": 10,
+          "borderRadius": 12,
           "borderWidth": 1,
-          "paddingBottom": 6,
-          "paddingHorizontal": 16,
-          "paddingTop": 10,
+          "paddingBottom": 8,
+          "paddingHorizontal": 20,
+          "paddingTop": 12,
         },
         false,
       ]
@@ -1126,7 +1136,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 6,
+          "gap": 8,
         }
       }
     >
@@ -1141,7 +1151,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 16,
+              "fontSize": 17,
               "fontWeight": "500",
             }
           }
@@ -1152,7 +1162,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           style={
             {
               "color": "#6B7076",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -1164,7 +1174,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 6,
+            "gap": 8,
           }
         }
       >
@@ -1191,6 +1201,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -1204,10 +1215,10 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -1219,10 +1230,10 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -1234,14 +1245,14 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -1331,23 +1342,23 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           "alignItems": "center",
           "backgroundColor": "#0E0F11",
           "borderColor": "#2A2D31",
-          "borderRadius": 9,
+          "borderRadius": 10,
           "borderWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
-          "marginBottom": 7,
-          "marginTop": 10,
-          "paddingHorizontal": 10,
-          "paddingVertical": 10,
+          "gap": 10,
+          "marginBottom": 10,
+          "marginTop": 12,
+          "paddingHorizontal": 12,
+          "paddingVertical": 12,
         }
       }
     >
       <RNSVGSvgView
         align="xMidYMid"
-        bbHeight={15}
-        bbWidth={15}
+        bbHeight={17}
+        bbWidth={17}
         focusable={false}
-        height={15}
+        height={17}
         meetOrSlice={0}
         minX={0}
         minY={0}
@@ -1359,14 +1370,14 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
             },
             {
               "flex": 0,
-              "height": 15,
-              "width": 15,
+              "height": 17,
+              "width": 17,
             },
           ]
         }
         vbHeight={24}
         vbWidth={24}
-        width={15}
+        width={17}
       >
         <RNSVGGroup
           fill={
@@ -1428,7 +1439,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
         style={
           {
             "color": "#8A9099",
-            "fontSize": 12,
+            "fontSize": 15,
           }
         }
       >
@@ -1443,7 +1454,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
 <View
   style={
     {
-      "gap": 7,
+      "gap": 10,
     }
   }
 >
@@ -1455,9 +1466,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "alignSelf": "flex-start",
           "borderRadius": 20,
           "flexDirection": "row",
-          "gap": 6,
-          "paddingHorizontal": 10,
-          "paddingVertical": 3,
+          "gap": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
         },
         {
           "backgroundColor": "#292116",
@@ -1470,9 +1481,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       style={
         [
           {
-            "borderRadius": 3,
-            "height": 6,
-            "width": 6,
+            "borderRadius": 4,
+            "height": 8,
+            "width": 8,
           },
           {
             "backgroundColor": "#F0A537",
@@ -1484,7 +1495,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 11,
+            "fontSize": 13,
             "fontWeight": "400",
           },
           {
@@ -1502,11 +1513,11 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         {
           "backgroundColor": "#1A1C1F",
           "borderColor": "#2A2D31",
-          "borderRadius": 10,
+          "borderRadius": 12,
           "borderWidth": 1,
-          "paddingBottom": 6,
-          "paddingHorizontal": 16,
-          "paddingTop": 10,
+          "paddingBottom": 8,
+          "paddingHorizontal": 20,
+          "paddingTop": 12,
         },
         false,
       ]
@@ -1518,7 +1529,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 6,
+          "gap": 8,
         }
       }
     >
@@ -1533,7 +1544,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 16,
+              "fontSize": 17,
               "fontWeight": "500",
             }
           }
@@ -1544,7 +1555,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#6B7076",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -1556,7 +1567,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 6,
+            "gap": 8,
           }
         }
       >
@@ -1572,9 +1583,14 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                   "borderRadius": 20,
                   "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
-                  "paddingHorizontal": 7,
-                  "paddingVertical": 6,
+                  "gap": 8,
+                  "minHeight": 36,
+                  "paddingHorizontal": 10,
+                  "paddingVertical": 8,
+                },
+                {
+                  "minHeight": 0,
+                  "paddingVertical": 4,
                 },
                 {
                   "backgroundColor": "#1A1C1F",
@@ -1587,7 +1603,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
               style={
                 [
                   {
-                    "fontSize": 10,
+                    "fontSize": 12,
                     "fontWeight": "400",
                   },
                   {
@@ -1623,6 +1639,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -1636,10 +1653,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -1651,10 +1668,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -1666,14 +1683,14 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -1762,9 +1779,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "gap": 7,
-          "marginTop": 10,
-          "paddingBottom": 6,
+          "gap": 10,
+          "marginTop": 12,
+          "paddingBottom": 8,
         }
       }
     >
@@ -1777,9 +1794,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -1795,9 +1812,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -1807,7 +1824,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
       <View
         style={
           {
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -1816,13 +1833,13 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           [
             {
               "textAlign": "right",
-              "width": 38,
+              "width": 44,
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -1837,7 +1854,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -1849,10 +1866,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -1865,7 +1882,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -1878,10 +1895,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -1894,7 +1911,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -1906,9 +1923,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             {
               "color": "#C9CDD2",
@@ -1922,7 +1939,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -1932,11 +1949,11 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -1947,10 +1964,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -1962,14 +1979,14 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -2026,7 +2043,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -2038,10 +2055,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -2054,7 +2071,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -2067,10 +2084,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -2083,7 +2100,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -2095,9 +2112,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             {
               "color": "#C9CDD2",
@@ -2111,7 +2128,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -2121,11 +2138,11 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -2136,10 +2153,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -2151,14 +2168,14 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -2215,7 +2232,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -2227,10 +2244,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -2243,7 +2260,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -2256,10 +2273,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -2272,7 +2289,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -2284,9 +2301,9 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             false,
           ]
@@ -2298,7 +2315,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -2308,11 +2325,11 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -2323,10 +2340,10 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -2338,14 +2355,14 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -2403,7 +2420,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
 <View
   style={
     {
-      "gap": 7,
+      "gap": 10,
     }
   }
 >
@@ -2415,9 +2432,9 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           "alignSelf": "flex-start",
           "borderRadius": 20,
           "flexDirection": "row",
-          "gap": 6,
-          "paddingHorizontal": 10,
-          "paddingVertical": 3,
+          "gap": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
         },
         {
           "backgroundColor": "#292116",
@@ -2430,9 +2447,9 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
       style={
         [
           {
-            "borderRadius": 3,
-            "height": 6,
-            "width": 6,
+            "borderRadius": 4,
+            "height": 8,
+            "width": 8,
           },
           {
             "backgroundColor": "#F0A537",
@@ -2444,7 +2461,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
       style={
         [
           {
-            "fontSize": 11,
+            "fontSize": 13,
             "fontWeight": "400",
           },
           {
@@ -2462,11 +2479,11 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         {
           "backgroundColor": "#1A1C1F",
           "borderColor": "#2A2D31",
-          "borderRadius": 10,
+          "borderRadius": 12,
           "borderWidth": 1,
-          "paddingBottom": 6,
-          "paddingHorizontal": 16,
-          "paddingTop": 10,
+          "paddingBottom": 8,
+          "paddingHorizontal": 20,
+          "paddingTop": 12,
         },
         {
           "opacity": 0.5,
@@ -2480,7 +2497,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 6,
+          "gap": 8,
         }
       }
     >
@@ -2495,7 +2512,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 16,
+              "fontSize": 17,
               "fontWeight": "500",
             }
           }
@@ -2506,7 +2523,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           style={
             {
               "color": "#6B7076",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -2518,7 +2535,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 6,
+            "gap": 8,
           }
         }
       >
@@ -2534,9 +2551,14 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
                   "borderRadius": 20,
                   "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
-                  "paddingHorizontal": 7,
-                  "paddingVertical": 6,
+                  "gap": 8,
+                  "minHeight": 36,
+                  "paddingHorizontal": 10,
+                  "paddingVertical": 8,
+                },
+                {
+                  "minHeight": 0,
+                  "paddingVertical": 4,
                 },
                 {
                   "backgroundColor": "#1A1C1F",
@@ -2549,7 +2571,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
               style={
                 [
                   {
-                    "fontSize": 10,
+                    "fontSize": 12,
                     "fontWeight": "400",
                   },
                   {
@@ -2585,6 +2607,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -2598,10 +2621,10 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -2613,10 +2636,10 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -2628,14 +2651,14 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -2723,9 +2746,9 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
       style={
         {
           "color": "#8A9099",
-          "fontSize": 12,
-          "paddingBottom": 7,
-          "paddingTop": 10,
+          "fontSize": 15,
+          "paddingBottom": 10,
+          "paddingTop": 12,
         }
       }
     >
@@ -2739,7 +2762,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
 <View
   style={
     {
-      "gap": 7,
+      "gap": 10,
     }
   }
 >
@@ -2751,9 +2774,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "alignSelf": "flex-start",
           "borderRadius": 20,
           "flexDirection": "row",
-          "gap": 6,
-          "paddingHorizontal": 10,
-          "paddingVertical": 3,
+          "gap": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
         },
         {
           "backgroundColor": "#292116",
@@ -2766,9 +2789,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       style={
         [
           {
-            "borderRadius": 3,
-            "height": 6,
-            "width": 6,
+            "borderRadius": 4,
+            "height": 8,
+            "width": 8,
           },
           {
             "backgroundColor": "#F0A537",
@@ -2780,7 +2803,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       style={
         [
           {
-            "fontSize": 11,
+            "fontSize": 13,
             "fontWeight": "400",
           },
           {
@@ -2798,11 +2821,11 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         {
           "backgroundColor": "#1A1C1F",
           "borderColor": "#2A2D31",
-          "borderRadius": 10,
+          "borderRadius": 12,
           "borderWidth": 1,
-          "paddingBottom": 6,
-          "paddingHorizontal": 16,
-          "paddingTop": 10,
+          "paddingBottom": 8,
+          "paddingHorizontal": 20,
+          "paddingTop": 12,
         },
         {
           "opacity": 0.5,
@@ -2816,7 +2839,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         {
           "alignItems": "flex-start",
           "flexDirection": "row",
-          "gap": 6,
+          "gap": 8,
         }
       }
     >
@@ -2831,7 +2854,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 16,
+              "fontSize": 17,
               "fontWeight": "500",
             }
           }
@@ -2842,7 +2865,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#6B7076",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -2854,7 +2877,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 6,
+            "gap": 8,
           }
         }
       >
@@ -2870,9 +2893,14 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                   "borderRadius": 20,
                   "borderWidth": 1,
                   "flexDirection": "row",
-                  "gap": 6,
-                  "paddingHorizontal": 7,
-                  "paddingVertical": 6,
+                  "gap": 8,
+                  "minHeight": 36,
+                  "paddingHorizontal": 10,
+                  "paddingVertical": 8,
+                },
+                {
+                  "minHeight": 0,
+                  "paddingVertical": 4,
                 },
                 {
                   "backgroundColor": "#1A1C1F",
@@ -2885,7 +2913,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
               style={
                 [
                   {
-                    "fontSize": 10,
+                    "fontSize": 12,
                     "fontWeight": "400",
                   },
                   {
@@ -2921,6 +2949,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -2934,10 +2963,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -2949,10 +2978,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -2964,14 +2993,14 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -3076,6 +3105,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -3089,10 +3119,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#1A1C1F",
@@ -3104,10 +3134,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={18}
-            bbWidth={18}
+            bbHeight={20}
+            bbWidth={20}
             focusable={false}
-            height={18}
+            height={20}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -3119,14 +3149,14 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 },
                 {
                   "flex": 0,
-                  "height": 18,
-                  "width": 18,
+                  "height": 20,
+                  "width": 20,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={18}
+            width={20}
           >
             <RNSVGGroup
               fill={
@@ -3197,9 +3227,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "gap": 7,
-          "marginTop": 10,
-          "paddingBottom": 6,
+          "gap": 10,
+          "marginTop": 12,
+          "paddingBottom": 8,
         }
       }
     >
@@ -3212,9 +3242,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -3230,9 +3260,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -3242,7 +3272,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
       <View
         style={
           {
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -3251,13 +3281,13 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           [
             {
               "textAlign": "right",
-              "width": 38,
+              "width": 44,
             },
             {
               "color": "#8A9099",
-              "fontSize": 11,
+              "fontSize": 13,
               "fontWeight": "400",
-              "letterSpacing": 0.04,
+              "letterSpacing": 0.5,
             },
           ]
         }
@@ -3272,7 +3302,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -3284,10 +3314,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -3300,7 +3330,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -3313,10 +3343,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -3329,7 +3359,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -3341,9 +3371,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             {
               "color": "#C9CDD2",
@@ -3357,7 +3387,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -3367,11 +3397,11 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -3382,10 +3412,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -3397,14 +3427,14 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -3461,7 +3491,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -3473,10 +3503,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -3489,7 +3519,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -3502,10 +3532,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             {
               "alignItems": "center",
               "borderColor": "#2A2D31",
-              "borderRadius": 9,
+              "borderRadius": 10,
               "borderWidth": 1,
               "flex": 1,
-              "height": 40,
+              "height": 44,
               "justifyContent": "center",
             },
             {
@@ -3518,7 +3548,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#F5F5F4",
-              "fontSize": 17,
+              "fontSize": 20,
             }
           }
         >
@@ -3530,9 +3560,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           [
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
               "textAlign": "center",
-              "width": 22,
+              "width": 24,
             },
             {
               "color": "#C9CDD2",
@@ -3546,7 +3576,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       >
@@ -3556,11 +3586,11 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
               {
                 "alignItems": "center",
                 "borderColor": "#2A2D31",
-                "borderRadius": 9,
+                "borderRadius": 10,
                 "borderWidth": 1,
-                "height": 34,
+                "height": 32,
                 "justifyContent": "center",
-                "width": 34,
+                "width": 32,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -3571,10 +3601,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         >
           <RNSVGSvgView
             align="xMidYMid"
-            bbHeight={16}
-            bbWidth={16}
+            bbHeight={18}
+            bbWidth={18}
             focusable={false}
-            height={16}
+            height={18}
             meetOrSlice={0}
             minX={0}
             minY={0}
@@ -3586,14 +3616,14 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 },
                 {
                   "flex": 0,
-                  "height": 16,
-                  "width": 16,
+                  "height": 18,
+                  "width": 18,
                 },
               ]
             }
             vbHeight={24}
             vbWidth={24}
-            width={16}
+            width={18}
           >
             <RNSVGGroup
               fill={
@@ -3650,7 +3680,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           "borderTopColor": "#232629",
           "borderTopWidth": 1,
           "flexDirection": "row",
-          "gap": 7,
+          "gap": 10,
           "paddingVertical": 6,
         }
       }
@@ -3661,7 +3691,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           {
             "alignItems": "center",
             "flex": 2,
-            "height": 40,
+            "height": 44,
             "justifyContent": "center",
           }
         }
@@ -3670,7 +3700,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           style={
             {
               "color": "#8A9099",
-              "fontSize": 12,
+              "fontSize": 15,
             }
           }
         >
@@ -3681,9 +3711,9 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           {
             "color": "#8A9099",
-            "fontSize": 12,
+            "fontSize": 15,
             "textAlign": "center",
-            "width": 22,
+            "width": 24,
           }
         }
       />
@@ -3691,7 +3721,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         style={
           {
             "alignItems": "flex-end",
-            "width": 38,
+            "width": 44,
           }
         }
       />

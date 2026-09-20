@@ -76,9 +76,9 @@ const EXPECTED_SPACING_TOKENS = [
   'space/row',
   'space/xxs',
   'space/chip-y',
+  'space/set-row-y',
   'space/xs',
   'space/dots',
-  'space/sm',
   'space/md',
   'space/action-row-y',
   'space/legend',
@@ -128,13 +128,13 @@ describe('design tokens', () => {
     expect(sorted(Object.keys(SPACING))).toEqual(sorted(EXPECTED_SPACING_TOKENS));
   });
 
-  test('type/card-title is 16 / 500', () => {
-    expect(TYPOGRAPHY['type/card-title']).toEqual({ fontSize: 16, fontWeight: '500' });
+  test('type/card-title is 17 / 500', () => {
+    expect(TYPOGRAPHY['type/card-title']).toEqual({ fontSize: 17, fontWeight: '500' });
   });
 
   test('ICON_SIZES keeps the tab bar and IconButton sizes from 08.0', () => {
-    expect(ICON_SIZES['icon/tab']).toBe(20);
-    expect(ICON_SIZES['icon/button']).toBe(18);
+    expect(ICON_SIZES['icon/tab']).toBe(24);
+    expect(ICON_SIZES['icon/button']).toBe(20);
   });
 
   // Task 100: every design value lives in a token group — each holds only its own kind of value.
@@ -168,7 +168,7 @@ describe('design tokens', () => {
   });
 
   test('only type/label carries letter-spacing and an uppercase transform', () => {
-    expect(TYPOGRAPHY['type/label'].letterSpacing).toBe(0.04);
+    expect(TYPOGRAPHY['type/label'].letterSpacing).toBe(0.5);
     expect(TYPOGRAPHY['type/label'].textTransform).toBe('uppercase');
 
     const others = EXPECTED_TYPOGRAPHY_TOKENS.filter((token) => token !== 'type/label');

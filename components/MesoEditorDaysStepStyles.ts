@@ -35,15 +35,18 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING['space/gap-tight'],
     paddingHorizontal: SPACING['space/screen'],
+    // The ScrollView clips its content, so this leaves room for the tabs' tap-target slop above.
+    paddingTop: SPACING['space/xs'],
     paddingBottom: SPACING['space/section'],
   },
   dayTab: {
+    height: SIZES['size/chip'],
+    justifyContent: 'center',
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/pill'],
     backgroundColor: COLORS['surface/card'],
     paddingHorizontal: SPACING['space/pill-x'],
-    paddingVertical: SPACING['space/sm'],
   },
   dayTabActive: {
     backgroundColor: COLORS['accent/bg'],

@@ -15,6 +15,10 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: SPACING['space/gap-tight'],
   },
+  resetButton: {
+    minHeight: SIZES['size/chip'],
+    justifyContent: 'center',
+  },
   reset: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
@@ -24,6 +28,7 @@ export const styles = StyleSheet.create({
   // design/muscleGroupColor.ts) and applied as an inline style override, the same pattern
   // Chip's own static-variant dot already uses for a caller-supplied color.
   muscleGroupChip: {
+    minHeight: SIZES['size/chip'],
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],

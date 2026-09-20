@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
-    paddingVertical: SPACING['space/gap-tight'],
+    paddingVertical: SPACING['space/set-row-y'],
     borderTopWidth: BORDER_WIDTHS['border/default'],
     borderTopColor: COLORS['border/divider-subtle'],
   },

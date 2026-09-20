@@ -5,7 +5,8 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, ICON_SIZES, OPACITY, RADII, SPACING, TYPOGRAPHY } from '../tokens';
+import { square, tapTargetSlop } from '../shapes';
 
 export type SearchFieldProps = {
   value: string;
@@ -31,8 +32,8 @@ export function SearchField({ value, onChangeText, icon, placeholder }: SearchFi
           accessibilityRole="button"
           accessibilityLabel="Clear search"
           onPress={() => onChangeText('')}
-          hitSlop={SIZES['size/hit-slop']}
-          style={({ pressed }) => pressed && styles.pressed}
+          hitSlop={tapTargetSlop(ICON_SIZES['icon/button'])}
+          style={({ pressed }) => [styles.clearButton, pressed && styles.pressed]}
         >
           <Text style={styles.clear}>×</Text>
         </Pressable>
@@ -51,13 +52,21 @@ const styles = StyleSheet.create({
     borderColor: COLORS['border/default'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/gap'],
-    paddingVertical: SPACING['space/gap-tight'],
+    // The same vertical padding as a TextField's box, so the two read as one height.
+    paddingVertical: SPACING['space/row'],
   },
   input: {
     flex: 1,
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS['text/primary'],
+  },
+  // An icon-sized box so `tapTargetSlop` knows what it grows to 44pt, without making the field
+  // taller the moment text (and with it this button) appears.
+  clearButton: {
+    ...square(ICON_SIZES['icon/button']),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   clear: {
     fontSize: TYPOGRAPHY['type/value'].fontSize,

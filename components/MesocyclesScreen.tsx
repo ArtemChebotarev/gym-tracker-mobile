@@ -132,7 +132,7 @@ export function MesocyclesScreen({
         )}
 
         {!isPending && !isEmptyGroups(groups) && (
-          <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             {active !== null && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Active</Text>

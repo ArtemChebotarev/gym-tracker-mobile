@@ -136,7 +136,11 @@ export function BottomSheet({
         </View>
         {action}
       </View>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {children}
       </ScrollView>
       {footer !== undefined && <View style={styles.footer}>{footer}</View>}

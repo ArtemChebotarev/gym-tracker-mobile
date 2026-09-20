@@ -72,6 +72,7 @@ import {
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
+import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 import {
@@ -256,6 +257,7 @@ export function MesoEditorDaysStep({
               accessibilityLabel={`Day ${day}`}
               accessibilityState={{ selected: isActive }}
               onPress={() => onChangeActiveDay(day)}
+              hitSlop={tapTargetSlop(SIZES['size/chip'])}
               style={[styles.dayTab, isActive && styles.dayTabActive]}
             >
               <Text style={[styles.dayTabLabel, isActive && styles.dayTabLabelActive]}>{`Day ${day}`}</Text>
@@ -264,7 +266,7 @@ export function MesoEditorDaysStep({
         })}
       </ScrollView>
 
-      <ScrollView style={styles.content} bounces={false}>
+      <ScrollView style={styles.content} bounces={false} showsVerticalScrollIndicator={false}>
         {activeDayExercises.length > 0 && (
           <View style={styles.columnHeader}>
             <View style={styles.columnHeaderHandleSpacer} />
@@ -293,6 +295,7 @@ export function MesoEditorDaysStep({
               <View
                 {...handleResponders.getHandleResponder(index).panHandlers}
                 accessibilityLabel={`Reorder ${title}`}
+                hitSlop={tapTargetSlop(SIZES['size/control-inline'])}
                 style={styles.dragHandle}
               >
                 <Text style={styles.dragHandleGlyph}>≡</Text>

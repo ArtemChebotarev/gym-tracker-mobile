@@ -14,7 +14,7 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
-import { circle } from '../shapes';
+import { circle, tapTargetSlop } from '../shapes';
 
 type SelectableChipProps = {
   variant: 'selectable';
@@ -27,6 +27,12 @@ type StaticChipProps = {
   variant: 'static';
   label: string;
   dotColor?: string;
+  /**
+   * Drops the `size/chip` height for the tighter padding of the workout's group chip. A static chip
+   * is never tapped, so it needs no tap target — for a lone mark like the workout card's RIR, not
+   * for a chip sitting in a row next to a selectable one.
+   */
+  compact?: boolean;
 };
 
 type CounterChipProps = {
@@ -44,6 +50,7 @@ export function Chip(props: ChipProps) {
         accessibilityRole="button"
         accessibilityState={{ selected: props.selected }}
         onPress={props.onPress}
+        hitSlop={tapTargetSlop(SIZES['size/chip'])}
         style={({ pressed }) => [
           styles.container,
           props.selected ? styles.selected : styles.unselected,
@@ -59,7 +66,7 @@ export function Chip(props: ChipProps) {
 
   if (props.variant === 'static') {
     return (
-      <View style={[styles.container, styles.unselected]}>
+      <View style={[styles.container, props.compact && styles.compact, styles.unselected]}>
         {props.dotColor !== undefined && (
           <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
         )}
@@ -82,11 +89,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
+    // Every variant is `size/chip` tall, so a static chip lines up with a selectable one — and a
+    // selectable one reaches the 44pt tap target through `tapTargetSlop`.
+    minHeight: SIZES['size/chip'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/pill'],
     paddingHorizontal: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
     gap: SPACING['space/gap-tight'],
+  },
+  compact: {
+    minHeight: 0,
+    paddingVertical: SPACING['space/chip-y'],
   },
   // Solid accent fill — the same treatment as the accent IconButton (e.g. the list's "+" and
   // "Filters" chip), not the muted accent/bg + accent/border pair used for a muscle-group tint.

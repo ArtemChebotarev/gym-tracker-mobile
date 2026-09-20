@@ -47,25 +47,31 @@ export type TypographyValue = {
   textTransform?: 'uppercase';
 };
 
+// The scale follows iOS HIG Dynamic Type at its default "Large" size (task 101): body text and
+// row titles 17 (Body), secondary lines 15 (Subheadline), labels 13 (Footnote), captions 12
+// (Caption 1) — nothing under 12. The first scale was measured off the web mockups and read small
+// on a real iPhone. Dynamic Type still scales all of it (`allowFontScaling` is on by default).
+//
 // letter-spacing and the uppercase transform apply only to `type/label` — the single place
-// in the app with a capitalized section header, see "Заголовок секции" in 08.0.
+// in the app with a capitalized section header, see "Заголовок секции" in 08.0. React Native's
+// letterSpacing is in points, not em: 0.5 is 08.0's 0.04em at 13.
 export const TYPOGRAPHY = {
-  'type/screen-title': { fontSize: 24, fontWeight: '500' },
-  'type/entity-title': { fontSize: 22, fontWeight: '500' },
-  'type/sheet-title': { fontSize: 19, fontWeight: '500' },
-  'type/card-title': { fontSize: 16, fontWeight: '500' },
-  'type/row-title': { fontSize: 14, fontWeight: '400' },
-  'type/body': { fontSize: 13, fontWeight: '400' },
-  'type/value': { fontSize: 15, fontWeight: '400' },
-  'type/meta': { fontSize: 12, fontWeight: '400' },
-  'type/set-value': { fontSize: 17, fontWeight: '400' },
+  'type/screen-title': { fontSize: 28, fontWeight: '500' },
+  'type/entity-title': { fontSize: 24, fontWeight: '500' },
+  'type/sheet-title': { fontSize: 22, fontWeight: '500' },
+  'type/card-title': { fontSize: 17, fontWeight: '500' },
+  'type/row-title': { fontSize: 17, fontWeight: '400' },
+  'type/body': { fontSize: 17, fontWeight: '400' },
+  'type/value': { fontSize: 20, fontWeight: '400' },
+  'type/meta': { fontSize: 15, fontWeight: '400' },
+  'type/set-value': { fontSize: 20, fontWeight: '400' },
   'type/label': {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '400',
-    letterSpacing: 0.04,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
-  'type/caption': { fontSize: 10, fontWeight: '400' },
+  'type/caption': { fontSize: 12, fontWeight: '400' },
 } as const satisfies Record<string, TypographyValue>;
 
 export type TypographyToken = keyof typeof TYPOGRAPHY;
@@ -73,7 +79,7 @@ export type TypographyToken = keyof typeof TYPOGRAPHY;
 // Fixed line heights, for text whose rendered height something else has to match exactly.
 export const LINE_HEIGHTS = {
   /** The wizard footer hint — its placeholder reserves the same height on steps without one. */
-  'line-height/hint': 14,
+  'line-height/hint': 16,
 } as const;
 
 export type LineHeightToken = keyof typeof LINE_HEIGHTS;
@@ -81,9 +87,9 @@ export type LineHeightToken = keyof typeof LINE_HEIGHTS;
 export const RADII = {
   'radius/pill': 20,
   'radius/sheet': 18,
-  'radius/control': 10,
-  'radius/field': 9,
-  'radius/segment-inner': 7,
+  'radius/control': 12,
+  'radius/field': 10,
+  'radius/segment-inner': 8,
   'radius/small': 4,
   'radius/progress': 2,
 } as const;
@@ -91,39 +97,40 @@ export const RADII = {
 export type RadiusToken = keyof typeof RADII;
 
 export const SPACING = {
-  'space/screen': 14,
-  'space/sheet': 16,
-  'space/section': 18,
-  'space/gap-tight': 6,
-  'space/gap': 7,
-  'space/row': 10,
+  'space/screen': 16,
+  'space/sheet': 20,
+  'space/section': 24,
+  'space/gap-tight': 8,
+  'space/gap': 10,
+  'space/row': 12,
 
   // A small step scale for the gaps the semantic tokens above don't name.
   'space/xxs': 2,
-  'space/chip-y': 3,
+  'space/chip-y': 4,
+  /** Set row: above and below its 44pt fields — kept tight, the fields already carry the height. */
+  'space/set-row-y': 6,
   'space/xs': 4,
-  'space/dots': 5,
-  'space/sm': 8,
-  'space/md': 12,
-  'space/action-row-y': 13,
-  'space/legend': 14,
+  'space/dots': 6,
+  'space/md': 14,
+  'space/action-row-y': 14,
+  'space/legend': 16,
   'space/button': 15,
-  'space/pill-x': 16,
+  'space/pill-x': 18,
   'space/xl': 24,
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;
 
-// Rendered icon sizes — 08.0 · Design SDK, "Иконки": "Размер в таб-баре — 20, в IconButton — 18".
+// Rendered icon sizes — 08.0 · Design SDK, "Иконки": "Размер в таб-баре — 24, в IconButton — 20".
 // Every icon in design/icons/ is drawn on the same 24×24 grid and scaled to one of these.
 // The smaller ones size inline marks and text glyphs used as icons (✕, ›, ⋮⋮, +).
 export const ICON_SIZES = {
-  'icon/tab': 20,
-  'icon/button': 18,
-  'icon/chevron': 20,
-  'icon/small': 16,
-  'icon/inline': 15,
-  'icon/glyph': 14,
+  'icon/tab': 24,
+  'icon/button': 20,
+  'icon/chevron': 22,
+  'icon/small': 18,
+  'icon/inline': 17,
+  'icon/glyph': 16,
 } as const;
 
 export type IconSizeToken = keyof typeof ICON_SIZES;
@@ -151,47 +158,54 @@ export type OpacityToken = keyof typeof OPACITY;
 
 // Component dimensions — fixed widths, heights and diameters of controls and marks.
 export const SIZES = {
+  /**
+   * The smallest touch area of anything tappable (iOS HIG: 44×44pt). A control drawn smaller
+   * reaches it through `hitSlop` — `tapTargetSlop` in design/shapes.ts.
+   */
+  'size/tap-target': 44,
   /** Muscle-group dot in chips, section headers and filter options. */
-  'size/dot': 6,
+  'size/dot': 8,
   /** The larger group dot of the mesocycle editor and the mesocycle list's week dots. */
-  'size/dot-large': 8,
+  'size/dot-large': 10,
   /** Legend swatch of the mesocycle overview grid. */
-  'size/swatch': 14,
+  'size/swatch': 16,
   /** ListRow's multi-select checkbox. */
-  'size/checkbox': 20,
+  'size/checkbox': 24,
   /** A small round mark: the workout's completed check, the editor's add-exercise "+". */
-  'size/badge': 22,
+  'size/badge': 28,
   /** Stepper's inline round buttons; the editor's drag handle. */
-  'size/control-inline': 24,
-  /** Round IconButton and Stepper buttons (08.0: "Размер 28–30"). */
-  'size/icon-button': 30,
+  'size/control-inline': 32,
+  /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
+  'size/chip': 36,
+  /** ListRow's action pill (Start, Copy) — drawn smaller, 44pt to the touch. */
+  'size/pill': 32,
+  /** Round IconButton and Stepper buttons (08.0: "Размер 36", tap area 44). */
+  'size/icon-button': 36,
   /** Set row: the target indicator column. */
-  'size/indicator-column': 22,
-  /** Set row: the Log checkbox. */
-  'size/log-box': 34,
-  /** Set row: the Log column. */
-  'size/log-column': 38,
+  'size/indicator-column': 24,
+  /** Set row: the Log checkbox — drawn at 32, 44pt to the touch (`tapTargetSlop`). */
+  'size/log-box': 32,
+  /** Set row: the Log column — as wide as the checkbox's tap target. */
+  'size/log-column': 44,
   /** Set row fields and mesocycle overview cells. */
-  'size/cell': 40,
+  'size/cell': 44,
   /** Mesocycle overview: the week label column. */
-  'size/week-column': 52,
+  'size/week-column': 64,
   /** Mesocycle editor: an exercise row's fixed height (the drag maths divide by it). */
-  'size/exercise-row': 58,
+  'size/exercise-row': 68,
   /** Mesocycle editor: the Sets column — Stepper's inline width. */
-  'size/sets-column': 80,
+  'size/sets-column': 104,
   /** Bottom sheet grabber. */
   'size/grabber-width': 36,
-  'size/grabber-height': 4,
+  'size/grabber-height': 5,
   /** ProgressBar and the wizard header's step segments. */
-  'size/progress': 3,
+  'size/progress': 4,
   /** Dropdown's open option panel. */
-  'size/dropdown-panel': 190,
+  'size/dropdown-panel': 240,
   /** New/Edit exercise form: room for its fields plus one open Dropdown panel. */
-  'size/form-fields': 400,
+  'size/form-fields': 480,
   /** Tallest a bottom sheet gets (and the height of a fixed-height one). */
   'size/sheet-max': '80%',
-  /** Extra touch area around a small tap target (SearchField's clear button). */
-  'size/hit-slop': 8,
 } as const;
 
 export type SizeToken = keyof typeof SIZES;

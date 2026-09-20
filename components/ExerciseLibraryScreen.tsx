@@ -115,6 +115,7 @@ export function ExerciseLibraryScreen({
 
       {showList && (
         <SectionList<ExerciseListEntry, ExerciseSection>
+          showsVerticalScrollIndicator={false}
           sections={sections}
           keyExtractor={(item) => item.exercise.id}
           stickySectionHeadersEnabled

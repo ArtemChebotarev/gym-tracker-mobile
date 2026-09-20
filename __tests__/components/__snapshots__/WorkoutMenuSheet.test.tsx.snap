@@ -98,7 +98,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
             },
             false,
             {
-              "paddingBottom": 50,
+              "paddingBottom": 54,
             },
           ]
         }
@@ -111,7 +111,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
           style={
             {
               "alignItems": "center",
-              "paddingVertical": 6,
+              "paddingVertical": 8,
             }
           }
           testID="bottom-sheet-grabber-area"
@@ -120,8 +120,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
             style={
               {
                 "backgroundColor": "#2A2D31",
-                "borderRadius": 2,
-                "height": 4,
+                "borderRadius": 2.5,
+                "height": 5,
                 "width": 36,
               }
             }
@@ -133,8 +133,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
               "alignItems": "center",
               "flexDirection": "row",
               "justifyContent": "space-between",
-              "paddingBottom": 7,
-              "paddingHorizontal": 16,
+              "paddingBottom": 10,
+              "paddingHorizontal": 20,
             }
           }
         >
@@ -149,7 +149,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
               style={
                 {
                   "color": "#F5F5F4",
-                  "fontSize": 19,
+                  "fontSize": 22,
                   "fontWeight": "500",
                 }
               }
@@ -160,7 +160,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
               style={
                 {
                   "color": "#6B7076",
-                  "fontSize": 12,
+                  "fontSize": 15,
                   "marginTop": 2,
                 }
               }
@@ -172,10 +172,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
         <RCTScrollView
           contentContainerStyle={
             {
-              "paddingHorizontal": 16,
+              "paddingHorizontal": 20,
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -216,17 +217,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -238,14 +239,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -298,7 +299,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -347,17 +348,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -369,14 +370,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -446,7 +447,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -495,17 +496,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -517,14 +518,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -577,7 +578,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -626,17 +627,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -648,14 +649,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -742,7 +743,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -791,17 +792,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -813,14 +814,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -869,7 +870,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: live 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     {
@@ -988,7 +989,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
             },
             false,
             {
-              "paddingBottom": 50,
+              "paddingBottom": 54,
             },
           ]
         }
@@ -1001,7 +1002,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
           style={
             {
               "alignItems": "center",
-              "paddingVertical": 6,
+              "paddingVertical": 8,
             }
           }
           testID="bottom-sheet-grabber-area"
@@ -1010,8 +1011,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
             style={
               {
                 "backgroundColor": "#2A2D31",
-                "borderRadius": 2,
-                "height": 4,
+                "borderRadius": 2.5,
+                "height": 5,
                 "width": 36,
               }
             }
@@ -1023,8 +1024,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
               "alignItems": "center",
               "flexDirection": "row",
               "justifyContent": "space-between",
-              "paddingBottom": 7,
-              "paddingHorizontal": 16,
+              "paddingBottom": 10,
+              "paddingHorizontal": 20,
             }
           }
         >
@@ -1039,7 +1040,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
               style={
                 {
                   "color": "#F5F5F4",
-                  "fontSize": 19,
+                  "fontSize": 22,
                   "fontWeight": "500",
                 }
               }
@@ -1050,7 +1051,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
               style={
                 {
                   "color": "#6B7076",
-                  "fontSize": 12,
+                  "fontSize": 15,
                   "marginTop": 2,
                 }
               }
@@ -1062,10 +1063,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
         <RCTScrollView
           contentContainerStyle={
             {
-              "paddingHorizontal": 16,
+              "paddingHorizontal": 20,
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -1106,17 +1108,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -1128,14 +1130,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -1188,7 +1190,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -1237,17 +1239,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -1259,14 +1261,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -1353,7 +1355,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -1402,17 +1404,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -1424,14 +1426,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -1480,7 +1482,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: preview 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     {
@@ -1599,7 +1601,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
             },
             false,
             {
-              "paddingBottom": 50,
+              "paddingBottom": 54,
             },
           ]
         }
@@ -1612,7 +1614,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
           style={
             {
               "alignItems": "center",
-              "paddingVertical": 6,
+              "paddingVertical": 8,
             }
           }
           testID="bottom-sheet-grabber-area"
@@ -1621,8 +1623,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
             style={
               {
                 "backgroundColor": "#2A2D31",
-                "borderRadius": 2,
-                "height": 4,
+                "borderRadius": 2.5,
+                "height": 5,
                 "width": 36,
               }
             }
@@ -1634,8 +1636,8 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
               "alignItems": "center",
               "flexDirection": "row",
               "justifyContent": "space-between",
-              "paddingBottom": 7,
-              "paddingHorizontal": 16,
+              "paddingBottom": 10,
+              "paddingHorizontal": 20,
             }
           }
         >
@@ -1650,7 +1652,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
               style={
                 {
                   "color": "#F5F5F4",
-                  "fontSize": 19,
+                  "fontSize": 22,
                   "fontWeight": "500",
                 }
               }
@@ -1661,7 +1663,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
               style={
                 {
                   "color": "#6B7076",
-                  "fontSize": 12,
+                  "fontSize": 15,
                   "marginTop": 2,
                 }
               }
@@ -1673,10 +1675,11 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
         <RCTScrollView
           contentContainerStyle={
             {
-              "paddingHorizontal": 16,
+              "paddingHorizontal": 20,
             }
           }
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View>
             <View
@@ -1717,17 +1720,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -1739,14 +1742,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -1799,7 +1802,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -1848,17 +1851,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -1870,14 +1873,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -1964,7 +1967,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     false,
@@ -2013,17 +2016,17 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                   "borderTopColor": "#1E2125",
                   "borderTopWidth": 1,
                   "flexDirection": "row",
-                  "gap": 12,
-                  "paddingVertical": 13,
+                  "gap": 14,
+                  "paddingVertical": 14,
                 }
               }
             >
               <RNSVGSvgView
                 align="xMidYMid"
-                bbHeight={18}
-                bbWidth={18}
+                bbHeight={20}
+                bbWidth={20}
                 focusable={false}
-                height={18}
+                height={20}
                 meetOrSlice={0}
                 minX={0}
                 minY={0}
@@ -2035,14 +2038,14 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     },
                     {
                       "flex": 0,
-                      "height": 18,
-                      "width": 18,
+                      "height": 20,
+                      "width": 20,
                     },
                   ]
                 }
                 vbHeight={24}
                 vbWidth={24}
-                width={18}
+                width={20}
               >
                 <RNSVGGroup
                   fill={
@@ -2091,7 +2094,7 @@ exports[`WorkoutMenuSheet — snapshots DoD: read-only 1`] = `
                     {
                       "color": "#C9CDD2",
                       "flex": 1,
-                      "fontSize": 14,
+                      "fontSize": 17,
                       "fontWeight": "400",
                     },
                     {

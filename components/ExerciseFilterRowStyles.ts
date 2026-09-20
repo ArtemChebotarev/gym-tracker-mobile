@@ -3,7 +3,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
   filterRow: {
@@ -17,6 +17,8 @@ export const styles = StyleSheet.create({
   // accent-colored text, not a filled chip, so it still stands out against the row's muted chips
   // without reading larger than its neighbors.
   resetChip: {
+    minHeight: SIZES['size/chip'],
+    justifyContent: 'center',
     paddingHorizontal: SPACING['space/gap-tight'],
     paddingVertical: SPACING['space/gap-tight'],
   },

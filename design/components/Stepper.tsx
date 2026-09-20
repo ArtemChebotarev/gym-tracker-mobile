@@ -22,7 +22,7 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
-import { circle } from '../shapes';
+import { circle, tapTargetSlop } from '../shapes';
 import { fieldStyles } from './fieldStyles';
 
 export type StepperVariant = 'field' | 'inline';
@@ -126,6 +126,7 @@ function StepperButton({ accessibilityLabel, disabled, inline, onPress, children
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
+      hitSlop={tapTargetSlop(SIZES[inline ? 'size/control-inline' : 'size/icon-button'])}
       style={({ pressed }) => [
         inline ? styles.buttonInline : styles.button,
         pressed && styles.pressed,

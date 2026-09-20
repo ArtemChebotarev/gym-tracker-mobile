@@ -27,7 +27,8 @@ import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
 import { CheckIcon } from '@design/icons/CheckIcon';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+import { tapTargetSlop } from '@design/shapes';
+import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSession';
 
 import {
@@ -120,6 +121,7 @@ export function WorkoutSetRow({
               accessibilityState={{ checked: true, disabled: isSaving }}
               disabled={isSaving}
               onPress={() => handleUnlog(log)}
+              hitSlop={tapTargetSlop(SIZES['size/log-box'])}
               style={({ pressed }) => [
                 styles.logBox,
                 styles.logBoxLogged,
@@ -210,6 +212,7 @@ export function WorkoutSetRow({
           accessibilityLabel={`Log set ${setNumber}`}
           accessibilityState={{ checked: false, disabled: !canLog }}
           disabled={!canLog}
+          hitSlop={tapTargetSlop(SIZES['size/log-box'])}
           onPress={() => {
             if (entry) {
               // Show what's being logged — an empty Reps field fills in with its placeholder.

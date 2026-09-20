@@ -32,9 +32,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
         {
           "backgroundColor": "#0E0F11",
           "flex": 1,
-          "gap": 7,
-          "paddingHorizontal": 14,
-          "paddingTop": 14,
+          "gap": 10,
+          "paddingHorizontal": 16,
+          "paddingTop": 16,
         }
       }
     >
@@ -43,7 +43,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 10,
             "justifyContent": "space-between",
           }
         }
@@ -60,7 +60,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
               {
                 "alignItems": "center",
                 "flexDirection": "row",
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -69,7 +69,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                 {
                   "color": "#F5F5F4",
                   "flexShrink": 1,
-                  "fontSize": 24,
+                  "fontSize": 28,
                   "fontWeight": "500",
                 }
               }
@@ -101,6 +101,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -114,10 +115,10 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -131,7 +132,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
             style={
               {
                 "color": "#232B0A",
-                "fontSize": 22,
+                "fontSize": 24,
                 "fontWeight": "500",
               }
             }
@@ -143,16 +144,17 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
       <RCTScrollView
         contentContainerStyle={
           {
-            "gap": 18,
-            "paddingBottom": 18,
+            "gap": 24,
+            "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -160,9 +162,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -206,11 +208,11 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                   {
                     "backgroundColor": "#1A1C1F",
                     "borderColor": "#4A5A20",
-                    "borderRadius": 10,
+                    "borderRadius": 12,
                     "borderWidth": 1,
-                    "gap": 10,
-                    "paddingHorizontal": 16,
-                    "paddingVertical": 16,
+                    "gap": 12,
+                    "paddingHorizontal": 20,
+                    "paddingVertical": 20,
                   },
                   false,
                 ]
@@ -221,7 +223,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                   {
                     "alignItems": "center",
                     "flexDirection": "row",
-                    "gap": 7,
+                    "gap": 10,
                     "justifyContent": "space-between",
                   }
                 }
@@ -232,7 +234,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     {
                       "color": "#F5F5F4",
                       "flex": 1,
-                      "fontSize": 19,
+                      "fontSize": 22,
                       "fontWeight": "500",
                     }
                   }
@@ -245,8 +247,8 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                       {
                         "alignSelf": "flex-start",
                         "borderRadius": 20,
-                        "paddingHorizontal": 7,
-                        "paddingVertical": 6,
+                        "paddingHorizontal": 10,
+                        "paddingVertical": 8,
                       },
                       {
                         "backgroundColor": "#232B0A",
@@ -258,7 +260,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     style={
                       [
                         {
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "400",
                         },
                         {
@@ -275,7 +277,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                 style={
                   {
                     "flexDirection": "row",
-                    "gap": 5,
+                    "gap": 6,
                   }
                 }
               >
@@ -284,9 +286,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       {
                         "backgroundColor": "#4A5A20",
@@ -301,9 +303,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       {
@@ -318,9 +320,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -333,9 +335,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -348,9 +350,9 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -363,7 +365,7 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                 style={
                   {
                     "color": "#8A9099",
-                    "fontSize": 13,
+                    "fontSize": 15,
                     "fontWeight": "400",
                   }
                 }
@@ -411,9 +413,9 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
         {
           "backgroundColor": "#0E0F11",
           "flex": 1,
-          "gap": 7,
-          "paddingHorizontal": 14,
-          "paddingTop": 14,
+          "gap": 10,
+          "paddingHorizontal": 16,
+          "paddingTop": 16,
         }
       }
     >
@@ -422,7 +424,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 10,
             "justifyContent": "space-between",
           }
         }
@@ -439,7 +441,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
               {
                 "alignItems": "center",
                 "flexDirection": "row",
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -448,7 +450,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                 {
                   "color": "#F5F5F4",
                   "flexShrink": 1,
-                  "fontSize": 24,
+                  "fontSize": 28,
                   "fontWeight": "500",
                 }
               }
@@ -480,6 +482,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -493,10 +496,10 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -510,7 +513,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
             style={
               {
                 "color": "#232B0A",
-                "fontSize": 22,
+                "fontSize": 24,
                 "fontWeight": "500",
               }
             }
@@ -522,16 +525,17 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
       <RCTScrollView
         contentContainerStyle={
           {
-            "gap": 18,
-            "paddingBottom": 18,
+            "gap": 24,
+            "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -539,9 +543,9 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -562,8 +566,8 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 6,
-                      "paddingVertical": 10,
+                      "gap": 8,
+                      "paddingVertical": 12,
                     }
                   }
                 >
@@ -588,7 +592,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                           {
                             "color": "#F5F5F4",
                             "flexShrink": 1,
-                            "fontSize": 14,
+                            "fontSize": 17,
                             "fontWeight": "400",
                           }
                         }
@@ -601,7 +605,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       style={
                         {
                           "color": "#6B7076",
-                          "fontSize": 13,
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
@@ -614,7 +618,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       {
                         "alignItems": "center",
                         "flexDirection": "row",
-                        "gap": 7,
+                        "gap": 10,
                       }
                     }
                   >
@@ -641,6 +645,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -655,8 +660,9 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
-                            "paddingHorizontal": 10,
-                            "paddingVertical": 6,
+                            "height": 32,
+                            "justifyContent": "center",
+                            "paddingHorizontal": 12,
                           },
                           {
                             "borderColor": "#2A2D31",
@@ -669,7 +675,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                         style={
                           [
                             {
-                              "fontSize": 13,
+                              "fontSize": 17,
                               "fontWeight": "400",
                             },
                             {
@@ -704,6 +710,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={4}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -717,10 +724,10 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                         [
                           {
                             "alignItems": "center",
-                            "borderRadius": 15,
-                            "height": 30,
+                            "borderRadius": 18,
+                            "height": 36,
                             "justifyContent": "center",
-                            "width": 30,
+                            "width": 36,
                           },
                           {
                             "backgroundColor": "#1A1C1F",
@@ -734,7 +741,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                         style={
                           {
                             "color": "#C9CDD2",
-                            "fontSize": 15,
+                            "fontSize": 20,
                           }
                         }
                       >
@@ -785,9 +792,9 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
         {
           "backgroundColor": "#0E0F11",
           "flex": 1,
-          "gap": 7,
-          "paddingHorizontal": 14,
-          "paddingTop": 14,
+          "gap": 10,
+          "paddingHorizontal": 16,
+          "paddingTop": 16,
         }
       }
     >
@@ -796,7 +803,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 10,
             "justifyContent": "space-between",
           }
         }
@@ -813,7 +820,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
               {
                 "alignItems": "center",
                 "flexDirection": "row",
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -822,7 +829,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                 {
                   "color": "#F5F5F4",
                   "flexShrink": 1,
-                  "fontSize": 24,
+                  "fontSize": 28,
                   "fontWeight": "500",
                 }
               }
@@ -854,6 +861,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -867,10 +875,10 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -884,7 +892,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
             style={
               {
                 "color": "#232B0A",
-                "fontSize": 22,
+                "fontSize": 24,
                 "fontWeight": "500",
               }
             }
@@ -896,16 +904,17 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
       <RCTScrollView
         contentContainerStyle={
           {
-            "gap": 18,
-            "paddingBottom": 18,
+            "gap": 24,
+            "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -913,9 +922,9 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -936,8 +945,8 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 6,
-                      "paddingVertical": 10,
+                      "gap": 8,
+                      "paddingVertical": 12,
                     }
                   }
                 >
@@ -962,7 +971,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                           {
                             "color": "#F5F5F4",
                             "flexShrink": 1,
-                            "fontSize": 14,
+                            "fontSize": 17,
                             "fontWeight": "400",
                           }
                         }
@@ -975,7 +984,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       style={
                         {
                           "color": "#6B7076",
-                          "fontSize": 13,
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
@@ -988,7 +997,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       {
                         "alignItems": "center",
                         "flexDirection": "row",
-                        "gap": 7,
+                        "gap": 10,
                       }
                     }
                   >
@@ -1015,6 +1024,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1029,8 +1039,9 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
-                            "paddingHorizontal": 10,
-                            "paddingVertical": 6,
+                            "height": 32,
+                            "justifyContent": "center",
+                            "paddingHorizontal": 12,
                           },
                           {
                             "backgroundColor": "#CDFF57",
@@ -1044,7 +1055,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                         style={
                           [
                             {
-                              "fontSize": 13,
+                              "fontSize": 17,
                               "fontWeight": "400",
                             },
                             {
@@ -1079,6 +1090,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={4}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1092,10 +1104,10 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                         [
                           {
                             "alignItems": "center",
-                            "borderRadius": 15,
-                            "height": 30,
+                            "borderRadius": 18,
+                            "height": 36,
                             "justifyContent": "center",
-                            "width": 30,
+                            "width": 36,
                           },
                           {
                             "backgroundColor": "#1A1C1F",
@@ -1109,7 +1121,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                         style={
                           {
                             "color": "#C9CDD2",
-                            "fontSize": 15,
+                            "fontSize": 20,
                           }
                         }
                       >
@@ -1160,9 +1172,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
         {
           "backgroundColor": "#0E0F11",
           "flex": 1,
-          "gap": 7,
-          "paddingHorizontal": 14,
-          "paddingTop": 14,
+          "gap": 10,
+          "paddingHorizontal": 16,
+          "paddingTop": 16,
         }
       }
     >
@@ -1171,7 +1183,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 10,
             "justifyContent": "space-between",
           }
         }
@@ -1188,7 +1200,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
               {
                 "alignItems": "center",
                 "flexDirection": "row",
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -1197,7 +1209,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                 {
                   "color": "#F5F5F4",
                   "flexShrink": 1,
-                  "fontSize": 24,
+                  "fontSize": 28,
                   "fontWeight": "500",
                 }
               }
@@ -1229,6 +1241,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -1242,10 +1255,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -1259,7 +1272,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
             style={
               {
                 "color": "#232B0A",
-                "fontSize": 22,
+                "fontSize": 24,
                 "fontWeight": "500",
               }
             }
@@ -1271,16 +1284,17 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
       <RCTScrollView
         contentContainerStyle={
           {
-            "gap": 18,
-            "paddingBottom": 18,
+            "gap": 24,
+            "paddingBottom": 24,
           }
         }
+        showsVerticalScrollIndicator={false}
       >
         <View>
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -1288,9 +1302,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -1334,11 +1348,11 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                   {
                     "backgroundColor": "#1A1C1F",
                     "borderColor": "#4A5A20",
-                    "borderRadius": 10,
+                    "borderRadius": 12,
                     "borderWidth": 1,
-                    "gap": 10,
-                    "paddingHorizontal": 16,
-                    "paddingVertical": 16,
+                    "gap": 12,
+                    "paddingHorizontal": 20,
+                    "paddingVertical": 20,
                   },
                   false,
                 ]
@@ -1349,7 +1363,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                   {
                     "alignItems": "center",
                     "flexDirection": "row",
-                    "gap": 7,
+                    "gap": 10,
                     "justifyContent": "space-between",
                   }
                 }
@@ -1360,7 +1374,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     {
                       "color": "#F5F5F4",
                       "flex": 1,
-                      "fontSize": 19,
+                      "fontSize": 22,
                       "fontWeight": "500",
                     }
                   }
@@ -1373,8 +1387,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       {
                         "alignSelf": "flex-start",
                         "borderRadius": 20,
-                        "paddingHorizontal": 7,
-                        "paddingVertical": 6,
+                        "paddingHorizontal": 10,
+                        "paddingVertical": 8,
                       },
                       {
                         "backgroundColor": "#232B0A",
@@ -1386,7 +1400,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     style={
                       [
                         {
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "400",
                         },
                         {
@@ -1403,7 +1417,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                 style={
                   {
                     "flexDirection": "row",
-                    "gap": 5,
+                    "gap": 6,
                   }
                 }
               >
@@ -1412,9 +1426,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       {
                         "backgroundColor": "#4A5A20",
@@ -1429,9 +1443,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       {
@@ -1446,9 +1460,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -1461,9 +1475,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -1476,9 +1490,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     [
                       {
                         "backgroundColor": "#2C3036",
-                        "borderRadius": 4,
-                        "height": 8,
-                        "width": 8,
+                        "borderRadius": 5,
+                        "height": 10,
+                        "width": 10,
                       },
                       false,
                       false,
@@ -1491,7 +1505,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                 style={
                   {
                     "color": "#8A9099",
-                    "fontSize": 13,
+                    "fontSize": 15,
                     "fontWeight": "400",
                   }
                 }
@@ -1503,7 +1517,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -1511,9 +1525,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -1534,8 +1548,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 6,
-                      "paddingVertical": 10,
+                      "gap": 8,
+                      "paddingVertical": 12,
                     }
                   }
                 >
@@ -1560,7 +1574,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "color": "#F5F5F4",
                             "flexShrink": 1,
-                            "fontSize": 14,
+                            "fontSize": 17,
                             "fontWeight": "400",
                           }
                         }
@@ -1573,7 +1587,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       style={
                         {
                           "color": "#6B7076",
-                          "fontSize": 13,
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
@@ -1586,7 +1600,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       {
                         "alignItems": "center",
                         "flexDirection": "row",
-                        "gap": 7,
+                        "gap": 10,
                       }
                     }
                   >
@@ -1613,6 +1627,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1627,8 +1642,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
-                            "paddingHorizontal": 10,
-                            "paddingVertical": 6,
+                            "height": 32,
+                            "justifyContent": "center",
+                            "paddingHorizontal": 12,
                           },
                           {
                             "backgroundColor": "#CDFF57",
@@ -1642,7 +1658,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         style={
                           [
                             {
-                              "fontSize": 13,
+                              "fontSize": 17,
                               "fontWeight": "400",
                             },
                             {
@@ -1677,6 +1693,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={4}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1690,10 +1707,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         [
                           {
                             "alignItems": "center",
-                            "borderRadius": 15,
-                            "height": 30,
+                            "borderRadius": 18,
+                            "height": 36,
                             "justifyContent": "center",
-                            "width": 30,
+                            "width": 36,
                           },
                           {
                             "backgroundColor": "#1A1C1F",
@@ -1707,7 +1724,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         style={
                           {
                             "color": "#C9CDD2",
-                            "fontSize": 15,
+                            "fontSize": 20,
                           }
                         }
                       >
@@ -1722,7 +1739,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
           <View
             style={
               {
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -1730,9 +1747,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
               style={
                 {
                   "color": "#8A9099",
-                  "fontSize": 11,
+                  "fontSize": 13,
                   "fontWeight": "400",
-                  "letterSpacing": 0.04,
+                  "letterSpacing": 0.5,
                   "textTransform": "uppercase",
                 }
               }
@@ -1753,8 +1770,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                     {
                       "alignItems": "center",
                       "flexDirection": "row",
-                      "gap": 6,
-                      "paddingVertical": 10,
+                      "gap": 8,
+                      "paddingVertical": 12,
                     }
                   }
                 >
@@ -1779,7 +1796,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "color": "#F5F5F4",
                             "flexShrink": 1,
-                            "fontSize": 14,
+                            "fontSize": 17,
                             "fontWeight": "400",
                           }
                         }
@@ -1792,7 +1809,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       style={
                         {
                           "color": "#6B7076",
-                          "fontSize": 13,
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
@@ -1805,7 +1822,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       {
                         "alignItems": "center",
                         "flexDirection": "row",
-                        "gap": 7,
+                        "gap": 10,
                       }
                     }
                   >
@@ -1832,6 +1849,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={6}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1846,8 +1864,9 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           {
                             "borderRadius": 20,
                             "borderWidth": 1,
-                            "paddingHorizontal": 10,
-                            "paddingVertical": 6,
+                            "height": 32,
+                            "justifyContent": "center",
+                            "paddingHorizontal": 12,
                           },
                           {
                             "borderColor": "#2A2D31",
@@ -1860,7 +1879,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         style={
                           [
                             {
-                              "fontSize": 13,
+                              "fontSize": 17,
                               "fontWeight": "400",
                             },
                             {
@@ -1895,6 +1914,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       accessible={true}
                       collapsable={false}
                       focusable={true}
+                      hitSlop={4}
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -1908,10 +1928,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         [
                           {
                             "alignItems": "center",
-                            "borderRadius": 15,
-                            "height": 30,
+                            "borderRadius": 18,
+                            "height": 36,
                             "justifyContent": "center",
-                            "width": 30,
+                            "width": 36,
                           },
                           {
                             "backgroundColor": "#1A1C1F",
@@ -1925,7 +1945,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         style={
                           {
                             "color": "#C9CDD2",
-                            "fontSize": 15,
+                            "fontSize": 20,
                           }
                         }
                       >
@@ -1976,9 +1996,9 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
         {
           "backgroundColor": "#0E0F11",
           "flex": 1,
-          "gap": 7,
-          "paddingHorizontal": 14,
-          "paddingTop": 14,
+          "gap": 10,
+          "paddingHorizontal": 16,
+          "paddingTop": 16,
         }
       }
     >
@@ -1987,7 +2007,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
           {
             "alignItems": "center",
             "flexDirection": "row",
-            "gap": 7,
+            "gap": 10,
             "justifyContent": "space-between",
           }
         }
@@ -2004,7 +2024,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
               {
                 "alignItems": "center",
                 "flexDirection": "row",
-                "gap": 7,
+                "gap": 10,
               }
             }
           >
@@ -2013,7 +2033,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
                 {
                   "color": "#F5F5F4",
                   "flexShrink": 1,
-                  "fontSize": 24,
+                  "fontSize": 28,
                   "fontWeight": "500",
                 }
               }
@@ -2045,6 +2065,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
           accessible={true}
           collapsable={false}
           focusable={true}
+          hitSlop={4}
           onBlur={[Function]}
           onClick={[Function]}
           onFocus={[Function]}
@@ -2058,10 +2079,10 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
             [
               {
                 "alignItems": "center",
-                "borderRadius": 15,
-                "height": 30,
+                "borderRadius": 18,
+                "height": 36,
                 "justifyContent": "center",
-                "width": 30,
+                "width": 36,
               },
               {
                 "backgroundColor": "#CDFF57",
@@ -2075,7 +2096,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
             style={
               {
                 "color": "#232B0A",
-                "fontSize": 22,
+                "fontSize": 24,
                 "fontWeight": "500",
               }
             }
@@ -2088,9 +2109,9 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
         style={
           {
             "alignItems": "center",
-            "gap": 6,
-            "paddingHorizontal": 14,
-            "paddingVertical": 18,
+            "gap": 8,
+            "paddingHorizontal": 16,
+            "paddingVertical": 24,
           }
         }
       >
@@ -2098,7 +2119,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
           style={
             {
               "color": "#5A5F65",
-              "fontSize": 22,
+              "fontSize": 24,
               "fontWeight": "500",
               "textAlign": "center",
             }
@@ -2110,7 +2131,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
           style={
             {
               "color": "#5A5F65",
-              "fontSize": 13,
+              "fontSize": 17,
               "textAlign": "center",
             }
           }
@@ -2120,7 +2141,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
         <View
           style={
             {
-              "marginTop": 7,
+              "marginTop": 10,
             }
           }
         >
@@ -2159,7 +2180,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
               [
                 {
                   "alignItems": "center",
-                  "borderRadius": 10,
+                  "borderRadius": 12,
                   "justifyContent": "center",
                   "paddingHorizontal": 15,
                   "paddingVertical": 15,
@@ -2176,7 +2197,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
               style={
                 [
                   {
-                    "fontSize": 13,
+                    "fontSize": 17,
                     "fontWeight": "400",
                   },
                   {
