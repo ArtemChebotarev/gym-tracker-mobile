@@ -10,6 +10,17 @@ import type { Exercise } from './catalog';
 import { toExerciseId } from './catalog';
 import type { Unsaved } from './timestamps';
 
+/**
+ * Which release of the catalog below this build carries (02 · Domain Model, "catalogVersion").
+ *
+ * Bump it whenever an exercise is added to, or changed in, `EXERCISE_CATALOG`: that is the signal
+ * a store uses to decide whether it has anything to seed (`usecases/catalogSeeding.ts`). It lives
+ * here, beside the array it describes, rather than in whatever wires the seeding up — a version
+ * kept in a different file from the data it versions drifts the first time someone edits one and
+ * not the other.
+ */
+export const CATALOG_VERSION = 1;
+
 export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
   // Chest
   {

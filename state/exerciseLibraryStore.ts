@@ -5,7 +5,7 @@
 // app/ must not import @storage or @repositories directly — see app/README.md and 07 ·
 // Persistence Layer Contract, rule 9.
 
-import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
+import { CATALOG_VERSION, EXERCISE_CATALOG } from '@domain/exerciseCatalog';
 import { InMemoryExerciseHistoryRepository } from '@storage/exerciseHistory';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemorySetLogRepository } from '@storage/setLogRepository';
@@ -14,10 +14,6 @@ import type { ExerciseHistoryDeps } from '@usecases/exerciseHistory';
 import type { ExerciseOverviewDeps } from '@usecases/exerciseOverview';
 
 import { appStore } from './appStore';
-
-// No catalog-versioning screen exists yet (that's Settings, see 02 · Domain Model), and the
-// in-memory adapter's seedCatalog ignores this argument entirely — see storage/exerciseRepository.ts.
-const CATALOG_VERSION = 1;
 
 export const exerciseLibraryDeps: ExerciseLibraryDeps = {
   exerciseRepo: new InMemoryExerciseRepository(appStore),
