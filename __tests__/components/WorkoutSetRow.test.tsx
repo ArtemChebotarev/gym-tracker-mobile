@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { useState } from 'react';
 
 import { WorkoutSetRow, type WorkoutSetRowProps } from '@components/WorkoutSetRow';
 import { COLORS } from '@design/tokens';
+import { initialWeightText } from '@components/WorkoutSetRowLogic';
 import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSession';
 
 const UNLOGGED: WorkoutSetRowModel = {
@@ -32,12 +34,39 @@ function makeProps(overrides: Partial<WorkoutSetRowProps> = {}): WorkoutSetRowPr
   return {
     row: UNLOGGED,
     targetRir: 2,
+    weightText: '',
+    onChangeWeight: jest.fn(),
+    onBlurWeight: jest.fn(),
     editable: true,
     isSaving: false,
     onLog: jest.fn(),
     onUnlog: jest.fn(),
     ...overrides,
   };
+}
+
+/**
+ * The row's Weight field is controlled by the exercise card (task 106), so these tests supply the
+ * smallest stand-in for it: the text starts at the row's suggested weight and follows what's typed.
+ * Carrying a weight into the later sets is the card's own logic, tested in WorkoutExerciseCard.
+ */
+function ControlledRow(props: WorkoutSetRowProps) {
+  const [weightText, setWeightText] = useState(() => initialWeightText(props.row));
+
+  return (
+    <WorkoutSetRow
+      {...props}
+      weightText={weightText}
+      onChangeWeight={(text) => {
+        setWeightText(text);
+        props.onChangeWeight(text);
+      }}
+    />
+  );
+}
+
+function renderRow(overrides: Partial<WorkoutSetRowProps> = {}) {
+  return render(<ControlledRow {...makeProps(overrides)} />);
 }
 
 function logButton() {
@@ -51,7 +80,7 @@ function flatStyle(element: ReturnType<typeof screen.getByRole>) {
 
 describe('WorkoutSetRow — unlogged', () => {
   test('Weight holds the suggested weight as a value; Reps is empty with the target as placeholder', () => {
-    render(<WorkoutSetRow {...makeProps()} />);
+    renderRow();
 
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('62.5');
     expect(screen.getByLabelText('Set 1 reps').props.value).toBe('');
@@ -59,7 +88,7 @@ describe('WorkoutSetRow — unlogged', () => {
   });
 
   test('Weight is empty with a `–` placeholder when there is no suggested weight', () => {
-    render(<WorkoutSetRow {...makeProps({ row: { setNumber: 1, isFirstUnlogged: false } })} />);
+    renderRow({ row: { setNumber: 1, isFirstUnlogged: false } });
 
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('');
     expect(screen.getByLabelText('Set 1 weight').props.placeholder).toBe('–');
@@ -67,17 +96,13 @@ describe('WorkoutSetRow — unlogged', () => {
   });
 
   test('a deload row shows last week’s actual reps as the placeholder', () => {
-    render(
-      <WorkoutSetRow
-        {...makeProps({ row: { setNumber: 1, referenceReps: 9, isFirstUnlogged: true } })}
-      />,
-    );
+    renderRow({ row: { setNumber: 1, referenceReps: 9, isFirstUnlogged: true } });
 
     expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('9');
   });
 
   test('decimal keyboard for Weight, whole-number keyboard for Reps', () => {
-    render(<WorkoutSetRow {...makeProps()} />);
+    renderRow();
 
     expect(screen.getByLabelText('Set 1 weight').props.keyboardType).toBe('decimal-pad');
     expect(screen.getByLabelText('Set 1 reps').props.keyboardType).toBe('number-pad');
@@ -85,7 +110,7 @@ describe('WorkoutSetRow — unlogged', () => {
 
   test('a row left as recommended logs with one tap — the target reps fill the empty field', () => {
     const onLog = jest.fn();
-    render(<WorkoutSetRow {...makeProps({ onLog })} />);
+    renderRow({ onLog });
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: false });
     fireEvent.press(logButton());
@@ -96,11 +121,7 @@ describe('WorkoutSetRow — unlogged', () => {
 
   test('with no target reps, Log stays inactive until reps are typed', () => {
     const onLog = jest.fn();
-    render(
-      <WorkoutSetRow
-        {...makeProps({ row: { setNumber: 1, suggestedWeight: 60, isFirstUnlogged: true }, onLog })}
-      />,
-    );
+    renderRow({ row: { setNumber: 1, suggestedWeight: 60, isFirstUnlogged: true }, onLog });
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
     fireEvent.press(logButton());
@@ -111,20 +132,31 @@ describe('WorkoutSetRow — unlogged', () => {
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: false });
   });
 
-  test("a deload row's guide is not logged for you", () => {
-    render(
-      <WorkoutSetRow
-        {...makeProps({
-          row: { setNumber: 1, suggestedWeight: 30, referenceReps: 9, isFirstUnlogged: true },
-        })}
-      />,
-    );
+  test('DoD 104: in a deload, an empty Reps logs the reference reps with one tap', () => {
+    const onLog = jest.fn();
+    renderRow({
+      row: { setNumber: 1, suggestedWeight: 30, referenceReps: 9, isFirstUnlogged: true },
+      onLog,
+    });
+
+    expect(logButton().props.accessibilityState).toMatchObject({ disabled: false });
+    fireEvent.press(logButton());
+
+    expect(onLog).toHaveBeenCalledWith({ weight: 30, reps: 9 });
+    expect(screen.getByLabelText('Set 1 reps').props.value).toBe('9');
+  });
+
+  test('DoD 104: with only the `N RIR` placeholder, Log still waits for typed reps', () => {
+    const onLog = jest.fn();
+    renderRow({ row: { setNumber: 1, suggestedWeight: 30, isFirstUnlogged: true }, onLog });
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
+    fireEvent.press(logButton());
+    expect(onLog).not.toHaveBeenCalled();
   });
 
   test('Log stays inactive with reps but no weight', () => {
-    render(<WorkoutSetRow {...makeProps()} />);
+    renderRow();
 
     fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '');
     fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '10');
@@ -134,7 +166,7 @@ describe('WorkoutSetRow — unlogged', () => {
 
   test('Log records what was typed', () => {
     const onLog = jest.fn();
-    render(<WorkoutSetRow {...makeProps({ onLog })} />);
+    renderRow({ onLog });
 
     fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '65');
     fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '8');
@@ -144,25 +176,23 @@ describe('WorkoutSetRow — unlogged', () => {
   });
 
   test('Log waits while a set is being saved', () => {
-    render(<WorkoutSetRow {...makeProps({ isSaving: true })} />);
+    renderRow({ isSaving: true });
 
     expect(logButton().props.accessibilityState).toMatchObject({ disabled: true });
   });
 
   test('the first unlogged row of the exercise gets the accent outline, the others do not', () => {
-    render(<WorkoutSetRow {...makeProps()} />);
+    renderRow();
     expect(flatStyle(logButton()).borderColor).toBe(COLORS.accent);
 
-    screen.rerender(
-      <WorkoutSetRow {...makeProps({ row: { ...UNLOGGED, isFirstUnlogged: false } })} />,
-    );
+    screen.rerender(<ControlledRow {...makeProps({ row: { ...UNLOGGED, isFirstUnlogged: false } })} />);
     expect(flatStyle(logButton()).borderColor).toBe(COLORS['border/default']);
   });
 });
 
 describe('WorkoutSetRow — logged', () => {
   test('shows the logged numbers, not fields, and a filled Log box', () => {
-    render(<WorkoutSetRow {...makeProps({ row: logged(10) })} />);
+    renderRow({ row: logged(10) });
 
     expect(screen.queryByLabelText('Set 1 weight')).toBeNull();
     expect(screen.getByText('62.5')).toBeTruthy();
@@ -177,32 +207,31 @@ describe('WorkoutSetRow — logged', () => {
     ['over', 12, '+2'],
     ['miss', 9, '−1'],
   ])('DoD: the indicator for a %s', (_case, reps, text) => {
-    render(<WorkoutSetRow {...makeProps({ row: logged(reps) })} />);
+    renderRow({ row: logged(reps) });
 
     expect(screen.getByText(text)).toBeTruthy();
   });
 
   test('DoD: no indicator for a set without target reps', () => {
     const { targetReps: _targetReps, indicator: _indicator, ...row } = logged(10);
-    render(<WorkoutSetRow {...makeProps({ row })} />);
+    renderRow({ row });
 
     expect(screen.queryByText('✓')).toBeNull();
     expect(screen.queryByText(/^[+−]\d/)).toBeNull();
   });
 
   test('DoD: un-logging brings the fields back, holding the logged values', () => {
+    // Weight is the card's state since task 106, so it comes back in as a prop here; the card's
+    // own test covers it putting the logged weight back.
     const onUnlog = jest.fn();
-    render(
-      <WorkoutSetRow
-        {...makeProps({ row: logged(11, { log: { weight: 65, reps: 11 } }), onUnlog })}
-      />,
-    );
+    const props = makeProps({ row: logged(11, { log: { weight: 65, reps: 11 } }), onUnlog });
+    render(<WorkoutSetRow {...props} />);
 
     fireEvent.press(screen.getByRole('checkbox', { name: 'Set 1 logged' }));
     expect(onUnlog).toHaveBeenCalledTimes(1);
 
     // Storage answers: the set is no longer logged.
-    screen.rerender(<WorkoutSetRow {...makeProps({ row: UNLOGGED, onUnlog })} />);
+    screen.rerender(<WorkoutSetRow {...props} row={UNLOGGED} weightText="65" />);
 
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('65');
     expect(screen.getByLabelText('Set 1 reps').props.value).toBe('11');
@@ -212,14 +241,14 @@ describe('WorkoutSetRow — logged', () => {
 
 describe('WorkoutSetRow — not editable', () => {
   test('a logged row shows its values with nothing to press', () => {
-    render(<WorkoutSetRow {...makeProps({ row: logged(10), editable: false })} />);
+    renderRow({ row: logged(10), editable: false });
 
     expect(screen.getByText('62.5')).toBeTruthy();
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
   test('an unlogged row shows the suggested weight and placeholder, with no fields', () => {
-    render(<WorkoutSetRow {...makeProps({ editable: false })} />);
+    renderRow({ editable: false });
 
     expect(screen.getByText('62.5')).toBeTruthy();
     expect(screen.getByText('10')).toBeTruthy();
