@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { MesoOverviewSheet, type MesoOverviewSheetProps } from '@components/MesoOverviewSheet';
+import { COLORS } from '@design/tokens';
 import type { MesoGrid } from '@domain/mesoGrid';
 
 // BottomSheet's SafeAreaView throws without a SafeAreaProvider ancestor.
@@ -54,6 +55,11 @@ const GRID: MesoGrid = {
   ],
 };
 
+function flatStyle(element: ReturnType<typeof screen.getByTestId>) {
+  const { style } = element.props;
+  return Object.assign({}, ...(Array.isArray(style) ? style : [style]).filter(Boolean));
+}
+
 function makeProps(overrides: Partial<MesoOverviewSheetProps> = {}): MesoOverviewSheetProps {
   return {
     visible: true,
@@ -66,7 +72,7 @@ function makeProps(overrides: Partial<MesoOverviewSheetProps> = {}): MesoOvervie
 }
 
 describe('MesoOverviewSheet', () => {
-  test('DoD: matches the snapshot of a grid with all five cell states', () => {
+  test('DoD: matches the snapshot of a grid with every cell state', () => {
     renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
 
     expect(screen.toJSON()).toMatchSnapshot();
@@ -86,15 +92,64 @@ describe('MesoOverviewSheet', () => {
     expect(screen.getAllByText('Deload')).toHaveLength(1);
   });
 
-  test('shows each state its own way', () => {
+  test('DoD 107: a finished day is filled, everything left to do is an outline', () => {
     renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
 
-    const cell = (week: number, day: number) => screen.getByTestId(`meso-grid-cell-${week}-${day}`);
-    expect(within(cell(1, 1)).queryByText(/./)).toBeNull();
-    expect(within(cell(1, 2)).getByText('Skip')).toBeTruthy();
-    expect(within(cell(2, 1)).getByText('Now')).toBeTruthy();
-    expect(within(cell(2, 2)).getByText('D2')).toBeTruthy();
-    expect(within(cell(3, 2)).getByText('—')).toBeTruthy();
+    const frame = (week: number, day: number) =>
+      flatStyle(screen.getByTestId(`meso-grid-cell-${week}-${day}`));
+
+    // Completed and skipped look alike — both are behind you.
+    for (const [week, day] of [
+      [1, 1],
+      [1, 2],
+      [1, 3],
+    ]) {
+      expect(frame(week as number, day as number)).toMatchObject({
+        backgroundColor: COLORS['surface/cell-done'],
+      });
+    }
+
+    // in_progress, ready and awaiting look alike — all still to do.
+    for (const [week, day] of [
+      [2, 1],
+      [2, 2],
+      [2, 3],
+      [3, 2],
+    ]) {
+      expect(frame(week as number, day as number)).toMatchObject({
+        borderColor: COLORS['border/cell-quiet'],
+      });
+      expect(frame(week as number, day as number).backgroundColor).toBeUndefined();
+    }
+  });
+
+  test('DoD 107: no cell carries a day number — the column header says the day', () => {
+    renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
+
+    for (const [week, day] of [
+      [1, 1],
+      [2, 1],
+      [2, 2],
+      [3, 2],
+    ]) {
+      expect(
+        within(screen.getByTestId(`meso-grid-cell-${week}-${day}`)).queryByText(/./),
+      ).toBeNull();
+    }
+    expect(screen.getByText('Day 2')).toBeTruthy();
+  });
+
+  test('DoD 107: every status still reaches a screen reader', () => {
+    renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
+
+    for (const name of [
+      'Week 1 Day 2, skipped',
+      'Week 2 Day 1, in progress',
+      'Week 2 Day 2, ready',
+      'Week 3 Day 2, not programmed yet',
+    ]) {
+      expect(screen.getByRole('button', { name })).toBeTruthy();
+    }
   });
 
   test('rings only the day the workout screen has open', () => {
@@ -107,11 +162,20 @@ describe('MesoOverviewSheet', () => {
     ).toBe(rings[0]);
   });
 
-  test('shows the legend', () => {
+  test('DoD 107: no legend — three looks this far apart need no key', () => {
     renderWithSafeArea(<MesoOverviewSheet {...makeProps()} />);
 
-    for (const label of ['Completed', 'In progress', 'Ready', 'Not programmed yet']) {
-      expect(screen.getByText(label)).toBeTruthy();
+    for (const gone of [
+      'Done',
+      'Left to do',
+      'Open now',
+      'Completed',
+      'In progress',
+      'Ready',
+      'Not programmed yet',
+      'Skipped',
+    ]) {
+      expect(screen.queryByText(gone)).toBeNull();
     }
   });
 

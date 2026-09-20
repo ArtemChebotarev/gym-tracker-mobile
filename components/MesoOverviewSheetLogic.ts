@@ -11,22 +11,15 @@ export function formatMesoOverviewSubtitle(
 }
 
 /**
- * The text inside a cell (08.7, the cell-state table): `Now`, `D1`…`D7`, a struck-out `Skip`, or
- * `—` for a day not programmed yet. A completed cell shows a check instead — `undefined`.
+ * Whether the day is behind you — the grid's only distinction between sessions (08.7, task 107).
+ * `completed` and `skipped` both count: a skipped day is as finished as a trained one, and telling
+ * them apart on the grid was noise Artem didn't want. Everything still to do — `ready`,
+ * `in_progress`, `awaiting` — looks the same, so the grid answers "what's done, what's left, and
+ * where am I" and nothing else. A cell carries no day number: its column header already says the
+ * day. The full status stays in `mesoGridCellAccessibilityLabel`, where it costs no glanceability.
  */
-export function mesoGridCellText(cell: Pick<MesoGridCell, 'status' | 'dayNumber'>) {
-  switch (cell.status) {
-    case 'completed':
-      return undefined;
-    case 'in_progress':
-      return 'Now';
-    case 'ready':
-      return `D${cell.dayNumber}`;
-    case 'skipped':
-      return 'Skip';
-    case 'awaiting':
-      return '—';
-  }
+export function isFinishedMesoGridCell(cell: Pick<MesoGridCell, 'status'>): boolean {
+  return cell.status === 'completed' || cell.status === 'skipped';
 }
 
 const STATUS_LABELS: Record<MesoGridCellStatus, string> = {
