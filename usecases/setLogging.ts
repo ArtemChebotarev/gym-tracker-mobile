@@ -108,7 +108,7 @@ export async function logSet(
       };
     }
 
-    const setLog = await repos.setLogRepo.create({
+    const draft: SetLog = {
       id: generateId(),
       sessionExerciseId: sessionExercise.id,
       exerciseId: sessionExercise.exerciseId,
@@ -116,7 +116,11 @@ export async function logSet(
       weight: entry.weight,
       reps: entry.reps,
       completedAt: now,
-    });
+    };
+    if (entry.bodyWeight !== undefined) {
+      draft.bodyWeight = entry.bodyWeight;
+    }
+    const setLog = await repos.setLogRepo.create(draft);
     return {
       kind: 'logged',
       setLog,

@@ -152,3 +152,33 @@ describe('prescribeDeloadDay', () => {
     expect(day[0]?.targetRir).toBe(6);
   });
 });
+
+describe('deload and the bodyweight exercises (task 105)', () => {
+  test('DoD: a pure bodyweight exercise gets no deload weight — half a body weight is no target', () => {
+    const pullUp: SourceExercise = {
+      ...sourceExercise('pull-up', 0, 'back'),
+      equipment: 'bodyweight',
+    };
+
+    const [prescription] = prescribeDeloadDay([pullUp], [], defaultProgressionSettings);
+
+    expect(prescription?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+    expect(prescription?.targetRir).toBe(defaultProgressionSettings.deloadRir);
+  });
+
+  test('DoD: a weighted bodyweight exercise halves its added weight like any other', () => {
+    const weighted: SourceExercise = {
+      ...sourceExercise('pull-up-weighted', 0, 'back', [
+        { setNumber: 1, targetReps: 8, suggestedWeight: 10 },
+      ]),
+      equipment: 'bodyweight-weighted',
+    };
+
+    const [prescription] = prescribeDeloadDay([weighted], [], defaultProgressionSettings);
+
+    expect(prescription?.setTargets).toEqual([
+      { setNumber: 1, suggestedWeight: 5 },
+      { setNumber: 2, suggestedWeight: 5 },
+    ]);
+  });
+});

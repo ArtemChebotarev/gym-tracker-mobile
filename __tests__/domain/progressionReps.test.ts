@@ -118,3 +118,53 @@ describe('nextSetTarget', () => {
     ).toEqual<SetTarget>({ setNumber: 2, targetReps: 30, suggestedWeight: 40 });
   });
 });
+
+describe('a pure bodyweight exercise progresses on reps alone (task 105)', () => {
+  const settings = { minReps: 5, maxReps: 30 };
+
+  test('DoD: a logged set gets next week’s reps but no weight and no hint', () => {
+    const next = nextSetTarget(
+      { setNumber: 1, targetReps: 10, suggestedWeight: 80 },
+      { reps: 30, weight: 80 },
+      settings,
+      'bodyweight',
+    );
+
+    expect(next).toEqual({ setNumber: 1, targetReps: 30 });
+  });
+
+  test('DoD: an unlogged set carries its reps over and drops the weight', () => {
+    const next = nextSetTarget(
+      { setNumber: 2, targetReps: 12, suggestedWeight: 80 },
+      undefined,
+      settings,
+      'bodyweight',
+    );
+
+    expect(next).toEqual({ setNumber: 2, targetReps: 12 });
+  });
+
+  test('DoD: a weighted bodyweight exercise keeps progressing on its added weight', () => {
+    const next = nextSetTarget(
+      { setNumber: 1, targetReps: 8, suggestedWeight: 10 },
+      { reps: 8, weight: 10 },
+      settings,
+      'bodyweight-weighted',
+    );
+
+    expect(next).toEqual({ setNumber: 1, targetReps: 9, suggestedWeight: 10 });
+  });
+
+  test('DoD: an ordinary exercise is untouched by any of this', () => {
+    expect(nextSetTarget({ setNumber: 1 }, { reps: 8, weight: 60 }, settings, 'barbell')).toEqual({
+      setNumber: 1,
+      targetReps: 9,
+      suggestedWeight: 60,
+    });
+    expect(nextSetTarget({ setNumber: 1 }, { reps: 8, weight: 60 }, settings)).toEqual({
+      setNumber: 1,
+      targetReps: 9,
+      suggestedWeight: 60,
+    });
+  });
+});

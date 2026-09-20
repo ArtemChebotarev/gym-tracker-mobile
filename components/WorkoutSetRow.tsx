@@ -26,6 +26,8 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import { usesAddedWeight } from '@domain/bodyWeightLoad';
+import type { Equipment } from '@domain/catalog';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { tapTargetSlop } from '@design/shapes';
 import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
@@ -33,7 +35,7 @@ import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSessi
 
 import {
   formatIndicator,
-  formatRowWeight,
+  formatLoggedWeight,
   isRirPlaceholder,
   isStrongIndicator,
   repsPlaceholder,
@@ -45,6 +47,10 @@ export type WorkoutSetRowProps = {
   row: WorkoutSetRowModel;
   /** The exercise's target RIR — the Reps placeholder when the set has no other. */
   targetRir: number | undefined;
+  /** Decides what the Weight column means here — see `domain/bodyWeightLoad.ts` (task 105). */
+  equipment?: Equipment;
+  /** The block's body weight, added onto a `bodyweight-weighted` set's total when it's logged. */
+  bodyWeight?: number;
   /** What the Weight field holds — the card owns it, so it can carry into the later sets (106). */
   weightText: string;
   onChangeWeight: (text: string) => void;
@@ -54,13 +60,15 @@ export type WorkoutSetRowProps = {
   editable: boolean;
   /** A log or un-log is being saved — Log is held until it lands, so a double tap can't repeat it. */
   isSaving: boolean;
-  onLog: (entry: { weight: number; reps: number }) => void;
+  onLog: (entry: { weight: number; reps: number; bodyWeight?: number }) => void;
   onUnlog: () => void;
 };
 
 export function WorkoutSetRow({
   row,
   targetRir,
+  equipment,
+  bodyWeight,
   weightText,
   onChangeWeight,
   onBlurWeight,
@@ -98,7 +106,7 @@ export function WorkoutSetRow({
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
         <View style={[styles.field, styles.fieldLogged]}>
-          <Text style={styles.value}>{formatRowWeight(log.weight)}</Text>
+          <Text style={styles.value}>{formatLoggedWeight(log, equipment)}</Text>
         </View>
         <View style={[styles.field, styles.fieldLogged]}>
           <Text style={styles.value}>{log.reps}</Text>
@@ -144,10 +152,10 @@ export function WorkoutSetRow({
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
         <View style={styles.field}>
-          {row.suggestedWeight !== undefined ? (
-            <Text style={styles.value}>{formatRowWeight(row.suggestedWeight)}</Text>
-          ) : (
+          {weightText === '' ? (
             <Text style={styles.placeholder}>–</Text>
+          ) : (
+            <Text style={styles.value}>{weightText}</Text>
           )}
         </View>
         <View style={styles.field}>
@@ -217,7 +225,13 @@ export function WorkoutSetRow({
             if (entry) {
               // Show what's being logged — an empty Reps field fills in with its placeholder.
               setRepsText(String(entry.reps));
-              onLog(entry);
+              // On a weighted bodyweight set the entered weight is only what was added; the body
+              // weight goes with it so the set still reads the same later (task 105).
+              onLog(
+                usesAddedWeight(equipment) && bodyWeight !== undefined
+                  ? { ...entry, bodyWeight }
+                  : entry,
+              );
             }
           }}
           style={({ pressed }) => [

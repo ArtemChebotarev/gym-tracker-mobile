@@ -2,6 +2,8 @@
 // повторы". Pure functions: set N of the next week is computed from set N of the source
 // session, each set on its own.
 
+import { isPureBodyWeight } from '@domain/bodyWeightLoad';
+import type { Equipment } from '@domain/catalog';
 import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { weightHintForReps } from '@domain/progressionWeightHint';
@@ -20,25 +22,37 @@ export function nextTargetReps(loggedReps: number, settings: RepCorridor): numbe
  *   the set gets its own weight hint by rule 3.
  * - Not logged (skipped): the row carries over its previous `targetReps` and `suggestedWeight`
  *   with no increment. There is no new fact to judge, so no weight hint is carried.
+ *
+ * A pure `bodyweight` exercise takes the reps half of that and nothing else (task 105): its load
+ * is the body weight, which the block already knows and the screen fills in, so a weight target
+ * would only restate it and a hint would point at a weight there's no way to change.
  */
 export function nextSetTarget(
   source: SetTarget,
   log: Pick<SetLog, 'reps' | 'weight'> | undefined,
   settings: RepCorridor,
+  equipment?: Equipment,
 ): SetTarget {
+  const carriesWeight = !isPureBodyWeight(equipment);
   if (log === undefined) {
-    return {
-      setNumber: source.setNumber,
-      targetReps: source.targetReps,
-      suggestedWeight: source.suggestedWeight,
-    };
+    const target: SetTarget = { setNumber: source.setNumber, targetReps: source.targetReps };
+    if (carriesWeight && source.suggestedWeight !== undefined) {
+      target.suggestedWeight = source.suggestedWeight;
+    }
+    return target;
   }
-  return {
+  const target: SetTarget = {
     setNumber: source.setNumber,
     targetReps: nextTargetReps(log.reps, settings),
-    suggestedWeight: log.weight,
-    weightHint: weightHintForReps(log.reps, settings),
   };
+  if (carriesWeight) {
+    target.suggestedWeight = log.weight;
+    const hint = weightHintForReps(log.reps, settings);
+    if (hint !== undefined) {
+      target.weightHint = hint;
+    }
+  }
+  return target;
 }
 
 /**
@@ -50,6 +64,7 @@ export function nextSetTargets(
   source: Pick<SessionExercise, 'id' | 'setTargets'>,
   logs: readonly SetLog[],
   settings: RepCorridor,
+  equipment?: Equipment,
 ): SetTarget[] {
   const logsBySetNumber = new Map<number, SetLog>();
   for (const log of logs) {
@@ -58,6 +73,6 @@ export function nextSetTargets(
     }
   }
   return source.setTargets.map((target) =>
-    nextSetTarget(target, logsBySetNumber.get(target.setNumber), settings),
+    nextSetTarget(target, logsBySetNumber.get(target.setNumber), settings, equipment),
   );
 }

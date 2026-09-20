@@ -1,5 +1,7 @@
 // Pure helpers behind components/WorkoutSetRow.tsx — see the code-style skill.
 
+import { isPureBodyWeight, totalLoad, usesAddedWeight } from '@domain/bodyWeightLoad';
+import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
@@ -14,9 +16,33 @@ export function formatRowWeight(weight: number): string {
 /**
  * What the Weight field starts with (08.7, "Строка подхода"): the **value** of `suggestedWeight`,
  * or empty — the field then shows its `–` placeholder.
+ *
+ * A pure bodyweight exercise has no `suggestedWeight` at all (task 105) and takes the block's body
+ * weight instead: its load is you, and the block already knows what you weigh. A
+ * `bodyweight-weighted` one is ordinary here — its `suggestedWeight` *is* the added weight.
  */
-export function initialWeightText(row: Pick<WorkoutSetRow, 'suggestedWeight'>): string {
+export function initialWeightText(
+  row: Pick<WorkoutSetRow, 'suggestedWeight'>,
+  equipment?: Equipment,
+  bodyWeight?: number,
+): string {
+  if (isPureBodyWeight(equipment)) {
+    return bodyWeight !== undefined ? formatRowWeight(bodyWeight) : '';
+  }
   return row.suggestedWeight !== undefined ? formatRowWeight(row.suggestedWeight) : '';
+}
+
+/**
+ * What a logged row shows in the Weight column: the total load, with the added weight spelled out
+ * after it on a `bodyweight-weighted` exercise — `90 (+10)` for 10 kg hung on an 80 kg body
+ * (Artem's call, task 105). Everything else reads as the plain number it always did.
+ */
+export function formatLoggedWeight(
+  log: { weight: number; bodyWeight?: number },
+  equipment?: Equipment,
+): string {
+  const total = formatRowWeight(totalLoad(log, equipment));
+  return usesAddedWeight(equipment) ? `${total} (+${formatRowWeight(log.weight)})` : total;
 }
 
 /**

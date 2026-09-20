@@ -73,7 +73,13 @@ export async function generateNextSession(
     if (!exercise) {
       throw new NotFoundError(`Exercise "${sessionExercise.exerciseId}" does not exist.`);
     }
-    return { sessionExercise, muscleGroup: exercise.muscleGroup };
+    // `equipment` rides along with `muscleGroup`: the engine needs it to tell a pure bodyweight
+    // exercise, which gets no weight target at all, from everything else (task 105).
+    const source: SourceExercise = { sessionExercise, muscleGroup: exercise.muscleGroup };
+    if (exercise.equipment !== undefined) {
+      source.equipment = exercise.equipment;
+    }
+    return source;
   });
 
   const draft = buildNextSession({

@@ -31,6 +31,12 @@ export const EQUIPMENT_OPTIONS = [
   'machine',
   'cable',
   'bodyweight',
+  // Task 105: a bodyweight movement you hang extra weight on (weighted pull-ups, dips). It is its
+  // own equipment rather than a flag on `Exercise` because the two load differently — a pure
+  // bodyweight set is the body weight and nothing else, so it has no weight to progress, while a
+  // weighted one progresses on the added weight alone. Keeping it here means the filters and the
+  // New exercise sheet pick it up for free.
+  'bodyweight-weighted',
   'other',
 ] as const;
 

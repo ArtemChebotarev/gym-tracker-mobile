@@ -98,3 +98,25 @@ describe('prescribeFromHistory', () => {
     expect(logs).toEqual(snapshot);
   });
 });
+
+describe('rule 6 and the bodyweight exercises (task 105)', () => {
+  test('DoD: a pure bodyweight exercise takes the reps and no weight', () => {
+    const targets = prescribeFromHistory([log(1, 80, 12)], 2, defaultProgressionSettings, 'bodyweight');
+
+    expect(targets).toEqual([
+      { setNumber: 1, targetReps: 13 },
+      { setNumber: 2, targetReps: 13 },
+    ]);
+  });
+
+  test('DoD: a weighted bodyweight exercise takes the added weight as its suggestion', () => {
+    const targets = prescribeFromHistory(
+      [log(1, 10, 8)],
+      1,
+      defaultProgressionSettings,
+      'bodyweight-weighted',
+    );
+
+    expect(targets).toEqual([{ setNumber: 1, targetReps: 9, suggestedWeight: 10 }]);
+  });
+});

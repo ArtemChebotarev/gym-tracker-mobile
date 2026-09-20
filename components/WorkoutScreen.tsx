@@ -57,10 +57,12 @@ export type WorkoutScreenProps = {
   onLogSet: (
     exercise: WorkoutExercise,
     setNumber: number,
-    entry: { weight: number; reps: number },
+    entry: { weight: number; reps: number; bodyWeight?: number },
   ) => void;
   /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
+  onBodyWeightChange?: (bodyWeight: number) => void;
   /** A log or un-log is being saved. */
   isSaving: boolean;
   /** Finishes the session (05, "Завершение тренировки"). Only offered when `showFinish`. */
@@ -85,6 +87,7 @@ export function WorkoutScreen({
   onOpenExerciseMenu,
   onLogSet,
   onUnlogSet,
+  onBodyWeightChange,
   isSaving,
   onFinish,
   isFinishing,
@@ -168,6 +171,8 @@ export function WorkoutScreen({
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               onOpenMenu={() => onOpenExerciseMenu(exercise)}
               isSaving={isSaving}
+              bodyWeight={model.bodyWeight}
+              onBodyWeightChange={onBodyWeightChange}
               onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
             />

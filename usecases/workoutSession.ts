@@ -45,8 +45,12 @@ export type WorkoutSetRow = {
    * shows it as a guide; absent when that set wasn't logged there.
    */
   referenceReps?: number;
-  /** What was logged, if the row is logged. */
-  log?: { weight: number; reps: number };
+  /**
+   * What was logged, if the row is logged. On a `bodyweight-weighted` exercise `weight` is the
+   * added weight and `bodyWeight` the body weight of the moment — the total is their sum, and it
+   * stays what it was even after the block's body weight changes (task 105).
+   */
+  log?: { weight: number; reps: number; bodyWeight?: number };
   /** `✓` / `+N` / `−N` — only for a logged row whose set had `targetReps`. */
   indicator?: TargetIndicator;
   /** The exercise's first unlogged row, whose Log box gets the accent outline. Live mode only. */
@@ -144,6 +148,12 @@ export type WorkoutSessionModel = {
   /** 0..1, for the progress bar. */
   progress: number;
   exercises: WorkoutExercise[];
+  /**
+   * The block's body weight (task 105), for its bodyweight exercises: it fills a pure one's Weight
+   * field and adds onto a weighted one's total. Absent until it's been asked for — the screen then
+   * asks the first time a bodyweight exercise comes up.
+   */
+  bodyWeight?: number;
   actions: WorkoutSessionActions;
   /** The `Finish workout` button: live, and every exercise `completed` or `skipped`. */
   showFinish: boolean;
@@ -223,6 +233,9 @@ function toRows(
     }
     if (log) {
       row.log = { weight: log.weight, reps: log.reps };
+      if (log.bodyWeight !== undefined) {
+        row.log.bodyWeight = log.bodyWeight;
+      }
       const indicator = targetIndicator(target, log);
       if (indicator) {
         row.indicator = indicator;
@@ -332,6 +345,9 @@ function fromTree(
     },
     showFinish: live && canFinishSession(sessionExercises),
   };
+  if (mesocycle.bodyWeight !== undefined) {
+    model.bodyWeight = mesocycle.bodyWeight;
+  }
   if (mode === 'readonly' && next !== undefined) {
     model.nextSessionId = next.id;
   }

@@ -4,6 +4,8 @@
 // come from its last performance instead. Finding that reference (this mesocycle, or the last
 // `historyLookbackDays` days) is the use case layer's job — the engine only sees the result.
 
+import { isPureBodyWeight } from '@domain/bodyWeightLoad';
+import type { Equipment } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { nextTargetReps } from '@domain/progressionReps';
@@ -34,6 +36,9 @@ export function referenceSetFor(
  *   (rule 3).
  * - No reference: neither target — the screen falls back to showing `N RIR`.
  *
+ * A pure `bodyweight` exercise takes the reps and skips the weight and the hint, as everywhere
+ * else (task 105, `domain/bodyWeightLoad.ts`).
+ *
  * Not called in the deload week: an exercise can't be added there, and one swapped in gets no
  * weight or reps at all — the week isn't for progression, so its RIR is guidance enough and no
  * reference is looked up. `targetRir` is not part of this either: it always comes from the
@@ -43,7 +48,9 @@ export function prescribeFromHistory(
   referenceLogs: readonly SetLog[] | null,
   rowCount: number,
   settings: RepCorridor,
+  equipment?: Equipment,
 ): SetTarget[] {
+  const carriesWeight = !isPureBodyWeight(equipment);
   return Array.from({ length: rowCount }, (_, index): SetTarget => {
     const setNumber = index + 1;
     const reference =
@@ -51,11 +58,17 @@ export function prescribeFromHistory(
     if (reference === undefined) {
       return { setNumber };
     }
-    return {
+    const target: SetTarget = {
       setNumber,
       targetReps: nextTargetReps(reference.reps, settings),
-      suggestedWeight: reference.weight,
-      weightHint: weightHintForReps(reference.reps, settings),
     };
+    if (carriesWeight) {
+      target.suggestedWeight = reference.weight;
+      const hint = weightHintForReps(reference.reps, settings);
+      if (hint !== undefined) {
+        target.weightHint = hint;
+      }
+    }
+    return target;
   });
 }

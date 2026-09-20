@@ -1,6 +1,7 @@
 import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
@@ -55,7 +56,9 @@ async function setUp(stored: Session = session): Promise<ExerciseAdditionDeps> {
   await mesocycleRepo.create(mesocycle);
   await workout.repos.sessionRepo.create(stored);
   await workout.repos.sessionExerciseRepo.create(bench);
-  return { workout, mesocycleRepo };
+  // These exercise ids aren't catalog entries, so the repo answers with nothing and the equipment
+  // stays undefined — the ordinary, non-bodyweight path.
+  return { workout, mesocycleRepo, exerciseRepo: new InMemoryExerciseRepository(store) };
 }
 
 /** A past performance of the curl: its own session and session exercise, plus the logs. */

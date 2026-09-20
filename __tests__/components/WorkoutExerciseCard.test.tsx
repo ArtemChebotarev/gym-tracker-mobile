@@ -378,3 +378,121 @@ describe('WorkoutExerciseCard — the weight carries into the later sets (task 1
     expect(weightFields()).toEqual(['', '', '']);
   });
 });
+
+describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
+  const PULL_UP = makeExercise({
+    name: 'Pull Up',
+    equipment: 'bodyweight',
+    rows: [1, 2].map((setNumber) => ({
+      setNumber,
+      targetReps: 10,
+      isFirstUnlogged: setNumber === 1,
+    })),
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  const WEIGHTED = makeExercise({
+    name: 'Pull Up Weighted',
+    equipment: 'bodyweight-weighted',
+    rows: [{ setNumber: 1, targetReps: 8, suggestedWeight: 10, isFirstUnlogged: true }],
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  test("DoD: a pure bodyweight row starts at the block's body weight", () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: PULL_UP, bodyWeight: 80 })} />);
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('80');
+    expect(screen.getByLabelText('Set 2 weight').props.value).toBe('80');
+  });
+
+  test('empty until the body weight has been asked for', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: PULL_UP })} />);
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('');
+  });
+
+  test("DoD: editing a pure bodyweight row sets the block's body weight", () => {
+    const onBodyWeightChange = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, bodyWeight: 80, onBodyWeightChange })}
+      />,
+    );
+
+    const field = screen.getByLabelText('Set 1 weight');
+    fireEvent.changeText(field, '82.5');
+    fireEvent(field, 'blur');
+
+    expect(onBodyWeightChange).toHaveBeenCalledWith(82.5);
+  });
+
+  test('leaving the field at the same weight changes nothing', () => {
+    const onBodyWeightChange = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, bodyWeight: 80, onBodyWeightChange })}
+      />,
+    );
+
+    fireEvent(screen.getByLabelText('Set 1 weight'), 'blur');
+
+    expect(onBodyWeightChange).not.toHaveBeenCalled();
+  });
+
+  test('DoD: a weighted row holds the added weight, and the column says so', () => {
+    const onBodyWeightChange = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: WEIGHTED, bodyWeight: 80, onBodyWeightChange })}
+      />,
+    );
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('10');
+    expect(screen.getByText('Added, kg')).toBeTruthy();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+
+    // Editing it is an ordinary weight edit — it isn't the body weight.
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '12');
+    fireEvent(screen.getByLabelText('Set 1 weight'), 'blur');
+    expect(onBodyWeightChange).not.toHaveBeenCalled();
+  });
+
+  test('DoD: logging a weighted set carries the body weight of the moment', () => {
+    const onLogSet = jest.fn();
+    render(
+      <WorkoutExerciseCard {...makeProps({ exercise: WEIGHTED, bodyWeight: 80, onLogSet })} />,
+    );
+
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
+
+    expect(onLogSet).toHaveBeenCalledWith(1, { weight: 10, reps: 8, bodyWeight: 80 });
+  });
+
+  test('DoD: a logged weighted set reads as the total, with the added weight after it', () => {
+    const logged = makeExercise({
+      ...WEIGHTED,
+      rows: [
+        {
+          setNumber: 1,
+          targetReps: 8,
+          log: { weight: 10, reps: 8, bodyWeight: 80 },
+          isFirstUnlogged: false,
+        },
+      ],
+      loggedSetCount: 1,
+      hasLoggedSets: true,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: logged, bodyWeight: 82 })} />);
+
+    // 80, the body weight it was logged with — not 82, today's (05, "История неизменяема").
+    expect(screen.getByText('90 (+10)')).toBeTruthy();
+  });
+
+  test('an ordinary exercise keeps the plain Weight column', () => {
+    render(<WorkoutExerciseCard {...makeProps({ bodyWeight: 80 })} />);
+
+    expect(screen.getByText('Weight, kg')).toBeTruthy();
+  });
+});
