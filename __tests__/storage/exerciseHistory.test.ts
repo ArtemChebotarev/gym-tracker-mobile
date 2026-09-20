@@ -1,4 +1,6 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import {
   InMemoryExerciseHistoryRepository,
   readExercisePerformances,
@@ -7,6 +9,20 @@ import { InMemoryStore } from '@storage/store';
 import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 
 const BENCH = 'bench-press';
+
+function mesocycle(id: string, name: string): Mesocycle {
+  return {
+    id,
+    name,
+    lengthWeeks: 4,
+    daysPerWeek: 2,
+    startDate: '2026-09-01T08:00:00.000Z',
+    status: 'active',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    createdAt: '2026-09-01T08:00:00.000Z',
+  };
+}
 
 function session(id: string, overrides: Partial<Session> = {}): Session {
   return {
@@ -48,6 +64,9 @@ function log(id: string, sessionExerciseId: string, exerciseId: string, setNumbe
 
 async function seeded() {
   const store = new InMemoryStore();
+  const mesocycles = new InMemoryMesocycleRepository(store);
+  await mesocycles.create(mesocycle('meso-1', 'Upper/Lower'));
+  await mesocycles.create(mesocycle('meso-2', 'Full body'));
   const { repos } = createInMemoryWorkoutStore(store);
   await repos.sessionRepo.create(session('session-1'));
   await repos.sessionRepo.create(session('session-2', { weekNumber: 2, mesoId: 'meso-2' }));
@@ -86,6 +105,29 @@ describe('InMemoryExerciseHistoryRepository', () => {
 
     const first = performances.find((performance) => performance.session.id === 'session-1');
     expect(first?.setLogs.map((setLog) => setLog.id)).toEqual(['log-1', 'log-2']);
+  });
+
+  test('carries the mesocycle each session belongs to', async () => {
+    const { repo } = await seeded();
+
+    const performances = await repo.listByExerciseId(BENCH);
+
+    expect(
+      performances
+        .map((performance) => performance.mesocycle.name)
+        .sort(),
+    ).toEqual(['Full body', 'Upper/Lower']);
+  });
+
+  test('drops a performance whose mesocycle cannot be resolved', async () => {
+    const { store, repo } = await seeded();
+    await store
+      .collection<Session>('Session')
+      .update('session-2', (existing) => ({ ...existing, mesoId: 'meso-gone' }));
+
+    const performances = await repo.listByExerciseId(BENCH);
+
+    expect(performances.map((performance) => performance.session.id)).toEqual(['session-1']);
   });
 
   test("leaves out another exercise's sets", async () => {

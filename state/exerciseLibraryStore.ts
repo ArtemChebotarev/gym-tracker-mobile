@@ -10,6 +10,7 @@ import { InMemoryExerciseHistoryRepository } from '@storage/exerciseHistory';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemorySetLogRepository } from '@storage/setLogRepository';
 import type { ExerciseLibraryDeps } from '@usecases/exerciseLibrary';
+import type { ExerciseHistoryDeps } from '@usecases/exerciseHistory';
 import type { ExerciseOverviewDeps } from '@usecases/exerciseOverview';
 
 import { appStore } from './appStore';
@@ -23,10 +24,15 @@ export const exerciseLibraryDeps: ExerciseLibraryDeps = {
   setLogRepo: new InMemorySetLogRepository(appStore),
 };
 
+/** What the Exercise screen's History tab (108) reads — and the Overview tab's aggregates too. */
+export const exerciseHistoryDeps: ExerciseHistoryDeps = {
+  exerciseHistoryRepo: new InMemoryExerciseHistoryRepository(appStore),
+};
+
 /** What the Exercise screen's Overview tab (065) reads: the catalog, plus the exercise's history. */
 export const exerciseOverviewDeps: ExerciseOverviewDeps = {
   exerciseRepo: exerciseLibraryDeps.exerciseRepo,
-  exerciseHistoryRepo: new InMemoryExerciseHistoryRepository(appStore),
+  exerciseHistoryRepo: exerciseHistoryDeps.exerciseHistoryRepo,
 };
 
 let seeded: Promise<void> | null = null;

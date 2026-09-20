@@ -8,22 +8,10 @@
 // to a backend then moves the queries, not this logic.
 
 import type { Exercise } from './catalog';
-import type { Session, SetLog } from './execution';
+import type { SetLog } from './execution';
+import type { ExercisePerformance } from './exerciseHistory';
 
-/**
- * One performance of an exercise: a session and the sets logged for that exercise in it. It's the
- * raw material every aggregate below is folded out of, so it's defined here rather than in the
- * repository that reads it — `repositories/exerciseHistory.ts` reuses this type, since the domain
- * can't depend on a repository but a repository can depend on the domain.
- *
- * One session can hold two performances of the same exercise (it was added twice), so a session
- * is not a key here.
- */
-export type ExercisePerformance = {
-  session: Session;
-  /** The sets logged in that session for this exercise, sorted by `setNumber`. */
-  setLogs: SetLog[];
-};
+export type { ExercisePerformance };
 
 /** The heaviest set of a range of sets — the `Best set` tile, and each earlier session's line. */
 export type ExerciseBestSet = {

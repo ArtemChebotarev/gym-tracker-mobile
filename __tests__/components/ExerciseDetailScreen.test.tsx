@@ -3,6 +3,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
+import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
 import type { ExerciseOverview } from '@domain/exerciseOverview';
 import {
   ExerciseDetailScreen,
@@ -68,10 +69,28 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
   };
 }
 
+const HISTORY: ExerciseHistoryMesocycle[] = [
+  {
+    mesoId: 'meso-1',
+    name: 'Upper/Lower',
+    sessions: [
+      {
+        id: 'log-1',
+        weekNumber: 3,
+        dayNumber: 2,
+        completedAt: '2026-09-17T12:00:00.000Z',
+        setLogs: [setLog({ rir: 2 })],
+      },
+    ],
+  },
+];
+
 function renderScreen(overrides: Partial<ExerciseDetailScreenProps> = {}) {
   const props: ExerciseDetailScreenProps = {
     overview: overview(),
     isPending: false,
+    history: HISTORY,
+    isHistoryPending: false,
     onBack: jest.fn(),
     onOpenMenu: jest.fn(),
     ...overrides,
@@ -161,6 +180,7 @@ describe('ExerciseDetailScreen', () => {
   test('with nothing logged, the tiles and the last session give way to the empty state', () => {
     renderScreen({
       overview: overview({ stats: null, lastSession: null, earlierSessions: [] }),
+      history: [],
     });
 
     expect(screen.getByText('No sets logged yet')).toBeTruthy();
@@ -169,6 +189,17 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
     expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
     expect(screen.queryByText('See full history')).toBeNull();
+  });
+
+  test('the empty state answers the History tab too — no sets means no history', () => {
+    renderScreen({
+      overview: overview({ stats: null, lastSession: null, earlierSessions: [] }),
+      history: [],
+    });
+
+    fireEvent.press(screen.getByText('History'));
+
+    expect(screen.getByText('No sets logged yet')).toBeTruthy();
   });
 
   test('hides the last-session block when no completed session holds a set', () => {
@@ -186,6 +217,7 @@ describe('ExerciseDetailScreen', () => {
     fireEvent.press(screen.getByText('History'));
 
     expect(screen.queryByText('Best set')).toBeNull();
+    expect(screen.getByText('Upper/Lower')).toBeTruthy();
   });
 
   test('See full history switches to the History tab', () => {
@@ -194,6 +226,26 @@ describe('ExerciseDetailScreen', () => {
     fireEvent.press(screen.getByText('See full history'));
 
     expect(screen.queryByText('Best set')).toBeNull();
+    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+  });
+
+  test('reports the switch so the caller can start loading the history', () => {
+    const onTabChange = jest.fn();
+    renderScreen({ onTabChange });
+
+    fireEvent.press(screen.getByText('History'));
+    expect(onTabChange).toHaveBeenCalledWith('history');
+
+    fireEvent.press(screen.getByText('Overview'));
+    expect(onTabChange).toHaveBeenLastCalledWith('overview');
+  });
+
+  test('the History tab waits on its own read', () => {
+    renderScreen({ history: undefined, isHistoryPending: true });
+
+    fireEvent.press(screen.getByText('History'));
+
+    expect(screen.getByText('Loading…')).toBeTruthy();
   });
 
   test('re-entering the screen opens Overview again — the tab is never remembered', () => {
