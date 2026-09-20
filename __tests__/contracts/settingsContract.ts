@@ -18,8 +18,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       expect(settings.weightUnit).toBe('kg');
       // Nothing has been seeded yet; a real seed applies version 1 or higher (067(2)).
       expect(settings.catalogVersion).toBe(0);
-      // Which version a fresh store starts at is the adapter's business — that it has one is not.
-      expect(settings.schemaVersion).toBeGreaterThanOrEqual(1);
     });
 
     test('write persists settings that a later read returns', async () => {
@@ -27,7 +25,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       const written: Settings = {
         defaultProgressionSettings: { ...defaultProgressionSettings, minReps: 6 },
         weightUnit: 'lb',
-        schemaVersion: 2,
         catalogVersion: 3,
       };
 
@@ -41,7 +38,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       const written: Settings = {
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
-        schemaVersion: 1,
         catalogVersion: 1,
       };
 
@@ -52,7 +48,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       await expect(settingsRepo.read()).resolves.toEqual({
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
-        schemaVersion: 1,
         catalogVersion: 1,
       });
     });
@@ -66,7 +61,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
         defaultProgressionSettings:
           legacyProgressionSettings as Settings['defaultProgressionSettings'],
         weightUnit: 'kg',
-        schemaVersion: 1,
         catalogVersion: 1,
       });
 

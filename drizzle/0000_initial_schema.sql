@@ -85,7 +85,6 @@ CREATE TABLE `settings` (
 	`id` integer PRIMARY KEY DEFAULT 1 NOT NULL,
 	`default_progression_settings` text NOT NULL,
 	`weight_unit` text NOT NULL,
-	`schema_version` integer NOT NULL,
 	`catalog_version` integer NOT NULL
 );
 --> statement-breakpoint

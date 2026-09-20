@@ -13,6 +13,5 @@ import type { Settings } from '@repositories/settings';
 export const DEFAULT_SETTINGS: Settings = {
   defaultProgressionSettings,
   weightUnit: 'kg',
-  schemaVersion: 1,
   catalogVersion: 0,
 };

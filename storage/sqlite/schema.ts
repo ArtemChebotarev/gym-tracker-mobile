@@ -167,7 +167,6 @@ export const settings = sqliteTable('settings', {
     .notNull()
     .$type<ProgressionSettings>(),
   weightUnit: text('weight_unit').notNull().$type<Settings['weightUnit']>(),
-  schemaVersion: integer('schema_version').notNull(),
   catalogVersion: integer('catalog_version').notNull(),
 });
 

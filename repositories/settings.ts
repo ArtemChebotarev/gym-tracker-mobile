@@ -22,9 +22,13 @@ export type Settings = {
    * never changes how a weight is stored, only how it is shown.
    */
   weightUnit: 'kg' | 'lb';
-  /** Version of the persisted data's shape, for migrations. */
-  schemaVersion: number;
-  /** Version of the seeded exercise catalog currently applied. */
+  /**
+   * Version of the seeded exercise catalog currently applied.
+   *
+   * The *schema* version is deliberately not here. It is kept by the migration runner, in the
+   * journal of migrations a database has had applied (storage/sqlite/migrations.ts, task 069) —
+   * a second number maintained by hand could only ever disagree with what actually ran.
+   */
   catalogVersion: number;
 };
 

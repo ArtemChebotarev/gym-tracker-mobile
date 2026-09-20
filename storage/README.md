@@ -24,6 +24,25 @@ driver failures, `transaction.ts` the BEGIN/COMMIT/ROLLBACK that rule 6 needs �
 `transaction()` cannot be used because it commits when a synchronous callback returns, and every
 repository method is async. `repositories.ts` wires all twelve over one database handle.
 
+## Migrations and the schema version (task 069)
+
+`migrations.ts` brings a database up to the schema this build expects, and refuses one written by
+a newer build. There is no schema version anyone maintains: `drizzle-kit generate` stamps each
+migration with its generation time in `drizzle/meta/_journal.json`, Drizzle's migrator records the
+stamps it has applied in a `__drizzle_migrations` table inside the user's database, and applies
+whatever is newer. A database whose newest stamp is newer than anything this build carries came
+from a later version of the app — migrating forward cannot help, so opening it is refused with
+`StorageUnavailableError`.
+
+Getting the migrations into the app takes two pieces of build configuration, because Metro has no
+filesystem to read them from at runtime: `metro.config.js` adds `.sql` as a source extension, and
+`babel.config.js` inlines each `.sql` import as a string (without it Babel would try to parse SQL
+as JavaScript). `migrationBundle.ts` is the single place that imports the generated
+`drizzle/migrations.js`. Nothing calls it yet — running migrations at startup is task 111.
+
+`drizzle/` is generated. Never hand-edit a migration that has shipped: a database that already
+applied it will not apply it again.
+
 `MuscleGroupCatalogRepository` is shared by both adapters rather than duplicated: muscle groups
 are a fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to
 differ about.

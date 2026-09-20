@@ -25,7 +25,6 @@ export class SqliteSettingsRepository implements SettingsRepository {
       ? {
           defaultProgressionSettings: row.defaultProgressionSettings,
           weightUnit: row.weightUnit,
-          schemaVersion: row.schemaVersion,
           catalogVersion: row.catalogVersion,
         }
       : DEFAULT_SETTINGS;
