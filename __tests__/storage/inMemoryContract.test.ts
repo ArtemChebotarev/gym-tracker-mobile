@@ -2,7 +2,7 @@ import { InMemoryExerciseHistoryRepository } from '@storage/exerciseHistory';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemoryMesocycleRepository } from '@storage/mesocycle';
 import { createInMemoryMesocycleStartStore } from '@storage/mesocycleStartStore';
-import { InMemoryMuscleGroupRepository } from '@storage/muscleGroupRepository';
+import { MuscleGroupCatalogRepository } from '@storage/muscleGroupRepository';
 import { InMemorySessionRepository } from '@storage/session';
 import { InMemorySessionExerciseRepository } from '@storage/sessionExercise';
 import { InMemorySessionTreeRepository } from '@storage/sessionTree';
@@ -23,7 +23,7 @@ function createInMemoryRepositories(): RepositorySet {
   const store = new InMemoryStore();
 
   return {
-    muscleGroupRepo: new InMemoryMuscleGroupRepository(),
+    muscleGroupRepo: new MuscleGroupCatalogRepository(),
     exerciseRepo: new InMemoryExerciseRepository(store),
     mesocycleRepo: new InMemoryMesocycleRepository(store),
     sessionRepo: new InMemorySessionRepository(store),
