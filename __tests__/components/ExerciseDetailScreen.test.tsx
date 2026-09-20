@@ -45,10 +45,8 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
     exercise: exercise(),
     stats: {
       bestSet: { weight: 90, reps: 6 },
-      sessionCount: 12,
+      sessionCount: 14,
       lastDoneAt: '2026-09-17T11:30:00.000Z',
-      setCount: 124,
-      mesocycleCount: 3,
     },
     lastSession: {
       weekNumber: 3,
@@ -56,6 +54,15 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
       completedAt: '2026-09-17T12:00:00.000Z',
       setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
     },
+    earlierSessions: [
+      {
+        weekNumber: 2,
+        dayNumber: 1,
+        completedAt: '2026-08-03T12:00:00.000Z',
+        bestSet: { weight: 80, reps: 8 },
+        setCount: 3,
+      },
+    ],
     actions: ['hide'],
     ...overrides,
   };
@@ -98,16 +105,40 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Best set')).toBeTruthy();
     expect(screen.getByText('90×6')).toBeTruthy();
     expect(screen.getByText('Sessions')).toBeTruthy();
-    expect(screen.getByText('12')).toBeTruthy();
+    expect(screen.getByText('14')).toBeTruthy();
     expect(screen.getByText('Last done')).toBeTruthy();
+  });
+
+  test("labels the last session's block with its week, day and date", () => {
+    renderScreen();
+
+    expect(screen.getByText('Last session')).toBeTruthy();
+    expect(screen.getByText('Week 3 · Day 2 · 17 Sep')).toBeTruthy();
   });
 
   test("lists the last session's sets, each with its RIR", () => {
     renderScreen();
 
-    expect(screen.getByText('Week 3 · Day 2 · 17 Sep')).toBeTruthy();
+    expect(screen.getByText('Set 1')).toBeTruthy();
+    expect(screen.getByText('Set 2')).toBeTruthy();
+    // The RIR is its own quieter Text inside the value's — a query sees the two as one line.
     expect(screen.getByText('85 kg × 8 · 2 RIR')).toBeTruthy();
     expect(screen.getByText('85 kg × 7 · 1 RIR')).toBeTruthy();
+  });
+
+  test('lists the earlier sessions by their heaviest set and set count', () => {
+    renderScreen();
+
+    expect(screen.getByText('Earlier')).toBeTruthy();
+    expect(screen.getByText('W2 · D1 · 3 Aug')).toBeTruthy();
+    expect(screen.getByText('80 × 8 · 3 sets')).toBeTruthy();
+  });
+
+  test('hides the Earlier block when the exercise was only ever done once', () => {
+    renderScreen({ overview: overview({ earlierSessions: [] }) });
+
+    expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
+    expect(screen.getByTestId('exercise-last-session')).toBeTruthy();
   });
 
   test('a set with no RIR renders without the tail', () => {
@@ -119,6 +150,7 @@ describe('ExerciseDetailScreen', () => {
           completedAt: '2026-09-17T12:00:00.000Z',
           setLogs: [setLog()],
         },
+        earlierSessions: [],
       }),
     });
 
@@ -126,25 +158,21 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText(/RIR/)).toBeNull();
   });
 
-  test('carries the all-time counts into the History link', () => {
-    renderScreen();
-
-    expect(screen.getByText('Used in 3 mesocycles')).toBeTruthy();
-    expect(screen.getByText('124 sets logged all-time')).toBeTruthy();
-  });
-
   test('with nothing logged, the tiles and the last session give way to the empty state', () => {
-    renderScreen({ overview: overview({ stats: null, lastSession: null }) });
+    renderScreen({
+      overview: overview({ stats: null, lastSession: null, earlierSessions: [] }),
+    });
 
     expect(screen.getByText('No sets logged yet')).toBeTruthy();
     expect(screen.queryByText('Best set')).toBeNull();
     expect(screen.queryByText('Sessions')).toBeNull();
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
-    expect(screen.queryByText(/sets logged all-time/)).toBeNull();
+    expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
+    expect(screen.queryByText('See full history')).toBeNull();
   });
 
   test('hides the last-session block when no completed session holds a set', () => {
-    renderScreen({ overview: overview({ lastSession: null }) });
+    renderScreen({ overview: overview({ lastSession: null, earlierSessions: [] }) });
 
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
     expect(screen.getByText('Best set')).toBeTruthy();
@@ -160,10 +188,10 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText('Best set')).toBeNull();
   });
 
-  test('the History link switches to the History tab', () => {
+  test('See full history switches to the History tab', () => {
     renderScreen();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Used in 3 mesocycles' }));
+    fireEvent.press(screen.getByText('See full history'));
 
     expect(screen.queryByText('Best set')).toBeNull();
   });

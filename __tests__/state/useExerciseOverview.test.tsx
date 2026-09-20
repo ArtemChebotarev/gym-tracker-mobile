@@ -39,7 +39,7 @@ describe('useExerciseOverview', () => {
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     expect(result.current.data?.exercise.name).toBe('Bench Press');
-    expect(result.current.data?.stats?.setCount).toBeGreaterThan(0);
+    expect(result.current.data?.stats?.sessionCount).toBeGreaterThan(0);
     expect(result.current.data?.actions).toEqual(['hide']);
   });
 
@@ -52,6 +52,7 @@ describe('useExerciseOverview', () => {
 
     expect(result.current.data?.stats).toBeNull();
     expect(result.current.data?.lastSession).toBeNull();
+    expect(result.current.data?.earlierSessions).toEqual([]);
   });
 
   test('resolves to null for an id no exercise carries', async () => {

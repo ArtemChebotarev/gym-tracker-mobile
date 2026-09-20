@@ -1,11 +1,14 @@
-// The Exercise screen — 08.6 · Библиотека упражнений, "Exercise — вкладка Overview" (task 065).
-// A pushed screen: back and `⋯` in the header, then the exercise's name with its muscle-group chip
-// in the group's own tint and a `Catalog`/`Custom` badge, then the Overview / History switcher.
+// The Exercise screen — 08.6 · Библиотека упражнений, "Exercise — вкладка Overview" (task 065),
+// laid out after its mockup 02-exercise-detail.html. A pushed screen: back and `⋯` in the header,
+// then the exercise's name with its muscle-group chip in the group's own tint and a
+// `Catalog`/`Custom` badge, then the Overview / History switcher.
 //
 // Overview answers one question — what did I do last time, before I get under the bar: three
-// tiles (Best set, Sessions, Last done), the last completed session's sets, and a row into the
-// History tab carrying the two all-time counts. With nothing ever logged, all of it is replaced by
-// a line saying so (08.6, "Пустое состояние") — tiles of zeros would be worse than no tiles.
+// tiles (Best set, Sessions, Last done), the last completed session set by set, then `Earlier` —
+// the few sessions before it as one line each, heaviest set and how many sets, which is where you
+// see the weight actually moving. `See full history` under them goes to the History tab for the
+// rest. With nothing ever logged, all of it is replaced by a line saying so (08.6, "Пустое
+// состояние") — tiles of zeros would be worse than no tiles.
 //
 // The switcher is the only way into History (08.6: "Единственная точка входа — переключатель
 // Overview / History на самом экране Exercise"), and Overview always opens first, from wherever
@@ -19,16 +22,20 @@
 // app/exercise/[id]/index.tsx. JSX/rendering only — styles live in ExerciseDetailScreenStyles.ts
 // and pure helpers in ExerciseDetailScreenLogic.ts, per the code-style skill.
 
+import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
-import type { ExerciseLastSession, ExerciseOverview } from '@domain/exerciseOverview';
+import type {
+  ExerciseLastSession,
+  ExerciseOverview,
+  ExerciseSessionSummary,
+} from '@domain/exerciseOverview';
 import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
-import { ListRow } from '@design/components/ListRow';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
 import { BackIcon } from '@design/icons/BackIcon';
@@ -40,11 +47,14 @@ import { COLORS, ICON_SIZES } from '@design/tokens';
 import {
   EXERCISE_DETAIL_TABS,
   formatBestSet,
+  formatEarlierSessionLabel,
+  formatEarlierSessionTail,
+  formatEarlierSessionValue,
   formatLastDone,
-  formatLastSessionTitle,
-  formatMesocyclesUsed,
-  formatOverviewSet,
-  formatSetsLogged,
+  formatLastSessionMeta,
+  formatSetLabel,
+  formatSetRirTail,
+  formatSetValue,
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
@@ -89,7 +99,7 @@ export function ExerciseDetailScreen({
     );
   }
 
-  const { exercise, stats, lastSession } = overview;
+  const { exercise, stats, lastSession, earlierSessions } = overview;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -137,16 +147,20 @@ export function ExerciseDetailScreen({
                 <StatTile label="Last done" value={formatLastDone(stats.lastDoneAt)} />
               </View>
 
-              {lastSession !== null && (
-                <LastSessionCard lastSession={lastSession} equipment={exercise.equipment} />
-              )}
+              {lastSession !== null && <LastSessionBlock
+                lastSession={lastSession}
+                equipment={exercise.equipment}
+              />}
 
-              <ListRow
-                title={formatMesocyclesUsed(stats.mesocycleCount)}
-                subtitle={formatSetsLogged(stats.setCount)}
-                trailing={{ type: 'chevron' }}
+              {earlierSessions.length > 0 && <EarlierBlock sessions={earlierSessions} />}
+
+              <Pressable
+                accessibilityRole="button"
                 onPress={() => setTab('history')}
-              />
+                style={({ pressed }) => [styles.link, pressed && styles.linkPressed]}
+              >
+                <Text style={styles.linkLabel}>See full history</Text>
+              </Pressable>
             </>
           )}
         </ScrollView>
@@ -173,7 +187,53 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
   );
 }
 
-function LastSessionCard({
+function Block({
+  label,
+  meta,
+  testID,
+  children,
+}: {
+  label: string;
+  meta?: string;
+  testID: string;
+  children: ReactNode;
+}) {
+  return (
+    <View testID={testID} style={styles.block}>
+      <View style={styles.blockLabelRow}>
+        <Text style={styles.blockLabel}>{label}</Text>
+        {meta !== undefined && <Text style={styles.blockMeta}>{meta}</Text>}
+      </View>
+      <View style={styles.card}>{children}</View>
+    </View>
+  );
+}
+
+function CardRow({
+  label,
+  labelStyle,
+  value,
+  tail,
+  isLast,
+}: {
+  label: string;
+  labelStyle: 'set' | 'session';
+  value: string;
+  tail?: string;
+  isLast: boolean;
+}) {
+  return (
+    <View style={[styles.cardRow, isLast && styles.cardRowLast]}>
+      <Text style={labelStyle === 'set' ? styles.rowLabel : styles.earlierLabel}>{label}</Text>
+      <Text style={styles.rowValue}>
+        {value}
+        {tail !== undefined && <Text style={styles.rowValueTail}>{tail}</Text>}
+      </Text>
+    </View>
+  );
+}
+
+function LastSessionBlock({
   lastSession,
   equipment,
 }: {
@@ -181,14 +241,38 @@ function LastSessionCard({
   equipment?: Equipment;
 }) {
   return (
-    <View testID="exercise-last-session" style={styles.card}>
-      <Text style={styles.cardTitle}>{formatLastSessionTitle(lastSession)}</Text>
-      {lastSession.setLogs.map((setLog) => (
-        <View key={setLog.id} style={styles.setRow}>
-          <Text style={styles.setNumber}>{setLog.setNumber}</Text>
-          <Text style={styles.setValue}>{formatOverviewSet(setLog, equipment)}</Text>
-        </View>
+    <Block
+      testID="exercise-last-session"
+      label="Last session"
+      meta={formatLastSessionMeta(lastSession)}
+    >
+      {lastSession.setLogs.map((setLog, index) => (
+        <CardRow
+          key={setLog.id}
+          label={formatSetLabel(setLog)}
+          labelStyle="set"
+          value={formatSetValue(setLog, equipment)}
+          tail={formatSetRirTail(setLog)}
+          isLast={index === lastSession.setLogs.length - 1}
+        />
       ))}
-    </View>
+    </Block>
+  );
+}
+
+function EarlierBlock({ sessions }: { sessions: ExerciseSessionSummary[] }) {
+  return (
+    <Block testID="exercise-earlier-sessions" label="Earlier">
+      {sessions.map((session, index) => (
+        <CardRow
+          key={`${session.completedAt}-${session.weekNumber}-${session.dayNumber}`}
+          label={formatEarlierSessionLabel(session)}
+          labelStyle="session"
+          value={formatEarlierSessionValue(session)}
+          tail={formatEarlierSessionTail(session)}
+          isLast={index === sessions.length - 1}
+        />
+      ))}
+    </Block>
   );
 }

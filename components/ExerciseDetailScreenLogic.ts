@@ -2,7 +2,11 @@
 
 import type { Equipment } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
-import type { ExerciseBestSet, ExerciseLastSession } from '@domain/exerciseOverview';
+import type {
+  ExerciseBestSet,
+  ExerciseLastSession,
+  ExerciseSessionSummary,
+} from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
 import { formatAbsoluteDate } from '@design/formatDate';
 import { formatShortDuration } from '@design/formatShortDuration';
@@ -28,31 +32,49 @@ export function formatLastDone(lastDoneAt: string, now: Date = new Date()): stri
   return formatShortDuration(parseUtcIso(lastDoneAt), now);
 }
 
-/** The last session's line: `Week 3 · Day 2 · 12 Sep` (08.6, "Последняя сессия"). */
-export function formatLastSessionTitle(lastSession: ExerciseLastSession): string {
+/** The Last session label's right-hand side: `Week 3 · Day 1 · 10 Aug` (the mockup). */
+export function formatLastSessionMeta(lastSession: ExerciseLastSession): string {
   const date = formatAbsoluteDate(parseUtcIso(lastSession.completedAt));
   return `Week ${lastSession.weekNumber} · Day ${lastSession.dayNumber} · ${date}`;
 }
 
+/** A logged set's row label — `Set 1`. */
+export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
+  return `Set ${setLog.setNumber}`;
+}
+
 /**
- * One logged set: `85 kg × 8 · 2 RIR`. `rir` is optional — with none there's no tail at all
- * (08.6: "если его нет, часть после точки не выводится").
+ * A logged set's value: `80 kg × 9`. The `· 2 RIR` tail is rendered separately and a step quieter
+ * (the mockup), so it isn't part of this string — see `formatSetRirTail`.
  *
  * The weight goes through the workout row's own formatter rather than `design/formatSet`, so a
- * `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 8`, the body weight
+ * `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
  * and what was hung on it kept apart (task 105).
  */
-export function formatOverviewSet(setLog: SetLog, equipment?: Equipment): string {
-  const set = `${formatLoggedWeight(setLog, equipment)} kg × ${setLog.reps}`;
-  return setLog.rir === undefined ? set : `${set} · ${formatRir(setLog.rir)}`;
+export function formatSetValue(setLog: SetLog, equipment?: Equipment): string {
+  return `${formatLoggedWeight(setLog, equipment)} kg × ${setLog.reps}`;
 }
 
-/** The History link's title — `Used in 3 mesocycles` (08.6, "Переход в историю"). */
-export function formatMesocyclesUsed(mesocycleCount: number): string {
-  return `Used in ${mesocycleCount} ${mesocycleCount === 1 ? 'mesocycle' : 'mesocycles'}`;
+/**
+ * The ` · 2 RIR` tail, or `undefined` when the set has no `rir` — 08.6: "если его нет, часть после
+ * точки не выводится", so there is no tail at all rather than an empty one.
+ */
+export function formatSetRirTail(setLog: SetLog): string | undefined {
+  return setLog.rir === undefined ? undefined : ` · ${formatRir(setLog.rir)}`;
 }
 
-/** The History link's subtitle — `124 sets logged all-time`. */
-export function formatSetsLogged(setCount: number): string {
-  return `${setCount} ${setCount === 1 ? 'set' : 'sets'} logged all-time`;
+/** An earlier session's left side — `W2 · D1 · 3 Aug` (the mockup's compact form). */
+export function formatEarlierSessionLabel(session: ExerciseSessionSummary): string {
+  const date = formatAbsoluteDate(parseUtcIso(session.completedAt));
+  return `W${session.weekNumber} · D${session.dayNumber} · ${date}`;
+}
+
+/** An earlier session's right side — `80 × 8`, its heaviest set, no unit. */
+export function formatEarlierSessionValue(session: ExerciseSessionSummary): string {
+  return `${session.bestSet.weight} × ${session.bestSet.reps}`;
+}
+
+/** The quieter tail after it — ` · 3 sets`. */
+export function formatEarlierSessionTail(session: ExerciseSessionSummary): string {
+  return ` · ${session.setCount} ${session.setCount === 1 ? 'set' : 'sets'}`;
 }

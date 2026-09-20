@@ -86,9 +86,8 @@ describe('loadExerciseOverview', () => {
       bestSet: { weight: 85, reps: 8 },
       sessionCount: 1,
       lastDoneAt: '2026-09-10T11:30:00.000Z',
-      setCount: 1,
-      mesocycleCount: 1,
     });
     expect(overview?.lastSession?.weekNumber).toBe(2);
+    expect(overview?.earlierSessions).toEqual([]);
   });
 });

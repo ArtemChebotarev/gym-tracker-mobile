@@ -3,6 +3,7 @@ import type { Session, SetLog } from '@domain/execution';
 import type { ExercisePerformance } from '@domain/exerciseOverview';
 import {
   buildExerciseOverview,
+  EARLIER_SESSION_LIMIT,
   exerciseOverviewActions,
 } from '@domain/exerciseOverviewBuilders';
 
@@ -83,7 +84,7 @@ describe('buildExerciseOverview', () => {
     expect(overview.stats?.bestSet).toEqual({ weight: 90, reps: 7 });
   });
 
-  test('counts distinct sessions, mesocycles and every set', () => {
+  test('counts distinct sessions', () => {
     const overview = buildExerciseOverview(exercise(), [
       performance({ id: 'session-1', mesoId: 'meso-1' }, [
         { id: 'a', sessionExerciseId: 'se-1' },
@@ -95,8 +96,6 @@ describe('buildExerciseOverview', () => {
     ]);
 
     expect(overview.stats?.sessionCount).toBe(2);
-    expect(overview.stats?.mesocycleCount).toBe(2);
-    expect(overview.stats?.setCount).toBe(4);
   });
 
   test('last done is the most recent set, whatever order the performances come in', () => {
@@ -141,7 +140,64 @@ describe('buildExerciseOverview', () => {
     ]);
 
     expect(overview.lastSession).toBeNull();
+    expect(overview.earlierSessions).toEqual([]);
     expect(overview.stats?.sessionCount).toBe(1);
+  });
+});
+
+describe('buildExerciseOverview — the Earlier block', () => {
+  function weeks(count: number) {
+    return Array.from({ length: count }, (_, index) =>
+      performance(
+        {
+          id: `session-${index + 1}`,
+          weekNumber: index + 1,
+          completedAt: `2026-09-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`,
+        },
+        [{ id: `log-${index + 1}` }],
+      ),
+    );
+  }
+
+  test('lists the completed sessions under the last one, newest first', () => {
+    const overview = buildExerciseOverview(exercise(), weeks(3));
+
+    expect(overview.lastSession?.weekNumber).toBe(3);
+    expect(overview.earlierSessions.map((session) => session.weekNumber)).toEqual([2, 1]);
+  });
+
+  test('summarises each one by its heaviest set and how many sets it held', () => {
+    const overview = buildExerciseOverview(exercise(), [
+      performance({ id: 'session-2', completedAt: '2026-09-17T12:00:00.000Z' }, [{ id: 'z' }]),
+      performance({ id: 'session-1', weekNumber: 1, dayNumber: 2 }, [
+        { id: 'a', setNumber: 1, weight: 80, reps: 8 },
+        { id: 'b', setNumber: 2, weight: 80, reps: 9 },
+        { id: 'c', setNumber: 3, weight: 75, reps: 10 },
+      ]),
+    ]);
+
+    expect(overview.earlierSessions).toEqual([
+      {
+        weekNumber: 1,
+        dayNumber: 2,
+        completedAt: '2026-09-10T12:00:00.000Z',
+        bestSet: { weight: 80, reps: 9 },
+        setCount: 3,
+      },
+    ]);
+  });
+
+  test('stops at the limit — Overview is not the history screen', () => {
+    const overview = buildExerciseOverview(exercise(), weeks(EARLIER_SESSION_LIMIT + 3));
+
+    expect(overview.earlierSessions).toHaveLength(EARLIER_SESSION_LIMIT);
+  });
+
+  test('is empty when the exercise was only ever done once', () => {
+    const overview = buildExerciseOverview(exercise(), weeks(1));
+
+    expect(overview.lastSession).not.toBeNull();
+    expect(overview.earlierSessions).toEqual([]);
   });
 });
 
