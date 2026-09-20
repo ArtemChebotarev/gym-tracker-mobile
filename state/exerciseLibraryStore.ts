@@ -6,9 +6,11 @@
 // Persistence Layer Contract, rule 9.
 
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
+import { InMemoryExerciseHistoryRepository } from '@storage/exerciseHistory';
 import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
 import { InMemorySetLogRepository } from '@storage/setLogRepository';
 import type { ExerciseLibraryDeps } from '@usecases/exerciseLibrary';
+import type { ExerciseOverviewDeps } from '@usecases/exerciseOverview';
 
 import { appStore } from './appStore';
 
@@ -19,6 +21,12 @@ const CATALOG_VERSION = 1;
 export const exerciseLibraryDeps: ExerciseLibraryDeps = {
   exerciseRepo: new InMemoryExerciseRepository(appStore),
   setLogRepo: new InMemorySetLogRepository(appStore),
+};
+
+/** What the Exercise screen's Overview tab (065) reads: the catalog, plus the exercise's history. */
+export const exerciseOverviewDeps: ExerciseOverviewDeps = {
+  exerciseRepo: exerciseLibraryDeps.exerciseRepo,
+  exerciseHistoryRepo: new InMemoryExerciseHistoryRepository(appStore),
 };
 
 let seeded: Promise<void> | null = null;
