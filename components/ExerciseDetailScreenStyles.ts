@@ -47,21 +47,27 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],
   },
+  // The group chip and the Catalog/Custom badge sit side by side, so they are the same pill: the
+  // same padding and the same `type/caption` Badge and Chip both use (08.0 · Design SDK — a chip's
+  // label and a badge's share that scale). Only the fill and the dot differ. Equal height also
+  // keeps them level whatever the row does, since Badge pins itself with `alignSelf: flex-start`
+  // and would otherwise ignore the row's `alignItems: center`. The workout card's group chip
+  // (08.7) stays on `type/label` — it stands alone above a card rather than next to a badge.
   groupChip: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: SPACING['space/gap-tight'],
     borderRadius: RADII['radius/pill'],
-    paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/chip-y'],
+    paddingHorizontal: SPACING['space/gap'],
+    paddingVertical: SPACING['space/gap-tight'],
   },
   groupDot: {
     ...circle(SIZES['size/dot']),
   },
   groupLabel: {
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
-    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
+    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
   },
   content: {
     gap: SPACING['space/xl'],
