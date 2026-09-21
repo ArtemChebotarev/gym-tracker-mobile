@@ -1,7 +1,7 @@
 // An active mesocycle mid-block, for the Today tab's route tests. The app no longer seeds one —
 // an active mesocycle and its sessions come from Start (042) — but the workout screen's modes are
 // easiest to exercise on a block already under way, so these tests seed it themselves into the
-// app-wide store, the same one the route reads:
+// store the route reads:
 // - Upper/Lower, 5 weeks × 4 days.
 // - Week 1 Day 1 — `completed` → read-only, with the completed check and a full progress bar.
 // - Week 2 Day 1 — `in_progress`, 2 of 6 sets logged → live, with a date and a partial bar.
@@ -13,8 +13,8 @@
 
 import type { Session, SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { mesocycleListDeps } from '@state/mesocycleStore';
-import { workoutStore } from '@state/workoutStore';
+import type { RepositorySet } from '@repositories/repositorySet';
+
 import { seedExerciseCatalog } from './appStorage';
 import { STAMPS } from './stamps';
 
@@ -135,26 +135,56 @@ function buildWorkoutFixture(now: Date) {
   };
 }
 
-let seeded: Promise<void> | null = null;
+/**
+ * Seeds the fixture into `repositories` — the store of the test about to run (task 115). It used
+ * to be written once per test file and shared by its tests, which meant a test could see what an
+ * earlier one had changed; now every test starts from the same fixture in an empty store.
+ */
+export async function seedWorkoutFixture(repositories: RepositorySet): Promise<void> {
+  await seedExerciseCatalog(repositories);
+  const fixture = buildWorkoutFixture(new Date());
+  await repositories.mesocycleRepo.create(fixture.mesocycle);
+  const { repos } = repositories.workoutStore;
+  await repos.sessionRepo.createMany(fixture.sessions);
+  await repos.sessionExerciseRepo.createMany(fixture.sessionExercises);
+  for (const setLog of fixture.setLogs) {
+    await repos.setLogRepo.create(setLog);
+  }
+}
 
 /**
- * Seeds the fixture into the app-wide store, once per test file (Jest gives each file its own
- * module registry, so its own store). Later calls wait for the first one and write nothing, so the
- * tests of a file share one fixture and see each other's changes to it.
+ * One more day of the fixture's mesocycle, with a single bench-press row — what a test needs when
+ * it is about the *other* day: the conflict alert while Week 2 Day 1 is in progress, `Next
+ * workout`'s pick, or a skipped day opening read-only. Every test that wants one seeds it itself,
+ * rather than inheriting the one an earlier test left behind (task 115).
  */
-export function seedWorkoutFixture(): Promise<void> {
-  if (!seeded) {
-    seeded = (async () => {
-      await seedExerciseCatalog();
-      const fixture = buildWorkoutFixture(new Date());
-      await mesocycleListDeps().mesocycleRepo.create(fixture.mesocycle);
-      const { repos } = workoutStore();
-      await repos.sessionRepo.createMany(fixture.sessions);
-      await repos.sessionExerciseRepo.createMany(fixture.sessionExercises);
-      for (const setLog of fixture.setLogs) {
-        await repos.setLogRepo.create(setLog);
-      }
-    })();
-  }
-  return seeded;
+export async function seedFixtureDay(
+  repositories: RepositorySet,
+  day: {
+    id: string;
+    weekNumber: number;
+    dayNumber: number;
+    status?: Session['status'];
+  },
+): Promise<void> {
+  const status = day.status ?? 'planned';
+  const { repos } = repositories.workoutStore;
+  await repos.sessionRepo.create({
+    id: day.id,
+    mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
+    weekNumber: day.weekNumber,
+    dayNumber: day.dayNumber,
+    isDeload: false,
+    prescriptionStatus: 'ready',
+    status,
+  });
+  await repos.sessionExerciseRepo.create({
+    id: `${day.id}-bench`,
+    sessionId: day.id,
+    exerciseId: 'bench-press-barbell',
+    order: 1,
+    setTargets: [{ setNumber: 1, targetReps: 10, suggestedWeight: 60 }],
+    targetRir: 3,
+    status: status === 'skipped' ? 'skipped' : 'planned',
+  });
 }

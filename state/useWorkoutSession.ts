@@ -11,7 +11,7 @@ import { getTodayWorkout, type TodayWorkout } from '@usecases/todayWorkout';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
 import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
-import { todayWorkoutDeps, workoutSessionDeps } from './workoutStore';
+import { useTodayWorkoutDeps, useWorkoutSessionDeps } from './workoutStore';
 
 /** Prefix of every workout-screen query — invalidate it after any change to a session. */
 export const WORKOUT_SESSION_QUERY_KEY = ['workoutSession'] as const;
@@ -30,9 +30,11 @@ export function invalidateWorkoutQueries(queryClient: QueryClient): Promise<unkn
 
 /** Session `sessionId` — live, read-only, or preview for an `awaiting_source` one. */
 export function useWorkoutSession(sessionId: string) {
+  const deps = useWorkoutSessionDeps();
+
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'session', sessionId],
-    queryFn: () => getWorkoutSession(sessionId, workoutSessionDeps()),
+    queryFn: () => getWorkoutSession(sessionId, deps),
   });
 }
 
@@ -41,9 +43,11 @@ export function useWorkoutSession(sessionId: string) {
  * preview of the day's latest programmed composition.
  */
 export function useWorkoutSlot(slot: WorkoutSlot) {
+  const deps = useWorkoutSessionDeps();
+
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'slot', slot.mesoId, slot.weekNumber, slot.dayNumber],
-    queryFn: () => getWorkoutSlot(slot, workoutSessionDeps()),
+    queryFn: () => getWorkoutSlot(slot, deps),
   });
 }
 
@@ -65,6 +69,8 @@ function todayKey(pick: WorkoutPick | undefined): readonly unknown[] {
  * next day of the active mesocycle (`getTodayWorkout`, 099) — or why there's none.
  */
 export function useTodayWorkout(pick?: WorkoutPick) {
+  const sessionDeps = useWorkoutSessionDeps();
+  const todayDeps = useTodayWorkoutDeps();
   const pinnedSessionId = pick !== undefined && 'sessionId' in pick ? pick.sessionId : undefined;
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'today', ...todayKey(pick)],
@@ -82,12 +88,12 @@ export function useTodayWorkout(pick?: WorkoutPick) {
         : undefined,
     queryFn: async (): Promise<TodayWorkout> => {
       if (pick === undefined) {
-        return getTodayWorkout(todayWorkoutDeps());
+        return getTodayWorkout(todayDeps);
       }
       const model =
         'sessionId' in pick
-          ? await getWorkoutSession(pick.sessionId, workoutSessionDeps())
-          : await getWorkoutSlot(pick.slot, workoutSessionDeps());
+          ? await getWorkoutSession(pick.sessionId, sessionDeps)
+          : await getWorkoutSlot(pick.slot, sessionDeps);
       return { kind: 'session', model };
     },
   });

@@ -1,6 +1,11 @@
 import { isConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
-import { assertSessionOpen, decideSessionStart, isFinalSession } from '@domain/sessionLifecycle';
+import {
+  assertSessionOpen,
+  closedSession,
+  decideSessionStart,
+  isFinalSession,
+} from '@domain/sessionLifecycle';
 import { STAMPS } from '../fixtures/stamps';
 
 const NOW = '2026-09-18T10:00:00.000Z';
@@ -91,5 +96,20 @@ describe('decideSessionStart', () => {
     const session = makeSession({ prescriptionStatus: 'awaiting_source' });
 
     expect(isConflictError(errorFrom(() => decideSessionStart(session, null, NOW)))).toBe(true);
+  });
+});
+
+describe('closedSession', () => {
+  test('a session with a logged set is completed, and dated', () => {
+    expect(closedSession(makeSession({ status: 'in_progress' }), true, NOW)).toEqual(
+      makeSession({ status: 'completed', completedAt: NOW }),
+    );
+  });
+
+  test('a session with nothing logged is skipped, and undated', () => {
+    const closed = closedSession(makeSession({ status: 'in_progress' }), false, NOW);
+
+    expect(closed.status).toBe('skipped');
+    expect(closed.completedAt).toBeUndefined();
   });
 });

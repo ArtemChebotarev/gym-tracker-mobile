@@ -7,14 +7,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { startMesocycle } from '@usecases/mesocycleStart';
 
-import { mesocycleStartDeps } from './mesocycleStore';
+import { useMesocycleStartDeps } from './mesocycleStore';
 import { invalidateWorkoutQueries } from './useWorkoutSession';
 
 export function useStartMesocycle() {
   const queryClient = useQueryClient();
+  const deps = useMesocycleStartDeps();
 
   return useMutation({
-    mutationFn: (id: string) => startMesocycle(id, mesocycleStartDeps()),
+    mutationFn: (id: string) => startMesocycle(id, deps),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ['mesocycles'] }),

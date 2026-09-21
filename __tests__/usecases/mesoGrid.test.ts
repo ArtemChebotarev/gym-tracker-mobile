@@ -2,14 +2,16 @@ import { toExerciseId } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { Session, SessionExercise } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemorySessionRepository } from '@storage/session';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { SqliteSessionRepository } from '@storage/sqlite/session';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { getMesoGrid, type MesoGridDeps } from '@usecases/mesoGrid';
 import { finishSession } from '@usecases/sessionFinish';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -59,9 +61,9 @@ function exerciseOf(day: number, status: SessionExercise['status']): SessionExer
 
 // Week 1 materialized by Start: four ready days of one exercise each.
 async function startedMesocycle() {
-  const store = new InMemoryStore();
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
-  const exerciseRepo = new InMemoryExerciseRepository(store);
+  const store = db();
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
+  const exerciseRepo = new SqliteExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   await exerciseRepo.createCustom({
     id: toExerciseId('press'),
@@ -70,13 +72,13 @@ async function startedMesocycle() {
     source: 'custom',
     isHidden: false,
   });
-  const workout = createInMemoryWorkoutStore(store);
+  const workout = createSqliteWorkoutStore(store);
   await workout.repos.sessionRepo.createMany([1, 2, 3, 4].map(weekOneDay));
   await workout.repos.sessionExerciseRepo.createMany(
     [1, 2, 3, 4].map((day) => exerciseOf(day, 'planned')),
   );
 
-  const deps: MesoGridDeps = { mesocycleRepo, sessionRepo: new InMemorySessionRepository(store) };
+  const deps: MesoGridDeps = { mesocycleRepo, sessionRepo: new SqliteSessionRepository(store) };
   return { workout, mesocycleRepo, exerciseRepo, deps };
 }
 

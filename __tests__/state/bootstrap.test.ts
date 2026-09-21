@@ -1,12 +1,10 @@
 import { StorageUnavailableError } from '@domain/errors';
 import { bootstrapStorage } from '@state/bootstrap';
-import { repositories, setRepositories } from '@state/repositories';
-import { createInMemoryRepositories } from '@storage/repositories';
 
 // What task 111 asks of startup is an order: open the database, migrate it, and only then let
 // anything read through it. Each step is mocked — the real ones need expo-sqlite, a native module
 // Jest cannot load (task 110), and what each does is tested where it lives — so what is left to
-// check here is exactly that order, and what is installed when a step fails.
+// check here is exactly that order, and what comes back when a step fails.
 
 const DB = { handle: 'db' };
 const calls: string[] = [];
@@ -34,30 +32,26 @@ jest.mock('@storage/sqlite/repositories', () => ({
 
 beforeEach(() => {
   calls.length = 0;
-  setRepositories(null);
 });
 
 afterEach(() => {
   mockMigrateToLatest.mockClear();
-  setRepositories(createInMemoryRepositories());
 });
 
 describe('bootstrapStorage', () => {
-  test('migrates the database it opened, then installs repositories over that same handle', async () => {
-    await bootstrapStorage();
+  test('migrates the database it opened, then answers with repositories over that same handle', async () => {
+    await expect(bootstrapStorage()).resolves.toEqual({ openedOver: DB });
 
     expect(calls).toEqual(['open', 'migrate']);
     expect(mockMigrateToLatest).toHaveBeenCalledWith(DB, expect.anything());
-    expect(repositories()).toEqual({ openedOver: DB });
   });
 
-  test('a failed migration installs nothing — no screen gets a half-migrated database', async () => {
+  test('a failed migration hands back nothing — no screen gets a half-migrated database', async () => {
     const failure = new StorageUnavailableError('The database is from the future.');
     mockMigrateToLatest.mockImplementationOnce(async () => {
       throw failure;
     });
 
     await expect(bootstrapStorage()).rejects.toBe(failure);
-    expect(() => repositories()).toThrow();
   });
 });

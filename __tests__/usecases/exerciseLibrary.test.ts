@@ -1,10 +1,11 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import { isConflictError, isNotFoundError } from '@domain/errors';
-import type { SetLog } from '@domain/execution';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemorySetLogRepository } from '@storage/setLogRepository';
-import { InMemoryStore } from '@storage/store';
+import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise';
+import { SqliteSessionRepository } from '@storage/sqlite/session';
+import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
 import {
   createCustomExercise,
   hideExercise,
@@ -12,7 +13,11 @@ import {
   listExercisesByIds,
   updateCustomExercise,
 } from '@usecases/exerciseLibrary';
+import { seedReferences } from '../fixtures/references';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -46,11 +51,46 @@ function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 function makeDeps() {
-  const store = new InMemoryStore();
+  const store = db();
   return {
-    exerciseRepo: new InMemoryExerciseRepository(store),
-    setLogRepo: new InMemorySetLogRepository(store),
+    exerciseRepo: new SqliteExerciseRepository(store),
+    setLogRepo: new SqliteSetLogRepository(store),
   };
+}
+
+/**
+ * The session exercise every `makeSetLog` hangs off, with the session and the block above it. A
+ * set log needs one to be writable at all (task 118), and which workout the sets were logged in
+ * is not what any test here is about — only that they were logged.
+ *
+ * Call it after the test has seeded the exercises it asserts on: the references are filled in
+ * only where nothing is there yet, so an exercise the test already created keeps its own name.
+ */
+async function seedLogHost(): Promise<void> {
+  const session: Session = {
+    ...STAMPS,
+    id: 'session-1',
+    mesoId: 'meso',
+    weekNumber: 1,
+    dayNumber: 1,
+    isDeload: false,
+    prescriptionStatus: 'ready',
+    status: 'completed',
+    completedAt: '2026-08-26T09:00:00.000Z',
+  };
+  const sessionExercise: SessionExercise = {
+    ...STAMPS,
+    id: 'session-exercise-1',
+    sessionId: session.id,
+    exerciseId: 'exercise-bench-press',
+    order: 1,
+    setTargets: [{ setNumber: 1 }],
+    targetRir: 2,
+    status: 'completed',
+  };
+  await seedReferences(db(), { sessions: [session], sessionExercises: [sessionExercise] });
+  await new SqliteSessionRepository(db()).create(session);
+  await new SqliteSessionExerciseRepository(db()).create(sessionExercise);
 }
 
 async function expectRejectsWithKind(
@@ -69,7 +109,10 @@ describe('createCustomExercise', () => {
   test('creates a custom exercise with a generated id and the system-assigned fields', async () => {
     const deps = makeDeps();
 
-    const created = await createCustomExercise({ name: '  Garage Press  ', muscleGroup: 'chest' }, deps);
+    const created = await createCustomExercise(
+      { name: '  Garage Press  ', muscleGroup: 'chest' },
+      deps,
+    );
 
     expect(created.name).toBe('Garage Press');
     expect(created.muscleGroup).toBe('chest');
@@ -114,7 +157,10 @@ describe('createCustomExercise', () => {
 describe('updateCustomExercise', () => {
   test('updates the name and muscle group of an existing custom exercise', async () => {
     const deps = makeDeps();
-    const created = await createCustomExercise({ name: 'Garage Press', muscleGroup: 'chest' }, deps);
+    const created = await createCustomExercise(
+      { name: 'Garage Press', muscleGroup: 'chest' },
+      deps,
+    );
 
     const updated = await updateCustomExercise(
       { id: created.id, name: '  Renamed Press  ', muscleGroup: 'shoulders' },
@@ -137,7 +183,12 @@ describe('updateCustomExercise', () => {
     );
 
     const updated = await updateCustomExercise(
-      { id: created.id, name: created.name, muscleGroup: created.muscleGroup, equipment: 'barbell' },
+      {
+        id: created.id,
+        name: created.name,
+        muscleGroup: created.muscleGroup,
+        equipment: 'barbell',
+      },
       deps,
     );
 
@@ -190,7 +241,10 @@ describe('hideExercise', () => {
   test('rejects an unknown exercise id', async () => {
     const deps = makeDeps();
 
-    await expectRejectsWithKind(hideExercise(toExerciseId('does-not-exist'), deps), isNotFoundError);
+    await expectRejectsWithKind(
+      hideExercise(toExerciseId('does-not-exist'), deps),
+      isNotFoundError,
+    );
   });
 });
 
@@ -232,6 +286,7 @@ describe('listExerciseGroups', () => {
       makeExercise({ id: toExerciseId('e-performed') }),
       makeExercise({ id: toExerciseId('e-never'), name: 'Never Done' }),
     ]);
+    await seedLogHost();
     await deps.setLogRepo.create(makeSetLog({ exerciseId: 'e-performed' }));
 
     const groups = await listExerciseGroups({ performedOnly: true }, deps);
@@ -239,9 +294,10 @@ describe('listExerciseGroups', () => {
     expect(groups[0]?.entries.map((entry) => entry.exercise.id)).toEqual(['e-performed']);
   });
 
-  test('attaches each exercise\'s last set log for the row caption', async () => {
+  test("attaches each exercise's last set log for the row caption", async () => {
     const deps = makeDeps();
     await deps.exerciseRepo.seedCatalog([makeExercise()]);
+    await seedLogHost();
     const older = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
     const newer = makeSetLog({ id: 'log-2', completedAt: '2026-08-26T08:00:00.000Z' });
     await deps.setLogRepo.create(older);
@@ -257,7 +313,11 @@ describe('listExercisesByIds', () => {
   test('resolves the requested ids and silently skips ones that do not exist', async () => {
     const deps = makeDeps();
     const benchPress = makeExercise({ id: toExerciseId('e-bench-press') });
-    const legPress = makeExercise({ id: toExerciseId('e-leg-press'), name: 'Leg Press', muscleGroup: 'quads' });
+    const legPress = makeExercise({
+      id: toExerciseId('e-leg-press'),
+      name: 'Leg Press',
+      muscleGroup: 'quads',
+    });
     await deps.exerciseRepo.seedCatalog([benchPress, legPress]);
 
     const found = await listExercisesByIds(

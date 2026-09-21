@@ -1,13 +1,12 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import ExerciseDetailRoute from '@app/exercise/[id]/index';
-import { exerciseLibraryDeps } from '@state/exerciseLibraryStore';
 import { createCustomExercise } from '@usecases/exerciseLibrary';
 
 import { seedWorkoutFixture } from '../fixtures/workoutFixture';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 // Mocked rather than driven through expo-router's renderRouter, for the reason TodayRoute.test.tsx
 // gives: renderRouter turns on fake timers, which also fake the `queueMicrotask` every storage call
@@ -31,28 +30,17 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 874 },
 };
 
-let client: QueryClient;
-
+const repositories = withRepositories();
 beforeEach(async () => {
-  await seedWorkoutFixture();
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
+  await seedWorkoutFixture(repositories());
   mockParams = {};
   mockBack.mockClear();
 });
 
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
 function renderRoute() {
-  return render(
+  return renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <ExerciseDetailRoute />
-      </QueryClientProvider>
+      <ExerciseDetailRoute />
     </SafeAreaProvider>,
   );
 }
@@ -113,7 +101,7 @@ describe('Exercise screen route', () => {
   test('a custom exercise can be edited, and hiding it pops the screen', async () => {
     const custom = await createCustomExercise(
       { name: 'Route Test Cable Fly', muscleGroup: 'chest' },
-      exerciseLibraryDeps(),
+      repositories(),
     );
     mockParams = { id: custom.id };
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
@@ -127,7 +115,7 @@ describe('Exercise screen route', () => {
     confirmAlert(alert, 'Hide');
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
-    await expect(exerciseLibraryDeps().exerciseRepo.getById(custom.id)).resolves.toMatchObject({
+    await expect(repositories().exerciseRepo.getById(custom.id)).resolves.toMatchObject({
       isHidden: true,
     });
 

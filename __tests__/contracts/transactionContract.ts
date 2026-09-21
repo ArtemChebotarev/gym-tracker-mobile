@@ -8,9 +8,11 @@ import {
 import { type RepositoryHarness, useRepositories } from './harness';
 
 // Atomicity — 07 · Persistence Layer Contract, rule 6: "Есть механизм выполнить набор записей
-// атомарно". Two stores need it: the workout screen, which writes a set log and its session's
-// status together (05 · Workout Execution & Logging, "Сохранение данных"), and Start, where an
-// active mesocycle without week 1's sessions would be an invalid state (04, "Запуск (Start)").
+// атомарно". Three stores need it: the workout screen, which writes a set log and its session's
+// status together (05 · Workout Execution & Logging, "Сохранение данных"); Start, where an active
+// mesocycle without week 1's sessions would be an invalid state (04, "Запуск (Start)"); and
+// closing a block (052), where an abandoned mesocycle still holding a session `in_progress` would
+// be another (05, "Остановить мезоцикл").
 //
 // The repositories handed to `work` are the ones bound to the transaction; a caller must never
 // be able to observe a partially-written state, however the medium underneath achieves that.
@@ -56,6 +58,47 @@ export function describeTransactionContract(harness: RepositoryHarness): void {
 
       await expect(workoutStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(session);
       await expect(workoutStore.repos.setLogRepo.listBySessionId('session-1')).resolves.toEqual([]);
+    });
+  });
+
+  describe('MesocycleClosingStore', () => {
+    const repositories = useRepositories(harness);
+
+    test('the block and the sessions it ends are visible together once it resolves', async () => {
+      const { mesocycleClosingStore } = repositories();
+      const active = await mesocycleClosingStore.repos.mesocycleRepo.create(makeMesocycle());
+      const session = await mesocycleClosingStore.repos.sessionRepo.create(makeSession());
+
+      await mesocycleClosingStore.transaction(async (repos) => {
+        await repos.sessionRepo.update({ ...session, status: 'skipped' });
+        await repos.mesocycleRepo.update({ ...active, status: 'abandoned' });
+      });
+
+      await expect(mesocycleClosingStore.repos.mesocycleRepo.getActive()).resolves.toBeNull();
+      await expect(
+        mesocycleClosingStore.repos.sessionRepo.getById('session-1'),
+      ).resolves.toMatchObject({ status: 'skipped' });
+    });
+
+    test('a failure partway through rolls back the block and its sessions alike', async () => {
+      const { mesocycleClosingStore } = repositories();
+      const active = await mesocycleClosingStore.repos.mesocycleRepo.create(makeMesocycle());
+      const session = await mesocycleClosingStore.repos.sessionRepo.create(makeSession());
+
+      await expect(
+        mesocycleClosingStore.transaction(async (repos) => {
+          await repos.sessionRepo.update({ ...session, status: 'skipped' });
+          await repos.mesocycleRepo.update({ ...active, status: 'abandoned' });
+          throw new Error('failure partway through');
+        }),
+      ).rejects.toThrow('failure partway through');
+
+      await expect(mesocycleClosingStore.repos.mesocycleRepo.getById(active.id)).resolves.toEqual(
+        active,
+      );
+      await expect(mesocycleClosingStore.repos.sessionRepo.getById('session-1')).resolves.toEqual(
+        session,
+      );
     });
   });
 

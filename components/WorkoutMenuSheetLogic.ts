@@ -25,10 +25,12 @@ export const WORKOUT_MENU_ACTIONS: Record<
 };
 
 /**
- * The actions the header menu lists for a session. The mesocycle ones are there in every mode;
- * Add exercise and Skip workout only when the model allows them — live, and for Skip while an
+ * The actions the header menu lists for a session. Rename and Mesocycle history are there in every
+ * mode; Add exercise and Skip workout only when the model allows them — live, and for Skip while an
  * exercise is still unfinished (088 works both out, including that a deload session takes no
- * additions). An action that isn't allowed is left out rather than shown disabled.
+ * additions) — and Stop mesocycle while the block is still active (052): a day of a block that has
+ * already been finished or stopped opens read-only, and there is nothing left there to stop. An
+ * action that isn't allowed is left out rather than shown disabled.
  */
 export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuItem[] {
   const items: WorkoutMenuItem[] = [];
@@ -38,7 +40,10 @@ export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuIte
   if (actions.canSkipWorkout) {
     items.push('skipWorkout');
   }
-  items.push('renameMesocycle', 'mesocycleHistory', 'stopMesocycle');
+  items.push('renameMesocycle', 'mesocycleHistory');
+  if (actions.canStopMesocycle) {
+    items.push('stopMesocycle');
+  }
   return items;
 }
 

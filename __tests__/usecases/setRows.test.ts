@@ -1,10 +1,13 @@
 import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { addSet, removeLastSet } from '@usecases/setRows';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const session: Session = {
   ...STAMPS,
@@ -50,7 +53,12 @@ function logFor(setNumber: number): SetLog {
 async function workoutWith(
   options: { session?: Session; exercise?: SessionExercise; logs?: SetLog[] } = {},
 ) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), {
+    sessions: [options.session ?? session],
+    sessionExercises: [options.exercise ?? benchPress],
+    setLogs: options.logs,
+  });
   await workout.repos.sessionRepo.create(options.session ?? session);
   await workout.repos.sessionExerciseRepo.create(options.exercise ?? benchPress);
   for (const log of options.logs ?? []) {

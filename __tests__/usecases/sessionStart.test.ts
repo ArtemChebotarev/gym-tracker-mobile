@@ -1,9 +1,12 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { startSessionOnFirstSet } from '@usecases/sessionStart';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const FIRST_SET_AT = '2026-09-18T10:00:00.000Z';
 const SECOND_SET_AT = '2026-09-18T10:03:00.000Z';
@@ -23,7 +26,8 @@ function makeSession(overrides: Partial<Session> = {}): Session {
 }
 
 async function workoutWith(...sessions: Session[]) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), { sessions });
   await workout.repos.sessionRepo.createMany(sessions);
   return workout;
 }

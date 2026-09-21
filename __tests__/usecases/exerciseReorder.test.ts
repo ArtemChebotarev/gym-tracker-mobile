@@ -3,10 +3,13 @@ import type { Session, SessionExercise } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { moveExercise } from '@usecases/exerciseReorder';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const session: Session = {
   ...STAMPS,
@@ -38,7 +41,8 @@ const row = makeExercise('row', 2);
 const curl = makeExercise('curl', 3);
 
 async function workoutWith(stored: Session = session) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), { sessions: [stored], sessionExercises: [bench, row, curl] });
   await workout.repos.sessionRepo.create(stored);
   await workout.repos.sessionExerciseRepo.createMany([bench, row, curl]);
   return workout;

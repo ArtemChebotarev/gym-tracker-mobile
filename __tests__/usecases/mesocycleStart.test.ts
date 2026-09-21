@@ -1,10 +1,13 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
-import { createInMemoryMesocycleStartStore } from '@storage/mesocycleStartStore';
-import { InMemoryStore } from '@storage/store';
+import { createSqliteMesocycleStartStore } from '@storage/sqlite/mesocycleStartStore';
 import { startMesocycle } from '@usecases/mesocycleStart';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -40,7 +43,16 @@ const planned: Mesocycle = {
 };
 
 async function setUp(mesocycles: Mesocycle[] = [planned]): Promise<MesocycleStartStore> {
-  const store = createInMemoryMesocycleStartStore(new InMemoryStore());
+  const store = createSqliteMesocycleStartStore(db());
+  await seedReferences(db(), {
+    // Start writes week 1's session exercises from the plan, so the library has to carry them.
+    exerciseIds: mesocycles.flatMap(
+      (mesocycle) =>
+        mesocycle.weekPlan?.days.flatMap((day) =>
+          day.exercises.map((exercise) => exercise.exerciseId),
+        ) ?? [],
+    ),
+  });
   for (const mesocycle of mesocycles) {
     await store.repos.mesocycleRepo.create(mesocycle);
   }

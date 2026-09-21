@@ -30,6 +30,19 @@ export function assertSessionOpen(session: Session): void {
   }
 }
 
+/**
+ * How a session ends once nothing is left to do in it (05, "Завершение тренировки"): with at least
+ * one logged set it becomes `completed` with `completedAt = now`; with none — every exercise
+ * skipped before a set was logged — it becomes `skipped`. Finish workout (050), Skip workout (049)
+ * and Stop mesocycle (052) all close a session by this one rule, so it lives here rather than in
+ * any one of them.
+ */
+export function closedSession(session: Session, hasLoggedSet: boolean, now: string): Session {
+  return hasLoggedSet
+    ? { ...session, status: 'completed', completedAt: now }
+    : { ...session, status: 'skipped' };
+}
+
 export type SessionStartDecision =
   /** The session moves to `in_progress` now — `session` is the updated one to persist. */
   | { kind: 'started'; session: Session }

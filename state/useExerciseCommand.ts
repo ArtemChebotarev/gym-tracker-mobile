@@ -7,6 +7,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import type { WorkoutStore } from '@repositories/workout';
 import { removeExercise } from '@usecases/exerciseRemoval';
 import { moveExercise } from '@usecases/exerciseReorder';
 import { skipExercise, unskipExercise } from '@usecases/exerciseSkipping';
@@ -15,36 +16,41 @@ import type { SessionExerciseRef } from '@usecases/openSession';
 import { addSet, removeLastSet } from '@usecases/setRows';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { exerciseSwapDeps, workoutStore } from './workoutStore';
+import { useExerciseSwapDeps, useWorkoutStore } from './workoutStore';
 
 export type ExerciseCommand =
   'addSet' | 'removeLastSet' | 'moveUp' | 'moveDown' | 'skip' | 'unskip' | 'delete';
 
-function runExerciseCommand(command: ExerciseCommand, ref: SessionExerciseRef): Promise<unknown> {
+function runExerciseCommand(
+  command: ExerciseCommand,
+  ref: SessionExerciseRef,
+  store: WorkoutStore,
+): Promise<unknown> {
   switch (command) {
     case 'addSet':
-      return addSet(ref, workoutStore());
+      return addSet(ref, store);
     case 'removeLastSet':
-      return removeLastSet(ref, workoutStore());
+      return removeLastSet(ref, store);
     case 'moveUp':
-      return moveExercise(ref, 'up', workoutStore());
+      return moveExercise(ref, 'up', store);
     case 'moveDown':
-      return moveExercise(ref, 'down', workoutStore());
+      return moveExercise(ref, 'down', store);
     case 'skip':
-      return skipExercise(ref, workoutStore());
+      return skipExercise(ref, store);
     case 'unskip':
-      return unskipExercise(ref, workoutStore());
+      return unskipExercise(ref, store);
     case 'delete':
-      return removeExercise(ref, workoutStore());
+      return removeExercise(ref, store);
   }
 }
 
 export function useExerciseCommand() {
   const queryClient = useQueryClient();
+  const store = useWorkoutStore();
 
   return useMutation({
     mutationFn: ({ command, ref }: { command: ExerciseCommand; ref: SessionExerciseRef }) =>
-      runExerciseCommand(command, ref),
+      runExerciseCommand(command, ref, store),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }
@@ -55,9 +61,10 @@ export function useExerciseCommand() {
  */
 export function useSwapExercise() {
   const queryClient = useQueryClient();
+  const deps = useExerciseSwapDeps();
 
   return useMutation({
-    mutationFn: (input: ExerciseSwapInput) => swapExercise(input, exerciseSwapDeps()),
+    mutationFn: (input: ExerciseSwapInput) => swapExercise(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

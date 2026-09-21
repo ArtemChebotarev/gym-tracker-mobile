@@ -144,6 +144,23 @@ describe('MesocyclesScreen', () => {
     expect(screen.getAllByTestId('week-dot-upcoming')).toHaveLength(3);
   });
 
+  test('DoD: a stopped block is listed under Completed, marked Stopped (052)', () => {
+    const stopped: Mesocycle = { ...COMPLETED, id: 'stopped', name: 'Cut', status: 'abandoned' };
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [stopped] })} />);
+
+    expect(screen.getByText('Completed')).toBeTruthy();
+    expect(screen.getByText('Cut')).toBeTruthy();
+    expect(screen.getByText('Stopped')).toBeTruthy();
+    // Its history is reachable again: the row keeps Copy and `⋯` like any finished block.
+    expect(screen.getByRole('button', { name: 'Copy Cut' })).toBeTruthy();
+  });
+
+  test('a block that ran its course carries no badge — that is what the section means', () => {
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [COMPLETED] })} />);
+
+    expect(screen.queryByText('Stopped')).toBeNull();
+  });
+
   test('empty groups are not rendered', () => {
     renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [PLANNED] })} />);
 

@@ -3,10 +3,13 @@ import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { skipExercise, unskipExercise } from '@usecases/exerciseSkipping';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const session: Session = {
   ...STAMPS,
@@ -53,7 +56,12 @@ function logFor(setNumber: number, reps = 12): SetLog {
 async function workoutWith(
   options: { session?: Session; exercise?: SessionExercise; logs?: SetLog[] } = {},
 ) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), {
+    sessions: [options.session ?? session],
+    sessionExercises: [options.exercise ?? bench],
+    setLogs: options.logs,
+  });
   await workout.repos.sessionRepo.create(options.session ?? session);
   await workout.repos.sessionExerciseRepo.create(options.exercise ?? bench);
   for (const log of options.logs ?? []) {

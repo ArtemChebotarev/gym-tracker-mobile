@@ -10,13 +10,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { skipWorkout } from '@usecases/workoutSkip';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { workoutSkipDeps } from './workoutStore';
+import { useWorkoutSkipDeps } from './workoutStore';
 
 export function useSkipWorkout() {
   const queryClient = useQueryClient();
+  const deps = useWorkoutSkipDeps();
 
   return useMutation({
-    mutationFn: (sessionId: string) => skipWorkout(sessionId, workoutSkipDeps()),
+    mutationFn: (sessionId: string) => skipWorkout(sessionId, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

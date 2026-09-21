@@ -4,6 +4,7 @@ import { createInMemoryBackupStore } from './backupStore';
 import { InMemoryExerciseHistoryRepository } from './exerciseHistory';
 import { InMemoryExerciseRepository } from './exerciseRepository';
 import { InMemoryMesocycleRepository } from './mesocycle';
+import { createInMemoryMesocycleClosingStore } from './mesocycleClosingStore';
 import { createInMemoryMesocycleStartStore } from './mesocycleStartStore';
 import { MuscleGroupCatalogRepository } from './muscleGroupRepository';
 import { InMemorySessionRepository } from './session';
@@ -44,6 +45,7 @@ export function createInMemoryRepositories(
     sessionTreeRepo: new InMemorySessionTreeRepository(store),
     workoutStore: createInMemoryWorkoutStore(store),
     mesocycleStartStore: createInMemoryMesocycleStartStore(store),
+    mesocycleClosingStore: createInMemoryMesocycleClosingStore(store),
     backupStore: createInMemoryBackupStore(store),
   };
 }

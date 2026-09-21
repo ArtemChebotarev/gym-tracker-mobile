@@ -4,10 +4,13 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { removeExercise } from '@usecases/exerciseRemoval';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 function makeSession(weekNumber: number, overrides: Partial<Session> = {}): Session {
   return {
@@ -60,11 +63,17 @@ const row = makeExercise(2, 'row', 2);
 const curl = makeExercise(2, 'curl', 3);
 
 async function workoutWith(options: { session?: Session; logs?: SetLog[] } = {}) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
-  await workout.repos.sessionRepo.createMany([
+  const workout = createSqliteWorkoutStore(db());
+  const sessions = [
     makeSession(1, { status: 'completed', completedAt: '2026-09-11T10:00:00.000Z' }),
     options.session ?? makeSession(2),
-  ]);
+  ];
+  await seedReferences(db(), {
+    sessions,
+    sessionExercises: [weekOneBench, bench, row, curl],
+    setLogs: [...weekOneLogs, ...(options.logs ?? [])],
+  });
+  await workout.repos.sessionRepo.createMany(sessions);
   await workout.repos.sessionExerciseRepo.createMany([weekOneBench, bench, row, curl]);
   for (const log of [...weekOneLogs, ...(options.logs ?? [])]) {
     await workout.repos.setLogRepo.create(log);
