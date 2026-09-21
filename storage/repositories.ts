@@ -1,5 +1,6 @@
 import type { RepositorySet } from '@repositories/repositorySet';
 
+import { createInMemoryBackupStore } from './backupStore';
 import { InMemoryExerciseHistoryRepository } from './exerciseHistory';
 import { InMemoryExerciseRepository } from './exerciseRepository';
 import { InMemoryMesocycleRepository } from './mesocycle';
@@ -43,5 +44,6 @@ export function createInMemoryRepositories(
     sessionTreeRepo: new InMemorySessionTreeRepository(store),
     workoutStore: createInMemoryWorkoutStore(store),
     mesocycleStartStore: createInMemoryMesocycleStartStore(store),
+    backupStore: createInMemoryBackupStore(store),
   };
 }

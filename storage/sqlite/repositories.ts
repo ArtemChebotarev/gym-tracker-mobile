@@ -1,6 +1,7 @@
 import type { RepositorySet } from '@repositories/repositorySet';
 
 import { MuscleGroupCatalogRepository } from '../muscleGroupRepository';
+import { createSqliteBackupStore } from './backupStore';
 import type { SqliteDatabase } from './db';
 import { SqliteExerciseHistoryRepository } from './exerciseHistory';
 import { SqliteExerciseRepository } from './exerciseRepository';
@@ -43,5 +44,6 @@ export function createSqliteRepositories(db: SqliteDatabase): RepositorySet {
     sessionTreeRepo: new SqliteSessionTreeRepository(db),
     workoutStore: createSqliteWorkoutStore(db),
     mesocycleStartStore: createSqliteMesocycleStartStore(db),
+    backupStore: createSqliteBackupStore(db),
   };
 }

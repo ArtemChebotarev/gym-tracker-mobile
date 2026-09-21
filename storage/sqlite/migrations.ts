@@ -30,8 +30,11 @@ export type MigrationBundle = {
 /** Drizzle's own bookkeeping table. Created by the migrator on first run. */
 const MIGRATIONS_TABLE = '__drizzle_migrations';
 
-/** The newest migration this build carries, as its generation stamp. */
-function newestInBundle(bundle: MigrationBundle): number {
+/**
+ * The newest migration this build carries, as its generation stamp — which is also the schema
+ * version a backup file records (task 070). There is no other number: see the note above.
+ */
+export function bundleSchemaVersion(bundle: MigrationBundle): number {
   return bundle.journal.entries.reduce((newest, entry) => Math.max(newest, entry.when), 0);
 }
 
@@ -67,7 +70,7 @@ async function newestInDatabase(db: SqliteDatabase): Promise<number | null> {
  */
 async function assertNotFromTheFuture(db: SqliteDatabase, bundle: MigrationBundle): Promise<void> {
   const applied = await newestInDatabase(db);
-  if (applied !== null && applied > newestInBundle(bundle)) {
+  if (applied !== null && applied > bundleSchemaVersion(bundle)) {
     throw new StorageUnavailableError(
       'The database was written by a newer version of the app and cannot be opened by this one.',
     );

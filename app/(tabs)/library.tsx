@@ -60,6 +60,7 @@ export default function LibraryScreen() {
         onRequestCreate={handleRequestCreate}
         onRequestFilters={handleRequestFilters}
         onOpenExercise={(entry) => router.push(exerciseDetailHref(entry.exercise.id))}
+        onOpenDebug={() => router.push('/debug')}
       />
       <ExerciseFiltersSheet
         visible={isFiltersSheetOpen}

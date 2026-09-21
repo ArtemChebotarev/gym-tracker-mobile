@@ -25,6 +25,8 @@ export default function RootLayout() {
           <Stack.Screen name="exercise/[id]/index" options={{ headerShown: false }} />
           {/* Mesocycle history, still a stub (task 098), with its own Go back. */}
           <Stack.Screen name="meso/[id]" options={{ headerShown: false }} />
+          {/* The developer door (task 070) — no link leads here, five taps on the Library title do. */}
+          <Stack.Screen name="debug" options={{ headerShown: false, presentation: 'modal' }} />
         </Stack>
       </QueryProvider>
     </StorageGate>

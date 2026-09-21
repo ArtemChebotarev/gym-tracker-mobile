@@ -16,7 +16,7 @@
 // under it. They stay generic — the caller resolves their content.
 
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
@@ -30,6 +30,12 @@ export type RootScreenProps = {
   /** A secondary line under the title. */
   subtitle?: string;
   trailing?: ReactNode;
+  /**
+   * Makes the title line tappable. Nothing in the frame reacts visually — a title that looked
+   * pressable would be a control, and it isn't one; this is for a screen that hides something
+   * behind repeated taps on it.
+   */
+  onTitlePress?: () => void;
   children?: ReactNode;
 };
 
@@ -39,21 +45,32 @@ export function RootScreen({
   titleAccessory,
   subtitle,
   trailing,
+  onTitlePress,
   children,
 }: RootScreenProps) {
+  const titleLine = (
+    <>
+      <Text style={styles.title}>
+        {title}
+        {titleSuffix !== undefined && <Text style={styles.titleSuffix}>{` ${titleSuffix}`}</Text>}
+      </Text>
+      {titleAccessory}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.heading}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>
-              {title}
-              {titleSuffix !== undefined && (
-                <Text style={styles.titleSuffix}>{` ${titleSuffix}`}</Text>
-              )}
-            </Text>
-            {titleAccessory}
-          </View>
+          {/* A plain View unless someone is listening: a Pressable, even a disabled one, adds
+              press handling and an accessibility state to a title that is only ever text. */}
+          {onTitlePress === undefined ? (
+            <View style={styles.titleRow}>{titleLine}</View>
+          ) : (
+            <Pressable style={styles.titleRow} onPress={onTitlePress}>
+              {titleLine}
+            </Pressable>
+          )}
           {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
         {trailing}

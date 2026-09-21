@@ -40,6 +40,7 @@ import {
   type ExerciseSection,
 } from './ExerciseLibraryScreenLogic';
 import { styles } from './ExerciseLibraryScreenStyles';
+import { useSecretTaps } from './useSecretTaps';
 
 export type ExerciseLibraryFilters = Omit<ExerciseListQuery, 'search'>;
 
@@ -54,6 +55,8 @@ export type ExerciseLibraryScreenProps = {
   onRequestFilters: () => void;
   /** Opens an exercise's own screen (08.6, "Exercise — вкладка Overview"), from its row. */
   onOpenExercise: (entry: ExerciseListEntry) => void;
+  /** The developer door, opened by five taps on the title — see `useSecretTaps` (task 070). */
+  onOpenDebug: () => void;
 };
 
 export function ExerciseLibraryScreen({
@@ -66,7 +69,9 @@ export function ExerciseLibraryScreen({
   onRequestCreate,
   onRequestFilters,
   onOpenExercise,
+  onOpenDebug,
 }: ExerciseLibraryScreenProps) {
+  const countTitleTap = useSecretTaps(5, onOpenDebug);
   const trimmedSearch = search.trim();
   const filtersActive = hasActiveFilters(filters);
   const resultCount = useMemo(() => (groups ? countEntries(groups) : 0), [groups]);
@@ -79,6 +84,7 @@ export function ExerciseLibraryScreen({
 
   return (
     <RootScreen
+      onTitlePress={countTitleTap}
       title="Exercises"
       trailing={
         <IconButton
