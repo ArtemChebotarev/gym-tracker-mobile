@@ -38,6 +38,7 @@ const BASE_PROPS: ExerciseLibraryScreenProps = {
   onResetFilters: jest.fn(),
   onRequestCreate: jest.fn(),
   onRequestFilters: jest.fn(),
+  onOpenDebug: jest.fn(),
   onOpenExercise: jest.fn(),
 };
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { Text } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
@@ -63,5 +63,24 @@ describe('RootScreen', () => {
 
     expect(screen.getByText('✓')).toBeTruthy();
     expect(screen.getByText('Tue, 15 Sep · Upper/lower')).toBeTruthy();
+  });
+});
+
+describe('RootScreen — a tappable title', () => {
+  test('calls back on a press when a handler is given', () => {
+    const onTitlePress = jest.fn();
+    renderWithSafeArea(<RootScreen title="Exercises" onTitlePress={onTitlePress} />);
+
+    fireEvent.press(screen.getByText('Exercises'));
+
+    expect(onTitlePress).toHaveBeenCalledTimes(1);
+  });
+
+  test('stays a plain title otherwise — nothing to press, nothing announced as pressable', () => {
+    renderWithSafeArea(<RootScreen title="Exercises" />);
+
+    // A Pressable, even a disabled one, would add press handling and an accessibility state to
+    // what is only ever text on the other two tabs.
+    expect(screen.queryByRole('button', { name: 'Exercises' })).toBeNull();
   });
 });
