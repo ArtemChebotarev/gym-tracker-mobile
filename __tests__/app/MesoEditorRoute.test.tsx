@@ -1,18 +1,16 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesoEditorRoute from '@app/meso-editor/new';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
 import { seedExerciseCatalog } from '../fixtures/appStorage';
-import { repositories } from '@state/repositories';
 import {
   DEFAULT_MESO_BUILDER_DRAFT,
   useDraftStore,
   type MesoBuilderDraft,
 } from '@state/draftStore';
-import { mesocycleCreationDeps } from '@state/mesocycleStore';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
 
@@ -42,24 +40,15 @@ const FILLED_DRAFT: MesoBuilderDraft = {
   },
 };
 
-let client: QueryClient;
+const repositories = withRepositories();
 
-beforeAll(async () => {
-  await seedExerciseCatalog();
-});
-
-beforeEach(() => {
-  // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
+beforeEach(async () => {
+  await seedExerciseCatalog(repositories());
   useDraftStore.setState({ mesoBuilder: FILLED_DRAFT });
   mockBack.mockClear();
 });
 
 afterEach(() => {
-  client.clear();
-  client.unmount();
   useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
 });
 
@@ -76,11 +65,9 @@ async function flushQueryNotifications() {
 }
 
 async function renderAtReviewStep() {
-  render(
+  renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <MesoEditorRoute />
-      </QueryClientProvider>
+      <MesoEditorRoute />
     </SafeAreaProvider>,
   );
   fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
@@ -97,7 +84,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
     await flushQueryNotifications();
 
-    const saved = (await mesocycleCreationDeps().mesocycleRepo.getAll()).find(
+    const saved = (await repositories().mesocycleRepo.getAll()).find(
       (mesocycle) => mesocycle.name === 'Route Test Block',
     );
     expect(saved?.status).toBe('planned');
@@ -119,7 +106,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
   test('a failed save shows a try-again alert and keeps the draft', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     jest
-      .spyOn(mesocycleCreationDeps().mesocycleRepo, 'create')
+      .spyOn(repositories().mesocycleRepo, 'create')
       .mockRejectedValueOnce(new Error('storage down'));
     await renderAtReviewStep();
 

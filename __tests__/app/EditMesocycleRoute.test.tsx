@@ -1,5 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -7,8 +6,8 @@ import EditMesocycleRoute from '@app/meso-editor/edit/[id]';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
 import { DEFAULT_MESO_BUILDER_DRAFT, toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
-import { mesocycleEditingDeps } from '@state/mesocycleStore';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
 let mockId = '';
@@ -39,40 +38,39 @@ function makePlanned(id: string): Mesocycle {
     progressionSettings: defaultProgressionSettings,
     weekPlan: {
       days: [
-        { dayNumber: 1, name: '', exercises: [{ exerciseId: FIRST_EXERCISE!.id, order: 0, sets: 3 }] },
-        { dayNumber: 2, name: '', exercises: [{ exerciseId: SECOND_EXERCISE!.id, order: 0, sets: 2 }] },
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [{ exerciseId: FIRST_EXERCISE!.id, order: 0, sets: 3 }],
+        },
+        {
+          dayNumber: 2,
+          name: '',
+          exercises: [{ exerciseId: SECOND_EXERCISE!.id, order: 0, sets: 2 }],
+        },
       ],
     },
     createdAt: '2026-09-01T12:00:00.000Z',
   };
 }
 
-let client: QueryClient;
-
+const repositories = withRepositories();
 beforeEach(() => {
-  // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
   mockBack.mockClear();
 });
 
 afterEach(() => {
-  client.clear();
-  client.unmount();
   useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
 });
 
 // Mirrors app/(tabs)/mesocycles.tsx's Edit: load the mesocycle into the draft, then open the route.
 async function openEditorOn(mesocycle: Mesocycle) {
-  await mesocycleEditingDeps().mesocycleRepo.create(mesocycle);
+  await repositories().mesocycleRepo.create(mesocycle);
   mockId = mesocycle.id;
   useDraftStore.getState().setMesoBuilder(toMesoBuilderDraft(mesocycle));
-  render(
+  renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <EditMesocycleRoute />
-      </QueryClientProvider>
+      <EditMesocycleRoute />
     </SafeAreaProvider>,
   );
 }
@@ -101,7 +99,7 @@ describe('EditMesocycleRoute', () => {
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
 
-    await expect(mesocycleEditingDeps().mesocycleRepo.getById(planned.id)).resolves.toEqual({
+    await expect(repositories().mesocycleRepo.getById(planned.id)).resolves.toEqual({
       ...planned,
       ...ANY_STAMPS,
       name: 'Renamed Block',
@@ -113,7 +111,7 @@ describe('EditMesocycleRoute', () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     const planned = makePlanned('edit-route-started');
     await openEditorOn(planned);
-    await mesocycleEditingDeps().mesocycleRepo.update({
+    await repositories().mesocycleRepo.update({
       ...planned,
       status: 'active',
       startDate: '2026-09-02T08:00:00.000Z',

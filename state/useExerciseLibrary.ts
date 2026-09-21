@@ -9,12 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExerciseListQuery } from '@domain/catalogListing';
 import { listExerciseGroups } from '@usecases/exerciseLibrary';
 
-import { exerciseLibraryDeps } from './exerciseLibraryStore';
+import { useExerciseLibraryDeps } from './exerciseLibraryStore';
 
 export function useExerciseLibrary(query: ExerciseListQuery, options: { enabled?: boolean } = {}) {
+  const deps = useExerciseLibraryDeps();
+
   return useQuery({
     enabled: options.enabled ?? true,
     queryKey: ['exerciseLibrary', query],
-    queryFn: () => listExerciseGroups(query, exerciseLibraryDeps()),
+    queryFn: () => listExerciseGroups(query, deps),
   });
 }

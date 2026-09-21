@@ -9,6 +9,11 @@
 // with a spinner on it. The spinner underneath is what shows if the wait outlasts the splash —
 // on a reload in development, or behind a splash the OS has already dismissed.
 //
+// It is also where the repository set enters the tree (task 115): the gate already owns the
+// bootstrap's result and already refuses to mount anything until it has one, so it is the one
+// place that can hand storage down knowing it exists. Nothing below reaches storage any other
+// way — `useRepositories` has no fallback.
+//
 // A failure is terminal by design: no retry button, and no error text. `StorageUnavailable` means
 // the database cannot be opened or migrated (07 · Persistence Layer Contract, rule 5; the
 // "written by a newer build" refusal of 069), and there is nothing the user could do about it
@@ -19,6 +24,7 @@ import { useEffect, type PropsWithChildren } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 import { COLORS } from '@design/tokens';
+import { RepositoriesProvider } from '@state/repositories';
 import { useStorageBootstrap } from '@state/useStorageBootstrap';
 
 import { styles } from './StorageGateStyles';
@@ -30,7 +36,8 @@ import { styles } from './StorageGateStyles';
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export function StorageGate({ children }: PropsWithChildren) {
-  const status = useStorageBootstrap();
+  const bootstrap = useStorageBootstrap();
+  const { status } = bootstrap;
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -38,7 +45,7 @@ export function StorageGate({ children }: PropsWithChildren) {
     }
   }, [status]);
 
-  if (status === 'loading') {
+  if (bootstrap.status === 'loading') {
     return (
       <View style={styles.screen} testID="storage-gate-loading">
         <ActivityIndicator color={COLORS['text/secondary']} />
@@ -46,7 +53,7 @@ export function StorageGate({ children }: PropsWithChildren) {
     );
   }
 
-  if (status === 'failed') {
+  if (bootstrap.status === 'failed') {
     return (
       <View style={styles.screen} testID="storage-gate-error">
         <Text style={styles.title}>Can’t open your data</Text>
@@ -55,5 +62,5 @@ export function StorageGate({ children }: PropsWithChildren) {
     );
   }
 
-  return <>{children}</>;
+  return <RepositoriesProvider repositories={bootstrap.repositories}>{children}</RepositoriesProvider>;
 }

@@ -1,13 +1,16 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
 import { workoutHref, workoutSlotHref } from '@components/workoutRoutes';
-import { workoutStore } from '@state/workoutStore';
 
-import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
+import {
+  seedFixtureDay,
+  seedWorkoutFixture,
+  WORKOUT_FIXTURE_IDS,
+} from '../fixtures/workoutFixture';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 // Mocked rather than driven through expo-router's renderRouter: that turns on jest's fake timers,
 // which also fake the `queueMicrotask` every storage call resolves through (storage/async.ts), so
@@ -37,28 +40,17 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 874 },
 };
 
-let client: QueryClient;
-
+const repositories = withRepositories();
 beforeEach(async () => {
-  await seedWorkoutFixture();
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
+  await seedWorkoutFixture(repositories());
   mockParams = {};
   mockNavigate.mockClear();
 });
 
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
 function renderToday() {
-  return render(
+  return renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <TodayScreen />
-      </QueryClientProvider>
+      <TodayScreen />
     </SafeAreaProvider>,
   );
 }
@@ -138,9 +130,7 @@ describe('Today tab — mesocycle overview', () => {
     mockParams = { mesoId: WORKOUT_FIXTURE_IDS.mesocycle, week: '3', day: '1' };
     view.rerender(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-        <QueryClientProvider client={client}>
-          <TodayScreen />
-        </QueryClientProvider>
+        <TodayScreen />
       </SafeAreaProvider>,
     );
 
@@ -190,28 +180,7 @@ describe('Today tab — set logging', () => {
 
   test('DoD: another session in progress — nothing is logged, the alert names it and opens it', async () => {
     // A ready day of the same mesocycle, while the fixture Week 2 Day 1 is in progress.
-    await workoutStore().repos.sessionRepo.createMany([
-      {
-        id: 'ready-w2d2',
-        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
-        weekNumber: 2,
-        dayNumber: 2,
-        isDeload: false,
-        prescriptionStatus: 'ready',
-        status: 'planned',
-      },
-    ]);
-    await workoutStore().repos.sessionExerciseRepo.createMany([
-      {
-        id: 'ready-w2d2-bench',
-        sessionId: 'ready-w2d2',
-        exerciseId: 'bench-press-barbell',
-        order: 1,
-        setTargets: [{ setNumber: 1, targetReps: 10, suggestedWeight: 60 }],
-        targetRir: 3,
-        status: 'planned',
-      },
-    ]);
+    await seedFixtureDay(repositories(), { id: 'ready-w2d2', weekNumber: 2, dayNumber: 2 });
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     mockParams = { sessionId: 'ready-w2d2' };
     renderToday();
@@ -224,9 +193,9 @@ describe('Today tab — set logging', () => {
     const [title, , buttons] = alert.mock.calls[0] ?? [];
     expect(title).toBe('Finish Week 2 Day 1 first');
     expect(buttons?.map((button: AlertButton) => button.text)).toEqual(['Cancel', 'Open']);
-    await expect(workoutStore().repos.setLogRepo.listBySessionId('ready-w2d2')).resolves.toEqual(
-      [],
-    );
+    await expect(
+      repositories().workoutStore.repos.setLogRepo.listBySessionId('ready-w2d2'),
+    ).resolves.toEqual([]);
     expect(screen.getByRole('checkbox', { name: 'Log set 1' })).toBeTruthy();
 
     buttons?.find((button: AlertButton) => button.text === 'Open')?.onPress?.();
@@ -235,7 +204,6 @@ describe('Today tab — set logging', () => {
   });
 });
 
-// Keep this block last: finishing is irreversible, so it leaves the shared fixture session read-only.
 describe('Today tab — Finish workout', () => {
   const card = (exerciseId: string) =>
     screen.getByTestId(`exercise-card-${WORKOUT_FIXTURE_IDS.live}-${exerciseId}`);
@@ -248,28 +216,12 @@ describe('Today tab — Finish workout', () => {
   }
 
   test('a skipped session opens read-only', async () => {
-    await workoutStore().repos.sessionRepo.createMany([
-      {
-        id: 'skipped-w1d2',
-        mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
-        weekNumber: 1,
-        dayNumber: 2,
-        isDeload: false,
-        prescriptionStatus: 'ready',
-        status: 'skipped',
-      },
-    ]);
-    await workoutStore().repos.sessionExerciseRepo.createMany([
-      {
-        id: 'skipped-w1d2-bench',
-        sessionId: 'skipped-w1d2',
-        exerciseId: 'bench-press-barbell',
-        order: 1,
-        setTargets: [{ setNumber: 1, targetReps: 10, suggestedWeight: 60 }],
-        targetRir: 3,
-        status: 'skipped',
-      },
-    ]);
+    await seedFixtureDay(repositories(), {
+      id: 'skipped-w1d2',
+      weekNumber: 1,
+      dayNumber: 2,
+      status: 'skipped',
+    });
     mockParams = { sessionId: 'skipped-w1d2' };
     renderToday();
 
@@ -280,6 +232,8 @@ describe('Today tab — Finish workout', () => {
   });
 
   test('DoD: no button until every exercise is done; Finish leaves the screen read-only', async () => {
+    // `Next workout` at the end goes to the earliest ready day, so there has to be one.
+    await seedFixtureDay(repositories(), { id: 'ready-w2d2', weekNumber: 2, dayNumber: 2 });
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
@@ -300,31 +254,36 @@ describe('Today tab — Finish workout', () => {
     expect(screen.queryAllByRole('checkbox')).toEqual([]);
     expect(screen.queryByLabelText(/Set \d reps/)).toBeNull();
 
-    const session = await workoutStore().repos.sessionRepo.getById(WORKOUT_FIXTURE_IDS.live);
+    const session = await repositories().workoutStore.repos.sessionRepo.getById(
+      WORKOUT_FIXTURE_IDS.live,
+    );
     expect(session?.status).toBe('completed');
-    const week3 = await workoutStore().repos.sessionRepo.listByMesoIdAndWeekNumber(
+    const week3 = await repositories().workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
       WORKOUT_FIXTURE_IDS.mesocycle,
       3,
     );
     expect(week3.map((next) => next.dayNumber)).toEqual([1]);
 
-    // Next workout goes to the earliest ready day — Week 2 Day 2 (seeded by the conflict test
-    // above) comes before the Week 3 Day 1 that Finish just generated.
+    // Next workout goes to the earliest ready day — Week 2 Day 2 comes before the Week 3 Day 1
+    // that Finish just generated.
     fireEvent.press(screen.getByRole('button', { name: 'Next workout' }));
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref('ready-w2d2'));
   });
 
   test('back on the current session after Finish, never shows the stale pick first', async () => {
-    // By now Week 2 Day 1 is finished (test above) and Week 2 Day 2 is the earliest ready day.
-    // Keep the cache like the app's client does — the default `gcTime: 0` above would hide this.
-    client = new QueryClient({
-      defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: 0 } },
+    // The state Finish leaves behind, seeded rather than produced by the test above it: Week 2
+    // Day 1 finished, Week 2 Day 2 the earliest ready day, Week 3 Day 1 generated behind it.
+    const { repos } = repositories().workoutStore;
+    await repos.sessionRepo.update({
+      ...(await repos.sessionRepo.getById(WORKOUT_FIXTURE_IDS.live))!,
+      status: 'completed',
     });
-    const view = render(
+    await seedFixtureDay(repositories(), { id: 'ready-w2d2', weekNumber: 2, dayNumber: 2 });
+    await seedFixtureDay(repositories(), { id: 'ready-w3d1', weekNumber: 3, dayNumber: 1 });
+
+    const view = renderWithRepositories(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-        <QueryClientProvider client={client}>
-          <TodayScreen />
-        </QueryClientProvider>
+        <TodayScreen />
       </SafeAreaProvider>,
     );
     expect(await screen.findByText('Week 2 Day 2')).toBeTruthy();
@@ -334,23 +293,19 @@ describe('Today tab — Finish workout', () => {
     mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
     view.rerender(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-        <QueryClientProvider client={client}>
-          <TodayScreen />
-        </QueryClientProvider>
+        <TodayScreen />
       </SafeAreaProvider>,
     );
     expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
-    await workoutStore().repos.sessionRepo.update({
-      ...(await workoutStore().repos.sessionRepo.getById('ready-w2d2'))!,
+    await repos.sessionRepo.update({
+      ...(await repos.sessionRepo.getById('ready-w2d2'))!,
       status: 'skipped',
     });
 
     mockParams = {};
     view.rerender(
       <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-        <QueryClientProvider client={client}>
-          <TodayScreen />
-        </QueryClientProvider>
+        <TodayScreen />
       </SafeAreaProvider>,
     );
     expect(screen.queryByText('Week 2 Day 2')).toBeNull();

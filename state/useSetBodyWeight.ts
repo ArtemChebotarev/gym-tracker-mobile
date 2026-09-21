@@ -8,13 +8,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { setBodyWeight, type BodyWeightInput } from '@usecases/bodyWeight';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { bodyWeightDeps } from './workoutStore';
+import { useBodyWeightDeps } from './workoutStore';
 
 export function useSetBodyWeight() {
   const queryClient = useQueryClient();
+  const deps = useBodyWeightDeps();
 
   return useMutation({
-    mutationFn: (input: BodyWeightInput) => setBodyWeight(input, bodyWeightDeps()),
+    mutationFn: (input: BodyWeightInput) => setBodyWeight(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

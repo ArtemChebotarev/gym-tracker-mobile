@@ -1,10 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { act, waitFor } from '@testing-library/react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { repositories } from '@state/repositories';
+import type { RepositorySet } from '@repositories/repositorySet';
+import {
+  queryClient,
+  renderHookWithRepositories,
+  withRepositories,
+} from '../fixtures/renderWithRepositories';
 import {
   useWorkoutSession,
   useWorkoutSlot,
@@ -17,10 +20,12 @@ jest.mock('expo-crypto', () => {
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
 });
 
-let client: QueryClient;
+const repositories = withRepositories();
 
-beforeAll(async () => {
-  await repositories().mesocycleRepo.create({
+// One active mesocycle with a single planned day of two set rows — the smallest thing these two
+// hooks can be read against.
+async function seedHookSession(store: RepositorySet): Promise<void> {
+  await store.mesocycleRepo.create({
     id: 'hook-meso',
     name: 'Hook meso',
     lengthWeeks: 4,
@@ -30,14 +35,14 @@ beforeAll(async () => {
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
   });
-  await repositories().exerciseRepo.createCustom({
+  await store.exerciseRepo.createCustom({
     id: toExerciseId('hook-exercise'),
     name: 'Hook press',
     muscleGroup: 'chest',
     source: 'custom',
     isHidden: false,
   });
-  const { repos } = repositories().workoutStore;
+  const { repos } = store.workoutStore;
   await repos.sessionRepo.create({
     id: 'hook-session',
     mesoId: 'hook-meso',
@@ -56,26 +61,15 @@ beforeAll(async () => {
     targetRir: 3,
     status: 'planned',
   });
-});
-
-beforeEach(() => {
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
+beforeEach(async () => {
+  await seedHookSession(repositories());
+});
+
 describe('useWorkoutSession / useWorkoutSlot', () => {
-  test('reads the session model from the app-wide store', async () => {
-    const { result } = renderHook(() => useWorkoutSession('hook-session'), { wrapper });
+  test("reads the session model from this test's store", async () => {
+    const { result } = renderHookWithRepositories(() => useWorkoutSession('hook-session'));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -85,7 +79,7 @@ describe('useWorkoutSession / useWorkoutSlot', () => {
   });
 
   test('invalidating the workout key after a write shows the stored state', async () => {
-    const { result } = renderHook(() => useWorkoutSession('hook-session'), { wrapper });
+    const { result } = renderHookWithRepositories(() => useWorkoutSession('hook-session'));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.progress).toBe(0);
 
@@ -94,16 +88,15 @@ describe('useWorkoutSession / useWorkoutSlot', () => {
       { weight: 40, reps: 10 },
       repositories().workoutStore,
     );
-    await act(() => client.invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }));
+    await act(() => queryClient().invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }));
 
     await waitFor(() => expect(result.current.data?.progress).toBe(0.5));
     expect(result.current.data?.exercises[0]?.rows[0]?.log).toEqual({ weight: 40, reps: 10 });
   });
 
   test('previews a day whose session does not exist yet', async () => {
-    const { result } = renderHook(
-      () => useWorkoutSlot({ mesoId: 'hook-meso', weekNumber: 2, dayNumber: 1 }),
-      { wrapper },
+    const { result } = renderHookWithRepositories(() =>
+      useWorkoutSlot({ mesoId: 'hook-meso', weekNumber: 2, dayNumber: 1 }),
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

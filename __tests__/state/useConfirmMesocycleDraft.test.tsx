@@ -1,10 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { waitFor } from '@testing-library/react-native';
 
-import { repositories } from '@state/repositories';
 import type { MesoBuilderDraft } from '@state/draftStore';
-import { mesocycleCreationDeps } from '@state/mesocycleStore';
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useConfirmMesocycleDraft } from '@state/useConfirmMesocycleDraft';
 
 jest.mock('expo-crypto', () => {
@@ -22,27 +19,11 @@ const DRAFT: MesoBuilderDraft = {
   },
 };
 
-let client: QueryClient;
-
-beforeEach(() => {
-  // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
+const repositories = withRepositories();
 
 describe('useConfirmMesocycleDraft', () => {
   test('saves the draft as a planned mesocycle through Confirm (071)', async () => {
-    const { result } = renderHook(() => useConfirmMesocycleDraft(), { wrapper });
+    const { result } = renderHookWithRepositories(() => useConfirmMesocycleDraft());
 
     result.current.mutate(DRAFT);
 
@@ -52,11 +33,11 @@ describe('useConfirmMesocycleDraft', () => {
     expect(saved.status).toBe('planned');
     expect(saved.origin).toEqual({ type: 'scratch' });
     expect(saved.weekPlan?.days).toHaveLength(2);
-    await expect(mesocycleCreationDeps().mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
+    await expect(repositories().mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
   });
 
-  test('creates no Session in the app-wide store', async () => {
-    const { result } = renderHook(() => useConfirmMesocycleDraft(), { wrapper });
+  test('creates no Session', async () => {
+    const { result } = renderHookWithRepositories(() => useConfirmMesocycleDraft());
 
     result.current.mutate(DRAFT);
 
@@ -67,7 +48,7 @@ describe('useConfirmMesocycleDraft', () => {
   });
 
   test('surfaces a failed save as a mutation error', async () => {
-    const { result } = renderHook(() => useConfirmMesocycleDraft(), { wrapper });
+    const { result } = renderHookWithRepositories(() => useConfirmMesocycleDraft());
 
     // daysPerWeek out of range — buildScratchMesocycleDraft rejects it before anything is saved.
     result.current.mutate({ ...DRAFT, daysPerWeek: 8 });

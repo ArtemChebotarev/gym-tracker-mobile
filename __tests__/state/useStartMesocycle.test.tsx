@@ -1,9 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { act, waitFor } from '@testing-library/react-native';
 
 import { seedExerciseCatalog, seedMockMesocycles } from '../fixtures/appStorage';
 import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useMesocycles } from '@state/useMesocycles';
 import { useStartMesocycle } from '@state/useStartMesocycle';
 import { useTodayWorkout } from '@state/useWorkoutSession';
@@ -13,34 +12,20 @@ jest.mock('expo-crypto', () => {
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
 });
 
-let client: QueryClient;
+const repositories = withRepositories();
 
-beforeAll(async () => {
-  await seedExerciseCatalog();
-  await seedMockMesocycles();
+beforeEach(async () => {
+  await seedExerciseCatalog(repositories());
+  await seedMockMesocycles(repositories());
 });
-
-beforeEach(() => {
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
 
 describe('useStartMesocycle', () => {
   test('starting the planned mock makes it active, and Today opens its Week 1 Day 1', async () => {
-    const { result } = renderHook(
-      () => ({ list: useMesocycles(), today: useTodayWorkout(), start: useStartMesocycle() }),
-      { wrapper },
-    );
+    const { result } = renderHookWithRepositories(() => ({
+      list: useMesocycles(),
+      today: useTodayWorkout(),
+      start: useStartMesocycle(),
+    }));
     await waitFor(() => expect(result.current.today.data?.kind).toBe('noActiveMesocycle'));
 
     act(() => result.current.start.mutate(MOCK_MESOCYCLE_IDS.planned));

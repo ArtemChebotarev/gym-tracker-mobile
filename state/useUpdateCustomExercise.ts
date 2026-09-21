@@ -8,14 +8,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UpdateCustomExerciseInput } from '@usecases/exerciseLibrary';
 import { updateCustomExercise } from '@usecases/exerciseLibrary';
 
-import { exerciseLibraryDeps } from './exerciseLibraryStore';
+import { useExerciseLibraryDeps } from './exerciseLibraryStore';
 
 export function useUpdateCustomExercise() {
   const queryClient = useQueryClient();
+  const deps = useExerciseLibraryDeps();
 
   return useMutation({
     mutationFn: (input: UpdateCustomExerciseInput) =>
-      updateCustomExercise(input, exerciseLibraryDeps()),
+      updateCustomExercise(input, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });
       queryClient.invalidateQueries({ queryKey: ['exerciseOverview'] });

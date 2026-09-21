@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
 import type { TodayWorkout } from '@usecases/todayWorkout';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 // The pick itself (every branch) is covered by __tests__/usecases/todayWorkout.test.ts; this only
 // checks how the tab renders the two outcomes that have no session, with the pick mocked so each
@@ -27,27 +27,16 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 874 },
 };
 
-let client: QueryClient;
-
+withRepositories();
 beforeEach(() => {
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
   mockNavigate.mockClear();
   mockPush.mockClear();
 });
 
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
 function renderToday() {
-  render(
+  renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <TodayScreen />
-      </QueryClientProvider>
+      <TodayScreen />
     </SafeAreaProvider>,
   );
 }

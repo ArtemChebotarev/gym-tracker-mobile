@@ -9,14 +9,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirmScratchMesocycleDraft } from '@usecases/mesocycleCreation';
 
 import { toScratchMesocycleDraftInput, type MesoBuilderDraft } from './draftStore';
-import { mesocycleCreationDeps } from './mesocycleStore';
+import { useMesocycleCreationDeps } from './mesocycleStore';
 
 export function useConfirmMesocycleDraft() {
   const queryClient = useQueryClient();
+  const deps = useMesocycleCreationDeps();
 
   return useMutation({
     mutationFn: (draft: MesoBuilderDraft) =>
-      confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), mesocycleCreationDeps()),
+      confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },

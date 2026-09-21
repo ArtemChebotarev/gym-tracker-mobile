@@ -1,12 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
-import { workoutStore } from '@state/workoutStore';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 // The exercise menu (097) on the Today tab, over the fixture session in progress: Bench Press (2 of
 // 3 sets logged), then Barbell Row (nothing logged). Its own file, apart from TodayRoute.test.tsx:
@@ -40,30 +39,23 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 const BENCH = `${WORKOUT_FIXTURE_IDS.live}-bench-press-barbell`;
 const ROW = `${WORKOUT_FIXTURE_IDS.live}-barbell-row-barbell`;
 
-let client: QueryClient;
 let alertSpy: jest.SpyInstance;
 
+const repositories = withRepositories();
 beforeEach(async () => {
-  await seedWorkoutFixture();
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
+  await seedWorkoutFixture(repositories());
   mockParams = {};
   alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
   alertSpy.mockRestore();
-  client.clear();
-  client.unmount();
 });
 
 async function renderToday() {
-  render(
+  renderWithRepositories(
     <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <QueryClientProvider client={client}>
-        <TodayScreen />
-      </QueryClientProvider>
+      <TodayScreen />
     </SafeAreaProvider>,
   );
   await screen.findByText('Week 2 Day 1');
@@ -84,7 +76,7 @@ function pressAlertButton(text: string) {
 }
 
 async function sessionExercises() {
-  const exercises = await workoutStore().repos.sessionExerciseRepo.listBySessionId(
+  const exercises = await repositories().workoutStore.repos.sessionExerciseRepo.listBySessionId(
     WORKOUT_FIXTURE_IDS.live,
   );
   return [...exercises].sort((a, b) => a.order - b.order);
@@ -211,9 +203,9 @@ describe('Today tab — exercise menu', () => {
         'squat-barbell',
       ),
     );
-    await expect(workoutStore().repos.setLogRepo.listBySessionExerciseId(BENCH)).resolves.toEqual(
-      [],
-    );
+    await expect(
+      repositories().workoutStore.repos.setLogRepo.listBySessionExerciseId(BENCH),
+    ).resolves.toEqual([]);
   });
 
   test('Delete exercise removes it once confirmed', async () => {

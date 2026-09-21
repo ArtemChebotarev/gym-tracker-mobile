@@ -1,9 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { waitFor } from '@testing-library/react-native';
 
 import { toExerciseId } from '@domain/catalog';
-import { exerciseLibraryDeps } from '@state/exerciseLibraryStore';
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useExercisesByIds } from '@state/useExercisesByIds';
 import { createCustomExercise } from '@usecases/exerciseLibrary';
 
@@ -12,29 +10,16 @@ jest.mock('expo-crypto', () => {
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
 });
 
-let client: QueryClient;
-
-beforeEach(() => {
-  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
+const repositories = withRepositories();
 
 describe('useExercisesByIds', () => {
   test('resolves the requested ids into a lookup keyed by id', async () => {
     const created = await createCustomExercise(
       { name: 'Hook Test By Id', muscleGroup: 'chest' },
-      exerciseLibraryDeps(),
+      repositories(),
     );
 
-    const { result } = renderHook(() => useExercisesByIds([created.id]), { wrapper });
+    const { result } = renderHookWithRepositories(() => useExercisesByIds([created.id]));
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
@@ -42,7 +27,9 @@ describe('useExercisesByIds', () => {
   });
 
   test('omits ids that do not resolve to an exercise', async () => {
-    const { result } = renderHook(() => useExercisesByIds([toExerciseId('missing')]), { wrapper });
+    const { result } = renderHookWithRepositories(() =>
+      useExercisesByIds([toExerciseId('missing')]),
+    );
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
