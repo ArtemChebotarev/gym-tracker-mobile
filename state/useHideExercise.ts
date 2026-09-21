@@ -7,13 +7,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ExerciseId } from '@domain/catalog';
 import { hideExercise } from '@usecases/exerciseLibrary';
 
-import { exerciseLibraryDeps } from './exerciseLibraryStore';
+import { useExerciseLibraryDeps } from './exerciseLibraryStore';
 
 export function useHideExercise() {
   const queryClient = useQueryClient();
+  const deps = useExerciseLibraryDeps();
 
   return useMutation({
-    mutationFn: (id: ExerciseId) => hideExercise(id, exerciseLibraryDeps()),
+    mutationFn: (id: ExerciseId) => hideExercise(id, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });
       queryClient.invalidateQueries({ queryKey: ['exerciseOverview'] });

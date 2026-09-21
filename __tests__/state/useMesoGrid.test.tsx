@@ -1,35 +1,19 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { waitFor } from '@testing-library/react-native';
 
 import { seedMockMesocycles } from '../fixtures/appStorage';
 import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useMesoGrid } from '@state/useMesoGrid';
 
-let client: QueryClient;
+const repositories = withRepositories();
 
-beforeAll(async () => {
-  await seedMockMesocycles();
+beforeEach(async () => {
+  await seedMockMesocycles(repositories());
 });
-
-beforeEach(() => {
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
-  });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
 
 describe('useMesoGrid', () => {
   test('reads the grid of a mesocycle in storage', async () => {
-    const { result } = renderHook(() => useMesoGrid(MOCK_MESOCYCLE_IDS.planned), { wrapper });
+    const { result } = renderHookWithRepositories(() => useMesoGrid(MOCK_MESOCYCLE_IDS.planned));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -43,7 +27,7 @@ describe('useMesoGrid', () => {
   });
 
   test('stays idle without a mesocycle id', () => {
-    const { result } = renderHook(() => useMesoGrid(undefined), { wrapper });
+    const { result } = renderHookWithRepositories(() => useMesoGrid(undefined));
 
     expect(result.current.fetchStatus).toBe('idle');
     expect(result.current.data).toBeUndefined();

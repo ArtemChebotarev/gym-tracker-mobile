@@ -1,9 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { waitFor } from '@testing-library/react-native';
 
 import { seedExerciseCatalog } from '../fixtures/appStorage';
-import { exerciseLibraryDeps } from '@state/exerciseLibraryStore';
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { createCustomExercise, hideExercise } from '@usecases/exerciseLibrary';
 
@@ -12,29 +10,15 @@ jest.mock('expo-crypto', () => {
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
 });
 
-let client: QueryClient;
+const repositories = withRepositories();
 
-beforeAll(async () => {
-  await seedExerciseCatalog();
+beforeEach(async () => {
+  await seedExerciseCatalog(repositories());
 });
-
-beforeEach(() => {
-  // gcTime: 0 avoids leaving a garbage-collection timer open past the test.
-  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-});
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
 
 describe('useExerciseLibrary', () => {
   test('groups the catalog by muscle group, in catalog order', async () => {
-    const { result } = renderHook(() => useExerciseLibrary({}), { wrapper });
+    const { result } = renderHookWithRepositories(() => useExerciseLibrary({}));
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
@@ -46,13 +30,12 @@ describe('useExerciseLibrary', () => {
   test('excludes an exercise once it has been hidden', async () => {
     const created = await createCustomExercise(
       { name: 'Hook Test Hidden Exercise', muscleGroup: 'chest' },
-      exerciseLibraryDeps(),
+      repositories(),
     );
-    await hideExercise(created.id, exerciseLibraryDeps());
+    await hideExercise(created.id, repositories());
 
-    const { result } = renderHook(
-      () => useExerciseLibrary({ search: 'Hook Test Hidden Exercise' }),
-      { wrapper },
+    const { result } = renderHookWithRepositories(() =>
+      useExerciseLibrary({ search: 'Hook Test Hidden Exercise' }),
     );
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
@@ -63,12 +46,12 @@ describe('useExerciseLibrary', () => {
   test('applies a case-insensitive search filter', async () => {
     await createCustomExercise(
       { name: 'Unique Search Target', muscleGroup: 'back' },
-      exerciseLibraryDeps(),
+      repositories(),
     );
 
-    const { result } = renderHook(() => useExerciseLibrary({ search: 'unique search target' }), {
-      wrapper,
-    });
+    const { result } = renderHookWithRepositories(() =>
+      useExerciseLibrary({ search: 'unique search target' }),
+    );
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
 

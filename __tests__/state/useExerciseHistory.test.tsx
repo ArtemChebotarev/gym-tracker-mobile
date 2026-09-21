@@ -1,10 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
-import type { PropsWithChildren } from 'react';
+import { waitFor } from '@testing-library/react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import { useExerciseHistory } from '@state/useExerciseHistory';
 
+import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { seedWorkoutFixture } from '../fixtures/workoutFixture';
 
 jest.mock('expo-crypto', () => {
@@ -12,28 +11,16 @@ jest.mock('expo-crypto', () => {
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
 });
 
-let client: QueryClient;
+const repositories = withRepositories();
 
 beforeEach(async () => {
-  await seedWorkoutFixture();
-  // gcTime: 0 avoids leaving a garbage-collection timer open past the test.
-  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  await seedWorkoutFixture(repositories());
 });
-
-afterEach(() => {
-  client.clear();
-  client.unmount();
-});
-
-function wrapper({ children }: PropsWithChildren) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
 
 describe('useExerciseHistory', () => {
   test("groups the fixture's completed session under its mesocycle", async () => {
-    const { result } = renderHook(
-      () => useExerciseHistory(toExerciseId('bench-press-barbell')),
-      { wrapper },
+    const { result } = renderHookWithRepositories(() =>
+      useExerciseHistory(toExerciseId('bench-press-barbell')),
     );
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
@@ -46,9 +33,8 @@ describe('useExerciseHistory', () => {
   });
 
   test('is empty for an exercise that was never performed', async () => {
-    const { result } = renderHook(
-      () => useExerciseHistory(toExerciseId('deadlift-barbell')),
-      { wrapper },
+    const { result } = renderHookWithRepositories(() =>
+      useExerciseHistory(toExerciseId('deadlift-barbell')),
     );
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
@@ -57,9 +43,8 @@ describe('useExerciseHistory', () => {
   });
 
   test('does not read at all until it is enabled', async () => {
-    const { result } = renderHook(
-      () => useExerciseHistory(toExerciseId('bench-press-barbell'), { enabled: false }),
-      { wrapper },
+    const { result } = renderHookWithRepositories(() =>
+      useExerciseHistory(toExerciseId('bench-press-barbell'), { enabled: false }),
     );
 
     expect(result.current.fetchStatus).toBe('idle');

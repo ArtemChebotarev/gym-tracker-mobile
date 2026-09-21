@@ -16,7 +16,8 @@ native module and no file on disk.
 
 Each engine has one factory producing the same `RepositorySet` (`repositories/repositorySet.ts`):
 `createInMemoryRepositories` here, `createSqliteRepositories` in `sqlite/`. Which one the app
-holds is `state/repositories.ts`, set once at startup by `state/bootstrap.ts` — so switching
+holds is decided in one place — `state/bootstrap.ts` builds it at startup and
+`components/StorageGate.tsx` puts it into context for everything below (task 115) — so switching
 engines, or putting the in-memory one back, is that one call and nothing else.
 
 What belongs where inside `sqlite/`: `schema.ts` is the tables, `mappers.ts` the entity ↔ row

@@ -9,13 +9,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { finishSession } from '@usecases/sessionFinish';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { sessionFinishDeps } from './workoutStore';
+import { useSessionFinishDeps } from './workoutStore';
 
 export function useFinishSession() {
   const queryClient = useQueryClient();
+  const deps = useSessionFinishDeps();
 
   return useMutation({
-    mutationFn: (sessionId: string) => finishSession(sessionId, sessionFinishDeps()),
+    mutationFn: (sessionId: string) => finishSession(sessionId, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

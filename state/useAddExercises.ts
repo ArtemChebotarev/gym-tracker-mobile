@@ -9,13 +9,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addExercises, type ExerciseAdditionInput } from '@usecases/exerciseAddition';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { exerciseAdditionDeps } from './workoutStore';
+import { useExerciseAdditionDeps } from './workoutStore';
 
 export function useAddExercises() {
   const queryClient = useQueryClient();
+  const deps = useExerciseAdditionDeps();
 
   return useMutation({
-    mutationFn: (input: ExerciseAdditionInput) => addExercises(input, exerciseAdditionDeps()),
+    mutationFn: (input: ExerciseAdditionInput) => addExercises(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

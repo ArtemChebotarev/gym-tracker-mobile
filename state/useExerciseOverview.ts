@@ -7,11 +7,13 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExerciseId } from '@domain/catalog';
 import { loadExerciseOverview } from '@usecases/exerciseOverview';
 
-import { exerciseOverviewDeps } from './exerciseLibraryStore';
+import { useExerciseOverviewDeps } from './exerciseLibraryStore';
 
 export function useExerciseOverview(exerciseId: ExerciseId) {
+  const deps = useExerciseOverviewDeps();
+
   return useQuery({
     queryKey: ['exerciseOverview', exerciseId],
-    queryFn: () => loadExerciseOverview(exerciseId, exerciseOverviewDeps()),
+    queryFn: () => loadExerciseOverview(exerciseId, deps),
   });
 }

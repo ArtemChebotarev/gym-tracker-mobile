@@ -6,20 +6,22 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getMesoGrid } from '@usecases/mesoGrid';
 
-import { mesoGridDeps } from './mesocycleStore';
+import { useMesoGridDeps } from './mesocycleStore';
 
 /** Prefix of every grid query — invalidate it after any change to a session's status. */
 export const MESO_GRID_QUERY_KEY = ['mesoGrid'] as const;
 
 /** The grid of mesocycle `mesoId`; idle while `mesoId` is `undefined` (e.g. no active one). */
 export function useMesoGrid(mesoId: string | undefined) {
+  const deps = useMesoGridDeps();
+
   return useQuery({
     queryKey: [...MESO_GRID_QUERY_KEY, mesoId],
     queryFn: async () => {
       if (mesoId === undefined) {
         throw new Error('useMesoGrid ran without a mesocycle id.');
       }
-      return getMesoGrid(mesoId, mesoGridDeps());
+      return getMesoGrid(mesoId, deps);
     },
     enabled: mesoId !== undefined,
   });

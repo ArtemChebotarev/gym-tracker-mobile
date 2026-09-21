@@ -11,14 +11,15 @@ import type { SetEntry } from '@domain/executionValidators';
 import { logSet, type SetRowRef, unlogSet } from '@usecases/setLogging';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
-import { workoutStore } from './workoutStore';
+import { useWorkoutStore } from './workoutStore';
 
 export function useLogSet() {
   const queryClient = useQueryClient();
+  const store = useWorkoutStore();
 
   return useMutation({
     mutationFn: ({ ref, entry }: { ref: SetRowRef; entry: SetEntry }) =>
-      logSet(ref, entry, workoutStore()),
+      logSet(ref, entry, store),
     onSuccess: (result) => {
       if (result.kind === 'logged') {
         return invalidateWorkoutQueries(queryClient);
@@ -30,9 +31,10 @@ export function useLogSet() {
 
 export function useUnlogSet() {
   const queryClient = useQueryClient();
+  const store = useWorkoutStore();
 
   return useMutation({
-    mutationFn: (ref: SetRowRef) => unlogSet(ref, workoutStore()),
+    mutationFn: (ref: SetRowRef) => unlogSet(ref, store),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

@@ -10,17 +10,17 @@ import { useMutation } from '@tanstack/react-query';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
-import { exportBackupJson } from '@usecases/backup';
+import { exportBackupJson, type BackupDeps } from '@usecases/backup';
 
-import { backupDeps } from './backupStore';
+import { useBackupDeps } from './backupStore';
 
 /** `gymtracker-backup-2026-09-21.json` — the date is the file's own, in UTC like every stamp. */
 export function backupFileName(now: Date = new Date()): string {
   return `gymtracker-backup-${now.toISOString().slice(0, 10)}.json`;
 }
 
-async function shareBackup(): Promise<void> {
-  const json = await exportBackupJson(backupDeps());
+async function shareBackup(deps: BackupDeps): Promise<void> {
+  const json = await exportBackupJson(deps);
   const file = new File(Paths.cache, backupFileName());
   if (file.exists) {
     file.delete();
@@ -39,5 +39,7 @@ async function shareBackup(): Promise<void> {
 }
 
 export function useExportBackup() {
-  return useMutation({ mutationFn: shareBackup });
+  const deps = useBackupDeps();
+
+  return useMutation({ mutationFn: () => shareBackup(deps) });
 }

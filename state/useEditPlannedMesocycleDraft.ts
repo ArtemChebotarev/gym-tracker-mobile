@@ -7,14 +7,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { editPlannedMesocycle } from '@usecases/mesocycleEditing';
 
 import { toScratchMesocycleDraftInput, type MesoBuilderDraft } from './draftStore';
-import { mesocycleEditingDeps } from './mesocycleStore';
+import { useMesocycleEditingDeps } from './mesocycleStore';
 
 export function useEditPlannedMesocycleDraft(id: string) {
   const queryClient = useQueryClient();
+  const deps = useMesocycleEditingDeps();
 
   return useMutation({
     mutationFn: (draft: MesoBuilderDraft) =>
-      editPlannedMesocycle(id, toScratchMesocycleDraftInput(draft), mesocycleEditingDeps()),
+      editPlannedMesocycle(id, toScratchMesocycleDraftInput(draft), deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },

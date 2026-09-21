@@ -6,13 +6,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { deletePlannedMesocycle } from '@usecases/mesocycleList';
 
-import { mesocycleListDeps } from './mesocycleStore';
+import { useMesocycleListDeps } from './mesocycleStore';
 
 export function useDeletePlannedMesocycle() {
   const queryClient = useQueryClient();
+  const deps = useMesocycleListDeps();
 
   return useMutation({
-    mutationFn: (id: string) => deletePlannedMesocycle(id, mesocycleListDeps()),
+    mutationFn: (id: string) => deletePlannedMesocycle(id, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },
