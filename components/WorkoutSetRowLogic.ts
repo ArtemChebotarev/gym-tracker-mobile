@@ -4,9 +4,8 @@ import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
+import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
-
-import { formatRir } from './WorkoutExerciseCardLogic';
 
 /** A weight as the row shows it — `62.5`, no unit (the column header says `kg`). */
 export function formatRowWeight(weight: number): string {
