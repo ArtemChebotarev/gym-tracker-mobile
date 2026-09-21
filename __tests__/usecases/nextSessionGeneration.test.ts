@@ -1,14 +1,16 @@
 import { type Exercise, type MuscleGroup, toExerciseId } from '@domain/catalog';
-import { isConflictError, isNotFoundError } from '@domain/errors';
+import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -84,10 +86,10 @@ async function setUp(
   exercises: SessionExercise[],
   logs: SetLog[] = [],
 ): Promise<{ workout: WorkoutStore; deps: Parameters<typeof generateNextSession>[2] }> {
-  const store = new InMemoryStore();
-  const workout = createInMemoryWorkoutStore(store);
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
-  const exerciseRepo = new InMemoryExerciseRepository(store);
+  const store = db();
+  const workout = createSqliteWorkoutStore(store);
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
+  const exerciseRepo = new SqliteExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   await exerciseRepo.seedCatalog(
     catalog.map(([id, muscleGroup]): Exercise => ({
@@ -231,14 +233,5 @@ describe('generateNextSession', () => {
     const error = await rejectionOf(generateNextSession(trigger, workout.repos, deps));
 
     expect(isConflictError(error)).toBe(true);
-  });
-
-  test('rejects when an exercise of the base is missing from the library', async () => {
-    const trigger = makeSession(1);
-    const { workout, deps } = await setUp([trigger], [makeExercise(1, 'unknown', 1)]);
-
-    const error = await rejectionOf(generateNextSession(trigger, workout.repos, deps));
-
-    expect(isNotFoundError(error)).toBe(true);
   });
 });

@@ -1,12 +1,15 @@
 import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { addExercises, type ExerciseAdditionDeps } from '@usecases/exerciseAddition';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -15,6 +18,7 @@ jest.mock('expo-crypto', () => {
 
 const NOW = '2026-09-18T10:00:00.000Z';
 const CURL = 'exercise-curl';
+const LATERAL_RAISE = 'exercise-lateral-raise';
 
 /** 5 weeks: working weeks at RIR 3, 2, 1, 0 — week 2 is RIR 2. */
 const mesocycle: Mesocycle = {
@@ -54,15 +58,20 @@ const bench: SessionExercise = {
 };
 
 async function setUp(stored: Session = session): Promise<ExerciseAdditionDeps> {
-  const store = new InMemoryStore();
-  const workout = createInMemoryWorkoutStore(store);
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
+  const store = db();
+  const workout = createSqliteWorkoutStore(store);
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
   await mesocycleRepo.create(mesocycle);
+  await seedReferences(db(), {
+    sessions: [stored],
+    sessionExercises: [bench],
+    exerciseIds: [CURL, LATERAL_RAISE],
+  });
   await workout.repos.sessionRepo.create(stored);
   await workout.repos.sessionExerciseRepo.create(bench);
-  // These exercise ids aren't catalog entries, so the repo answers with nothing and the equipment
-  // stays undefined — the ordinary, non-bodyweight path.
-  return { workout, mesocycleRepo, exerciseRepo: new InMemoryExerciseRepository(store) };
+  // The library carries these exercises with no equipment on them, so `equipment` stays undefined
+  // — the ordinary, non-bodyweight path.
+  return { workout, mesocycleRepo, exerciseRepo: new SqliteExerciseRepository(store) };
 }
 
 /** A past performance of the curl: its own session and session exercise, plus the logs. */
@@ -87,6 +96,7 @@ async function curlPerformedIn(
     exerciseId: CURL,
     status: 'completed',
   };
+  await seedReferences(db(), { sessions: [pastSession], sessionExercises: [pastExercise] });
   await deps.workout.repos.sessionRepo.create(pastSession);
   await deps.workout.repos.sessionExerciseRepo.create(pastExercise);
   for (const [index, rep] of reps.entries()) {

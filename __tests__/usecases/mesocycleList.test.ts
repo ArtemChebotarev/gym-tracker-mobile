@@ -1,10 +1,12 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { deletePlannedMesocycle, listMesocycles } from '@usecases/mesocycleList';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
   return {
@@ -22,7 +24,7 @@ function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
 }
 
 function makeDeps() {
-  return { mesocycleRepo: new InMemoryMesocycleRepository(new InMemoryStore()) };
+  return { mesocycleRepo: new SqliteMesocycleRepository(db()) };
 }
 
 describe('listMesocycles', () => {

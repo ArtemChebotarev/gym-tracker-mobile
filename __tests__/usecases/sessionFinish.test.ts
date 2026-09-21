@@ -1,13 +1,17 @@
 import { type Exercise, toExerciseId } from '@domain/catalog';
-import { isConflictError, isNotFoundError } from '@domain/errors';
+import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
+import type { SessionRepository } from '@repositories/session';
+import type { WorkoutStore } from '@repositories/workout';
 import { finishSession, type SessionFinishDeps } from '@usecases/sessionFinish';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -71,17 +75,18 @@ function logFor(sessionExercise: SessionExercise): SetLog {
   };
 }
 
+const LIBRARY = ['bench', 'row'];
+
 async function setUp(
   options: { session?: Session; exercises: SessionExercise[]; logs?: SetLog[] },
-  libraryIds: string[] = ['bench', 'row'],
 ): Promise<SessionFinishDeps> {
-  const store = new InMemoryStore();
-  const workout = createInMemoryWorkoutStore(store);
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
-  const exerciseRepo = new InMemoryExerciseRepository(store);
+  const store = db();
+  const workout = createSqliteWorkoutStore(store);
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
+  const exerciseRepo = new SqliteExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   await exerciseRepo.seedCatalog(
-    libraryIds.map((id): Exercise => ({
+    LIBRARY.map((id): Exercise => ({
       ...STAMPS,
       id: toExerciseId(id),
       name: id,
@@ -96,6 +101,23 @@ async function setUp(
     await workout.repos.setLogRepo.create(log);
   }
   return { workout, mesocycleRepo, exerciseRepo };
+}
+
+/** A workout store whose write of the new session fails inside a transaction. */
+function failingSessionWrites(workout: WorkoutStore): WorkoutStore {
+  return {
+    repos: workout.repos,
+    transaction: (work) =>
+      workout.transaction((repos) => {
+        const sessionRepo: SessionRepository = Object.assign(
+          Object.create(repos.sessionRepo) as SessionRepository,
+          {
+            create: () => Promise.reject(new Error('next session write failed')),
+          },
+        );
+        return work({ ...repos, sessionRepo });
+      }),
+  };
 }
 
 async function sessionsOf(deps: SessionFinishDeps) {
@@ -154,13 +176,14 @@ describe('finishSession', () => {
     expect(nextExercises.map((exercise) => exercise.exerciseId).sort()).toEqual(['bench', 'row']);
   });
 
-  test('DoD: the new session is written in the same transaction — a generation failure keeps the session open', async () => {
+  test('DoD: the new session is written in the same transaction — a failure keeps the session open', async () => {
     const bench = makeExercise('bench', 1, 'completed');
-    const deps = await setUp({ exercises: [bench], logs: [logFor(bench)] }, []);
+    const deps = await setUp({ exercises: [bench], logs: [logFor(bench)] });
 
-    const error = await rejectionOf(finishSession('session-w2', deps, NOW));
+    await expect(
+      finishSession('session-w2', { ...deps, workout: failingSessionWrites(deps.workout) }, NOW),
+    ).rejects.toThrow('next session write failed');
 
-    expect(isNotFoundError(error)).toBe(true);
     await expect(sessionsOf(deps)).resolves.toEqual([session]);
   });
 

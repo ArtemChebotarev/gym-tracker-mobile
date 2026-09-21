@@ -1,9 +1,12 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { targetsFromHistory } from '@usecases/historyTargets';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const NOW = '2026-09-18T10:00:00.000Z';
 const BARBELL = 'exercise-barbell-bench-press';
@@ -28,7 +31,7 @@ type Performance = {
  * (02 · Domain Model), and which day these happened on is not what any test here is about.
  */
 async function setLogRepoWith(performances: Performance[]) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
   for (const [index, performance] of performances.entries()) {
     const session: Session = {
       ...STAMPS,
@@ -61,6 +64,11 @@ async function setLogRepoWith(performances: Performance[]) {
       reps,
       completedAt: performance.loggedAt,
     }));
+    await seedReferences(db(), {
+      sessions: [session],
+      sessionExercises: [sessionExercise],
+      setLogs: logs,
+    });
     await workout.repos.sessionRepo.create(session);
     await workout.repos.sessionExerciseRepo.create(sessionExercise);
     for (const log of logs) {

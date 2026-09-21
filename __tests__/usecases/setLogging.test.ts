@@ -1,9 +1,12 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { logSet, type SetRowRef, unlogSet } from '@usecases/setLogging';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -43,7 +46,8 @@ function row(setNumber: number, sessionExerciseId = benchPress.id): SetRowRef {
 }
 
 async function workoutWith(sessions: Session[] = [session], exercises = [benchPress]) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), { sessions, sessionExercises: exercises });
   await workout.repos.sessionRepo.createMany(sessions);
   await workout.repos.sessionExerciseRepo.createMany(exercises);
   return workout;

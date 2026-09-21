@@ -2,12 +2,14 @@ import { type Exercise, toExerciseId } from '@domain/catalog';
 import { isConflictError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { skipWorkout, type WorkoutSkipDeps } from '@usecases/workoutSkip';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -71,10 +73,10 @@ const row: SessionExercise = {
 async function setUp(
   options: { session?: Session; exercises?: SessionExercise[]; logs?: SetLog[] } = {},
 ): Promise<WorkoutSkipDeps> {
-  const store = new InMemoryStore();
-  const workout = createInMemoryWorkoutStore(store);
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
-  const exerciseRepo = new InMemoryExerciseRepository(store);
+  const store = db();
+  const workout = createSqliteWorkoutStore(store);
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
+  const exerciseRepo = new SqliteExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   const catalogBench: Exercise = {
     ...STAMPS,

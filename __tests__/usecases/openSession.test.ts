@@ -1,9 +1,12 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Session, SessionExercise } from '@domain/execution';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { openSession, openSessionExercise } from '@usecases/openSession';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const session: Session = {
   ...STAMPS,
@@ -29,7 +32,8 @@ const benchPress: SessionExercise = {
 };
 
 async function reposWith(stored: Session = session) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  await seedReferences(db(), { sessions: [stored], sessionExercises: [benchPress] });
   await workout.repos.sessionRepo.create(stored);
   await workout.repos.sessionExerciseRepo.create(benchPress);
   return workout.repos;

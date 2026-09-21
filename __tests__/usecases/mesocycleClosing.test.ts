@@ -1,8 +1,7 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { createInMemoryMesocycleClosingStore } from '@storage/mesocycleClosingStore';
-import { InMemoryStore } from '@storage/store';
+import { createSqliteMesocycleClosingStore } from '@storage/sqlite/mesocycleClosingStore';
 import {
   finishMesocycle,
   type MesocycleClosingDeps,
@@ -10,6 +9,10 @@ import {
 } from '@usecases/mesocycleClosing';
 
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const NOW = '2026-09-28T18:00:00.000Z';
 
@@ -52,9 +55,7 @@ function makeExercise(
   };
 }
 
-function makeLog(
-  overrides: Partial<SetLog> & Pick<SetLog, 'id' | 'sessionExerciseId'>,
-): SetLog {
+function makeLog(overrides: Partial<SetLog> & Pick<SetLog, 'id' | 'sessionExerciseId'>): SetLog {
   return {
     ...STAMPS,
     exerciseId: 'bench',
@@ -74,8 +75,13 @@ async function setUp(
     logs?: SetLog[];
   } = {},
 ): Promise<MesocycleClosingDeps> {
-  const store = createInMemoryMesocycleClosingStore(new InMemoryStore());
+  const store = createSqliteMesocycleClosingStore(db());
   await store.repos.mesocycleRepo.create(options.mesocycle ?? mesocycle);
+  await seedReferences(db(), {
+    sessions: options.sessions,
+    sessionExercises: options.exercises,
+    setLogs: options.logs,
+  });
   if (options.sessions?.length) {
     await store.repos.sessionRepo.createMany(options.sessions);
   }

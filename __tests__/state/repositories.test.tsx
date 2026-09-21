@@ -3,7 +3,11 @@ import type { PropsWithChildren } from 'react';
 import { Text } from 'react-native';
 
 import { RepositoriesProvider, useRepositories } from '@state/repositories';
-import { createInMemoryRepositories } from '@storage/repositories';
+import { createSqliteRepositories } from '@storage/sqlite/repositories';
+
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 // Task 115 · storage reaches a screen through context, so what this file states is the two ends
 // of that: what a component below a provider gets, and what one rendered without a provider does.
@@ -15,7 +19,7 @@ function MesocycleName() {
 
 describe('state/repositories', () => {
   test('a component below the provider reads the set it was given', () => {
-    const installed = createInMemoryRepositories();
+    const installed = createSqliteRepositories(db());
     function wrapper({ children }: PropsWithChildren) {
       return <RepositoriesProvider repositories={installed}>{children}</RepositoriesProvider>;
     }
