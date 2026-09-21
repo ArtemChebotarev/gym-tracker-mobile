@@ -1,10 +1,12 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExercisePerformance } from '@domain/exerciseOverview';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryStore } from '@storage/store';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { loadExerciseOverview } from '@usecases/exerciseOverview';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const BENCH = toExerciseId('bench-press');
 
@@ -25,7 +27,7 @@ function historyRepo(performances: ExercisePerformance[] = []): ExerciseHistoryR
 }
 
 async function deps(exercises: Exercise[], performances: ExercisePerformance[] = []) {
-  const exerciseRepo = new InMemoryExerciseRepository(new InMemoryStore());
+  const exerciseRepo = new SqliteExerciseRepository(db());
   for (const entry of exercises) {
     await exerciseRepo.createCustom(entry);
   }

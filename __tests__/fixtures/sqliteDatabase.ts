@@ -71,3 +71,36 @@ export async function emptyTestDatabase(): Promise<TestDatabase> {
   await database.db.run(sql`DELETE FROM exercise`);
   return database;
 }
+
+/**
+ * A database of its own for every test in the file, closed when the test ends — the counterpart
+ * of `withRepositories()` for a test that needs no React (a use case over its repositories, a
+ * repository on its own). Call once, at the top level of the file and before any `beforeEach`
+ * that seeds: hooks run in the order they were registered.
+ *
+ * Empty, so that a test counts what it seeded and nothing else — the catalog included, which is
+ * how these tests read on the in-memory engine they were written over. What a fixture refers to
+ * and the test doesn't care about goes in through `seedReferences` (`references.ts`): with
+ * foreign keys on (task 111), an id nothing carries is no longer writable.
+ */
+export function withTestDatabase(): () => SqliteDatabase {
+  let current: TestDatabase | null = null;
+
+  beforeEach(async () => {
+    current = await emptyTestDatabase();
+  });
+
+  afterEach(() => {
+    current?.close();
+    current = null;
+  });
+
+  return () => {
+    if (!current) {
+      throw new Error(
+        'No database for this test — call withTestDatabase() at the top level of the file, and use it from inside a test.',
+      );
+    }
+    return current.db;
+  };
+}

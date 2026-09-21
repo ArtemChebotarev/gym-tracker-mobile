@@ -4,12 +4,15 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { WorkoutStore } from '@repositories/workout';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { swapExercise } from '@usecases/exerciseSwap';
 import { STAMPS } from '../fixtures/stamps';
+import { seedReferences } from '../fixtures/references';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const NOW = '2026-09-18T10:00:00.000Z';
 const DUMBBELL = 'exercise-dumbbell-bench-press';
@@ -100,17 +103,23 @@ async function setUp(
     exercise: weekTwoExercise,
   },
 ) {
-  const workout = createInMemoryWorkoutStore(new InMemoryStore());
-  const mesocycleRepo = new InMemoryMesocycleRepository(new InMemoryStore());
+  const workout = createSqliteWorkoutStore(db());
+  const mesocycleRepo = new SqliteMesocycleRepository(db());
   await mesocycleRepo.create(mesocycle);
+  await seedReferences(db(), {
+    sessions: [weekOneSession, current.session],
+    sessionExercises: [weekOneExercise, current.exercise],
+    setLogs: [...weekOneLogs, ...(current.logs ?? [])],
+    exerciseIds: [DUMBBELL, BARBELL],
+  });
   await workout.repos.sessionRepo.createMany([weekOneSession, current.session]);
   await workout.repos.sessionExerciseRepo.createMany([weekOneExercise, current.exercise]);
   for (const log of [...weekOneLogs, ...(current.logs ?? [])]) {
     await workout.repos.setLogRepo.create(log);
   }
-  // The swapped-in exercises here aren't catalog entries, so the repo answers `null` and the
-  // equipment stays undefined — which is exactly the non-bodyweight path these tests exercise.
-  return { workout, mesocycleRepo, exerciseRepo: new InMemoryExerciseRepository(new InMemoryStore()) };
+  // The library carries these exercises with no equipment on them, so `equipment` stays undefined
+  // — which is exactly the non-bodyweight path these tests exercise.
+  return { workout, mesocycleRepo, exerciseRepo: new SqliteExerciseRepository(db()) };
 }
 
 const swapToBarbell = {
@@ -225,9 +234,13 @@ describe('swapExercise', () => {
       sessionId: 'session-past',
       exerciseId: BARBELL,
     });
-    await deps.workout.repos.sessionRepo.create(
-      makeSession(1, { id: 'session-past', mesoId: 'meso-past', status: 'completed' }),
-    );
+    const pastSession = makeSession(1, {
+      id: 'session-past',
+      mesoId: 'meso-past',
+      status: 'completed',
+    });
+    await seedReferences(db(), { sessions: [pastSession], sessionExercises: [pastBarbell] });
+    await deps.workout.repos.sessionRepo.create(pastSession);
     await deps.workout.repos.sessionExerciseRepo.create(pastBarbell);
     for (const log of logsFor(pastBarbell, [8, 8, 6], 80, '2026-09-01T10:00:00.000Z')) {
       await deps.workout.repos.setLogRepo.create(log);

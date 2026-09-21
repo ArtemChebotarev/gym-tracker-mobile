@@ -2,14 +2,20 @@ import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { editPlannedMesocycle } from '@usecases/mesocycleEditing';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const originalWeekPlan: WeekPlan = {
   days: [
-    { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }] },
+    {
+      dayNumber: 1,
+      name: '',
+      exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }],
+    },
     { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 4 }] },
   ],
 };
@@ -31,7 +37,7 @@ function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
 }
 
 function makeDeps() {
-  return { mesocycleRepo: new InMemoryMesocycleRepository(new InMemoryStore()) };
+  return { mesocycleRepo: new SqliteMesocycleRepository(db()) };
 }
 
 async function rejectionOf(promise: Promise<unknown>): Promise<unknown> {

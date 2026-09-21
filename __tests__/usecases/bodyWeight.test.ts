@@ -1,9 +1,11 @@
 import { isNotFoundError } from '@domain/errors';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemoryStore } from '@storage/store';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { setBodyWeight } from '@usecases/bodyWeight';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 const mesocycle: Mesocycle = {
   ...STAMPS,
@@ -19,7 +21,7 @@ const mesocycle: Mesocycle = {
 };
 
 async function setUp() {
-  const repo = new InMemoryMesocycleRepository(new InMemoryStore());
+  const repo = new SqliteMesocycleRepository(db());
   await repo.create(mesocycle);
   return repo;
 }

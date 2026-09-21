@@ -1,14 +1,16 @@
 import { toExerciseId } from '@domain/catalog';
 import type { Session, SessionExercise } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { InMemorySessionRepository } from '@storage/session';
-import { InMemorySessionTreeRepository } from '@storage/sessionTree';
-import { InMemoryStore } from '@storage/store';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
+import { SqliteSessionRepository } from '@storage/sqlite/session';
+import { SqliteSessionTreeRepository } from '@storage/sqlite/sessionTree';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { getTodayWorkout, type TodayWorkout, type TodayWorkoutDeps } from '@usecases/todayWorkout';
 import { STAMPS } from '../fixtures/stamps';
+import { withTestDatabase } from '../fixtures/sqliteDatabase';
+
+const db = withTestDatabase();
 
 function mesocycleOf(id: string, status: Mesocycle['status']): Mesocycle {
   return {
@@ -58,19 +60,19 @@ async function setUp({
   mesocycles = [mesocycleOf('active', 'active')],
   sessions = [],
 }: Setup = {}): Promise<TodayWorkoutDeps> {
-  const store = new InMemoryStore();
-  const mesocycleRepo = new InMemoryMesocycleRepository(store);
+  const store = db();
+  const mesocycleRepo = new SqliteMesocycleRepository(store);
   for (const mesocycle of mesocycles) {
     await mesocycleRepo.create(mesocycle);
   }
-  await new InMemoryExerciseRepository(store).createCustom({
+  await new SqliteExerciseRepository(store).createCustom({
     id: toExerciseId('bench'),
     name: 'Bench press',
     muscleGroup: 'chest',
     source: 'catalog',
     isHidden: false,
   });
-  const { repos } = createInMemoryWorkoutStore(store);
+  const { repos } = createSqliteWorkoutStore(store);
   await repos.sessionRepo.createMany(sessions);
   // An `awaiting_source` session has no exercises yet (02, "Session").
   await repos.sessionExerciseRepo.createMany(
@@ -80,8 +82,8 @@ async function setUp({
   );
   return {
     mesocycleRepo,
-    sessionTreeRepo: new InMemorySessionTreeRepository(store),
-    sessionRepo: new InMemorySessionRepository(store),
+    sessionTreeRepo: new SqliteSessionTreeRepository(store),
+    sessionRepo: new SqliteSessionRepository(store),
   };
 }
 
