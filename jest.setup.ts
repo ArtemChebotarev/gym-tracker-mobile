@@ -26,6 +26,17 @@
 import { cleanupAsync } from '@testing-library/react-native/pure';
 import { Animated } from 'react-native';
 
+import { setRepositories } from '@state/repositories';
+import { createInMemoryRepositories } from '@storage/repositories';
+
+// The storage the tests run on. The app runs on SQLite since task 111; the in-memory engine stays
+// as its test double — the same repositories, passing the same contract (task 109), with no
+// native module and no file on disk. Installing it here is the counterpart of what the bootstrap
+// does at startup (state/bootstrap.ts), and it happens once per test file: Jest gives each file
+// its own module registry, so each gets its own empty storage and no test file can see another's
+// rows. A test that needs it filled says what with — see `__tests__/fixtures/appStorage.ts`.
+setRepositories(createInMemoryRepositories());
+
 type ConsoleMethod = 'error' | 'warn';
 type Logged = { method: ConsoleMethod; message: string };
 

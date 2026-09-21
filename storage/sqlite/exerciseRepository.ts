@@ -76,14 +76,10 @@ export class SqliteExerciseRepository implements ExerciseRepository {
     return this.replace(stampUpdated(current, { ...current, isHidden: !current.isHidden }));
   }
 
-  // catalogVersion is not persisted here — it is tracked in Settings (02 · Domain Model,
-  // "catalogVersion хранится в настройках"). Ids the store already holds are left exactly as they
-  // are, catalog or custom: a re-seed must not undo an exercise the user hid, so the insert is
-  // the one that yields rather than the row that is already there.
-  async seedCatalog(
-    _catalogVersion: number,
-    catalog: readonly Incoming<Exercise>[],
-  ): Promise<void> {
+  // Ids the store already holds are left exactly as they are, catalog or custom: a re-seed must
+  // not undo an exercise the user hid, so the insert is the one that yields rather than the row
+  // that is already there.
+  async seedCatalog(catalog: readonly Incoming<Exercise>[]): Promise<void> {
     for (const exercise of catalog) {
       await runQuery(() =>
         this.db

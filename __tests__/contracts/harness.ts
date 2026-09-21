@@ -1,35 +1,12 @@
-import type { ExerciseRepository, MuscleGroupRepository } from '@repositories/catalog';
-import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
-import type { MesocycleRepository } from '@repositories/mesocycle';
-import type { MesocycleStartStore } from '@repositories/mesocycleStart';
-import type { SessionRepository } from '@repositories/session';
-import type { SessionExerciseRepository } from '@repositories/sessionExercise';
-import type { SessionTreeRepository } from '@repositories/sessionTree';
-import type { SetLogRepository } from '@repositories/setLogRepository';
-import type { SettingsRepository } from '@repositories/settings';
-import type { TemplateRepository } from '@repositories/template';
-import type { WorkoutStore } from '@repositories/workout';
+import type { RepositorySet } from '@repositories/repositorySet';
 
 // Task 109 · the seam between the repository contract suite and the implementation under test.
 //
-// Every repository of 07 · Persistence Layer Contract in one bundle, all of them over the same
-// underlying storage: mesocycles, sessions, session exercises and set logs reference each other
-// by id, and a cascade or a join only sees the other's rows if they share it.
+// The bundle itself is the app's own `RepositorySet` (repositories/repositorySet.ts), not a
+// shape this suite invented: the contract states what the app actually holds, so an
+// implementation that passes it can be handed straight to `state/repositories.ts`.
 
-export type RepositorySet = {
-  muscleGroupRepo: MuscleGroupRepository;
-  exerciseRepo: ExerciseRepository;
-  mesocycleRepo: MesocycleRepository;
-  sessionRepo: SessionRepository;
-  sessionExerciseRepo: SessionExerciseRepository;
-  setLogRepo: SetLogRepository;
-  settingsRepo: SettingsRepository;
-  templateRepo: TemplateRepository;
-  exerciseHistoryRepo: ExerciseHistoryRepository;
-  sessionTreeRepo: SessionTreeRepository;
-  workoutStore: WorkoutStore;
-  mesocycleStartStore: MesocycleStartStore;
-};
+export type { RepositorySet };
 
 /**
  * How a runner plugs its implementation into the contract: one call that produces empty

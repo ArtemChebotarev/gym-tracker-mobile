@@ -9,15 +9,12 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExerciseListQuery } from '@domain/catalogListing';
 import { listExerciseGroups } from '@usecases/exerciseLibrary';
 
-import { ensureExerciseCatalogSeeded, exerciseLibraryDeps } from './exerciseLibraryStore';
+import { exerciseLibraryDeps } from './exerciseLibraryStore';
 
 export function useExerciseLibrary(query: ExerciseListQuery, options: { enabled?: boolean } = {}) {
   return useQuery({
     enabled: options.enabled ?? true,
     queryKey: ['exerciseLibrary', query],
-    queryFn: async () => {
-      await ensureExerciseCatalogSeeded();
-      return listExerciseGroups(query, exerciseLibraryDeps);
-    },
+    queryFn: () => listExerciseGroups(query, exerciseLibraryDeps()),
   });
 }

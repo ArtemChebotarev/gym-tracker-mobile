@@ -15,7 +15,7 @@ export function useAddExercises() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: ExerciseAdditionInput) => addExercises(input, exerciseAdditionDeps),
+    mutationFn: (input: ExerciseAdditionInput) => addExercises(input, exerciseAdditionDeps()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

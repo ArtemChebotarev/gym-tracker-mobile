@@ -14,7 +14,7 @@ export function useEditPlannedMesocycleDraft(id: string) {
 
   return useMutation({
     mutationFn: (draft: MesoBuilderDraft) =>
-      editPlannedMesocycle(id, toScratchMesocycleDraftInput(draft), mesocycleEditingDeps),
+      editPlannedMesocycle(id, toScratchMesocycleDraftInput(draft), mesocycleEditingDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },

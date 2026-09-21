@@ -54,14 +54,14 @@ function wrapper({ children }: PropsWithChildren) {
 
 describe('useEditPlannedMesocycleDraft', () => {
   test('saves the draft over the planned mesocycle through the edit use case (072)', async () => {
-    await mesocycleEditingDeps.mesocycleRepo.create(PLANNED);
+    await mesocycleEditingDeps().mesocycleRepo.create(PLANNED);
     const { result } = renderHook(() => useEditPlannedMesocycleDraft(PLANNED.id), { wrapper });
 
     result.current.mutate(EDITED_DRAFT);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const saved = await mesocycleEditingDeps.mesocycleRepo.getById(PLANNED.id);
+    const saved = await mesocycleEditingDeps().mesocycleRepo.getById(PLANNED.id);
     expect(saved).toEqual({
       ...PLANNED,
       ...ANY_STAMPS,
@@ -85,7 +85,7 @@ describe('useEditPlannedMesocycleDraft', () => {
       startDate: '2026-09-02T08:00:00.000Z',
       weekPlan: undefined,
     };
-    await mesocycleEditingDeps.mesocycleRepo.create(active);
+    await mesocycleEditingDeps().mesocycleRepo.create(active);
     const { result } = renderHook(() => useEditPlannedMesocycleDraft(active.id), { wrapper });
 
     result.current.mutate(EDITED_DRAFT);

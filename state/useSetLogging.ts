@@ -18,7 +18,7 @@ export function useLogSet() {
 
   return useMutation({
     mutationFn: ({ ref, entry }: { ref: SetRowRef; entry: SetEntry }) =>
-      logSet(ref, entry, workoutStore),
+      logSet(ref, entry, workoutStore()),
     onSuccess: (result) => {
       if (result.kind === 'logged') {
         return invalidateWorkoutQueries(queryClient);
@@ -32,7 +32,7 @@ export function useUnlogSet() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (ref: SetRowRef) => unlogSet(ref, workoutStore),
+    mutationFn: (ref: SetRowRef) => unlogSet(ref, workoutStore()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

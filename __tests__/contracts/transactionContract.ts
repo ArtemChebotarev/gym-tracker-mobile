@@ -21,9 +21,7 @@ export function describeTransactionContract(harness: RepositoryHarness): void {
 
     beforeEach(async () => {
       await repositories().mesocycleRepo.create(makeMesocycle());
-      await repositories().exerciseRepo.seedCatalog(1, [
-        makeCatalogExercise('exercise-bench-press'),
-      ]);
+      await repositories().exerciseRepo.seedCatalog([makeCatalogExercise('exercise-bench-press')]);
     });
 
     test('writes made inside a transaction are visible through repos once it resolves', async () => {

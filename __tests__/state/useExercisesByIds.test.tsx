@@ -31,7 +31,7 @@ describe('useExercisesByIds', () => {
   test('resolves the requested ids into a lookup keyed by id', async () => {
     const created = await createCustomExercise(
       { name: 'Hook Test By Id', muscleGroup: 'chest' },
-      exerciseLibraryDeps,
+      exerciseLibraryDeps(),
     );
 
     const { result } = renderHook(() => useExercisesByIds([created.id]), { wrapper });

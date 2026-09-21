@@ -2,12 +2,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
-import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
+import { seedMockMesocycles } from '../fixtures/appStorage';
+import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { mesocycleListDeps } from '@state/mesocycleStore';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesocycles } from '@state/useMesocycles';
 
 let client: QueryClient;
+
+beforeAll(async () => {
+  await seedMockMesocycles();
+});
 
 beforeEach(() => {
   client = new QueryClient({
@@ -25,7 +30,7 @@ function wrapper({ children }: PropsWithChildren) {
 }
 
 describe('useMesocycles / useDeletePlannedMesocycle', () => {
-  test('seeds the three stub mesocycles into the app-wide store', async () => {
+  test('lists what storage holds', async () => {
     const { result } = renderHook(() => useMesocycles(), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -35,7 +40,7 @@ describe('useMesocycles / useDeletePlannedMesocycle', () => {
     );
   });
 
-  test('deleting the planned mock removes it and refreshes the list without re-seeding it', async () => {
+  test('deleting the planned mesocycle removes it and refreshes the list', async () => {
     const { result } = renderHook(
       () => ({ list: useMesocycles(), remove: useDeletePlannedMesocycle() }),
       { wrapper },
@@ -51,7 +56,7 @@ describe('useMesocycles / useDeletePlannedMesocycle', () => {
       ),
     );
     await expect(
-      mesocycleListDeps.mesocycleRepo.getById(MOCK_MESOCYCLE_IDS.planned),
+      mesocycleListDeps().mesocycleRepo.getById(MOCK_MESOCYCLE_IDS.planned),
     ).resolves.toBeNull();
   });
 });

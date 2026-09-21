@@ -84,8 +84,7 @@ CREATE INDEX `set_log_session_exercise` ON `set_log` (`session_exercise_id`,`set
 CREATE TABLE `settings` (
 	`id` integer PRIMARY KEY DEFAULT 1 NOT NULL,
 	`default_progression_settings` text NOT NULL,
-	`weight_unit` text NOT NULL,
-	`catalog_version` integer NOT NULL
+	`weight_unit` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `meso_template` (

@@ -12,7 +12,7 @@ export function useDeletePlannedMesocycle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => deletePlannedMesocycle(id, mesocycleListDeps),
+    mutationFn: (id: string) => deletePlannedMesocycle(id, mesocycleListDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },

@@ -599,13 +599,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "catalog_version": {
-          "name": "catalog_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
         }
       },
       "indexes": {},

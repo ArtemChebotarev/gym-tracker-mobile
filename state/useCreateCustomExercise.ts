@@ -14,7 +14,7 @@ export function useCreateCustomExercise() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateCustomExerciseInput) => createCustomExercise(input, exerciseLibraryDeps),
+    mutationFn: (input: CreateCustomExerciseInput) => createCustomExercise(input, exerciseLibraryDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });
     },

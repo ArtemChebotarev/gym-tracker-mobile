@@ -23,19 +23,19 @@ export type ExerciseCommand =
 function runExerciseCommand(command: ExerciseCommand, ref: SessionExerciseRef): Promise<unknown> {
   switch (command) {
     case 'addSet':
-      return addSet(ref, workoutStore);
+      return addSet(ref, workoutStore());
     case 'removeLastSet':
-      return removeLastSet(ref, workoutStore);
+      return removeLastSet(ref, workoutStore());
     case 'moveUp':
-      return moveExercise(ref, 'up', workoutStore);
+      return moveExercise(ref, 'up', workoutStore());
     case 'moveDown':
-      return moveExercise(ref, 'down', workoutStore);
+      return moveExercise(ref, 'down', workoutStore());
     case 'skip':
-      return skipExercise(ref, workoutStore);
+      return skipExercise(ref, workoutStore());
     case 'unskip':
-      return unskipExercise(ref, workoutStore);
+      return unskipExercise(ref, workoutStore());
     case 'delete':
-      return removeExercise(ref, workoutStore);
+      return removeExercise(ref, workoutStore());
   }
 }
 
@@ -57,7 +57,7 @@ export function useSwapExercise() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: ExerciseSwapInput) => swapExercise(input, exerciseSwapDeps),
+    mutationFn: (input: ExerciseSwapInput) => swapExercise(input, exerciseSwapDeps()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

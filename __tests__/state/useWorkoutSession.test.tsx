@@ -4,15 +4,12 @@ import type { PropsWithChildren } from 'react';
 
 import { toExerciseId } from '@domain/catalog';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { appStore } from '@state/appStore';
+import { repositories } from '@state/repositories';
 import {
   useWorkoutSession,
   useWorkoutSlot,
   WORKOUT_SESSION_QUERY_KEY,
 } from '@state/useWorkoutSession';
-import { InMemoryExerciseRepository } from '@storage/exerciseRepository';
-import { InMemoryMesocycleRepository } from '@storage/mesocycle';
-import { createInMemoryWorkoutStore } from '@storage/workoutStore';
 import { logSet } from '@usecases/setLogging';
 
 jest.mock('expo-crypto', () => {
@@ -23,7 +20,7 @@ jest.mock('expo-crypto', () => {
 let client: QueryClient;
 
 beforeAll(async () => {
-  await new InMemoryMesocycleRepository(appStore).create({
+  await repositories().mesocycleRepo.create({
     id: 'hook-meso',
     name: 'Hook meso',
     lengthWeeks: 4,
@@ -33,14 +30,14 @@ beforeAll(async () => {
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
   });
-  await new InMemoryExerciseRepository(appStore).createCustom({
+  await repositories().exerciseRepo.createCustom({
     id: toExerciseId('hook-exercise'),
     name: 'Hook press',
     muscleGroup: 'chest',
     source: 'custom',
     isHidden: false,
   });
-  const { repos } = createInMemoryWorkoutStore(appStore);
+  const { repos } = repositories().workoutStore;
   await repos.sessionRepo.create({
     id: 'hook-session',
     mesoId: 'hook-meso',
@@ -95,7 +92,7 @@ describe('useWorkoutSession / useWorkoutSlot', () => {
     await logSet(
       { sessionId: 'hook-session', sessionExerciseId: 'hook-session-exercise', setNumber: 1 },
       { weight: 40, reps: 10 },
-      createInMemoryWorkoutStore(appStore),
+      repositories().workoutStore,
     );
     await act(() => client.invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }));
 

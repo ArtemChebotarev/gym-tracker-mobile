@@ -65,7 +65,7 @@ afterEach(() => {
 
 // Mirrors app/(tabs)/mesocycles.tsx's Edit: load the mesocycle into the draft, then open the route.
 async function openEditorOn(mesocycle: Mesocycle) {
-  await mesocycleEditingDeps.mesocycleRepo.create(mesocycle);
+  await mesocycleEditingDeps().mesocycleRepo.create(mesocycle);
   mockId = mesocycle.id;
   useDraftStore.getState().setMesoBuilder(toMesoBuilderDraft(mesocycle));
   render(
@@ -101,7 +101,7 @@ describe('EditMesocycleRoute', () => {
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
 
-    await expect(mesocycleEditingDeps.mesocycleRepo.getById(planned.id)).resolves.toEqual({
+    await expect(mesocycleEditingDeps().mesocycleRepo.getById(planned.id)).resolves.toEqual({
       ...planned,
       ...ANY_STAMPS,
       name: 'Renamed Block',
@@ -113,7 +113,7 @@ describe('EditMesocycleRoute', () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     const planned = makePlanned('edit-route-started');
     await openEditorOn(planned);
-    await mesocycleEditingDeps.mesocycleRepo.update({
+    await mesocycleEditingDeps().mesocycleRepo.update({
       ...planned,
       status: 'active',
       startDate: '2026-09-02T08:00:00.000Z',

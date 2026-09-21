@@ -5,8 +5,8 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesoEditorRoute from '@app/meso-editor/new';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
-import { InMemorySessionRepository } from '@storage/session';
-import { appStore } from '@state/appStore';
+import { seedExerciseCatalog } from '../fixtures/appStorage';
+import { repositories } from '@state/repositories';
 import {
   DEFAULT_MESO_BUILDER_DRAFT,
   useDraftStore,
@@ -43,6 +43,10 @@ const FILLED_DRAFT: MesoBuilderDraft = {
 };
 
 let client: QueryClient;
+
+beforeAll(async () => {
+  await seedExerciseCatalog();
+});
 
 beforeEach(() => {
   // mutations.gcTime: 0 too — a mutation's default 5-minute GC timer otherwise keeps jest alive.
@@ -93,13 +97,11 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
     await flushQueryNotifications();
 
-    const saved = (await mesocycleCreationDeps.mesocycleRepo.getAll()).find(
+    const saved = (await mesocycleCreationDeps().mesocycleRepo.getAll()).find(
       (mesocycle) => mesocycle.name === 'Route Test Block',
     );
     expect(saved?.status).toBe('planned');
-    await expect(new InMemorySessionRepository(appStore).listByMesoId(saved!.id)).resolves.toEqual(
-      [],
-    );
+    await expect(repositories().sessionRepo.listByMesoId(saved!.id)).resolves.toEqual([]);
     expect(useDraftStore.getState().mesoBuilder).toEqual(DEFAULT_MESO_BUILDER_DRAFT);
   });
 
@@ -117,7 +119,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
   test('a failed save shows a try-again alert and keeps the draft', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     jest
-      .spyOn(mesocycleCreationDeps.mesocycleRepo, 'create')
+      .spyOn(mesocycleCreationDeps().mesocycleRepo, 'create')
       .mockRejectedValueOnce(new Error('storage down'));
     await renderAtReviewStep();
 

@@ -14,7 +14,7 @@ export function useStartMesocycle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => startMesocycle(id, mesocycleStartDeps),
+    mutationFn: (id: string) => startMesocycle(id, mesocycleStartDeps()),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ['mesocycles'] }),

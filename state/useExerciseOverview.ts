@@ -7,14 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExerciseId } from '@domain/catalog';
 import { loadExerciseOverview } from '@usecases/exerciseOverview';
 
-import { ensureExerciseCatalogSeeded, exerciseOverviewDeps } from './exerciseLibraryStore';
+import { exerciseOverviewDeps } from './exerciseLibraryStore';
 
 export function useExerciseOverview(exerciseId: ExerciseId) {
   return useQuery({
     queryKey: ['exerciseOverview', exerciseId],
-    queryFn: async () => {
-      await ensureExerciseCatalogSeeded();
-      return loadExerciseOverview(exerciseId, exerciseOverviewDeps);
-    },
+    queryFn: () => loadExerciseOverview(exerciseId, exerciseOverviewDeps()),
   });
 }

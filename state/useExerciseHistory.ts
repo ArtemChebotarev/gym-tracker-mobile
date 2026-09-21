@@ -11,15 +11,12 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExerciseId } from '@domain/catalog';
 import { loadExerciseHistory } from '@usecases/exerciseHistory';
 
-import { ensureExerciseCatalogSeeded, exerciseHistoryDeps } from './exerciseLibraryStore';
+import { exerciseHistoryDeps } from './exerciseLibraryStore';
 
 export function useExerciseHistory(exerciseId: ExerciseId, options: { enabled?: boolean } = {}) {
   return useQuery({
     enabled: options.enabled ?? true,
     queryKey: ['exerciseHistory', exerciseId],
-    queryFn: async () => {
-      await ensureExerciseCatalogSeeded();
-      return loadExerciseHistory(exerciseId, exerciseHistoryDeps);
-    },
+    queryFn: () => loadExerciseHistory(exerciseId, exerciseHistoryDeps()),
   });
 }

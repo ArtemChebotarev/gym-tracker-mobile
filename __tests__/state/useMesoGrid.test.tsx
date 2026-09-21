@@ -2,10 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
-import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
+import { seedMockMesocycles } from '../fixtures/appStorage';
+import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { useMesoGrid } from '@state/useMesoGrid';
 
 let client: QueryClient;
+
+beforeAll(async () => {
+  await seedMockMesocycles();
+});
 
 beforeEach(() => {
   client = new QueryClient({
@@ -23,7 +28,7 @@ function wrapper({ children }: PropsWithChildren) {
 }
 
 describe('useMesoGrid', () => {
-  test('reads the grid of a seeded mesocycle from the app-wide store', async () => {
+  test('reads the grid of a mesocycle in storage', async () => {
     const { result } = renderHook(() => useMesoGrid(MOCK_MESOCYCLE_IDS.planned), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

@@ -1,3 +1,5 @@
+import type { RepositorySet } from '@repositories/repositorySet';
+
 import { MuscleGroupCatalogRepository } from '../muscleGroupRepository';
 import type { SqliteDatabase } from './db';
 import { SqliteExerciseHistoryRepository } from './exerciseHistory';
@@ -27,7 +29,7 @@ import { createSqliteWorkoutStore } from './workoutStore';
  * a fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to
  * differ about.
  */
-export function createSqliteRepositories(db: SqliteDatabase) {
+export function createSqliteRepositories(db: SqliteDatabase): RepositorySet {
   return {
     muscleGroupRepo: new MuscleGroupCatalogRepository(),
     exerciseRepo: new SqliteExerciseRepository(db),

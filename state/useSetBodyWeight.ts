@@ -14,7 +14,7 @@ export function useSetBodyWeight() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: BodyWeightInput) => setBodyWeight(input, bodyWeightDeps),
+    mutationFn: (input: BodyWeightInput) => setBodyWeight(input, bodyWeightDeps()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

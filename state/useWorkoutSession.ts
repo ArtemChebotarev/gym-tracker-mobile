@@ -10,8 +10,6 @@ import type { WorkoutPick, WorkoutSlot } from '@domain/workoutView';
 import { getTodayWorkout, type TodayWorkout } from '@usecases/todayWorkout';
 import { getWorkoutSession, getWorkoutSlot } from '@usecases/workoutSession';
 
-import { ensureExerciseCatalogSeeded } from './exerciseLibraryStore';
-import { ensureMesocyclesSeeded } from './mesocycleStore';
 import { MESO_GRID_QUERY_KEY } from './useMesoGrid';
 import { todayWorkoutDeps, workoutSessionDeps } from './workoutStore';
 
@@ -30,18 +28,11 @@ export function invalidateWorkoutQueries(queryClient: QueryClient): Promise<unkn
   ]);
 }
 
-async function ensureSeeded(): Promise<void> {
-  await Promise.all([ensureExerciseCatalogSeeded(), ensureMesocyclesSeeded()]);
-}
-
 /** Session `sessionId` — live, read-only, or preview for an `awaiting_source` one. */
 export function useWorkoutSession(sessionId: string) {
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'session', sessionId],
-    queryFn: async () => {
-      await ensureSeeded();
-      return getWorkoutSession(sessionId, workoutSessionDeps);
-    },
+    queryFn: () => getWorkoutSession(sessionId, workoutSessionDeps()),
   });
 }
 
@@ -52,10 +43,7 @@ export function useWorkoutSession(sessionId: string) {
 export function useWorkoutSlot(slot: WorkoutSlot) {
   return useQuery({
     queryKey: [...WORKOUT_SESSION_QUERY_KEY, 'slot', slot.mesoId, slot.weekNumber, slot.dayNumber],
-    queryFn: async () => {
-      await ensureSeeded();
-      return getWorkoutSlot(slot, workoutSessionDeps);
-    },
+    queryFn: () => getWorkoutSlot(slot, workoutSessionDeps()),
   });
 }
 
@@ -93,14 +81,13 @@ export function useTodayWorkout(pick?: WorkoutPick) {
         ? previous
         : undefined,
     queryFn: async (): Promise<TodayWorkout> => {
-      await ensureSeeded();
       if (pick === undefined) {
-        return getTodayWorkout(todayWorkoutDeps);
+        return getTodayWorkout(todayWorkoutDeps());
       }
       const model =
         'sessionId' in pick
-          ? await getWorkoutSession(pick.sessionId, workoutSessionDeps)
-          : await getWorkoutSlot(pick.slot, workoutSessionDeps);
+          ? await getWorkoutSession(pick.sessionId, workoutSessionDeps())
+          : await getWorkoutSlot(pick.slot, workoutSessionDeps());
       return { kind: 'session', model };
     },
   });

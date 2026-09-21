@@ -16,7 +16,7 @@ export function useSkipWorkout() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: string) => skipWorkout(sessionId, workoutSkipDeps),
+    mutationFn: (sessionId: string) => skipWorkout(sessionId, workoutSkipDeps()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

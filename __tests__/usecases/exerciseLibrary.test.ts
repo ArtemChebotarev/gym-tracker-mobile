@@ -146,7 +146,7 @@ describe('updateCustomExercise', () => {
 
   test('rejects editing a catalog exercise', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise({ source: 'catalog' })]);
+    await deps.exerciseRepo.seedCatalog([makeExercise({ source: 'catalog' })]);
 
     const result = updateCustomExercise(
       { id: toExerciseId('exercise-bench-press'), name: 'New Name', muscleGroup: 'chest' },
@@ -171,7 +171,7 @@ describe('updateCustomExercise', () => {
 describe('hideExercise', () => {
   test('sets isHidden to true on a catalog exercise', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise({ source: 'catalog' })]);
+    await deps.exerciseRepo.seedCatalog([makeExercise({ source: 'catalog' })]);
 
     const hidden = await hideExercise(toExerciseId('exercise-bench-press'), deps);
 
@@ -180,7 +180,7 @@ describe('hideExercise', () => {
 
   test('is idempotent for an already-hidden exercise', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise({ source: 'catalog', isHidden: true })]);
+    await deps.exerciseRepo.seedCatalog([makeExercise({ source: 'catalog', isHidden: true })]);
 
     const result = await hideExercise(toExerciseId('exercise-bench-press'), deps);
 
@@ -197,7 +197,7 @@ describe('hideExercise', () => {
 describe('listExerciseGroups', () => {
   test('never includes a hidden exercise, under any filter combination', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise({ isHidden: true })]);
+    await deps.exerciseRepo.seedCatalog([makeExercise({ isHidden: true })]);
 
     await expect(listExerciseGroups({}, deps)).resolves.toEqual([]);
     await expect(listExerciseGroups({ search: 'bench' }, deps)).resolves.toEqual([]);
@@ -207,7 +207,7 @@ describe('listExerciseGroups', () => {
 
   test('omits groups left with no matching exercises', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [
+    await deps.exerciseRepo.seedCatalog([
       makeExercise({ id: toExerciseId('e-chest'), muscleGroup: 'chest' }),
       makeExercise({ id: toExerciseId('e-back'), muscleGroup: 'back', isHidden: true }),
     ]);
@@ -219,7 +219,7 @@ describe('listExerciseGroups', () => {
 
   test('search is case-insensitive', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise({ name: 'Incline Dumbbell Press' })]);
+    await deps.exerciseRepo.seedCatalog([makeExercise({ name: 'Incline Dumbbell Press' })]);
 
     const groups = await listExerciseGroups({ search: 'DUMBBELL' }, deps);
 
@@ -228,7 +228,7 @@ describe('listExerciseGroups', () => {
 
   test('performedOnly keeps only exercises with a logged set', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [
+    await deps.exerciseRepo.seedCatalog([
       makeExercise({ id: toExerciseId('e-performed') }),
       makeExercise({ id: toExerciseId('e-never'), name: 'Never Done' }),
     ]);
@@ -241,7 +241,7 @@ describe('listExerciseGroups', () => {
 
   test('attaches each exercise\'s last set log for the row caption', async () => {
     const deps = makeDeps();
-    await deps.exerciseRepo.seedCatalog(1, [makeExercise()]);
+    await deps.exerciseRepo.seedCatalog([makeExercise()]);
     const older = makeSetLog({ id: 'log-1', completedAt: '2026-08-01T08:00:00.000Z' });
     const newer = makeSetLog({ id: 'log-2', completedAt: '2026-08-26T08:00:00.000Z' });
     await deps.setLogRepo.create(older);
@@ -258,7 +258,7 @@ describe('listExercisesByIds', () => {
     const deps = makeDeps();
     const benchPress = makeExercise({ id: toExerciseId('e-bench-press') });
     const legPress = makeExercise({ id: toExerciseId('e-leg-press'), name: 'Leg Press', muscleGroup: 'quads' });
-    await deps.exerciseRepo.seedCatalog(1, [benchPress, legPress]);
+    await deps.exerciseRepo.seedCatalog([benchPress, legPress]);
 
     const found = await listExercisesByIds(
       [legPress.id, toExerciseId('e-missing'), benchPress.id],

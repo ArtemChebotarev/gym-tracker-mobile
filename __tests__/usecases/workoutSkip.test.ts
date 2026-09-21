@@ -84,7 +84,7 @@ async function setUp(
     source: 'catalog',
     isHidden: false,
   };
-  await exerciseRepo.seedCatalog(1, [catalogBench]);
+  await exerciseRepo.seedCatalog([catalogBench]);
   await workout.repos.sessionRepo.create(options.session ?? weekOne);
   await workout.repos.sessionExerciseRepo.createMany(options.exercises ?? [bench]);
   for (const setLog of options.logs ?? []) {

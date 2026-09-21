@@ -1,5 +1,5 @@
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
-import { buildMockMesocycles } from '@domain/mesocycleMocks';
+import { buildMockMesocycles } from '../fixtures/mesocycleMocks';
 import {
   validateMesocycleDaysPerWeek,
   validateMesocycleLengthWeeks,
@@ -7,6 +7,10 @@ import {
   validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
 import { STAMPS } from '../fixtures/stamps';
+
+// The mock mesocycles are a fixture rather than app code (task 112), but they are one several
+// screen tests are written against, so they still have to be mesocycles the domain would accept —
+// which is what this checks, and why it sits with the domain's own tests.
 
 const NOW = new Date('2026-09-16T12:00:00.000Z');
 

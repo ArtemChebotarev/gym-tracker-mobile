@@ -5,8 +5,12 @@ import type { ProgressionSettings } from '@domain/mesocycle';
  * document, not a collection.
  *
  * See 07 · Persistence Layer Contract ("SettingsRepository": "Дефолтные
- * progressionSettings, единицы измерения, версия схемы") and 02 · Domain
- * Model ("catalogVersion хранится в настройках").
+ * progressionSettings, единицы измерения, версия схемы").
+ *
+ * Neither version lives here. The schema's is kept by the migration runner, in the journal of
+ * migrations a database has had applied (storage/sqlite/migrations.ts, task 069); the exercise
+ * catalog's is the same journal, because the catalog ships as a migration too (067(2)). A number
+ * maintained by hand beside them could only ever disagree with what actually ran.
  */
 export type Settings = {
   /**
@@ -22,14 +26,6 @@ export type Settings = {
    * never changes how a weight is stored, only how it is shown.
    */
   weightUnit: 'kg' | 'lb';
-  /**
-   * Version of the seeded exercise catalog currently applied.
-   *
-   * The *schema* version is deliberately not here. It is kept by the migration runner, in the
-   * journal of migrations a database has had applied (storage/sqlite/migrations.ts, task 069) —
-   * a second number maintained by hand could only ever disagree with what actually ran.
-   */
-  catalogVersion: number;
 };
 
 /**
