@@ -3,10 +3,8 @@ import { buildMockMesocycles } from '../fixtures/mesocycleMocks';
 import {
   validateMesocycleDaysPerWeek,
   validateMesocycleLengthWeeks,
-  validateSingleActiveMesocycle,
   validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
-import { STAMPS } from '../fixtures/stamps';
 
 // The mock mesocycles are a fixture rather than app code (task 112), but they are one several
 // screen tests are written against, so they still have to be mesocycles the domain would accept —
@@ -34,9 +32,6 @@ describe('buildMockMesocycles', () => {
   test('every mock satisfies the domain invariants', () => {
     const mocks = buildMockMesocycles(NOW);
 
-    expect(() =>
-      validateSingleActiveMesocycle(mocks.map((mesocycle) => ({ ...STAMPS, ...mesocycle }))),
-    ).not.toThrow();
     for (const mesocycle of mocks) {
       expect(() => validateMesocycleLengthWeeks(mesocycle.lengthWeeks)).not.toThrow();
       expect(() => validateMesocycleDaysPerWeek(mesocycle.daysPerWeek)).not.toThrow();

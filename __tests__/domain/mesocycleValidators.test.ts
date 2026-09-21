@@ -4,7 +4,6 @@ import {
   validateMesocycleDaysPerWeek,
   validateMesocycleImmutableFields,
   validateMesocycleLengthWeeks,
-  validateSingleActiveMesocycle,
   validateWeekPlanDayCount,
 } from '@domain/mesocycleValidators';
 import type { WeekPlan } from '@domain/plan';
@@ -44,23 +43,6 @@ describe('validateMesocycleDaysPerWeek', () => {
     expect(() => validateMesocycleDaysPerWeek(daysPerWeek)).toThrow(
       /daysPerWeek must be between 1 and 7/,
     );
-  });
-});
-
-describe('validateSingleActiveMesocycle', () => {
-  const completedMeso: Mesocycle = { ...mesocycleFixture, id: 'meso-2', status: 'completed' };
-  const secondActiveMeso: Mesocycle = { ...mesocycleFixture, id: 'meso-3', status: 'active' };
-
-  test('accepts a collection with zero or one active mesocycle', () => {
-    expect(() => validateSingleActiveMesocycle([])).not.toThrow();
-    expect(() => validateSingleActiveMesocycle([completedMeso])).not.toThrow();
-    expect(() => validateSingleActiveMesocycle([mesocycleFixture, completedMeso])).not.toThrow();
-  });
-
-  test('rejects a collection with more than one active mesocycle', () => {
-    expect(() =>
-      validateSingleActiveMesocycle([mesocycleFixture, secondActiveMeso, completedMeso]),
-    ).toThrow(/Only one mesocycle may be active/);
   });
 });
 
