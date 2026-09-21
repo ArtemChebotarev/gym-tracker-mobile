@@ -1,9 +1,12 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
+import { FINISH_MESOCYCLE_CONFIRMATION } from '@components/TodayScreenLogic';
 import type { TodayWorkout } from '@usecases/todayWorkout';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 
 // The pick itself (every branch) is covered by __tests__/usecases/todayWorkout.test.ts; this only
 // checks how the tab renders the two outcomes that have no session, with the pick mocked so each
@@ -27,11 +30,28 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 874 },
 };
 
-withRepositories();
+let alertSpy: jest.SpyInstance;
+
+const repositories = withRepositories();
 beforeEach(() => {
   mockNavigate.mockClear();
   mockPush.mockClear();
+  alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
 });
+
+afterEach(() => {
+  alertSpy.mockRestore();
+});
+
+/** Presses the named button of the most recent Alert.alert call. */
+function pressAlertButton(text: string) {
+  const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[] | undefined;
+  const button = buttons?.find((candidate) => candidate.text === text);
+  if (!button) {
+    throw new Error(`No "${text}" button in the last alert`);
+  }
+  act(() => button.onPress?.());
+}
 
 function renderToday() {
   renderWithRepositories(
@@ -52,13 +72,32 @@ describe('Today tab — no session to show', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
-  test('once the active mesocycle has nothing left, leads to the mesocycles', async () => {
-    mockToday = { kind: 'allDone', mesoId: 'active' };
+  test('DoD: once the active mesocycle has nothing left, it is finished from here (052)', async () => {
+    await seedWorkoutFixture(repositories());
+    mockToday = { kind: 'allDone', mesoId: WORKOUT_FIXTURE_IDS.mesocycle };
+    // Nothing is left to train, which is what `allDone` means — the fixture's two sessions final.
+    const { repos } = repositories().workoutStore;
+    for (const id of [WORKOUT_FIXTURE_IDS.completed, WORKOUT_FIXTURE_IDS.live]) {
+      const session = await repos.sessionRepo.getById(id);
+      await repos.sessionRepo.update({ ...session!, status: 'completed' });
+    }
     renderToday();
 
     expect(await screen.findByText('Block complete')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
 
-    expect(mockNavigate).toHaveBeenCalledWith('/mesocycles');
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Finish mesocycle?',
+      FINISH_MESOCYCLE_CONFIRMATION,
+      expect.any(Array),
+    );
+    pressAlertButton('Finish');
+
+    await waitFor(async () => {
+      expect(
+        (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.status,
+      ).toBe('completed');
+    });
+    expect(await repositories().mesocycleRepo.getActive()).toBeNull();
   });
 });

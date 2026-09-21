@@ -3,7 +3,7 @@
 // preview ones included, opens here with the tab bar rather than as a separate page. The current
 // session (099, `useTodayWorkout`) is the one in progress, else the next day of the active
 // mesocycle — a preview if that day isn't programmed yet. With no active mesocycle the tab invites
-// creating one (08, "Сегодня"); once the active one has nothing left, it leads to the mesocycles.
+// creating one (08, "Сегодня"); once the active one has nothing left, it offers to finish it (052).
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
@@ -29,15 +29,26 @@
 // exercise (`useSwapExercise`, 047). Delete, Skip and — with logged sets — Replace are confirmed in
 // the menu first.
 //
-// Rename mesocycle (087), Stop mesocycle (052), and exercise history aren't built yet, so until
-// then they explain that they're not available yet rather than doing nothing.
+// Stop mesocycle (052) opens `StopMesocycleSheet`, which stops the block once `END MESO` has been
+// typed into it (`useStopMesocycle`); the tab then re-reads and, with no active mesocycle left,
+// invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
+// action of the `Block complete` EmptyState, so leaving that screen isn't a dead end — closes the
+// block through `useFinishMesocycle` after a plain confirmation: it throws nothing away.
+//
+// Rename mesocycle (087) isn't built yet, so until then it explains that it's not available yet
+// rather than doing nothing.
 
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BodyWeightSheet } from '@components/BodyWeightSheet';
-import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
+import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
+import {
+  FINISH_MESOCYCLE_CONFIRMATION,
+  formatInProgressConflict,
+  todayEmptyCopy,
+} from '@components/TodayScreenLogic';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
@@ -54,6 +65,7 @@ import {
 import { useAddExercises } from '@state/useAddExercises';
 import { useExerciseCommand, useSwapExercise } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
+import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
@@ -74,7 +86,12 @@ export default function TodayScreen() {
   const exerciseCommand = useExerciseCommand();
   const swapExercise = useSwapExercise();
   const setBodyWeight = useSetBodyWeight();
+  const finishMesocycle = useFinishMesocycle();
+  const stopMesocycle = useStopMesocycle();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
+  // The block the `Block complete` EmptyState would finish — there's no session model to read it
+  // from, since the tab has no session left to show.
+  const allDoneMesoId = query.data?.kind === 'allDone' ? query.data.mesoId : undefined;
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,6 +101,10 @@ export default function TodayScreen() {
   const [menuExercise, setMenuExercise] = useState<WorkoutExercise | undefined>(undefined);
   const [isExerciseMenuOpen, setIsExerciseMenuOpen] = useState(false);
   const [isReplaceOpen, setIsReplaceOpen] = useState(false);
+  // The Stop mesocycle sheet and the phrase typed into it (052) — cleared on every opening, so a
+  // half-typed `END MES` from a cancelled attempt never sits there waiting to be completed.
+  const [isStopOpen, setIsStopOpen] = useState(false);
+  const [stopText, setStopText] = useState('');
   // The body weight sheet (105) opens from the Weight cell of a bodyweight exercise, never by
   // itself: that cell stays on screen, so closing the sheet costs nothing and is never a dead end.
   const [bodyWeightText, setBodyWeightText] = useState('');
@@ -104,6 +125,20 @@ export default function TodayScreen() {
     if (sessionId === undefined && currentSessionId !== undefined) {
       router.setParams({ sessionId: currentSessionId });
     }
+  }
+
+  /** Finish mesocycle (052), from the last workout or the `Block complete` EmptyState. */
+  function confirmFinishMesocycle(mesoId: string) {
+    Alert.alert('Finish mesocycle?', FINISH_MESOCYCLE_CONFIRMATION, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Finish',
+        onPress: () =>
+          finishMesocycle.mutate(mesoId, {
+            onError: () => Alert.alert("Couldn't finish the mesocycle", 'Please try again.'),
+          }),
+      },
+    ]);
   }
 
   function showSaveError() {
@@ -206,12 +241,23 @@ export default function TodayScreen() {
           });
         }}
         onOpenNext={(nextSessionId) => router.navigate(workoutHref(nextSessionId))}
+        onFinishMesocycle={() => {
+          if (model !== undefined) {
+            confirmFinishMesocycle(model.mesoId);
+          }
+        }}
+        isFinishingMesocycle={finishMesocycle.isPending}
         fallback={{
           ...todayEmptyCopy(emptyReason),
-          onAction: () =>
-            emptyReason === 'noActiveMesocycle'
-              ? router.push('/meso-editor/new')
-              : router.navigate('/mesocycles'),
+          onAction: () => {
+            if (emptyReason === 'noActiveMesocycle') {
+              router.push('/meso-editor/new');
+            } else if (allDoneMesoId !== undefined) {
+              confirmFinishMesocycle(allDoneMesoId);
+            } else {
+              router.navigate('/mesocycles');
+            }
+          },
         }}
       />
       <MesoOverviewSheet
@@ -246,7 +292,27 @@ export default function TodayScreen() {
             router.push(mesocycleDetailHref(model.mesoId));
           }
         }}
-        onStopMesocycle={() => showNotAvailable('Stopping a mesocycle')}
+        onStopMesocycle={() => {
+          setStopText('');
+          setIsStopOpen(true);
+        }}
+      />
+      <StopMesocycleSheet
+        visible={isStopOpen}
+        onClose={() => setIsStopOpen(false)}
+        mesocycleName={model?.header.mesocycleName ?? ''}
+        value={stopText}
+        onChangeValue={setStopText}
+        onConfirm={() => {
+          if (model === undefined) {
+            return;
+          }
+          setIsStopOpen(false);
+          stopMesocycle.mutate(model.mesoId, {
+            onError: () => Alert.alert("Couldn't stop the mesocycle", 'Please try again.'),
+          });
+        }}
+        isStopping={stopMesocycle.isPending}
       />
       <WorkoutExercisePickerSheet
         mode="multi"

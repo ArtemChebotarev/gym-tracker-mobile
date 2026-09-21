@@ -6,7 +6,11 @@ import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSetLogRepository } from './setLogRepository';
 import { runInTransaction } from './transaction';
 
-function workoutRepositoriesOver(db: SqliteDatabase): WorkoutRepositories {
+/**
+ * The workout repositories over `db` — exported for `createSqliteMesocycleClosingStore`, which is
+ * the same set plus the mesocycle.
+ */
+export function workoutRepositoriesOver(db: SqliteDatabase): WorkoutRepositories {
   return {
     sessionRepo: new SqliteSessionRepository(db),
     sessionExerciseRepo: new SqliteSessionExerciseRepository(db),
