@@ -8,15 +8,16 @@ See 07 · Persistence Layer Contract, "Hard rules" section.
 
 ## Two implementations
 
-The files in this directory are the **in-memory** engine (`InMemoryStore` plus one repository per
-entity), which is what the app still runs on. `sqlite/` is the **SQLite** one (task 067): the
-same repositories over Drizzle ORM, with the relational schema in `sqlite/schema.ts` and the
-generated DDL in `drizzle/`.
+`sqlite/` is the **SQLite** engine (task 067) and what the app runs on since task 111: the
+repositories over Drizzle ORM, with the relational schema in `sqlite/schema.ts` and the generated
+DDL in `drizzle/`. The files directly in this directory are the **in-memory** one (`InMemoryStore`
+plus one repository per entity), kept as its test double — same repositories, same contract, no
+native module and no file on disk.
 
-The SQLite adapter is complete and tested but not yet wired to anything — `state/appStore.ts`
-still builds the in-memory repositories, and the app keeps using them. Opening the database on
-the device, running migrations at startup and switching the app over are tasks 069 and 111; until
-then nothing in `app/` or `state/` imports `sqlite/`.
+Each engine has one factory producing the same `RepositorySet` (`repositories/repositorySet.ts`):
+`createInMemoryRepositories` here, `createSqliteRepositories` in `sqlite/`. Which one the app
+holds is `state/repositories.ts`, set once at startup by `state/bootstrap.ts` — so switching
+engines, or putting the in-memory one back, is that one call and nothing else.
 
 What belongs where inside `sqlite/`: `schema.ts` is the tables, `mappers.ts` the entity ↔ row
 translation (the one place `NULL` and an absent field meet), `errors.ts` the normalization of
@@ -38,10 +39,13 @@ Getting the migrations into the app takes two pieces of build configuration, bec
 filesystem to read them from at runtime: `metro.config.js` adds `.sql` as a source extension, and
 `babel.config.js` inlines each `.sql` import as a string (without it Babel would try to parse SQL
 as JavaScript). `migrationBundle.ts` is the single place that imports the generated
-`drizzle/migrations.js`. Nothing calls it yet — running migrations at startup is task 111.
+`drizzle/migrations.js`. `state/bootstrap.ts` is what runs them, once, before any screen mounts
+(task 111).
 
 `drizzle/` is generated. Never hand-edit a migration that has shipped: a database that already
-applied it will not apply it again.
+applied it will not apply it again. `0000_initial_schema.sql` was edited by hand once, in task
+111, to drop a `catalog_version` column nobody read — the last moment that was safe, since no
+build had yet run on a device and so no database had ever applied it.
 
 ## The exercise catalog (task 067(2))
 
@@ -80,7 +84,7 @@ Jest by `better-sqlite3` rather than by `expo-sqlite`, which is a native iOS/And
 cannot load in Node. Same engine, same SQL, same schema and migrations — only the line that opens
 the database differs from the app's. The database is `:memory:` and built fresh per test, so there
 is nothing to clean up between tests and no shared state to leak. What a Node driver cannot prove
-is how the native binding behaves on a phone; that stays a manual check on the simulator (task
-111). `__tests__/storage/sqliteToolchain.test.ts` is the standing proof that this toolchain works
+is how the native binding behaves on a phone; that stays a manual check on a device. The one line
+that differs there is `sqlite/expoDatabase.ts`, which opens the app's own database file. `__tests__/storage/sqliteToolchain.test.ts` is the standing proof that this toolchain works
 under Jest.
 

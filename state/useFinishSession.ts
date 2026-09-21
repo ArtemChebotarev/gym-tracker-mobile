@@ -15,7 +15,7 @@ export function useFinishSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: string) => finishSession(sessionId, sessionFinishDeps),
+    mutationFn: (sessionId: string) => finishSession(sessionId, sessionFinishDeps()),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
 }

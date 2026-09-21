@@ -90,7 +90,6 @@ async function setUp(
   const exerciseRepo = new InMemoryExerciseRepository(store);
   await mesocycleRepo.create(mesocycle);
   await exerciseRepo.seedCatalog(
-    1,
     catalog.map(([id, muscleGroup]): Exercise => ({
       ...STAMPS,
       id: toExerciseId(id),

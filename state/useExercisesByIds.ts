@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { Exercise, ExerciseId } from '@domain/catalog';
 import { listExercisesByIds } from '@usecases/exerciseLibrary';
 
-import { ensureExerciseCatalogSeeded, exerciseLibraryDeps } from './exerciseLibraryStore';
+import { exerciseLibraryDeps } from './exerciseLibraryStore';
 
 /** Keyed by id for O(1) lookups from a screen's render — see `MesoEditorDaysStepLogic.ts`. */
 export type ExercisesById = Record<string, Exercise>;
@@ -17,8 +17,7 @@ export function useExercisesByIds(ids: readonly ExerciseId[]) {
   return useQuery({
     queryKey: ['exercisesByIds', [...ids].sort()],
     queryFn: async (): Promise<ExercisesById> => {
-      await ensureExerciseCatalogSeeded();
-      const exercises = await listExercisesByIds(ids, exerciseLibraryDeps);
+      const exercises = await listExercisesByIds(ids, exerciseLibraryDeps());
       return Object.fromEntries(exercises.map((exercise) => [exercise.id, exercise]));
     },
   });

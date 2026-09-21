@@ -136,7 +136,7 @@ describe('Today tab — header menu', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Add 1 exercise' }));
 
     await waitFor(async () => {
-      const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
+      const exercises = await workoutStore().repos.sessionExerciseRepo.listBySessionId(
         WORKOUT_FIXTURE_IDS.live,
       );
       expect(exercises.map((exercise) => exercise.exerciseId)).toEqual([
@@ -145,7 +145,7 @@ describe('Today tab — header menu', () => {
         'squat-barbell',
       ]);
     });
-    const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
+    const exercises = await workoutStore().repos.sessionExerciseRepo.listBySessionId(
       WORKOUT_FIXTURE_IDS.live,
     );
     const added = exercises.at(-1);
@@ -172,7 +172,7 @@ describe('Today tab — header menu', () => {
     // Logged sets make it a completed session — still this one, now read-only.
     expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
-    const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
+    const exercises = await workoutStore().repos.sessionExerciseRepo.listBySessionId(
       WORKOUT_FIXTURE_IDS.live,
     );
     expect(exercises.map((exercise) => [exercise.exerciseId, exercise.status])).toEqual([
@@ -181,12 +181,12 @@ describe('Today tab — header menu', () => {
       ['squat-barbell', 'skipped'],
     ]);
     await expect(
-      workoutStore.repos.setLogRepo.listBySessionId(WORKOUT_FIXTURE_IDS.live),
+      workoutStore().repos.setLogRepo.listBySessionId(WORKOUT_FIXTURE_IDS.live),
     ).resolves.toHaveLength(3);
   });
 
   test('Skip workout, once confirmed, skips the session and leaves it read-only', async () => {
-    await workoutStore.repos.sessionRepo.createMany([
+    await workoutStore().repos.sessionRepo.createMany([
       {
         id: 'ready-w1d2',
         mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
@@ -197,7 +197,7 @@ describe('Today tab — header menu', () => {
         status: 'planned',
       },
     ]);
-    await workoutStore.repos.sessionExerciseRepo.createMany([
+    await workoutStore().repos.sessionExerciseRepo.createMany([
       {
         id: 'ready-w1d2-bench',
         sessionId: 'ready-w1d2',
@@ -221,10 +221,10 @@ describe('Today tab — header menu', () => {
     expect(await screen.findByText('Skipped')).toBeTruthy();
     expect(screen.getByText('Week 1 Day 2')).toBeTruthy();
     expect(screen.queryByRole('checkbox', { name: 'Log set 1' })).toBeNull();
-    const session = await workoutStore.repos.sessionRepo.getById('ready-w1d2');
+    const session = await workoutStore().repos.sessionRepo.getById('ready-w1d2');
     expect(session?.status).toBe('skipped');
     // Next week's Day 2 is generated, as after Finish.
-    const week2 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
+    const week2 = await workoutStore().repos.sessionRepo.listByMesoIdAndWeekNumber(
       WORKOUT_FIXTURE_IDS.mesocycle,
       2,
     );
@@ -232,7 +232,7 @@ describe('Today tab — header menu', () => {
   });
 
   test('no Skip workout once every exercise is done — Finish takes its place', async () => {
-    await workoutStore.repos.sessionRepo.createMany([
+    await workoutStore().repos.sessionRepo.createMany([
       {
         id: 'ready-w1d3',
         mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
@@ -243,7 +243,7 @@ describe('Today tab — header menu', () => {
         status: 'planned',
       },
     ]);
-    await workoutStore.repos.sessionExerciseRepo.createMany([
+    await workoutStore().repos.sessionExerciseRepo.createMany([
       {
         id: 'ready-w1d3-bench',
         sessionId: 'ready-w1d3',

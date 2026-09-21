@@ -3,9 +3,9 @@
 // hand-picked slugs baked into the app (same reasoning as MUSCLE_GROUPS in
 // ./catalog.ts — "Идентификаторы каталога прошиты в приложение"), and every
 // field is checked against the domain's own MuscleGroup/Equipment unions at
-// compile time. Feed this into ExerciseRepository.seedCatalog(catalogVersion,
-// EXERCISE_CATALOG) to populate a store; this file has no side effects of its
-// own and does not call the repository.
+// compile time. This is the catalog `npm run catalog:migration` writes into a
+// migration (067(2)), and what ExerciseRepository.seedCatalog fills a store
+// with directly in tests; the file has no side effects of its own.
 import type { Exercise } from './catalog';
 import { toExerciseId } from './catalog';
 import type { Unsaved } from './timestamps';

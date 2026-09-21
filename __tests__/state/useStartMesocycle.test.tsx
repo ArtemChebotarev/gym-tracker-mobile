@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
-import { MOCK_MESOCYCLE_IDS } from '@domain/mesocycleMocks';
+import { seedExerciseCatalog, seedMockMesocycles } from '../fixtures/appStorage';
+import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { useMesocycles } from '@state/useMesocycles';
 import { useStartMesocycle } from '@state/useStartMesocycle';
 import { useTodayWorkout } from '@state/useWorkoutSession';
@@ -13,6 +14,11 @@ jest.mock('expo-crypto', () => {
 });
 
 let client: QueryClient;
+
+beforeAll(async () => {
+  await seedExerciseCatalog();
+  await seedMockMesocycles();
+});
 
 beforeEach(() => {
   client = new QueryClient({

@@ -84,7 +84,7 @@ function pressAlertButton(text: string) {
 }
 
 async function sessionExercises() {
-  const exercises = await workoutStore.repos.sessionExerciseRepo.listBySessionId(
+  const exercises = await workoutStore().repos.sessionExerciseRepo.listBySessionId(
     WORKOUT_FIXTURE_IDS.live,
   );
   return [...exercises].sort((a, b) => a.order - b.order);
@@ -211,7 +211,9 @@ describe('Today tab — exercise menu', () => {
         'squat-barbell',
       ),
     );
-    await expect(workoutStore.repos.setLogRepo.listBySessionExerciseId(BENCH)).resolves.toEqual([]);
+    await expect(workoutStore().repos.setLogRepo.listBySessionExerciseId(BENCH)).resolves.toEqual(
+      [],
+    );
   });
 
   test('Delete exercise removes it once confirmed', async () => {

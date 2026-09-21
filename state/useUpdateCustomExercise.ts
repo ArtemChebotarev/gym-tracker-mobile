@@ -15,7 +15,7 @@ export function useUpdateCustomExercise() {
 
   return useMutation({
     mutationFn: (input: UpdateCustomExerciseInput) =>
-      updateCustomExercise(input, exerciseLibraryDeps),
+      updateCustomExercise(input, exerciseLibraryDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });
       queryClient.invalidateQueries({ queryKey: ['exerciseOverview'] });

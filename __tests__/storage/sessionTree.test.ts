@@ -26,7 +26,7 @@ async function treeOver(options: { withMesocycle: boolean; withExercise: boolean
     await new InMemoryMesocycleRepository(store).create(makeMesocycle());
   }
   if (options.withExercise) {
-    await new InMemoryExerciseRepository(store).seedCatalog(1, [
+    await new InMemoryExerciseRepository(store).seedCatalog([
       makeCatalogExercise('exercise-bench-press'),
     ]);
   }

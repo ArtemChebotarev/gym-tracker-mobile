@@ -13,9 +13,9 @@
 
 import type { Session, SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
-import { ensureExerciseCatalogSeeded } from '@state/exerciseLibraryStore';
 import { mesocycleListDeps } from '@state/mesocycleStore';
 import { workoutStore } from '@state/workoutStore';
+import { seedExerciseCatalog } from './appStorage';
 import { STAMPS } from './stamps';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -145,10 +145,10 @@ let seeded: Promise<void> | null = null;
 export function seedWorkoutFixture(): Promise<void> {
   if (!seeded) {
     seeded = (async () => {
-      await ensureExerciseCatalogSeeded();
+      await seedExerciseCatalog();
       const fixture = buildWorkoutFixture(new Date());
-      await mesocycleListDeps.mesocycleRepo.create(fixture.mesocycle);
-      const { repos } = workoutStore;
+      await mesocycleListDeps().mesocycleRepo.create(fixture.mesocycle);
+      const { repos } = workoutStore();
       await repos.sessionRepo.createMany(fixture.sessions);
       await repos.sessionExerciseRepo.createMany(fixture.sessionExercises);
       for (const setLog of fixture.setLogs) {

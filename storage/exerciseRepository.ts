@@ -51,14 +51,9 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     );
   }
 
-  // catalogVersion is not persisted here — it is tracked in Settings (02 · Domain Model,
-  // "catalogVersion хранится в настройках"). This method only inserts catalog exercises
-  // whose (pre-baked) id isn't already present, leaving every existing record — catalog or
-  // custom — untouched.
-  async seedCatalog(
-    _catalogVersion: number,
-    exercises: readonly Incoming<Exercise>[],
-  ): Promise<void> {
+  // Only inserts catalog exercises whose (pre-baked) id isn't already present, leaving every
+  // existing record — catalog or custom — untouched.
+  async seedCatalog(exercises: readonly Incoming<Exercise>[]): Promise<void> {
     for (const exercise of exercises) {
       const existing = await this.exercises.findById(exercise.id);
       if (!existing) {

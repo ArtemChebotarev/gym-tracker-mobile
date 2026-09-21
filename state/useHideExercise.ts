@@ -13,7 +13,7 @@ export function useHideExercise() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: ExerciseId) => hideExercise(id, exerciseLibraryDeps),
+    mutationFn: (id: ExerciseId) => hideExercise(id, exerciseLibraryDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });
       queryClient.invalidateQueries({ queryKey: ['exerciseOverview'] });

@@ -4,8 +4,9 @@ import type { Settings } from '@repositories/settings';
 import { type RepositoryHarness, useRepositories } from './harness';
 
 // SettingsRepository — a single global record rather than a table (07 · Persistence Layer
-// Contract, "SettingsRepository"). It holds the defaults new mesocycles are stamped with, the
-// display unit, the schema version and the applied catalog version.
+// Contract, "SettingsRepository"). It holds the defaults new mesocycles are stamped with and the
+// display unit — no version of anything: neither the schema's nor the catalog's, both of which
+// the migration journal keeps (069, 067(2)).
 
 export function describeSettingsContract(harness: RepositoryHarness): void {
   describe('SettingsRepository', () => {
@@ -16,8 +17,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
 
       expect(settings.defaultProgressionSettings).toEqual(defaultProgressionSettings);
       expect(settings.weightUnit).toBe('kg');
-      // Nothing has been seeded yet; a real seed applies version 1 or higher (067(2)).
-      expect(settings.catalogVersion).toBe(0);
     });
 
     test('write persists settings that a later read returns', async () => {
@@ -25,7 +24,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       const written: Settings = {
         defaultProgressionSettings: { ...defaultProgressionSettings, minReps: 6 },
         weightUnit: 'lb',
-        catalogVersion: 3,
       };
 
       await settingsRepo.write(written);
@@ -38,7 +36,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       const written: Settings = {
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
-        catalogVersion: 1,
       };
 
       await settingsRepo.write(written);
@@ -48,7 +45,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       await expect(settingsRepo.read()).resolves.toEqual({
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
-        catalogVersion: 1,
       });
     });
 
@@ -61,7 +57,6 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
         defaultProgressionSettings:
           legacyProgressionSettings as Settings['defaultProgressionSettings'],
         weightUnit: 'kg',
-        catalogVersion: 1,
       });
 
       const settings = await settingsRepo.read();

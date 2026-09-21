@@ -113,7 +113,7 @@ describe('Exercise screen route', () => {
   test('a custom exercise can be edited, and hiding it pops the screen', async () => {
     const custom = await createCustomExercise(
       { name: 'Route Test Cable Fly', muscleGroup: 'chest' },
-      exerciseLibraryDeps,
+      exerciseLibraryDeps(),
     );
     mockParams = { id: custom.id };
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
@@ -127,7 +127,7 @@ describe('Exercise screen route', () => {
     confirmAlert(alert, 'Hide');
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
-    await expect(exerciseLibraryDeps.exerciseRepo.getById(custom.id)).resolves.toMatchObject({
+    await expect(exerciseLibraryDeps().exerciseRepo.getById(custom.id)).resolves.toMatchObject({
       isHidden: true,
     });
 

@@ -190,7 +190,7 @@ describe('Today tab — set logging', () => {
 
   test('DoD: another session in progress — nothing is logged, the alert names it and opens it', async () => {
     // A ready day of the same mesocycle, while the fixture Week 2 Day 1 is in progress.
-    await workoutStore.repos.sessionRepo.createMany([
+    await workoutStore().repos.sessionRepo.createMany([
       {
         id: 'ready-w2d2',
         mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
@@ -201,7 +201,7 @@ describe('Today tab — set logging', () => {
         status: 'planned',
       },
     ]);
-    await workoutStore.repos.sessionExerciseRepo.createMany([
+    await workoutStore().repos.sessionExerciseRepo.createMany([
       {
         id: 'ready-w2d2-bench',
         sessionId: 'ready-w2d2',
@@ -224,7 +224,9 @@ describe('Today tab — set logging', () => {
     const [title, , buttons] = alert.mock.calls[0] ?? [];
     expect(title).toBe('Finish Week 2 Day 1 first');
     expect(buttons?.map((button: AlertButton) => button.text)).toEqual(['Cancel', 'Open']);
-    await expect(workoutStore.repos.setLogRepo.listBySessionId('ready-w2d2')).resolves.toEqual([]);
+    await expect(workoutStore().repos.setLogRepo.listBySessionId('ready-w2d2')).resolves.toEqual(
+      [],
+    );
     expect(screen.getByRole('checkbox', { name: 'Log set 1' })).toBeTruthy();
 
     buttons?.find((button: AlertButton) => button.text === 'Open')?.onPress?.();
@@ -246,7 +248,7 @@ describe('Today tab — Finish workout', () => {
   }
 
   test('a skipped session opens read-only', async () => {
-    await workoutStore.repos.sessionRepo.createMany([
+    await workoutStore().repos.sessionRepo.createMany([
       {
         id: 'skipped-w1d2',
         mesoId: WORKOUT_FIXTURE_IDS.mesocycle,
@@ -257,7 +259,7 @@ describe('Today tab — Finish workout', () => {
         status: 'skipped',
       },
     ]);
-    await workoutStore.repos.sessionExerciseRepo.createMany([
+    await workoutStore().repos.sessionExerciseRepo.createMany([
       {
         id: 'skipped-w1d2-bench',
         sessionId: 'skipped-w1d2',
@@ -298,9 +300,9 @@ describe('Today tab — Finish workout', () => {
     expect(screen.queryAllByRole('checkbox')).toEqual([]);
     expect(screen.queryByLabelText(/Set \d reps/)).toBeNull();
 
-    const session = await workoutStore.repos.sessionRepo.getById(WORKOUT_FIXTURE_IDS.live);
+    const session = await workoutStore().repos.sessionRepo.getById(WORKOUT_FIXTURE_IDS.live);
     expect(session?.status).toBe('completed');
-    const week3 = await workoutStore.repos.sessionRepo.listByMesoIdAndWeekNumber(
+    const week3 = await workoutStore().repos.sessionRepo.listByMesoIdAndWeekNumber(
       WORKOUT_FIXTURE_IDS.mesocycle,
       3,
     );
@@ -338,8 +340,8 @@ describe('Today tab — Finish workout', () => {
       </SafeAreaProvider>,
     );
     expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
-    await workoutStore.repos.sessionRepo.update({
-      ...(await workoutStore.repos.sessionRepo.getById('ready-w2d2'))!,
+    await workoutStore().repos.sessionRepo.update({
+      ...(await workoutStore().repos.sessionRepo.getById('ready-w2d2'))!,
       status: 'skipped',
     });
 

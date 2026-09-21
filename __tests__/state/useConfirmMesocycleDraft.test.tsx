@@ -2,8 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
-import { InMemorySessionRepository } from '@storage/session';
-import { appStore } from '@state/appStore';
+import { repositories } from '@state/repositories';
 import type { MesoBuilderDraft } from '@state/draftStore';
 import { mesocycleCreationDeps } from '@state/mesocycleStore';
 import { useConfirmMesocycleDraft } from '@state/useConfirmMesocycleDraft';
@@ -53,7 +52,7 @@ describe('useConfirmMesocycleDraft', () => {
     expect(saved.status).toBe('planned');
     expect(saved.origin).toEqual({ type: 'scratch' });
     expect(saved.weekPlan?.days).toHaveLength(2);
-    await expect(mesocycleCreationDeps.mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
+    await expect(mesocycleCreationDeps().mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
   });
 
   test('creates no Session in the app-wide store', async () => {
@@ -63,7 +62,7 @@ describe('useConfirmMesocycleDraft', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const sessionRepo = new InMemorySessionRepository(appStore);
+    const { sessionRepo } = repositories();
     await expect(sessionRepo.listByMesoId(result.current.data!.id)).resolves.toEqual([]);
   });
 

@@ -6,14 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { listMesocycles } from '@usecases/mesocycleList';
 
-import { ensureMesocyclesSeeded, mesocycleListDeps } from './mesocycleStore';
+import { mesocycleListDeps } from './mesocycleStore';
 
 export function useMesocycles() {
   return useQuery({
     queryKey: ['mesocycles'],
-    queryFn: async () => {
-      await ensureMesocyclesSeeded();
-      return listMesocycles(mesocycleListDeps);
-    },
+    queryFn: () => listMesocycles(mesocycleListDeps()),
   });
 }

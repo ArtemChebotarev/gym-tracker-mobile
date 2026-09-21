@@ -68,10 +68,14 @@ export interface ExerciseRepository {
   toggleHidden(id: ExerciseId): Promise<Exercise>;
 
   /**
-   * Seeds the catalog with the given `source: 'catalog'` exercises for the
-   * given `catalogVersion`. Matches by the exercises' (pre-baked) ids: existing
-   * records — catalog or custom — are left untouched, only missing catalog
-   * ids are inserted. See 02 · Domain Model, "catalogVersion".
+   * Seeds the catalog with the given `source: 'catalog'` exercises. Matches by the exercises'
+   * (pre-baked) ids: existing records — catalog or custom — are left untouched, only missing
+   * catalog ids are inserted.
+   *
+   * The app itself no longer calls this: since 067(2) the catalog reaches a SQLite database as
+   * migration `drizzle/0001_seed_catalog.sql`, so the migration journal decides what has been
+   * seeded. It stays on the interface because it is how a store is filled with catalog exercises
+   * — which is what every test that needs some does, on either adapter.
    */
-  seedCatalog(catalogVersion: number, exercises: readonly Incoming<Exercise>[]): Promise<void>;
+  seedCatalog(exercises: readonly Incoming<Exercise>[]): Promise<void>;
 }

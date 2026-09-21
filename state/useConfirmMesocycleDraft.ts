@@ -16,7 +16,7 @@ export function useConfirmMesocycleDraft() {
 
   return useMutation({
     mutationFn: (draft: MesoBuilderDraft) =>
-      confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), mesocycleCreationDeps),
+      confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), mesocycleCreationDeps()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
     },

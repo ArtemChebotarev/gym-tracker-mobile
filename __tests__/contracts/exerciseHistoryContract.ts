@@ -22,7 +22,7 @@ async function seedHistory(repositories: RepositorySet): Promise<void> {
   await mesocycleRepo.create(
     makeMesocycle({ id: 'meso-2', name: 'Full body', status: 'completed' }),
   );
-  await exerciseRepo.seedCatalog(1, [makeCatalogExercise(BENCH_PRESS), makeCatalogExercise(SQUAT)]);
+  await exerciseRepo.seedCatalog([makeCatalogExercise(BENCH_PRESS), makeCatalogExercise(SQUAT)]);
 
   await sessionRepo.create(makeSession({ id: 'session-1', mesoId: 'meso-1', status: 'completed' }));
   await sessionRepo.create(

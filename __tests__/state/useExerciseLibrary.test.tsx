@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 
+import { seedExerciseCatalog } from '../fixtures/appStorage';
 import { exerciseLibraryDeps } from '@state/exerciseLibraryStore';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { createCustomExercise, hideExercise } from '@usecases/exerciseLibrary';
@@ -12,6 +13,10 @@ jest.mock('expo-crypto', () => {
 });
 
 let client: QueryClient;
+
+beforeAll(async () => {
+  await seedExerciseCatalog();
+});
 
 beforeEach(() => {
   // gcTime: 0 avoids leaving a garbage-collection timer open past the test.
@@ -28,7 +33,7 @@ function wrapper({ children }: PropsWithChildren) {
 }
 
 describe('useExerciseLibrary', () => {
-  test('groups the seeded catalog by muscle group, in catalog order', async () => {
+  test('groups the catalog by muscle group, in catalog order', async () => {
     const { result } = renderHook(() => useExerciseLibrary({}), { wrapper });
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
@@ -41,9 +46,9 @@ describe('useExerciseLibrary', () => {
   test('excludes an exercise once it has been hidden', async () => {
     const created = await createCustomExercise(
       { name: 'Hook Test Hidden Exercise', muscleGroup: 'chest' },
-      exerciseLibraryDeps,
+      exerciseLibraryDeps(),
     );
-    await hideExercise(created.id, exerciseLibraryDeps);
+    await hideExercise(created.id, exerciseLibraryDeps());
 
     const { result } = renderHook(
       () => useExerciseLibrary({ search: 'Hook Test Hidden Exercise' }),
@@ -58,7 +63,7 @@ describe('useExerciseLibrary', () => {
   test('applies a case-insensitive search filter', async () => {
     await createCustomExercise(
       { name: 'Unique Search Target', muscleGroup: 'back' },
-      exerciseLibraryDeps,
+      exerciseLibraryDeps(),
     );
 
     const { result } = renderHook(() => useExerciseLibrary({ search: 'unique search target' }), {

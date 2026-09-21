@@ -19,7 +19,7 @@ async function seedSession(repositories: RepositorySet): Promise<void> {
   const { mesocycleRepo, exerciseRepo, sessionRepo, sessionExerciseRepo, setLogRepo } =
     repositories;
   await mesocycleRepo.create(makeMesocycle({ name: 'Upper/lower' }));
-  await exerciseRepo.seedCatalog(1, [
+  await exerciseRepo.seedCatalog([
     makeCatalogExercise(FIRST_EXERCISE),
     makeCatalogExercise(SECOND_EXERCISE),
   ]);

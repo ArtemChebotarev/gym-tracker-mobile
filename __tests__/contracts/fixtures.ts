@@ -66,8 +66,8 @@ export function makeSetLog(overrides: Partial<Unsaved<SetLog>> = {}): Unsaved<Se
 }
 
 /**
- * A `source: 'catalog'` exercise — shipped with the app, immutable, and written through
- * `seedCatalog` rather than `createCustom` (02 · Domain Model, "catalogVersion").
+ * A `source: 'catalog'` exercise — shipped with the app and written through `seedCatalog` rather
+ * than `createCustom` (02 · Domain Model, "Exercise").
  */
 export function makeCatalogExercise(id: string, overrides: Partial<Unsaved<Exercise>> = {}): Unsaved<Exercise> {
   return {
@@ -117,6 +117,6 @@ export async function seedParents(
   }
   const exercises = (options.exerciseIds ?? []).map((id) => makeCatalogExercise(id));
   if (exercises.length > 0) {
-    await repositories.exerciseRepo.seedCatalog(1, exercises);
+    await repositories.exerciseRepo.seedCatalog(exercises);
   }
 }
