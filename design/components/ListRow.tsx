@@ -88,7 +88,14 @@ export function ListRow({
           </Text>
         )}
       </View>
-      {badge !== undefined && <Badge label={badge.label} variant={badge.variant} />}
+      {badge !== undefined && (
+        // Badge pins itself to the top (alignSelf), which in this row would leave it riding above
+        // the pill and `⋯` beside it; the wrapper takes the row's own centring instead, the same
+        // way the workout header wraps its Deload badge.
+        <View>
+          <Badge label={badge.label} variant={badge.variant} />
+        </View>
+      )}
       {trailing !== undefined && <Trailing title={title} trailing={trailing} />}
     </View>
   );
