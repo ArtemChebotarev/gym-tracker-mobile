@@ -42,6 +42,7 @@ import {
   getWeekDots,
   groupMesocycles,
   isEmptyGroups,
+  mesocycleStoppedBadge,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
 
@@ -199,6 +200,7 @@ export function MesocyclesScreen({
                       key={mesocycle.id}
                       title={mesocycle.name}
                       subtitle={formatCompletedCaption(mesocycle)}
+                      badge={mesocycleStoppedBadge(mesocycle)}
                       trailing={{
                         type: 'actions',
                         actionLabel: 'Copy',
