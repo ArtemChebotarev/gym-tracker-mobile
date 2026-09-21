@@ -8,8 +8,7 @@ import {
 } from '../errors';
 
 // Rule 5 of 07 · Persistence Layer Contract: an adapter never leaks its own storage-specific
-// errors. The in-memory engine had nothing to normalize — it only ever threw the domain's own
-// errors. A real database throws its own, and this is where they stop.
+// errors. A database throws its own, and this is where they stop.
 //
 // The split is by what the caller can do about it:
 // - a uniqueness or foreign key violation is the write disagreeing with what is already stored,

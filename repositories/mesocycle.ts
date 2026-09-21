@@ -9,7 +9,7 @@ import type { Incoming } from '@domain/timestamps';
  * Contract, "Hard rules" and "MesocycleRepository".
  *
  * All methods are asynchronous per hard rule 1, even though the current
- * (in-memory/local) adapter has no real I/O to await. No business logic
+ * (local SQLite) adapter has no real I/O to await. No business logic
  * lives here (hard rule 2) — reading, writing, and simple filtering only.
  */
 export interface MesocycleRepository {

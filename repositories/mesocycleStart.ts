@@ -1,6 +1,7 @@
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { SessionRepository } from '@repositories/session';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
+import type { TransactionalStore } from '@repositories/transaction';
 
 /**
  * The repositories Start (04 · Meso Creation Flows, "Запуск (Start)") writes through: the
@@ -21,7 +22,6 @@ export type MesocycleStartRepositories = {
  * all rolled back if `work` throws or rejects (see `TransactionalStore` for the full contract).
  * `repos` is for reads outside a transaction.
  */
-export interface MesocycleStartStore {
+export interface MesocycleStartStore extends TransactionalStore<MesocycleStartRepositories> {
   readonly repos: MesocycleStartRepositories;
-  transaction<T>(work: (repos: MesocycleStartRepositories) => Promise<T>): Promise<T>;
 }

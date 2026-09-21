@@ -17,11 +17,10 @@ import type { WorkoutStore } from '@repositories/workout';
  * underlying storage: mesocycles, sessions, session exercises and set logs reference each other
  * by id, and a cascade or a join only sees the other's rows if they share it.
  *
- * This is what an engine produces and what the app consumes, so both engines answer the same
- * shape: `createInMemoryRepositories` (storage/repositories.ts) and `createSqliteRepositories`
- * (storage/sqlite/repositories.ts). The app holds exactly one of them at a time
- * (state/repositories.ts, task 111) — which is why switching engines is an edit in one place
- * rather than a change to anything that reads data. The shared repository contract (task 109)
+ * This is what an engine produces and what the app consumes: `createSqliteRepositories`
+ * (storage/sqlite/repositories.ts) builds the one the app runs on, and the app holds it through
+ * context (state/repositories.tsx, task 115) — which is why another engine would be an edit in
+ * one place rather than a change to anything that reads data. The repository contract (task 109)
  * is stated against this same type, so whatever passes it can be the one the app holds.
  */
 export type RepositorySet = {

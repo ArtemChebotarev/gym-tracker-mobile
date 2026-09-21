@@ -14,9 +14,8 @@
 // can read storage without a provider above it, and a test renders its own set — one per test,
 // not one per file (`__tests__/fixtures/renderWithRepositories.tsx`).
 //
-// Which is also what makes the engine switch reversible: an engine is a `RepositorySet`, and
-// handing the app a different one — the in-memory engine in tests — is what is passed here and
-// nothing else.
+// Which is also what keeps an engine switch to one edit: an engine is a `RepositorySet`, and
+// handing the app a different one is what is passed here and nothing else.
 
 import { createContext, useContext, type PropsWithChildren } from 'react';
 
