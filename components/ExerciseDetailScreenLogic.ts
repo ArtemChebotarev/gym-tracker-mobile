@@ -9,9 +9,9 @@ import type {
 } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
 import { formatAbsoluteDate } from '@design/formatDate';
+import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
 
-import { formatRir } from './WorkoutExerciseCardLogic';
 import { formatLoggedWeight } from './WorkoutSetRowLogic';
 
 /** The two tabs of the Exercise screen (08.6, "Переключатель"). */

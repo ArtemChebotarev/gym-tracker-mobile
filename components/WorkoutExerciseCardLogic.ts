@@ -3,6 +3,7 @@
 import type { Equipment } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
+import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 import { formatRowWeight, initialWeightText } from './WorkoutSetRowLogic';
@@ -46,11 +47,6 @@ export function exerciseCardView(
     showSkippedNote: skippedWhole,
     showNotProgrammed: isPreview,
   };
-}
-
-/** `2 RIR` — the chip, and the reps placeholder of a row with no `targetReps`. */
-export function formatRir(rir: number): string {
-  return `${rir} RIR`;
 }
 
 /**

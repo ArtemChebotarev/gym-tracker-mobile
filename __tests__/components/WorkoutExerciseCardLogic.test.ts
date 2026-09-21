@@ -3,7 +3,6 @@ import {
   carryWeightForward,
   editWeightText,
   exerciseCardView,
-  formatRir,
   formatWeightHint,
   holdLoggedWeight,
   showsGroupChip,
@@ -112,13 +111,6 @@ describe('showsGroupChip', () => {
 
   test('an index past the list gets no chip', () => {
     expect(showsGroupChip(exercises, 4)).toBe(false);
-  });
-});
-
-describe('formatRir', () => {
-  test('reads `N RIR`', () => {
-    expect(formatRir(2)).toBe('2 RIR');
-    expect(formatRir(0)).toBe('0 RIR');
   });
 });
 
