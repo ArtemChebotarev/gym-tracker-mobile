@@ -3,8 +3,8 @@ import { sql } from 'drizzle-orm';
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 
-// Rule 6 of 07 · Persistence Layer Contract, on a medium that has transactions of its own —
-// unlike the in-memory engine, which emulates them by snapshotting.
+// Rule 6 of 07 · Persistence Layer Contract, on a medium that has transactions of its own. A
+// medium without them has to emulate the same guarantee — see `repositories/transaction.ts`.
 //
 // Drizzle's own `db.transaction()` is not usable here: on a synchronous driver it runs the
 // callback synchronously and commits the moment it returns, so a callback that `await`s — which
@@ -26,11 +26,15 @@ function execute(db: SqliteDatabase, statement: string): Promise<void> {
 
 /**
  * Runs `work` atomically: every write it makes through `db` is kept if it resolves, and none of
- * them are observable afterwards if it throws or rejects. The original failure is what reaches
+ * them are observable afterwards if it throws or rejects. `work` may be synchronous — the
+ * contract allows it (`TransactionalStore`), even though every store here hands over an async one. The original failure is what reaches
  * the caller — a rollback that fails too is reported as the cause of nothing, it just cannot be
  * allowed to hide what actually went wrong.
  */
-export async function runInTransaction<T>(db: SqliteDatabase, work: () => Promise<T>): Promise<T> {
+export async function runInTransaction<T>(
+  db: SqliteDatabase,
+  work: () => Promise<T> | T,
+): Promise<T> {
   const level = openLevels.get(db) ?? 0;
   const savepoint = level === 0 ? null : `repository_tx_${level}`;
 

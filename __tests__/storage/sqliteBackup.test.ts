@@ -12,8 +12,8 @@ import {
 } from '../contracts/fixtures';
 import { migratedTestDatabase, readMigrationBundle, type TestDatabase } from '../fixtures/sqliteDatabase';
 
-// The round trip on the engine the app actually runs (task 070's DoD). The in-memory suite proves
-// the use case's rules; this proves they survive the medium — `week_plan`, `origin` and
+// The round trip through the medium (task 070's DoD). `__tests__/usecases/backup.test.ts` states
+// the use case's rules; this proves they survive the columns — `week_plan`, `origin` and
 // `set_targets` are JSON columns, `startDate` and `rir` are nullable, and a value that round-trips
 // through a Map need not round-trip through SQLite.
 //
@@ -41,7 +41,7 @@ describe('a backup round trip on SQLite', () => {
     const source = await freshDeps();
     const { exerciseRepo, templateRepo, mesocycleRepo, sessionRepo, sessionExerciseRepo, setLogRepo } =
       source.store.repos;
-    // Foreign keys are on here (unlike the in-memory engine), so the session exercise and the set
+    // Foreign keys are on, so the session exercise and the set
     // log point at an exercise that really exists rather than the fixtures' default id.
     const exercise = await exerciseRepo.createCustom(makeCustomExercise('exercise-my-own'));
     await templateRepo.create(makeTemplate());

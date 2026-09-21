@@ -17,19 +17,18 @@ import { SqliteTemplateRepository } from './template';
 import { createSqliteWorkoutStore } from './workoutStore';
 
 /**
- * Every repository of 07 · Persistence Layer Contract over one database handle — the SQLite
- * counterpart of wiring the in-memory repositories to one `InMemoryStore`. They have to share it:
- * mesocycles, sessions, session exercises and set logs reference each other by id, and a cascade
- * or a join only sees the other's rows if it is looking at the same database.
+ * Every repository of 07 · Persistence Layer Contract over one database handle. They have to
+ * share it: mesocycles, sessions, session exercises and set logs reference each other by id, and
+ * a cascade or a join only sees the other's rows if it is looking at the same database.
  *
  * `db` is whichever synchronous Drizzle handle the caller opened — expo-sqlite in the app, in
  * a database that lives in the app's document directory; better-sqlite3 in Jest, in `:memory:`.
  * Turning on foreign keys and applying the schema is the opener's job (see `db.ts`), because it
  * happens once per connection rather than once per repository.
  *
- * `MuscleGroupCatalogRepository` is the in-memory one and not a copy of it: the muscle groups are
- * a fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to
- * differ about.
+ * `MuscleGroupCatalogRepository` carries no engine in its name and sits outside `sqlite/`: the
+ * muscle groups are a fixed enum in the domain (02 · Domain Model), so there is nothing stored
+ * for an engine to differ about.
  */
 export function createSqliteRepositories(db: SqliteDatabase): RepositorySet {
   return {

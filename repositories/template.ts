@@ -19,7 +19,7 @@ import type { Incoming } from '@domain/timestamps';
  * See 07 · Persistence Layer Contract, "Hard rules" and "TemplateRepository".
  *
  * All methods are asynchronous per hard rule 1, even though the current
- * (in-memory/local) adapter has no real I/O to await.
+ * (local SQLite) adapter has no real I/O to await.
  */
 export interface TemplateRepository {
   /** All templates, catalog and custom, including hidden ones. */

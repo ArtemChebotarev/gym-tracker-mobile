@@ -9,7 +9,7 @@ import type { Incoming } from '@domain/timestamps';
  * and 07 · Persistence Layer Contract ("MuscleGroupRepository").
  *
  * All methods are asynchronous per hard rule 1, even though the current
- * (in-memory/local) adapter has no real I/O to await.
+ * (local SQLite) adapter has no real I/O to await.
  */
 export interface MuscleGroupRepository {
   /** All muscle groups in the catalog. */

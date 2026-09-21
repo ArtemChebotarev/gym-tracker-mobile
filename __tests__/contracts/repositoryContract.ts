@@ -18,9 +18,10 @@ import { describeTransactionContract } from './transactionContract';
  * The suites underneath know nothing about the implementation they exercise: they reach it only
  * through the interfaces in `repositories/`, and they set data up only through those same
  * interfaces — never by reaching into an engine's internals. That is what lets the same
- * expectations run against the in-memory engine today and against the expo-sqlite + Drizzle
- * adapter of task 067 tomorrow, which is how that task's DoD ("весь набор тестов репозиториев
- * проходит на новой реализации без изменений") gets checked instead of asserted.
+ * expectations ran unchanged against the in-memory engine and then against the expo-sqlite +
+ * Drizzle adapter of task 067, which is how that task's DoD ("весь набор тестов репозиториев
+ * проходит на новой реализации без изменений") got checked instead of asserted. Since task 118
+ * SQLite is the only implementation left, and this stays what the next one would be put through.
  *
  * A runner supplies `harness` (see `harness.ts`) and calls this from a `.test.ts` file. Anything
  * specific to one implementation — how legacy rows sit in storage, what happens to a reference

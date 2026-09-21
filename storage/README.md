@@ -6,25 +6,32 @@ StorageUnavailable).
 
 See 07 · Persistence Layer Contract, "Hard rules" section.
 
-## Two implementations
+## One implementation (task 118)
 
 `sqlite/` is the **SQLite** engine (task 067) and what the app runs on since task 111: the
 repositories over Drizzle ORM, with the relational schema in `sqlite/schema.ts` and the generated
-DDL in `drizzle/`. The files directly in this directory are the **in-memory** one (`InMemoryStore`
-plus one repository per entity), kept as its test double — same repositories, same contract, no
-native module and no file on disk.
+DDL in `drizzle/`. `createSqliteRepositories` is its one factory, producing the `RepositorySet`
+of `repositories/repositorySet.ts`; `state/bootstrap.ts` builds it at startup and
+`components/StorageGate.tsx` puts it into context for everything below (task 115), so another
+engine would be that one call and nothing else.
 
-Each engine has one factory producing the same `RepositorySet` (`repositories/repositorySet.ts`):
-`createInMemoryRepositories` here, `createSqliteRepositories` in `sqlite/`. Which one the app
-holds is decided in one place — `state/bootstrap.ts` builds it at startup and
-`components/StorageGate.tsx` puts it into context for everything below (task 115) — so switching
-engines, or putting the in-memory one back, is that one call and nothing else.
+There used to be a second engine here — an in-memory one, `InMemoryStore` plus a repository per
+entity, kept as a test double after 111. Task 118 removed it: it was another adapter to write for
+every transactional store, and a test over it could describe states the database refuses (a
+session exercise naming an exercise nobody has, a set log with no session exercise). The tests
+run on `better-sqlite3` `:memory:` instead — `__tests__/fixtures/sqliteDatabase.ts` opens a
+migrated database per test, in a fraction of a millisecond, with the foreign keys on.
+
+The five files directly in this directory are what both engines shared and `sqlite/` still uses:
+`async.ts` (rule 1's artificial asynchrony), `errors.ts` (the domain error types), `timestamps.ts`
+(rule: the adapter stamps), `settingsDefaults.ts`, and `muscleGroupRepository.ts` — a fixed enum
+with nothing stored, so no engine can differ about it.
 
 What belongs where inside `sqlite/`: `schema.ts` is the tables, `mappers.ts` the entity ↔ row
 translation (the one place `NULL` and an absent field meet), `errors.ts` the normalization of
 driver failures, `transaction.ts` the BEGIN/COMMIT/ROLLBACK that rule 6 needs — Drizzle's own
 `transaction()` cannot be used because it commits when a synchronous callback returns, and every
-repository method is async. `repositories.ts` wires all twelve over one database handle.
+repository method is async. `repositories.ts` wires all fourteen over one database handle.
 
 ## Migrations and the schema version (task 069)
 
@@ -67,17 +74,17 @@ this, and that is what the script drives.
 One test guards the whole arrangement: after migrating, the catalog in the database must equal
 `EXERCISE_CATALOG`. Edit the catalog without generating a migration and it fails.
 
-`MuscleGroupCatalogRepository` is shared by both adapters rather than duplicated: muscle groups
-are a fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to
-differ about.
+`MuscleGroupCatalogRepository` sits outside `sqlite/` rather than inside it: muscle groups are a
+fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to differ
+about.
 
 ## Tests
 
-Tested twice over: the shared repository contract in `__tests__/contracts/` (every implementation
-must pass it, unchanged — `inMemoryContract.test.ts` and `sqliteContract.test.ts` are the two
-runners), plus the tests beside those for what is one engine's own business — the in-memory
-collections, cloning and rows a relational adapter could not produce; SQLite's error
-normalization, its cleared columns and its nested transactions.
+Tested twice over: the repository contract in `__tests__/contracts/` (any implementation must
+pass it unchanged — `sqliteContract.test.ts` is its runner), plus the tests beside it for what is
+this adapter's own business: its error normalization, its cleared columns and its nested
+transactions. The contract had a second runner over the in-memory engine until task 118; with one
+implementation left it states what the next one would have to satisfy.
 
 Which engine the tests run on (task 110): repository behaviour is checked through the contract on
 whatever implementation a runner supplies, and the SQLite implementation (task 067) is driven in
