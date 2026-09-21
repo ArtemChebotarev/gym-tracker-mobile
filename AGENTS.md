@@ -20,6 +20,19 @@ File organization and code-splitting conventions — domain modules, screens, st
 
 `main` is protected on GitHub and moves between sessions (other PRs get merged independently of this one). Before starting *any* task that will touch files — and before branching off `main` for a commit — always run `git fetch origin` and sync local `main` with `origin/main` (fast-forward pull, or rebase/merge it into the working branch). Never assume the local `main` you last looked at is still current; a stale base is how avoidable merge conflicts and "fixed" bugs that are actually already-fixed-upstream get discovered late.
 
+# Data model changes go through migrations
+
+**From 2026-09-21 the app runs on a real device, with real training data in it.** The database on that phone is the only copy — there is no export yet (task 070) and no backend. Every change to the stored data model is therefore a migration, and nothing else.
+
+- The schema is `storage/sqlite/schema.ts`. Change it there, then run `npx drizzle-kit generate`, which writes a new migration into `drizzle/`. Never hand-write DDL, and never edit `drizzle/meta/` — it is the generator's state, and a snapshot that disagrees with the schema makes every later `generate` wrong.
+- **Never edit a migration that has already run anywhere real** — merged to `main`, or applied on the device. A database that applied it will not apply it again, so the edit reaches new installs only, and the two diverge silently. `0000_initial_schema.sql` and `0001_seed_catalog.sql` are frozen. (`0000` was hand-edited once, in task 111, while no build had yet run on a device. That window is closed.)
+- Removing or renaming a column is a new migration, not a rewrite of the old one.
+- Reference data — the exercise catalog — is a migration too: edit `domain/exerciseCatalog.ts`, then `npm run catalog:migration`. A test fails if the catalog and the migrations disagree.
+- `__drizzle_migrations` inside the user's database is Drizzle's own bookkeeping. Never write to it. Clearing it does not reset anything; it makes the next launch try to re-apply `0000` against tables that already exist.
+- A migration that drops, truncates or rewrites data the user could have created needs Artem's explicit approval first, stated as such. Adding a column, a table or an index does not.
+
+Why the schema is versioned this way, and what refuses to open a database from a newer build — `storage/README.md` and 07 · Persistence Layer Contract, rule 7.
+
 # Running and debugging
 
 Always run these through `npm run <script>`, never call `expo`/`npx expo` directly — lint and typecheck run automatically as a `pre*` hook before `start`, `ios`, `ios:device`, `android`, and `web`, and calling the underlying Expo CLI command directly skips that check.
