@@ -10,6 +10,12 @@
 // A test that needs nothing of React — a use case over hand-made fakes, a repository contract —
 // doesn't import this at all; those build their own set and always did (`__tests__/contracts/`).
 //
+// Task 118 · the storage underneath is the SQLite adapter the app itself runs on, not a test
+// double of it: `emptyTestDatabase()` gives each test a migrated database of its own, on
+// better-sqlite3 `:memory:`, and every screen rendered here reads through the same repositories
+// the phone does. It costs about 0.7 ms per test to open, and the foreign keys are real — a test
+// that seeds a set log for an exercise it never created is now told so.
+//
 // Not a test file itself — see `testPathIgnorePatterns` in jest.config.js.
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -23,13 +29,17 @@ import type { PropsWithChildren, ReactElement } from 'react';
 
 import type { RepositorySet } from '@repositories/repositorySet';
 import { RepositoriesProvider } from '@state/repositories';
-import { createInMemoryRepositories } from '@storage/repositories';
+import { createSqliteRepositories } from '@storage/sqlite/repositories';
+
+import { emptyTestDatabase, type TestDatabase } from './sqliteDatabase';
 
 // One test runs at a time and Jest gives each file its own module registry, so the current test's
 // storage and query client live here rather than being threaded through every call below.
-let current: { repositories: RepositorySet; client: QueryClient } | null = null;
+type Current = { database: TestDatabase; repositories: RepositorySet; client: QueryClient };
 
-function active(): { repositories: RepositorySet; client: QueryClient } {
+let current: Current | null = null;
+
+function active(): Current {
   if (!current) {
     throw new Error(
       'No storage for this test — call withRepositories() at the top level of the file, and render from inside a test.',
@@ -50,15 +60,17 @@ function providers({ children }: PropsWithChildren) {
 }
 
 /**
- * Gives every test in the file its own empty in-memory storage and its own query client, and
- * hands back a getter for the storage — for seeding it in a `beforeEach` and reading it back in
- * an assertion. Call once, at the top level of the file and before any `beforeEach` that seeds:
- * hooks run in the order they were registered.
+ * Gives every test in the file its own empty database and its own query client, and hands back a
+ * getter for the storage — for seeding it in a `beforeEach` and reading it back in an assertion.
+ * Call once, at the top level of the file and before any `beforeEach` that seeds: hooks run in
+ * the order they were registered.
  */
 export function withRepositories(): () => RepositorySet {
-  beforeEach(() => {
+  beforeEach(async () => {
+    const database = await emptyTestDatabase();
     current = {
-      repositories: createInMemoryRepositories(),
+      database,
+      repositories: createSqliteRepositories(database.db),
       // `gcTime: 0` so nothing this test cached outlives it — see __tests__/state/queryClient.test.tsx.
       client: new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { gcTime: 0 } },
@@ -69,6 +81,7 @@ export function withRepositories(): () => RepositorySet {
   afterEach(() => {
     current?.client.clear();
     current?.client.unmount();
+    current?.database.close();
     current = null;
   });
 
