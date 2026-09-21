@@ -43,6 +43,25 @@ as JavaScript). `migrationBundle.ts` is the single place that imports the genera
 `drizzle/` is generated. Never hand-edit a migration that has shipped: a database that already
 applied it will not apply it again.
 
+## The exercise catalog (task 067(2))
+
+The catalog ships as a migration too, not as a step at startup: `drizzle/0001_seed_catalog.sql`
+is one upsert carrying every exercise. It is reference data with ids baked into the app, so the
+journal that decides whether a schema change has been applied decides the same for catalog
+content, and there is no second version number to keep in step by hand.
+
+Change `domain/exerciseCatalog.ts`, then run `npm run catalog:migration` — it asks drizzle-kit
+for an empty custom migration and writes the whole catalog into it. `scripts/catalogMigration.ts`
+explains why it emits the entire catalog rather than a difference, and which columns a re-seed is
+allowed to overwrite: never `is_hidden`, which is the user's, and never `created_at`.
+
+Drizzle cannot generate this itself — its snapshot models tables and columns and has no notion of
+rows, so `generate` has nothing to diff. `generate --custom` is its supported hook for exactly
+this, and that is what the script drives.
+
+One test guards the whole arrangement: after migrating, the catalog in the database must equal
+`EXERCISE_CATALOG`. Edit the catalog without generating a migration and it fails.
+
 `MuscleGroupCatalogRepository` is shared by both adapters rather than duplicated: muscle groups
 are a fixed enum in the domain (02 · Domain Model), so there is nothing stored for an engine to
 differ about.

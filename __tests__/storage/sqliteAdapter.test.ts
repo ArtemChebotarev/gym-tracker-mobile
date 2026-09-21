@@ -4,7 +4,7 @@ import { isConflictError, isStorageUnavailableError } from '@domain/errors';
 import type { Unsaved } from '@domain/timestamps';
 import { createSqliteRepositories } from '@storage/sqlite/repositories';
 
-import { migratedTestDatabase } from '../fixtures/sqliteDatabase';
+import { emptyTestDatabase } from '../fixtures/sqliteDatabase';
 
 // What is this adapter's own business rather than the repository contract's (task 067). The
 // contract says what every implementation does; these say how *this* one behaves where a
@@ -13,7 +13,7 @@ import { migratedTestDatabase } from '../fixtures/sqliteDatabase';
 // behaves. See `sqliteContract.test.ts` for the shared suite.
 
 async function createRepositories() {
-  const { db, close } = await migratedTestDatabase();
+  const { db, close } = await emptyTestDatabase();
   return { close, ...createSqliteRepositories(db) };
 }
 
