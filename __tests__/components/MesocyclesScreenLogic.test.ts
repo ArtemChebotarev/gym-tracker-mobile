@@ -7,6 +7,7 @@ import {
   getWeekDots,
   groupMesocycles,
   isEmptyGroups,
+  mesocycleStoppedBadge,
 } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -26,10 +27,9 @@ function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
 }
 
 describe('groupMesocycles', () => {
-  test('splits by status, drops abandoned, and orders completed newest-finished first', () => {
+  test('splits by status and orders completed newest-finished first', () => {
     const active = makeMesocycle({ id: 'a', status: 'active' });
     const planned = makeMesocycle({ id: 'p', status: 'planned' });
-    const abandoned = makeMesocycle({ id: 'x', status: 'abandoned' });
     const older = makeMesocycle({
       id: 'c1',
       status: 'completed',
@@ -41,17 +41,41 @@ describe('groupMesocycles', () => {
       completedAt: '2026-08-01T00:00:00.000Z',
     });
 
-    const groups = groupMesocycles([older, abandoned, planned, newer, active]);
+    const groups = groupMesocycles([older, planned, newer, active]);
 
     expect(groups.active).toBe(active);
     expect(groups.planned).toEqual([planned]);
     expect(groups.completed.map((m) => m.id)).toEqual(['c2', 'c1']);
   });
 
+  test('a stopped block is listed with the completed ones, by when it ended (052)', () => {
+    const stopped = makeMesocycle({
+      id: 'x',
+      status: 'abandoned',
+      completedAt: '2026-07-01T00:00:00.000Z',
+    });
+    const finished = makeMesocycle({
+      id: 'c1',
+      status: 'completed',
+      completedAt: '2026-05-01T00:00:00.000Z',
+    });
+
+    expect(groupMesocycles([finished, stopped]).completed.map((m) => m.id)).toEqual(['x', 'c1']);
+  });
+
   test('isEmptyGroups is true only when nothing renders', () => {
     expect(isEmptyGroups(groupMesocycles([]))).toBe(true);
-    expect(isEmptyGroups(groupMesocycles([makeMesocycle({ status: 'abandoned' })]))).toBe(true);
+    expect(isEmptyGroups(groupMesocycles([makeMesocycle({ status: 'abandoned' })]))).toBe(false);
     expect(isEmptyGroups(groupMesocycles([makeMesocycle({ status: 'planned' })]))).toBe(false);
+  });
+});
+
+describe('mesocycleStoppedBadge', () => {
+  test('DoD: a stopped block is marked, a finished one is not (052)', () => {
+    expect(mesocycleStoppedBadge(makeMesocycle({ status: 'abandoned' }))).toEqual({
+      label: 'Stopped',
+    });
+    expect(mesocycleStoppedBadge(makeMesocycle({ status: 'completed' }))).toBeUndefined();
   });
 });
 

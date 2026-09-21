@@ -12,6 +12,7 @@
 // __tests__/fixtures/mesocycleMocks.ts.
 
 import { useRepositories } from '@state/repositories';
+import type { MesocycleClosingDeps } from '@usecases/mesocycleClosing';
 import type { MesocycleCreationDeps } from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
@@ -36,6 +37,12 @@ export function useMesocycleEditingDeps(): MesocycleEditingDeps {
 export function useMesocycleStartDeps(): MesocycleStartDeps {
   const { mesocycleStartStore } = useRepositories();
   return { store: mesocycleStartStore };
+}
+
+/** What Finish and Stop mesocycle (052) need: the store whose transaction closes a whole block. */
+export function useMesocycleClosingDeps(): MesocycleClosingDeps {
+  const { mesocycleClosingStore } = useRepositories();
+  return { store: mesocycleClosingStore };
 }
 
 export function useMesoGridDeps(): MesoGridDeps {

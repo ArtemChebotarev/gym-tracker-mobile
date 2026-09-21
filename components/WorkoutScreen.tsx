@@ -15,7 +15,10 @@
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
 // A read-only session shows a secondary `Next workout` button in the same place when the model has
-// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap.
+// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap. When
+// there is no next session because the block is done, `showFinishMesocycle` puts a primary
+// `Finish mesocycle` there instead (052): the block is closed by hand, never on its own, so the
+// last workout of a mesocycle ends with the button that ends the mesocycle.
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day. With no
@@ -73,6 +76,10 @@ export type WorkoutScreenProps = {
   isFinishing: boolean;
   /** Opens the session `Next workout` points at. Read-only only. */
   onOpenNext: (sessionId: string) => void;
+  /** Closes the mesocycle (052). Only offered when `showFinishMesocycle`. */
+  onFinishMesocycle: () => void;
+  /** The mesocycle's Finish is being saved — the button is disabled so it can't be pressed twice. */
+  isFinishingMesocycle: boolean;
   /**
    * The EmptyState shown in place of the screen when there's no session to show — none to pick,
    * or it couldn't be loaded. The caller knows which, so it supplies the copy and the way forward.
@@ -95,6 +102,8 @@ export function WorkoutScreen({
   onFinish,
   isFinishing,
   onOpenNext,
+  onFinishMesocycle,
+  isFinishingMesocycle,
   fallback,
 }: WorkoutScreenProps) {
   if (isPending) {
@@ -192,6 +201,15 @@ export function WorkoutScreen({
                 label="Next workout"
                 variant="secondary"
                 onPress={() => onOpenNext(nextSessionId)}
+              />
+            </View>
+          )}
+          {model.showFinishMesocycle && (
+            <View style={styles.finish}>
+              <Button
+                label="Finish mesocycle"
+                onPress={onFinishMesocycle}
+                disabled={isFinishingMesocycle}
               />
             </View>
           )}

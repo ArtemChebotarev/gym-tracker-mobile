@@ -2,7 +2,9 @@
 // 08.3 · Мезоциклы — список (task 074).
 
 import type { Mesocycle } from '@domain/mesocycle';
+import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
 import { parseUtcIso } from '@domain/time';
+import type { ListRowBadge } from '@design/components/ListRow';
 import { formatAbsoluteDate } from '@design/formatDate';
 
 export type MesocycleGroups = {
@@ -13,18 +15,32 @@ export type MesocycleGroups = {
 
 /**
  * Splits mesocycles into the list's three groups (08.3: fixed order Active → Planned →
- * Completed). `abandoned` mesocycles belong to none of them and aren't shown. Planned order isn't
- * designed (08.3: "упорядочивание не проектируем"), so it's left as the repository returns it;
- * Completed is newest-finished first.
+ * Completed). Planned order isn't designed (08.3: "упорядочивание не проектируем"), so it's left
+ * as the repository returns it; Completed is newest-finished first.
+ *
+ * Completed holds both ways a block ends — `completed` and `abandoned` (task 052). 08.3 used to
+ * show neither an abandoned block nor anything else about it, which was invisible while nothing
+ * could produce one; once Stop mesocycle could, stopping a block made it and every set logged in
+ * it disappear from the app, with no screen left to reach its history from. A stopped block is
+ * still a block that happened, so it is listed with the rest and told apart by its badge
+ * (`mesocycleStoppedBadge`) rather than hidden.
  */
 export function groupMesocycles(mesocycles: readonly Mesocycle[]): MesocycleGroups {
   return {
     active: mesocycles.find((mesocycle) => mesocycle.status === 'active') ?? null,
     planned: mesocycles.filter((mesocycle) => mesocycle.status === 'planned'),
     completed: mesocycles
-      .filter((mesocycle) => mesocycle.status === 'completed')
+      .filter((mesocycle) => isFinalMesocycle(mesocycle))
       .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '')),
   };
+}
+
+/**
+ * The `Stopped` badge on a Completed row, for a block that was stopped rather than finished (052).
+ * A block that ran its course gets none — that is what the section already means.
+ */
+export function mesocycleStoppedBadge(mesocycle: Mesocycle): ListRowBadge | undefined {
+  return mesocycle.status === 'abandoned' ? { label: 'Stopped' } : undefined;
 }
 
 /** True when no group has anything to render — the first-launch `EmptyState` case. */

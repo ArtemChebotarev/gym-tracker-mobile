@@ -1,6 +1,7 @@
 import type { BackupStore } from '@repositories/backup';
 import type { ExerciseRepository, MuscleGroupRepository } from '@repositories/catalog';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
+import type { MesocycleClosingStore } from '@repositories/mesocycleClosing';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { MesocycleStartStore } from '@repositories/mesocycleStart';
 import type { SessionRepository } from '@repositories/session';
@@ -36,5 +37,6 @@ export type RepositorySet = {
   sessionTreeRepo: SessionTreeRepository;
   workoutStore: WorkoutStore;
   mesocycleStartStore: MesocycleStartStore;
+  mesocycleClosingStore: MesocycleClosingStore;
   backupStore: BackupStore;
 };

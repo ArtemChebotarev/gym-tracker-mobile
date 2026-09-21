@@ -4,6 +4,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
 import { mesocycleDetailHref } from '@components/historyRoutes';
+import { STOP_MESOCYCLE_PHRASE } from '@components/StopMesocycleSheetLogic';
 import { SKIP_WORKOUT_WARNING } from '@components/WorkoutMenuSheetLogic';
 
 import {
@@ -108,18 +109,66 @@ describe('Today tab — header menu', () => {
     expect(mockPush).toHaveBeenCalledWith(mesocycleDetailHref(WORKOUT_FIXTURE_IDS.mesocycle));
   });
 
-  test.each(['Rename mesocycle', 'Stop mesocycle'])(
-    '%s explains it is not available yet',
-    async (label) => {
-      renderToday();
-      await screen.findByText('Week 2 Day 1');
+  test('Rename mesocycle explains it is not available yet', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
 
-      openMenu();
-      fireEvent.press(screen.getByRole('button', { name: label }));
+    openMenu();
+    fireEvent.press(screen.getByRole('button', { name: 'Rename mesocycle' }));
 
-      expect(alertSpy).toHaveBeenCalledWith('Not available yet', expect.any(String));
-    },
-  );
+    expect(alertSpy).toHaveBeenCalledWith('Not available yet', expect.any(String));
+  });
+
+  test('DoD: Stop mesocycle waits for the phrase, then abandons the block (052)', async () => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+
+    openMenu();
+    fireEvent.press(screen.getByRole('button', { name: 'Stop mesocycle' }));
+
+    // The sheet's own button, not the menu row that opened it — it stays inert until typed into.
+    const confirm = await screen.findByRole('button', { name: 'Stop mesocycle' });
+    expect(confirm.props.accessibilityState?.disabled).toBe(true);
+    fireEvent.press(confirm);
+    expect(
+      (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.status,
+    ).toBe('active');
+
+    fireEvent.changeText(
+      screen.getByLabelText(`Type ${STOP_MESOCYCLE_PHRASE} to confirm`),
+      STOP_MESOCYCLE_PHRASE,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Stop mesocycle' }));
+
+    await waitFor(async () => {
+      expect(await repositories().mesocycleRepo.getActive()).toBeNull();
+    });
+    const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
+    expect(mesocycle?.status).toBe('abandoned');
+    // The live session had two sets logged, so it is completed rather than skipped, and they stay.
+    const live = await repositories().workoutStore.repos.sessionRepo.getById(
+      WORKOUT_FIXTURE_IDS.live,
+    );
+    expect(live?.status).toBe('completed');
+    await expect(
+      repositories().workoutStore.repos.setLogRepo.listBySessionId(WORKOUT_FIXTURE_IDS.live),
+    ).resolves.toHaveLength(2);
+    // With no active mesocycle left, the tab invites planning the next one.
+    expect(await screen.findByText('Plan your training block')).toBeTruthy();
+  });
+
+  test('a day of a block that is no longer active has nothing to stop (052)', async () => {
+    const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
+    await repositories().mesocycleRepo.update({ ...mesocycle!, status: 'abandoned' });
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
+    renderToday();
+    await screen.findByText('Week 1 Day 1');
+
+    openMenu();
+
+    expect(screen.queryByRole('button', { name: 'Stop mesocycle' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Mesocycle history' })).toBeTruthy();
+  });
 
   test('Add exercise adds the picked exercises to the end of the session', async () => {
     renderToday();

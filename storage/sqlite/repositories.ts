@@ -6,6 +6,7 @@ import type { SqliteDatabase } from './db';
 import { SqliteExerciseHistoryRepository } from './exerciseHistory';
 import { SqliteExerciseRepository } from './exerciseRepository';
 import { SqliteMesocycleRepository } from './mesocycle';
+import { createSqliteMesocycleClosingStore } from './mesocycleClosingStore';
 import { createSqliteMesocycleStartStore } from './mesocycleStartStore';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
@@ -44,6 +45,7 @@ export function createSqliteRepositories(db: SqliteDatabase): RepositorySet {
     sessionTreeRepo: new SqliteSessionTreeRepository(db),
     workoutStore: createSqliteWorkoutStore(db),
     mesocycleStartStore: createSqliteMesocycleStartStore(db),
+    mesocycleClosingStore: createSqliteMesocycleClosingStore(db),
     backupStore: createSqliteBackupStore(db),
   };
 }

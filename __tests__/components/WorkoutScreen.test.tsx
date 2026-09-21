@@ -61,8 +61,9 @@ const LIVE: WorkoutSessionModel = {
   },
   progress: 0.4,
   exercises: [makeExercise()],
-  actions: { canAddExercise: true, canSkipWorkout: false },
+  actions: { canAddExercise: true, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
+  showFinishMesocycle: false,
 };
 
 const COMPLETED: WorkoutSessionModel = {
@@ -70,7 +71,7 @@ const COMPLETED: WorkoutSessionModel = {
   mode: 'readonly',
   header: { ...LIVE.header, isCompleted: true },
   progress: 1,
-  actions: { canAddExercise: false, canSkipWorkout: false },
+  actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
 };
 
 const PREVIEW: WorkoutSessionModel = {
@@ -85,8 +86,9 @@ const PREVIEW: WorkoutSessionModel = {
   },
   progress: 0,
   exercises: [makeExercise({ targetRir: undefined })],
-  actions: { canAddExercise: false, canSkipWorkout: false },
+  actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
+  showFinishMesocycle: false,
   unlocksAfter: { weekNumber: 6, dayNumber: 3 },
 };
 
@@ -104,6 +106,8 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onFinish: jest.fn(),
     isFinishing: false,
     onOpenNext: jest.fn(),
+    onFinishMesocycle: jest.fn(),
+    isFinishingMesocycle: false,
     fallback: {
       title: 'Pick another workout',
       description: 'Choose another day to train.',
@@ -345,6 +349,50 @@ describe('WorkoutScreen Next workout', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
 
     expect(screen.queryByRole('button', { name: 'Next workout' })).toBeNull();
+  });
+});
+
+describe('WorkoutScreen Finish mesocycle', () => {
+  test('DoD: the last workout of a block offers to finish it, and does so on press (052)', () => {
+    const onFinishMesocycle = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({
+          model: { ...COMPLETED, showFinishMesocycle: true },
+          onFinishMesocycle,
+        })}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
+
+    expect(onFinishMesocycle).toHaveBeenCalledTimes(1);
+  });
+
+  test('not there while the block still has workouts left', () => {
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: { ...COMPLETED, nextSessionId: 'session-2' } })} />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Next workout' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish mesocycle' })).toBeNull();
+  });
+
+  test('waits while the block is being closed, so a double tap cannot repeat it', () => {
+    const onFinishMesocycle = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({
+          model: { ...COMPLETED, showFinishMesocycle: true },
+          onFinishMesocycle,
+          isFinishingMesocycle: true,
+        })}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
+
+    expect(onFinishMesocycle).not.toHaveBeenCalled();
   });
 });
 

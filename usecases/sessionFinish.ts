@@ -5,6 +5,7 @@
 
 import { ConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
+import { closedSession } from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import { canFinishSession } from '@domain/workoutViewRules';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
@@ -63,10 +64,6 @@ export async function closeSession(
   now: string,
 ): Promise<SessionFinishResult> {
   const logs = await repos.setLogRepo.listBySessionId(session.id);
-  const finished = await repos.sessionRepo.update(
-    logs.length > 0
-      ? { ...session, status: 'completed', completedAt: now }
-      : { ...session, status: 'skipped' },
-  );
+  const finished = await repos.sessionRepo.update(closedSession(session, logs.length > 0, now));
   return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
 }

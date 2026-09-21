@@ -27,14 +27,14 @@ const HEADER: WorkoutSessionModel['header'] = {
 
 // What 088 allows in each mode: everything live with an exercise left to do, nothing
 // session-level in read-only or preview.
-const LIVE = { header: HEADER, actions: { canAddExercise: true, canSkipWorkout: true } };
+const LIVE = { header: HEADER, actions: { canAddExercise: true, canSkipWorkout: true, canStopMesocycle: true } };
 const READ_ONLY = {
   header: { ...HEADER, isCompleted: true },
-  actions: { canAddExercise: false, canSkipWorkout: false },
+  actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
 };
 const PREVIEW = {
   header: { ...HEADER, weekNumber: 7 },
-  actions: { canAddExercise: false, canSkipWorkout: false },
+  actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
 };
 
 function makeProps(overrides: Partial<WorkoutMenuSheetProps> = {}): WorkoutMenuSheetProps {
@@ -107,7 +107,7 @@ describe('WorkoutMenuSheet', () => {
     renderWithSafeArea(
       <WorkoutMenuSheet
         {...makeProps({
-          model: { header: HEADER, actions: { canAddExercise: true, canSkipWorkout: false } },
+          model: { header: HEADER, actions: { canAddExercise: true, canSkipWorkout: false, canStopMesocycle: true } },
         })}
       />,
     );

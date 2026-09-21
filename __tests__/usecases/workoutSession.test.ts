@@ -165,7 +165,11 @@ describe('getWorkoutSession — live', () => {
     expect(model.progress).toBeCloseTo(2 / 5);
     expect(model.showFinish).toBe(false);
     // A set is logged, but an exercise is left to do — Skip workout skips it.
-    expect(model.actions).toEqual({ canAddExercise: true, canSkipWorkout: true });
+    expect(model.actions).toEqual({
+      canAddExercise: true,
+      canSkipWorkout: true,
+      canStopMesocycle: true,
+    });
 
     const [benchCard, rowCard] = model.exercises;
     expect(benchCard).toMatchObject({
@@ -350,6 +354,50 @@ describe('getWorkoutSession — Finish', () => {
   });
 });
 
+describe('getWorkoutSession — Finish mesocycle', () => {
+  test('DoD: a read-only session with nothing left in the block offers to finish it (052)', async () => {
+    const { deps } = await setUp({
+      sessions: [w1d1, { ...w1d2, status: 'skipped' }],
+      exercises: [w1Bench, w1Squat],
+    });
+
+    const model = await getWorkoutSession('w1d1', deps);
+
+    expect(model.showFinishMesocycle).toBe(true);
+    // Nothing to move on to — Finish mesocycle stands where `Next workout` would.
+    expect(model.nextSessionId).toBeUndefined();
+  });
+
+  test('not while a workout is still to be trained', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSession('w1d1', deps);
+
+    expect(model.showFinishMesocycle).toBe(false);
+    expect(model.nextSessionId).toBe('w2d1');
+  });
+
+  test('never from a live session — that session is itself what is left', async () => {
+    const { deps } = await setUp({ sessions: [w2d1], exercises: [bench, row] });
+
+    expect((await getWorkoutSession('w2d1', deps)).showFinishMesocycle).toBe(false);
+  });
+
+  test('not once the block itself is closed — and Stop mesocycle goes with it', async () => {
+    const { store, deps } = await setUp({
+      sessions: [w1d1, { ...w1d2, status: 'skipped' }],
+      exercises: [w1Bench, w1Squat],
+    });
+    const mesocycleRepo = new InMemoryMesocycleRepository(store);
+    await mesocycleRepo.update({ ...mesocycle, status: 'completed', completedAt: NOW });
+
+    const model = await getWorkoutSession('w1d1', deps);
+
+    expect(model.showFinishMesocycle).toBe(false);
+    expect(model.actions.canStopMesocycle).toBe(false);
+  });
+});
+
 describe('getWorkoutSession — read-only', () => {
   test('a completed session is full, dated by completedAt, checked, with no actions', async () => {
     const { deps } = await setUp();
@@ -359,7 +407,11 @@ describe('getWorkoutSession — read-only', () => {
     expect(model.mode).toBe('readonly');
     expect(model.header).toMatchObject({ date: '2026-09-01T10:00:00.000Z', isCompleted: true });
     expect(model.progress).toBe(1);
-    expect(model.actions).toEqual({ canAddExercise: false, canSkipWorkout: false });
+    expect(model.actions).toEqual({
+      canAddExercise: false,
+      canSkipWorkout: false,
+      canStopMesocycle: true,
+    });
     expect(model.exercises[0]?.actions).toEqual({
       canReplace: false,
       canAddSet: false,

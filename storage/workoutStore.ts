@@ -5,7 +5,12 @@ import { InMemorySessionExerciseRepository } from './sessionExercise';
 import { InMemorySetLogRepository } from './setLogRepository';
 import type { InMemoryStore } from './store';
 
-function workoutRepositoriesOver(store: InMemoryStore): WorkoutRepositories {
+/**
+ * The workout repositories over `store` — exported because the mesocycle-closing store is the same
+ * set plus the mesocycle (see `createInMemoryMesocycleClosingStore`), and a second hand-written
+ * copy of the list would drift the next time it changes.
+ */
+export function workoutRepositoriesOver(store: InMemoryStore): WorkoutRepositories {
   return {
     sessionRepo: new InMemorySessionRepository(store),
     sessionExerciseRepo: new InMemorySessionExerciseRepository(store),

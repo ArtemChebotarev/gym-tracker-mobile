@@ -34,6 +34,29 @@ describe('ListRow', () => {
     expect(screen.getByText('Custom')).toBeTruthy();
   });
 
+  test('a badge sits in a wrapper so the row can centre it', () => {
+    // Badge carries `alignSelf: 'flex-start'` so it shrink-wraps in a column; dropped straight
+    // into this row it overrode `alignItems: 'center'` and rode above the pill beside it (Artem,
+    // 21.09.2026). The wrapper keeps that alignSelf off the row's cross axis. Snapshotted rather
+    // than asserted on styles: what broke was the shape of the tree, and that is what this holds.
+    const tree = render(
+      <ListRow
+        title="Test"
+        subtitle="3 weeks"
+        badge={{ label: 'Stopped' }}
+        trailing={{
+          type: 'actions',
+          actionLabel: 'Copy',
+          actionVariant: 'secondary',
+          onAction: jest.fn(),
+          onMenu: jest.fn(),
+        }}
+      />,
+    );
+
+    expect(tree.toJSON()).toMatchSnapshot();
+  });
+
   test('actions trailing accessory calls its own handlers, labeled with the row title', () => {
     const onAction = jest.fn();
     const onMenu = jest.fn();

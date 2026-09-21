@@ -9,6 +9,7 @@ import { NotFoundError } from '@domain/errors';
 import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@domain/execution';
 import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
+import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/progressionPlan';
 import { targetIndicator } from '@domain/progressionTargetIndicator';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
@@ -137,6 +138,12 @@ export type WorkoutSessionActions = {
    * тренировку"). Once every exercise is done, Finish takes its place.
    */
   canSkipWorkout: boolean;
+  /**
+   * The mesocycle is `active` (052). Stop is a mesocycle action, so it's there in every mode — a
+   * day of the block opened read-only can still be the one you call the block off from — but a
+   * block already closed has nothing to stop.
+   */
+  canStopMesocycle: boolean;
 };
 
 export type WorkoutSessionModel = {
@@ -157,6 +164,12 @@ export type WorkoutSessionModel = {
   actions: WorkoutSessionActions;
   /** The `Finish workout` button: live, and every exercise `completed` or `skipped`. */
   showFinish: boolean;
+  /**
+   * The `Finish mesocycle` button (052): the block is `active` and every session of it is final —
+   * this is the last workout, already done. It closes the block by hand; nothing closes it on its
+   * own (Artem's review of 052).
+   */
+  showFinishMesocycle: boolean;
   /**
    * Read-only only: the session the `Next workout` button opens — the mesocycle's current one (in
    * progress, else the earliest ready; see `currentSession`). Absent when nothing is left to do.
@@ -300,17 +313,20 @@ function toExercise(
 
 /**
  * A live or read-only session, from its own tree. `source` is the tree of the session a deload
- * session was planned from (`null` otherwise) — see `referenceReps`. `next` is the mesocycle's
- * current session, for `nextSessionId`.
+ * session was planned from (`null` otherwise) — see `referenceReps`. `mesoSessions` is every
+ * session of the mesocycle, which answers what `Next workout` opens and whether the block has
+ * anything left to train; it is loaded for a read-only session only, and `null` while the session
+ * is live — a live session is itself the proof that the block isn't done.
  */
 function fromTree(
   tree: SessionTree,
   source: SessionTree | null,
-  next: Session | undefined,
+  mesoSessions: readonly Session[] | null,
 ): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
   const mode = workoutMode(session);
   const live = mode === 'live';
+  const next = mesoSessions === null ? undefined : currentSession(mesoSessions);
   const header: WorkoutHeader = {
     weekNumber: session.weekNumber,
     dayNumber: session.dayNumber,
@@ -342,8 +358,10 @@ function fromTree(
     actions: {
       canAddExercise: live && !session.isDeload,
       canSkipWorkout: live && !canFinishSession(sessionExercises),
+      canStopMesocycle: mesocycle.status === 'active',
     },
     showFinish: live && canFinishSession(sessionExercises),
+    showFinishMesocycle: mesoSessions !== null && canFinishMesocycle(mesocycle, mesoSessions),
   };
   if (mesocycle.bodyWeight !== undefined) {
     model.bodyWeight = mesocycle.bodyWeight;
@@ -401,8 +419,14 @@ async function previewOf(
       }
       return preview;
     }),
-    actions: { canAddExercise: false, canSkipWorkout: false },
+    actions: {
+      canAddExercise: false,
+      canSkipWorkout: false,
+      canStopMesocycle: tree.mesocycle.status === 'active',
+    },
     showFinish: false,
+    // A preview is a day still to come, so the block always has it left to train.
+    showFinishMesocycle: false,
     unlocksAfter: { weekNumber, dayNumber },
   };
   if (session) {
@@ -435,11 +459,9 @@ export async function getWorkoutSession(
     isDeload && sourceSessionId !== undefined
       ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
       : null;
-  const next =
-    workoutMode(tree.session) === 'readonly'
-      ? currentSession(await deps.sessionRepo.listByMesoId(mesoId))
-      : undefined;
-  return fromTree(tree, source, next);
+  const mesoSessions =
+    workoutMode(tree.session) === 'readonly' ? await deps.sessionRepo.listByMesoId(mesoId) : null;
+  return fromTree(tree, source, mesoSessions);
 }
 
 /**

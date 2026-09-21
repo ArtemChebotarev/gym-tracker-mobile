@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
+<View
+  style={
+    {
+      "borderBottomColor": "#1E2125",
+      "borderBottomWidth": 1,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "gap": 8,
+        "paddingVertical": 12,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "baseline",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#F5F5F4",
+              "flexShrink": 1,
+              "fontSize": 17,
+              "fontWeight": "400",
+            }
+          }
+        >
+          Test
+        </Text>
+      </View>
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#6B7076",
+            "fontSize": 15,
+            "fontWeight": "400",
+          }
+        }
+      >
+        3 weeks
+      </Text>
+    </View>
+    <View>
+      <View
+        style={
+          [
+            {
+              "alignSelf": "flex-start",
+              "borderRadius": 20,
+              "paddingHorizontal": 10,
+              "paddingVertical": 8,
+            },
+            {
+              "backgroundColor": "#1A1C1F",
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#C9CDD2",
+              },
+            ]
+          }
+        >
+          Stopped
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 10,
+        }
+      }
+    >
+      <View
+        accessibilityLabel="Copy Test"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={6}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "borderRadius": 20,
+              "borderWidth": 1,
+              "height": 32,
+              "justifyContent": "center",
+              "paddingHorizontal": 12,
+            },
+            {
+              "borderColor": "#2A2D31",
+            },
+            false,
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "fontSize": 17,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#C9CDD2",
+              },
+            ]
+          }
+        >
+          Copy
+        </Text>
+      </View>
+      <View
+        accessibilityLabel="More actions for Test"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={4}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 18,
+              "height": 36,
+              "justifyContent": "center",
+              "width": 36,
+            },
+            {
+              "backgroundColor": "#1A1C1F",
+            },
+            false,
+            false,
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#C9CDD2",
+              "fontSize": 20,
+            }
+          }
+        >
+          ⋯
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
