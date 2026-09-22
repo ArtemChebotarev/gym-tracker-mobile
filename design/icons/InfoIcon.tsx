@@ -1,4 +1,5 @@
-// `info` — Circled "i" — the `Not programmed yet` plate (08.7, "Preview").
+// `info` — Circled "i" — the `Not programmed yet` plate (08.7, "Preview"), the weight-swap ⓘ
+// beside the Reps column and the InlineNote inside a card (08.7.1).
 
 import { Circle, Path } from 'react-native-svg';
 

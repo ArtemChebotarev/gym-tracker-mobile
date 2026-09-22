@@ -1,3 +1,5 @@
+import { defaultProgressionSettings } from '@domain/mesocycle';
+import { buildWeightSwap } from '@domain/weightSwapRules';
 import {
   formatIndicator,
   formatLoggedWeight,
@@ -9,6 +11,7 @@ import {
   parseWeight,
   repsPlaceholder,
   resolveSetEntry,
+  rowEvaluation,
 } from '@components/WorkoutSetRowLogic';
 
 describe('formatRowWeight', () => {
@@ -195,5 +198,80 @@ describe('the Weight column on a bodyweight exercise (task 105)', () => {
     test('an ordinary exercise ignores the body weight entirely', () => {
       expect(initialWeightText({ suggestedWeight: 60 }, 'barbell', 80)).toBe('60');
     });
+  });
+});
+
+// The weight swap half of the row (08.7.1 · Другой вес; task 121). The zones and reps come from
+// `evaluateWeightSwap`; these are about what the row does with them.
+describe('the row at another weight', () => {
+  const swap = buildWeightSwap({
+    target: { targetReps: 10, suggestedWeight: 15 },
+    settings: defaultProgressionSettings,
+    isDeload: false,
+    equipment: 'dumbbell',
+  });
+  const row = { targetReps: 10, suggestedWeight: 15, weightSwap: swap };
+
+  function evaluationAt(weightText: string) {
+    return rowEvaluation(row, weightText);
+  }
+
+  test('the target weight leaves the placeholder as the target', () => {
+    expect(repsPlaceholder(row, 2, evaluationAt('15'))).toBe('10');
+  });
+
+  test('a close weight reads as an ordinary target of its own', () => {
+    expect(repsPlaceholder(row, 2, evaluationAt('14'))).toBe('12');
+    expect(isRirPlaceholder(row, 2, evaluationAt('14'))).toBe(false);
+  });
+
+  test('a far weight is marked as an estimate', () => {
+    expect(repsPlaceholder(row, 2, evaluationAt('10'))).toBe('~19');
+  });
+
+  test('past the rep corridor there is no target — the placeholder falls back to RIR', () => {
+    expect(repsPlaceholder(row, 2, evaluationAt('20'))).toBe('2 RIR');
+    expect(isRirPlaceholder(row, 2, evaluationAt('20'))).toBe(true);
+  });
+
+  test('an empty Weight field leaves the placeholder where it was', () => {
+    expect(evaluationAt('')).toBeUndefined();
+    expect(repsPlaceholder(row, 2, evaluationAt(''))).toBe('10');
+  });
+
+  test('one tap logs what the placeholder shows, estimate included', () => {
+    expect(resolveSetEntry('14', '', row, evaluationAt('14'))).toEqual({ weight: 14, reps: 12 });
+    expect(resolveSetEntry('10', '', row, evaluationAt('10'))).toEqual({ weight: 10, reps: 19 });
+  });
+
+  test('past the corridor Log waits for typed reps', () => {
+    expect(resolveSetEntry('20', '', row, evaluationAt('20'))).toBeNull();
+    expect(resolveSetEntry('20', '4', row, evaluationAt('20'))).toEqual({ weight: 20, reps: 4 });
+  });
+
+  test('typed reps always win over the placeholder', () => {
+    expect(resolveSetEntry('14', '15', row, evaluationAt('14'))).toEqual({ weight: 14, reps: 15 });
+  });
+
+  test('a set with no swap behind it is the row it always was', () => {
+    const plain = { targetReps: 10, suggestedWeight: 15, weightSwap: undefined };
+
+    expect(rowEvaluation(plain, '10')).toBeUndefined();
+    expect(repsPlaceholder(plain, 2, rowEvaluation(plain, '10'))).toBe('10');
+  });
+
+  test('a weighted bodyweight row reads the added weight it types in', () => {
+    const dip = {
+      targetReps: 7,
+      weightSwap: buildWeightSwap({
+        target: { targetReps: 7, suggestedWeight: 16 },
+        settings: defaultProgressionSettings,
+        isDeload: false,
+        equipment: 'bodyweight-weighted',
+        bodyWeight: 83,
+      }),
+    };
+
+    expect(repsPlaceholder(dip, 2, rowEvaluation(dip, '10'))).toBe('9');
   });
 });

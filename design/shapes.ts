@@ -22,6 +22,11 @@ export function capsule(width: number, height: number) {
   return { width, ...roundedBar(height) };
 }
 
+/** The offset that centres something of the given size on a point it is positioned at. */
+export function centerOffset(size: number): number {
+  return -size / 2;
+}
+
 /**
  * The `hitSlop` that grows a control of the given size to the minimum tap target
  * (`size/tap-target`, 44pt) — the same on every side, none for a control already that big.

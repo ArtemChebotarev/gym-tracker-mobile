@@ -24,11 +24,15 @@
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
-import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { IconButton } from '@design/components/IconButton';
+import { InlineNote } from '@design/components/InlineNote';
+import { Popover } from '@design/components/Popover';
+import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
+import type { AnchorRect } from '@design/popoverLayout';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
@@ -45,12 +49,16 @@ import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import {
   type WeightEdits,
+  type WeightSwapPopover,
   carryWeightForward,
   editWeightText,
   exerciseCardView,
+  firstUnloggedRow,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
+  weightSwapNote,
+  weightSwapPopover,
 } from './WorkoutExerciseCardLogic';
 import { styles } from './WorkoutExerciseCardStyles';
 import { parseWeight } from './WorkoutSetRowLogic';
@@ -98,6 +106,24 @@ export function WorkoutExerciseCard({
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
   const editable = mode === 'live' && !view.isSkipped;
+  // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
+  // — never for whatever is in the Weight field right now (08.7.1).
+  const popover = weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir);
+  const infoRef = useRef<View>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [anchor, setAnchor] = useState<AnchorRect | null>(null);
+
+  function openPopover() {
+    // The plate points at the button, so it measures it — and opens either way: a platform that
+    // answers nothing gets a centred plate rather than a tap that did nothing (see Popover).
+    infoRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
+    setInfoOpen(true);
+  }
+
+  function closePopover() {
+    setInfoOpen(false);
+    setAnchor(null);
+  }
 
   return (
     <View style={styles.root}>
@@ -154,7 +180,26 @@ export function WorkoutExerciseCard({
             <Text style={[styles.valueColumn, styles.columnLabel]}>
               {usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg'}
             </Text>
-            <Text style={[styles.valueColumn, styles.columnLabel]}>Reps</Text>
+            <View style={[styles.valueColumn, styles.repsHeader]}>
+              <Text style={styles.columnLabel}>Reps</Text>
+              {mode === 'live' && popover !== undefined && (
+                <Pressable
+                  ref={infoRef}
+                  accessibilityRole="button"
+                  accessibilityLabel="Weight recommendations"
+                  accessibilityState={{ expanded: infoOpen }}
+                  onPress={openPopover}
+                  style={styles.infoButton}
+                >
+                  <View style={[styles.infoDisc, infoOpen && styles.infoDiscOpen]}>
+                    <InfoIcon
+                      size={ICON_SIZES['icon/glyph']}
+                      color={infoOpen ? COLORS['text/primary'] : COLORS['text/muted']}
+                    />
+                  </View>
+                </Pressable>
+              )}
+            </View>
             <View style={styles.indicatorColumn} />
             <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
           </View>
@@ -176,7 +221,62 @@ export function WorkoutExerciseCard({
         )}
         {view.showSkippedNote && <Text style={styles.skippedNote}>Skipped</Text>}
       </View>
+      {popover !== undefined && (
+        <WeightSwapPopoverPlate
+          popover={popover}
+          visible={infoOpen}
+          anchor={anchor}
+          onClose={closePopover}
+        />
+      )}
     </View>
+  );
+}
+
+/** The ⓘ plate — the ranges of the first unlogged set, or why there are none (08.7.1). */
+function WeightSwapPopoverPlate({
+  popover,
+  visible,
+  anchor,
+  onClose,
+}: {
+  popover: WeightSwapPopover;
+  visible: boolean;
+  anchor: AnchorRect | null;
+  onClose: () => void;
+}) {
+  if (popover.kind === 'no-history') {
+    return (
+      <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
+        <Text style={styles.popoverText}>{popover.text}</Text>
+      </Popover>
+    );
+  }
+  return (
+    <Popover
+      visible={visible}
+      onClose={onClose}
+      anchor={anchor}
+      title={popover.title}
+      subtitle={popover.subtitle}
+    >
+      <RangeTrack
+        outer={popover.outer}
+        inner={popover.inner}
+        marker={popover.marker}
+        labels={popover.labels}
+        accessibilityLabel={popover.title}
+      />
+      <View style={styles.legend}>
+        {popover.legend.map((line) => (
+          <View key={line.label} style={styles.legendRow}>
+            <RangeTrackSwatch span={line.span} />
+            <Text style={styles.legendLabel}>{line.label}</Text>
+            <Text style={styles.legendValue}>{line.value}</Text>
+          </View>
+        ))}
+      </View>
+    </Popover>
   );
 }
 
@@ -240,6 +340,15 @@ function SetRows({
     }
   }
 
+  // One note per card, for the set that is next to do and only while its weight has taken the
+  // target out of reach (08.7.1) — the Weight fields live here, so this is where it can be read.
+  const next = firstUnloggedRow(rows);
+  const note = weightSwapNote(
+    next,
+    next === undefined ? '' : weightFieldText(weights, next, exercise.equipment, bodyWeight),
+    exercise.targetRir,
+  );
+
   return (
     <>
       {rows.map((row) => (
@@ -271,6 +380,7 @@ function SetRows({
           }}
         />
       ))}
+      {editable && note !== undefined && <InlineNote lead={note.lead} text={note.text} />}
     </>
   );
 }

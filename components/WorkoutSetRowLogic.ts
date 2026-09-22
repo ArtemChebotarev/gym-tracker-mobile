@@ -4,6 +4,8 @@ import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
+import type { WeightSwapEvaluation } from '@domain/weightSwap';
+import { evaluateWeightSwap } from '@domain/weightSwapRules';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
@@ -52,19 +54,65 @@ export function formatLoggedWeight(
 }
 
 /**
- * The Reps field's placeholder — the field itself starts empty (08.7, "Строка подхода"):
- * `targetReps` when the set has one; in a deload, last week's actual reps as a guide; otherwise the
- * exercise's target RIR.
+ * What the weight now in this row's Weight field is worth against the row's own target (03, rule
+ * 7; task 120). `undefined` while the field holds no number, or when the set has no swap to read
+ * — a deload set, a pure `bodyweight` one, or one with no target behind it.
+ *
+ * The field holds what the row states: the added weight on a `bodyweight-weighted` exercise, the
+ * weight lifted on any other, which is exactly what `evaluateWeightSwap` expects.
+ */
+export function rowEvaluation(
+  row: Pick<WorkoutSetRow, 'weightSwap'>,
+  weightText: string,
+): WeightSwapEvaluation | undefined {
+  const weight = parseWeight(weightText);
+  return weight === null ? undefined : evaluateWeightSwap(row.weightSwap, weight);
+}
+
+/** The number the Reps placeholder shows, and whether it is only an estimate (`~19`). */
+export type PlaceholderReps = { reps: number; isEstimate: boolean };
+
+/**
+ * The rep count the Reps field suggests, which is also the one a one-tap Log records (task 104).
+ * `undefined` when there is no number to suggest — the placeholder falls back to `N RIR` and Log
+ * waits for typed reps.
+ *
+ * With a weight in the field that isn't the one the target was issued for, the number is what
+ * *that* weight is worth (08.7.1): a close weight reads as an ordinary target, a far one as an
+ * estimate, and a weight off the rep corridor has no target at all. Without an evaluation it is
+ * the set's own `targetReps`, or — in a deload — last working week's reps as a guide.
+ */
+export function placeholderReps(
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  evaluation?: WeightSwapEvaluation,
+): PlaceholderReps | undefined {
+  if (evaluation !== undefined) {
+    return evaluation.zone === 'out'
+      ? undefined
+      : { reps: evaluation.reps, isEstimate: evaluation.zone === 'estimate' };
+  }
+  if (row.targetReps !== undefined) {
+    return { reps: row.targetReps, isEstimate: false };
+  }
+  if (row.referenceReps !== undefined) {
+    return { reps: row.referenceReps, isEstimate: false };
+  }
+  return undefined;
+}
+
+/**
+ * The Reps field's placeholder — the field itself starts empty (08.7, "Строка подхода"): the reps
+ * to aim for, `~` in front when they are an estimate, and the exercise's target RIR when there is
+ * no number to aim for.
  */
 export function repsPlaceholder(
   row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
   targetRir: number | undefined,
+  evaluation?: WeightSwapEvaluation,
 ): string {
-  if (row.targetReps !== undefined) {
-    return String(row.targetReps);
-  }
-  if (row.referenceReps !== undefined) {
-    return String(row.referenceReps);
+  const placeholder = placeholderReps(row, evaluation);
+  if (placeholder !== undefined) {
+    return placeholder.isEstimate ? `~${placeholder.reps}` : String(placeholder.reps);
   }
   return targetRir !== undefined ? formatRir(targetRir) : '–';
 }
@@ -76,8 +124,9 @@ export function repsPlaceholder(
 export function isRirPlaceholder(
   row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
   targetRir: number | undefined,
+  evaluation?: WeightSwapEvaluation,
 ): boolean {
-  return row.targetReps === undefined && row.referenceReps === undefined && targetRir !== undefined;
+  return placeholderReps(row, evaluation) === undefined && targetRir !== undefined;
 }
 
 /** On target or over it reads a step brighter than under it (08.7 mockup) — both neutral text. */
@@ -119,15 +168,19 @@ export function parseReps(text: string): number | null {
  * `targetReps`, or in a deload last week's `referenceReps` (task 104). Either way a row left as
  * recommended logs with one tap, on every week alike; type your own if you did something else.
  * `N RIR` is the exception: it isn't a rep count, so with that placeholder an empty field keeps Log
- * inactive. The rules for a valid entry are the domain's (`validateSetEntry`), not repeated here.
+ * inactive — which now also covers a weight the rep corridor doesn't reach (08.7.1, zone `out`).
+ * The rules for a valid entry are the domain's (`validateSetEntry`), not repeated here.
  */
 export function resolveSetEntry(
   weightText: string,
   repsText: string,
   row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  evaluation?: WeightSwapEvaluation,
 ): { weight: number; reps: number } | null {
   const reps =
-    repsText.trim() === '' ? (row.targetReps ?? row.referenceReps ?? null) : parseReps(repsText);
+    repsText.trim() === ''
+      ? (placeholderReps(row, evaluation)?.reps ?? null)
+      : parseReps(repsText);
   const entry = { weight: parseWeight(weightText), reps };
   try {
     validateSetEntry(entry);
