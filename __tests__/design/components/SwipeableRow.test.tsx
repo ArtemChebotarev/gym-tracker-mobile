@@ -83,12 +83,14 @@ describe('SwipeableRow', () => {
     );
   });
 
-  test('an ordinary trailing action stays on the card surface', () => {
+  test('an ordinary trailing action is a step lighter than the row it comes out from under', () => {
     renderBlockRow();
 
+    // The row itself turns `surface/card` for as long as the swipe lasts, so a capsule drawn in
+    // that colour would disappear into it.
     expect(screen.getByTestId('block-row-edit').props.style).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ backgroundColor: COLORS['surface/card'] }),
+        expect.objectContaining({ backgroundColor: COLORS['surface/control-active'] }),
       ]),
     );
     expect(screen.getByText('Edit').props.style).toEqual(
