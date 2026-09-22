@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
+import { HideIcon } from '@design/icons/HideIcon';
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
@@ -95,7 +96,7 @@ function renderScreen(overrides: Partial<ExerciseDetailScreenProps> = {}) {
     history: HISTORY,
     isHistoryPending: false,
     onBack: jest.fn(),
-    onOpenMenu: jest.fn(),
+    menuItems: [],
     ...overrides,
   };
   const view = render(
@@ -263,13 +264,18 @@ describe('ExerciseDetailScreen', () => {
   });
 
   test('back and the menu call their handlers', () => {
-    const { props } = renderScreen();
+    const onPress = jest.fn();
+    const { props } = renderScreen({
+      menuItems: [
+        { key: 'hide', label: 'Hide', icon: HideIcon, systemImage: 'eye.slash', onPress },
+      ],
+    });
 
     fireEvent.press(screen.getByRole('button', { name: 'Back' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Exercise menu' }));
+    fireEvent(screen.getByTestId('action-menu-hide'), 'buttonPress');
 
     expect(props.onBack).toHaveBeenCalled();
-    expect(props.onOpenMenu).toHaveBeenCalled();
+    expect(onPress).toHaveBeenCalled();
   });
 
   test('shows a loading line while the overview loads', () => {

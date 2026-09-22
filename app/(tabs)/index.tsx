@@ -52,7 +52,12 @@ import {
 } from '@components/TodayScreenLogic';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
-import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
+import {
+  formatDeleteExerciseWarning,
+  formatReplaceExerciseWarning,
+  formatSkipExerciseWarning,
+  type ExerciseMenuItem,
+} from '@components/WorkoutExerciseMenuLogic';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
 import {
   formatWorkoutMenuTitle,
@@ -66,7 +71,11 @@ import {
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
 import { useAddExercises } from '@state/useAddExercises';
-import { useExerciseCommand, useSwapExercise } from '@state/useExerciseCommand';
+import {
+  useExerciseCommand,
+  useSwapExercise,
+  type ExerciseCommand,
+} from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useMesoGrid } from '@state/useMesoGrid';
@@ -98,10 +107,9 @@ export default function TodayScreen() {
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
-  // The exercise whose menu was opened last. Kept after its menu closes, so the sheet keeps its
-  // content while sliding away and Replace's picker knows which exercise it replaces.
+  // The exercise Replace was picked for — the picker that opens next has to know which exercise
+  // it replaces, and the menu it was picked in is gone by then.
   const [menuExercise, setMenuExercise] = useState<WorkoutExercise | undefined>(undefined);
-  const [isExerciseMenuOpen, setIsExerciseMenuOpen] = useState(false);
   const [isReplaceOpen, setIsReplaceOpen] = useState(false);
   // The Stop mesocycle sheet and the phrase typed into it (052) — cleared on every opening, so a
   // half-typed `END MES` from a cancelled attempt never sits there waiting to be completed.
@@ -175,6 +183,75 @@ export default function TodayScreen() {
     Alert.alert("Couldn't update the exercise", 'Please try again.');
   }
 
+  /**
+   * An action picked in an exercise card's `⋯` menu (097). Three of them ask first — Delete and,
+   * with logged sets, Replace are destructive; Skip says what it keeps and what it skips — and the
+   * command runs only once the confirmation is accepted. The rest are one tap.
+   */
+  function runExerciseMenuAction(exercise: WorkoutExercise, item: ExerciseMenuItem) {
+    const confirm = (
+      title: string,
+      message: string,
+      action: { text: string; destructive: boolean; onPress: () => void },
+    ) =>
+      Alert.alert(title, message, [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: action.text,
+          style: action.destructive ? 'destructive' : 'default',
+          onPress: action.onPress,
+        },
+      ]);
+
+    const runCommand = (command: ExerciseCommand) => {
+      if (currentSessionId === undefined) {
+        return;
+      }
+      exerciseCommand.mutate(
+        {
+          command,
+          ref: { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId },
+        },
+        { onError: showExerciseError },
+      );
+    };
+
+    switch (item) {
+      case 'replace': {
+        const openPicker = () => {
+          setMenuExercise(exercise);
+          setIsReplaceOpen(true);
+        };
+        if (!exercise.hasLoggedSets) {
+          openPicker();
+          return;
+        }
+        confirm(
+          'Replace exercise?',
+          formatReplaceExerciseWarning(exercise.name, exercise.loggedSetCount),
+          { text: 'Replace', destructive: true, onPress: openPicker },
+        );
+        return;
+      }
+      case 'skip':
+        confirm(
+          'Skip exercise?',
+          formatSkipExerciseWarning(exercise.plannedSetCount, exercise.loggedSetCount),
+          { text: 'Skip', destructive: false, onPress: () => runCommand('skip') },
+        );
+        return;
+      case 'delete':
+        confirm('Delete exercise?', formatDeleteExerciseWarning(exercise.loggedSetCount), {
+          text: 'Delete',
+          destructive: true,
+          onPress: () => runCommand('delete'),
+        });
+        return;
+      default:
+        runCommand(item);
+    }
+  }
+
   /** The body weight belongs to the mesocycle, not the session (105). */
   function saveBodyWeight(bodyWeight: number) {
     if (model === undefined) {
@@ -220,10 +297,7 @@ export default function TodayScreen() {
         // for exactly that from a workout: its last-session block is the quick check you came
         // for, and History is one tap further in from there.
         onOpenExerciseHistory={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
-        onOpenExerciseMenu={(exercise) => {
-          setMenuExercise(exercise);
-          setIsExerciseMenuOpen(true);
-        }}
+        onExerciseMenuAction={runExerciseMenuAction}
         isSaving={logSet.isPending || unlogSet.isPending}
         onBodyWeightChange={saveBodyWeight}
         onRequestBodyWeight={() => setIsBodyWeightOpen(true)}
@@ -343,27 +417,6 @@ export default function TodayScreen() {
             {
               onError: () => Alert.alert("Couldn't add the exercises", 'Please try again.'),
             },
-          );
-        }}
-      />
-      <WorkoutExerciseMenuSheet
-        visible={isExerciseMenuOpen}
-        onClose={() => setIsExerciseMenuOpen(false)}
-        exercise={menuExercise}
-        onReplace={() => setIsReplaceOpen(true)}
-        onCommand={(command) => {
-          if (currentSessionId === undefined || menuExercise === undefined) {
-            return;
-          }
-          exerciseCommand.mutate(
-            {
-              command,
-              ref: {
-                sessionId: currentSessionId,
-                sessionExerciseId: menuExercise.sessionExerciseId,
-              },
-            },
-            { onError: showExerciseError },
           );
         }}
       />

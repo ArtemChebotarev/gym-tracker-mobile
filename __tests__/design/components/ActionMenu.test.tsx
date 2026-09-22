@@ -72,6 +72,32 @@ describe('ActionMenu — iOS', () => {
     expect(screen.getByTestId('action-menu-stop').props.systemImage).toBe('stop.circle');
   });
 
+  test('an unavailable action stays listed and disabled, with no reason crammed in', () => {
+    renderWithSafeArea(
+      <ActionMenu
+        accessibilityLabel="Workout menu"
+        title="Week 6 Day 2"
+        items={[
+          {
+            key: 'moveUp',
+            label: 'Move up',
+            icon: PlusIcon,
+            systemImage: 'arrow.up',
+            disabledReason: 'Already first',
+            onPress: jest.fn(),
+          },
+        ]}
+      />,
+    );
+
+    // The label stays clean — a native menu row has no column for a reason, and greying the row
+    // says enough on its own.
+    expect(screen.getByTestId('action-menu-moveUp').props.label).toBe('Move up');
+    expect(screen.getByTestId('action-menu-moveUp').props.modifiers).toEqual([
+      expect.objectContaining({ $type: 'disabled' }),
+    ]);
+  });
+
   test('picking an action runs it', () => {
     renderMenu();
 
@@ -104,6 +130,30 @@ describe('ActionMenu — without SwiftUI', () => {
     expect(screen.getByRole('button', { name: 'Add exercise' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Stop mesocycle' })).toBeTruthy();
     expect(tree.toJSON()).toMatchSnapshot();
+  });
+
+  test('an unavailable action is a disabled row with the reason beside it', () => {
+    renderWithSafeArea(
+      <ActionMenu
+        accessibilityLabel="Workout menu"
+        title="Week 6 Day 2"
+        items={[
+          {
+            key: 'moveUp',
+            label: 'Move up',
+            icon: PlusIcon,
+            systemImage: 'arrow.up',
+            disabledReason: 'Already first',
+            onPress: jest.fn(),
+          },
+        ]}
+      />,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Workout menu' }));
+
+    // The sheet has the column, so the label stays clean and the reason sits on the right.
+    expect(screen.getByRole('button', { name: 'Move up' })).toBeDisabled();
+    expect(screen.getByText('Already first')).toBeTruthy();
   });
 
   test('an action closes the sheet and runs', () => {

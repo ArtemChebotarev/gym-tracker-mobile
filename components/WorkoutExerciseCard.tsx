@@ -28,6 +28,7 @@ import { useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
+import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { InlineNote } from '@design/components/InlineNote';
 import { Popover } from '@design/components/Popover';
@@ -38,7 +39,6 @@ import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import { MoreIcon } from '@design/icons/MoreIcon';
 import { isBodyWeightExercise, isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
@@ -60,6 +60,7 @@ import {
   weightSwapNote,
   weightSwapPopover,
 } from './WorkoutExerciseCardLogic';
+import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { styles } from './WorkoutExerciseCardStyles';
 import { parseWeight } from './WorkoutSetRowLogic';
 import { WorkoutSetRow } from './WorkoutSetRow';
@@ -71,8 +72,12 @@ export type WorkoutExerciseCardProps = {
   showGroupChip: boolean;
   /** Opens "История упражнения" (06). */
   onOpenHistory: () => void;
-  /** Opens the "Меню упражнения" sheet. Live mode only — the button isn't there otherwise. */
-  onOpenMenu: () => void;
+  /**
+   * What the card's `⋯` offers (08.7, "Меню упражнения") — the menu opens out of the button
+   * itself (117), so the card holds the actions rather than an `onOpenMenu` that raised a sheet
+   * elsewhere. Live mode only; the button isn't there otherwise.
+   */
+  menuItems: ActionMenuItem[];
   /** The block's body weight (task 105) — fills a pure bodyweight row and tops up a weighted one. */
   bodyWeight?: number;
   /**
@@ -96,7 +101,7 @@ export function WorkoutExerciseCard({
   mode,
   showGroupChip,
   onOpenHistory,
-  onOpenMenu,
+  menuItems,
   bodyWeight,
   onBodyWeightChange,
   onRequestBodyWeight,
@@ -151,9 +156,16 @@ export function WorkoutExerciseCard({
               <HistoryIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
             </IconButton>
             {view.showMenu && (
-              <IconButton accessibilityLabel={`${exercise.name} menu`} onPress={onOpenMenu}>
-                <MoreIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-              </IconButton>
+              <ActionMenu
+                testID={`exercise-menu-${exercise.sessionExerciseId}`}
+                accessibilityLabel={`${exercise.name} menu`}
+                title={exercise.name}
+                subtitle={formatExerciseMenuSubtitle(
+                  exercise.plannedSetCount,
+                  exercise.loggedSetCount,
+                )}
+                items={menuItems}
+              />
             )}
           </View>
         </View>
