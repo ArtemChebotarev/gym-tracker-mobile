@@ -1,6 +1,7 @@
 // https://docs.expo.dev/develop/unit-testing/
 module.exports = {
   preset: 'jest-expo',
+  setupFiles: ['<rootDir>/jest.gestures.ts'],
   setupFilesAfterEnv: ['@react-native/jest-preset/jest/setup.js', '<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@domain/(.*)$': '<rootDir>/domain/$1',

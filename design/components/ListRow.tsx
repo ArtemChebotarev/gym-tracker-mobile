@@ -16,8 +16,9 @@
 // `Checkbox` design/components file.
 //
 // `trailing: { type: 'actions' }` is task 074's pill-plus-`⋯` pair (08.3 · Мезоциклы — список:
-// Planned rows get a primary `Start` pill, Completed rows a secondary outlined `Copy` pill, both
-// followed by a `⋯` IconButton). These rows are deliberately not tappable as a whole — 08.3 moved
+// Planned rows get a primary `Start` pill, Completed rows a secondary outlined `Copy` pill). The
+// `⋯` is optional and, since 117, unused on that screen: those rows' other actions moved behind a
+// swipe (`SwipeableRow`), leaving the pill alone. These rows are deliberately not tappable as a whole — 08.3 moved
 // away from row taps because they competed with the adjacent action — so each accessory owns its
 // own press handler instead of the row's `onPress`. Both carry the row title in their accessibility
 // label so several rows' `Start`/`⋯` buttons stay distinguishable to a screen reader.
@@ -43,7 +44,8 @@ export type ListRowTrailing =
       actionLabel: string;
       actionVariant: ListRowActionVariant;
       onAction: () => void;
-      onMenu: () => void;
+      /** The `⋯` button. Left out where the row's other actions live behind a swipe (117). */
+      onMenu?: () => void;
     };
 
 export type ListRowLeading = { type: 'checkbox'; checked: boolean };
@@ -155,9 +157,11 @@ function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailin
           {trailing.actionLabel}
         </Text>
       </Pressable>
-      <IconButton accessibilityLabel={`More actions for ${title}`} onPress={trailing.onMenu}>
-        <Text style={styles.menuIcon}>⋯</Text>
-      </IconButton>
+      {trailing.onMenu !== undefined && (
+        <IconButton accessibilityLabel={`More actions for ${title}`} onPress={trailing.onMenu}>
+          <Text style={styles.menuIcon}>⋯</Text>
+        </IconButton>
+      )}
     </View>
   );
 }

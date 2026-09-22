@@ -1,0 +1,680 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SwipeableRow DoD: renders the row with its actions behind it 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    testID="block-row"
+  >
+    <View
+      handlerTags={
+        [
+          2,
+        ]
+      }
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onGestureHandlerTouchEvent={[Function]}
+      onStartShouldSetResponder={[Function]}
+      pointerEvents="box-none"
+      style={
+        {
+          "display": "contents",
+        }
+      }
+      touchAction="pan-y"
+    >
+      <View
+        collapsable={false}
+        jestAnimatedProps={
+          {
+            "value": {},
+          }
+        }
+        jestAnimatedStyle={
+          {
+            "value": {},
+          }
+        }
+        jestInlineStyle={
+          [
+            {
+              "overflow": "hidden",
+            },
+            undefined,
+          ]
+        }
+        onLayout={[Function]}
+        style={
+          [
+            {
+              "overflow": "hidden",
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          collapsable={false}
+          forwardedRef={[Function]}
+          jestAnimatedProps={
+            {
+              "value": {},
+            }
+          }
+          jestAnimatedStyle={
+            {
+              "value": {
+                "pointerEvents": "none",
+              },
+            }
+          }
+          jestInlineStyle={
+            [
+              {
+                "bottom": 0,
+                "flexDirection": "row",
+                "left": 0,
+                "overflow": "hidden",
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              },
+            ]
+          }
+          style={
+            [
+              {
+                "bottom": 0,
+                "flexDirection": "row",
+                "left": 0,
+                "overflow": "hidden",
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              },
+              {
+                "pointerEvents": "none",
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "stretch",
+                "flexDirection": "row",
+              }
+            }
+            testID="block-row-leading"
+          >
+            <View
+              accessibilityLabel="Start Push/Pull/Legs"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "gap": 2,
+                    "justifyContent": "center",
+                    "width": 76,
+                  },
+                  {
+                    "alignItems": "flex-start",
+                    "backgroundColor": "#CDFF57",
+                    "paddingLeft": 16,
+                    "width": 160,
+                  },
+                  false,
+                  false,
+                ]
+              }
+              testID="block-row-start"
+            >
+              <RNSVGSvgView
+                align="xMidYMid"
+                bbHeight={20}
+                bbWidth={20}
+                focusable={false}
+                height={20}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 20,
+                      "width": 20,
+                    },
+                  ]
+                }
+                vbHeight={24}
+                vbWidth={24}
+                width={20}
+              >
+                <RNSVGGroup
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ]
+                    }
+                    stroke={
+                      {
+                        "payload": 4280494858,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGPath
+                      d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
+                </RNSVGGroup>
+              </RNSVGSvgView>
+              <Text
+                style={
+                  [
+                    {
+                      "fontSize": 12,
+                    },
+                    {
+                      "color": "#232B0A",
+                    },
+                  ]
+                }
+              >
+                Start
+              </Text>
+            </View>
+          </View>
+          <View
+            collapsable={false}
+            forwardedRef={[Function]}
+            jestAnimatedProps={
+              {
+                "value": {},
+              }
+            }
+            jestAnimatedStyle={
+              {
+                "value": {},
+              }
+            }
+          />
+        </View>
+        <View
+          collapsable={false}
+          jestAnimatedProps={
+            {
+              "value": {},
+            }
+          }
+          jestAnimatedStyle={
+            {
+              "value": {
+                "pointerEvents": "none",
+              },
+            }
+          }
+          jestInlineStyle={
+            [
+              {
+                "bottom": 0,
+                "flexDirection": "row-reverse",
+                "left": 0,
+                "overflow": "hidden",
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              },
+            ]
+          }
+          style={
+            [
+              {
+                "bottom": 0,
+                "flexDirection": "row-reverse",
+                "left": 0,
+                "overflow": "hidden",
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              },
+              {
+                "pointerEvents": "none",
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "stretch",
+                "flexDirection": "row",
+              }
+            }
+            testID="block-row-actions"
+          >
+            <View
+              accessibilityLabel="Edit Push/Pull/Legs"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "gap": 2,
+                    "justifyContent": "center",
+                    "width": 76,
+                  },
+                  {
+                    "backgroundColor": "#1A1C1F",
+                  },
+                  false,
+                  false,
+                ]
+              }
+              testID="block-row-edit"
+            >
+              <RNSVGSvgView
+                align="xMidYMid"
+                bbHeight={20}
+                bbWidth={20}
+                focusable={false}
+                height={20}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 20,
+                      "width": 20,
+                    },
+                  ]
+                }
+                vbHeight={24}
+                vbWidth={24}
+                width={20}
+              >
+                <RNSVGGroup
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ]
+                    }
+                    stroke={
+                      {
+                        "payload": 4291415506,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGPath
+                      d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
+                </RNSVGGroup>
+              </RNSVGSvgView>
+              <Text
+                style={
+                  [
+                    {
+                      "fontSize": 12,
+                    },
+                    {
+                      "color": "#C9CDD2",
+                    },
+                  ]
+                }
+              >
+                Edit
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Delete Push/Pull/Legs"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "gap": 2,
+                    "justifyContent": "center",
+                    "width": 76,
+                  },
+                  {
+                    "backgroundColor": "#1A1C1F",
+                  },
+                  {
+                    "backgroundColor": "#C43C31",
+                  },
+                  false,
+                ]
+              }
+              testID="block-row-delete"
+            >
+              <RNSVGSvgView
+                align="xMidYMid"
+                bbHeight={20}
+                bbWidth={20}
+                focusable={false}
+                height={20}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 20,
+                      "width": 20,
+                    },
+                  ]
+                }
+                vbHeight={24}
+                vbWidth={24}
+                width={20}
+              >
+                <RNSVGGroup
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ]
+                    }
+                    stroke={
+                      {
+                        "payload": 4294309364,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGPath
+                      d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
+                </RNSVGGroup>
+              </RNSVGSvgView>
+              <Text
+                style={
+                  [
+                    {
+                      "fontSize": 12,
+                    },
+                    {
+                      "color": "#F5F5F4",
+                    },
+                  ]
+                }
+              >
+                Delete
+              </Text>
+            </View>
+          </View>
+          <View
+            collapsable={false}
+            forwardedRef={[Function]}
+            jestAnimatedProps={
+              {
+                "value": {},
+              }
+            }
+            jestAnimatedStyle={
+              {
+                "value": {},
+              }
+            }
+          />
+        </View>
+        <View
+          handlerTags={
+            [
+              1,
+            ]
+          }
+          onGestureHandlerEvent={[Function]}
+          onGestureHandlerStateChange={[Function]}
+          onGestureHandlerTouchEvent={[Function]}
+          onStartShouldSetResponder={[Function]}
+          pointerEvents="box-none"
+          style={
+            {
+              "display": "contents",
+            }
+          }
+          touchAction="pan-y"
+        >
+          <View
+            collapsable={false}
+            jestAnimatedProps={
+              {
+                "value": {},
+              }
+            }
+            jestAnimatedStyle={
+              {
+                "value": {
+                  "pointerEvents": "auto",
+                  "transform": [
+                    {
+                      "translateX": 0,
+                    },
+                  ],
+                },
+              }
+            }
+            jestInlineStyle={
+              [
+                {
+                  "backgroundColor": "#0E0F11",
+                },
+              ]
+            }
+            style={
+              [
+                {
+                  "pointerEvents": "auto",
+                  "transform": [
+                    {
+                      "translateX": 0,
+                    },
+                  ],
+                },
+                {
+                  "backgroundColor": "#0E0F11",
+                },
+              ]
+            }
+          >
+            <Text>
+              Push/Pull/Legs
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;
