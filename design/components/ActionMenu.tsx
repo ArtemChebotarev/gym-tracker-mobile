@@ -35,6 +35,7 @@ import { Button as NativeMenuButton, Host, Image, Menu } from '@expo/ui/swift-ui
 import {
   buttonStyle,
   contentShape,
+  disabled,
   frame,
   menuIndicator,
   menuStyle,
@@ -60,6 +61,14 @@ export type ActionMenuItem = {
   systemImage: SFSymbol;
   /** Red, and grouped last by iOS — an action that throws something away. */
   destructive?: boolean;
+  /**
+   * Set when the action isn't available right now: the item stays listed but can't be picked.
+   * The string is the reason, which the fallback sheet shows in its own column (08.7, `Already
+   * first`). A native menu row has no such column and doesn't get one: crammed into the label it
+   * wrapped onto a second line, and a greyed `Move up` on the first exercise says the same thing
+   * without it (Artem's review on the device).
+   */
+  disabledReason?: string;
   onPress: () => void;
 };
 
@@ -71,17 +80,28 @@ export type ActionMenuProps = {
   /** A line under that title. */
   subtitle?: string;
   items: ActionMenuItem[];
+  /**
+   * Names this menu and its items (`<testID>-<item key>`). A screen can carry several — a header's
+   * and one per card — so a caller with siblings passes something that tells them apart.
+   */
+  testID?: string;
 };
 
 /** The SF Symbol for the `⋯` trigger — the system's own dots, matching MoreIcon. */
 const TRIGGER_SYMBOL: SFSymbol = 'ellipsis';
 
-export function ActionMenu({ accessibilityLabel, title, subtitle, items }: ActionMenuProps) {
+export function ActionMenu({
+  accessibilityLabel,
+  title,
+  subtitle,
+  items,
+  testID = 'action-menu',
+}: ActionMenuProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (Platform.OS === 'ios') {
     return (
-      <View testID="action-menu" accessibilityLabel={accessibilityLabel} style={iconButtonFrame()}>
+      <View testID={testID} accessibilityLabel={accessibilityLabel} style={iconButtonFrame()}>
         <Host style={styles.host}>
           <Menu
             label={
@@ -111,10 +131,11 @@ export function ActionMenu({ accessibilityLabel, title, subtitle, items }: Actio
             {items.map((item) => (
               <NativeMenuButton
                 key={item.key}
-                testID={`action-menu-${item.key}`}
+                testID={`${testID}-${item.key}`}
                 label={item.label}
                 systemImage={item.systemImage}
                 role={item.destructive === true ? 'destructive' : 'default'}
+                modifiers={item.disabledReason === undefined ? undefined : [disabled(true)]}
                 onPress={item.onPress}
               />
             ))}
@@ -142,6 +163,7 @@ export function ActionMenu({ accessibilityLabel, title, subtitle, items }: Actio
             icon={item.icon}
             label={item.label}
             variant={item.destructive === true ? 'danger' : 'default'}
+            disabledReason={item.disabledReason}
             onPress={() => {
               setIsSheetOpen(false);
               item.onPress();

@@ -9,6 +9,7 @@
 // The screen opens on Overview every time, so the History tab's own read (108) waits until that
 // tab is first picked and then stays loaded — switching back and forth doesn't re-read.
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import {
@@ -18,7 +19,10 @@ import {
   type ExerciseFormValues,
 } from '@components/ExerciseFormSheet';
 import { ExerciseDetailScreen } from '@components/ExerciseDetailScreen';
-import { ExerciseMenuSheet } from '@components/ExerciseMenuSheet';
+import {
+  exerciseOverviewMenuActions,
+  formatHideExerciseWarning,
+} from '@components/ExerciseMenuLogic';
 import { toExerciseId } from '@domain/catalog';
 import { useExerciseHistory } from '@state/useExerciseHistory';
 import { useExerciseOverview } from '@state/useExerciseOverview';
@@ -31,7 +35,6 @@ export default function ExerciseDetailRoute() {
   const exerciseId = toExerciseId(id);
 
   const [isHistoryOpened, setIsHistoryOpened] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
   const [formValues, setFormValues] = useState<ExerciseFormValues>(EMPTY_EXERCISE_FORM_VALUES);
 
@@ -61,8 +64,22 @@ export default function ExerciseDetailRoute() {
     );
   }
 
-  function handleHide() {
-    hideExercise.mutate(exerciseId, { onSuccess: () => router.back() });
+  /**
+   * Hide asks first (08.6): the exercise keeps its whole history but drops out of the library and
+   * every picker, and nothing in the app brings it back today.
+   */
+  function confirmHide() {
+    if (!exercise) {
+      return;
+    }
+    Alert.alert('Hide exercise?', formatHideExerciseWarning(exercise.name), [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Hide',
+        style: 'destructive',
+        onPress: () => hideExercise.mutate(exerciseId, { onSuccess: () => router.back() }),
+      },
+    ]);
   }
 
   return (
@@ -73,20 +90,14 @@ export default function ExerciseDetailRoute() {
         history={historyQuery.data}
         isHistoryPending={historyQuery.isPending}
         onBack={() => router.back()}
-        onOpenMenu={() => setIsMenuOpen(true)}
+        menuItems={exerciseOverviewMenuActions(query.data?.actions ?? [], (action) =>
+          action === 'edit' ? handleEdit() : confirmHide(),
+        )}
         onTabChange={(tab) => {
           if (tab === 'history') {
             setIsHistoryOpened(true);
           }
         }}
-      />
-      <ExerciseMenuSheet
-        visible={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        exerciseName={exercise?.name ?? ''}
-        actions={query.data?.actions ?? []}
-        onEdit={handleEdit}
-        onHide={handleHide}
       />
       <ExerciseFormSheet
         visible={isFormSheetOpen}

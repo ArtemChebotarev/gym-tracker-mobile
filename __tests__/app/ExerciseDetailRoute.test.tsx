@@ -92,10 +92,9 @@ describe('Exercise screen route', () => {
     renderRoute();
     await screen.findByText('Bench Press');
 
-    fireEvent.press(screen.getByRole('button', { name: 'Exercise menu' }));
-
-    expect(await screen.findByRole('button', { name: 'Hide' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    // A native menu (117): its items are always mounted, so there is nothing to open first.
+    expect(screen.getByTestId('action-menu-hide')).toBeTruthy();
+    expect(screen.queryByTestId('action-menu-edit')).toBeNull();
   });
 
   test('a custom exercise can be edited, and hiding it pops the screen', async () => {
@@ -108,10 +107,9 @@ describe('Exercise screen route', () => {
     renderRoute();
     await screen.findByText('Route Test Cable Fly');
 
-    fireEvent.press(screen.getByRole('button', { name: 'Exercise menu' }));
-    expect(await screen.findByRole('button', { name: 'Edit' })).toBeTruthy();
+    expect(screen.getByTestId('action-menu-edit')).toBeTruthy();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Hide' }));
+    fireEvent(screen.getByTestId('action-menu-hide'), 'buttonPress');
     confirmAlert(alert, 'Hide');
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());

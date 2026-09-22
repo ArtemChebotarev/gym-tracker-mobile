@@ -4,6 +4,7 @@ import {
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import { TrashIcon } from '@design/icons/TrashIcon';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
@@ -91,7 +92,7 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
     mode: 'live',
     showGroupChip: true,
     onOpenHistory: jest.fn(),
-    onOpenMenu: jest.fn(),
+    menuItems: [],
     isSaving: false,
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
@@ -145,17 +146,20 @@ describe('WorkoutExerciseCard', () => {
     }
   });
 
-  test('the ⋯ button is there in live mode only', () => {
-    const onOpenMenu = jest.fn();
-    render(<WorkoutExerciseCard {...makeProps({ onOpenMenu })} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Bench press menu' }));
-    expect(onOpenMenu).toHaveBeenCalledTimes(1);
+  test('the ⋯ menu is there in live mode only, and lists what it was given', () => {
+    const onPress = jest.fn();
+    const menuItems = [
+      { key: 'delete', label: 'Delete exercise', icon: TrashIcon, systemImage: 'trash' as const, onPress },
+    ];
+    render(<WorkoutExerciseCard {...makeProps({ menuItems })} />);
+    fireEvent(screen.getByTestId('exercise-menu-session-exercise-1-delete'), 'buttonPress');
+    expect(onPress).toHaveBeenCalledTimes(1);
 
     screen.rerender(<WorkoutExerciseCard {...makeProps({ mode: 'readonly' })} />);
-    expect(screen.queryByRole('button', { name: 'Bench press menu' })).toBeNull();
+    expect(screen.queryByTestId('exercise-menu-session-exercise-1')).toBeNull();
 
     screen.rerender(<WorkoutExerciseCard {...makeProps({ mode: 'preview' })} />);
-    expect(screen.queryByRole('button', { name: 'Bench press menu' })).toBeNull();
+    expect(screen.queryByTestId('exercise-menu-session-exercise-1')).toBeNull();
   });
 
   test('the group chip shows only when asked for', () => {

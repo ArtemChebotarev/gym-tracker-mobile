@@ -105,7 +105,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
       stopMesocycle: jest.fn(),
     },
     onOpenExerciseHistory: jest.fn(),
-    onOpenExerciseMenu: jest.fn(),
+    onExerciseMenuAction: jest.fn(),
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
     isSaving: false,
@@ -257,18 +257,18 @@ describe('WorkoutScreen list', () => {
     expect(screen.getByText('Back')).toBeTruthy();
   });
 
-  test("hands the pressed card's exercise to the history and menu handlers", () => {
+  test("hands the pressed card's exercise to the history handler and to its menu", () => {
     const onOpenExerciseHistory = jest.fn();
-    const onOpenExerciseMenu = jest.fn();
+    const onExerciseMenuAction = jest.fn();
     renderWithSafeArea(
-      <WorkoutScreen {...makeProps({ onOpenExerciseHistory, onOpenExerciseMenu })} />,
+      <WorkoutScreen {...makeProps({ onOpenExerciseHistory, onExerciseMenuAction })} />,
     );
 
     fireEvent.press(screen.getByRole('button', { name: 'Bench press history' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Bench press menu' }));
+    fireEvent(screen.getByTestId('exercise-menu-session-exercise-1-delete'), 'buttonPress');
 
     expect(onOpenExerciseHistory).toHaveBeenCalledWith(LIVE.exercises[0]);
-    expect(onOpenExerciseMenu).toHaveBeenCalledWith(LIVE.exercises[0]);
+    expect(onExerciseMenuAction).toHaveBeenCalledWith(LIVE.exercises[0], 'delete');
   });
 
   test('a preview names the session that unlocks it', () => {

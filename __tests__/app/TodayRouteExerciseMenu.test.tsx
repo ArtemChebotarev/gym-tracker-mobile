@@ -3,6 +3,7 @@ import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import TodayScreen from '@app/(tabs)/index';
+import type { ExerciseMenuItem } from '@components/WorkoutExerciseMenuLogic';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
@@ -12,6 +13,10 @@ import { renderWithRepositories, withRepositories } from '../fixtures/renderWith
 // the actions change the shared fixture session for good, and a separate file gets a fresh store.
 // Tests run in order on the same session. Mocked expo-router, for the reason TodayRoute.test.tsx
 // gives.
+//
+// The menu is a native one since 117: a card's items are always mounted (iOS opens the plate
+// itself, which nothing here can drive), so a test picks one straight off by the card's own
+// `exercise-menu-<session exercise id>-<item>` testID rather than opening a sheet first.
 let mockParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => ({
@@ -61,8 +66,18 @@ async function renderToday() {
   await screen.findByText('Week 2 Day 1');
 }
 
-function openMenu(exerciseName: string) {
-  fireEvent.press(screen.getByRole('button', { name: `${exerciseName} menu` }));
+/** A card's menu item, or null when the card doesn't offer it. */
+function menuItem(sessionExerciseId: string, item: ExerciseMenuItem) {
+  return screen.queryByTestId(`exercise-menu-${sessionExerciseId}-${item}`);
+}
+
+/** Picks one — a native menu button, so a native press rather than `fireEvent.press`. */
+function pickMenuItem(sessionExerciseId: string, item: ExerciseMenuItem) {
+  const button = menuItem(sessionExerciseId, item);
+  if (button === null) {
+    throw new Error(`No "${item}" in the menu of ${sessionExerciseId}`);
+  }
+  fireEvent(button, 'buttonPress');
 }
 
 /** Presses the named button of the most recent Alert.alert call. */
@@ -83,35 +98,34 @@ async function sessionExercises() {
 }
 
 describe('Today tab — exercise menu', () => {
-  test("opens on the tapped exercise, with its sets and what's not available", async () => {
+  test("lists the card's own actions, with what isn't available left disabled", async () => {
     await renderToday();
 
-    openMenu('Bench Press');
-
-    expect(screen.getByText('3 sets planned · 2 logged')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Move up' })).toBeDisabled();
-    expect(screen.getByText('Already first')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Move down' })).toBeEnabled();
+    // Bench Press is first, so Move up stays listed but can't be picked — greyed, with no reason
+    // crammed into the row.
+    expect(menuItem(BENCH, 'moveUp')?.props.label).toBe('Move up');
+    expect(menuItem(BENCH, 'moveUp')?.props.modifiers).toEqual([
+      expect.objectContaining({ $type: 'disabled' }),
+    ]);
+    expect(menuItem(BENCH, 'moveDown')?.props.label).toBe('Move down');
+    expect(menuItem(BENCH, 'moveDown')?.props.modifiers).toBeUndefined();
   });
 
   test('Add set adds a row, Remove last set takes it away', async () => {
     await renderToday();
 
-    openMenu('Bench Press');
-    fireEvent.press(screen.getByRole('button', { name: 'Add set' }));
+    pickMenuItem(BENCH, 'addSet');
     await waitFor(async () => expect((await sessionExercises())[0]?.setTargets).toHaveLength(4));
     expect(await screen.findByRole('checkbox', { name: 'Log set 4' })).toBeTruthy();
 
-    openMenu('Bench Press');
-    fireEvent.press(screen.getByRole('button', { name: 'Remove last set' }));
+    pickMenuItem(BENCH, 'removeLastSet');
     await waitFor(async () => expect((await sessionExercises())[0]?.setTargets).toHaveLength(3));
   });
 
   test('Move down swaps the exercise with the next one', async () => {
     await renderToday();
 
-    openMenu('Bench Press');
-    fireEvent.press(screen.getByRole('button', { name: 'Move down' }));
+    pickMenuItem(BENCH, 'moveDown');
 
     await waitFor(async () =>
       expect((await sessionExercises()).map((exercise) => exercise.id)).toEqual([ROW, BENCH]),
@@ -121,8 +135,7 @@ describe('Today tab — exercise menu', () => {
   test('Skip exercise, then Unskip exercise', async () => {
     await renderToday();
 
-    openMenu('Barbell Row');
-    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pickMenuItem(ROW, 'skip');
     expect(alertSpy).toHaveBeenCalledWith(
       'Skip exercise?',
       'All 3 sets will be skipped.',
@@ -133,9 +146,8 @@ describe('Today tab — exercise menu', () => {
       expect((await sessionExercises()).find((e) => e.id === ROW)?.status).toBe('skipped'),
     );
 
-    openMenu('Barbell Row');
-    await screen.findByRole('button', { name: 'Unskip exercise' });
-    fireEvent.press(screen.getByRole('button', { name: 'Unskip exercise' }));
+    await waitFor(() => expect(menuItem(ROW, 'unskip')).not.toBeNull());
+    pickMenuItem(ROW, 'unskip');
     await waitFor(async () =>
       expect((await sessionExercises()).find((e) => e.id === ROW)?.status).toBe('planned'),
     );
@@ -146,8 +158,7 @@ describe('Today tab — exercise menu', () => {
     const card = (id: string) => within(screen.getByTestId(`exercise-card-${id}`));
 
     // Bench: 2 of 3 logged.
-    openMenu('Bench Press');
-    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pickMenuItem(BENCH, 'skip');
     pressAlertButton('Skip');
     // Waits on what appears: a failing assertion on an element pretty-prints its whole fiber on
     // every poll, slow enough to starve the re-read it's waiting for.
@@ -157,16 +168,15 @@ describe('Today tab — exercise menu', () => {
     expect(card(BENCH).getByTestId('set-row-2')).not.toHaveTextContent('Skipped');
 
     // Row: nothing logged.
-    openMenu('Barbell Row');
-    fireEvent.press(screen.getByRole('button', { name: 'Skip exercise' }));
+    pickMenuItem(ROW, 'skip');
     pressAlertButton('Skip');
     expect(await card(ROW).findByText('Skipped')).toBeTruthy();
     expect(card(ROW).queryByTestId('set-row-1')).toBeNull();
     expect(card(ROW).getAllByText('Skipped')).toHaveLength(1);
 
-    for (const name of ['Bench Press', 'Barbell Row']) {
-      openMenu(name);
-      fireEvent.press(await screen.findByRole('button', { name: 'Unskip exercise' }));
+    for (const id of [BENCH, ROW]) {
+      await waitFor(() => expect(menuItem(id, 'unskip')).not.toBeNull());
+      pickMenuItem(id, 'unskip');
     }
     await waitFor(async () =>
       expect((await sessionExercises()).map((exercise) => exercise.status)).toEqual([
@@ -183,8 +193,7 @@ describe('Today tab — exercise menu', () => {
   test('Replace exercise with sets logged warns first, then swaps to the pick', async () => {
     await renderToday();
 
-    openMenu('Bench Press');
-    fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
+    pickMenuItem(BENCH, 'replace');
 
     // The warning comes before the picker.
     expect(alertSpy).toHaveBeenCalledWith(
@@ -211,8 +220,7 @@ describe('Today tab — exercise menu', () => {
   test('Delete exercise removes it once confirmed', async () => {
     await renderToday();
 
-    openMenu('Barbell Row');
-    fireEvent.press(screen.getByRole('button', { name: 'Delete exercise' }));
+    pickMenuItem(ROW, 'delete');
     pressAlertButton('Delete');
 
     await waitFor(async () =>

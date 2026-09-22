@@ -324,37 +324,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         </View>
         <View
           accessibilityLabel="Bench press menu"
-          accessibilityRole="button"
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": false,
-              "expanded": undefined,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          collapsable={false}
-          focusable={true}
-          hitSlop={4}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -367,98 +336,71 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               {
                 "backgroundColor": "#1A1C1F",
               },
-              false,
-              false,
             ]
           }
+          testID="exercise-menu-session-exercise-1"
         >
-          <RNSVGSvgView
-            align="xMidYMid"
-            bbHeight={20}
-            bbWidth={20}
-            focusable={false}
-            height={20}
-            meetOrSlice={0}
-            minX={0}
-            minY={0}
+          <ViewManagerAdapter_ExpoUI
+            layoutDirection="leftToRight"
             style={
-              [
-                {
-                  "backgroundColor": "transparent",
-                  "borderWidth": 0,
-                },
-                {
-                  "flex": 0,
-                  "height": 20,
-                  "width": 20,
-                },
-              ]
+              {
+                "height": 36,
+                "width": 36,
+              }
             }
-            vbHeight={24}
-            vbWidth={24}
-            width={20}
           >
-            <RNSVGGroup
-              fill={
-                {
-                  "payload": 4278190080,
-                  "type": 0,
-                }
+            <ViewManagerAdapter_ExpoUI
+              hasPrimaryAction={false}
+              modifiers={
+                [
+                  {
+                    "$type": "menuStyle",
+                    "style": "button",
+                  },
+                  {
+                    "$type": "buttonStyle",
+                    "style": "plain",
+                  },
+                  {
+                    "$type": "menuIndicator",
+                    "visibility": "hidden",
+                  },
+                ]
               }
             >
-              <RNSVGGroup
-                fill={null}
-                propList={
-                  [
-                    "fill",
-                    "stroke",
-                    "strokeWidth",
-                  ]
-                }
-                stroke={
-                  {
-                    "payload": 4291415506,
-                    "type": 0,
-                  }
-                }
-                strokeWidth={1.8}
+              <ViewManagerAdapter_ExpoUI
+                name="label"
               >
-                <RNSVGCircle
-                  cx={5.5}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
+                <ViewManagerAdapter_ExpoUI
+                  modifiers={
+                    [
+                      {
+                        "$type": "frame",
+                        "height": 36,
+                        "width": 36,
+                      },
+                      {
+                        "$type": "contentShape",
+                        "kind": undefined,
+                        "shape": "rectangle",
+                      },
+                      {
+                        "$type": "font",
+                        "size": 20,
+                      },
+                      {
+                        "$type": "foregroundStyle",
+                        "color": "#C9CDD2",
+                        "styleType": "color",
+                      },
+                    ]
                   }
-                  r={0.9}
+                  onGlobalEvent={[Function]}
+                  systemName="ellipsis"
                 />
-                <RNSVGCircle
-                  cx={12}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
-                  }
-                  r={0.9}
-                />
-                <RNSVGCircle
-                  cx={18.5}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
-                  }
-                  r={0.9}
-                />
-              </RNSVGGroup>
-            </RNSVGGroup>
-          </RNSVGSvgView>
+              </ViewManagerAdapter_ExpoUI>
+            </ViewManagerAdapter_ExpoUI>
+          </ViewManagerAdapter_ExpoUI>
         </View>
       </View>
     </View>
@@ -3108,37 +3050,6 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         </View>
         <View
           accessibilityLabel="Bench press menu"
-          accessibilityRole="button"
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": false,
-              "expanded": undefined,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          collapsable={false}
-          focusable={true}
-          hitSlop={4}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -3151,98 +3062,71 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
               {
                 "backgroundColor": "#1A1C1F",
               },
-              false,
-              false,
             ]
           }
+          testID="exercise-menu-session-exercise-1"
         >
-          <RNSVGSvgView
-            align="xMidYMid"
-            bbHeight={20}
-            bbWidth={20}
-            focusable={false}
-            height={20}
-            meetOrSlice={0}
-            minX={0}
-            minY={0}
+          <ViewManagerAdapter_ExpoUI
+            layoutDirection="leftToRight"
             style={
-              [
-                {
-                  "backgroundColor": "transparent",
-                  "borderWidth": 0,
-                },
-                {
-                  "flex": 0,
-                  "height": 20,
-                  "width": 20,
-                },
-              ]
+              {
+                "height": 36,
+                "width": 36,
+              }
             }
-            vbHeight={24}
-            vbWidth={24}
-            width={20}
           >
-            <RNSVGGroup
-              fill={
-                {
-                  "payload": 4278190080,
-                  "type": 0,
-                }
+            <ViewManagerAdapter_ExpoUI
+              hasPrimaryAction={false}
+              modifiers={
+                [
+                  {
+                    "$type": "menuStyle",
+                    "style": "button",
+                  },
+                  {
+                    "$type": "buttonStyle",
+                    "style": "plain",
+                  },
+                  {
+                    "$type": "menuIndicator",
+                    "visibility": "hidden",
+                  },
+                ]
               }
             >
-              <RNSVGGroup
-                fill={null}
-                propList={
-                  [
-                    "fill",
-                    "stroke",
-                    "strokeWidth",
-                  ]
-                }
-                stroke={
-                  {
-                    "payload": 4291415506,
-                    "type": 0,
-                  }
-                }
-                strokeWidth={1.8}
+              <ViewManagerAdapter_ExpoUI
+                name="label"
               >
-                <RNSVGCircle
-                  cx={5.5}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
+                <ViewManagerAdapter_ExpoUI
+                  modifiers={
+                    [
+                      {
+                        "$type": "frame",
+                        "height": 36,
+                        "width": 36,
+                      },
+                      {
+                        "$type": "contentShape",
+                        "kind": undefined,
+                        "shape": "rectangle",
+                      },
+                      {
+                        "$type": "font",
+                        "size": 20,
+                      },
+                      {
+                        "$type": "foregroundStyle",
+                        "color": "#C9CDD2",
+                        "styleType": "color",
+                      },
+                    ]
                   }
-                  r={0.9}
+                  onGlobalEvent={[Function]}
+                  systemName="ellipsis"
                 />
-                <RNSVGCircle
-                  cx={12}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
-                  }
-                  r={0.9}
-                />
-                <RNSVGCircle
-                  cx={18.5}
-                  cy={12}
-                  fill={
-                    {
-                      "payload": 4278190080,
-                      "type": 0,
-                    }
-                  }
-                  r={0.9}
-                />
-              </RNSVGGroup>
-            </RNSVGGroup>
-          </RNSVGSvgView>
+              </ViewManagerAdapter_ExpoUI>
+            </ViewManagerAdapter_ExpoUI>
+          </ViewManagerAdapter_ExpoUI>
         </View>
       </View>
     </View>

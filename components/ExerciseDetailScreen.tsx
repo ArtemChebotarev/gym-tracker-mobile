@@ -37,11 +37,11 @@ import type {
 } from '@domain/exerciseOverview';
 import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
+import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
 import { BackIcon } from '@design/icons/BackIcon';
-import { MoreIcon } from '@design/icons/MoreIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -73,7 +73,11 @@ export type ExerciseDetailScreenProps = {
   isHistoryPending: boolean;
   onBack: () => void;
   /** Opens the `⋯` menu (08.6, "Меню и действия"). */
-  onOpenMenu: () => void;
+  /**
+   * What the screen's `⋯` offers (08.6, "Меню и действия"). The menu opens out of the button
+   * itself (117), so the screen holds the actions rather than an `onOpenMenu` that raised a sheet.
+   */
+  menuItems: ActionMenuItem[];
   /** The tab was switched — the caller loads the history the first time it's History. */
   onTabChange?: (tab: ExerciseDetailTab) => void;
 };
@@ -84,7 +88,7 @@ export function ExerciseDetailScreen({
   history,
   isHistoryPending,
   onBack,
-  onOpenMenu,
+  menuItems,
   onTabChange,
 }: ExerciseDetailScreenProps) {
   const [tab, setTab] = useState<ExerciseDetailTab>('overview');
@@ -124,9 +128,11 @@ export function ExerciseDetailScreen({
         <IconButton accessibilityLabel="Back" onPress={onBack}>
           <BackIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
         </IconButton>
-        <IconButton accessibilityLabel="Exercise menu" onPress={onOpenMenu}>
-          <MoreIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-        </IconButton>
+        <ActionMenu
+          accessibilityLabel="Exercise menu"
+          title={exercise.name}
+          items={menuItems}
+        />
       </View>
 
       <View style={styles.heading}>

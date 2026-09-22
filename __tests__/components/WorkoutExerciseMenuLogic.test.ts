@@ -5,7 +5,8 @@ import {
   formatExerciseMenuSubtitle,
   formatReplaceExerciseWarning,
   formatSkipExerciseWarning,
-} from '@components/WorkoutExerciseMenuSheetLogic';
+  workoutExerciseMenuActions,
+} from '@components/WorkoutExerciseMenuLogic';
 import type { WorkoutExerciseActions } from '@usecases/workoutSession';
 
 // A live, planned exercise in the middle of the list with several rows: everything available.
@@ -60,11 +61,43 @@ describe('exerciseMenuRows', () => {
 });
 
 describe('EXERCISE_MENU_ACTIONS', () => {
-  test('only Delete exercise is a danger action', () => {
-    const danger = Object.entries(EXERCISE_MENU_ACTIONS)
-      .filter(([, action]) => action.variant === 'danger')
+  test('only Delete exercise is destructive', () => {
+    const destructive = Object.entries(EXERCISE_MENU_ACTIONS)
+      .filter(([, action]) => action.destructive === true)
       .map(([item]) => item);
-    expect(danger).toEqual(['delete']);
+    expect(destructive).toEqual(['delete']);
+  });
+
+  test('every action names both icons — the sheet draws one, the native menu the other', () => {
+    for (const action of Object.values(EXERCISE_MENU_ACTIONS)) {
+      expect(typeof action.icon).toBe('function');
+      expect(action.systemImage).toMatch(/\S/);
+    }
+  });
+});
+
+describe('workoutExerciseMenuActions', () => {
+  test('keeps an unavailable action listed, disabled with its reason', () => {
+    const onAction = jest.fn();
+    const items = workoutExerciseMenuActions(
+      { ...ALL, canMoveUp: false, canRemoveLastSet: false },
+      onAction,
+    );
+
+    const moveUp = items.find((item) => item.key === 'moveUp');
+    expect(moveUp?.disabledReason).toBe('Already first');
+    expect(items.find((item) => item.key === 'removeLastSet')?.disabledReason).toBe('Only one set');
+    // An available one carries no reason at all.
+    expect(items.find((item) => item.key === 'addSet')?.disabledReason).toBeUndefined();
+  });
+
+  test('each item calls back with its own action', () => {
+    const onAction = jest.fn();
+    const items = workoutExerciseMenuActions(ALL, onAction);
+
+    items.find((item) => item.key === 'delete')?.onPress();
+
+    expect(onAction).toHaveBeenCalledWith('delete');
   });
 });
 

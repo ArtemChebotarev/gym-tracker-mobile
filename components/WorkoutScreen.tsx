@@ -48,6 +48,10 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
 import {
+  workoutExerciseMenuActions,
+  type ExerciseMenuItem,
+} from './WorkoutExerciseMenuLogic';
+import {
   formatWorkoutMenuTitle,
   workoutMenuActions,
   type WorkoutMenuItem,
@@ -64,8 +68,12 @@ export type WorkoutScreenProps = {
   menuActions: Record<WorkoutMenuItem, () => void>;
   /** Opens an exercise's history (06), from its card. */
   onOpenExerciseHistory: (exercise: WorkoutExercise) => void;
-  /** Opens an exercise's menu sheet (08.7, "Лист «Меню упражнения»"), from its card. Live only. */
-  onOpenExerciseMenu: (exercise: WorkoutExercise) => void;
+  /**
+   * An action picked in an exercise card's `⋯` menu (08.7, "Меню упражнения"). Live only. The
+   * menu opens out of the card's own button (117), so the screen builds each card's items from
+   * the model and hands the pick back with the exercise it belongs to.
+   */
+  onExerciseMenuAction: (exercise: WorkoutExercise, item: ExerciseMenuItem) => void;
   /** Logs a set row with what was typed (05, "Записать подход"). Live only. */
   onLogSet: (
     exercise: WorkoutExercise,
@@ -103,7 +111,7 @@ export function WorkoutScreen({
   onOpenGrid,
   menuActions,
   onOpenExerciseHistory,
-  onOpenExerciseMenu,
+  onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
   onBodyWeightChange,
@@ -194,7 +202,9 @@ export function WorkoutScreen({
               mode={model.mode}
               showGroupChip={showsGroupChip(model.exercises, index)}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
-              onOpenMenu={() => onOpenExerciseMenu(exercise)}
+              menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
+                onExerciseMenuAction(exercise, item),
+              )}
               isSaving={isSaving}
               bodyWeight={model.bodyWeight}
               onBodyWeightChange={onBodyWeightChange}
