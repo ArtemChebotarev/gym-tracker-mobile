@@ -3,16 +3,16 @@
 // and next-session generation, both of which write several related records that must
 // either all land or none do.
 //
-// This is a contract, not an implementation — implementations live in `storage` (see
-// `storage/store.ts`'s `InMemoryStore`, and later a SQLite/HTTP-backed adapter).
+// This is the contract the four transactional stores of `RepositorySet` are stated on —
+// `WorkoutStore`, `MesocycleStartStore`, `MesocycleClosingStore`, `BackupStore` — each binding
+// `Store` to the repositories its scenario writes through. The implementations live in
+// `storage/sqlite/`, where `runInTransaction` issues the BEGIN/COMMIT/ROLLBACK.
 export interface TransactionalStore<Store> {
   /**
    * Runs `work` as a single atomic operation against this store.
    *
-   * `work` receives a handle of type `Store` — whatever medium-specific writer the
-   * concrete adapter provides (the in-memory engine passes itself back, so `work` can
-   * reach any of its collections through it) — and performs its writes through that
-   * handle.
+   * `work` receives a handle of type `Store` — the repositories bound to this transaction —
+   * and performs its writes through it.
    *
    * - If `work` throws synchronously, or the promise it returns rejects, none of the
    *   writes attempted during `work` may be observable afterwards: every one of them is
@@ -23,9 +23,8 @@ export interface TransactionalStore<Store> {
    * A storage medium with no native transaction support (e.g. a plain key-value store, or
    * an HTTP API without a batched-write endpoint) must still satisfy this contract by
    * emulating atomicity itself — for example by snapshotting the affected state before
-   * running `work` and restoring it on failure, the way the in-memory adapter does.
-   * Callers must never be able to observe a partially-written state, no matter how the
-   * medium underneath achieves that guarantee.
+   * running `work` and restoring it on failure. Callers must never be able to observe a
+   * partially-written state, no matter how the medium underneath achieves that guarantee.
    */
   transaction<T>(work: (store: Store) => Promise<T> | T): Promise<T>;
 }

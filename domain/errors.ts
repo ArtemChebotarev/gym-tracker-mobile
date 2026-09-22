@@ -47,9 +47,8 @@ export class ConflictError extends DomainError {
 }
 
 /**
- * The store cannot currently serve the request. Not raised by the in-memory engine
- * itself — reserved for adapters backed by a real medium (disk, network) that can fail
- * independently of the data they hold.
+ * The store cannot currently serve the request — for a medium (disk, network) that can fail
+ * independently of the data it holds.
  */
 export class StorageUnavailableError extends DomainError {
   readonly kind = 'storage-unavailable' as const;

@@ -103,9 +103,8 @@ export const sessions = sqliteTable(
     // "Пара (mesoId, weekNumber, dayNumber) уникальна" — 02 · Domain Model, Session invariants.
     // Enforced here rather than left to the callers: the two places that write sessions are Start
     // and next-week generation, and the second one guards the slot with a read-then-write check
-    // that only this index makes airtight. The in-memory adapter enforces the same rule through
-    // `validateUniqueSessionSlots`, so the two implementations agree and the shared contract
-    // states it once for both.
+    // that only this index makes airtight — since task 118 this is the only place the invariant
+    // is enforced, rather than one of two.
     uniqueIndex('session_meso_week_day').on(table.mesoId, table.weekNumber, table.dayNumber),
   ],
 );

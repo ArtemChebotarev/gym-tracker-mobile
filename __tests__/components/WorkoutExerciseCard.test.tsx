@@ -4,6 +4,8 @@ import {
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import { defaultProgressionSettings } from '@domain/mesocycle';
+import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 const NO_ACTIONS: WorkoutExercise['actions'] = {
@@ -533,5 +535,176 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
     render(<WorkoutExerciseCard {...makeProps({ bodyWeight: 80 })} />);
 
     expect(screen.getByText('Weight, kg')).toBeTruthy();
+  });
+});
+
+// Weight swap on the card — 08.7.1 · Другой вес (task 121). The numbers are the swap's (task 120);
+// these are about what the card puts on screen around them.
+describe('WorkoutExerciseCard — another weight (task 121)', () => {
+  const swap = buildWeightSwap({
+    target: { targetReps: 10, suggestedWeight: 15 },
+    settings: defaultProgressionSettings,
+    isDeload: false,
+    equipment: 'dumbbell',
+  });
+
+  function swapRow(setNumber: number, isFirstUnlogged = false): WorkoutSetRow {
+    return { setNumber, targetReps: 10, suggestedWeight: 15, weightSwap: swap, isFirstUnlogged };
+  }
+
+  const CURL = makeExercise({
+    name: 'Dumbbell curl',
+    equipment: 'dumbbell',
+    rows: [swapRow(1, true), swapRow(2), swapRow(3)],
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  const info = () => screen.queryByRole('button', { name: 'Weight recommendations' });
+
+  test('the ⓘ sits beside Reps when the next set has a swap', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    expect(info()).toBeTruthy();
+  });
+
+  test('no swap, no ⓘ — a deload set or a pure bodyweight one', () => {
+    render(<WorkoutExerciseCard {...makeProps()} />);
+
+    expect(info()).toBeNull();
+  });
+
+  test('a set with no history still gets the ⓘ, to say why there are no numbers', () => {
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({
+          exercise: makeExercise({
+            rows: [
+              { setNumber: 1, weightSwap: { unavailable: 'no_history' }, isFirstUnlogged: true },
+            ],
+          }),
+        })}
+      />,
+    );
+
+    expect(info()).toBeTruthy();
+  });
+
+  test('read-only has nothing to swap a weight for', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL, mode: 'readonly' })} />);
+
+    expect(info()).toBeNull();
+  });
+
+  test('typing a far weight explains the estimate under the sets', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    expect(screen.queryByTestId('inline-note')).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '10');
+
+    expect(screen.getByTestId('inline-note')).toHaveTextContent(
+      '~ Estimated from 15 kg × 10. Stop at 2 RIR, not at the number.',
+    );
+    // Every row is recomputed from its own target — all three target 10 here.
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('~19');
+  });
+
+  test('a weight past the rep corridor drops the target and says how far it reaches', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '20');
+
+    expect(screen.getByTestId('inline-note')).toHaveTextContent(
+      '20 kg is too heavy for 5+ reps. Up to 17.5 kg keeps a rep target.',
+    );
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('2 RIR');
+  });
+
+  test('a close weight needs no explaining — it reads as an ordinary target', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '14');
+
+    expect(screen.queryByTestId('inline-note')).toBeNull();
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('12');
+  });
+});
+
+describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
+  const swap = buildWeightSwap({
+    target: { targetReps: 10, suggestedWeight: 15 },
+    settings: defaultProgressionSettings,
+    isDeload: false,
+    equipment: 'dumbbell',
+  });
+
+  const CURL = makeExercise({
+    name: 'Dumbbell curl',
+    equipment: 'dumbbell',
+    rows: [
+      { setNumber: 1, targetReps: 10, suggestedWeight: 15, weightSwap: swap, isFirstUnlogged: true },
+      { setNumber: 2, targetReps: 9, suggestedWeight: 15, weightSwap: swap, isFirstUnlogged: false },
+    ],
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  function openInfo() {
+    fireEvent.press(screen.getByRole('button', { name: 'Weight recommendations' }));
+  }
+
+  test('it opens on the ⓘ and shows the ranges of the set that is next to do', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    expect(screen.queryByTestId('popover')).toBeNull();
+
+    openInfo();
+
+    expect(screen.getByTestId('popover')).toBeTruthy();
+    expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
+    expect(screen.getByText('Recommended weight')).toBeTruthy();
+    expect(screen.getByText('12–17.5 kg')).toBeTruthy();
+    expect(screen.getByText('Not ideal, but acceptable')).toBeTruthy();
+  });
+
+  test('a tap beside it closes it again', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+    openInfo();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+
+    expect(screen.queryByTestId('popover')).toBeNull();
+  });
+
+  test('it always speaks for the original target, whatever is in the field', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '10');
+    openInfo();
+
+    expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
+  });
+
+  test('with no history it says why there are no numbers', () => {
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({
+          exercise: makeExercise({
+            targetRir: 3,
+            rows: [
+              { setNumber: 1, weightSwap: { unavailable: 'no_history' }, isFirstUnlogged: true },
+            ],
+          }),
+        })}
+      />,
+    );
+
+    openInfo();
+
+    expect(screen.getByText('Not enough history yet')).toBeTruthy();
+    expect(
+      screen.getByText(/Pick a weight you can lift for about 3 reps short of failure/),
+    ).toBeTruthy();
   });
 });

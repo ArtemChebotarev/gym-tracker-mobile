@@ -4,7 +4,9 @@
 // Editable (live mode, exercise not skipped):
 // - unlogged — Weight holds the **value** the card gives it (`suggestedWeight`, what was typed, or
 //   a weight carried over from an earlier set — task 106; else empty, `–` placeholder, decimal
-//   keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard).
+//   keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard). A weight
+//   other than the one the target was issued for moves that placeholder onto what *this* weight is
+//   worth — `12`, `~19`, or `N RIR` once it is past the rep corridor (08.7.1, rule 7).
 //   Log carries the accent outline on the exercise's first unlogged row. It logs what the fields
 //   hold, an empty Reps taking the number the placeholder shows (`resolveSetEntry`) — so a row left
 //   as recommended logs with one tap. With only `N RIR` to fall back on, Log waits for typed reps.
@@ -40,6 +42,7 @@ import {
   isStrongIndicator,
   repsPlaceholder,
   resolveSetEntry,
+  rowEvaluation,
 } from './WorkoutSetRowLogic';
 import { PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
 
@@ -87,8 +90,11 @@ export function WorkoutSetRow({
   const [repsText, setRepsText] = useState('');
   const [focused, setFocused] = useState<'weight' | 'reps' | null>(null);
   const { log, setNumber } = row;
-  const placeholder = repsPlaceholder(row, targetRir);
-  const rirPlaceholder = isRirPlaceholder(row, targetRir);
+  // What the weight now in the field is worth against this set's target (03, rule 7): the Reps
+  // placeholder, and the number a one-tap Log records, both follow it.
+  const evaluation = rowEvaluation(row, weightText);
+  const placeholder = repsPlaceholder(row, targetRir, evaluation);
+  const rirPlaceholder = isRirPlaceholder(row, targetRir, evaluation);
 
   function handleUnlog(logged: { weight: number; reps: number }) {
     // The row goes back to editable fields holding what was logged (05, "Снять отметку") — the
@@ -178,7 +184,7 @@ export function WorkoutSetRow({
     );
   }
 
-  const entry = resolveSetEntry(weightText, repsText, row);
+  const entry = resolveSetEntry(weightText, repsText, row, evaluation);
   const canLog = entry !== null && !isSaving;
 
   return (

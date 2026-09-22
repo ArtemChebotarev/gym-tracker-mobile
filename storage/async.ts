@@ -1,6 +1,6 @@
 // Artificial asynchrony — see 07 · Persistence Layer Contract, "Hard rules", rule 1:
 // "All operations are asynchronous, even if the current storage is synchronous. Otherwise
-// swapping in a network adapter later would break every call site." The in-memory engine
+// swapping in a network adapter later would break every call site." The local SQLite driver
 // does its actual work synchronously; this is the one seam where that fact is hidden from
 // callers, so code written against it keeps working unchanged once a real (slow, fallible)
 // adapter replaces it.

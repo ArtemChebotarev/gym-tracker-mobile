@@ -8,9 +8,8 @@ import { emptyTestDatabase } from '../fixtures/sqliteDatabase';
 
 // What is this adapter's own business rather than the repository contract's (task 067). The
 // contract says what every implementation does; these say how *this* one behaves where a
-// relational store differs from the in-memory engine: which driver failure becomes which domain
-// error, that a dropped field is actually cleared, and how a transaction inside a transaction
-// behaves. See `sqliteContract.test.ts` for the shared suite.
+// relational store has answers of its own: which driver failure becomes which domain error, that
+// a dropped field is actually cleared, and how a transaction inside a transaction behaves. See `sqliteContract.test.ts` for the shared suite.
 
 async function createRepositories() {
   const { db, close } = await emptyTestDatabase();

@@ -1,5 +1,6 @@
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { WorkoutRepositories } from '@repositories/workout';
+import type { TransactionalStore } from '@repositories/transaction';
 
 /**
  * The repositories closing a mesocycle (052) writes through: the workout ones — Stop ends the
@@ -24,7 +25,6 @@ export type MesocycleClosingRepositories = WorkoutRepositories & {
  * all rolled back if `work` throws or rejects (see `TransactionalStore` for the full contract).
  * `repos` is for reads outside a transaction.
  */
-export interface MesocycleClosingStore {
+export interface MesocycleClosingStore extends TransactionalStore<MesocycleClosingRepositories> {
   readonly repos: MesocycleClosingRepositories;
-  transaction<T>(work: (repos: MesocycleClosingRepositories) => Promise<T>): Promise<T>;
 }

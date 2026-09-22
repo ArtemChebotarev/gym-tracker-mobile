@@ -15,6 +15,13 @@ export const COLORS = {
   'surface/control-active': '#2C3036',
   /** A completed day's cell in the mesocycle overview (08.7, task 107) — 3.2:1 on `surface/sheet`. */
   'surface/cell-done': '#626973',
+  /**
+   * A Popover's plate (08.7.1). The only surface that sits *above* a card rather than under it,
+   * so it is the only one lighter than `surface/card` — on `surface/sheet`, as 08.7.1 first had
+   * it, a plate floating over a card was darker than the card and the two read as one block
+   * (Artem's review on the device).
+   */
+  'surface/popover': '#262A30',
 
   'border/default': '#2A2D31',
   'border/divider': '#1E2125',
@@ -41,7 +48,7 @@ export const COLORS = {
   danger: '#E2574C',
   'danger/border': '#5C2320',
 
-  /** The dimmed backdrop behind a bottom sheet. */
+  /** The dimmed backdrop behind a bottom sheet, and behind a Popover. */
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
   /** Drop shadow under a lifted (dragged) row. */
   shadow: '#000000',
@@ -89,6 +96,9 @@ export type TypographyToken = keyof typeof TYPOGRAPHY;
 export const LINE_HEIGHTS = {
   /** The wizard footer hint — its placeholder reserves the same height on steps without one. */
   'line-height/hint': 16,
+  /** A caption line whose height has to be reserved — RangeTrack's value labels, each of which
+   * is positioned over the row rather than flowing in it (08.7.1). */
+  'line-height/caption': 16,
 } as const;
 
 export type LineHeightToken = keyof typeof LINE_HEIGHTS;
@@ -212,6 +222,15 @@ export const SIZES = {
   'size/form-fields': 480,
   /** Tallest a bottom sheet gets (and the height of a fixed-height one). */
   'size/sheet-max': '80%',
+  /** Popover's arrow to its anchor — a square of this side, turned 45°. */
+  'size/popover-arrow': 12,
+  /** The bar of track beside a RangeTrack legend line, showing which span it names (08.7.1). */
+  'size/legend-swatch': 24,
+  /**
+   * A round button drawn around a glyph rather than a full icon — the weight-swap ⓘ beside the
+   * Reps column header (08.7.1). Drawn at 24, 44pt to the touch through `tapTargetSlop`.
+   */
+  'size/glyph-button': 24,
 } as const;
 
 export type SizeToken = keyof typeof SIZES;
@@ -223,6 +242,16 @@ export const SHADOWS = {
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
+  },
+  /**
+   * A plate floating over the screen — a Popover (08.7.1). Deeper and offset downwards, so the
+   * plate reads as being above what it covers rather than printed on it.
+   */
+  'shadow/overlay': {
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
   },
 } as const;
 

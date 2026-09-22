@@ -5,6 +5,7 @@ import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 import type { SettingsRepository } from '@repositories/settings';
 import type { TemplateRepository } from '@repositories/template';
+import type { TransactionalStore } from '@repositories/transaction';
 
 /** Every repository a backup reads from and writes back into (task 070). */
 export type BackupRepositories = {
@@ -25,7 +26,6 @@ export type BackupRepositories = {
  * Same shape as `WorkoutStore` and `MesocycleStartStore`: `transaction` hands `work` repositories
  * bound to the transaction, `repos` is for reads outside one — which is all an export needs.
  */
-export interface BackupStore {
+export interface BackupStore extends TransactionalStore<BackupRepositories> {
   readonly repos: BackupRepositories;
-  transaction<T>(work: (repos: BackupRepositories) => Promise<T>): Promise<T>;
 }

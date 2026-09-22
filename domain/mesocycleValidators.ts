@@ -39,19 +39,6 @@ export function validateMesocycleDaysPerWeek(daysPerWeek: number): void {
 }
 
 /**
- * Throws if more than one of `mesocycles` has `status: 'active'` (02 · Domain
- * Model, "Mesocycle", invariants: "Активным может быть только один мезоцикл
- * одновременно"). Callers validate the resulting collection after adding or
- * activating a mesocycle, before persisting it.
- */
-export function validateSingleActiveMesocycle(mesocycles: readonly Mesocycle[]): void {
-  const activeCount = mesocycles.filter((mesocycle) => mesocycle.status === 'active').length;
-  if (activeCount > 1) {
-    throw new Error(`Only one mesocycle may be active at a time, found ${activeCount}.`);
-  }
-}
-
-/**
  * Throws if `weekPlan` doesn't have exactly one `WeekPlanDay` per day of the week (04 · Meso
  * Creation Flows, Flow A, step 1: `daysPerWeek` and the days added on step 2 must agree —
  * used by `buildScratchMesocycleDraft` in `domain/mesocycleBuilders.ts` before a draft is
