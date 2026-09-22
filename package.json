@@ -61,6 +61,8 @@
     "ios": "expo run:ios",
     "preios:device": "npm run verify",
     "ios:device": "expo run:ios --device",
+    "preios:device:release": "npm run verify",
+    "ios:device:release": "expo run:ios --device --configuration Release",
     "preweb": "npm run verify",
     "web": "expo start --web",
     "lint": "expo lint . --max-warnings=0",
