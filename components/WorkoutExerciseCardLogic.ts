@@ -281,8 +281,10 @@ export function weightSwapPopover(
   }
   return {
     kind: 'ranges',
-    title: 'Weight recommendations',
-    subtitle: `Set ${row.setNumber} · target ${formatSwapTarget(swap)}`,
+    // The target leads and the instruction sits under it: the number you are anchored to is what
+    // you scan first, and the line under it says what to do about it (Artem's wording).
+    title: `Set ${row.setNumber} target ${formatSwapTarget(swap)}`,
+    subtitle: 'Pick another weight',
     outer: swap.estimateRange,
     inner: swap.closeRange,
     marker,

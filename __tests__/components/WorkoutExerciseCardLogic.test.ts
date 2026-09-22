@@ -285,8 +285,8 @@ describe('the weight swap popover and note', () => {
 
       expect(popover).toMatchObject({
         kind: 'ranges',
-        title: 'Weight recommendations',
-        subtitle: 'Set 1 · target 15 kg × 10',
+        title: 'Set 1 target 15 kg × 10',
+        subtitle: 'Pick another weight',
         outer: { min: 4, max: 17.5 },
         inner: { min: 12, max: 17.5 },
         marker: 15,
@@ -318,7 +318,7 @@ describe('the weight swap popover and note', () => {
       // A dip's close span runs the whole corridor: the body weight is most of the load, so ±20%
       // of it covers every added weight there is.
       expect(weightSwapPopover(dipRow, 2)).toMatchObject({
-        subtitle: 'Set 1 · target +16 kg × 7',
+        title: 'Set 1 target +16 kg × 7',
         legend: [{ span: 'inner', label: 'Recommended weight', value: '+0 to +22.5 kg' }],
       });
     });

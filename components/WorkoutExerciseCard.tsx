@@ -266,7 +266,7 @@ function WeightSwapPopoverPlate({
         inner={popover.inner}
         marker={popover.marker}
         labels={popover.labels}
-        accessibilityLabel={popover.subtitle}
+        accessibilityLabel={popover.title}
       />
       <View style={styles.legend}>
         {popover.legend.map((line) => (

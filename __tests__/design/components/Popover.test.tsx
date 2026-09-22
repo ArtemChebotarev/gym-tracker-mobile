@@ -12,16 +12,16 @@ describe('Popover', () => {
         visible
         onClose={() => {}}
         anchor={anchor}
-        title="Weight recommendations"
-        subtitle="Set 1 · target 15 kg × 10"
+        title="Set 1 target 15 kg × 10"
+        subtitle="Pick another weight"
         footer={<Text>Type the weight you have.</Text>}
       >
         <Text>Recommended weight</Text>
       </Popover>,
     );
 
-    expect(screen.getByText('Weight recommendations')).toBeTruthy();
-    expect(screen.getByText('Set 1 · target 15 kg × 10')).toBeTruthy();
+    expect(screen.getByText('Set 1 target 15 kg × 10')).toBeTruthy();
+    expect(screen.getByText('Pick another weight')).toBeTruthy();
     expect(screen.getByText('Recommended weight')).toBeTruthy();
     expect(screen.getByText('Type the weight you have.')).toBeTruthy();
   });
