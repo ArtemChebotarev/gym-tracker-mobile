@@ -141,7 +141,9 @@ const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   subtitle: {
-    marginTop: SPACING['space/xxs'],
+    // A step more than a sheet's subtitle takes: here the line under the title is a sentence of
+    // its own, not a continuation of the title (Artem's review).
+    marginTop: SPACING['space/dots'],
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/secondary'],
   },

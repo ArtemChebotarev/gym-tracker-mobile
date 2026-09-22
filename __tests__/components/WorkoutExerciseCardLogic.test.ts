@@ -286,7 +286,7 @@ describe('the weight swap popover and note', () => {
       expect(popover).toMatchObject({
         kind: 'ranges',
         title: 'Current set target: 15 kg × 10',
-        subtitle: 'You can choose another weight — reps will update accordingly.',
+        subtitle: 'You can choose another weight — reps will update',
         outer: { min: 4, max: 17.5 },
         inner: { min: 12, max: 17.5 },
         marker: 15,
