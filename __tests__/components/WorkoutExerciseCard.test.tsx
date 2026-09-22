@@ -560,7 +560,7 @@ describe('WorkoutExerciseCard — another weight (task 121)', () => {
     hasLoggedSets: false,
   });
 
-  const info = () => screen.queryByRole('button', { name: 'Other weight, same load' });
+  const info = () => screen.queryByRole('button', { name: 'Weight recommendations' });
 
   test('the ⓘ sits beside Reps when the next set has a swap', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
@@ -651,7 +651,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
   });
 
   function openInfo() {
-    fireEvent.press(screen.getByRole('button', { name: 'Other weight, same load' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Weight recommendations' }));
   }
 
   test('it opens on the ⓘ and shows the ranges of the set that is next to do', () => {
@@ -663,9 +663,9 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
 
     expect(screen.getByTestId('popover')).toBeTruthy();
     expect(screen.getByText('Set 1 · target 15 kg × 10')).toBeTruthy();
-    expect(screen.getByText('Close match')).toBeTruthy();
+    expect(screen.getByText('Recommended weight')).toBeTruthy();
     expect(screen.getByText('12–17.5 kg')).toBeTruthy();
-    expect(screen.getByText('Estimate, go by 2 RIR')).toBeTruthy();
+    expect(screen.getByText('Not ideal, but acceptable')).toBeTruthy();
     expect(screen.getByText('Type the weight you have — reps update in every set.')).toBeTruthy();
   });
 

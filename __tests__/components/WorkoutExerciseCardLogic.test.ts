@@ -285,7 +285,7 @@ describe('the weight swap popover and note', () => {
 
       expect(popover).toMatchObject({
         kind: 'ranges',
-        title: 'Other weight, same load',
+        title: 'Weight recommendations',
         subtitle: 'Set 1 · target 15 kg × 10',
         outer: { min: 4, max: 17.5 },
         inner: { min: 12, max: 17.5 },
@@ -308,8 +308,8 @@ describe('the weight swap popover and note', () => {
     test('the legend names the close span, and what is left of the full one', () => {
       expect(weightSwapPopover(rowWith(10, 15), 2)).toMatchObject({
         legend: [
-          { span: 'inner', label: 'Close match', value: '12–17.5 kg' },
-          { span: 'outer', label: 'Estimate, go by 2 RIR', value: '4–12 kg' },
+          { span: 'inner', label: 'Recommended weight', value: '12–17.5 kg' },
+          { span: 'outer', label: 'Not ideal, but acceptable', value: '4–12 kg' },
         ],
       });
     });
@@ -319,7 +319,7 @@ describe('the weight swap popover and note', () => {
       // of it covers every added weight there is.
       expect(weightSwapPopover(dipRow, 2)).toMatchObject({
         subtitle: 'Set 1 · target +16 kg × 7',
-        legend: [{ span: 'inner', label: 'Close match', value: '+0 to +22.5 kg' }],
+        legend: [{ span: 'inner', label: 'Recommended weight', value: '+0 to +22.5 kg' }],
       });
     });
 

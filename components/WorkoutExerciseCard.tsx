@@ -186,7 +186,7 @@ export function WorkoutExerciseCard({
                 <Pressable
                   ref={infoRef}
                   accessibilityRole="button"
-                  accessibilityLabel="Other weight, same load"
+                  accessibilityLabel="Weight recommendations"
                   accessibilityState={{ expanded: infoOpen }}
                   onPress={openPopover}
                   style={styles.infoButton}

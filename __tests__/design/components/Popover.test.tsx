@@ -12,29 +12,29 @@ describe('Popover', () => {
         visible
         onClose={() => {}}
         anchor={anchor}
-        title="Other weight, same load"
+        title="Weight recommendations"
         subtitle="Set 1 · target 15 kg × 10"
         footer={<Text>Type the weight you have.</Text>}
       >
-        <Text>Close match</Text>
+        <Text>Recommended weight</Text>
       </Popover>,
     );
 
-    expect(screen.getByText('Other weight, same load')).toBeTruthy();
+    expect(screen.getByText('Weight recommendations')).toBeTruthy();
     expect(screen.getByText('Set 1 · target 15 kg × 10')).toBeTruthy();
-    expect(screen.getByText('Close match')).toBeTruthy();
+    expect(screen.getByText('Recommended weight')).toBeTruthy();
     expect(screen.getByText('Type the weight you have.')).toBeTruthy();
   });
 
   test('an anchor that could not be measured still opens the plate, without an arrow', () => {
-    render(<Popover visible onClose={() => {}} anchor={null} title="Other weight, same load" />);
+    render(<Popover visible onClose={() => {}} anchor={null} title="Weight recommendations" />);
 
     expect(screen.getByTestId('popover')).toBeTruthy();
     expect(screen.queryByTestId('popover-arrow')).toBeNull();
   });
 
   test('a measured anchor gets the arrow, pointing at it', () => {
-    render(<Popover visible onClose={() => {}} anchor={anchor} title="Other weight, same load" />);
+    render(<Popover visible onClose={() => {}} anchor={anchor} title="Weight recommendations" />);
 
     expect(screen.getByTestId('popover-arrow')).toBeTruthy();
   });
@@ -42,7 +42,7 @@ describe('Popover', () => {
   test('a tap beside the plate closes it', () => {
     const onClose = jest.fn();
     render(
-      <Popover visible onClose={onClose} anchor={anchor} title="Other weight, same load" />,
+      <Popover visible onClose={onClose} anchor={anchor} title="Weight recommendations" />,
     );
 
     fireEvent.press(screen.getByRole('button', { name: 'Close' }));

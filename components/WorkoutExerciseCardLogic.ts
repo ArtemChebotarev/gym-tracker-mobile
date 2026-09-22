@@ -270,18 +270,18 @@ export function weightSwapPopover(
   const marker = targetWeightOf(swap);
   const spans = estimateSpans(swap);
   const legend: WeightSwapLegendRow[] = [
-    { span: 'inner', label: 'Close match', value: formatSwapSpans([swap.closeRange], added) },
+    { span: 'inner', label: 'Recommended weight', value: formatSwapSpans([swap.closeRange], added) },
   ];
   if (spans.length > 0) {
     legend.push({
       span: 'outer',
-      label: targetRir === undefined ? 'Estimate' : `Estimate, go by ${formatRir(targetRir)}`,
+      label: 'Not ideal, but acceptable',
       value: formatSwapSpans(spans, added),
     });
   }
   return {
     kind: 'ranges',
-    title: 'Other weight, same load',
+    title: 'Weight recommendations',
     subtitle: `Set ${row.setNumber} · target ${formatSwapTarget(swap)}`,
     outer: swap.estimateRange,
     inner: swap.closeRange,
