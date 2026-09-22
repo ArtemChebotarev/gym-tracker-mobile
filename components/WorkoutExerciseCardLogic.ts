@@ -3,10 +3,11 @@
 import type { Equipment } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
+import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
-import { formatRowWeight, initialWeightText } from './WorkoutSetRowLogic';
+import { formatRowWeight, initialWeightText, parseWeight, rowEvaluation } from './WorkoutSetRowLogic';
 
 /**
  * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
@@ -146,4 +147,178 @@ export function carryWeightForward(
     }
   }
   return { ...edits, ...carried };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Weight swap — 08.7.1 · Другой вес. Everything below reads what `evaluateWeightSwap` and the
+// row's own `weightSwap` already worked out (03, rule 7; task 120) and turns it into the strings
+// and spans the ⓘ popover and the card's InlineNote show. Nothing here computes reps or ranges.
+
+/** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
+export function firstUnloggedRow(
+  rows: readonly WorkoutSetRow[],
+): WorkoutSetRow | undefined {
+  return rows.find((row) => row.isFirstUnlogged);
+}
+
+/** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
+function formatSwapWeight(weight: number, added: boolean): string {
+  return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
+}
+
+function formatSwapSpans(spans: readonly WeightRange[], added: boolean): string {
+  const parts = spans.map((span) =>
+    added
+      ? `${formatSwapWeight(span.min, true)} to ${formatSwapWeight(span.max, true)}`
+      : `${formatRowWeight(span.min)}–${formatRowWeight(span.max)}`,
+  );
+  return `${parts.join(' and ')} kg`;
+}
+
+/** `15 kg × 10`, or `+16 kg × 7` on a weighted bodyweight exercise. */
+function formatSwapTarget(swap: WeightSwapTarget): string {
+  const added = swap.bodyWeight !== undefined;
+  return `${formatSwapWeight(targetWeightOf(swap), added)} kg × ${swap.baseReps}`;
+}
+
+/**
+ * The target's weight in the units the set row types in: the added weight on a weighted bodyweight
+ * exercise, where `baseWeight` is the full load the formula works on (03, rule 7).
+ */
+function targetWeightOf(swap: WeightSwapTarget): number {
+  return swap.bodyWeight === undefined ? swap.baseWeight : swap.baseWeight - swap.bodyWeight;
+}
+
+/** The parts of the full span that lie outside the close one — one side, or both. */
+function estimateSpans(swap: WeightSwapTarget): WeightRange[] {
+  const spans: WeightRange[] = [];
+  if (swap.estimateRange.min < swap.closeRange.min) {
+    spans.push({ min: swap.estimateRange.min, max: swap.closeRange.min });
+  }
+  if (swap.closeRange.max < swap.estimateRange.max) {
+    spans.push({ min: swap.closeRange.max, max: swap.estimateRange.max });
+  }
+  return spans;
+}
+
+export type WeightSwapLegendRow = {
+  /** Which span of the track the line names — it carries that span's own swatch. */
+  span: 'inner' | 'outer';
+  label: string;
+  value: string;
+};
+
+/**
+ * What the ⓘ popover shows for the exercise's first unlogged set — always from that set's
+ * **original** target, never from whatever weight is in the field right now (08.7.1).
+ */
+export type WeightSwapPopover =
+  | {
+      kind: 'ranges';
+      title: string;
+      subtitle: string;
+      outer: WeightRange;
+      inner: WeightRange;
+      marker: number;
+      labels: { value: number; text: string }[];
+      legend: WeightSwapLegendRow[];
+      footer: string;
+    }
+  | { kind: 'no-history'; title: string; text: string };
+
+export function weightSwapPopover(
+  row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap'> | undefined,
+  targetRir: number | undefined,
+): WeightSwapPopover | undefined {
+  if (row === undefined || row.weightSwap === undefined) {
+    return undefined;
+  }
+  const swap = row.weightSwap;
+  if ('unavailable' in swap) {
+    const effort = targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`;
+    return {
+      kind: 'no-history',
+      title: 'Not enough history yet',
+      text: `Pick a weight you can lift for ${effort} short of failure. After this workout you’ll get rep targets, and any weight you pick will get its own.`,
+    };
+  }
+  const added = swap.bodyWeight !== undefined;
+  const marker = targetWeightOf(swap);
+  const values = [
+    swap.estimateRange.min,
+    swap.closeRange.min,
+    marker,
+    swap.closeRange.max,
+    swap.estimateRange.max,
+  ];
+  const spans = estimateSpans(swap);
+  const legend: WeightSwapLegendRow[] = [
+    { span: 'inner', label: 'Close match', value: formatSwapSpans([swap.closeRange], added) },
+  ];
+  if (spans.length > 0) {
+    legend.push({
+      span: 'outer',
+      label: targetRir === undefined ? 'Estimate' : `Estimate, go by ${formatRir(targetRir)}`,
+      value: formatSwapSpans(spans, added),
+    });
+  }
+  return {
+    kind: 'ranges',
+    title: 'Other weight, same load',
+    subtitle: `Set ${row.setNumber} · target ${formatSwapTarget(swap)}`,
+    outer: swap.estimateRange,
+    inner: swap.closeRange,
+    marker,
+    labels: [...new Set(values)]
+      .sort((a, b) => a - b)
+      .map((value) => ({ value, text: formatSwapWeight(value, added) })),
+    legend,
+    footer: 'Type the weight you have — reps update in every set.',
+  };
+}
+
+/** The card's one InlineNote (08.7.1) — the lead phrase, then the way out of it. */
+export type WeightSwapNote = { lead: string; text: string };
+
+/**
+ * The note under the set rows: it speaks for the first unlogged set, and only while the weight in
+ * its field has taken the target out of reach — an `estimate`, or off the rep corridor entirely.
+ * A close weight needs no explaining, and neither does a card with nothing typed into it.
+ */
+export function weightSwapNote(
+  row: Pick<WorkoutSetRow, 'weightSwap'> | undefined,
+  weightText: string,
+  targetRir: number | undefined,
+): WeightSwapNote | undefined {
+  if (row === undefined || row.weightSwap === undefined || 'unavailable' in row.weightSwap) {
+    return undefined;
+  }
+  const swap = row.weightSwap;
+  const evaluation = rowEvaluation(row, weightText);
+  if (evaluation === undefined) {
+    return undefined;
+  }
+  const added = swap.bodyWeight !== undefined;
+  if (evaluation.zone === 'out') {
+    const weight = formatSwapWeight(parseWeight(weightText) ?? 0, added);
+    const bound = formatSwapWeight(evaluation.bound, added);
+    return evaluation.direction === 'tooHeavy'
+      ? {
+          lead: `${weight} kg is too heavy for ${swap.corridor.minReps}+ reps.`,
+          text: `Up to ${bound} kg keeps a rep target.`,
+        }
+      : {
+          lead: `${weight} kg is too light for ${swap.corridor.maxReps} reps.`,
+          text: `From ${bound} kg keeps a rep target.`,
+        };
+  }
+  if (evaluation.zone !== 'estimate') {
+    // `target` and `close` read as an ordinary target — there is nothing to explain.
+    return undefined;
+  }
+  const effort = targetRir === undefined ? 'the effort' : formatRir(targetRir);
+  return {
+    lead: `~ Estimated from ${formatSwapTarget(swap)}.`,
+    text: `Stop at ${effort}, not at the number.`,
+  };
 }

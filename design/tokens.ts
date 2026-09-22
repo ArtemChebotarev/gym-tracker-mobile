@@ -43,6 +43,11 @@ export const COLORS = {
 
   /** The dimmed backdrop behind a bottom sheet. */
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
+  /**
+   * The backdrop behind a Popover — weaker than a sheet's, so the card it points at stays
+   * readable underneath it (08.0, "Акцент и роли"; 08.7.1).
+   */
+  'overlay/scrim-light': 'rgba(0, 0, 0, 0.35)',
   /** Drop shadow under a lifted (dragged) row. */
   shadow: '#000000',
 } as const;
@@ -89,6 +94,9 @@ export type TypographyToken = keyof typeof TYPOGRAPHY;
 export const LINE_HEIGHTS = {
   /** The wizard footer hint — its placeholder reserves the same height on steps without one. */
   'line-height/hint': 16,
+  /** A caption line whose height has to be reserved — RangeTrack's value labels, each of which
+   * is positioned over the row rather than flowing in it (08.7.1). */
+  'line-height/caption': 16,
 } as const;
 
 export type LineHeightToken = keyof typeof LINE_HEIGHTS;
@@ -212,6 +220,15 @@ export const SIZES = {
   'size/form-fields': 480,
   /** Tallest a bottom sheet gets (and the height of a fixed-height one). */
   'size/sheet-max': '80%',
+  /** Popover's arrow to its anchor — a square of this side, turned 45°. */
+  'size/popover-arrow': 12,
+  /** The bar of track beside a RangeTrack legend line, showing which span it names (08.7.1). */
+  'size/legend-swatch': 24,
+  /**
+   * A round button drawn around a glyph rather than a full icon — the weight-swap ⓘ beside the
+   * Reps column header (08.7.1). Drawn at 24, 44pt to the touch through `tapTargetSlop`.
+   */
+  'size/glyph-button': 24,
 } as const;
 
 export type SizeToken = keyof typeof SIZES;

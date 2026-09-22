@@ -43,6 +43,7 @@ const EXPECTED_COLOR_TOKENS = [
   'danger',
   'danger/border',
   'overlay/scrim',
+  'overlay/scrim-light',
   'shadow',
 ];
 
