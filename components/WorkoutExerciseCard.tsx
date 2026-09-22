@@ -33,7 +33,6 @@ import { InlineNote } from '@design/components/InlineNote';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
-import { tapTargetSlop } from '@design/shapes';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
@@ -43,7 +42,7 @@ import { MoreIcon } from '@design/icons/MoreIcon';
 import { isBodyWeightExercise, isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
-import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
@@ -190,13 +189,14 @@ export function WorkoutExerciseCard({
                   accessibilityLabel="Other weight, same load"
                   accessibilityState={{ expanded: infoOpen }}
                   onPress={openPopover}
-                  hitSlop={tapTargetSlop(SIZES['size/glyph-button'])}
-                  style={[styles.infoButton, infoOpen && styles.infoButtonOpen]}
+                  style={styles.infoButton}
                 >
-                  <InfoIcon
-                    size={ICON_SIZES['icon/glyph']}
-                    color={infoOpen ? COLORS['text/primary'] : COLORS['text/muted']}
-                  />
+                  <View style={[styles.infoDisc, infoOpen && styles.infoDiscOpen]}>
+                    <InfoIcon
+                      size={ICON_SIZES['icon/glyph']}
+                      color={infoOpen ? COLORS['text/primary'] : COLORS['text/muted']}
+                    />
+                  </View>
                 </Pressable>
               )}
             </View>

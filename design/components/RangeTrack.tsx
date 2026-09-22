@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: 'center',
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
     lineHeight: LINE_HEIGHTS['line-height/caption'],
-    color: COLORS['text/muted'],
+    color: COLORS['text/secondary'],
   },
 });

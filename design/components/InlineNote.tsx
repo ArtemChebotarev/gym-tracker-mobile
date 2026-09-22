@@ -19,7 +19,7 @@ export type InlineNoteProps = {
 export function InlineNote({ lead, text }: InlineNoteProps) {
   return (
     <View testID="inline-note" style={styles.root}>
-      <InfoIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/muted']} />
+      <InfoIcon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
       <Text style={styles.text}>
         {lead !== undefined && <Text style={styles.lead}>{lead} </Text>}
         {text}
@@ -43,11 +43,11 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
-    color: COLORS['text/muted'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/secondary'],
   },
   lead: {
-    color: COLORS['text/secondary'],
+    color: COLORS['text/primary'],
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
   },
 });

@@ -201,6 +201,30 @@ function estimateSpans(swap: WeightSwapTarget): WeightRange[] {
   return spans;
 }
 
+/**
+ * How close two labels may sit, as a share of the track, before they run into each other. Not a
+ * design value — it is about the numbers, not about how they are drawn.
+ */
+const LABEL_CLEARANCE = 0.08;
+
+/**
+ * The values the track is labelled at: its four bounds, each once, plus the target — unless the
+ * target sits so near a bound that the two would collide. The dot marks it either way, and the
+ * popover's subtitle spells it out, so the bound is the one worth keeping.
+ */
+function trackLabels(swap: WeightSwapTarget, marker: number): number[] {
+  const bounds = [
+    swap.estimateRange.min,
+    swap.closeRange.min,
+    swap.closeRange.max,
+    swap.estimateRange.max,
+  ];
+  const span = swap.estimateRange.max - swap.estimateRange.min;
+  const crowded =
+    span > 0 && bounds.some((bound) => Math.abs(bound - marker) / span < LABEL_CLEARANCE);
+  return [...new Set(crowded ? bounds : [...bounds, marker])].sort((a, b) => a - b);
+}
+
 export type WeightSwapLegendRow = {
   /** Which span of the track the line names — it carries that span's own swatch. */
   span: 'inner' | 'outer';
@@ -244,13 +268,6 @@ export function weightSwapPopover(
   }
   const added = swap.bodyWeight !== undefined;
   const marker = targetWeightOf(swap);
-  const values = [
-    swap.estimateRange.min,
-    swap.closeRange.min,
-    marker,
-    swap.closeRange.max,
-    swap.estimateRange.max,
-  ];
   const spans = estimateSpans(swap);
   const legend: WeightSwapLegendRow[] = [
     { span: 'inner', label: 'Close match', value: formatSwapSpans([swap.closeRange], added) },
@@ -269,9 +286,10 @@ export function weightSwapPopover(
     outer: swap.estimateRange,
     inner: swap.closeRange,
     marker,
-    labels: [...new Set(values)]
-      .sort((a, b) => a - b)
-      .map((value) => ({ value, text: formatSwapWeight(value, added) })),
+    labels: trackLabels(swap, marker).map((value) => ({
+      value,
+      text: formatSwapWeight(value, added),
+    })),
     legend,
     footer: 'Type the weight you have — reps update in every set.',
   };

@@ -7,7 +7,7 @@
 import { StyleSheet } from 'react-native';
 
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
-import { circle } from '@design/shapes';
+import { circle, square } from '@design/shapes';
 
 // The small secondary text of the workout screen — same as the set rows (WorkoutSetRowStyles.ts).
 const META_FONT_SIZE = TYPOGRAPHY['type/meta'].fontSize;
@@ -68,31 +68,41 @@ export const styles = StyleSheet.create({
   },
   // The column header, on the set rows' grid (WorkoutSetRowStyles.ts): Weight · Reps · indicator ·
   // Log, centered, with Log flush right.
+  // Tall enough to hold the ⓘ's full tap target: iOS delivers no touch outside a parent's own
+  // frame, so a `hitSlop` on the button alone would be cut off by a row the height of its label.
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap'],
-    marginTop: SPACING['space/row'],
-    paddingBottom: SPACING['space/gap-tight'],
+    minHeight: SIZES['size/tap-target'],
+    marginTop: SPACING['space/gap-tight'],
   },
   valueColumn: {
     flex: 1,
     textAlign: 'center',
   },
-  // The Reps header carries the weight-swap ⓘ beside its label (08.7.1).
+  // The Reps header carries the weight-swap ⓘ beside its label (08.7.1). It stretches to the
+  // row's full height so the button inside it is a whole 44pt tall to the touch.
   repsHeader: {
     flexDirection: 'row',
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING['space/dots'],
   },
+  /** The ⓘ's touch area — the iOS minimum, around a disc a third of its size. */
   infoButton: {
+    ...square(SIZES['size/tap-target']),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoDisc: {
     ...circle(SIZES['size/glyph-button']),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  /** While its popover is open, the button sits on a lit disc — 08.7.1, "подсветка". */
-  infoButtonOpen: {
+  /** While its popover is open, the glyph sits on a lit disc — 08.7.1, "подсветка". */
+  infoDiscOpen: {
     backgroundColor: COLORS['surface/control-active'],
   },
   indicatorColumn: {
@@ -117,8 +127,8 @@ export const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   popoverFooter: {
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
-    color: COLORS['text/muted'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/secondary'],
   },
   legend: {
     marginTop: SPACING['space/row'],
@@ -131,11 +141,11 @@ export const styles = StyleSheet.create({
   },
   legendLabel: {
     flex: 1,
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
-    color: COLORS['text/muted'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/secondary'],
   },
   legendValue: {
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/primary'],
   },
   skippedNote: {

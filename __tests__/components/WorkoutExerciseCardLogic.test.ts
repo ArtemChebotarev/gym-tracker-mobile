@@ -390,3 +390,30 @@ describe('the weight swap popover and note', () => {
     });
   });
 });
+
+describe('the range track labels', () => {
+  function labelsOf(targetReps: number, suggestedWeight: number) {
+    const popover = weightSwapPopover(
+      {
+        setNumber: 1,
+        weightSwap: buildWeightSwap({
+          target: { targetReps, suggestedWeight },
+          settings: defaultProgressionSettings,
+          isDeload: false,
+          equipment: 'dumbbell',
+        }),
+      },
+      2,
+    );
+    return popover?.kind === 'ranges' ? popover.labels.map((label) => label.text) : undefined;
+  }
+
+  test('the bounds and the target, when they all have room', () => {
+    expect(labelsOf(10, 15)).toEqual(['4', '12', '15', '17.5']);
+  });
+
+  test('the target label steps aside when it would run into a bound', () => {
+    // 10 kg × 7 reaches only 2.5–10.5 kg, so the target sits half a kilo from the heavy end.
+    expect(labelsOf(7, 10)).toEqual(['2.5', '8', '10.5']);
+  });
+});

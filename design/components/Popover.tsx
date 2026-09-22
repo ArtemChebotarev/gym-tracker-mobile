@@ -152,8 +152,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: SPACING['space/xxs'],
-    fontSize: TYPOGRAPHY['type/label'].fontSize,
-    color: COLORS['text/muted'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/secondary'],
   },
   footer: {
     marginTop: SPACING['space/md'],
