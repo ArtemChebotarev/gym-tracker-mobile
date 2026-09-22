@@ -2,6 +2,8 @@ import { type Equipment, type MuscleGroup, toExerciseId } from '@domain/catalog'
 import { NotFoundError } from '@domain/errors';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import type { WeightSwap } from '@domain/weightSwap';
+import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { SqliteDatabase } from '@storage/sqlite/db';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
@@ -47,6 +49,8 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
   ['row', 'Cable row', 'back', 'cable'],
   ['squat', 'Back squat', 'quads', 'barbell'],
   ['curl', 'Leg curl', 'hamstrings', undefined],
+  ['dip', 'Dip', 'chest', 'bodyweight-weighted'],
+  ['pullup', 'Pull-up', 'back', 'bodyweight'],
 ];
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
@@ -85,6 +89,25 @@ function planned(
     status: 'planned',
     ...overrides,
   };
+}
+
+/**
+ * The swap the domain builds for a set with this target (03, rule 7) — what the row is expected
+ * to carry. The numbers behind it are `weightSwapRules`' own tests; this only pins down that the
+ * model hands the screen the swap of that set's own target.
+ */
+function swapOf(targetReps: number, equipment: Equipment, bodyWeight?: number): WeightSwap {
+  const swap = buildWeightSwap({
+    target: { targetReps, suggestedWeight: 60 },
+    settings: defaultProgressionSettings,
+    isDeload: false,
+    equipment,
+    bodyWeight,
+  });
+  if (swap === undefined) {
+    throw new Error('expected a weight swap');
+  }
+  return swap;
 }
 
 function logOf(sessionExercise: SessionExercise, setNumber: number, reps: number): SetLog {
@@ -195,6 +218,7 @@ describe('getWorkoutSession — live', () => {
         setNumber: 1,
         targetReps: 11,
         suggestedWeight: 60,
+        weightSwap: swapOf(11, 'barbell'),
         log: { weight: 60, reps: 12 },
         indicator: { kind: 'over', diff: 1 },
         isFirstUnlogged: false,
@@ -203,14 +227,26 @@ describe('getWorkoutSession — live', () => {
         setNumber: 2,
         targetReps: 10,
         suggestedWeight: 60,
+        weightSwap: swapOf(10, 'barbell'),
         log: { weight: 60, reps: 10 },
         indicator: { kind: 'hit' },
         isFirstUnlogged: false,
       },
-      { setNumber: 3, targetReps: 9, suggestedWeight: 60, isFirstUnlogged: true },
+      {
+        setNumber: 3,
+        targetReps: 9,
+        suggestedWeight: 60,
+        weightSwap: swapOf(9, 'barbell'),
+        isFirstUnlogged: true,
+      },
     ]);
     expect(rowCard?.equipment).toBe('cable');
-    expect(rowCard?.rows[0]).toEqual({ setNumber: 1, suggestedWeight: 60, isFirstUnlogged: true });
+    expect(rowCard?.rows[0]).toEqual({
+      setNumber: 1,
+      suggestedWeight: 60,
+      weightSwap: { unavailable: 'no_history' },
+      isFirstUnlogged: true,
+    });
     expect(rowCard?.rows[1]?.isFirstUnlogged).toBe(false);
   });
 
@@ -687,5 +723,98 @@ describe('the block body weight on the workout model (task 105)', () => {
     const model = await getWorkoutSession('w2d1', deps);
 
     expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 10, reps: 12, bodyWeight: 80 });
+  });
+});
+
+describe('weight swap on the workout data (task 120)', () => {
+  test('DoD: every row carries the swap of its own target', async () => {
+    const { deps } = await setUp();
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    // Targets 11 / 10 / 9 at the same weight are three different swaps — the same weight in hand
+    // is worth different reps in the third set than in the first.
+    expect(benchCard?.rows.map((row) => row.weightSwap)).toEqual([
+      swapOf(11, 'barbell'),
+      swapOf(10, 'barbell'),
+      swapOf(9, 'barbell'),
+    ]);
+  });
+
+  test('DoD: a set with no target to move says so instead of going quiet', async () => {
+    const { deps } = await setUp();
+
+    const [, rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(rowCard?.rows.map((row) => row.weightSwap)).toEqual([
+      { unavailable: 'no_history' },
+      { unavailable: 'no_history' },
+    ]);
+  });
+
+  test('DoD: no swap on a deload set — its weight is a fraction of a working one', async () => {
+    const { deps } = await setUp({
+      sessions: [slotSession(4, 1, { isDeload: true })],
+      exercises: [planned('w4d1', 'bench', 1, [10])],
+      logs: [],
+    });
+
+    const [benchCard] = (await getWorkoutSession('w4d1', deps)).exercises;
+
+    expect(benchCard?.rows[0]).not.toHaveProperty('weightSwap');
+  });
+
+  test('no swap on a pure bodyweight set — there is no weight to change', async () => {
+    const { deps } = await setUp({
+      exercises: [planned('w2d1', 'pullup', 1, [10])],
+      logs: [],
+    });
+
+    const [pullupCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(pullupCard?.rows[0]).not.toHaveProperty('weightSwap');
+  });
+
+  test('a weighted bodyweight set swaps on the full load', async () => {
+    const { store, deps } = await setUp({
+      exercises: [planned('w2d1', 'dip', 1, [7])],
+      logs: [],
+    });
+    await new SqliteMesocycleRepository(store).update({ ...mesocycle, bodyWeight: 83 });
+
+    const [dipCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(dipCard?.rows[0]?.weightSwap).toEqual(swapOf(7, 'bodyweight-weighted', 83));
+    expect(dipCard?.rows[0]?.weightSwap).toMatchObject({ baseWeight: 143, bodyWeight: 83 });
+  });
+
+  test('no swap on a weighted bodyweight set until the block knows the body weight', async () => {
+    const { deps } = await setUp({
+      exercises: [planned('w2d1', 'dip', 1, [7])],
+      logs: [],
+    });
+
+    const [dipCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(dipCard?.rows[0]).not.toHaveProperty('weightSwap');
+  });
+
+  test('a set logged at another weight is marked against what that weight was worth', async () => {
+    // Set 1 targets 11 reps at 60 kg, which is 15 reps at 50 kg — a close weight, so it still
+    // gets a marker, and 15 there is a hit rather than four over.
+    const { deps } = await setUp({ logs: [{ ...logOf(bench, 1, 15), weight: 50 }] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard?.rows[0]?.indicator).toEqual({ kind: 'hit' });
+  });
+
+  test('no marker once the weight is far enough to be an estimate', async () => {
+    const { deps } = await setUp({ logs: [{ ...logOf(bench, 1, 20), weight: 40 }] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard?.rows[0]?.log).toEqual({ weight: 40, reps: 20 });
+    expect(benchCard?.rows[0]).not.toHaveProperty('indicator');
   });
 });

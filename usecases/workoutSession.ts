@@ -11,7 +11,9 @@ import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/progressionPlan';
-import { targetIndicator } from '@domain/progressionTargetIndicator';
+import { targetIndicatorAtWeight } from '@domain/progressionTargetIndicator';
+import type { WeightSwap } from '@domain/weightSwap';
+import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
 import {
   canFinishSession,
@@ -54,6 +56,13 @@ export type WorkoutSetRow = {
   log?: { weight: number; reps: number; bodyWeight?: number };
   /** `✓` / `+N` / `−N` — only for a logged row whose set had `targetReps`. */
   indicator?: TargetIndicator;
+  /**
+   * What this set's target is worth at another weight (03, rule 7; task 120) — the screen reads
+   * it with `evaluateWeightSwap` for whatever weight the row holds. Absent when the question
+   * doesn't arise at all: a deload set, a pure `bodyweight` one, or a weighted bodyweight one
+   * while the block has no body weight yet. See `buildWeightSwap`.
+   */
+  weightSwap?: WeightSwap;
   /** The exercise's first unlogged row, whose Log box gets the accent outline. Live mode only. */
   isFirstUnlogged: boolean;
   /**
@@ -196,6 +205,17 @@ const NO_EXERCISE_ACTIONS: WorkoutExerciseActions = {
  */
 type ReferenceLogs = ReadonlyMap<string, readonly SetLog[]>;
 
+/**
+ * What the rows and cards of one session need beyond the session tree itself: the block's
+ * settings and body weight, and — for a deload — the working session it was planned from.
+ */
+type SessionContext = {
+  settings: ProgressionSettings;
+  isDeload: boolean;
+  bodyWeight?: number;
+  referenceLogs: ReferenceLogs;
+};
+
 function referenceLogsOf(source: SessionTree | null): ReferenceLogs {
   const byExercise = new Map<string, SetLog[]>();
   for (const { sessionExercise, setLogs } of source?.exercises ?? []) {
@@ -210,10 +230,10 @@ function referenceLogsOf(source: SessionTree | null): ReferenceLogs {
 function toRows(
   tree: SessionExerciseTree,
   mode: WorkoutMode,
-  referenceLogs: ReferenceLogs,
+  context: SessionContext,
 ): WorkoutSetRow[] {
-  const { sessionExercise, setLogs } = tree;
-  const exerciseReferenceLogs = referenceLogs.get(sessionExercise.exerciseId) ?? [];
+  const { sessionExercise, exercise, setLogs } = tree;
+  const exerciseReferenceLogs = context.referenceLogs.get(sessionExercise.exerciseId) ?? [];
   const skipped = sessionExercise.status === 'skipped';
   const firstUnlogged =
     mode === 'live' && !skipped
@@ -238,6 +258,18 @@ function toRows(
     if (target.suggestedWeight !== undefined) {
       row.suggestedWeight = target.suggestedWeight;
     }
+    // Rule 7 asks only about this set's own target, so every row gets its own: with targets
+    // 10 / 10 / 9 the same weight is worth different reps in the third set than in the first.
+    const weightSwap = buildWeightSwap({
+      target,
+      settings: context.settings,
+      isDeload: context.isDeload,
+      equipment: exercise.equipment,
+      bodyWeight: context.bodyWeight,
+    });
+    if (weightSwap !== undefined) {
+      row.weightSwap = weightSwap;
+    }
     const reference = exerciseReferenceLogs.find(
       (candidate) => candidate.setNumber === target.setNumber,
     );
@@ -249,7 +281,7 @@ function toRows(
       if (log.bodyWeight !== undefined) {
         row.log.bodyWeight = log.bodyWeight;
       }
-      const indicator = targetIndicator(target, log);
+      const indicator = targetIndicatorAtWeight(target, log, weightSwap);
       if (indicator) {
         row.indicator = indicator;
       }
@@ -264,8 +296,7 @@ function toExercise(
   index: number,
   count: number,
   mode: WorkoutMode,
-  referenceLogs: ReferenceLogs,
-  settings: ProgressionSettings,
+  context: SessionContext,
 ): WorkoutExercise {
   const { sessionExercise, exercise, setLogs } = tree;
   const skipped = sessionExercise.status === 'skipped';
@@ -281,7 +312,7 @@ function toExercise(
     muscleGroup: exercise.muscleGroup,
     targetRir: sessionExercise.targetRir,
     status: sessionExercise.status,
-    rows: toRows(tree, mode, referenceLogs),
+    rows: toRows(tree, mode, context),
     plannedSetCount,
     loggedSetCount,
     hasLoggedSets: loggedSetCount > 0,
@@ -303,7 +334,7 @@ function toExercise(
     model.equipment = exercise.equipment;
   }
   if (mode === 'live' && !skipped) {
-    const weightHints = exerciseWeightHints(sessionExercise.setTargets, settings);
+    const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
     if (weightHints.length > 0) {
       model.weightHints = weightHints;
     }
@@ -339,6 +370,14 @@ function fromTree(
     header.date = date;
   }
   const sessionExercises = exercises.map((exercise) => exercise.sessionExercise);
+  const context: SessionContext = {
+    settings: mesocycle.progressionSettings,
+    isDeload: session.isDeload,
+    referenceLogs: referenceLogsOf(source),
+  };
+  if (mesocycle.bodyWeight !== undefined) {
+    context.bodyWeight = mesocycle.bodyWeight;
+  }
   const model: WorkoutSessionModel = {
     sessionId: session.id,
     mesoId: session.mesoId,
@@ -346,14 +385,7 @@ function fromTree(
     header,
     progress: sessionProgress(session, exercises),
     exercises: exercises.map((exercise, index) =>
-      toExercise(
-        exercise,
-        index,
-        exercises.length,
-        mode,
-        referenceLogsOf(source),
-        mesocycle.progressionSettings,
-      ),
+      toExercise(exercise, index, exercises.length, mode, context),
     ),
     actions: {
       canAddExercise: live && !session.isDeload,
