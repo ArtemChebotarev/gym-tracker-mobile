@@ -4,8 +4,11 @@
 // It points at an anchor the caller has measured (`measureInWindow`) and passes in, so the plate
 // can sit under it — or over it, once the anchor is past the middle of the screen. Where exactly
 // is `design/popoverLayout.ts`; this only renders the result. The arrow is a square of
-// `size/popover-arrow` turned 45°, showing two of its borders so it reads as a continuation of the
-// plate's own outline.
+// `size/popover-arrow` turned 45°, in the plate's own colour.
+//
+// `surface/popover` is the one surface lighter than a card, and it carries `shadow/overlay`: this
+// is the only thing in the app that floats *over* the screen rather than sitting in it, and on a
+// plate the colour of what it covers the two read as one block (Artem's review on the device).
 //
 // Presented through <Modal>, like BottomSheet: the backdrop has to cover the whole screen, take
 // the tap that closes the plate ("Закрывается тапом мимо"), and dim everything under it with
@@ -21,7 +24,7 @@ import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'r
 
 import { arrowOffset, popoverLayout } from '../popoverLayout';
 import type { AnchorRect } from '../popoverLayout';
-import { BORDER_WIDTHS, COLORS, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, RADII, SHADOWS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type PopoverProps = {
   visible: boolean;
@@ -105,7 +108,7 @@ const ARROW_OFFSET = arrowOffset(SIZES['size/popover-arrow']);
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: COLORS['overlay/scrim-light'],
+    backgroundColor: COLORS['overlay/scrim'],
   },
   centered: {
     ...StyleSheet.absoluteFill,
@@ -118,32 +121,23 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING['space/screen'],
   },
   plate: {
-    backgroundColor: COLORS['surface/sheet'],
-    borderWidth: BORDER_WIDTHS['border/default'],
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
+    backgroundColor: COLORS['surface/popover'],
+    borderRadius: RADII['radius/control'],
     padding: SPACING['space/screen'],
+    ...SHADOWS['shadow/overlay'],
   },
   arrow: {
     position: 'absolute',
     width: SIZES['size/popover-arrow'],
     height: SIZES['size/popover-arrow'],
-    backgroundColor: COLORS['surface/sheet'],
+    backgroundColor: COLORS['surface/popover'],
     transform: [{ rotate: '45deg' }],
   },
-  // Only the two borders facing away from the plate are drawn, so the outline runs around the
-  // arrow's tip and stops where the plate's own edge takes over.
   arrowUp: {
     top: ARROW_OFFSET,
-    borderLeftWidth: BORDER_WIDTHS['border/default'],
-    borderTopWidth: BORDER_WIDTHS['border/default'],
-    borderColor: COLORS['border/default'],
   },
   arrowDown: {
     bottom: ARROW_OFFSET,
-    borderRightWidth: BORDER_WIDTHS['border/default'],
-    borderBottomWidth: BORDER_WIDTHS['border/default'],
-    borderColor: COLORS['border/default'],
   },
   title: {
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
@@ -159,6 +153,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING['space/md'],
     paddingTop: SPACING['space/row'],
     borderTopWidth: BORDER_WIDTHS['border/default'],
-    borderTopColor: COLORS['border/divider-subtle'],
+    borderTopColor: COLORS['border/default'],
   },
 });

@@ -15,6 +15,13 @@ export const COLORS = {
   'surface/control-active': '#2C3036',
   /** A completed day's cell in the mesocycle overview (08.7, task 107) — 3.2:1 on `surface/sheet`. */
   'surface/cell-done': '#626973',
+  /**
+   * A Popover's plate (08.7.1). The only surface that sits *above* a card rather than under it,
+   * so it is the only one lighter than `surface/card` — on `surface/sheet`, as 08.7.1 first had
+   * it, a plate floating over a card was darker than the card and the two read as one block
+   * (Artem's review on the device).
+   */
+  'surface/popover': '#262A30',
 
   'border/default': '#2A2D31',
   'border/divider': '#1E2125',
@@ -41,13 +48,8 @@ export const COLORS = {
   danger: '#E2574C',
   'danger/border': '#5C2320',
 
-  /** The dimmed backdrop behind a bottom sheet. */
+  /** The dimmed backdrop behind a bottom sheet, and behind a Popover. */
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
-  /**
-   * The backdrop behind a Popover — weaker than a sheet's, so the card it points at stays
-   * readable underneath it (08.0, "Акцент и роли"; 08.7.1).
-   */
-  'overlay/scrim-light': 'rgba(0, 0, 0, 0.35)',
   /** Drop shadow under a lifted (dragged) row. */
   shadow: '#000000',
 } as const;
@@ -240,6 +242,16 @@ export const SHADOWS = {
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
+  },
+  /**
+   * A plate floating over the screen — a Popover (08.7.1). Deeper and offset downwards, so the
+   * plate reads as being above what it covers rather than printed on it.
+   */
+  'shadow/overlay': {
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
   },
 } as const;
 

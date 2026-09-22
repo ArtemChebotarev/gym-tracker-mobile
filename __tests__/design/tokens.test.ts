@@ -26,6 +26,7 @@ const EXPECTED_COLOR_TOKENS = [
   'surface/card',
   'surface/control-active',
   'surface/cell-done',
+  'surface/popover',
   'border/default',
   'border/divider',
   'border/divider-subtle',
@@ -43,7 +44,6 @@ const EXPECTED_COLOR_TOKENS = [
   'danger',
   'danger/border',
   'overlay/scrim',
-  'overlay/scrim-light',
   'shadow',
 ];
 
