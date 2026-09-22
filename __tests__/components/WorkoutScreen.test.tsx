@@ -97,7 +97,13 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     model: LIVE,
     isPending: false,
     onOpenGrid: jest.fn(),
-    onOpenMenu: jest.fn(),
+    menuActions: {
+      addExercise: jest.fn(),
+      skipWorkout: jest.fn(),
+      renameMesocycle: jest.fn(),
+      mesocycleHistory: jest.fn(),
+      stopMesocycle: jest.fn(),
+    },
     onOpenExerciseHistory: jest.fn(),
     onOpenExerciseMenu: jest.fn(),
     onLogSet: jest.fn(),
@@ -193,14 +199,30 @@ describe('WorkoutScreen header', () => {
     ['preview', PREVIEW],
   ])('the grid and ⋯ buttons are there in %s mode', (_mode, model) => {
     const onOpenGrid = jest.fn();
-    const onOpenMenu = jest.fn();
-    renderWithSafeArea(<WorkoutScreen {...makeProps({ model, onOpenGrid, onOpenMenu })} />);
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model, onOpenGrid })} />);
 
     fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Workout menu' }));
 
     expect(onOpenGrid).toHaveBeenCalledTimes(1);
-    expect(onOpenMenu).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('action-menu')).toBeTruthy();
+  });
+
+  test('the ⋯ menu lists what the session allows, and picking one runs it', () => {
+    const menuActions = {
+      addExercise: jest.fn(),
+      skipWorkout: jest.fn(),
+      renameMesocycle: jest.fn(),
+      mesocycleHistory: jest.fn(),
+      stopMesocycle: jest.fn(),
+    };
+    // A completed session can neither take an exercise nor be skipped (088) — those are left out.
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED, menuActions })} />);
+
+    expect(screen.queryByTestId('action-menu-addExercise')).toBeNull();
+    expect(screen.queryByTestId('action-menu-skipWorkout')).toBeNull();
+    fireEvent(screen.getByTestId('action-menu-stopMesocycle'), 'buttonPress');
+
+    expect(menuActions.stopMesocycle).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -5,7 +5,10 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import TodayScreen from '@app/(tabs)/index';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { STOP_MESOCYCLE_PHRASE } from '@components/StopMesocycleSheetLogic';
-import { SKIP_WORKOUT_WARNING } from '@components/WorkoutMenuSheetLogic';
+import {
+  SKIP_WORKOUT_WARNING,
+  type WorkoutMenuItem,
+} from '@components/WorkoutHeaderMenuLogic';
 
 import {
   seedFixtureDay,
@@ -17,6 +20,10 @@ import { renderWithRepositories, withRepositories } from '../fixtures/renderWith
 // The header menu (096) on the Today tab, over the fixture sessions. Its own file, apart from
 // TodayRoute.test.tsx: skipping and adding change the shared fixture sessions for good, and a
 // separate file gets a fresh store. Mocked expo-router, for the reason TodayRoute.test.tsx gives.
+//
+// The menu is a native one since 117: its items are always mounted (iOS opens the plate itself,
+// which nothing here can drive), so a test picks one straight off by its `action-menu-<key>`
+// testID rather than opening a sheet first.
 let mockParams: Record<string, string | undefined> = {};
 const mockNavigate = jest.fn();
 const mockPush = jest.fn();
@@ -67,8 +74,18 @@ function renderToday() {
   );
 }
 
-function openMenu() {
-  fireEvent.press(screen.getByRole('button', { name: 'Workout menu' }));
+/** The header menu's item for an action of `workoutMenuItems`, or null when it isn't offered. */
+function menuItem(item: WorkoutMenuItem) {
+  return screen.queryByTestId(`action-menu-${item}`);
+}
+
+/** Picks one — a native menu button, so a native press rather than `fireEvent.press`. */
+function pickMenuItem(item: WorkoutMenuItem) {
+  const button = menuItem(item);
+  if (button === null) {
+    throw new Error(`The header menu has no "${item}"`);
+  }
+  fireEvent(button, 'buttonPress');
 }
 
 /** Presses the named button of the most recent Alert.alert call. */
@@ -90,21 +107,18 @@ describe('Today tab — header menu', () => {
     renderToday();
     await screen.findByText('Week 1 Day 1');
 
-    openMenu();
-
-    expect(screen.getByRole('button', { name: 'Rename mesocycle' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Mesocycle history' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Stop mesocycle' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Add exercise' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Skip workout' })).toBeNull();
+    expect(menuItem('renameMesocycle')).toBeTruthy();
+    expect(menuItem('mesocycleHistory')).toBeTruthy();
+    expect(menuItem('stopMesocycle')).toBeTruthy();
+    expect(menuItem('addExercise')).toBeNull();
+    expect(menuItem('skipWorkout')).toBeNull();
   });
 
   test("Mesocycle history opens the shown session's mesocycle", async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle history' }));
+    pickMenuItem('mesocycleHistory');
 
     expect(mockPush).toHaveBeenCalledWith(mesocycleDetailHref(WORKOUT_FIXTURE_IDS.mesocycle));
   });
@@ -113,8 +127,7 @@ describe('Today tab — header menu', () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Rename mesocycle' }));
+    pickMenuItem('renameMesocycle');
 
     expect(alertSpy).toHaveBeenCalledWith('Not available yet', expect.any(String));
   });
@@ -123,10 +136,9 @@ describe('Today tab — header menu', () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Stop mesocycle' }));
+    pickMenuItem('stopMesocycle');
 
-    // The sheet's own button, not the menu row that opened it — it stays inert until typed into.
+    // The sheet's own button — it stays inert until the phrase has been typed into it.
     const confirm = await screen.findByRole('button', { name: 'Stop mesocycle' });
     expect(confirm.props.accessibilityState?.disabled).toBe(true);
     fireEvent.press(confirm);
@@ -164,18 +176,15 @@ describe('Today tab — header menu', () => {
     renderToday();
     await screen.findByText('Week 1 Day 1');
 
-    openMenu();
-
-    expect(screen.queryByRole('button', { name: 'Stop mesocycle' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Mesocycle history' })).toBeTruthy();
+    expect(menuItem('stopMesocycle')).toBeNull();
+    expect(menuItem('mesocycleHistory')).toBeTruthy();
   });
 
   test('Add exercise adds the picked exercises to the end of the session', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
+    pickMenuItem('addExercise');
     expect(await screen.findByText('Squat')).toBeTruthy();
     fireEvent.press(screen.getByRole('checkbox', { name: 'Squat' }));
     fireEvent.press(screen.getByRole('button', { name: 'Add 1 exercise' }));
@@ -209,8 +218,7 @@ describe('Today tab — header menu', () => {
       name: 'Set 3 logged',
     });
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
+    pickMenuItem('skipWorkout');
     expect(alertSpy).toHaveBeenCalledWith('Skip workout?', SKIP_WORKOUT_WARNING, expect.any(Array));
     pressAlertButton('Skip');
 
@@ -235,8 +243,7 @@ describe('Today tab — header menu', () => {
     renderToday();
     await screen.findByText('Week 1 Day 2');
 
-    openMenu();
-    fireEvent.press(screen.getByRole('button', { name: 'Skip workout' }));
+    pickMenuItem('skipWorkout');
     pressAlertButton('Skip');
 
     // Still this session, now read-only: its one exercise skipped with nothing logged — the
@@ -270,8 +277,7 @@ describe('Today tab — header menu', () => {
     fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
     expect(await screen.findByRole('button', { name: 'Finish workout' })).toBeTruthy();
 
-    openMenu();
-    expect(screen.queryByRole('button', { name: 'Skip workout' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Add exercise' })).toBeTruthy();
+    expect(menuItem('skipWorkout')).toBeNull();
+    expect(menuItem('addExercise')).toBeTruthy();
   });
 });

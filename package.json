@@ -6,6 +6,7 @@
     "node": ">=22.20.0"
   },
   "dependencies": {
+    "@expo/ui": "57.0.13",
     "@tanstack/react-query": "^5.102.3",
     "drizzle-orm": "^0.45.2",
     "expo": "~57.0.13",

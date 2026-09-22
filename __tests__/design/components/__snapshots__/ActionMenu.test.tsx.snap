@@ -1,0 +1,690 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ActionMenu — iOS DoD: the trigger is the native menu, one native button per action 1`] = `
+<RNCSafeAreaProvider
+  onInsetsChange={[Function]}
+  style={
+    [
+      {
+        "flex": 1,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    accessibilityLabel="Workout menu"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 18,
+          "height": 36,
+          "justifyContent": "center",
+          "width": 36,
+        },
+        {
+          "backgroundColor": "#1A1C1F",
+        },
+      ]
+    }
+    testID="action-menu"
+  >
+    <ViewManagerAdapter_ExpoUI
+      layoutDirection="leftToRight"
+      style={
+        {
+          "height": 36,
+          "width": 36,
+        }
+      }
+    >
+      <ViewManagerAdapter_ExpoUI
+        hasPrimaryAction={false}
+        modifiers={
+          [
+            {
+              "$type": "menuStyle",
+              "style": "button",
+            },
+            {
+              "$type": "buttonStyle",
+              "style": "plain",
+            },
+            {
+              "$type": "menuIndicator",
+              "visibility": "hidden",
+            },
+          ]
+        }
+      >
+        <ViewManagerAdapter_ExpoUI
+          name="label"
+        >
+          <ViewManagerAdapter_ExpoUI
+            modifiers={
+              [
+                {
+                  "$type": "frame",
+                  "height": 36,
+                  "width": 36,
+                },
+                {
+                  "$type": "contentShape",
+                  "kind": undefined,
+                  "shape": "rectangle",
+                },
+                {
+                  "$type": "font",
+                  "size": 20,
+                },
+                {
+                  "$type": "foregroundStyle",
+                  "color": "#C9CDD2",
+                  "styleType": "color",
+                },
+              ]
+            }
+            onGlobalEvent={[Function]}
+            systemName="ellipsis"
+          />
+        </ViewManagerAdapter_ExpoUI>
+        <ViewManagerAdapter_ExpoUI
+          label="Add exercise"
+          onButtonPress={[MockFunction]}
+          role="default"
+          systemImage="plus"
+          testID="action-menu-add"
+        />
+        <ViewManagerAdapter_ExpoUI
+          label="Stop mesocycle"
+          onButtonPress={[MockFunction]}
+          role="destructive"
+          systemImage="stop.circle"
+          testID="action-menu-stop"
+        />
+      </ViewManagerAdapter_ExpoUI>
+    </ViewManagerAdapter_ExpoUI>
+  </View>
+</RNCSafeAreaProvider>
+`;
+
+exports[`ActionMenu — without SwiftUI DoD: the \`⋯\` button opens a titled sheet of the same actions 1`] = `
+<RNCSafeAreaProvider
+  onInsetsChange={[Function]}
+  style={
+    [
+      {
+        "flex": 1,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    accessibilityLabel="Workout menu"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": false,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    hitSlop={4}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderRadius": 18,
+          "height": 36,
+          "justifyContent": "center",
+          "width": 36,
+        },
+        {
+          "backgroundColor": "#1A1C1F",
+        },
+        false,
+        false,
+      ]
+    }
+  >
+    <RNSVGSvgViewAndroid
+      align="xMidYMid"
+      bbHeight={20}
+      bbWidth={20}
+      focusable={false}
+      height={20}
+      meetOrSlice={0}
+      minX={0}
+      minY={0}
+      style={
+        [
+          {
+            "backgroundColor": "transparent",
+            "borderWidth": 0,
+          },
+          {
+            "flex": 0,
+            "height": 20,
+            "width": 20,
+          },
+        ]
+      }
+      vbHeight={24}
+      vbWidth={24}
+      width={20}
+    >
+      <RNSVGGroup
+        fill={
+          {
+            "payload": 4278190080,
+            "type": 0,
+          }
+        }
+      >
+        <RNSVGGroup
+          fill={null}
+          propList={
+            [
+              "fill",
+              "stroke",
+              "strokeWidth",
+            ]
+          }
+          stroke={
+            {
+              "payload": -3551790,
+              "type": 0,
+            }
+          }
+          strokeWidth={1.8}
+        >
+          <RNSVGCircle
+            cx={5.5}
+            cy={12}
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+            r={0.9}
+          />
+          <RNSVGCircle
+            cx={12}
+            cy={12}
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+            r={0.9}
+          />
+          <RNSVGCircle
+            cx={18.5}
+            cy={12}
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+            r={0.9}
+          />
+        </RNSVGGroup>
+      </RNSVGGroup>
+    </RNSVGSvgViewAndroid>
+  </View>
+  <View
+    collapsable={false}
+    pointerEvents="auto"
+    style={
+      {
+        "bottom": 0,
+        "left": 0,
+        "position": "absolute",
+        "right": 0,
+        "top": 0,
+        "transform": [
+          {
+            "translateY": 0,
+          },
+        ],
+      }
+    }
+  >
+    <View
+      onLayout={[Function]}
+      style={
+        {
+          "flex": 1,
+          "justifyContent": "flex-end",
+        }
+      }
+    >
+      <View
+        accessibilityLabel="Close"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "backgroundColor": "rgba(0, 0, 0, 0.5)",
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
+          }
+        }
+      />
+      <View
+        style={
+          [
+            {
+              "backgroundColor": "#17191C",
+              "borderTopLeftRadius": 18,
+              "borderTopRightRadius": 18,
+              "maxHeight": "80%",
+            },
+            false,
+            {
+              "paddingBottom": 54,
+            },
+          ]
+        }
+        testID="bottom-sheet"
+      >
+        <View
+          onResponderGrant={[Function]}
+          onResponderRelease={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "paddingVertical": 8,
+            }
+          }
+          testID="bottom-sheet-grabber-area"
+        >
+          <View
+            style={
+              {
+                "backgroundColor": "#2A2D31",
+                "borderRadius": 2.5,
+                "height": 5,
+                "width": 36,
+              }
+            }
+          />
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+              "paddingBottom": 10,
+              "paddingHorizontal": 20,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "flexShrink": 1,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 22,
+                  "fontWeight": "500",
+                }
+              }
+            >
+              Week 6 Day 2
+            </Text>
+            <Text
+              style={
+                {
+                  "color": "#6B7076",
+                  "fontSize": 15,
+                  "marginTop": 2,
+                }
+              }
+            >
+              Upper/lower
+            </Text>
+          </View>
+        </View>
+        <RCTScrollView
+          contentContainerStyle={
+            {
+              "paddingHorizontal": 20,
+            }
+          }
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              accessibilityLabel="Add exercise"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": false,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "alignItems": "center",
+                  "borderTopColor": "#1E2125",
+                  "borderTopWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 14,
+                  "paddingVertical": 14,
+                }
+              }
+            >
+              <RNSVGSvgViewAndroid
+                align="xMidYMid"
+                bbHeight={20}
+                bbWidth={20}
+                focusable={false}
+                height={20}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 20,
+                      "width": 20,
+                    },
+                  ]
+                }
+                vbHeight={24}
+                vbWidth={24}
+                width={20}
+              >
+                <RNSVGGroup
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ]
+                    }
+                    stroke={
+                      {
+                        "payload": -7696231,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGPath
+                      d="M12 5v14M5 12h14"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
+                </RNSVGGroup>
+              </RNSVGSvgViewAndroid>
+              <Text
+                style={
+                  [
+                    {
+                      "color": "#C9CDD2",
+                      "flex": 1,
+                      "fontSize": 17,
+                      "fontWeight": "400",
+                    },
+                    false,
+                    false,
+                  ]
+                }
+              >
+                Add exercise
+              </Text>
+            </View>
+            <View
+              accessibilityLabel="Stop mesocycle"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": false,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "alignItems": "center",
+                  "borderTopColor": "#1E2125",
+                  "borderTopWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 14,
+                  "paddingVertical": 14,
+                }
+              }
+            >
+              <RNSVGSvgViewAndroid
+                align="xMidYMid"
+                bbHeight={20}
+                bbWidth={20}
+                focusable={false}
+                height={20}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 20,
+                      "width": 20,
+                    },
+                  ]
+                }
+                vbHeight={24}
+                vbWidth={24}
+                width={20}
+              >
+                <RNSVGGroup
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ]
+                    }
+                    stroke={
+                      {
+                        "payload": -1943732,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGRect
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      height={12}
+                      rx={2}
+                      width={12}
+                      x={6}
+                      y={6}
+                    />
+                  </RNSVGGroup>
+                </RNSVGGroup>
+              </RNSVGSvgViewAndroid>
+              <Text
+                style={
+                  [
+                    {
+                      "color": "#C9CDD2",
+                      "flex": 1,
+                      "fontSize": 17,
+                      "fontWeight": "400",
+                    },
+                    {
+                      "color": "#E2574C",
+                    },
+                    false,
+                  ]
+                }
+              >
+                Stop mesocycle
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </View>
+  </View>
+</RNCSafeAreaProvider>
+`;

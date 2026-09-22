@@ -17,9 +17,10 @@
 // mesocycle. A cell closes it and opens its day here: by `sessionId` when the session exists, else
 // by week and day (`workoutSlotHref`) — a preview of a day not programmed yet.
 //
-// The header `⋯` opens the header menu (096, `WorkoutMenuSheet`). Add exercise opens the exercise
+// The header `⋯` opens the header menu (096) — a native menu out of the button itself (117), so
+// its actions are wired here rather than raised as a sheet. Add exercise opens the exercise
 // picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the
-// session (`useAddExercises`, 048). Skip workout, once confirmed in the menu, skips every unfinished
+// session (`useAddExercises`, 048). Skip workout, once confirmed, skips every unfinished
 // exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
 // now read-only. Mesocycle history opens the mesocycle detail stub (098).
 //
@@ -53,8 +54,10 @@ import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRout
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import { WorkoutExerciseMenuSheet } from '@components/WorkoutExerciseMenuSheet';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
-import { WorkoutMenuSheet } from '@components/WorkoutMenuSheet';
-import { formatWorkoutMenuTitle } from '@components/WorkoutMenuSheetLogic';
+import {
+  formatWorkoutMenuTitle,
+  SKIP_WORKOUT_WARNING,
+} from '@components/WorkoutHeaderMenuLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import {
   mesoGridCellHref,
@@ -94,7 +97,6 @@ export default function TodayScreen() {
   const allDoneMesoId = query.data?.kind === 'allDone' ? query.data.mesoId : undefined;
   const currentSessionId = model?.sessionId;
   const [isGridOpen, setIsGridOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   // The exercise whose menu was opened last. Kept after its menu closes, so the sheet keeps its
   // content while sliding away and Replace's picker knows which exercise it replaces.
@@ -125,6 +127,30 @@ export default function TodayScreen() {
     if (sessionId === undefined && currentSessionId !== undefined) {
       router.setParams({ sessionId: currentSessionId });
     }
+  }
+
+  /**
+   * Skip workout (049), from the header menu. It can't be undone and skips every unfinished
+   * exercise, dropping whatever wasn't logged in them, so it warns about that first — the same way
+   * the Mesocycles tab gates Delete.
+   */
+  function confirmSkipWorkout() {
+    Alert.alert('Skip workout?', SKIP_WORKOUT_WARNING, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Skip',
+        style: 'destructive',
+        onPress: () => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          pinCurrentSession();
+          skipWorkout.mutate(currentSessionId, {
+            onError: () => Alert.alert("Couldn't skip the workout", 'Please try again.'),
+          });
+        },
+      },
+    ]);
   }
 
   /** Finish mesocycle (052), from the last workout or the `Block complete` EmptyState. */
@@ -176,7 +202,20 @@ export default function TodayScreen() {
         model={model}
         isPending={query.isPending}
         onOpenGrid={() => setIsGridOpen(true)}
-        onOpenMenu={() => setIsMenuOpen(true)}
+        menuActions={{
+          addExercise: () => setIsAddExerciseOpen(true),
+          skipWorkout: confirmSkipWorkout,
+          renameMesocycle: () => showNotAvailable('Renaming a mesocycle'),
+          mesocycleHistory: () => {
+            if (model !== undefined) {
+              router.push(mesocycleDetailHref(model.mesoId));
+            }
+          },
+          stopMesocycle: () => {
+            setStopText('');
+            setIsStopOpen(true);
+          },
+        }}
         // The card's history button opens the exercise's own screen, on Overview — 08.6 asks
         // for exactly that from a workout: its last-session block is the quick check you came
         // for, and History is one tap further in from there.
@@ -270,31 +309,6 @@ export default function TodayScreen() {
           if (grid.data !== undefined) {
             router.navigate(mesoGridCellHref(grid.data.mesoId, cell));
           }
-        }}
-      />
-      <WorkoutMenuSheet
-        visible={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        model={model}
-        onAddExercise={() => setIsAddExerciseOpen(true)}
-        onSkipWorkout={() => {
-          if (currentSessionId === undefined) {
-            return;
-          }
-          pinCurrentSession();
-          skipWorkout.mutate(currentSessionId, {
-            onError: () => Alert.alert("Couldn't skip the workout", 'Please try again.'),
-          });
-        }}
-        onRenameMesocycle={() => showNotAvailable('Renaming a mesocycle')}
-        onOpenMesocycleHistory={() => {
-          if (model !== undefined) {
-            router.push(mesocycleDetailHref(model.mesoId));
-          }
-        }}
-        onStopMesocycle={() => {
-          setStopText('');
-          setIsStopOpen(true);
         }}
       />
       <StopMesocycleSheet
