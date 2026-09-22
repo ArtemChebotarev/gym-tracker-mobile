@@ -1,6 +1,7 @@
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { CheckIcon } from '@design/icons/CheckIcon';
+import { CopyIcon } from '@design/icons/CopyIcon';
 import { EditIcon } from '@design/icons/EditIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
@@ -8,6 +9,7 @@ import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { MinusIcon } from '@design/icons/MinusIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
+import { PlayIcon } from '@design/icons/PlayIcon';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
 import { StopIcon } from '@design/icons/StopIcon';
@@ -31,6 +33,8 @@ const ICONS: [string, IconComponent][] = [
   ['plus', PlusIcon],
   ['minus', MinusIcon],
   ['skip', SkipIcon],
+  ['play', PlayIcon],
+  ['copy', CopyIcon],
   ['trash', TrashIcon],
   ['edit', EditIcon],
   ['stop', StopIcon],

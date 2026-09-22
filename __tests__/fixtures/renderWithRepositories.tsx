@@ -26,6 +26,7 @@ import {
   type RenderResult,
 } from '@testing-library/react-native';
 import type { PropsWithChildren, ReactElement } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import type { RepositorySet } from '@repositories/repositorySet';
 import { RepositoriesProvider } from '@state/repositories';
@@ -48,14 +49,18 @@ function active(): Current {
   return current;
 }
 
-// The providers a screen reads through, in the order app/_layout.tsx renders them: storage above
-// the query client, because what a query calls reads storage out of context.
+// The providers a screen reads through, in the order app/_layout.tsx renders them: the gesture
+// root outermost, then storage above the query client, because what a query calls reads storage
+// out of context. The gesture root is not optional — gesture-handler 3.x throws when a gesture
+// renders without one (task 117), so a screen with a swipeable row wouldn't render here at all.
 function providers({ children }: PropsWithChildren) {
   const { repositories, client } = active();
   return (
-    <RepositoriesProvider repositories={repositories}>
-      <QueryClientProvider client={client}>{children}</QueryClientProvider>
-    </RepositoriesProvider>
+    <GestureHandlerRootView>
+      <RepositoriesProvider repositories={repositories}>
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      </RepositoriesProvider>
+    </GestureHandlerRootView>
   );
 }
 

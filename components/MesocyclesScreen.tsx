@@ -8,32 +8,38 @@
 // 08.3's own screen behavior rather than something the route decides:
 // - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
-// - Delete (from the Planned `⋯` menu) opens `Delete mesocycle? This can't be undone` and calls
-//   `onDelete` only from its destructive button.
+// - Delete (revealed by swiping a Planned row) opens `Delete mesocycle? This can't be undone` and
+//   calls `onDelete` only from its destructive button.
 //
 // Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
 // Rows inside a group sit in their own gap-less View: the group's `gap` is for the label only, and
 // applied between rows it pushed each row's content below the visual middle of its divider band.
 //
-// The Planned `⋯` menu is a BottomSheet in `overlay` presentation rather than a native <Modal>:
-// Delete's confirmation popup is raised the moment the menu closes, and an iOS system alert
-// presented while a native modal is still dismissing can be swallowed along with it.
+// Since task 117 a row carries nothing but its name and caption: every action is behind a swipe
+// (`SwipeableRow`). Right to left reveals the secondary ones — Edit and Delete on a Planned row,
+// History on a Completed one. Left to right, pulled far enough, runs the row's primary one: Start,
+// or Copy on a finished block. The pill and the `⋯` both went with it, because the right edge is
+// where the hand goes to swipe and a button sitting there competed with the gesture (Artem's
+// call). With the `⋯` sheet gone, so is the `presentation: overlay` workaround it needed: Delete's
+// confirmation is raised from a plain button now, with no modal dismissing underneath it.
 //
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
 import { Badge } from '@design/components/Badge';
-import { BottomSheet } from '@design/components/BottomSheet';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
+import { SwipeableRow } from '@design/components/SwipeableRow';
 
 import {
+  completedLeadingAction,
+  completedRowActions,
   formatActiveCaption,
   formatCompletedCaption,
   formatPlannedCaption,
@@ -43,6 +49,8 @@ import {
   groupMesocycles,
   isEmptyGroups,
   mesocycleStoppedBadge,
+  plannedLeadingAction,
+  plannedRowActions,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
 
@@ -76,7 +84,6 @@ export function MesocyclesScreen({
   onOpenHistory,
 }: MesocyclesScreenProps) {
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
-  const [menuTarget, setMenuTarget] = useState<Mesocycle | null>(null);
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
@@ -89,23 +96,10 @@ export function MesocyclesScreen({
     ]);
   }
 
-  function handleEdit() {
-    const target = menuTarget;
-    setMenuTarget(null);
-    if (target !== null) {
-      onEdit(target);
-    }
-  }
-
-  function handleDelete() {
-    const target = menuTarget;
-    setMenuTarget(null);
-    if (target === null) {
-      return;
-    }
+  function confirmDelete(mesocycle: Mesocycle) {
     Alert.alert('Delete mesocycle?', "This can't be undone.", [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => onDelete(target) },
+      { text: 'Delete', style: 'destructive', onPress: () => onDelete(mesocycle) },
     ]);
   }
 
@@ -174,18 +168,21 @@ export function MesocyclesScreen({
                 <Text style={styles.groupLabel}>Planned</Text>
                 <View>
                   {groups.planned.map((mesocycle) => (
-                    <ListRow
+                    <SwipeableRow
                       key={mesocycle.id}
-                      title={mesocycle.name}
-                      subtitle={formatPlannedCaption(mesocycle)}
-                      trailing={{
-                        type: 'actions',
-                        actionLabel: 'Start',
-                        actionVariant: 'primary',
-                        onAction: () => handleStart(mesocycle),
-                        onMenu: () => setMenuTarget(mesocycle),
-                      }}
-                    />
+                      testID={`mesocycle-row-${mesocycle.id}`}
+                      accessibilityLabel={mesocycle.name}
+                      leadingAction={plannedLeadingAction(mesocycle, { onStart: handleStart })}
+                      trailingActions={plannedRowActions(mesocycle, {
+                        onEdit,
+                        onDelete: confirmDelete,
+                      })}
+                    >
+                      <ListRow
+                        title={mesocycle.name}
+                        subtitle={formatPlannedCaption(mesocycle)}
+                      />
+                    </SwipeableRow>
                   ))}
                 </View>
               </View>
@@ -196,19 +193,19 @@ export function MesocyclesScreen({
                 <Text style={styles.groupLabel}>Completed</Text>
                 <View>
                   {groups.completed.map((mesocycle) => (
-                    <ListRow
+                    <SwipeableRow
                       key={mesocycle.id}
-                      title={mesocycle.name}
-                      subtitle={formatCompletedCaption(mesocycle)}
-                      badge={mesocycleStoppedBadge(mesocycle)}
-                      trailing={{
-                        type: 'actions',
-                        actionLabel: 'Copy',
-                        actionVariant: 'secondary',
-                        onAction: () => onCopy(mesocycle),
-                        onMenu: () => onOpenHistory(mesocycle),
-                      }}
-                    />
+                      testID={`mesocycle-row-${mesocycle.id}`}
+                      accessibilityLabel={mesocycle.name}
+                      leadingAction={completedLeadingAction(mesocycle, { onCopy })}
+                      trailingActions={completedRowActions(mesocycle, { onOpenHistory })}
+                    >
+                      <ListRow
+                        title={mesocycle.name}
+                        subtitle={formatCompletedCaption(mesocycle)}
+                        badge={mesocycleStoppedBadge(mesocycle)}
+                      />
+                    </SwipeableRow>
                   ))}
                 </View>
               </View>
@@ -216,20 +213,6 @@ export function MesocyclesScreen({
           </ScrollView>
         )}
       </RootScreen>
-
-      <BottomSheet
-        visible={menuTarget !== null}
-        onClose={() => setMenuTarget(null)}
-        title={menuTarget?.name ?? ''}
-        presentation="overlay"
-      >
-        <Pressable accessibilityRole="button" onPress={handleEdit} style={styles.menuItem}>
-          <Text style={styles.menuItemLabel}>Edit</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={handleDelete} style={styles.menuItem}>
-          <Text style={[styles.menuItemLabel, styles.menuItemLabelDanger]}>Delete mesocycle</Text>
-        </Pressable>
-      </BottomSheet>
     </View>
   );
 }

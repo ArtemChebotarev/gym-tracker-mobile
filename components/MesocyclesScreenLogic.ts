@@ -1,6 +1,12 @@
 // Pure helpers behind components/MesocyclesScreen.tsx — see the code-style skill and
 // 08.3 · Мезоциклы — список (task 074).
 
+import type { SwipeAction } from '@design/components/SwipeableRow';
+import { CopyIcon } from '@design/icons/CopyIcon';
+import { EditIcon } from '@design/icons/EditIcon';
+import { HistoryIcon } from '@design/icons/HistoryIcon';
+import { PlayIcon } from '@design/icons/PlayIcon';
+import { TrashIcon } from '@design/icons/TrashIcon';
 import type { Mesocycle } from '@domain/mesocycle';
 import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
 import { parseUtcIso } from '@domain/time';
@@ -98,4 +104,74 @@ export function formatStartConfirmMessage(mesocycle: Mesocycle): string {
 /** Why Start is unavailable while another mesocycle is active (08.3: the message is mandatory). */
 export function formatStartBlockedMessage(active: Mesocycle): string {
   return `"${active.name}" is still active. Finish or abandon it before starting another mesocycle.`;
+}
+
+/**
+ * What a Planned row reveals when swiped right to left (08.3, task 117) — the two actions that
+ * used to sit in its `⋯` sheet. Delete is last, so it lands under the thumb at the very edge the
+ * swipe came from, the way iOS orders a destructive action.
+ */
+export function plannedRowActions(
+  mesocycle: Mesocycle,
+  handlers: { onEdit: (mesocycle: Mesocycle) => void; onDelete: (mesocycle: Mesocycle) => void },
+): SwipeAction[] {
+  return [
+    { key: 'edit', label: 'Edit', icon: EditIcon, onPress: () => handlers.onEdit(mesocycle) },
+    {
+      key: 'delete',
+      label: 'Delete',
+      icon: TrashIcon,
+      destructive: true,
+      onPress: () => handlers.onDelete(mesocycle),
+    },
+  ];
+}
+
+/**
+ * What a Completed row reveals when swiped right to left. Only History: a finished block can't be
+ * edited, and deleting one is not offered anywhere (there is no hard delete in this app).
+ */
+export function completedRowActions(
+  mesocycle: Mesocycle,
+  handlers: { onOpenHistory: (mesocycle: Mesocycle) => void },
+): SwipeAction[] {
+  return [
+    {
+      key: 'history',
+      label: 'History',
+      icon: HistoryIcon,
+      onPress: () => handlers.onOpenHistory(mesocycle),
+    },
+  ];
+}
+
+/**
+ * A Planned row's primary action — run by pulling the row left to right (08.3, task 117). Start is
+ * what you came to this screen for, so it gets the leading pull rather than a place among the
+ * secondary actions. It can't fire by accident: the pull has to be a long one, and `Start` asks
+ * for confirmation after that.
+ */
+export function plannedLeadingAction(
+  mesocycle: Mesocycle,
+  handlers: { onStart: (mesocycle: Mesocycle) => void },
+): SwipeAction {
+  return {
+    key: 'start',
+    label: 'Start',
+    icon: PlayIcon,
+    onPress: () => handlers.onStart(mesocycle),
+  };
+}
+
+/** A Completed row's primary action — the same leading pull, planning the next block from this one. */
+export function completedLeadingAction(
+  mesocycle: Mesocycle,
+  handlers: { onCopy: (mesocycle: Mesocycle) => void },
+): SwipeAction {
+  return {
+    key: 'copy',
+    label: 'Copy',
+    icon: CopyIcon,
+    onPress: () => handlers.onCopy(mesocycle),
+  };
 }

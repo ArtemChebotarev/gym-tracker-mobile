@@ -47,6 +47,15 @@ export const COLORS = {
 
   danger: '#E2574C',
   'danger/border': '#5C2320',
+  /**
+   * A filled destructive block — the `Delete` revealed by swiping a row (08.3, task 117). The one
+   * place danger is a fill rather than text and a contour (Artem's call): a swipe action *is* the
+   * coloured block, and iOS has no other reading of it. Darker than `danger` so the 12pt label on
+   * it clears 4.5:1 (4.8:1 against `danger/on`); `danger` itself gives only 3.4:1.
+   */
+  'danger/fill': '#C43C31',
+  /** Text and icons on `danger/fill`. */
+  'danger/on': '#F5F5F4',
 
   /** The dimmed backdrop behind a bottom sheet, and behind a Popover. */
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
@@ -207,6 +216,18 @@ export const SIZES = {
   'size/cell': 44,
   /** Mesocycle overview: the week label column. */
   'size/week-column': 64,
+  /**
+   * One action revealed by swiping a row (`SwipeableRow`, 08.3). Wide enough for a 20pt icon over
+   * a short one-word label and, at 76, comfortably past the 44pt tap target in the one direction
+   * a swipe action can't grow — its height is the row's.
+   */
+  'size/swipe-action': 76,
+  /**
+   * The block behind a row's leading (primary) action — `Start` on a Planned mesocycle. Far wider
+   * than a trailing button because it is pulled *across* rather than tapped: the row has to travel
+   * a good part of it before letting go fires anything.
+   */
+  'size/swipe-primary': 160,
   /** Mesocycle editor: an exercise row's fixed height (the drag maths divide by it). */
   'size/exercise-row': 68,
   /** Mesocycle editor: the Sets column — Stepper's inline width. */
