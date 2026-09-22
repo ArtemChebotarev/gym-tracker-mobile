@@ -662,11 +662,10 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     openInfo();
 
     expect(screen.getByTestId('popover')).toBeTruthy();
-    expect(screen.getByText('Set 1 target 15 kg × 10')).toBeTruthy();
+    expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
     expect(screen.getByText('Recommended weight')).toBeTruthy();
     expect(screen.getByText('12–17.5 kg')).toBeTruthy();
     expect(screen.getByText('Not ideal, but acceptable')).toBeTruthy();
-    expect(screen.getByText('Type the weight you have — reps update in every set.')).toBeTruthy();
   });
 
   test('a tap beside it closes it again', () => {
@@ -684,7 +683,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '10');
     openInfo();
 
-    expect(screen.getByText('Set 1 target 15 kg × 10')).toBeTruthy();
+    expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
   });
 
   test('with no history it says why there are no numbers', () => {

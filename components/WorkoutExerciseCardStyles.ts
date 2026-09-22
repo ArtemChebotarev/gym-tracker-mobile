@@ -126,10 +126,6 @@ export const styles = StyleSheet.create({
     fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
   },
-  popoverFooter: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    color: COLORS['text/secondary'],
-  },
   legend: {
     marginTop: SPACING['space/row'],
     gap: SPACING['space/dots'],

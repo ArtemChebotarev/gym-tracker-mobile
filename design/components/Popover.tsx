@@ -24,7 +24,7 @@ import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'r
 
 import { arrowOffset, popoverLayout } from '../popoverLayout';
 import type { AnchorRect } from '../popoverLayout';
-import { BORDER_WIDTHS, COLORS, RADII, SHADOWS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, RADII, SHADOWS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type PopoverProps = {
   visible: boolean;
@@ -32,11 +32,9 @@ export type PopoverProps = {
   /** Where the anchor sits in the window. Nothing is shown until it has been measured. */
   anchor: AnchorRect | null;
   title: string;
-  /** A short line under the title — `Set 1 · target 15 kg × 10` (08.7.1). */
+  /** A line under the title — what the plate is for (08.7.1). */
   subtitle?: string;
   children?: ReactNode;
-  /** A closing line, separated by a divider. */
-  footer?: ReactNode;
 };
 
 export function Popover({
@@ -46,7 +44,6 @@ export function Popover({
   title,
   subtitle,
   children,
-  footer,
 }: PopoverProps) {
   const window = useWindowDimensions();
   const layout =
@@ -59,7 +56,6 @@ export function Popover({
       <Text style={styles.title}>{title}</Text>
       {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
       {children}
-      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
     </>
   );
 
@@ -148,11 +144,5 @@ const styles = StyleSheet.create({
     marginTop: SPACING['space/xxs'],
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/secondary'],
-  },
-  footer: {
-    marginTop: SPACING['space/md'],
-    paddingTop: SPACING['space/row'],
-    borderTopWidth: BORDER_WIDTHS['border/default'],
-    borderTopColor: COLORS['border/default'],
   },
 });

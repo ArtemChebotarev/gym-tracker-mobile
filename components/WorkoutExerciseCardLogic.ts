@@ -246,7 +246,6 @@ export type WeightSwapPopover =
       marker: number;
       labels: { value: number; text: string }[];
       legend: WeightSwapLegendRow[];
-      footer: string;
     }
   | { kind: 'no-history'; title: string; text: string };
 
@@ -282,9 +281,10 @@ export function weightSwapPopover(
   return {
     kind: 'ranges',
     // The target leads and the instruction sits under it: the number you are anchored to is what
-    // you scan first, and the line under it says what to do about it (Artem's wording).
-    title: `Set ${row.setNumber} target ${formatSwapTarget(swap)}`,
-    subtitle: 'Pick another weight',
+    // you scan first, and the line under it says what may be done about it. The instruction is
+    // the whole of it, so the plate needs no closing line (Artem's wording).
+    title: `Current set target: ${formatSwapTarget(swap)}`,
+    subtitle: 'You can choose another weight — reps will update accordingly.',
     outer: swap.estimateRange,
     inner: swap.closeRange,
     marker,
@@ -293,7 +293,6 @@ export function weightSwapPopover(
       text: formatSwapWeight(value, added),
     })),
     legend,
-    footer: 'Type the weight you have — reps update in every set.',
   };
 }
 

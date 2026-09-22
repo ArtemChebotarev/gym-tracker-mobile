@@ -259,7 +259,6 @@ function WeightSwapPopoverPlate({
       anchor={anchor}
       title={popover.title}
       subtitle={popover.subtitle}
-      footer={<Text style={styles.popoverFooter}>{popover.footer}</Text>}
     >
       <RangeTrack
         outer={popover.outer}

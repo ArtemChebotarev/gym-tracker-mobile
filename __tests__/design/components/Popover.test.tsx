@@ -6,24 +6,22 @@ import { Popover } from '@design/components/Popover';
 const anchor = { x: 180, y: 200, width: 24, height: 24 };
 
 describe('Popover', () => {
-  test('shows its title, subtitle, content and footer', () => {
+  test('shows its title, subtitle and content', () => {
     render(
       <Popover
         visible
         onClose={() => {}}
         anchor={anchor}
         title="Set 1 target 15 kg × 10"
-        subtitle="Pick another weight"
-        footer={<Text>Type the weight you have.</Text>}
+        subtitle="You can choose another weight"
       >
         <Text>Recommended weight</Text>
       </Popover>,
     );
 
     expect(screen.getByText('Set 1 target 15 kg × 10')).toBeTruthy();
-    expect(screen.getByText('Pick another weight')).toBeTruthy();
+    expect(screen.getByText('You can choose another weight')).toBeTruthy();
     expect(screen.getByText('Recommended weight')).toBeTruthy();
-    expect(screen.getByText('Type the weight you have.')).toBeTruthy();
   });
 
   test('an anchor that could not be measured still opens the plate, without an arrow', () => {
