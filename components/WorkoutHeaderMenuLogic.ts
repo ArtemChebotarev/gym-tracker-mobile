@@ -1,27 +1,43 @@
-// Pure helpers behind components/WorkoutMenuSheet.tsx — see the code-style skill.
+// Pure helpers behind the workout header's `⋯` menu (08.7, "Меню шапки") — see the code-style
+// skill. The menu itself is `ActionMenu` (117), wired in components/WorkoutScreen.tsx; this only
+// decides which actions a session offers and what each one looks like.
 
-import type { ActionRowVariant } from '@design/components/ActionRow';
+import type { ActionMenuItem } from '@design/components/ActionMenu';
 import { EditIcon } from '@design/icons/EditIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
 import { StopIcon } from '@design/icons/StopIcon';
+import type { SFSymbol } from 'sf-symbols-typescript';
 import type { WorkoutHeader, WorkoutSessionActions } from '@usecases/workoutSession';
 
-/** The header menu's actions (08.7, "Меню шапки"), in the order the sheet lists them. */
+/** The header menu's actions (08.7, "Меню шапки"), in the order the menu lists them. */
 export type WorkoutMenuItem =
   'addExercise' | 'skipWorkout' | 'renameMesocycle' | 'mesocycleHistory' | 'stopMesocycle';
 
+/**
+ * How each action reads. `icon` is drawn by the fallback sheet off iOS and `systemImage` by the
+ * native menu on it — the two icon sets don't overlap, so an action names one of each.
+ */
 export const WORKOUT_MENU_ACTIONS: Record<
   WorkoutMenuItem,
-  { label: string; icon: IconComponent; variant: ActionRowVariant }
+  { label: string; icon: IconComponent; systemImage: SFSymbol; destructive?: boolean }
 > = {
-  addExercise: { label: 'Add exercise', icon: PlusIcon, variant: 'default' },
-  skipWorkout: { label: 'Skip workout', icon: SkipIcon, variant: 'default' },
-  renameMesocycle: { label: 'Rename mesocycle', icon: EditIcon, variant: 'default' },
-  mesocycleHistory: { label: 'Mesocycle history', icon: HistoryIcon, variant: 'default' },
-  stopMesocycle: { label: 'Stop mesocycle', icon: StopIcon, variant: 'danger' },
+  addExercise: { label: 'Add exercise', icon: PlusIcon, systemImage: 'plus' },
+  skipWorkout: { label: 'Skip workout', icon: SkipIcon, systemImage: 'forward.end' },
+  renameMesocycle: { label: 'Rename mesocycle', icon: EditIcon, systemImage: 'pencil' },
+  mesocycleHistory: {
+    label: 'Mesocycle history',
+    icon: HistoryIcon,
+    systemImage: 'clock.arrow.circlepath',
+  },
+  stopMesocycle: {
+    label: 'Stop mesocycle',
+    icon: StopIcon,
+    systemImage: 'stop.circle',
+    destructive: true,
+  },
 };
 
 /**
@@ -47,6 +63,18 @@ export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuIte
   return items;
 }
 
+/** Those actions as the menu takes them, each carrying the handler the screen supplies for it. */
+export function workoutMenuActions(
+  actions: WorkoutSessionActions,
+  handlers: Record<WorkoutMenuItem, () => void>,
+): ActionMenuItem[] {
+  return workoutMenuItems(actions).map((item) => ({
+    key: item,
+    ...WORKOUT_MENU_ACTIONS[item],
+    onPress: handlers[item],
+  }));
+}
+
 /**
  * The Skip workout confirmation's message (05, "Пропустить тренировку"): every exercise not yet
  * completed is skipped, so rows left unlogged in them — and anything typed there — are gone.
@@ -54,7 +82,7 @@ export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuIte
 export const SKIP_WORKOUT_WARNING =
   "Exercises you haven't finished will be skipped, and anything not logged in them will be lost. This can't be undone.";
 
-/** The sheet's title (08.7, "Меню шапки"): `Week 6 Day 2`. */
+/** The fallback sheet's title (08.7, "Меню шапки"): `Week 6 Day 2`. */
 export function formatWorkoutMenuTitle(
   header: Pick<WorkoutHeader, 'weekNumber' | 'dayNumber'>,
 ): string {

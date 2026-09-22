@@ -8,6 +8,11 @@
 // every mode. A deload session gets a neutral `Deload` badge right after the title, ahead of the
 // check — lighter weights and fewer sets otherwise read like a mistake. The progress ratio comes straight from the model (088) — nothing is computed here.
 //
+// The `⋯` is an ActionMenu (117): its actions open as a native menu out of the button itself
+// rather than as a sheet, so the screen holds the actions (`menuActions`, one handler per action)
+// instead of an `onOpenMenu` that only raised one somewhere else. Which of them a given session
+// offers — and what each one reads as — is `workoutMenuActions` (096).
+//
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
 // (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — only when
 // the model's `showFinish` says every exercise is `completed` or `skipped`; before that it isn't
@@ -28,6 +33,7 @@
 
 import { ScrollView, Text, View } from 'react-native';
 
+import { ActionMenu } from '@design/components/ActionMenu';
 import { Badge } from '@design/components/Badge';
 import { Button } from '@design/components/Button';
 import { EmptyState } from '@design/components/EmptyState';
@@ -36,12 +42,16 @@ import { ProgressBar } from '@design/components/ProgressBar';
 import { RootScreen } from '@design/components/RootScreen';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
-import { MoreIcon } from '@design/icons/MoreIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import {
+  formatWorkoutMenuTitle,
+  workoutMenuActions,
+  type WorkoutMenuItem,
+} from './WorkoutHeaderMenuLogic';
 import { formatUnlocksCaption, formatWorkoutSubtitle } from './WorkoutScreenLogic';
 import { styles } from './WorkoutScreenStyles';
 
@@ -50,8 +60,8 @@ export type WorkoutScreenProps = {
   isPending: boolean;
   /** Opens the mesocycle overview sheet (08.7, "Лист «Обзор мезоцикла»"). */
   onOpenGrid: () => void;
-  /** Opens the header menu sheet (08.7, "Лист «Меню шапки»"). */
-  onOpenMenu: () => void;
+  /** What each action of the header menu does (08.7, "Меню шапки") — one handler per action. */
+  menuActions: Record<WorkoutMenuItem, () => void>;
   /** Opens an exercise's history (06), from its card. */
   onOpenExerciseHistory: (exercise: WorkoutExercise) => void;
   /** Opens an exercise's menu sheet (08.7, "Лист «Меню упражнения»"), from its card. Live only. */
@@ -91,7 +101,7 @@ export function WorkoutScreen({
   model,
   isPending,
   onOpenGrid,
-  onOpenMenu,
+  menuActions,
   onOpenExerciseHistory,
   onOpenExerciseMenu,
   onLogSet,
@@ -159,9 +169,12 @@ export function WorkoutScreen({
             <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
               <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
             </IconButton>
-            <IconButton accessibilityLabel="Workout menu" onPress={onOpenMenu}>
-              <MoreIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-            </IconButton>
+            <ActionMenu
+              accessibilityLabel="Workout menu"
+              title={formatWorkoutMenuTitle(header)}
+              subtitle={header.mesocycleName}
+              items={workoutMenuActions(model.actions, menuActions)}
+            />
           </View>
         }
       >

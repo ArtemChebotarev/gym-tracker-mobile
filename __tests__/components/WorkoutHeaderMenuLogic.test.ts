@@ -1,8 +1,9 @@
 import {
   formatWorkoutMenuTitle,
   WORKOUT_MENU_ACTIONS,
+  workoutMenuActions,
   workoutMenuItems,
-} from '@components/WorkoutMenuSheetLogic';
+} from '@components/WorkoutHeaderMenuLogic';
 
 describe('workoutMenuItems', () => {
   test('a live session with nothing logged lists every action, in the 08.7 order', () => {
@@ -55,11 +56,51 @@ describe('workoutMenuItems', () => {
 });
 
 describe('WORKOUT_MENU_ACTIONS', () => {
-  test('only Stop mesocycle is a danger action', () => {
-    const danger = Object.entries(WORKOUT_MENU_ACTIONS)
-      .filter(([, action]) => action.variant === 'danger')
+  test('only Stop mesocycle is destructive', () => {
+    const destructive = Object.entries(WORKOUT_MENU_ACTIONS)
+      .filter(([, action]) => action.destructive === true)
       .map(([item]) => item);
-    expect(danger).toEqual(['stopMesocycle']);
+    expect(destructive).toEqual(['stopMesocycle']);
+  });
+
+  test('every action names both icons — the sheet draws one, the native menu the other', () => {
+    for (const action of Object.values(WORKOUT_MENU_ACTIONS)) {
+      expect(typeof action.icon).toBe('function');
+      expect(action.systemImage).toMatch(/\S/);
+    }
+  });
+});
+
+describe('workoutMenuActions', () => {
+  const handlers = {
+    addExercise: jest.fn(),
+    skipWorkout: jest.fn(),
+    renameMesocycle: jest.fn(),
+    mesocycleHistory: jest.fn(),
+    stopMesocycle: jest.fn(),
+  };
+
+  test('carries each allowed action with its own handler, in order', () => {
+    const items = workoutMenuActions(
+      { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
+      handlers,
+    );
+
+    expect(items.map((item) => item.key)).toEqual([
+      'renameMesocycle',
+      'mesocycleHistory',
+      'stopMesocycle',
+    ]);
+    expect(items.map((item) => item.label)).toEqual([
+      'Rename mesocycle',
+      'Mesocycle history',
+      'Stop mesocycle',
+    ]);
+    items.forEach((item) => item.onPress());
+    expect(handlers.renameMesocycle).toHaveBeenCalledTimes(1);
+    expect(handlers.mesocycleHistory).toHaveBeenCalledTimes(1);
+    expect(handlers.stopMesocycle).toHaveBeenCalledTimes(1);
+    expect(handlers.addExercise).not.toHaveBeenCalled();
   });
 });
 
