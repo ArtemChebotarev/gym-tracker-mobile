@@ -50,5 +50,6 @@ export async function targetsFromHistory(
     since: daysBefore(now, settings.historyLookbackDays),
     excludeSessionExerciseId: sessionExerciseId,
   });
-  return prescribeFromHistory(reference, rowCount, settings, equipment);
+  // Rule 6 progresses from the reps alone; the RIR they were done at is Flow C's business (122).
+  return prescribeFromHistory(reference?.setLogs ?? null, rowCount, settings, equipment);
 }

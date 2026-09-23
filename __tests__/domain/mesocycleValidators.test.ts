@@ -1,7 +1,9 @@
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import { isConflictError } from '@domain/errors';
 import {
   validateCopyableSourceWeek,
+  validateMesocycleCanStart,
   validateMesocycleDaysPerWeek,
   validateMesocycleImmutableFields,
   validateMesocycleLengthWeeks,
@@ -112,5 +114,47 @@ describe('validateCopyableSourceWeek', () => {
   test('follows the source’s own length, not a fixed week number', () => {
     expect(() => validateCopyableSourceWeek({ lengthWeeks: 3 }, 3)).toThrow(/deload week/);
     expect(() => validateCopyableSourceWeek({ lengthWeeks: 8 }, 3)).not.toThrow();
+  });
+});
+
+describe('validateMesocycleCanStart', () => {
+  const planned: Mesocycle = {
+    ...mesocycleFixture,
+    status: 'planned',
+    startDate: undefined,
+    weekPlan: { days: [{ dayNumber: 1, name: '', exercises: [] }] },
+  };
+
+  function thrownBy(run: () => void): unknown {
+    try {
+      run();
+    } catch (error) {
+      return error;
+    }
+    throw new Error('Expected the call to throw.');
+  }
+
+  test('accepts a planned mesocycle with a week plan and nothing else running', () => {
+    expect(() => validateMesocycleCanStart(planned, null)).not.toThrow();
+  });
+
+  test('rejects a mesocycle that is not planned', () => {
+    const error = thrownBy(() => validateMesocycleCanStart({ ...planned, status: 'active' }, null));
+
+    expect(isConflictError(error)).toBe(true);
+  });
+
+  test('rejects while another mesocycle is active', () => {
+    const active: Mesocycle = { ...planned, id: 'meso-other', status: 'active' };
+
+    expect(isConflictError(thrownBy(() => validateMesocycleCanStart(planned, active)))).toBe(true);
+  });
+
+  test('rejects a planned mesocycle whose week plan is gone', () => {
+    const error = thrownBy(() =>
+      validateMesocycleCanStart({ ...planned, weekPlan: undefined }, null),
+    );
+
+    expect(isConflictError(error)).toBe(true);
   });
 });

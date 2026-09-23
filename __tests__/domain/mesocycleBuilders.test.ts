@@ -5,6 +5,7 @@ import {
   buildCopyWeekMesocycleDraft,
   buildMesocycleStart,
   buildScratchMesocycleDraft,
+  weekPlanSlotKey,
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
@@ -411,5 +412,87 @@ describe('buildMesocycleStart', () => {
       thrown = error;
     }
     expect(isConflictError(thrown)).toBe(true);
+  });
+});
+
+describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
+  const NOW = '2026-09-19T09:00:00.000Z';
+
+  const copied: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-copy',
+    name: 'Upper/Lower 2',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    status: 'planned',
+    progressionSettings: defaultProgressionSettings,
+    createdAt: '2026-09-01T12:00:00.000Z',
+    origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'exercise-bench-press', order: 0, sets: 2 },
+            { exerciseId: 'exercise-row', order: 1, sets: 1 },
+          ],
+        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }] },
+      ],
+    },
+  };
+
+  test('writes the targets given for a slot and leaves the rest bare', () => {
+    const targets = new Map([
+      [
+        weekPlanSlotKey(1, 0),
+        [
+          { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
+          { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
+        ],
+      ],
+      [weekPlanSlotKey(2, 0), [{ setNumber: 1, targetReps: 9, suggestedWeight: 100 }]],
+    ]);
+
+    const { week } = buildMesocycleStart(copied, null, NOW, targets);
+    const byExercise = new Map(
+      week.flatMap(({ exercises }) => exercises.map((e) => [e.exerciseId, e.setTargets])),
+    );
+
+    expect(byExercise.get('exercise-bench-press')).toEqual([
+      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
+    ]);
+    expect(byExercise.get('exercise-squat')).toEqual([
+      { setNumber: 1, targetReps: 9, suggestedWeight: 100 },
+    ]);
+    // No entry for day 1's second slot — nothing to price it from.
+    expect(byExercise.get('exercise-row')).toEqual([{ setNumber: 1 }]);
+  });
+
+  test('keys targets by the plan’s own order, not the renumbered session order', () => {
+    // Day 1's slots are numbered 0 and 1 in the plan; the session renumbers them 1 and 2.
+    const targets = new Map([
+      [weekPlanSlotKey(1, 1), [{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]],
+    ]);
+
+    const { week } = buildMesocycleStart(copied, null, NOW, targets);
+    const day1 = week.find(({ session }) => session.dayNumber === 1)!;
+    const row = day1.exercises.find((exercise) => exercise.exerciseId === 'exercise-row')!;
+
+    expect(row.order).toBe(2);
+    expect(row.setTargets).toEqual([{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]);
+  });
+
+  test('without targets every row stays bare, as Flow A and B start', () => {
+    const { week } = buildMesocycleStart(copied, null, NOW);
+
+    expect(week.flatMap(({ exercises }) => exercises.flatMap((e) => e.setTargets))).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 1 },
+      { setNumber: 1 },
+    ]);
   });
 });

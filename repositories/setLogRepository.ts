@@ -41,6 +41,23 @@ export type FindLastPerformanceQuery = {
   excludeSessionExerciseId?: string;
 };
 
+/**
+ * The reference performance rule 6 found: its set logs and the target RIR it was performed at.
+ *
+ * `targetRir` comes from the `SessionExercise` the logs belong to, which the join already passes
+ * through — it costs nothing to carry and there is no other way to read it back afterwards, a
+ * `SetLog` holding no RIR of its own (02 · Domain Model). Flow C needs it to re-price the reps
+ * for the new block's starting RIR (04 · Meso Creation Flows, "Расчёт startReps"), which is
+ * honest even when the reference came from mid-block rather than the last working week. Rule 6's
+ * own arithmetic ignores it.
+ */
+export type LastPerformance = {
+  /** Sorted by `setNumber`. Never empty — nothing to reference is `null` instead. */
+  setLogs: SetLog[];
+  /** `SessionExercise.targetRir` of the performance these logs came from. */
+  targetRir: number;
+};
+
 export interface SetLogRepository {
   /** All set logs for one session exercise (a single exercise instance within a session). */
   listBySessionExerciseId(sessionExerciseId: string): Promise<SetLog[]>;
@@ -62,13 +79,13 @@ export interface SetLogRepository {
   /**
    * The reference performance for rule 6 (03 · Progression Engine): every set log of the single
    * most recent session exercise for `exerciseId` whose session is not a deload and either
-   * belongs to `mesoId` or was logged no earlier than `since`, sorted by `setNumber`. Empty
-   * when nothing qualifies, and also when a newer performance can't be joined to its session:
-   * with no trustworthy reference rule 6 recommends nothing and the screen shows only RIR. The
-   * SetLog → SessionExercise → Session join happens inside the repository
-   * (07 · Persistence Layer Contract, rule 4).
+   * belongs to `mesoId` or was logged no earlier than `since`, sorted by `setNumber`, with the
+   * `targetRir` that performance was done at. `null` when nothing qualifies, and also when a
+   * newer performance can't be joined to its session: with no trustworthy reference rule 6
+   * recommends nothing and the screen shows only RIR. The SetLog → SessionExercise → Session
+   * join happens inside the repository (07 · Persistence Layer Contract, rule 4).
    */
-  findLastPerformance(query: FindLastPerformanceQuery): Promise<SetLog[]>;
+  findLastPerformance(query: FindLastPerformanceQuery): Promise<LastPerformance | null>;
 
   /** Persists a set log that already carries its domain-generated id. */
   create(setLog: Incoming<SetLog>): Promise<SetLog>;
