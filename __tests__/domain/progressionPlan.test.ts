@@ -2,7 +2,7 @@ import type { MuscleGroup } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { SourceExercise } from '@domain/progression';
-import { isDeloadWeek, prescribeNextSession, type NextSessionInput } from '@domain/progressionPlan';
+import { prescribeNextSession, type NextSessionInput } from '@domain/progressionPlan';
 import { STAMPS } from '../fixtures/stamps';
 
 const threeSets: SetTarget[] = [
@@ -44,13 +44,6 @@ function input(overrides: Partial<NextSessionInput>): NextSessionInput {
     ...overrides,
   };
 }
-
-describe('isDeloadWeek', () => {
-  test('is the last week of the block', () => {
-    expect(isDeloadWeek(5, 5)).toBe(true);
-    expect(isDeloadWeek(5, 4)).toBe(false);
-  });
-});
 
 describe('prescribeNextSession', () => {
   test('progresses every set of every exercise and sets the week’s RIR', () => {

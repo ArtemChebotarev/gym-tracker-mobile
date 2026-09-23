@@ -6,7 +6,7 @@
 import { ConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
-import { isDeloadWeek } from '@domain/progressionPlan';
+import { isDeloadWeek } from '@domain/mesocycleWeeks';
 
 // Exported so callers that need the same bounds (e.g. the mesocycle editor's Stepper props —
 // see 08.5 · Редактор мезоцикла — Flow A, "Шаг 1 — Basics") reuse them instead of hand-copying

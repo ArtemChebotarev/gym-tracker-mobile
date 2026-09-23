@@ -10,7 +10,7 @@ import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@d
 import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
-import { isDeloadWeek } from '@domain/progressionPlan';
+import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import { targetIndicatorAtWeight } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
 import { buildWeightSwap } from '@domain/weightSwapRules';

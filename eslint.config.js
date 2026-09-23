@@ -45,6 +45,20 @@ module.exports = defineConfig([
     ignores: ['dist/*', '.expo/*', '.claude/*'],
   },
   {
+    // No module may import its way back to itself. Metro allows a require cycle and prints a
+    // WARN for it on every bundle, but the value a cyclic import sees can be uninitialized at
+    // module-eval time, which fails as `undefined is not a function` at runtime rather than at
+    // build time. One went unnoticed for a whole task (041: validators -> progressionPlan ->
+    // progressionRir -> validators) precisely because nothing but that WARN objected.
+    //
+    // `eslint-plugin-import` and the TypeScript resolver both come with eslint-config-expo, so
+    // the `@domain/*` aliases resolve without extra configuration.
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'import/no-cycle': ['error', { maxDepth: Infinity, ignoreExternal: true }],
+    },
+  },
+  {
     // domain/ is the portable core: no RN, no navigation, no storage, no screens.
     files: ['domain/**/*.{js,jsx,ts,tsx}'],
     rules: {
