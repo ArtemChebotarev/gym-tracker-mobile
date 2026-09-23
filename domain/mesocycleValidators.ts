@@ -5,6 +5,7 @@
 
 import type { Mesocycle } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
+import { isDeloadWeek } from '@domain/progressionPlan';
 
 // Exported so callers that need the same bounds (e.g. the mesocycle editor's Stepper props —
 // see 08.5 · Редактор мезоцикла — Flow A, "Шаг 1 — Basics") reuse them instead of hand-copying
@@ -68,6 +69,27 @@ export function validateMesocycleImmutableFields(current: Mesocycle, next: Mesoc
   if (current.daysPerWeek !== next.daysPerWeek) {
     throw new Error(
       `Mesocycle daysPerWeek is immutable after Start: was ${current.daysPerWeek}, got ${next.daysPerWeek}.`,
+    );
+  }
+}
+
+/**
+ * Throws if week `weekNumber` of `source` can't be copied as Flow C's source week (04 · Meso
+ * Creation Flows, "Запрет копирования deload-недели"). The deload week is the only one barred:
+ * it carries an artificially cut volume and half the weight, so as a starting point it says
+ * nothing.
+ *
+ * Nothing else is checked here. A week with no finished session at all copies like any other
+ * (решение 22.09.2026) — structure is there whether or not it was trained — and a week lazy
+ * generation never reached has no sessions, so it can't be offered in the first place.
+ */
+export function validateCopyableSourceWeek(
+  source: Pick<Mesocycle, 'lengthWeeks'>,
+  weekNumber: number,
+): void {
+  if (isDeloadWeek(source.lengthWeeks, weekNumber)) {
+    throw new Error(
+      `Week ${weekNumber} is the deload week of a ${source.lengthWeeks}-week mesocycle and cannot be copied.`,
     );
   }
 }
