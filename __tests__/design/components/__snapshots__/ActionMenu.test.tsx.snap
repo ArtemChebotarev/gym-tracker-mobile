@@ -535,22 +535,30 @@ exports[`ActionMenu — without SwiftUI DoD: the \`⋯\` button opens a titled s
                   </RNSVGGroup>
                 </RNSVGGroup>
               </RNSVGSvgViewAndroid>
-              <Text
+              <View
                 style={
-                  [
-                    {
-                      "color": "#C9CDD2",
-                      "flex": 1,
-                      "fontSize": 17,
-                      "fontWeight": "400",
-                    },
-                    false,
-                    false,
-                  ]
+                  {
+                    "flex": 1,
+                    "gap": 4,
+                  }
                 }
               >
-                Add exercise
-              </Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#C9CDD2",
+                        "fontSize": 17,
+                        "fontWeight": "400",
+                      },
+                      false,
+                      false,
+                    ]
+                  }
+                >
+                  Add exercise
+                </Text>
+              </View>
             </View>
             <View
               accessibilityLabel="Stop mesocycle"
@@ -662,24 +670,32 @@ exports[`ActionMenu — without SwiftUI DoD: the \`⋯\` button opens a titled s
                   </RNSVGGroup>
                 </RNSVGGroup>
               </RNSVGSvgViewAndroid>
-              <Text
+              <View
                 style={
-                  [
-                    {
-                      "color": "#C9CDD2",
-                      "flex": 1,
-                      "fontSize": 17,
-                      "fontWeight": "400",
-                    },
-                    {
-                      "color": "#E2574C",
-                    },
-                    false,
-                  ]
+                  {
+                    "flex": 1,
+                    "gap": 4,
+                  }
                 }
               >
-                Stop mesocycle
-              </Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#C9CDD2",
+                        "fontSize": 17,
+                        "fontWeight": "400",
+                      },
+                      {
+                        "color": "#E2574C",
+                      },
+                      false,
+                    ]
+                  }
+                >
+                  Stop mesocycle
+                </Text>
+              </View>
             </View>
           </View>
         </RCTScrollView>

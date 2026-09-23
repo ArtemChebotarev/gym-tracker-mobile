@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { Alert, type AlertButton } from 'react-native';
+import { Alert, Modal, type AlertButton } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/MesocyclesScreen';
+import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
 import { STAMPS } from '../fixtures/stamps';
 import { pressSwipeAction } from '../fixtures/swipeActions';
 
@@ -71,7 +72,8 @@ function makeProps(overrides: Partial<MesocyclesScreenProps> = {}): MesocyclesSc
     mesocycles: [ACTIVE, PLANNED, COMPLETED],
     isPending: false,
     activeWeekNumber: 2,
-    onRequestCreate: jest.fn(),
+    onCreateFromScratch: jest.fn(),
+    onCopyMesocycle: jest.fn(),
     onOpenActive: jest.fn(),
     onStart: jest.fn(),
     onEdit: jest.fn(),
@@ -177,22 +179,91 @@ describe('MesocyclesScreen', () => {
     expect(screen.queryByText('Plan your first mesocycle')).toBeNull();
   });
 
-  test('an entirely empty list shows the EmptyState, whose action starts creation', () => {
-    const onRequestCreate = jest.fn();
-    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [], onRequestCreate })} />);
+  // With no mesocycle at all there is provably nothing to copy, so the empty state skips the
+  // choice and goes straight to Flow A.
+  test('an entirely empty list shows the EmptyState, whose action goes straight to Flow A', () => {
+    const onCreateFromScratch = jest.fn();
+    renderWithSafeArea(
+      <MesocyclesScreen {...makeProps({ mesocycles: [], onCreateFromScratch })} />,
+    );
 
     fireEvent.press(screen.getByText('Create mesocycle'));
 
-    expect(onRequestCreate).toHaveBeenCalled();
+    expect(onCreateFromScratch).toHaveBeenCalled();
   });
 
-  test('pressing "+" calls onRequestCreate', () => {
-    const onRequestCreate = jest.fn();
-    renderWithSafeArea(<MesocyclesScreen {...makeProps({ onRequestCreate })} />);
+  // DoD (task 123): each row of the sheet leads where it should.
+  test('pressing "+" opens the creation-method sheet, and From scratch goes to Flow A', () => {
+    const onCreateFromScratch = jest.fn();
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCreateFromScratch })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    expect(screen.getByText('New mesocycle')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
+
+    expect(onCreateFromScratch).toHaveBeenCalledTimes(1);
+  });
+
+  test('Copy a mesocycle leads to Flow C when there is something to copy', () => {
+    const onCopyMesocycle = jest.fn();
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCopyMesocycle })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Copy a mesocycle' }));
+
+    expect(onCopyMesocycle).toHaveBeenCalledTimes(1);
+  });
+
+  // DoD (task 123): with nothing finished, the second row is off and says why.
+  test('Copy a mesocycle is off with no finished or stopped block, and explains itself', () => {
+    const onCopyMesocycle = jest.fn();
+    renderWithSafeArea(
+      <MesocyclesScreen {...makeProps({ mesocycles: [ACTIVE, PLANNED], onCopyMesocycle })} />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    const row = screen.getByRole('button', { name: 'Copy a mesocycle' });
+
+    expect(row).toBeDisabled();
+    expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
+    fireEvent.press(row);
+    expect(onCopyMesocycle).not.toHaveBeenCalled();
+  });
+
+  // A stopped block is still a block that happened — it can be copied like a finished one.
+  test('a stopped block counts as something to copy', () => {
+    const stopped: Mesocycle = { ...COMPLETED, id: 'stopped', status: 'abandoned' };
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [stopped] })} />);
 
     fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
 
-    expect(onRequestCreate).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Copy a mesocycle' })).not.toBeDisabled();
+  });
+
+  // DoD (task 123): the sheet closes on a choice, so coming back doesn't land on it still open.
+  test('choosing a method closes the sheet', () => {
+    renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
+
+    expect(screen.queryByRole('button', { name: 'From scratch' })).toBeNull();
+  });
+
+  // The chosen screen is pushing in at the same moment, so the sheet goes without its slide.
+  test('a choice closes the sheet instantly, a dismissal still slides', () => {
+    renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
+
+    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('none');
+
+    // Reopening slides again — the instant close was for that one hand-off only.
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
   });
 
   test('tapping the Active card calls onOpenActive', () => {

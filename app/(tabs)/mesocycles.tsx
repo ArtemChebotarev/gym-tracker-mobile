@@ -5,15 +5,16 @@
 // Active card, which leads on to the Today tab.
 // Several destinations don't exist yet, so they're explicit "not available yet" popups rather
 // than buttons that silently do nothing:
-// - Completed Copy → Flow C, not yet specified as a screen (074: "можно оставить точку входа как
-//   заглушку").
+// - Copy, from either entry point → Flow C's Source week step, which task 124 builds. Both lead to
+//   the same step and differ only in what it already knows (04, "Точки входа"), so they share the
+//   one placeholder until then.
 // - Completed `⋯` → a mesocycle's History screen.
 // Planned `⋯` → Edit opens the same editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
 // The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
 // not the calendar — so a break of a few days between workouts doesn't move it.
-// `+` goes straight to Flow A — Flows B and C have no screens yet to choose between (074's
-// temporary option; the final three-flow picker is still Artem's call).
+// `+` opens the creation-method sheet (123), which the screen owns; the route only supplies the
+// two destinations.
 
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -43,7 +44,8 @@ export default function MesocyclesRoute() {
       mesocycles={query.data}
       isPending={query.isPending || (activeId !== undefined && activeGrid.isPending)}
       activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
-      onRequestCreate={() => router.push('/meso-editor/new')}
+      onCreateFromScratch={() => router.push('/meso-editor/new')}
+      onCopyMesocycle={() => showNotAvailable('Copying a mesocycle')}
       onOpenActive={() => router.navigate('/')}
       onStart={(mesocycle) =>
         startMesocycle.mutate(mesocycle.id, {
