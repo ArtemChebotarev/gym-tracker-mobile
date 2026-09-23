@@ -23,11 +23,12 @@
 //
 // Since task 117 a row carries nothing but its name and caption: every action is behind a swipe
 // (`SwipeableRow`). Right to left reveals the secondary ones — Edit and Delete on a Planned row,
-// History on a Completed one. Left to right, pulled far enough, runs the row's primary one: Start,
-// or Copy on a finished block. The pill and the `⋯` both went with it, because the right edge is
-// where the hand goes to swipe and a button sitting there competed with the gesture (Artem's
-// call). With the `⋯` sheet gone, so is the `presentation: overlay` workaround it needed: Delete's
-// confirmation is raised from a plain button now, with no modal dismissing underneath it.
+// History on a Completed one. Left to right reveals the row's primary one — Start, or Copy on a
+// finished block — as a button to tap, and pulling all the way runs it without the tap. The pill
+// and the `⋯` both went with it, because the right edge is where the hand goes to swipe and a
+// button sitting there competed with the gesture (Artem's call). With the `⋯` sheet gone, so is
+// the `presentation: overlay` workaround it needed: Delete's confirmation is raised from a plain
+// button now, with no modal dismissing underneath it.
 //
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.

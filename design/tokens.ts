@@ -16,10 +16,9 @@ export const COLORS = {
   /** A completed day's cell in the mesocycle overview (08.7, task 107) — 3.2:1 on `surface/sheet`. */
   'surface/cell-done': '#626973',
   /**
-   * A Popover's plate (08.7.1). The only surface that sits *above* a card rather than under it,
-   * so it is the only one lighter than `surface/card` — on `surface/sheet`, as 08.7.1 first had
-   * it, a plate floating over a card was darker than the card and the two read as one block
-   * (Artem's review on the device).
+   * A Popover's plate (08.7.1). Sits *above* a card rather than under it, so it is lighter than
+   * `surface/card` — on `surface/sheet`, as 08.7.1 first had it, a plate floating over a card was
+   * darker than the card and the two read as one block (Artem's review on the device).
    */
   'surface/popover': '#262A30',
 
@@ -113,6 +112,14 @@ export const LINE_HEIGHTS = {
 export type LineHeightToken = keyof typeof LINE_HEIGHTS;
 
 export const RADII = {
+  /**
+   * Fully rounded ends on a block whose height is only known at layout time — a swipe action's
+   * capsule is as tall as the row it sits behind, and a row is as tall as its content made it.
+   * Larger than any such block ever gets: the platform clamps a radius to half the box it is on,
+   * so the ends come out round whatever the height turns out to be. A block of a *known* height
+   * takes `roundedBar`/`capsule` from design/shapes.ts instead, which derives the radius from it.
+   */
+  'radius/capsule': 999,
   'radius/pill': 20,
   'radius/sheet': 18,
   'radius/control': 12,
@@ -217,17 +224,13 @@ export const SIZES = {
   /** Mesocycle overview: the week label column. */
   'size/week-column': 64,
   /**
-   * One action revealed by swiping a row (`SwipeableRow`, 08.3). Wide enough for a 20pt icon over
-   * a short one-word label and, at 76, comfortably past the 44pt tap target in the one direction
-   * a swipe action can't grow — its height is the row's.
+   * One capsule revealed by swiping a row (`SwipeableRow`, 08.3). Wide enough for a 20pt icon over
+   * a short one-word label and, at 64, still past the 44pt tap target in the one direction a swipe
+   * action can't grow — its height is the row's, less the inset that makes it a capsule. It is
+   * also the width of the leading capsule's own icon-and-label block, which stays that wide
+   * whatever the capsule around it has stretched to.
    */
-  'size/swipe-action': 76,
-  /**
-   * The block behind a row's leading (primary) action — `Start` on a Planned mesocycle. Far wider
-   * than a trailing button because it is pulled *across* rather than tapped: the row has to travel
-   * a good part of it before letting go fires anything.
-   */
-  'size/swipe-primary': 160,
+  'size/swipe-action': 64,
   /** Mesocycle editor: an exercise row's fixed height (the drag maths divide by it). */
   'size/exercise-row': 68,
   /** Mesocycle editor: the Sets column — Stepper's inline width. */

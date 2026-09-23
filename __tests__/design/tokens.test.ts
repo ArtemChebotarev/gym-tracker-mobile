@@ -64,6 +64,7 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
 ];
 
 const EXPECTED_RADIUS_TOKENS = [
+  'radius/capsule',
   'radius/pill',
   'radius/sheet',
   'radius/control',
