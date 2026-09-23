@@ -197,3 +197,272 @@ describe('startMesocycle', () => {
     await expect(store.repos.sessionRepo.listByMesoId('meso')).resolves.toHaveLength(2);
   });
 });
+
+// --- Flow C week 1 targets (task 122) -----------------------------------------------------
+//
+// A `copyWeek` block copies structure only; its week 1 reps and weights are priced here, at
+// Start, from each exercise's own reference performance — not from the week that was copied.
+
+const PAST_MESO = 'meso-past';
+
+const copied: Mesocycle = {
+  ...planned,
+  id: 'meso-copy',
+  name: 'Upper/Lower 2',
+  // 8 weeks: 7 working weeks, startRir = min(3, 7 − 1) = 3 on week 1.
+  lengthWeeks: 8,
+  daysPerWeek: 1,
+  origin: { type: 'copyWeek', sourceMesoId: PAST_MESO, sourceWeekNumber: 3 },
+  weekPlan: {
+    days: [
+      {
+        dayNumber: 1,
+        name: '',
+        exercises: [
+          { exerciseId: 'bench', order: 0, sets: 3 },
+          { exerciseId: 'row', order: 1, sets: 2 },
+        ],
+      },
+    ],
+  },
+};
+
+type Performance = {
+  sessionExerciseId: string;
+  exerciseId: string;
+  /** The RIR the reference was performed at — what its reps get re-priced from. */
+  targetRir: number;
+  isDeload?: boolean;
+  completedAt: string;
+  /** `[weight, reps]` per set, in set order. */
+  sets: [number, number][];
+};
+
+/**
+ * Writes a past performance the way the app would: a completed session in `PAST_MESO`, one
+ * session exercise on it, and a set log per set. Real rows, so `findLastPerformance` walks the
+ * same join it walks on the phone.
+ */
+async function seedPerformance(
+  store: MesocycleStartStore,
+  performance: Performance,
+  dayNumber: number,
+): Promise<void> {
+  const sessionId = `session-${performance.sessionExerciseId}`;
+  await store.repos.sessionRepo.create({
+    ...STAMPS,
+    id: sessionId,
+    mesoId: PAST_MESO,
+    weekNumber: 1,
+    dayNumber,
+    isDeload: performance.isDeload ?? false,
+    prescriptionStatus: 'ready',
+    status: 'completed',
+    completedAt: performance.completedAt,
+  });
+  await store.repos.sessionExerciseRepo.create({
+    ...STAMPS,
+    id: performance.sessionExerciseId,
+    sessionId,
+    exerciseId: performance.exerciseId,
+    order: 1,
+    setTargets: performance.sets.map((_, index) => ({ setNumber: index + 1 })),
+    targetRir: performance.targetRir,
+    status: 'completed',
+  });
+  for (const [index, [weight, reps]] of performance.sets.entries()) {
+    await store.repos.setLogRepo.create({
+      ...STAMPS,
+      id: `${performance.sessionExerciseId}-set-${index + 1}`,
+      sessionExerciseId: performance.sessionExerciseId,
+      exerciseId: performance.exerciseId,
+      setNumber: index + 1,
+      weight,
+      reps,
+      completedAt: performance.completedAt,
+    });
+  }
+}
+
+async function setUpCopied(performances: Performance[]): Promise<MesocycleStartStore> {
+  const store = await setUp([copied]);
+  await store.repos.mesocycleRepo.create({
+    ...STAMPS,
+    id: PAST_MESO,
+    name: 'Upper/Lower',
+    lengthWeeks: 8,
+    daysPerWeek: 1,
+    startDate: '2026-07-01T00:00:00.000Z',
+    status: 'completed',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    completedAt: '2026-09-10T00:00:00.000Z',
+  });
+  for (const [index, performance] of performances.entries()) {
+    await seedPerformance(store, performance, index + 1);
+  }
+  return store;
+}
+
+async function startedTargetsOf(store: MesocycleStartStore, exerciseId: string) {
+  const [session] = await store.repos.sessionRepo.listByMesoId('meso-copy');
+  const exercises = await store.repos.sessionExerciseRepo.listBySessionId(session!.id);
+  return exercises.find((exercise) => exercise.exerciseId === exerciseId)?.setTargets;
+}
+
+describe('startMesocycle — copyWeek week 1 targets', () => {
+  // DoD: week 1 gets its weight and reps from a fresh reference.
+  test('prices week 1 from the exercise’s latest performance, per set', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [
+          [60, 10],
+          [60, 9],
+          [55, 8],
+        ],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // startRir 3, reference at RIR 0 → reps − 3; the reference weight carries over as is.
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 5, suggestedWeight: 55 },
+    ]);
+  });
+
+  // DoD: an exercise with no reference comes with no targets at all.
+  test('leaves an exercise with no history bare, so the screen shows N RIR', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // `row` is in the copied week but was never performed.
+    await expect(startedTargetsOf(store, 'row')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
+  });
+
+  // DoD: a reference from mid-block is re-priced by its own targetRir.
+  test('re-prices a mid-block reference by the RIR it was actually performed at', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        // Mid-block week: performed at RIR 2, not at the block's final RIR 0.
+        targetRir: 2,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // 10 − (3 − 2) = 9, not 10 − 3 = 7.
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 9, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 9, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 9, suggestedWeight: 60 },
+    ]);
+  });
+
+  test('skips a deload performance, falling back to the working one', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench-working',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-01T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+      {
+        sessionExerciseId: 'sx-bench-deload',
+        exerciseId: 'bench',
+        targetRir: 8,
+        isDeload: true,
+        completedAt: '2026-09-12T08:00:00.000Z',
+        sets: [[30, 5]],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    const targets = await startedTargetsOf(store, 'bench');
+    expect(targets?.[0]).toEqual({ setNumber: 1, targetReps: 7, suggestedWeight: 60 });
+  });
+
+  test('ignores a performance older than historyLookbackDays', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench-ancient',
+        exerciseId: 'bench',
+        targetRir: 0,
+        // NOW is 2026-09-19 and historyLookbackDays is 30, so this falls outside the window.
+        completedAt: '2026-06-01T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  // DoD: a scratch mesocycle still starts with no targets — Flow A and B don't read history.
+  test('a scratch mesocycle still starts with bare set targets', async () => {
+    const store = await setUp();
+
+    await startMesocycle('meso', { store }, NOW);
+
+    const sessions = await store.repos.sessionRepo.listByMesoId('meso');
+    const day1 = sessions.find((session) => session.dayNumber === 1)!;
+    const exercises = await store.repos.sessionExerciseRepo.listBySessionId(day1.id);
+    for (const exercise of exercises) {
+      expect(exercise.setTargets.every((target) => Object.keys(target).length === 1)).toBe(true);
+    }
+  });
+
+  // DoD: the write stays atomic — the history lookup happens inside the same transaction.
+  test('a failure writing the exercises rolls back a copyWeek Start too', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+
+    const error = await rejectionOf(
+      startMesocycle(
+        'meso-copy',
+        { store: failingOn(store, 'sessionExerciseRepo', 'createMany') },
+        NOW,
+      ),
+    );
+
+    expect(error).toEqual(new Error('createMany failed'));
+    await expect(store.repos.mesocycleRepo.getActive()).resolves.toBeNull();
+    await expect(store.repos.sessionRepo.listByMesoId('meso-copy')).resolves.toEqual([]);
+  });
+});

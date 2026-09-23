@@ -20,6 +20,12 @@ import { mesocycles, sessionExercises, sessions, setLogs } from './schema';
 export type StoredExercisePerformance = {
   sessionExerciseId: string;
   session: Session;
+  /**
+   * The RIR this performance was planned at (`SessionExercise.targetRir`). Already on the middle
+   * table of the join, so reading it costs nothing; Flow C's start targets need it (task 122) and
+   * a `SetLog` carries no RIR of its own.
+   */
+  targetRir: number;
   /** Sorted by `setNumber`. */
   setLogs: SetLog[];
 };
@@ -41,7 +47,7 @@ export async function readExercisePerformances(
   const excluded = options.excludeSessionExerciseId;
   const rows = await runQuery(() =>
     db
-      .select({ setLog: setLogs, session: sessions })
+      .select({ setLog: setLogs, session: sessions, targetRir: sessionExercises.targetRir })
       .from(setLogs)
       .innerJoin(sessionExercises, eq(setLogs.sessionExerciseId, sessionExercises.id))
       .innerJoin(sessions, eq(sessionExercises.sessionId, sessions.id))
@@ -55,10 +61,11 @@ export async function readExercisePerformances(
   );
 
   const performances = new Map<string, StoredExercisePerformance>();
-  for (const { setLog, session } of rows) {
+  for (const { setLog, session, targetRir } of rows) {
     const performance = performances.get(setLog.sessionExerciseId) ?? {
       sessionExerciseId: setLog.sessionExerciseId,
       session: rowToSession(session),
+      targetRir,
       setLogs: [],
     };
     performance.setLogs.push(rowToSetLog(setLog));

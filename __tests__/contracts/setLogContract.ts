@@ -1,4 +1,4 @@
-import type { SetLog } from '@domain/execution';
+import type { LastPerformance } from '@repositories/setLogRepository';
 
 import { makeSession, makeSessionExercise, makeSetLog, seedParents } from './fixtures';
 import { type RepositoryHarness, type RepositorySet, useRepositories } from './harness';
@@ -24,6 +24,8 @@ type Performance = {
   isDeload?: boolean;
   exerciseId?: string;
   setNumbers?: number[];
+  /** The RIR the performance was planned at; `makeSessionExercise`'s default (2) when omitted. */
+  targetRir?: number;
 };
 
 /**
@@ -59,6 +61,7 @@ async function seedPerformances(
         sessionId,
         exerciseId,
         status: 'completed',
+        ...(performance.targetRir === undefined ? {} : { targetRir: performance.targetRir }),
       }),
     );
     for (const setNumber of performance.setNumbers ?? [1]) {
@@ -75,15 +78,17 @@ async function seedPerformances(
   }
 }
 
-function sessionExerciseIdsOf(setLogs: SetLog[]): string[] {
-  return [...new Set(setLogs.map((setLog) => setLog.sessionExerciseId))];
+function sessionExerciseIdsOf(reference: LastPerformance | null): string[] {
+  return [...new Set((reference?.setLogs ?? []).map((setLog) => setLog.sessionExerciseId))];
 }
 
 export function describeSetLogContract(harness: RepositoryHarness): void {
   describe('SetLogRepository', () => {
     const repositories = useRepositories(harness);
 
-    function findBenchReference(excludeSessionExerciseId?: string): Promise<SetLog[]> {
+    function findBenchReference(
+      excludeSessionExerciseId?: string,
+    ): Promise<LastPerformance | null> {
       return repositories().setLogRepo.findLastPerformance({
         exerciseId: BENCH_PRESS,
         mesoId: CURRENT_MESO,
@@ -241,7 +246,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
           { sessionExerciseId: 'se-past-old', completedAt: OLDER_THAN_SINCE, mesoId: PAST_MESO },
         ]);
 
-        await expect(findBenchReference()).resolves.toEqual([]);
+        await expect(findBenchReference()).resolves.toBeNull();
       });
 
       test('excludes the session exercise asking for the reference', async () => {
@@ -271,7 +276,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
 
         const reference = await findBenchReference();
 
-        expect(reference.map((setLog) => setLog.id)).toEqual([
+        expect(reference?.setLogs.map((setLog) => setLog.id)).toEqual([
           'se-newest-set-1',
           'se-newest-set-2',
           'se-newest-set-3',
@@ -291,7 +296,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-working']);
       });
 
-      test('returns an empty list when only deload performances fall in the window', async () => {
+      test('answers null when only deload performances fall in the window', async () => {
         await seedPerformances(repositories(), [
           {
             sessionExerciseId: 'se-deload-current',
@@ -306,7 +311,46 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
           },
         ]);
 
-        await expect(findBenchReference()).resolves.toEqual([]);
+        await expect(findBenchReference()).resolves.toBeNull();
+      });
+
+      // DoD (task 122): the reference carries the RIR it was performed at, so Flow C can re-price
+      // its reps for the new block's starting RIR even when it came from mid-block.
+      test('carries the targetRir of the performance it found', async () => {
+        await seedPerformances(repositories(), [
+          {
+            sessionExerciseId: 'se-mid-block',
+            completedAt: NEWER_THAN_SINCE,
+            mesoId: PAST_MESO,
+            targetRir: 2,
+          },
+        ]);
+
+        await expect(findBenchReference()).resolves.toEqual(
+          expect.objectContaining({ targetRir: 2 }),
+        );
+      });
+
+      test('the targetRir is the found performance’s own, not the newest one’s', async () => {
+        await seedPerformances(repositories(), [
+          {
+            sessionExerciseId: 'se-working',
+            completedAt: '2026-09-01T08:00:00.000Z',
+            targetRir: 1,
+          },
+          // Newer, but a deload — skipped, and its RIR must not travel instead.
+          {
+            sessionExerciseId: 'se-deload',
+            completedAt: '2026-09-15T08:00:00.000Z',
+            isDeload: true,
+            targetRir: 8,
+          },
+        ]);
+
+        const reference = await findBenchReference();
+
+        expect(sessionExerciseIdsOf(reference)).toEqual(['se-working']);
+        expect(reference?.targetRir).toBe(1);
       });
 
       test('references the exercise performed last, not whatever filled the same slot', async () => {

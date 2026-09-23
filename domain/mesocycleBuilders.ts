@@ -4,6 +4,7 @@
 // construct a `Mesocycle`, one per flow — plus Start, which turns a planned one into an active one.
 
 import { ConflictError } from '@domain/errors';
+import type { SetTarget } from '@domain/execution';
 import { generateId } from '@domain/id';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
@@ -153,6 +154,28 @@ export function applyPlannedMesocycleEdit(
   };
 }
 
+/**
+ * Which slot of a `WeekPlan` a set of targets belongs to: one exercise of one day, addressed the
+ * way the plan itself addresses it. `order` is the plan's own numbering, before Start renumbers a
+ * session's exercises from 1.
+ */
+export function weekPlanSlotKey(dayNumber: number, order: number): string {
+  return `${dayNumber}:${order}`;
+}
+
+/**
+ * Week 1's set targets, ready to be written, keyed by `weekPlanSlotKey`.
+ *
+ * Only a `copyWeek` block has any: the user already trained these exercises, so week 1's reps and
+ * weights are computed from each one's reference performance (04 · Meso Creation Flows, "Расчёт
+ * startReps"). Flow A and B hand over nothing and their rows show `N RIR` instead — as does a
+ * copied exercise with no reference to price it from, which is simply a slot missing from the map.
+ *
+ * The lookup behind it is asynchronous and belongs to the use case (`startMesocycle`, task 122),
+ * the same split as rule 6 in 047/048; what arrives here is already decided.
+ */
+export type WeekOneTargets = ReadonlyMap<string, SetTarget[]>;
+
 /** What Start writes: the launched mesocycle, and week 1 as sessions with their exercises. */
 export type MesocycleStart = {
   mesocycle: Mesocycle;
@@ -165,10 +188,9 @@ export type MesocycleStart = {
  *
  * The mesocycle becomes `active` with `startDate = now`, and its `weekPlan` is dropped — week 1
  * lives on as sessions from here (see `Mesocycle`'s invariants). Every day of the plan becomes a
- * `planned`, `ready` week 1 session whose exercises carry week 1's `targetRir` and one bare set
- * target per `startSets` — no reps and no weight, in any flow. A `copyWeek` block's week 1 does
- * get them, computed here from the exercise's history rather than carried in the plan, which is
- * task 122's half of "Расчёт startReps". Exercise `order` is
+ * `planned`, `ready` week 1 session whose exercises carry week 1's `targetRir` and one set target
+ * per `startSets`. Those targets are bare — no reps, no weight — unless `weekOneTargets` has
+ * something for that slot, which only a `copyWeek` block does (task 122). Exercise `order` is
  * renumbered 1..n: the editor numbers a plan's exercises from 0, a session's start at 1
  * (05 · Workout Execution & Logging, see `renumbered`). Weeks 2+ aren't created — each day of the
  * next week is generated when the same day of this one is finished.
@@ -180,6 +202,7 @@ export function buildMesocycleStart(
   mesocycle: Mesocycle,
   active: Mesocycle | null,
   now: string,
+  weekOneTargets?: WeekOneTargets,
 ): MesocycleStart {
   if (mesocycle.status !== 'planned') {
     throw new ConflictError(
@@ -201,7 +224,15 @@ export function buildMesocycleStart(
     weekNumber: 1,
     isDeload: false,
     targetRir: targetRir(mesocycle.lengthWeeks, 1),
-  }).map(({ session, exercises }) => ({ session, exercises: renumbered(exercises) }));
+  }).map(({ session, exercises }) => ({
+    session,
+    exercises: renumbered(
+      exercises.map((exercise) => {
+        const targets = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.order));
+        return targets === undefined ? exercise : { ...exercise, setTargets: targets };
+      }),
+    ),
+  }));
 
   return { mesocycle: { ...rest, status: 'active', startDate: now }, week };
 }
