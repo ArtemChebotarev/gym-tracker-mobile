@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { Alert, type AlertButton } from 'react-native';
+import { Alert, Modal, type AlertButton } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -249,6 +249,21 @@ describe('MesocyclesScreen', () => {
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
     expect(screen.queryByRole('button', { name: 'From scratch' })).toBeNull();
+  });
+
+  // The chosen screen is pushing in at the same moment, so the sheet goes without its slide.
+  test('a choice closes the sheet instantly, a dismissal still slides', () => {
+    renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
+
+    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('none');
+
+    // Reopening slides again — the instant close was for that one hand-off only.
+    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
   });
 
   test('tapping the Active card calls onOpenActive', () => {

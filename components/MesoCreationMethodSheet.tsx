@@ -10,7 +10,10 @@
 // may not. With no finished or stopped block to copy from it is disabled and its caption says so
 // (`copyMethodCaption`).
 //
-// Presentational and fully controlled, like the other sheets: both destinations arrive as props.
+// Presentational and fully controlled, like the other sheets: both destinations arrive as props,
+// and so does whether the close slides — picking a row hands off to a screen, and a slide-down
+// under a screen pushing in reads as a stutter rather than one deliberate motion (the same reason
+// ExercisePickerSheet's Filters handoff turns it off, task 079).
 // JSX/rendering only — pure helpers live in MesoCreationMethodSheetLogic.ts, per the code-style
 // skill. No styles of its own: BottomSheet and ActionRow carry the whole layout.
 
@@ -28,6 +31,8 @@ export type MesoCreationMethodSheetProps = {
   canCopy: boolean;
   onCreateFromScratch: () => void;
   onCopyMesocycle: () => void;
+  /** False to close instantly — what the caller does when a row was picked. Defaults to sliding. */
+  animated?: boolean;
 };
 
 export function MesoCreationMethodSheet({
@@ -36,9 +41,10 @@ export function MesoCreationMethodSheet({
   canCopy,
   onCreateFromScratch,
   onCopyMesocycle,
+  animated,
 }: MesoCreationMethodSheetProps) {
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="New mesocycle">
+    <BottomSheet visible={visible} onClose={onClose} title="New mesocycle" animated={animated}>
       <ActionRow
         icon={PlusIcon}
         label="From scratch"

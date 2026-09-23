@@ -101,7 +101,10 @@ const styles = StyleSheet.create({
   caption: {
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS['text/faint'],
+    // `text/secondary`, not the `text/faint` a ListRow subtitle uses: small text on a sheet reads
+    // as grey-on-black on a real phone at those darker tokens (Artem's review of 107). The size
+    // difference against the 17pt label is the hierarchy here, not a dimmer colour.
+    color: COLORS['text/secondary'],
   },
   captionDisabled: {
     color: COLORS['text/disabled'],

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
+import { Modal } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import {
@@ -103,6 +104,19 @@ describe('MesoCreationMethodSheet', () => {
     fireEvent.press(screen.getByLabelText('Close'));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  // Picking a row hands off to a screen, so the caller closes the sheet without its slide.
+  test('passes the close animation through to the sheet', () => {
+    renderWithSafeArea(<MesoCreationMethodSheet {...makeProps({ animated: false })} />);
+
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('none');
+  });
+
+  test('slides by default', () => {
+    renderWithSafeArea(<MesoCreationMethodSheet {...makeProps()} />);
+
+    expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
   });
 
   test('renders nothing while closed', () => {

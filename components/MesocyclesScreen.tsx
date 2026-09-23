@@ -8,7 +8,10 @@
 // rather than something the route decides:
 // - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to Flow A: there are two
 //   ways to build a block now. Whether the second one has anything to copy from is read off the
-//   Completed group, which already holds both ways a block ends.
+//   Completed group, which already holds both ways a block ends. Picking a row closes the sheet
+//   without its slide — the chosen screen is pushing in at the same moment, and two transitions
+//   at once read as a stutter (Artem's call); dismissing it by backdrop or grabber still slides,
+//   because then nothing is arriving to take its place.
 // - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
 // - Delete (revealed by swiping a Planned row) opens `Delete mesocycle? This can't be undone` and
@@ -93,11 +96,12 @@ export function MesocyclesScreen({
   onOpenHistory,
 }: MesocyclesScreenProps) {
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
-  const [methodSheetOpen, setMethodSheetOpen] = useState(false);
+  // `chosen` is `closed` with the slide turned off — see the note at the top of the file.
+  const [methodSheet, setMethodSheet] = useState<'closed' | 'open' | 'chosen'>('closed');
 
   /** Closes the sheet before navigating, so coming back doesn't land on it still open. */
   function chooseMethod(go: () => void) {
-    setMethodSheetOpen(false);
+    setMethodSheet('chosen');
     go();
   }
 
@@ -129,7 +133,7 @@ export function MesocyclesScreen({
           <IconButton
             accessibilityLabel="New mesocycle"
             variant="accent"
-            onPress={() => setMethodSheetOpen(true)}
+            onPress={() => setMethodSheet('open')}
           >
             <Text style={styles.addIcon}>+</Text>
           </IconButton>
@@ -235,8 +239,9 @@ export function MesocyclesScreen({
       </RootScreen>
 
       <MesoCreationMethodSheet
-        visible={methodSheetOpen}
-        onClose={() => setMethodSheetOpen(false)}
+        visible={methodSheet === 'open'}
+        animated={methodSheet !== 'chosen'}
+        onClose={() => setMethodSheet('closed')}
         canCopy={groups.completed.length > 0}
         onCreateFromScratch={() => chooseMethod(onCreateFromScratch)}
         onCopyMesocycle={() => chooseMethod(onCopyMesocycle)}
