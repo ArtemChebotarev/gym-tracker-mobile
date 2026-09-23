@@ -3,6 +3,7 @@
 // `domain/mesocycle.ts` (types only) per the single-responsibility rule in
 // AGENTS.md.
 
+import { ConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
 import { isDeloadWeek } from '@domain/progressionPlan';
@@ -91,5 +92,38 @@ export function validateCopyableSourceWeek(
     throw new Error(
       `Week ${weekNumber} is the deload week of a ${source.lengthWeeks}-week mesocycle and cannot be copied.`,
     );
+  }
+}
+
+/** A mesocycle that has passed `validateMesocycleCanStart` — its draft week 1 is there to build. */
+export type StartableMesocycle = Mesocycle & { weekPlan: WeekPlan };
+
+/**
+ * Throws `ConflictError` unless `mesocycle` can be started right now (04 · Meso Creation Flows,
+ * "Запуск (Start)"): it must be `planned`, it must still carry its draft week 1, and no other
+ * mesocycle may be `active` — at most one runs at a time (02 · Domain Model).
+ *
+ * Its own guard so Start can ask before doing any work: a `copyWeek` block reads every exercise's
+ * history to price week 1 (task 122), and there is no reason to read any of it for a launch that
+ * was never going to happen. `buildMesocycleStart` asks again — it is a public function and stays
+ * safe on its own — but the answer costs nothing, so the two calls are the same check, not a
+ * second copy of it.
+ */
+export function validateMesocycleCanStart(
+  mesocycle: Mesocycle,
+  active: Mesocycle | null,
+): asserts mesocycle is StartableMesocycle {
+  if (mesocycle.status !== 'planned') {
+    throw new ConflictError(
+      `Mesocycle "${mesocycle.id}" is ${mesocycle.status}; only planned ones can be started.`,
+    );
+  }
+  if (active !== null) {
+    throw new ConflictError(
+      `Mesocycle "${active.id}" is still active; finish it before starting "${mesocycle.id}".`,
+    );
+  }
+  if (mesocycle.weekPlan === undefined) {
+    throw new ConflictError(`Mesocycle "${mesocycle.id}" has no week plan to start.`);
   }
 }

@@ -304,6 +304,34 @@ async function setUpCopied(performances: Performance[]): Promise<MesocycleStartS
   return store;
 }
 
+/** `store`, counting every reference lookup Start makes inside its transaction. */
+function countingLookups(store: MesocycleStartStore): {
+  store: MesocycleStartStore;
+  lookups: () => number;
+} {
+  let calls = 0;
+  return {
+    lookups: () => calls,
+    store: {
+      repos: store.repos,
+      transaction: (work) =>
+        store.transaction((repos) =>
+          work({
+            ...repos,
+            setLogRepo: Object.assign(Object.create(repos.setLogRepo), {
+              findLastPerformance: (query: Parameters<
+                typeof repos.setLogRepo.findLastPerformance
+              >[0]) => {
+                calls += 1;
+                return repos.setLogRepo.findLastPerformance(query);
+              },
+            }),
+          }),
+        ),
+    },
+  };
+}
+
 async function startedTargetsOf(store: MesocycleStartStore, exerciseId: string) {
   const [session] = await store.repos.sessionRepo.listByMesoId('meso-copy');
   const exercises = await store.repos.sessionExerciseRepo.listBySessionId(session!.id);
@@ -464,5 +492,54 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     expect(error).toEqual(new Error('createMany failed'));
     await expect(store.repos.mesocycleRepo.getActive()).resolves.toBeNull();
     await expect(store.repos.sessionRepo.listByMesoId('meso-copy')).resolves.toEqual([]);
+  });
+
+  // The history lookup is one query per exercise. A Start that was never going to happen
+  // shouldn't run any of them, so `validateMesocycleCanStart` is asked first.
+  test('reads no history at all when the Start is going to be refused', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+    await store.repos.mesocycleRepo.create({
+      ...STAMPS,
+      id: 'meso-running',
+      name: 'Running block',
+      lengthWeeks: 4,
+      daysPerWeek: 1,
+      startDate: '2026-09-01T09:00:00.000Z',
+      status: 'active',
+      origin: { type: 'scratch' },
+      progressionSettings: defaultProgressionSettings,
+    });
+    const counted = countingLookups(store);
+
+    const error = await rejectionOf(startMesocycle('meso-copy', { store: counted.store }, NOW));
+
+    expect(isConflictError(error)).toBe(true);
+    expect(counted.lookups()).toBe(0);
+  });
+
+  test('reads history once per distinct exercise of the plan', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+    const counted = countingLookups(store);
+
+    await startMesocycle('meso-copy', { store: counted.store }, NOW);
+
+    // The copied week has `bench` and `row`, one day.
+    expect(counted.lookups()).toBe(2);
   });
 });

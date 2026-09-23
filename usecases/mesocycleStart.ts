@@ -9,6 +9,10 @@ import { NotFoundError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 import { buildMesocycleStart, weekPlanSlotKey, type WeekOneTargets } from '@domain/mesocycleBuilders';
+import {
+  validateMesocycleCanStart,
+  type StartableMesocycle,
+} from '@domain/mesocycleValidators';
 import { prescribeBlockStart } from '@domain/progressionStartReps';
 import { targetRir } from '@domain/progressionRir';
 import { daysBefore, nowAsUtcIso } from '@domain/time';
@@ -36,16 +40,16 @@ const FIRST_WEEK = 1;
  * screen shows `N RIR`, the same "не уверен — не рекомендуй" rule as everywhere else. Each
  * exercise is looked up once even when several days share it; `sets` differs per slot, the
  * reference doesn't.
+ *
+ * Only reached once `validateMesocycleCanStart` has passed, so the plan is there and the queries
+ * below are never run for a launch that is going to be refused.
  */
 async function weekOneTargetsFromHistory(
-  mesocycle: Mesocycle,
+  mesocycle: StartableMesocycle,
   repos: MesocycleStartRepositories,
   now: string,
 ): Promise<WeekOneTargets> {
   const plan = mesocycle.weekPlan;
-  if (!plan) {
-    return new Map();
-  }
   const exerciseIds = [
     ...new Set(plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
   ];
@@ -101,6 +105,10 @@ async function weekOneTargetsFromHistory(
  * A `copyWeek` block's week 1 gets its reps and weights here, from each exercise's own history —
  * this is the only place Start reads history, and Flow A and B don't reach it at all.
  *
+ * Whether the launch may happen at all is settled first, by `validateMesocycleCanStart`: the
+ * history lookup that follows is one query per exercise, and a Start that was going to be refused
+ * shouldn't run any of them.
+ *
  * Rejects with `NotFoundError` if `id` doesn't exist, and with `ConflictError` if it isn't
  * `planned`, has no week plan, or another mesocycle is active; nothing is written then.
  */
@@ -114,16 +122,14 @@ export async function startMesocycle(
     if (!mesocycle) {
       throw new NotFoundError(`Mesocycle "${id}" does not exist.`);
     }
+    const active = await repos.mesocycleRepo.getActive();
+    validateMesocycleCanStart(mesocycle, active);
+
     const weekOneTargets =
       mesocycle.origin.type === 'copyWeek'
         ? await weekOneTargetsFromHistory(mesocycle, repos, now)
         : undefined;
-    const start = buildMesocycleStart(
-      mesocycle,
-      await repos.mesocycleRepo.getActive(),
-      now,
-      weekOneTargets,
-    );
+    const start = buildMesocycleStart(mesocycle, active, now, weekOneTargets);
 
     await repos.sessionRepo.createMany(start.week.map(({ session }) => session));
     await repos.sessionExerciseRepo.createMany(start.week.flatMap(({ exercises }) => exercises));

@@ -10,6 +10,7 @@ import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/me
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
   validateCopyableSourceWeek,
+  validateMesocycleCanStart,
   validateMesocycleDaysPerWeek,
   validateMesocycleLengthWeeks,
   validateWeekPlanDayCount,
@@ -195,8 +196,9 @@ export type MesocycleStart = {
  * (05 · Workout Execution & Logging, see `renumbered`). Weeks 2+ aren't created — each day of the
  * next week is generated when the same day of this one is finished.
  *
- * Throws `ConflictError` if `mesocycle` isn't `planned`, has no week plan, or another mesocycle —
- * `active` — is already running: at most one is active at a time (02 · Domain Model).
+ * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
+ * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
+ * already running.
  */
 export function buildMesocycleStart(
   mesocycle: Mesocycle,
@@ -204,20 +206,8 @@ export function buildMesocycleStart(
   now: string,
   weekOneTargets?: WeekOneTargets,
 ): MesocycleStart {
-  if (mesocycle.status !== 'planned') {
-    throw new ConflictError(
-      `Mesocycle "${mesocycle.id}" is ${mesocycle.status}; only planned ones can be started.`,
-    );
-  }
-  if (active !== null) {
-    throw new ConflictError(
-      `Mesocycle "${active.id}" is still active; finish it before starting "${mesocycle.id}".`,
-    );
-  }
+  validateMesocycleCanStart(mesocycle, active);
   const { weekPlan, ...rest } = mesocycle;
-  if (weekPlan === undefined) {
-    throw new ConflictError(`Mesocycle "${mesocycle.id}" has no week plan to start.`);
-  }
 
   const week = materializeWeekPlan(weekPlan, {
     mesoId: mesocycle.id,
