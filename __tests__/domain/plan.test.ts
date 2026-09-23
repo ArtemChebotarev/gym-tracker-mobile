@@ -5,12 +5,7 @@ const benchPress: WeekPlanExercise = { exerciseId: 'exercise-bench-press', order
 
 const row: WeekPlanExercise = { exerciseId: 'exercise-row', order: 2, sets: 3 };
 
-const squatWithReps: WeekPlanExercise = {
-  exerciseId: 'exercise-squat',
-  order: 1,
-  sets: 4,
-  reps: 8,
-};
+const squat: WeekPlanExercise = { exerciseId: 'exercise-squat', order: 1, sets: 4 };
 
 const dayOne: WeekPlanDay = {
   dayNumber: 1,
@@ -21,7 +16,7 @@ const dayOne: WeekPlanDay = {
 const dayTwo: WeekPlanDay = {
   dayNumber: 2,
   name: 'Legs',
-  exercises: [squatWithReps],
+  exercises: [squat],
 };
 
 const weekPlanFixture: WeekPlan = {
@@ -57,10 +52,8 @@ describe('plan domain types', () => {
     expect(exerciseCount).toBe(3);
   });
 
-  test('reps is optional and only set by Flow C', () => {
-    expect(benchPress.reps).toBeUndefined();
-    expect(row.reps).toBeUndefined();
-    expect(squatWithReps.reps).toBe(8);
+  test('an exercise slot carries structure only — no reps in any flow (task 041)', () => {
+    expect(Object.keys(squat).sort()).toEqual(['exerciseId', 'order', 'sets']);
   });
 
   test('meso template fixtures carry their source and embed the week plan', () => {
