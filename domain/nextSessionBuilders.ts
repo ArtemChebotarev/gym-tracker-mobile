@@ -6,7 +6,7 @@
 import type { Session, SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
 import type { ExercisePrescription } from '@domain/progression';
-import { isDeloadWeek } from '@domain/progressionPlan';
+import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import type { Unsaved } from '@domain/timestamps';
 
 /**

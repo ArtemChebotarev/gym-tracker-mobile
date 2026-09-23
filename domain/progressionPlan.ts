@@ -6,10 +6,11 @@
 
 import type { SetLog } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
+import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 import { prescribeDeloadDay } from '@domain/progressionDeload';
 import { nextSetTargets } from '@domain/progressionReps';
-import { targetRir, workingWeekCount } from '@domain/progressionRir';
+import { targetRir } from '@domain/progressionRir';
 
 export type NextSessionInput = {
   /**
@@ -25,11 +26,6 @@ export type NextSessionInput = {
   lengthWeeks: number;
   settings: ProgressionSettings;
 };
-
-/** The deload week is always a block's last week (02 · Domain Model, "Mesocycle"). */
-export function isDeloadWeek(lengthWeeks: number, weekNumber: number): boolean {
-  return weekNumber === workingWeekCount(lengthWeeks) + 1;
-}
 
 /**
  * The next session's exercises. The structure is inherited from the source's fact — its

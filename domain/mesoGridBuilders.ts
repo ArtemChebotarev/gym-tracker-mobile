@@ -6,7 +6,7 @@
 import type { Session } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { MesoGrid, MesoGridCellStatus } from '@domain/mesoGrid';
-import { isDeloadWeek } from '@domain/progressionPlan';
+import { isDeloadWeek } from '@domain/mesocycleWeeks';
 
 /** The state of a cell whose session is `session` — or which has none yet. */
 export function mesoGridCellStatus(
