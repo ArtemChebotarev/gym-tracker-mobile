@@ -40,4 +40,39 @@ describe('ActionRow', () => {
     fireEvent.press(row);
     expect(onPress).not.toHaveBeenCalled();
   });
+
+  test('a caption sits under the label', () => {
+    render(
+      <ActionRow
+        icon={PlusIcon}
+        label="From scratch"
+        caption="Build the week yourself"
+        onPress={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Build the week yourself')).toBeTruthy();
+  });
+
+  // A row whose caption carries the reason turns off without a right-hand one.
+  test('disabled without a reason still turns the row off and greys the caption', () => {
+    const onPress = jest.fn();
+    render(
+      <ActionRow
+        icon={PlusIcon}
+        label="Copy a mesocycle"
+        caption="Nothing to copy yet"
+        onPress={onPress}
+        disabled
+      />,
+    );
+
+    const row = screen.getByRole('button', { name: 'Copy a mesocycle' });
+    expect(row).toBeDisabled();
+    expect(screen.getByText('Nothing to copy yet')).toHaveStyle({
+      color: COLORS['text/disabled'],
+    });
+    fireEvent.press(row);
+    expect(onPress).not.toHaveBeenCalled();
+  });
 });

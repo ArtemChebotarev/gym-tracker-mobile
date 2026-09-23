@@ -4,8 +4,14 @@
 //
 // Presentational: data and every outcome (navigating, starting, deleting) come in as props from
 // app/(tabs)/mesocycles.tsx, so this renders and is tested with plain props. What *does* live
-// here is the confirmation gate in front of the two irreversible actions, since both are part of
-// 08.3's own screen behavior rather than something the route decides:
+// here is the gate each action goes through, since those are part of 08.3's own screen behavior
+// rather than something the route decides:
+// - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to Flow A: there are two
+//   ways to build a block now. Whether the second one has anything to copy from is read off the
+//   Completed group, which already holds both ways a block ends. Picking a row closes the sheet
+//   without its slide — the chosen screen is pushing in at the same moment, and two transitions
+//   at once read as a stutter (Artem's call); dismissing it by backdrop or grabber still slides,
+//   because then nothing is arriving to take its place.
 // - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
 // - Delete (revealed by swiping a Planned row) opens `Delete mesocycle? This can't be undone` and
@@ -17,16 +23,17 @@
 //
 // Since task 117 a row carries nothing but its name and caption: every action is behind a swipe
 // (`SwipeableRow`). Right to left reveals the secondary ones — Edit and Delete on a Planned row,
-// History on a Completed one. Left to right, pulled far enough, runs the row's primary one: Start,
-// or Copy on a finished block. The pill and the `⋯` both went with it, because the right edge is
-// where the hand goes to swipe and a button sitting there competed with the gesture (Artem's
-// call). With the `⋯` sheet gone, so is the `presentation: overlay` workaround it needed: Delete's
-// confirmation is raised from a plain button now, with no modal dismissing underneath it.
+// History on a Completed one. Left to right reveals the row's primary one — Start, or Copy on a
+// finished block — as a button to tap, and pulling all the way runs it without the tap. The pill
+// and the `⋯` both went with it, because the right edge is where the hand goes to swipe and a
+// button sitting there competed with the gesture (Artem's call). With the `⋯` sheet gone, so is
+// the `presentation: overlay` workaround it needed: Delete's confirmation is raised from a plain
+// button now, with no modal dismissing underneath it.
 //
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
@@ -36,6 +43,8 @@ import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SwipeableRow } from '@design/components/SwipeableRow';
+
+import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 
 import {
   completedLeadingAction,
@@ -62,7 +71,10 @@ export type MesocyclesScreenProps = {
    * progress, else of the next ready one), not the calendar. Unused without an active mesocycle.
    */
   activeWeekNumber: number;
-  onRequestCreate: () => void;
+  /** Flow A — also where the empty state goes directly, having provably nothing to copy. */
+  onCreateFromScratch: () => void;
+  /** Flow C, step Source week (124). */
+  onCopyMesocycle: () => void;
   onOpenActive: () => void;
   onStart: (mesocycle: Mesocycle) => void;
   onEdit: (mesocycle: Mesocycle) => void;
@@ -75,7 +87,8 @@ export function MesocyclesScreen({
   mesocycles,
   isPending,
   activeWeekNumber,
-  onRequestCreate,
+  onCreateFromScratch,
+  onCopyMesocycle,
   onOpenActive,
   onStart,
   onEdit,
@@ -84,6 +97,14 @@ export function MesocyclesScreen({
   onOpenHistory,
 }: MesocyclesScreenProps) {
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
+  // `chosen` is `closed` with the slide turned off — see the note at the top of the file.
+  const [methodSheet, setMethodSheet] = useState<'closed' | 'open' | 'chosen'>('closed');
+
+  /** Closes the sheet before navigating, so coming back doesn't land on it still open. */
+  function chooseMethod(go: () => void) {
+    setMethodSheet('chosen');
+    go();
+  }
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
@@ -110,7 +131,11 @@ export function MesocyclesScreen({
       <RootScreen
         title="Mesocycles"
         trailing={
-          <IconButton accessibilityLabel="New mesocycle" variant="accent" onPress={onRequestCreate}>
+          <IconButton
+            accessibilityLabel="New mesocycle"
+            variant="accent"
+            onPress={() => setMethodSheet('open')}
+          >
             <Text style={styles.addIcon}>+</Text>
           </IconButton>
         }
@@ -122,7 +147,7 @@ export function MesocyclesScreen({
             title="Plan your first mesocycle"
             description="Build a training block, then start it when you're ready."
             actionLabel="Create mesocycle"
-            onAction={onRequestCreate}
+            onAction={onCreateFromScratch}
           />
         )}
 
@@ -213,6 +238,15 @@ export function MesocyclesScreen({
           </ScrollView>
         )}
       </RootScreen>
+
+      <MesoCreationMethodSheet
+        visible={methodSheet === 'open'}
+        animated={methodSheet !== 'chosen'}
+        onClose={() => setMethodSheet('closed')}
+        canCopy={groups.completed.length > 0}
+        onCreateFromScratch={() => chooseMethod(onCreateFromScratch)}
+        onCopyMesocycle={() => chooseMethod(onCopyMesocycle)}
+      />
     </View>
   );
 }
