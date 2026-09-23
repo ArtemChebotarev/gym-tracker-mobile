@@ -13,12 +13,7 @@ const benchPress: WeekPlanExercise = { exerciseId: 'exercise-bench-press', order
 
 const row: WeekPlanExercise = { exerciseId: 'exercise-row', order: 2, sets: 3 };
 
-const squatWithReps: WeekPlanExercise = {
-  exerciseId: 'exercise-squat',
-  order: 1,
-  sets: 4,
-  reps: 8,
-};
+const squat: WeekPlanExercise = { exerciseId: 'exercise-squat', order: 1, sets: 4 };
 
 const dayOne: WeekPlanDay = {
   dayNumber: 1,
@@ -29,7 +24,7 @@ const dayOne: WeekPlanDay = {
 const dayTwo: WeekPlanDay = {
   dayNumber: 2,
   name: 'Legs',
-  exercises: [squatWithReps],
+  exercises: [squat],
 };
 
 const weekPlanFixture: WeekPlan = {
@@ -68,7 +63,7 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
     expect(materialized[1]?.session.name).toBe('Legs');
   });
 
-  test('materializes setTargets from sets and reps, and a shared targetRir per exercise', () => {
+  test('materializes one bare setTarget per set, and a shared targetRir per exercise', () => {
     const materialized = materializeWeekPlan(weekPlanFixture, {
       mesoId: 'meso-1',
       weekNumber: 1,
@@ -80,10 +75,10 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
     expect(legsDayExercises).toHaveLength(1);
     expect(legsDayExercises[0]?.targetRir).toBe(2);
     expect(legsDayExercises[0]?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 8 },
-      { setNumber: 2, targetReps: 8 },
-      { setNumber: 3, targetReps: 8 },
-      { setNumber: 4, targetReps: 8 },
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+      { setNumber: 4 },
     ]);
 
     const pushDayExercises = materialized[0]?.exercises ?? [];
@@ -91,9 +86,9 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
       (exercise) => exercise.exerciseId === benchPress.exerciseId,
     );
     expect(benchPressSessionExercise?.setTargets).toEqual([
-      { setNumber: 1, targetReps: undefined },
-      { setNumber: 2, targetReps: undefined },
-      { setNumber: 3, targetReps: undefined },
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
     ]);
   });
 
@@ -115,7 +110,9 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
     expect(extractWeekPlan(shuffled)).toEqual(weekPlanFixture);
   });
 
-  test('drops execution fields when extracting back to a week plan', () => {
+  // DoD (task 041): a copied week carries no sets logged, no targets and no statuses — only the
+  // structure. This is the same source session shape Flow C reads.
+  test('drops execution and prescription fields when extracting back to a week plan', () => {
     const completedSession: Session = {
       ...STAMPS,
       id: 'session-completed',
@@ -156,7 +153,7 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
         {
           dayNumber: 1,
           name: 'Push',
-          exercises: [{ exerciseId: benchPress.exerciseId, order: 1, sets: 3, reps: 8 }],
+          exercises: [{ exerciseId: benchPress.exerciseId, order: 1, sets: 3 }],
         },
       ],
     });

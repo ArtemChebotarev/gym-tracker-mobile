@@ -2,6 +2,7 @@ import type { SetLog } from '@domain/execution';
 import type { Incoming } from '@domain/timestamps';
 import type {
   FindLastPerformanceQuery,
+  LastPerformance,
   ListSetLogsByExerciseIdOptions,
   SetLogRepository,
 } from '@repositories/setLogRepository';
@@ -74,18 +75,18 @@ export class SqliteSetLogRepository implements SetLogRepository {
     mesoId,
     since,
     excludeSessionExerciseId,
-  }: FindLastPerformanceQuery): Promise<SetLog[]> {
+  }: FindLastPerformanceQuery): Promise<LastPerformance | null> {
     const performances = (
       await readExercisePerformances(this.db, exerciseId, { excludeSessionExerciseId })
     ).map((performance) => ({ ...performance, completedAt: performedAt(performance) }));
     performances.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
 
-    for (const { session, setLogs: logs, completedAt } of performances) {
+    for (const { session, setLogs: logs, targetRir, completedAt } of performances) {
       if (!session.isDeload && (session.mesoId === mesoId || completedAt >= since)) {
-        return logs;
+        return { setLogs: logs, targetRir };
       }
     }
-    return [];
+    return null;
   }
 
   async create(setLog: Incoming<SetLog>): Promise<SetLog> {

@@ -4,10 +4,13 @@
 // construct a `Mesocycle`, one per flow — plus Start, which turns a planned one into an active one.
 
 import { ConflictError } from '@domain/errors';
+import type { SetTarget } from '@domain/execution';
 import { generateId } from '@domain/id';
-import type { Mesocycle, ProgressionSettings } from '@domain/mesocycle';
+import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
+  validateCopyableSourceWeek,
+  validateMesocycleCanStart,
   validateMesocycleDaysPerWeek,
   validateMesocycleLengthWeeks,
   validateWeekPlanDayCount,
@@ -18,6 +21,14 @@ import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
 
+/**
+ * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
+ * and differ only in where the `WeekPlan` came from (04 · Meso Creation Flows) — so the draft they
+ * hand over is one shape, and only `origin` tells them apart afterwards.
+ *
+ * Still named after Flow A because it is also what `applyPlannedMesocycleEdit` re-applies, and
+ * renaming it would touch the editor's store and both its hooks for no behavioural gain.
+ */
 export type ScratchMesocycleDraftInput = {
   name: string;
   /** 3..8, deload week included — see `validateMesocycleLengthWeeks`. */
@@ -25,13 +36,35 @@ export type ScratchMesocycleDraftInput = {
   /** 1..7 — see `validateMesocycleDaysPerWeek`. Must match `weekPlan.days.length`. */
   daysPerWeek: number;
   /**
-   * The week 1 structure assembled on step 2 of the editor (08.5, "Шаг 2"). No `WeekPlanExercise`
-   * carries `reps` in Flow A — the week's target RIR is shown instead (04 · Meso Creation Flows,
-   * "Почему повторы задаются только в Flow C") — but that is a property of what step 2 collects,
-   * not something this function enforces.
+   * The week 1 structure assembled on step 2 of the editor (08.5, "Шаг 2") — days, exercises and
+   * `sets`, and nothing else. A `WeekPlan` carries no reps in any flow: in A and B the week's
+   * target RIR is shown instead, and in C the targets are computed at Start from history
+   * (04 · Meso Creation Flows, "Почему целевые повторы появляются только в Flow C").
    */
   weekPlan: WeekPlan;
 };
+
+/** The draft every flow builds, differing only in `origin`. */
+function buildMesocycleDraft(
+  input: ScratchMesocycleDraftInput,
+  origin: MesocycleOrigin,
+  progressionSettings: ProgressionSettings,
+): Unsaved<Mesocycle> {
+  validateMesocycleLengthWeeks(input.lengthWeeks);
+  validateMesocycleDaysPerWeek(input.daysPerWeek);
+  validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
+
+  return {
+    id: generateId(),
+    name: input.name,
+    lengthWeeks: input.lengthWeeks,
+    daysPerWeek: input.daysPerWeek,
+    status: 'planned',
+    origin,
+    progressionSettings: { ...progressionSettings },
+    weekPlan: input.weekPlan,
+  };
+}
 
 /**
  * Builds a Flow A ("с нуля") planned-mesocycle draft — task 038. Pure: no repository access, no
@@ -49,20 +82,43 @@ export function buildScratchMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
 ): Unsaved<Mesocycle> {
-  validateMesocycleLengthWeeks(input.lengthWeeks);
-  validateMesocycleDaysPerWeek(input.daysPerWeek);
-  validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
+  return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings);
+}
 
-  return {
-    id: generateId(),
-    name: input.name,
-    lengthWeeks: input.lengthWeeks,
-    daysPerWeek: input.daysPerWeek,
-    status: 'planned',
-    origin: { type: 'scratch' },
-    progressionSettings: { ...progressionSettings },
-    weekPlan: input.weekPlan,
-  };
+export type CopyWeekMesocycleDraftInput = ScratchMesocycleDraftInput & {
+  /**
+   * Which week of `source` the `weekPlan` was extracted from (`extractWeekPlan`). Recorded on the
+   * mesocycle so Start knows the block is a copy; the week's own contents are already in
+   * `weekPlan` and are never read back from the source.
+   */
+  sourceWeekNumber: number;
+};
+
+/**
+ * Builds a Flow C ("копия недели") planned-mesocycle draft — task 041. Same draft as Flow A's,
+ * down to the fact that its `weekPlan` carries structure only; the difference is `origin`, which
+ * records where the week came from so Start can compute week 1's targets from history
+ * (04 · Meso Creation Flows, "Расчёт startReps", task 122).
+ *
+ * Throws if `sourceWeekNumber` is `source`'s deload week — the one week that can't be copied.
+ * The editor keeps the user off it (08.8), this makes it true of the draft as well.
+ *
+ * The new block's own `lengthWeeks` comes from `input`, not from `source`: the editor prefills it
+ * from the source but the user is free to change it, and its `startRir` follows from whatever it
+ * ends up being (04, "RIR при копировании").
+ */
+export function buildCopyWeekMesocycleDraft(
+  input: CopyWeekMesocycleDraftInput,
+  source: Pick<Mesocycle, 'id' | 'lengthWeeks'>,
+  progressionSettings: ProgressionSettings = defaultProgressionSettings,
+): Unsaved<Mesocycle> {
+  validateCopyableSourceWeek(source, input.sourceWeekNumber);
+
+  return buildMesocycleDraft(
+    input,
+    { type: 'copyWeek', sourceMesoId: source.id, sourceWeekNumber: input.sourceWeekNumber },
+    progressionSettings,
+  );
 }
 
 /**
@@ -99,6 +155,28 @@ export function applyPlannedMesocycleEdit(
   };
 }
 
+/**
+ * Which slot of a `WeekPlan` a set of targets belongs to: one exercise of one day, addressed the
+ * way the plan itself addresses it. `order` is the plan's own numbering, before Start renumbers a
+ * session's exercises from 1.
+ */
+export function weekPlanSlotKey(dayNumber: number, order: number): string {
+  return `${dayNumber}:${order}`;
+}
+
+/**
+ * Week 1's set targets, ready to be written, keyed by `weekPlanSlotKey`.
+ *
+ * Only a `copyWeek` block has any: the user already trained these exercises, so week 1's reps and
+ * weights are computed from each one's reference performance (04 · Meso Creation Flows, "Расчёт
+ * startReps"). Flow A and B hand over nothing and their rows show `N RIR` instead — as does a
+ * copied exercise with no reference to price it from, which is simply a slot missing from the map.
+ *
+ * The lookup behind it is asynchronous and belongs to the use case (`startMesocycle`, task 122),
+ * the same split as rule 6 in 047/048; what arrives here is already decided.
+ */
+export type WeekOneTargets = ReadonlyMap<string, SetTarget[]>;
+
 /** What Start writes: the launched mesocycle, and week 1 as sessions with their exercises. */
 export type MesocycleStart = {
   mesocycle: Mesocycle;
@@ -112,40 +190,39 @@ export type MesocycleStart = {
  * The mesocycle becomes `active` with `startDate = now`, and its `weekPlan` is dropped — week 1
  * lives on as sessions from here (see `Mesocycle`'s invariants). Every day of the plan becomes a
  * `planned`, `ready` week 1 session whose exercises carry week 1's `targetRir` and one set target
- * per `startSets`, with `targetReps` only where the plan has reps (Flow C). Exercise `order` is
+ * per `startSets`. Those targets are bare — no reps, no weight — unless `weekOneTargets` has
+ * something for that slot, which only a `copyWeek` block does (task 122). Exercise `order` is
  * renumbered 1..n: the editor numbers a plan's exercises from 0, a session's start at 1
  * (05 · Workout Execution & Logging, see `renumbered`). Weeks 2+ aren't created — each day of the
  * next week is generated when the same day of this one is finished.
  *
- * Throws `ConflictError` if `mesocycle` isn't `planned`, has no week plan, or another mesocycle —
- * `active` — is already running: at most one is active at a time (02 · Domain Model).
+ * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
+ * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
+ * already running.
  */
 export function buildMesocycleStart(
   mesocycle: Mesocycle,
   active: Mesocycle | null,
   now: string,
+  weekOneTargets?: WeekOneTargets,
 ): MesocycleStart {
-  if (mesocycle.status !== 'planned') {
-    throw new ConflictError(
-      `Mesocycle "${mesocycle.id}" is ${mesocycle.status}; only planned ones can be started.`,
-    );
-  }
-  if (active !== null) {
-    throw new ConflictError(
-      `Mesocycle "${active.id}" is still active; finish it before starting "${mesocycle.id}".`,
-    );
-  }
+  validateMesocycleCanStart(mesocycle, active);
   const { weekPlan, ...rest } = mesocycle;
-  if (weekPlan === undefined) {
-    throw new ConflictError(`Mesocycle "${mesocycle.id}" has no week plan to start.`);
-  }
 
   const week = materializeWeekPlan(weekPlan, {
     mesoId: mesocycle.id,
     weekNumber: 1,
     isDeload: false,
     targetRir: targetRir(mesocycle.lengthWeeks, 1),
-  }).map(({ session, exercises }) => ({ session, exercises: renumbered(exercises) }));
+  }).map(({ session, exercises }) => ({
+    session,
+    exercises: renumbered(
+      exercises.map((exercise) => {
+        const targets = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.order));
+        return targets === undefined ? exercise : { ...exercise, setTargets: targets };
+      }),
+    ),
+  }));
 
   return { mesocycle: { ...rest, status: 'active', startDate: now }, week };
 }

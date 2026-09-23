@@ -1,17 +1,20 @@
 import type { Timestamps } from './timestamps';
 
 /**
- * A single exercise slot within a `WeekPlanDay`.
+ * A single exercise slot within a `WeekPlanDay`: which exercise, in what position, for how
+ * many sets. Structure only — a `WeekPlan` carries no reps, no weights and no execution state
+ * in any flow (04 · Meso Creation Flows, "Что копируется").
  *
- * `reps` is intentionally optional: it is only filled in by Flow C ("copy
- * previous week"). In Flow A and B there is no per-exercise `reps` — the
- * week's target RIR is shown instead. See 02 · Domain Model, "WeekPlan".
+ * It used to carry an optional `reps`, filled in by Flow C. Flow C no longer copies the
+ * source week's numbers: its week 1 targets are computed at Start, from the exercise's own
+ * history rather than from the copied week (task 122), so the field had nothing left to hold
+ * (task 041). No migration was needed — `WeekPlan` lives inside the `week_plan` JSON column
+ * and no stored record ever carried it.
  */
 export type WeekPlanExercise = {
   exerciseId: string;
   order: number;
   sets: number;
-  reps?: number;
 };
 
 export type WeekPlanDay = {

@@ -2,8 +2,10 @@ import { isConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import {
   applyPlannedMesocycleEdit,
+  buildCopyWeekMesocycleDraft,
   buildMesocycleStart,
   buildScratchMesocycleDraft,
+  weekPlanSlotKey,
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
@@ -62,9 +64,10 @@ describe('buildScratchMesocycleDraft', () => {
   });
 
   // DoD (task 038): "у всех SetTarget отсутствует targetReps" — carried forward from the
-  // original 038 into the new planned-draft model as "no WeekPlanExercise carries reps", since
-  // SetTarget doesn't exist yet at this stage — it's only materialized by Start.
-  test('does not require reps on any weekPlan exercise (Flow A never sets it)', () => {
+  // original 038 into the new planned-draft model as "the draft's week plan is structure only",
+  // since SetTarget doesn't exist yet at this stage — it's only materialized by Start. Since 041
+  // there is no `reps` field left to carry, in any flow.
+  test('the draft week plan carries structure only — exercise, order and sets', () => {
     const draft = buildScratchMesocycleDraft({
       name: 'Push/Pull/Legs',
       lengthWeeks: 6,
@@ -74,7 +77,7 @@ describe('buildScratchMesocycleDraft', () => {
 
     for (const day of draft.weekPlan?.days ?? []) {
       for (const exercise of day.exercises) {
-        expect(exercise.reps).toBeUndefined();
+        expect(Object.keys(exercise).sort()).toEqual(['exerciseId', 'order', 'sets']);
       }
     }
   });
@@ -110,6 +113,69 @@ describe('buildScratchMesocycleDraft', () => {
         weekPlan: twoDayWeekPlan,
       }),
     ).toThrow(/daysPerWeek must be between 1 and 7/);
+  });
+});
+
+describe('buildCopyWeekMesocycleDraft', () => {
+  // A 6-week source block: 5 working weeks, deload on week 6.
+  const source = { id: 'meso-previous', lengthWeeks: 6 };
+  const input = {
+    name: 'Push/Pull 2',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    weekPlan: twoDayWeekPlan,
+    sourceWeekNumber: 4,
+  };
+
+  // DoD (task 041): the draft gets a copyWeek origin carrying the week number.
+  test('records where the week came from as a copyWeek origin', () => {
+    const draft = buildCopyWeekMesocycleDraft(input, source);
+
+    expect(draft.origin).toEqual({
+      type: 'copyWeek',
+      sourceMesoId: 'meso-previous',
+      sourceWeekNumber: 4,
+    });
+  });
+
+  test('is otherwise the same planned draft Flow A builds', () => {
+    const draft = buildCopyWeekMesocycleDraft(input, source);
+
+    expect(draft.status).toBe('planned');
+    expect(draft.startDate).toBeUndefined();
+    expect(draft.name).toBe('Push/Pull 2');
+    expect(draft.weekPlan).toEqual(twoDayWeekPlan);
+    expect(draft.progressionSettings).toEqual(defaultProgressionSettings);
+  });
+
+  // DoD (task 041): Flow C refuses the deload week.
+  test('rejects the source block’s deload week', () => {
+    expect(() =>
+      buildCopyWeekMesocycleDraft({ ...input, sourceWeekNumber: 6 }, source),
+    ).toThrow(/deload week/);
+  });
+
+  test('takes the new block’s length from the draft, not from the source', () => {
+    const draft = buildCopyWeekMesocycleDraft({ ...input, lengthWeeks: 4 }, source);
+
+    expect(draft.lengthWeeks).toBe(4);
+    // Week 4 is a working week of the 6-week source, so it stays copyable.
+    expect(draft.origin).toEqual(expect.objectContaining({ sourceWeekNumber: 4 }));
+  });
+
+  test('validates the draft the same way Flow A does', () => {
+    expect(() => buildCopyWeekMesocycleDraft({ ...input, daysPerWeek: 3 }, source)).toThrow(
+      /exactly 3 day/,
+    );
+  });
+
+  test('copies the given progressionSettings as a snapshot rather than referencing them', () => {
+    const globalSettings = { ...defaultProgressionSettings, historyLookbackDays: 45 };
+
+    const draft = buildCopyWeekMesocycleDraft(input, source, globalSettings);
+    globalSettings.historyLookbackDays = 90;
+
+    expect(draft.progressionSettings.historyLookbackDays).toBe(45);
   });
 });
 
@@ -269,29 +335,29 @@ describe('buildMesocycleStart', () => {
     expect(exercises.map((exercise) => exercise.targetRir)).toEqual([3, 3, 3]);
     expect(exercises.map((exercise) => exercise.status)).toEqual(['planned', 'planned', 'planned']);
     expect(exercises.find((e) => e.exerciseId === 'exercise-bench-press')?.setTargets).toEqual([
-      { setNumber: 1, targetReps: undefined },
-      { setNumber: 2, targetReps: undefined },
-      { setNumber: 3, targetReps: undefined },
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
     ]);
   });
 
-  test('carries Flow C reps into every set target of the exercise', () => {
-    const withReps: Mesocycle = {
+  // Since 041 this holds for a `copyWeek` block too: its week 1 reps are computed at Start from
+  // the exercise's history (122), never carried in the plan.
+  test('a copied-week mesocycle starts with bare set targets all the same', () => {
+    const copied: Mesocycle = {
       ...plannedMesocycle,
       daysPerWeek: 1,
+      origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
       weekPlan: {
         days: [
-          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2, reps: 7 }] },
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2 }] },
         ],
       },
     };
 
-    const [day] = buildMesocycleStart(withReps, null, NOW).week;
+    const [day] = buildMesocycleStart(copied, null, NOW).week;
 
-    expect(day?.exercises[0]?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 7 },
-      { setNumber: 2, targetReps: 7 },
-    ]);
+    expect(day?.exercises[0]?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
   });
 
   test("renumbers each session's exercises 1..n, in the plan's order", () => {
@@ -346,5 +412,87 @@ describe('buildMesocycleStart', () => {
       thrown = error;
     }
     expect(isConflictError(thrown)).toBe(true);
+  });
+});
+
+describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
+  const NOW = '2026-09-19T09:00:00.000Z';
+
+  const copied: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-copy',
+    name: 'Upper/Lower 2',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    status: 'planned',
+    progressionSettings: defaultProgressionSettings,
+    createdAt: '2026-09-01T12:00:00.000Z',
+    origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'exercise-bench-press', order: 0, sets: 2 },
+            { exerciseId: 'exercise-row', order: 1, sets: 1 },
+          ],
+        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }] },
+      ],
+    },
+  };
+
+  test('writes the targets given for a slot and leaves the rest bare', () => {
+    const targets = new Map([
+      [
+        weekPlanSlotKey(1, 0),
+        [
+          { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
+          { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
+        ],
+      ],
+      [weekPlanSlotKey(2, 0), [{ setNumber: 1, targetReps: 9, suggestedWeight: 100 }]],
+    ]);
+
+    const { week } = buildMesocycleStart(copied, null, NOW, targets);
+    const byExercise = new Map(
+      week.flatMap(({ exercises }) => exercises.map((e) => [e.exerciseId, e.setTargets])),
+    );
+
+    expect(byExercise.get('exercise-bench-press')).toEqual([
+      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
+    ]);
+    expect(byExercise.get('exercise-squat')).toEqual([
+      { setNumber: 1, targetReps: 9, suggestedWeight: 100 },
+    ]);
+    // No entry for day 1's second slot — nothing to price it from.
+    expect(byExercise.get('exercise-row')).toEqual([{ setNumber: 1 }]);
+  });
+
+  test('keys targets by the plan’s own order, not the renumbered session order', () => {
+    // Day 1's slots are numbered 0 and 1 in the plan; the session renumbers them 1 and 2.
+    const targets = new Map([
+      [weekPlanSlotKey(1, 1), [{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]],
+    ]);
+
+    const { week } = buildMesocycleStart(copied, null, NOW, targets);
+    const day1 = week.find(({ session }) => session.dayNumber === 1)!;
+    const row = day1.exercises.find((exercise) => exercise.exerciseId === 'exercise-row')!;
+
+    expect(row.order).toBe(2);
+    expect(row.setTargets).toEqual([{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]);
+  });
+
+  test('without targets every row stays bare, as Flow A and B start', () => {
+    const { week } = buildMesocycleStart(copied, null, NOW);
+
+    expect(week.flatMap(({ exercises }) => exercises.flatMap((e) => e.setTargets))).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 1 },
+      { setNumber: 1 },
+    ]);
   });
 });

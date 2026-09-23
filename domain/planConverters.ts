@@ -27,8 +27,10 @@ export type SessionWithExercises = {
  * it, whether from a template, a copied week, or the progression engine, is a separate
  * concern from materializing it) and `planned` (not yet started). `targetRir` is one
  * value for the whole week (03 · Progression Engine, Правило 4), applied to every
- * exercise; per-set `targetReps` is taken from `WeekPlanExercise.reps` when present
- * (Flow C) and left unset otherwise (Flow A/B, 02 · Domain Model, "WeekPlan").
+ * exercise. Set targets come out bare — one per `sets`, numbered from 1, with no
+ * `targetReps`: a `WeekPlan` holds no reps in any flow, and where week 1 does get them
+ * (Flow C) they are computed at Start from the exercise's history, not carried in the
+ * plan (04 · Meso Creation Flows, "Расчёт startReps"; task 041).
  */
 export function materializeWeekPlan(
   plan: WeekPlan,
@@ -53,7 +55,6 @@ export function materializeWeekPlan(
       order: exercise.order,
       setTargets: Array.from({ length: exercise.sets }, (_, index) => ({
         setNumber: index + 1,
-        targetReps: exercise.reps,
       })),
       targetRir: params.targetRir,
       status: 'planned',
@@ -65,34 +66,36 @@ export function materializeWeekPlan(
 
 /**
  * Extracts a `WeekPlan` back out of a week's sessions, preserving day and exercise order
- * and composition — see 02 · Domain Model, "WeekPlan". Execution fields (status, logged
- * sets, weight hints, etc.) exist only on `Session` / `SessionExercise` and are dropped:
- * the result carries only what `WeekPlan` has room for.
+ * and composition — see 02 · Domain Model, "WeekPlan". The week is read as it actually
+ * ended: an exercise swapped mid-week comes back as the one performed, a reordered day
+ * comes back in its final order, and a removed exercise simply isn't there.
  *
- * `reps` is reconstructed from the exercise's first `setTarget`'s `targetReps`, mirroring
- * `materializeWeekPlan`, which always assigns the same `targetReps` to every set target of
- * an exercise materialized from a `WeekPlan`.
+ * Only structure survives. Execution (statuses, logged sets) and prescription (target reps,
+ * suggested weights, weight hints, the week's RIR) live on `Session` / `SessionExercise`
+ * and are dropped — `WeekPlan` has no room for either. `sets` is the number of set rows the
+ * exercise actually ended up with, not the number it was planned with. Both callers want
+ * exactly that much: Flow C copies the structure and computes its targets at Start from
+ * history (04 · Meso Creation Flows, "Что копируется"), and saving a mesocycle as a
+ * template keeps no execution at all (043).
+ *
+ * Whether the week may be copied in the first place is not this function's call — a deload
+ * week can't be (`validateCopyableSourceWeek`), and a week that was never generated has no
+ * sessions to pass in here.
  */
 export function extractWeekPlan(sessionsWithExercises: readonly SessionWithExercises[]): WeekPlan {
-  const days = sessionsWithExercises.map(({ session, exercises }): WeekPlanDay => {
-    const sortedExercises = [...exercises].sort((a, b) => a.order - b.order);
-
-    return {
-      dayNumber: session.dayNumber,
-      name: session.name ?? '',
-      exercises: sortedExercises.map((exercise): WeekPlanExercise => {
-        const reps = exercise.setTargets[0]?.targetReps;
-        return reps === undefined
-          ? { exerciseId: exercise.exerciseId, order: exercise.order, sets: exercise.setTargets.length }
-          : {
-              exerciseId: exercise.exerciseId,
-              order: exercise.order,
-              sets: exercise.setTargets.length,
-              reps,
-            };
-      }),
-    };
-  });
+  const days = sessionsWithExercises.map(({ session, exercises }): WeekPlanDay => ({
+    dayNumber: session.dayNumber,
+    name: session.name ?? '',
+    exercises: [...exercises]
+      .sort((a, b) => a.order - b.order)
+      .map(
+        (exercise): WeekPlanExercise => ({
+          exerciseId: exercise.exerciseId,
+          order: exercise.order,
+          sets: exercise.setTargets.length,
+        }),
+      ),
+  }));
 
   return { days: days.sort((a, b) => a.dayNumber - b.dayNumber) };
 }

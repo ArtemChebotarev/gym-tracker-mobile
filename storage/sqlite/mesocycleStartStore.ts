@@ -1,9 +1,11 @@
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
 
 import type { SqliteDatabase } from './db';
+import { SqliteExerciseRepository } from './exerciseRepository';
 import { SqliteMesocycleRepository } from './mesocycle';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
+import { SqliteSetLogRepository } from './setLogRepository';
 import { runInTransaction } from './transaction';
 
 function mesocycleStartRepositoriesOver(db: SqliteDatabase): MesocycleStartRepositories {
@@ -11,6 +13,8 @@ function mesocycleStartRepositoriesOver(db: SqliteDatabase): MesocycleStartRepos
     mesocycleRepo: new SqliteMesocycleRepository(db),
     sessionRepo: new SqliteSessionRepository(db),
     sessionExerciseRepo: new SqliteSessionExerciseRepository(db),
+    setLogRepo: new SqliteSetLogRepository(db),
+    exerciseRepo: new SqliteExerciseRepository(db),
   };
 }
 
