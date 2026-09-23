@@ -667,162 +667,211 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                         <View
                           style={
                             {
-                              "alignItems": "stretch",
-                              "flexDirection": "row",
+                              "width": 72,
                             }
                           }
                           testID="mesocycle-row-completed-leading"
                         >
                           <View
-                            accessibilityLabel="Copy Strength Base"
-                            accessibilityRole="button"
-                            accessibilityState={
-                              {
-                                "busy": undefined,
-                                "checked": undefined,
-                                "disabled": undefined,
-                                "expanded": undefined,
-                                "selected": undefined,
-                              }
-                            }
-                            accessibilityValue={
-                              {
-                                "max": undefined,
-                                "min": undefined,
-                                "now": undefined,
-                                "text": undefined,
-                              }
-                            }
-                            accessible={true}
                             collapsable={false}
-                            focusable={true}
-                            onBlur={[Function]}
-                            onClick={[Function]}
-                            onFocus={[Function]}
-                            onResponderGrant={[Function]}
-                            onResponderMove={[Function]}
-                            onResponderRelease={[Function]}
-                            onResponderTerminate={[Function]}
-                            onResponderTerminationRequest={[Function]}
-                            onStartShouldSetResponder={[Function]}
+                            jestAnimatedProps={
+                              {
+                                "value": {},
+                              }
+                            }
+                            jestAnimatedStyle={
+                              {
+                                "value": {
+                                  "width": 64,
+                                },
+                              }
+                            }
+                            jestInlineStyle={
+                              [
+                                {
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
+                                },
+                              ]
+                            }
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
                                 },
                                 {
-                                  "alignItems": "flex-start",
-                                  "backgroundColor": "#CDFF57",
-                                  "paddingLeft": 16,
-                                  "width": 160,
+                                  "width": 64,
                                 },
-                                false,
-                                false,
                               ]
                             }
-                            testID="mesocycle-row-completed-copy"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
+                              accessibilityLabel="Copy Strength Base"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "busy": undefined,
+                                  "checked": undefined,
+                                  "disabled": undefined,
+                                  "expanded": undefined,
+                                  "selected": undefined,
+                                }
+                              }
+                              accessibilityValue={
+                                {
+                                  "max": undefined,
+                                  "min": undefined,
+                                  "now": undefined,
+                                  "text": undefined,
+                                }
+                              }
+                              accessible={true}
+                              collapsable={false}
+                              focusable={true}
+                              onBlur={[Function]}
+                              onClick={[Function]}
+                              onFocus={[Function]}
+                              onResponderGrant={[Function]}
+                              onResponderMove={[Function]}
+                              onResponderRelease={[Function]}
+                              onResponderTerminate={[Function]}
+                              onResponderTerminationRequest={[Function]}
+                              onStartShouldSetResponder={[Function]}
                               style={
                                 [
                                   {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
+                                    "borderRadius": 999,
+                                    "flexDirection": "row",
+                                    "justifyContent": "flex-end",
+                                    "overflow": "hidden",
                                   },
                                   {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
+                                    "backgroundColor": "#CDFF57",
+                                    "flex": 1,
                                   },
+                                  false,
+                                  false,
                                 ]
                               }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
+                              testID="mesocycle-row-completed-copy"
                             >
-                              <RNSVGGroup
-                                fill={
+                              <View
+                                style={
                                   {
-                                    "payload": 4278190080,
-                                    "type": 0,
+                                    "alignItems": "center",
+                                    "gap": 2,
+                                    "justifyContent": "center",
+                                    "width": 64,
                                   }
                                 }
                               >
-                                <RNSVGGroup
-                                  fill={null}
-                                  propList={
+                                <RNSVGSvgView
+                                  align="xMidYMid"
+                                  bbHeight={20}
+                                  bbWidth={20}
+                                  focusable={false}
+                                  height={20}
+                                  meetOrSlice={0}
+                                  minX={0}
+                                  minY={0}
+                                  style={
                                     [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
+                                      {
+                                        "backgroundColor": "transparent",
+                                        "borderWidth": 0,
+                                      },
+                                      {
+                                        "flex": 0,
+                                        "height": 20,
+                                        "width": 20,
+                                      },
                                     ]
                                   }
-                                  stroke={
-                                    {
-                                      "payload": 4280494858,
-                                      "type": 0,
-                                    }
-                                  }
-                                  strokeWidth={1.8}
+                                  vbHeight={24}
+                                  vbWidth={24}
+                                  width={20}
                                 >
-                                  <RNSVGRect
+                                  <RNSVGGroup
                                     fill={
                                       {
                                         "payload": 4278190080,
                                         "type": 0,
                                       }
                                     }
-                                    height={11}
-                                    rx={2}
-                                    width={11}
-                                    x={9}
-                                    y={9}
-                                  />
-                                  <RNSVGPath
-                                    d="M5 15V6a2 2 0 0 1 2-2h8"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                  >
+                                    <RNSVGGroup
+                                      fill={null}
+                                      propList={
+                                        [
+                                          "fill",
+                                          "stroke",
+                                          "strokeWidth",
+                                        ]
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#232B0A",
-                                  },
-                                ]
-                              }
-                            >
-                              Copy
-                            </Text>
+                                      stroke={
+                                        {
+                                          "payload": 4280494858,
+                                          "type": 0,
+                                        }
+                                      }
+                                      strokeWidth={1.8}
+                                    >
+                                      <RNSVGRect
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        height={11}
+                                        rx={2}
+                                        width={11}
+                                        x={9}
+                                        y={9}
+                                      />
+                                      <RNSVGPath
+                                        d="M5 15V6a2 2 0 0 1 2-2h8"
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        propList={
+                                          [
+                                            "strokeLinecap",
+                                            "strokeLinejoin",
+                                          ]
+                                        }
+                                        strokeLinecap={1}
+                                        strokeLinejoin={1}
+                                      />
+                                    </RNSVGGroup>
+                                  </RNSVGGroup>
+                                </RNSVGSvgView>
+                                <Text
+                                  style={
+                                    [
+                                      {
+                                        "fontSize": 12,
+                                      },
+                                      {
+                                        "color": "#232B0A",
+                                      },
+                                    ]
+                                  }
+                                >
+                                  Copy
+                                </Text>
+                              </View>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -889,6 +938,8 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                             {
                               "alignItems": "stretch",
                               "flexDirection": "row",
+                              "gap": 8,
+                              "paddingLeft": 8,
                             }
                           }
                           testID="mesocycle-row-completed-actions"
@@ -928,13 +979,15 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 false,
                                 false,
@@ -942,125 +995,136 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                             }
                             testID="mesocycle-row-completed-history"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4291415506,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4291415506,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                  <RNSVGPath
-                                    d="M4.5 4.5V9H9"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                  <RNSVGPath
-                                    d="M12 8v4l3 2"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                    <RNSVGPath
+                                      d="M4.5 4.5V9H9"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                    <RNSVGPath
+                                      d="M12 8v4l3 2"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#C9CDD2",
-                                  },
-                                ]
-                              }
-                            >
-                              History
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#C9CDD2",
+                                    },
+                                  ]
+                                }
+                              >
+                                History
+                              </Text>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -1117,9 +1181,15 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                           }
                           jestInlineStyle={
                             [
-                              {
-                                "backgroundColor": "#0E0F11",
-                              },
+                              [
+                                {
+                                  "backgroundColor": "#0E0F11",
+                                  "overflow": "hidden",
+                                },
+                                false,
+                                false,
+                                false,
+                              ],
                             ]
                           }
                           style={
@@ -1134,7 +1204,11 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                               },
                               {
                                 "backgroundColor": "#0E0F11",
+                                "overflow": "hidden",
                               },
+                              false,
+                              false,
+                              false,
                             ]
                           }
                         >
@@ -1493,149 +1567,198 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                         <View
                           style={
                             {
-                              "alignItems": "stretch",
-                              "flexDirection": "row",
+                              "width": 72,
                             }
                           }
                           testID="mesocycle-row-planned-leading"
                         >
                           <View
-                            accessibilityLabel="Start Push/Pull/Legs"
-                            accessibilityRole="button"
-                            accessibilityState={
-                              {
-                                "busy": undefined,
-                                "checked": undefined,
-                                "disabled": undefined,
-                                "expanded": undefined,
-                                "selected": undefined,
-                              }
-                            }
-                            accessibilityValue={
-                              {
-                                "max": undefined,
-                                "min": undefined,
-                                "now": undefined,
-                                "text": undefined,
-                              }
-                            }
-                            accessible={true}
                             collapsable={false}
-                            focusable={true}
-                            onBlur={[Function]}
-                            onClick={[Function]}
-                            onFocus={[Function]}
-                            onResponderGrant={[Function]}
-                            onResponderMove={[Function]}
-                            onResponderRelease={[Function]}
-                            onResponderTerminate={[Function]}
-                            onResponderTerminationRequest={[Function]}
-                            onStartShouldSetResponder={[Function]}
+                            jestAnimatedProps={
+                              {
+                                "value": {},
+                              }
+                            }
+                            jestAnimatedStyle={
+                              {
+                                "value": {
+                                  "width": 64,
+                                },
+                              }
+                            }
+                            jestInlineStyle={
+                              [
+                                {
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
+                                },
+                              ]
+                            }
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
                                 },
                                 {
-                                  "alignItems": "flex-start",
-                                  "backgroundColor": "#CDFF57",
-                                  "paddingLeft": 16,
-                                  "width": 160,
+                                  "width": 64,
                                 },
-                                false,
-                                false,
                               ]
                             }
-                            testID="mesocycle-row-planned-start"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
+                              accessibilityLabel="Start Push/Pull/Legs"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "busy": undefined,
+                                  "checked": undefined,
+                                  "disabled": undefined,
+                                  "expanded": undefined,
+                                  "selected": undefined,
+                                }
+                              }
+                              accessibilityValue={
+                                {
+                                  "max": undefined,
+                                  "min": undefined,
+                                  "now": undefined,
+                                  "text": undefined,
+                                }
+                              }
+                              accessible={true}
+                              collapsable={false}
+                              focusable={true}
+                              onBlur={[Function]}
+                              onClick={[Function]}
+                              onFocus={[Function]}
+                              onResponderGrant={[Function]}
+                              onResponderMove={[Function]}
+                              onResponderRelease={[Function]}
+                              onResponderTerminate={[Function]}
+                              onResponderTerminationRequest={[Function]}
+                              onStartShouldSetResponder={[Function]}
                               style={
                                 [
                                   {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
+                                    "borderRadius": 999,
+                                    "flexDirection": "row",
+                                    "justifyContent": "flex-end",
+                                    "overflow": "hidden",
                                   },
                                   {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
+                                    "backgroundColor": "#CDFF57",
+                                    "flex": 1,
                                   },
+                                  false,
+                                  false,
                                 ]
                               }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
+                              testID="mesocycle-row-planned-start"
                             >
-                              <RNSVGGroup
-                                fill={
+                              <View
+                                style={
                                   {
-                                    "payload": 4278190080,
-                                    "type": 0,
+                                    "alignItems": "center",
+                                    "gap": 2,
+                                    "justifyContent": "center",
+                                    "width": 64,
                                   }
                                 }
                               >
-                                <RNSVGGroup
-                                  fill={null}
-                                  propList={
+                                <RNSVGSvgView
+                                  align="xMidYMid"
+                                  bbHeight={20}
+                                  bbWidth={20}
+                                  focusable={false}
+                                  height={20}
+                                  meetOrSlice={0}
+                                  minX={0}
+                                  minY={0}
+                                  style={
                                     [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
+                                      {
+                                        "backgroundColor": "transparent",
+                                        "borderWidth": 0,
+                                      },
+                                      {
+                                        "flex": 0,
+                                        "height": 20,
+                                        "width": 20,
+                                      },
                                     ]
                                   }
-                                  stroke={
-                                    {
-                                      "payload": 4280494858,
-                                      "type": 0,
-                                    }
-                                  }
-                                  strokeWidth={1.8}
+                                  vbHeight={24}
+                                  vbWidth={24}
+                                  width={20}
                                 >
-                                  <RNSVGPath
-                                    d="M8 5l11 7-11 7z"
+                                  <RNSVGGroup
                                     fill={
                                       {
                                         "payload": 4278190080,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#232B0A",
-                                  },
-                                ]
-                              }
-                            >
-                              Start
-                            </Text>
+                                  >
+                                    <RNSVGGroup
+                                      fill={null}
+                                      propList={
+                                        [
+                                          "fill",
+                                          "stroke",
+                                          "strokeWidth",
+                                        ]
+                                      }
+                                      stroke={
+                                        {
+                                          "payload": 4280494858,
+                                          "type": 0,
+                                        }
+                                      }
+                                      strokeWidth={1.8}
+                                    >
+                                      <RNSVGPath
+                                        d="M8 5l11 7-11 7z"
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        propList={
+                                          [
+                                            "strokeLinecap",
+                                            "strokeLinejoin",
+                                          ]
+                                        }
+                                        strokeLinecap={1}
+                                        strokeLinejoin={1}
+                                      />
+                                    </RNSVGGroup>
+                                  </RNSVGGroup>
+                                </RNSVGSvgView>
+                                <Text
+                                  style={
+                                    [
+                                      {
+                                        "fontSize": 12,
+                                      },
+                                      {
+                                        "color": "#232B0A",
+                                      },
+                                    ]
+                                  }
+                                >
+                                  Start
+                                </Text>
+                              </View>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -1702,6 +1825,8 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                             {
                               "alignItems": "stretch",
                               "flexDirection": "row",
+                              "gap": 8,
+                              "paddingLeft": 8,
                             }
                           }
                           testID="mesocycle-row-planned-actions"
@@ -1741,13 +1866,15 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 false,
                                 false,
@@ -1755,91 +1882,102 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                             }
                             testID="mesocycle-row-planned-edit"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4291415506,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4291415506,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#C9CDD2",
-                                  },
-                                ]
-                              }
-                            >
-                              Edit
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#C9CDD2",
+                                    },
+                                  ]
+                                }
+                              >
+                                Edit
+                              </Text>
+                            </View>
                           </View>
                           <View
                             accessibilityLabel="Delete Push/Pull/Legs"
@@ -1876,13 +2014,15 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 {
                                   "backgroundColor": "#C43C31",
@@ -1892,91 +2032,102 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                             }
                             testID="mesocycle-row-planned-delete"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4294309364,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4294309364,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#F5F5F4",
-                                  },
-                                ]
-                              }
-                            >
-                              Delete
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#F5F5F4",
+                                    },
+                                  ]
+                                }
+                              >
+                                Delete
+                              </Text>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -2033,9 +2184,15 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                           }
                           jestInlineStyle={
                             [
-                              {
-                                "backgroundColor": "#0E0F11",
-                              },
+                              [
+                                {
+                                  "backgroundColor": "#0E0F11",
+                                  "overflow": "hidden",
+                                },
+                                false,
+                                false,
+                                false,
+                              ],
                             ]
                           }
                           style={
@@ -2050,7 +2207,11 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                               },
                               {
                                 "backgroundColor": "#0E0F11",
+                                "overflow": "hidden",
                               },
+                              false,
+                              false,
+                              false,
                             ]
                           }
                         >
@@ -2632,149 +2793,198 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         <View
                           style={
                             {
-                              "alignItems": "stretch",
-                              "flexDirection": "row",
+                              "width": 72,
                             }
                           }
                           testID="mesocycle-row-planned-leading"
                         >
                           <View
-                            accessibilityLabel="Start Push/Pull/Legs"
-                            accessibilityRole="button"
-                            accessibilityState={
-                              {
-                                "busy": undefined,
-                                "checked": undefined,
-                                "disabled": undefined,
-                                "expanded": undefined,
-                                "selected": undefined,
-                              }
-                            }
-                            accessibilityValue={
-                              {
-                                "max": undefined,
-                                "min": undefined,
-                                "now": undefined,
-                                "text": undefined,
-                              }
-                            }
-                            accessible={true}
                             collapsable={false}
-                            focusable={true}
-                            onBlur={[Function]}
-                            onClick={[Function]}
-                            onFocus={[Function]}
-                            onResponderGrant={[Function]}
-                            onResponderMove={[Function]}
-                            onResponderRelease={[Function]}
-                            onResponderTerminate={[Function]}
-                            onResponderTerminationRequest={[Function]}
-                            onStartShouldSetResponder={[Function]}
+                            jestAnimatedProps={
+                              {
+                                "value": {},
+                              }
+                            }
+                            jestAnimatedStyle={
+                              {
+                                "value": {
+                                  "width": 64,
+                                },
+                              }
+                            }
+                            jestInlineStyle={
+                              [
+                                {
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
+                                },
+                              ]
+                            }
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
                                 },
                                 {
-                                  "alignItems": "flex-start",
-                                  "backgroundColor": "#CDFF57",
-                                  "paddingLeft": 16,
-                                  "width": 160,
+                                  "width": 64,
                                 },
-                                false,
-                                false,
                               ]
                             }
-                            testID="mesocycle-row-planned-start"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
+                              accessibilityLabel="Start Push/Pull/Legs"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "busy": undefined,
+                                  "checked": undefined,
+                                  "disabled": undefined,
+                                  "expanded": undefined,
+                                  "selected": undefined,
+                                }
+                              }
+                              accessibilityValue={
+                                {
+                                  "max": undefined,
+                                  "min": undefined,
+                                  "now": undefined,
+                                  "text": undefined,
+                                }
+                              }
+                              accessible={true}
+                              collapsable={false}
+                              focusable={true}
+                              onBlur={[Function]}
+                              onClick={[Function]}
+                              onFocus={[Function]}
+                              onResponderGrant={[Function]}
+                              onResponderMove={[Function]}
+                              onResponderRelease={[Function]}
+                              onResponderTerminate={[Function]}
+                              onResponderTerminationRequest={[Function]}
+                              onStartShouldSetResponder={[Function]}
                               style={
                                 [
                                   {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
+                                    "borderRadius": 999,
+                                    "flexDirection": "row",
+                                    "justifyContent": "flex-end",
+                                    "overflow": "hidden",
                                   },
                                   {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
+                                    "backgroundColor": "#CDFF57",
+                                    "flex": 1,
                                   },
+                                  false,
+                                  false,
                                 ]
                               }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
+                              testID="mesocycle-row-planned-start"
                             >
-                              <RNSVGGroup
-                                fill={
+                              <View
+                                style={
                                   {
-                                    "payload": 4278190080,
-                                    "type": 0,
+                                    "alignItems": "center",
+                                    "gap": 2,
+                                    "justifyContent": "center",
+                                    "width": 64,
                                   }
                                 }
                               >
-                                <RNSVGGroup
-                                  fill={null}
-                                  propList={
+                                <RNSVGSvgView
+                                  align="xMidYMid"
+                                  bbHeight={20}
+                                  bbWidth={20}
+                                  focusable={false}
+                                  height={20}
+                                  meetOrSlice={0}
+                                  minX={0}
+                                  minY={0}
+                                  style={
                                     [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
+                                      {
+                                        "backgroundColor": "transparent",
+                                        "borderWidth": 0,
+                                      },
+                                      {
+                                        "flex": 0,
+                                        "height": 20,
+                                        "width": 20,
+                                      },
                                     ]
                                   }
-                                  stroke={
-                                    {
-                                      "payload": 4280494858,
-                                      "type": 0,
-                                    }
-                                  }
-                                  strokeWidth={1.8}
+                                  vbHeight={24}
+                                  vbWidth={24}
+                                  width={20}
                                 >
-                                  <RNSVGPath
-                                    d="M8 5l11 7-11 7z"
+                                  <RNSVGGroup
                                     fill={
                                       {
                                         "payload": 4278190080,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#232B0A",
-                                  },
-                                ]
-                              }
-                            >
-                              Start
-                            </Text>
+                                  >
+                                    <RNSVGGroup
+                                      fill={null}
+                                      propList={
+                                        [
+                                          "fill",
+                                          "stroke",
+                                          "strokeWidth",
+                                        ]
+                                      }
+                                      stroke={
+                                        {
+                                          "payload": 4280494858,
+                                          "type": 0,
+                                        }
+                                      }
+                                      strokeWidth={1.8}
+                                    >
+                                      <RNSVGPath
+                                        d="M8 5l11 7-11 7z"
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        propList={
+                                          [
+                                            "strokeLinecap",
+                                            "strokeLinejoin",
+                                          ]
+                                        }
+                                        strokeLinecap={1}
+                                        strokeLinejoin={1}
+                                      />
+                                    </RNSVGGroup>
+                                  </RNSVGGroup>
+                                </RNSVGSvgView>
+                                <Text
+                                  style={
+                                    [
+                                      {
+                                        "fontSize": 12,
+                                      },
+                                      {
+                                        "color": "#232B0A",
+                                      },
+                                    ]
+                                  }
+                                >
+                                  Start
+                                </Text>
+                              </View>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -2841,6 +3051,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             {
                               "alignItems": "stretch",
                               "flexDirection": "row",
+                              "gap": 8,
+                              "paddingLeft": 8,
                             }
                           }
                           testID="mesocycle-row-planned-actions"
@@ -2880,13 +3092,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 false,
                                 false,
@@ -2894,91 +3108,102 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             }
                             testID="mesocycle-row-planned-edit"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4291415506,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4291415506,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M15 5l4 4L9 19H5v-4zM13 7l4 4"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#C9CDD2",
-                                  },
-                                ]
-                              }
-                            >
-                              Edit
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#C9CDD2",
+                                    },
+                                  ]
+                                }
+                              >
+                                Edit
+                              </Text>
+                            </View>
                           </View>
                           <View
                             accessibilityLabel="Delete Push/Pull/Legs"
@@ -3015,13 +3240,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 {
                                   "backgroundColor": "#C43C31",
@@ -3031,91 +3258,102 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             }
                             testID="mesocycle-row-planned-delete"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4294309364,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4294309364,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#F5F5F4",
-                                  },
-                                ]
-                              }
-                            >
-                              Delete
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#F5F5F4",
+                                    },
+                                  ]
+                                }
+                              >
+                                Delete
+                              </Text>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -3172,9 +3410,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           }
                           jestInlineStyle={
                             [
-                              {
-                                "backgroundColor": "#0E0F11",
-                              },
+                              [
+                                {
+                                  "backgroundColor": "#0E0F11",
+                                  "overflow": "hidden",
+                                },
+                                false,
+                                false,
+                                false,
+                              ],
                             ]
                           }
                           style={
@@ -3189,7 +3433,11 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                               },
                               {
                                 "backgroundColor": "#0E0F11",
+                                "overflow": "hidden",
                               },
+                              false,
+                              false,
+                              false,
                             ]
                           }
                         >
@@ -3382,162 +3630,211 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                         <View
                           style={
                             {
-                              "alignItems": "stretch",
-                              "flexDirection": "row",
+                              "width": 72,
                             }
                           }
                           testID="mesocycle-row-completed-leading"
                         >
                           <View
-                            accessibilityLabel="Copy Strength Base"
-                            accessibilityRole="button"
-                            accessibilityState={
-                              {
-                                "busy": undefined,
-                                "checked": undefined,
-                                "disabled": undefined,
-                                "expanded": undefined,
-                                "selected": undefined,
-                              }
-                            }
-                            accessibilityValue={
-                              {
-                                "max": undefined,
-                                "min": undefined,
-                                "now": undefined,
-                                "text": undefined,
-                              }
-                            }
-                            accessible={true}
                             collapsable={false}
-                            focusable={true}
-                            onBlur={[Function]}
-                            onClick={[Function]}
-                            onFocus={[Function]}
-                            onResponderGrant={[Function]}
-                            onResponderMove={[Function]}
-                            onResponderRelease={[Function]}
-                            onResponderTerminate={[Function]}
-                            onResponderTerminationRequest={[Function]}
-                            onStartShouldSetResponder={[Function]}
+                            jestAnimatedProps={
+                              {
+                                "value": {},
+                              }
+                            }
+                            jestAnimatedStyle={
+                              {
+                                "value": {
+                                  "width": 64,
+                                },
+                              }
+                            }
+                            jestInlineStyle={
+                              [
+                                {
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
+                                },
+                              ]
+                            }
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "bottom": 8,
+                                  "flexDirection": "row",
+                                  "left": 0,
+                                  "position": "absolute",
+                                  "top": 8,
                                 },
                                 {
-                                  "alignItems": "flex-start",
-                                  "backgroundColor": "#CDFF57",
-                                  "paddingLeft": 16,
-                                  "width": 160,
+                                  "width": 64,
                                 },
-                                false,
-                                false,
                               ]
                             }
-                            testID="mesocycle-row-completed-copy"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
+                              accessibilityLabel="Copy Strength Base"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "busy": undefined,
+                                  "checked": undefined,
+                                  "disabled": undefined,
+                                  "expanded": undefined,
+                                  "selected": undefined,
+                                }
+                              }
+                              accessibilityValue={
+                                {
+                                  "max": undefined,
+                                  "min": undefined,
+                                  "now": undefined,
+                                  "text": undefined,
+                                }
+                              }
+                              accessible={true}
+                              collapsable={false}
+                              focusable={true}
+                              onBlur={[Function]}
+                              onClick={[Function]}
+                              onFocus={[Function]}
+                              onResponderGrant={[Function]}
+                              onResponderMove={[Function]}
+                              onResponderRelease={[Function]}
+                              onResponderTerminate={[Function]}
+                              onResponderTerminationRequest={[Function]}
+                              onStartShouldSetResponder={[Function]}
                               style={
                                 [
                                   {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
+                                    "borderRadius": 999,
+                                    "flexDirection": "row",
+                                    "justifyContent": "flex-end",
+                                    "overflow": "hidden",
                                   },
                                   {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
+                                    "backgroundColor": "#CDFF57",
+                                    "flex": 1,
                                   },
+                                  false,
+                                  false,
                                 ]
                               }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
+                              testID="mesocycle-row-completed-copy"
                             >
-                              <RNSVGGroup
-                                fill={
+                              <View
+                                style={
                                   {
-                                    "payload": 4278190080,
-                                    "type": 0,
+                                    "alignItems": "center",
+                                    "gap": 2,
+                                    "justifyContent": "center",
+                                    "width": 64,
                                   }
                                 }
                               >
-                                <RNSVGGroup
-                                  fill={null}
-                                  propList={
+                                <RNSVGSvgView
+                                  align="xMidYMid"
+                                  bbHeight={20}
+                                  bbWidth={20}
+                                  focusable={false}
+                                  height={20}
+                                  meetOrSlice={0}
+                                  minX={0}
+                                  minY={0}
+                                  style={
                                     [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
+                                      {
+                                        "backgroundColor": "transparent",
+                                        "borderWidth": 0,
+                                      },
+                                      {
+                                        "flex": 0,
+                                        "height": 20,
+                                        "width": 20,
+                                      },
                                     ]
                                   }
-                                  stroke={
-                                    {
-                                      "payload": 4280494858,
-                                      "type": 0,
-                                    }
-                                  }
-                                  strokeWidth={1.8}
+                                  vbHeight={24}
+                                  vbWidth={24}
+                                  width={20}
                                 >
-                                  <RNSVGRect
+                                  <RNSVGGroup
                                     fill={
                                       {
                                         "payload": 4278190080,
                                         "type": 0,
                                       }
                                     }
-                                    height={11}
-                                    rx={2}
-                                    width={11}
-                                    x={9}
-                                    y={9}
-                                  />
-                                  <RNSVGPath
-                                    d="M5 15V6a2 2 0 0 1 2-2h8"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                  >
+                                    <RNSVGGroup
+                                      fill={null}
+                                      propList={
+                                        [
+                                          "fill",
+                                          "stroke",
+                                          "strokeWidth",
+                                        ]
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#232B0A",
-                                  },
-                                ]
-                              }
-                            >
-                              Copy
-                            </Text>
+                                      stroke={
+                                        {
+                                          "payload": 4280494858,
+                                          "type": 0,
+                                        }
+                                      }
+                                      strokeWidth={1.8}
+                                    >
+                                      <RNSVGRect
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        height={11}
+                                        rx={2}
+                                        width={11}
+                                        x={9}
+                                        y={9}
+                                      />
+                                      <RNSVGPath
+                                        d="M5 15V6a2 2 0 0 1 2-2h8"
+                                        fill={
+                                          {
+                                            "payload": 4278190080,
+                                            "type": 0,
+                                          }
+                                        }
+                                        propList={
+                                          [
+                                            "strokeLinecap",
+                                            "strokeLinejoin",
+                                          ]
+                                        }
+                                        strokeLinecap={1}
+                                        strokeLinejoin={1}
+                                      />
+                                    </RNSVGGroup>
+                                  </RNSVGGroup>
+                                </RNSVGSvgView>
+                                <Text
+                                  style={
+                                    [
+                                      {
+                                        "fontSize": 12,
+                                      },
+                                      {
+                                        "color": "#232B0A",
+                                      },
+                                    ]
+                                  }
+                                >
+                                  Copy
+                                </Text>
+                              </View>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -3604,6 +3901,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             {
                               "alignItems": "stretch",
                               "flexDirection": "row",
+                              "gap": 8,
+                              "paddingLeft": 8,
                             }
                           }
                           testID="mesocycle-row-completed-actions"
@@ -3643,13 +3942,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             style={
                               [
                                 {
-                                  "alignItems": "center",
-                                  "gap": 2,
-                                  "justifyContent": "center",
-                                  "width": 76,
+                                  "borderRadius": 999,
+                                  "flexDirection": "row",
+                                  "justifyContent": "flex-end",
+                                  "overflow": "hidden",
                                 },
                                 {
-                                  "backgroundColor": "#1A1C1F",
+                                  "backgroundColor": "#2C3036",
+                                  "marginVertical": 8,
+                                  "width": 64,
                                 },
                                 false,
                                 false,
@@ -3657,125 +3958,136 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             }
                             testID="mesocycle-row-completed-history"
                           >
-                            <RNSVGSvgView
-                              align="xMidYMid"
-                              bbHeight={20}
-                              bbWidth={20}
-                              focusable={false}
-                              height={20}
-                              meetOrSlice={0}
-                              minX={0}
-                              minY={0}
+                            <View
                               style={
-                                [
-                                  {
-                                    "backgroundColor": "transparent",
-                                    "borderWidth": 0,
-                                  },
-                                  {
-                                    "flex": 0,
-                                    "height": 20,
-                                    "width": 20,
-                                  },
-                                ]
-                              }
-                              vbHeight={24}
-                              vbWidth={24}
-                              width={20}
-                            >
-                              <RNSVGGroup
-                                fill={
-                                  {
-                                    "payload": 4278190080,
-                                    "type": 0,
-                                  }
+                                {
+                                  "alignItems": "center",
+                                  "gap": 2,
+                                  "justifyContent": "center",
+                                  "width": 64,
                                 }
+                              }
+                            >
+                              <RNSVGSvgView
+                                align="xMidYMid"
+                                bbHeight={20}
+                                bbWidth={20}
+                                focusable={false}
+                                height={20}
+                                meetOrSlice={0}
+                                minX={0}
+                                minY={0}
+                                style={
+                                  [
+                                    {
+                                      "backgroundColor": "transparent",
+                                      "borderWidth": 0,
+                                    },
+                                    {
+                                      "flex": 0,
+                                      "height": 20,
+                                      "width": 20,
+                                    },
+                                  ]
+                                }
+                                vbHeight={24}
+                                vbWidth={24}
+                                width={20}
                               >
                                 <RNSVGGroup
-                                  fill={null}
-                                  propList={
-                                    [
-                                      "fill",
-                                      "stroke",
-                                      "strokeWidth",
-                                    ]
-                                  }
-                                  stroke={
+                                  fill={
                                     {
-                                      "payload": 4291415506,
+                                      "payload": 4278190080,
                                       "type": 0,
                                     }
                                   }
-                                  strokeWidth={1.8}
                                 >
-                                  <RNSVGPath
-                                    d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"
-                                    fill={
+                                  <RNSVGGroup
+                                    fill={null}
+                                    propList={
+                                      [
+                                        "fill",
+                                        "stroke",
+                                        "strokeWidth",
+                                      ]
+                                    }
+                                    stroke={
                                       {
-                                        "payload": 4278190080,
+                                        "payload": 4291415506,
                                         "type": 0,
                                       }
                                     }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                  <RNSVGPath
-                                    d="M4.5 4.5V9H9"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                    strokeWidth={1.8}
+                                  >
+                                    <RNSVGPath
+                                      d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
-                                  <RNSVGPath
-                                    d="M12 8v4l3 2"
-                                    fill={
-                                      {
-                                        "payload": 4278190080,
-                                        "type": 0,
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
                                       }
-                                    }
-                                    propList={
-                                      [
-                                        "strokeLinecap",
-                                        "strokeLinejoin",
-                                      ]
-                                    }
-                                    strokeLinecap={1}
-                                    strokeLinejoin={1}
-                                  />
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                    <RNSVGPath
+                                      d="M4.5 4.5V9H9"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                    <RNSVGPath
+                                      d="M12 8v4l3 2"
+                                      fill={
+                                        {
+                                          "payload": 4278190080,
+                                          "type": 0,
+                                        }
+                                      }
+                                      propList={
+                                        [
+                                          "strokeLinecap",
+                                          "strokeLinejoin",
+                                        ]
+                                      }
+                                      strokeLinecap={1}
+                                      strokeLinejoin={1}
+                                    />
+                                  </RNSVGGroup>
                                 </RNSVGGroup>
-                              </RNSVGGroup>
-                            </RNSVGSvgView>
-                            <Text
-                              style={
-                                [
-                                  {
-                                    "fontSize": 12,
-                                  },
-                                  {
-                                    "color": "#C9CDD2",
-                                  },
-                                ]
-                              }
-                            >
-                              History
-                            </Text>
+                              </RNSVGSvgView>
+                              <Text
+                                style={
+                                  [
+                                    {
+                                      "fontSize": 12,
+                                    },
+                                    {
+                                      "color": "#C9CDD2",
+                                    },
+                                  ]
+                                }
+                              >
+                                History
+                              </Text>
+                            </View>
                           </View>
                         </View>
                         <View
@@ -3832,9 +4144,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           }
                           jestInlineStyle={
                             [
-                              {
-                                "backgroundColor": "#0E0F11",
-                              },
+                              [
+                                {
+                                  "backgroundColor": "#0E0F11",
+                                  "overflow": "hidden",
+                                },
+                                false,
+                                false,
+                                false,
+                              ],
                             ]
                           }
                           style={
@@ -3849,7 +4167,11 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                               },
                               {
                                 "backgroundColor": "#0E0F11",
+                                "overflow": "hidden",
                               },
+                              false,
+                              false,
+                              false,
                             ]
                           }
                         >
