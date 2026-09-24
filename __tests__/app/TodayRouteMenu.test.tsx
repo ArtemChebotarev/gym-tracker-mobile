@@ -16,6 +16,8 @@ import {
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
+import { tabNavigation as mockTabNavigation } from '../fixtures/tabNavigation';
 
 // The header menu (096) on the Today tab, over the fixture sessions. Its own file, apart from
 // TodayRoute.test.tsx: skipping and adding change the shared fixture sessions for good, and a
@@ -37,6 +39,9 @@ jest.mock('expo-router', () => ({
     },
   }),
   useLocalSearchParams: () => mockParams,
+  // Called rather than passed: the factory runs while this file's imports are still being
+  // evaluated, so the fixture has to be dereferenced at render time, not now.
+  useNavigation: () => mockTabNavigation(),
 }));
 
 // expo-crypto's native module isn't available under Jest; added exercises and generated sessions
@@ -279,5 +284,51 @@ describe('Today tab — header menu', () => {
 
     expect(menuItem('skipWorkout')).toBeNull();
     expect(menuItem('addExercise')).toBeTruthy();
+  });
+});
+
+// Finishing a block leaves the screen on the workout it was on, and `Plan next mesocycle` takes
+// `Finish mesocycle`'s place there (Artem, 24.09.2026). The screen used to be sent away to an
+// empty state, which is a poor place to decide what comes next from — and no place at all for the
+// block-level actions meant to join that button.
+describe('Today tab — Finish mesocycle, then plan the next one', () => {
+  /** Every session of the fixture block final, so the shown one offers to close the block. */
+  async function finishEveryWorkout() {
+    const { repos } = repositories().workoutStore;
+    for (const id of [WORKOUT_FIXTURE_IDS.completed, WORKOUT_FIXTURE_IDS.live]) {
+      const session = await repos.sessionRepo.getById(id);
+      await repos.sessionRepo.update({ ...session!, status: 'completed' });
+    }
+  }
+
+  test('the screen stays on the workout, and the button becomes Plan next mesocycle', async () => {
+    await finishEveryWorkout();
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
+    pressAlertButton('Finish');
+
+    expect(await screen.findByRole('button', { name: 'Plan next mesocycle' })).toBeTruthy();
+    // Still the same workout — nothing navigated, and the pin was not released.
+    expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
+    expect(mockParams.sessionId).toBe(WORKOUT_FIXTURE_IDS.live);
+  });
+
+  test('Plan next mesocycle opens Flow C on the block that just ended', async () => {
+    await finishEveryWorkout();
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
+    pressAlertButton('Finish');
+
+    fireEvent.press(await screen.findByRole('button', { name: 'Plan next mesocycle' }));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/meso-editor/copy',
+      params: { sourceMesoId: WORKOUT_FIXTURE_IDS.mesocycle },
+    });
   });
 });

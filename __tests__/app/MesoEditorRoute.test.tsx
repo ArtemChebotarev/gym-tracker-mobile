@@ -13,8 +13,11 @@ import {
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ back: mockBack }) }));
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ back: mockBack, dismissTo: mockDismissTo }),
+}));
 
 jest.mock('expo-crypto', () => {
   let counter = 0;
@@ -46,6 +49,7 @@ beforeEach(async () => {
   await seedExerciseCatalog(repositories());
   useDraftStore.setState({ mesoBuilder: FILLED_DRAFT });
   mockBack.mockClear();
+  mockDismissTo.mockClear();
 });
 
 afterEach(() => {
@@ -81,7 +85,9 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
 
-    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    // The saved block ends on the Mesocycles tab, where it now sits, rather than back on
+    // whatever opened the editor (Artem, 24.09.2026).
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/mesocycles'));
     await flushQueryNotifications();
 
     const saved = (await repositories().mesocycleRepo.getAll()).find(

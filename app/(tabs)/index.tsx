@@ -3,7 +3,12 @@
 // preview ones included, opens here with the tab bar rather than as a separate page. The current
 // session (099, `useTodayWorkout`) is the one in progress, else the next day of the active
 // mesocycle — a preview if that day isn't programmed yet. With no active mesocycle the tab invites
-// creating one (08, "Сегодня"); once the active one has nothing left, it offers to finish it (052).
+// planning one (08, "Сегодня") through the same creation-method sheet the `+` on 08.3 raises (123);
+// once the active one has nothing left, it offers to finish it (052).
+//
+// A picked day is held in the tab's params and dropped by `unpinDay` when the Today tab is pressed
+// again. Without that the params outlived everything that gave them meaning and the tab stuck on
+// one workout until the app was restarted; see `unpinDay`.
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
@@ -34,22 +39,27 @@
 // typed into it (`useStopMesocycle`); the tab then re-reads and, with no active mesocycle left,
 // invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
 // action of the `Block complete` EmptyState, so leaving that screen isn't a dead end — closes the
-// block through `useFinishMesocycle` after a plain confirmation: it throws nothing away.
+// block through `useFinishMesocycle` after a plain confirmation: it throws nothing away. The screen
+// does not move afterwards — `Finish mesocycle` is replaced in place by `Plan next mesocycle`
+// (04, "Завершение мезоцикла"), which opens Flow C on the block that just ended. Stopping gets no
+// such button: a block called off is a poor thing to build the next one from.
 //
 // Rename mesocycle (087) isn't built yet, so until then it explains that it's not available yet
 // rather than doing nothing.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 
 import { BodyWeightSheet } from '@components/BodyWeightSheet';
+import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
+import { useMesoCreationMethodSheet } from '@components/useMesoCreationMethodSheet';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
@@ -70,6 +80,7 @@ import {
   workoutPickFromParams,
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
+import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
 import { useAddExercises } from '@state/useAddExercises';
 import {
   useExerciseCommand,
@@ -79,11 +90,22 @@ import {
 import { useFinishSession } from '@state/useFinishSession';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useMesoGrid } from '@state/useMesoGrid';
+import { useMesocycles } from '@state/useMesocycles';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import type { WorkoutExercise } from '@usecases/workoutSession';
+
+/**
+ * The one method of the tab's navigation object this screen uses. React Navigation's own
+ * `BottomTabNavigationProp` isn't importable here — expo-router vendors the navigators instead of
+ * depending on `@react-navigation/bottom-tabs`, so there is no package to take the type from, and
+ * reaching into `expo-router/build` for it would tie this screen to that build layout.
+ */
+type TabPressNavigation = {
+  addListener: (event: 'tabPress', listener: () => void) => () => void;
+};
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -100,6 +122,9 @@ export default function TodayScreen() {
   const setBodyWeight = useSetBodyWeight();
   const finishMesocycle = useFinishMesocycle();
   const stopMesocycle = useStopMesocycle();
+  // Only for the creation-method sheet's second row: whether there is anything to copy at all.
+  const mesocycles = useMesocycles();
+  const methodSheet = useMesoCreationMethodSheet();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   // The block the `Block complete` EmptyState would finish — there's no session model to read it
   // from, since the tab has no session left to show.
@@ -122,6 +147,44 @@ export default function TodayScreen() {
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
+  const navigation = useNavigation<TabPressNavigation>();
+
+  /**
+   * Drops the picked day, so the tab means "the current session" again.
+   *
+   * The pin is what made Today stick: `Finish workout` writes the finished session's id into the
+   * tab's params on purpose, and nothing used to take it out again. `workoutPickFromParams` gives
+   * that id priority over everything, so after the last workout of a block the tab went on showing
+   * it — through tab switches, and past the moment the block itself was finished — until the app
+   * was restarted and the route params went with it (Artem, 24.09.2026).
+   *
+   * Leaving and coming back is the whole rule. Finishing or stopping the block deliberately does
+   * *not* release it: standing on the workout you just finished is the point, and that is where
+   * `Plan next mesocycle` — and, later, the block's history — is offered from.
+   *
+   * `setParams` merges, so an explicit `undefined` is what removes a key rather than leaving the
+   * old value in place.
+   */
+  function unpinDay() {
+    router.setParams({
+      sessionId: undefined,
+      mesoId: undefined,
+      week: undefined,
+      day: undefined,
+    });
+  }
+
+  // Coming back to Today through the tab bar means today, not the day that was open when the tab
+  // was last left. `tabPress` rather than losing focus: focus is also lost by pushing a screen
+  // from inside the tab — an exercise's history, opened from a workout — and clearing the pick
+  // there would drop the user off the workout they were reading on the way back.
+  useEffect(
+    () => navigation.addListener('tabPress', unpinDay),
+    // `unpinDay` only ever calls `router.setParams` with the same constant, so re-subscribing as
+    // it is re-created each render would churn listeners for no reason.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [navigation],
+  );
 
   function showNotAvailable(feature: string) {
     Alert.alert('Not available yet', `${feature} is coming in a later update.`);
@@ -136,6 +199,7 @@ export default function TodayScreen() {
       router.setParams({ sessionId: currentSessionId });
     }
   }
+
 
   /**
    * Skip workout (049), from the header menu. It can't be undone and skips every unfinished
@@ -169,6 +233,10 @@ export default function TodayScreen() {
         text: 'Finish',
         onPress: () =>
           finishMesocycle.mutate(mesoId, {
+            // Nothing navigates: the screen stays on the workout it was on, and `Finish mesocycle`
+            // is replaced in place by `Plan next mesocycle` once the re-read model comes back
+            // (Artem, 24.09.2026 — a finished block is still worth standing on, and block-level
+            // actions like its history will land beside that button).
             onError: () => Alert.alert("Couldn't finish the mesocycle", 'Please try again.'),
           }),
       },
@@ -359,12 +427,23 @@ export default function TodayScreen() {
             confirmFinishMesocycle(model.mesoId);
           }
         }}
+        onPlanNextMesocycle={() => {
+          if (model !== undefined) {
+            router.push({
+              pathname: '/meso-editor/copy',
+              params: { sourceMesoId: model.mesoId },
+            });
+          }
+        }}
         isFinishingMesocycle={finishMesocycle.isPending}
         fallback={{
           ...todayEmptyCopy(emptyReason),
           onAction: () => {
             if (emptyReason === 'noActiveMesocycle') {
-              router.push('/meso-editor/new');
+              // The same sheet the `+` on 08.3 raises, not Flow A directly: no block is *running*
+              // here, but finished ones may well exist to copy — which is the most common way the
+              // next block starts (04, Flow C).
+              methodSheet.open();
             } else if (allDoneMesoId !== undefined) {
               confirmFinishMesocycle(allDoneMesoId);
             } else {
@@ -372,6 +451,14 @@ export default function TodayScreen() {
             }
           },
         }}
+      />
+      <MesoCreationMethodSheet
+        visible={methodSheet.visible}
+        animated={methodSheet.animated}
+        onClose={methodSheet.close}
+        canCopy={finishedMesocyclesNewestFirst(mesocycles.data ?? []).length > 0}
+        onCreateFromScratch={methodSheet.choose(() => router.push('/meso-editor/new'))}
+        onCopyMesocycle={methodSheet.choose(() => router.push('/meso-editor/copy'))}
       />
       <MesoOverviewSheet
         visible={isGridOpen}
@@ -397,6 +484,9 @@ export default function TodayScreen() {
           }
           setIsStopOpen(false);
           stopMesocycle.mutate(model.mesoId, {
+            // Like Finish, this doesn't navigate. Releasing the picked day is the tab bar's job
+            // and only the tab bar's, so there is one rule for it rather than a list of actions
+            // that each remember to do it.
             onError: () => Alert.alert("Couldn't stop the mesocycle", 'Please try again.'),
           });
         }}

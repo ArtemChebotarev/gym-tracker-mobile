@@ -8,6 +8,7 @@ import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/MesocyclesScreen';
 import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
+import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 import { pressSwipeAction } from '../fixtures/swipeActions';
 
@@ -179,17 +180,29 @@ describe('MesocyclesScreen', () => {
     expect(screen.queryByText('Plan your first mesocycle')).toBeNull();
   });
 
-  // With no mesocycle at all there is provably nothing to copy, so the empty state skips the
-  // choice and goes straight to Flow A.
-  test('an entirely empty list shows the EmptyState, whose action goes straight to Flow A', () => {
+  // The empty state raises the same sheet as `+` (Artem's call): the gesture that starts a block
+  // is the same one everywhere, even here, where `Copy a mesocycle` is provably off.
+  test('an entirely empty list shows the EmptyState, whose action opens the creation-method sheet', () => {
     const onCreateFromScratch = jest.fn();
     renderWithSafeArea(
       <MesocyclesScreen {...makeProps({ mesocycles: [], onCreateFromScratch })} />,
     );
 
-    fireEvent.press(screen.getByText('Create mesocycle'));
+    fireEvent.press(screen.getByText(PLAN_MESOCYCLE_LABEL));
+    expect(onCreateFromScratch).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
     expect(onCreateFromScratch).toHaveBeenCalled();
+  });
+
+  test('the empty state’s sheet has nothing to copy, and the row says so', () => {
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [] })} />);
+
+    fireEvent.press(screen.getByText(PLAN_MESOCYCLE_LABEL));
+
+    expect(screen.getByRole('button', { name: 'Copy a mesocycle' })).toBeDisabled();
+    expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
   });
 
   // DoD (task 123): each row of the sheet leads where it should.

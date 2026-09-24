@@ -64,6 +64,7 @@ const LIVE: WorkoutSessionModel = {
   actions: { canAddExercise: true, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
   showFinishMesocycle: false,
+  showPlanNextMesocycle: false,
 };
 
 const COMPLETED: WorkoutSessionModel = {
@@ -89,6 +90,7 @@ const PREVIEW: WorkoutSessionModel = {
   actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
   showFinishMesocycle: false,
+  showPlanNextMesocycle: false,
   unlocksAfter: { weekNumber: 6, dayNumber: 3 },
 };
 
@@ -97,6 +99,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     model: LIVE,
     isPending: false,
     onOpenGrid: jest.fn(),
+    onPlanNextMesocycle: jest.fn(),
     menuActions: {
       addExercise: jest.fn(),
       skipWorkout: jest.fn(),
@@ -447,5 +450,43 @@ describe('WorkoutScreen states', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
 
     expect(onAction).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Finishing the block doesn't take the screen anywhere: `Plan next mesocycle` appears where
+// `Finish mesocycle` was, so what you just closed is still on screen when you decide what follows
+// it (Artem, 24.09.2026). Block-level actions — its history — will land beside it.
+describe('WorkoutScreen Plan next mesocycle', () => {
+  test('a finished block offers to build the next one from it', () => {
+    const onPlanNextMesocycle = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({
+          model: { ...COMPLETED, showPlanNextMesocycle: true },
+          onPlanNextMesocycle,
+        })}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Plan next mesocycle' }));
+
+    expect(onPlanNextMesocycle).toHaveBeenCalledTimes(1);
+  });
+
+  test('not there while the block is still running', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
+
+    expect(screen.queryByRole('button', { name: 'Plan next mesocycle' })).toBeNull();
+  });
+
+  test('takes the place of Finish mesocycle rather than sitting beside it', () => {
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({ model: { ...COMPLETED, showPlanNextMesocycle: true } })}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Plan next mesocycle' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish mesocycle' })).toBeNull();
   });
 });

@@ -1,3 +1,4 @@
+import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import { formatInProgressConflict, todayEmptyCopy } from '@components/TodayScreenLogic';
 
 describe('formatInProgressConflict', () => {
@@ -10,7 +11,7 @@ describe('formatInProgressConflict', () => {
 
 describe('todayEmptyCopy', () => {
   test('invites creating a mesocycle when none is active', () => {
-    expect(todayEmptyCopy('noActiveMesocycle').actionLabel).toBe('Create mesocycle');
+    expect(todayEmptyCopy('noActiveMesocycle').actionLabel).toBe(PLAN_MESOCYCLE_LABEL);
   });
 
   test('a workout that is gone leads to the mesocycles', () => {

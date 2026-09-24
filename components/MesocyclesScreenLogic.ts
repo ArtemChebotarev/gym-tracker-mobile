@@ -13,6 +13,14 @@ import { parseUtcIso } from '@domain/time';
 import type { ListRowBadge } from '@design/components/ListRow';
 import { formatAbsoluteDate } from '@design/formatDate';
 
+/**
+ * What every button that starts a new block says (Artem's call). `Plan`, not `Create`, because
+ * that is what the button does: a block saved here is `planned` and does nothing until Start
+ * (04 · Meso Creation Flows, "Сохранение при подтверждении"). One constant rather than the same
+ * string typed into two empty states, so the two can't drift apart.
+ */
+export const PLAN_MESOCYCLE_LABEL = 'Plan mesocycle';
+
 export type MesocycleGroups = {
   active: Mesocycle | null;
   planned: Mesocycle[];

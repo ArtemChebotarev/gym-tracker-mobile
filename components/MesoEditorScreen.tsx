@@ -185,15 +185,21 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
   }
 
   // Task 078: Save mesocycle → the route's `saveMutation` (Confirm, 071, when creating; the edit
-  // use case, 072, when editing a planned mesocycle). Neither creates sessions. On success the
-  // draft is reset and the modal closes back onto the Mesocycles tab it was opened from. A failed
-  // save keeps the draft and shows a plain system alert so the user can simply try again (Artem's
-  // call on 08.5's open question about the save-failure state).
+  // use case, 072, when editing a planned mesocycle). Neither creates sessions. A failed save keeps
+  // the draft and shows a plain system alert so the user can simply try again (Artem's call on
+  // 08.5's open question about the save-failure state).
+  //
+  // A saved block lands on the Mesocycles tab rather than wherever the editor was opened from
+  // (Artem, 24.09.2026). It used to simply close, which was the same thing while the only way in
+  // was that list; Flow C can now be started from the Today tab too, and coming back there to a
+  // screen that says nothing about the block just saved is a worse ending than being shown it in
+  // the list it now sits in. `dismissTo` rather than `back` + `navigate`: one dismissal, so the
+  // editor doesn't briefly hand back to the screen underneath on its way out.
   function handleSave() {
     saveMutation.mutate(draft, {
       onSuccess: () => {
         resetDraft();
-        router.back();
+        router.dismissTo('/mesocycles');
       },
       onError: () => {
         Alert.alert("Couldn't save mesocycle", 'Something went wrong. Please try again.');

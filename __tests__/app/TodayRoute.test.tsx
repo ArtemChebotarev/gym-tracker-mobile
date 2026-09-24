@@ -11,6 +11,12 @@ import {
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
+import {
+  pressTodayTab,
+  resetTabNavigation,
+  tabNavigation as mockTabNavigation,
+} from '../fixtures/tabNavigation';
 
 // Mocked rather than driven through expo-router's renderRouter: that turns on jest's fake timers,
 // which also fake the `queueMicrotask` every storage call resolves through (storage/async.ts), so
@@ -26,6 +32,9 @@ jest.mock('expo-router', () => ({
     },
   }),
   useLocalSearchParams: () => mockParams,
+  // Called rather than passed: the factory runs while this file's imports are still being
+  // evaluated, so the fixture has to be dereferenced at render time, not now.
+  useNavigation: () => mockTabNavigation(),
 }));
 
 // expo-crypto's native module isn't available under Jest, so every set log and generated session
@@ -45,14 +54,19 @@ beforeEach(async () => {
   await seedWorkoutFixture(repositories());
   mockParams = {};
   mockNavigate.mockClear();
+  resetTabNavigation();
 });
 
+// A fresh element each call: React bails out of re-rendering an element it is handed by the same
+// reference, which would make `rerender` below a no-op.
+const todayScreen = () => (
+  <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+    <TodayScreen />
+  </SafeAreaProvider>
+);
+
 function renderToday() {
-  return renderWithRepositories(
-    <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
-      <TodayScreen />
-    </SafeAreaProvider>,
-  );
+  return renderWithRepositories(todayScreen());
 }
 
 describe('Today tab', () => {
@@ -310,5 +324,82 @@ describe('Today tab — Finish workout', () => {
     );
     expect(screen.queryByText('Week 2 Day 2')).toBeNull();
     expect(await screen.findByText('Week 3 Day 1')).toBeTruthy();
+  });
+});
+
+
+// The pin `Finish workout` leaves behind (see `unpinDay` in app/(tabs)/index.tsx). It used to
+// outlive everything that gave it meaning: the tab went on showing that one workout through tab
+// switches and past the end of the block, until the app was restarted (Artem, 24.09.2026).
+describe('Today tab — the pinned day is released', () => {
+  const card = (exerciseId: string) =>
+    screen.getByTestId(`exercise-card-${WORKOUT_FIXTURE_IDS.live}-${exerciseId}`);
+
+  async function finishTheLiveWorkout() {
+    for (const [exerciseId, sets] of [
+      ['bench-press-barbell', [3]],
+      ['barbell-row-barbell', [1, 2, 3]],
+    ] as const) {
+      for (const setNumber of sets) {
+        fireEvent.press(
+          within(card(exerciseId)).getByRole('checkbox', { name: `Log set ${setNumber}` }),
+        );
+        await within(card(exerciseId)).findByRole('checkbox', { name: `Set ${setNumber} logged` });
+      }
+    }
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish workout' }));
+    await screen.findByTestId('workout-completed-check');
+  }
+
+  /**
+   * Presses the Today tab and re-renders. The real router re-renders the screen itself when
+   * `setParams` changes the route; this mock only keeps `mockParams` in a variable, so the
+   * re-render has to be asked for — otherwise the screen would go on reading the params it was
+   * last rendered with and the test would prove nothing about what the tab then shows.
+   */
+  function pressTodayTabAndRerender(view: ReturnType<typeof renderToday>) {
+    pressTodayTab();
+    view.rerender(todayScreen());
+  }
+
+  test('pressing the Today tab returns to the current session', async () => {
+    await seedFixtureDay(repositories(), { id: 'ready-w2d2', weekNumber: 2, dayNumber: 2 });
+    const view = renderToday();
+    await screen.findByText('Week 2 Day 1');
+    await finishTheLiveWorkout();
+    // Pinned to the finished day, which is the point of the pin.
+    expect(mockParams.sessionId).toBe(WORKOUT_FIXTURE_IDS.live);
+
+    pressTodayTabAndRerender(view);
+
+    expect(mockParams.sessionId).toBeUndefined();
+    expect(await screen.findByText('Week 2 Day 2')).toBeTruthy();
+  });
+
+  test('a day opened from the grid is released the same way', async () => {
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
+    const view = renderToday();
+    await screen.findByText('Week 1 Day 1');
+
+    pressTodayTabAndRerender(view);
+
+    expect(mockParams.sessionId).toBeUndefined();
+    expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
+  });
+
+  test('a slot picked by week and day is released too, not just a session id', async () => {
+    mockParams = { mesoId: WORKOUT_FIXTURE_IDS.mesocycle, week: '3', day: '1' };
+    const view = renderToday();
+    await screen.findByText('Week 3 Day 1');
+
+    pressTodayTabAndRerender(view);
+
+    expect(mockParams).toEqual({
+      sessionId: undefined,
+      mesoId: undefined,
+      week: undefined,
+      day: undefined,
+    });
+    expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
   });
 });

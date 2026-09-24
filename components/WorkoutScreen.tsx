@@ -23,7 +23,9 @@
 // a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap. When
 // there is no next session because the block is done, `showFinishMesocycle` puts a primary
 // `Finish mesocycle` there instead (052): the block is closed by hand, never on its own, so the
-// last workout of a mesocycle ends with the button that ends the mesocycle.
+// last workout of a mesocycle ends with the button that ends the mesocycle. Finishing it doesn't
+// take the screen anywhere — `Plan next mesocycle` appears in the same place instead, so the block
+// you just closed is still the thing on screen when you decide what follows it (Artem, 24.09.2026).
 //
 // Presentational: the model and every outcome come in as props from the Today tab
 // (app/(tabs)/index.tsx), which shows every session — the current one or a picked day. With no
@@ -94,6 +96,8 @@ export type WorkoutScreenProps = {
   isFinishing: boolean;
   /** Opens the session `Next workout` points at. Read-only only. */
   onOpenNext: (sessionId: string) => void;
+  /** Flow C on the block this session belongs to. Only offered when `showPlanNextMesocycle`. */
+  onPlanNextMesocycle: () => void;
   /** Closes the mesocycle (052). Only offered when `showFinishMesocycle`. */
   onFinishMesocycle: () => void;
   /** The mesocycle's Finish is being saved — the button is disabled so it can't be pressed twice. */
@@ -121,6 +125,7 @@ export function WorkoutScreen({
   isFinishing,
   onOpenNext,
   onFinishMesocycle,
+  onPlanNextMesocycle,
   isFinishingMesocycle,
   fallback,
 }: WorkoutScreenProps) {
@@ -234,6 +239,11 @@ export function WorkoutScreen({
                 onPress={onFinishMesocycle}
                 disabled={isFinishingMesocycle}
               />
+            </View>
+          )}
+          {model.showPlanNextMesocycle && (
+            <View style={styles.finish}>
+              <Button label="Plan next mesocycle" onPress={onPlanNextMesocycle} />
             </View>
           )}
           {model.unlocksAfter !== undefined && (
