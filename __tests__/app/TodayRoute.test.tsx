@@ -11,8 +11,9 @@ import {
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
-// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
+// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to them.
 import {
+  isTabBeingPressed as mockIsTabBeingPressed,
   pressTodayTab,
   resetTabNavigation,
   tabNavigation as mockTabNavigation,
@@ -27,14 +28,25 @@ const mockNavigate = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     navigate: mockNavigate,
-    setParams: (params: { sessionId?: string }) => {
+    setParams: (params: Record<string, string | undefined>) => {
+      // The imperative router writes to the *focused* route. While a tab press is being delivered
+      // the focused route is still the tab being left, so a write from here would never reach
+      // this screen — see `isTabBeingPressed`.
+      if (mockIsTabBeingPressed()) {
+        return;
+      }
       mockParams = { ...mockParams, ...params };
     },
   }),
   useLocalSearchParams: () => mockParams,
   // Called rather than passed: the factory runs while this file's imports are still being
-  // evaluated, so the fixture has to be dereferenced at render time, not now.
-  useNavigation: () => mockTabNavigation(),
+  // evaluated, so the fixture has to be dereferenced at render time, not now. The screen's own
+  // navigation writes this route's params whether or not it is focused, which is the whole
+  // difference from the router above.
+  useNavigation: () =>
+    mockTabNavigation((params) => {
+      mockParams = { ...mockParams, ...params };
+    }),
 }));
 
 // expo-crypto's native module isn't available under Jest, so every set log and generated session

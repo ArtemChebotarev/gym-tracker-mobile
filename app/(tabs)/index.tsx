@@ -98,13 +98,19 @@ import { useTodayWorkout } from '@state/useWorkoutSession';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
- * The one method of the tab's navigation object this screen uses. React Navigation's own
+ * The two methods of this tab's own navigation object the screen uses. React Navigation's
  * `BottomTabNavigationProp` isn't importable here — expo-router vendors the navigators instead of
  * depending on `@react-navigation/bottom-tabs`, so there is no package to take the type from, and
  * reaching into `expo-router/build` for it would tie this screen to that build layout.
+ *
+ * `setParams` is this one's, not `useRouter()`'s. The imperative router writes to whatever route
+ * is *focused* (`navigationRef.current.setParams`), and `tabPress` is delivered before the tab
+ * actually changes — so a write from the router during it lands on the tab being left instead of
+ * on this one, and the picked day is never released (found on the device, 24.09.2026).
  */
-type TabPressNavigation = {
+type TodayTabNavigation = {
   addListener: (event: 'tabPress', listener: () => void) => () => void;
+  setParams: (params: Partial<WorkoutRouteParams>) => void;
 };
 
 export default function TodayScreen() {
@@ -147,7 +153,7 @@ export default function TodayScreen() {
   const grid = useMesoGrid(model?.mesoId);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
-  const navigation = useNavigation<TabPressNavigation>();
+  const navigation = useNavigation<TodayTabNavigation>();
 
   /**
    * Drops the picked day, so the tab means "the current session" again.
@@ -163,10 +169,10 @@ export default function TodayScreen() {
    * `Copy current meso` — and, later, the block's history — is offered from.
    *
    * `setParams` merges, so an explicit `undefined` is what removes a key rather than leaving the
-   * old value in place.
+   * old value in place. It is the tab's own — see `TodayTabNavigation` for why not the router's.
    */
   function unpinDay() {
-    router.setParams({
+    navigation.setParams({
       sessionId: undefined,
       mesoId: undefined,
       week: undefined,
@@ -196,7 +202,10 @@ export default function TodayScreen() {
    */
   function pinCurrentSession() {
     if (sessionId === undefined && currentSessionId !== undefined) {
-      router.setParams({ sessionId: currentSessionId });
+      // Through this tab's own navigation, like `unpinDay` — see `TodayTabNavigation`. It happens
+      // to be focused here, so the router would work too, but one mechanism for both means the
+      // focused-route trap can't be walked into again by whatever writes these params next.
+      navigation.setParams({ sessionId: currentSessionId });
     }
   }
 
