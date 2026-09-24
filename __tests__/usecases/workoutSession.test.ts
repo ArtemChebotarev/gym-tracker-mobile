@@ -445,6 +445,45 @@ describe('getWorkoutSession — Finish mesocycle', () => {
   });
 });
 
+// The button that takes Finish mesocycle's place once the block is closed, so finishing one
+// doesn't have to move the screen off it (Artem, 24.09.2026).
+describe('getWorkoutSession — Copy current meso', () => {
+  async function closedBlock(status: 'completed' | 'abandoned') {
+    const { store, deps } = await setUp({
+      sessions: [w1d1, { ...w1d2, status: 'skipped' }],
+      exercises: [w1Bench, w1Squat],
+    });
+    await new SqliteMesocycleRepository(store).update({ ...mesocycle, status, completedAt: NOW });
+    return deps;
+  }
+
+  test('a finished block offers the next one', async () => {
+    const model = await getWorkoutSession('w1d1', await closedBlock('completed'));
+
+    expect(model.showCopyMesocycle).toBe(true);
+    // The two never show together: one is for a running block, the other for a closed one.
+    expect(model.showFinishMesocycle).toBe(false);
+  });
+
+  test('not while the block is still running', async () => {
+    const { deps } = await setUp();
+
+    expect((await getWorkoutSession('w1d1', deps)).showCopyMesocycle).toBe(false);
+  });
+
+  test('never from a stopped block — it was called off, not finished', async () => {
+    const model = await getWorkoutSession('w1d1', await closedBlock('abandoned'));
+
+    expect(model.showCopyMesocycle).toBe(false);
+  });
+
+  test('every session of a finished block carries it, not only its last', async () => {
+    const model = await getWorkoutSession('w1d2', await closedBlock('completed'));
+
+    expect(model.showCopyMesocycle).toBe(true);
+  });
+});
+
 describe('getWorkoutSession — read-only', () => {
   test('a completed session is full, dated by completedAt, checked, with no actions', async () => {
     const { deps } = await setUp();

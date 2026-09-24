@@ -7,6 +7,8 @@ import type { ExerciseMenuItem } from '@components/WorkoutExerciseMenuLogic';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
+import { tabNavigation as mockTabNavigation } from '../fixtures/tabNavigation';
 
 // The exercise menu (097) on the Today tab, over the fixture session in progress: Bench Press (2 of
 // 3 sets logged), then Barbell Row (nothing logged). Its own file, apart from TodayRoute.test.tsx:
@@ -28,6 +30,9 @@ jest.mock('expo-router', () => ({
     },
   }),
   useLocalSearchParams: () => mockParams,
+  // Called rather than passed: the factory runs while this file's imports are still being
+  // evaluated, so the fixture has to be dereferenced at render time, not now.
+  useNavigation: () => mockTabNavigation(),
 }));
 
 // expo-crypto's native module isn't available under Jest; every set log needs an id of its own.

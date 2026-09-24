@@ -1,6 +1,8 @@
 // Pure helpers behind the Today tab (app/(tabs)/index.tsx, `TodayScreen`) — see the code-style
 // skill; they live here because every file under app/ is a route.
 
+import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
+
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
  * "Жизненный цикл сессии").
@@ -20,9 +22,10 @@ export type TodayEmptyReason = 'noActiveMesocycle' | 'allDone' | 'unavailable';
 
 /**
  * The EmptyState copy for `reason` — an invitation, not an apology (08.0, "EmptyState"). Without an
- * active mesocycle it invites creating one (08, "Сегодня"); with the block done it closes it (052 —
- * the same Finish the last workout offers, so leaving that screen isn't a dead end); otherwise it
- * leads to the mesocycles.
+ * active mesocycle it invites planning one (08, "Сегодня") — through the same creation-method sheet
+ * the `+` on 08.3 raises, since finished blocks may well exist to copy even when none is running;
+ * with the block done it closes it (052 — the same Finish the last workout offers, so leaving that
+ * screen isn't a dead end); otherwise it leads to the mesocycles.
  */
 export function todayEmptyCopy(reason: TodayEmptyReason): {
   title: string;
@@ -33,8 +36,8 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
     case 'noActiveMesocycle':
       return {
         title: 'Plan your training block',
-        description: 'Create a mesocycle and start it — its workouts show up here.',
-        actionLabel: 'Create mesocycle',
+        description: 'Plan a mesocycle and start it — its workouts show up here.',
+        actionLabel: PLAN_MESOCYCLE_LABEL,
       };
     case 'allDone':
       return {

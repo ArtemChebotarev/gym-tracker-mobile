@@ -64,6 +64,7 @@ const LIVE: WorkoutSessionModel = {
   actions: { canAddExercise: true, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
   showFinishMesocycle: false,
+  showCopyMesocycle: false,
 };
 
 const COMPLETED: WorkoutSessionModel = {
@@ -89,6 +90,7 @@ const PREVIEW: WorkoutSessionModel = {
   actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
   showFinishMesocycle: false,
+  showCopyMesocycle: false,
   unlocksAfter: { weekNumber: 6, dayNumber: 3 },
 };
 
@@ -97,6 +99,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     model: LIVE,
     isPending: false,
     onOpenGrid: jest.fn(),
+    onCopyMesocycle: jest.fn(),
     menuActions: {
       addExercise: jest.fn(),
       skipWorkout: jest.fn(),
@@ -447,5 +450,43 @@ describe('WorkoutScreen states', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
 
     expect(onAction).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Finishing the block doesn't take the screen anywhere: `Copy current meso` appears where
+// `Finish mesocycle` was, so what you just closed is still on screen when you decide what follows
+// it (Artem, 24.09.2026). Block-level actions — its history — will land beside it.
+describe('WorkoutScreen Copy current meso', () => {
+  test('a finished block offers to build the next one from it', () => {
+    const onCopyMesocycle = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({
+          model: { ...COMPLETED, showCopyMesocycle: true },
+          onCopyMesocycle,
+        })}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Copy current meso' }));
+
+    expect(onCopyMesocycle).toHaveBeenCalledTimes(1);
+  });
+
+  test('not there while the block is still running', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
+
+    expect(screen.queryByRole('button', { name: 'Copy current meso' })).toBeNull();
+  });
+
+  test('takes the place of Finish mesocycle rather than sitting beside it', () => {
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({ model: { ...COMPLETED, showCopyMesocycle: true } })}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Copy current meso' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish mesocycle' })).toBeNull();
   });
 });

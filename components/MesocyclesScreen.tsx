@@ -8,10 +8,13 @@
 // rather than something the route decides:
 // - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to Flow A: there are two
 //   ways to build a block now. Whether the second one has anything to copy from is read off the
-//   Completed group, which already holds both ways a block ends. Picking a row closes the sheet
-//   without its slide — the chosen screen is pushing in at the same moment, and two transitions
-//   at once read as a stutter (Artem's call); dismissing it by backdrop or grabber still slides,
-//   because then nothing is arriving to take its place.
+//   Completed group, which already holds both ways a block ends. How the sheet opens and closes is
+//   `useMesoCreationMethodSheet`, shared with the Today tab's own empty state.
+// - The empty state raises the same sheet rather than going straight to Flow A. It used to go
+//   direct, on the grounds that this state means no block exists at all, so `Copy a mesocycle` is
+//   provably off and the sheet would be one live row. Artem's call: the gesture that starts a
+//   block should be the same one everywhere, and a disabled row that says `Nothing to copy yet`
+//   teaches what the second way is before there is anything to use it on.
 // - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
 // - Delete (revealed by swiping a Planned row) opens `Delete mesocycle? This can't be undone` and
@@ -33,7 +36,7 @@
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
@@ -45,6 +48,7 @@ import { RootScreen } from '@design/components/RootScreen';
 import { SwipeableRow } from '@design/components/SwipeableRow';
 
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
+import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
 
 import {
   completedLeadingAction,
@@ -58,6 +62,7 @@ import {
   groupMesocycles,
   isEmptyGroups,
   mesocycleStoppedBadge,
+  PLAN_MESOCYCLE_LABEL,
   plannedLeadingAction,
   plannedRowActions,
 } from './MesocyclesScreenLogic';
@@ -71,7 +76,7 @@ export type MesocyclesScreenProps = {
    * progress, else of the next ready one), not the calendar. Unused without an active mesocycle.
    */
   activeWeekNumber: number;
-  /** Flow A — also where the empty state goes directly, having provably nothing to copy. */
+  /** Flow A. */
   onCreateFromScratch: () => void;
   /** Flow C, step Source week (124). */
   onCopyMesocycle: () => void;
@@ -97,14 +102,7 @@ export function MesocyclesScreen({
   onOpenHistory,
 }: MesocyclesScreenProps) {
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
-  // `chosen` is `closed` with the slide turned off — see the note at the top of the file.
-  const [methodSheet, setMethodSheet] = useState<'closed' | 'open' | 'chosen'>('closed');
-
-  /** Closes the sheet before navigating, so coming back doesn't land on it still open. */
-  function chooseMethod(go: () => void) {
-    setMethodSheet('chosen');
-    go();
-  }
+  const methodSheet = useMesoCreationMethodSheet();
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
@@ -134,7 +132,7 @@ export function MesocyclesScreen({
           <IconButton
             accessibilityLabel="New mesocycle"
             variant="accent"
-            onPress={() => setMethodSheet('open')}
+            onPress={methodSheet.open}
           >
             <Text style={styles.addIcon}>+</Text>
           </IconButton>
@@ -146,8 +144,8 @@ export function MesocyclesScreen({
           <EmptyState
             title="Plan your first mesocycle"
             description="Build a training block, then start it when you're ready."
-            actionLabel="Create mesocycle"
-            onAction={onCreateFromScratch}
+            actionLabel={PLAN_MESOCYCLE_LABEL}
+            onAction={methodSheet.open}
           />
         )}
 
@@ -240,12 +238,12 @@ export function MesocyclesScreen({
       </RootScreen>
 
       <MesoCreationMethodSheet
-        visible={methodSheet === 'open'}
-        animated={methodSheet !== 'chosen'}
-        onClose={() => setMethodSheet('closed')}
+        visible={methodSheet.visible}
+        animated={methodSheet.animated}
+        onClose={methodSheet.close}
         canCopy={groups.completed.length > 0}
-        onCreateFromScratch={() => chooseMethod(onCreateFromScratch)}
-        onCopyMesocycle={() => chooseMethod(onCopyMesocycle)}
+        onCreateFromScratch={methodSheet.choose(onCreateFromScratch)}
+        onCopyMesocycle={methodSheet.choose(onCopyMesocycle)}
       />
     </View>
   );

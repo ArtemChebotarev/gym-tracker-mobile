@@ -4501,7 +4501,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
                   ]
                 }
               >
-                Create mesocycle
+                Plan mesocycle
               </Text>
             </View>
           </View>

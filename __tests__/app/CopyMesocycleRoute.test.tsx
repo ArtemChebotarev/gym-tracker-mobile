@@ -20,12 +20,13 @@ import { seedExerciseCatalog } from '../fixtures/appStorage';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
 // `mock`-prefixed so jest.mock's factory may reference it — the hoisted factory can't close over
 // an ordinary out-of-scope variable.
 let mockSearchParams: { sourceMesoId?: string } = {};
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({ back: mockBack, dismissTo: mockDismissTo }),
   useLocalSearchParams: () => mockSearchParams,
 }));
 
@@ -133,6 +134,7 @@ beforeEach(async () => {
 
   mockSearchParams = {};
   mockBack.mockClear();
+  mockDismissTo.mockClear();
   useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
 });
 
@@ -293,7 +295,7 @@ describe('CopyMesocycleRoute — Save', () => {
     fireEvent.press(await screen.findByRole('button', { name: 'Continue' }));
     fireEvent.press(await screen.findByRole('button', { name: 'Save mesocycle' }));
 
-    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/mesocycles'));
     await flushQueryNotifications();
 
     const saved = (await repositories().mesocycleRepo.getAll()).find(

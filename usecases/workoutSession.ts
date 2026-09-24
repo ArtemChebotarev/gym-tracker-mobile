@@ -180,6 +180,25 @@ export type WorkoutSessionModel = {
    */
   showFinishMesocycle: boolean;
   /**
+   * The `Copy current meso` button (04 · Meso Creation Flows, "Завершение мезоцикла"): the block
+   * is `completed`, so the next one is usually a week of it copied. It takes the place of
+   * `Finish mesocycle`, which only ever shows while the block is still `active` — the two can't
+   * both be true.
+   *
+   * Finishing a block doesn't move the screen off it any more: standing on the workout you just
+   * finished is the point, and this is offered from there (Artem, 24.09.2026). Every session of a
+   * finished block carries it, not only its last one — it is an action on the block, which is also
+   * where its history will go.
+   *
+   * A stopped (`abandoned`) block gets no button: it was called off, and offering it as the basis
+   * of the next one reads as not having noticed.
+   *
+   * The label says `Copy current meso` (Artem's wording): "current" is the block being stood in,
+   * and `Copy` is what the same action is already called on 08.3's finished rows — one word for
+   * one thing, rather than a second name for the way into Flow C.
+   */
+  showCopyMesocycle: boolean;
+  /**
    * Read-only only: the session the `Next workout` button opens — the mesocycle's current one (in
    * progress, else the earliest ready; see `currentSession`). Absent when nothing is left to do.
    */
@@ -394,6 +413,7 @@ function fromTree(
     },
     showFinish: live && canFinishSession(sessionExercises),
     showFinishMesocycle: mesoSessions !== null && canFinishMesocycle(mesocycle, mesoSessions),
+    showCopyMesocycle: mesocycle.status === 'completed',
   };
   if (mesocycle.bodyWeight !== undefined) {
     model.bodyWeight = mesocycle.bodyWeight;
@@ -459,6 +479,9 @@ async function previewOf(
     showFinish: false,
     // A preview is a day still to come, so the block always has it left to train.
     showFinishMesocycle: false,
+    // A preview is a day that hasn't been programmed yet, which only exists inside a running
+    // block — there is nothing finished here to build the next one from.
+    showCopyMesocycle: false,
     unlocksAfter: { weekNumber, dayNumber },
   };
   if (session) {

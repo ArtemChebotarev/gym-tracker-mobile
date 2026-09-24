@@ -10,10 +10,11 @@ import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
 let mockId = '';
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({ back: mockBack, dismissTo: mockDismissTo }),
   useLocalSearchParams: () => ({ id: mockId }),
 }));
 
@@ -57,6 +58,7 @@ function makePlanned(id: string): Mesocycle {
 const repositories = withRepositories();
 beforeEach(() => {
   mockBack.mockClear();
+  mockDismissTo.mockClear();
 });
 
 afterEach(() => {
@@ -97,7 +99,7 @@ describe('EditMesocycleRoute', () => {
     await goToReviewStep();
     fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
 
-    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/mesocycles'));
 
     await expect(repositories().mesocycleRepo.getById(planned.id)).resolves.toEqual({
       ...planned,
