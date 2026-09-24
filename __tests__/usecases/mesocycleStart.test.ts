@@ -357,11 +357,11 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
 
     await startMesocycle('meso-copy', { store }, NOW);
 
-    // startRir 3, reference at RIR 0 → reps − 3; the reference weight carries over as is.
+    // startRir 3, reference at RIR 0 → reps + 1 − 3; the reference weight carries over as is.
     await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
-      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
-      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 5, suggestedWeight: 55 },
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 6, suggestedWeight: 55 },
     ]);
   });
 
@@ -401,11 +401,11 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
 
     await startMesocycle('meso-copy', { store }, NOW);
 
-    // 10 − (3 − 2) = 9, not 10 − 3 = 7.
+    // 10 + 1 − (3 − 2) = 10, not 10 + 1 − 3 = 8.
     await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
-      { setNumber: 1, targetReps: 9, suggestedWeight: 60 },
-      { setNumber: 2, targetReps: 9, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 9, suggestedWeight: 60 },
+      { setNumber: 1, targetReps: 10, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 10, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 10, suggestedWeight: 60 },
     ]);
   });
 
@@ -431,7 +431,7 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     await startMesocycle('meso-copy', { store }, NOW);
 
     const targets = await startedTargetsOf(store, 'bench');
-    expect(targets?.[0]).toEqual({ setNumber: 1, targetReps: 7, suggestedWeight: 60 });
+    expect(targets?.[0]).toEqual({ setNumber: 1, targetReps: 8, suggestedWeight: 60 });
   });
 
   test('ignores a performance older than historyLookbackDays', async () => {

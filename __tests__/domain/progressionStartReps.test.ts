@@ -17,12 +17,12 @@ function log(setNumber: number, weight: number, reps: number): SetLog {
 }
 
 describe('startTargetReps', () => {
-  test('DoD: the spec’s example — 10 reps at RIR 0, new startRir 3, gives 7', () => {
-    expect(startTargetReps(10, 0, 3, defaultProgressionSettings)).toBe(7);
+  test('DoD: the spec’s example — 10 reps at RIR 0, new startRir 3, gives 8', () => {
+    expect(startTargetReps(10, 0, 3, defaultProgressionSettings)).toBe(8);
   });
 
-  test('DoD: a reference that wasn’t at RIR 0 — 10 at RIR 2 with startRir 3 gives 9', () => {
-    expect(startTargetReps(10, 2, 3, defaultProgressionSettings)).toBe(9);
+  test('DoD: a reference that wasn’t at RIR 0 — 10 at RIR 2 with startRir 3 gives 10', () => {
+    expect(startTargetReps(10, 2, 3, defaultProgressionSettings)).toBe(10);
   });
 
   test('DoD: clamps to the corridor’s floor', () => {
@@ -37,17 +37,23 @@ describe('startTargetReps', () => {
     );
   });
 
-  test('no +1: a reference already at the new block’s RIR keeps its reps', () => {
-    expect(startTargetReps(12, 3, 3, defaultProgressionSettings)).toBe(12);
+  test('a reference already at the new block’s RIR gains the single rep (task 125)', () => {
+    expect(startTargetReps(12, 3, 3, defaultProgressionSettings)).toBe(13);
   });
 
-  test('a reference at a higher RIR than the block’s start moves the reps up', () => {
-    expect(startTargetReps(10, 4, 3, defaultProgressionSettings)).toBe(11);
+  test('a reference at a higher RIR than the block’s start moves the reps up further', () => {
+    expect(startTargetReps(10, 4, 3, defaultProgressionSettings)).toBe(12);
+  });
+
+  test('task 125: copying the block that just ended does not repeat its first week', () => {
+    // 3 weeks → 2 working weeks, startRir 1: week 1 was 10 reps at RIR 1, week 2 was 11 at RIR 0.
+    // Re-pricing that week 2 for the new block's startRir 1 has to beat the 10 it started from.
+    expect(startTargetReps(11, 0, 1, defaultProgressionSettings)).toBe(11);
   });
 });
 
 describe('prescribeBlockStart', () => {
-  test('DoD: each set is re-priced on its own — 10/9/8 at RIR 0 with startRir 3 give 7/6/5', () => {
+  test('DoD: each set is re-priced on its own — 10/9/8 at RIR 0 with startRir 3 give 8/7/6', () => {
     expect(
       prescribeBlockStart(
         [log(1, 60, 10), log(2, 60, 9), log(3, 55, 8)],
@@ -57,15 +63,15 @@ describe('prescribeBlockStart', () => {
         defaultProgressionSettings,
       ),
     ).toEqual([
-      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
-      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 5, suggestedWeight: 55 },
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 6, suggestedWeight: 55 },
     ]);
   });
 
   test('the reference weight is carried over as is', () => {
     expect(prescribeBlockStart([log(1, 62.5, 12)], 1, 3, 1, defaultProgressionSettings)).toEqual([
-      { setNumber: 1, targetReps: 10, suggestedWeight: 62.5 },
+      { setNumber: 1, targetReps: 11, suggestedWeight: 62.5 },
     ]);
   });
 
@@ -83,10 +89,10 @@ describe('prescribeBlockStart', () => {
     expect(
       prescribeBlockStart([log(1, 60, 10), log(2, 60, 9)], 0, 3, 4, defaultProgressionSettings),
     ).toEqual([
-      { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
-      { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 6, suggestedWeight: 60 },
-      { setNumber: 4, targetReps: 6, suggestedWeight: 60 },
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 4, targetReps: 7, suggestedWeight: 60 },
     ]);
   });
 
@@ -116,8 +122,8 @@ describe('prescribeBlockStart', () => {
     expect(
       prescribeBlockStart([log(1, 80, 12)], 0, 3, 2, defaultProgressionSettings, 'bodyweight'),
     ).toEqual([
-      { setNumber: 1, targetReps: 9 },
-      { setNumber: 2, targetReps: 9 },
+      { setNumber: 1, targetReps: 10 },
+      { setNumber: 2, targetReps: 10 },
     ]);
   });
 });

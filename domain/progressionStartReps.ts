@@ -1,7 +1,9 @@
 // Flow C start targets — see 04 · Meso Creation Flows, "Расчёт startReps". A block copied from
-// a past week starts at a higher RIR than the one its reference was performed at, so the same
-// weight is worth fewer reps. This is the arithmetic for that; it sits next to
-// `prescribeFromHistory` (rule 6) on purpose: same reference performance, different sum.
+// a past week takes the reference one rep further, as progression always does, and then gives
+// back the RIR gap: the new block starts at a higher RIR than the one its reference was
+// performed at, so the same weight is worth fewer reps there. This is the arithmetic for that;
+// it sits next to `prescribeFromHistory` (rule 6) on purpose: same reference performance,
+// different sum.
 //
 // Pure and timeless, like the rest of the engine. Finding the reference performance and its
 // `targetRir` is the use case layer's job (task 122) — nothing here reads storage or a clock.
@@ -15,14 +17,18 @@ import { referenceSetFor } from '@domain/progressionHistory';
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
 /**
- * `clamp(referenceReps − (startRir − referenceTargetRir), minReps, maxReps)` — the reference's
- * reps re-priced for a higher target RIR.
+ * `clamp(referenceReps + 1 − (startRir − referenceTargetRir), minReps, maxReps)` — rule 2's
+ * increment on the reference, then re-priced for a higher target RIR.
  *
- * Deliberately no `+ 1`: rule 2's increment continues a progression inside a block, and this is
- * the start of a new one (04 · Meso Creation Flows, "Расчёт startReps"). A reference performed
- * at a *higher* RIR than the new block's start (`startRir < referenceTargetRir`) moves the reps
- * up rather than down, which is the same formula read the other way round — nothing special-cases
- * it.
+ * The `+ 1` is what carries progression *across* blocks (task 125). Without it, a block copied
+ * from the one that just ended lands back where that block started: a 3-week block runs week 1
+ * at RIR 1 for 10 reps and week 2 at RIR 0 for 11, and re-pricing 11 reps for a `startRir` of 1
+ * gives 10 again — the same number, block after block, forever. The increment earns the reps
+ * back; the RIR term is what still makes the first week easier than the last.
+ *
+ * A reference performed at a *higher* RIR than the new block's start
+ * (`startRir < referenceTargetRir`) moves the reps up further rather than down, which is the
+ * same formula read the other way round — nothing special-cases it.
  */
 export function startTargetReps(
   referenceReps: number,
@@ -30,7 +36,7 @@ export function startTargetReps(
   startRir: number,
   settings: RepCorridor,
 ): number {
-  const reps = referenceReps - (startRir - referenceTargetRir);
+  const reps = referenceReps + 1 - (startRir - referenceTargetRir);
   return Math.min(Math.max(reps, settings.minReps), settings.maxReps);
 }
 
