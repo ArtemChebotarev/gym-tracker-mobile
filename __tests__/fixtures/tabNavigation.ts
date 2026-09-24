@@ -10,17 +10,9 @@
 import { act } from '@testing-library/react-native';
 
 let listeners: (() => void)[] = [];
-let pressing = false;
 
-/**
- * What `useNavigation()` returns: `tabPress` subscriptions and this tab's own `setParams`.
- *
- * `setParams` is here and not only on the router because the two are not interchangeable — see
- * `isTabBeingPressed`. A caller that doesn't care passes nothing.
- */
-export function tabNavigation(
-  setParams: (params: Record<string, string | undefined>) => void = () => {},
-) {
+/** What `useNavigation()` returns — registers `tabPress` listeners and hands back an unsubscribe. */
+export function tabNavigation() {
   return {
     addListener(event: string, listener: () => void) {
       if (event !== 'tabPress') {
@@ -31,38 +23,19 @@ export function tabNavigation(
         listeners = listeners.filter((registered) => registered !== listener);
       };
     },
-    setParams,
   };
 }
 
-/**
- * True while a `tabPress` is being delivered, which is the window in which the tab being *left* is
- * still the focused route. A test's `useRouter().setParams` should do nothing then: that is what
- * the real imperative router effectively does to this tab, since it writes to the focused route
- * (`navigationRef.current.setParams`). Without modelling that, a screen clearing its params
- * through the router would look like it worked here and do nothing on the device — which is
- * exactly what happened on 24.09.2026.
- */
-export function isTabBeingPressed(): boolean {
-  return pressing;
-}
-
-/** Fires `tabPress` — the user tapping the Today tab while another one is still focused. */
+/** Fires `tabPress` — the user tapping the Today tab. */
 export function pressTodayTab(): void {
-  pressing = true;
-  try {
-    act(() => {
-      for (const listener of [...listeners]) {
-        listener();
-      }
-    });
-  } finally {
-    pressing = false;
-  }
+  act(() => {
+    for (const listener of [...listeners]) {
+      listener();
+    }
+  });
 }
 
 /** Forgets every subscription — between tests, so one file's screens don't outlive their test. */
 export function resetTabNavigation(): void {
   listeners = [];
-  pressing = false;
 }

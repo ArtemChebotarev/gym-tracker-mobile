@@ -11,9 +11,8 @@ import {
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
-// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to them.
+// Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
 import {
-  isTabBeingPressed as mockIsTabBeingPressed,
   pressTodayTab,
   resetTabNavigation,
   tabNavigation as mockTabNavigation,
@@ -24,29 +23,27 @@ import {
 // the query would never settle. The href itself is covered by workoutRoutes.test.ts.
 let mockParams: Record<string, string | undefined> = {};
 const mockNavigate = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     navigate: mockNavigate,
-    setParams: (params: Record<string, string | undefined>) => {
-      // The imperative router writes to the *focused* route. While a tab press is being delivered
-      // the focused route is still the tab being left, so a write from here would never reach
-      // this screen — see `isTabBeingPressed`.
-      if (mockIsTabBeingPressed()) {
-        return;
-      }
+    setParams: (params: { sessionId?: string }) => {
       mockParams = { ...mockParams, ...params };
+    },
+    // How the picked day is dropped: the route is replaced, not stripped of its params — see
+    // `unpinDay`. Replacing `/` leaves the tab on Today with nothing picked.
+    replace: (href: string) => {
+      mockReplace(href);
+      if (href === '/') {
+        mockParams = {};
+      }
     },
   }),
   useLocalSearchParams: () => mockParams,
   // Called rather than passed: the factory runs while this file's imports are still being
-  // evaluated, so the fixture has to be dereferenced at render time, not now. The screen's own
-  // navigation writes this route's params whether or not it is focused, which is the whole
-  // difference from the router above.
-  useNavigation: () =>
-    mockTabNavigation((params) => {
-      mockParams = { ...mockParams, ...params };
-    }),
+  // evaluated, so the fixture has to be dereferenced at render time, not now.
+  useNavigation: () => mockTabNavigation(),
 }));
 
 // expo-crypto's native module isn't available under Jest, so every set log and generated session
@@ -66,6 +63,7 @@ beforeEach(async () => {
   await seedWorkoutFixture(repositories());
   mockParams = {};
   mockNavigate.mockClear();
+  mockReplace.mockClear();
   resetTabNavigation();
 });
 
@@ -406,12 +404,8 @@ describe('Today tab — the pinned day is released', () => {
 
     pressTodayTabAndRerender(view);
 
-    expect(mockParams).toEqual({
-      sessionId: undefined,
-      mesoId: undefined,
-      week: undefined,
-      day: undefined,
-    });
+    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockParams).toEqual({});
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
   });
 });

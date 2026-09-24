@@ -98,19 +98,13 @@ import { useTodayWorkout } from '@state/useWorkoutSession';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
- * The two methods of this tab's own navigation object the screen uses. React Navigation's
+ * The one method of this tab's navigation object the screen uses. React Navigation's
  * `BottomTabNavigationProp` isn't importable here — expo-router vendors the navigators instead of
  * depending on `@react-navigation/bottom-tabs`, so there is no package to take the type from, and
  * reaching into `expo-router/build` for it would tie this screen to that build layout.
- *
- * `setParams` is this one's, not `useRouter()`'s. The imperative router writes to whatever route
- * is *focused* (`navigationRef.current.setParams`), and `tabPress` is delivered before the tab
- * actually changes — so a write from the router during it lands on the tab being left instead of
- * on this one, and the picked day is never released (found on the device, 24.09.2026).
  */
 type TodayTabNavigation = {
   addListener: (event: 'tabPress', listener: () => void) => () => void;
-  setParams: (params: Partial<WorkoutRouteParams>) => void;
 };
 
 export default function TodayScreen() {
@@ -168,16 +162,15 @@ export default function TodayScreen() {
    * *not* release it: standing on the workout you just finished is the point, and that is where
    * `Copy current meso` — and, later, the block's history — is offered from.
    *
-   * `setParams` merges, so an explicit `undefined` is what removes a key rather than leaving the
-   * old value in place. It is the tab's own — see `TodayTabNavigation` for why not the router's.
+   * It replaces the route rather than clearing the params on it. `setParams` does update the
+   * navigator's own state — the route really does come back as `index:{}` — but expo-router reads
+   * these through its own store, and that store is not updated by a bare `SET_PARAMS`: the screen
+   * never re-rendered and went on showing the day it was already on. Verified on the device by
+   * logging the navigator state on both sides of the call (24.09.2026). `replace` goes through
+   * the same path as every other navigation here, so the store and the screen both follow.
    */
   function unpinDay() {
-    navigation.setParams({
-      sessionId: undefined,
-      mesoId: undefined,
-      week: undefined,
-      day: undefined,
-    });
+    router.replace('/');
   }
 
   // Coming back to Today through the tab bar means today, not the day that was open when the tab
@@ -186,8 +179,8 @@ export default function TodayScreen() {
   // there would drop the user off the workout they were reading on the way back.
   useEffect(
     () => navigation.addListener('tabPress', unpinDay),
-    // `unpinDay` only ever calls `router.setParams` with the same constant, so re-subscribing as
-    // it is re-created each render would churn listeners for no reason.
+    // `unpinDay` only ever replaces the route with the same bare href, so re-subscribing as it is
+    // re-created each render would churn listeners for no reason.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [navigation],
   );
@@ -202,10 +195,7 @@ export default function TodayScreen() {
    */
   function pinCurrentSession() {
     if (sessionId === undefined && currentSessionId !== undefined) {
-      // Through this tab's own navigation, like `unpinDay` — see `TodayTabNavigation`. It happens
-      // to be focused here, so the router would work too, but one mechanism for both means the
-      // focused-route trap can't be walked into again by whatever writes these params next.
-      navigation.setParams({ sessionId: currentSessionId });
+      router.setParams({ sessionId: currentSessionId });
     }
   }
 

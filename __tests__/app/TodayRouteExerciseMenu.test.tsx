@@ -31,12 +31,8 @@ jest.mock('expo-router', () => ({
   }),
   useLocalSearchParams: () => mockParams,
   // Called rather than passed: the factory runs while this file's imports are still being
-  // evaluated, so the fixture has to be dereferenced at render time, not now. It writes this
-  // route's params, which is how the screen pins the day it is on (see `TodayTabNavigation`).
-  useNavigation: () =>
-    mockTabNavigation((params) => {
-      mockParams = { ...mockParams, ...params };
-    }),
+  // evaluated, so the fixture has to be dereferenced at render time, not now.
+  useNavigation: () => mockTabNavigation(),
 }));
 
 // expo-crypto's native module isn't available under Jest; every set log needs an id of its own.
