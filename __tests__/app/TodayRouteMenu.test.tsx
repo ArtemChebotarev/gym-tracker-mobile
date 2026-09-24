@@ -287,7 +287,7 @@ describe('Today tab — header menu', () => {
   });
 });
 
-// Finishing a block leaves the screen on the workout it was on, and `Plan next mesocycle` takes
+// Finishing a block leaves the screen on the workout it was on, and `Copy current meso` takes
 // `Finish mesocycle`'s place there (Artem, 24.09.2026). The screen used to be sent away to an
 // empty state, which is a poor place to decide what comes next from — and no place at all for the
 // block-level actions meant to join that button.
@@ -301,7 +301,7 @@ describe('Today tab — Finish mesocycle, then plan the next one', () => {
     }
   }
 
-  test('the screen stays on the workout, and the button becomes Plan next mesocycle', async () => {
+  test('the screen stays on the workout, and the button becomes Copy current meso', async () => {
     await finishEveryWorkout();
     mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
     renderToday();
@@ -310,13 +310,13 @@ describe('Today tab — Finish mesocycle, then plan the next one', () => {
     fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
     pressAlertButton('Finish');
 
-    expect(await screen.findByRole('button', { name: 'Plan next mesocycle' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Copy current meso' })).toBeTruthy();
     // Still the same workout — nothing navigated, and the pin was not released.
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     expect(mockParams.sessionId).toBe(WORKOUT_FIXTURE_IDS.live);
   });
 
-  test('Plan next mesocycle opens Flow C on the block that just ended', async () => {
+  test('Copy current meso opens Flow C on the block that just ended', async () => {
     await finishEveryWorkout();
     mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
     renderToday();
@@ -324,7 +324,7 @@ describe('Today tab — Finish mesocycle, then plan the next one', () => {
     fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
     pressAlertButton('Finish');
 
-    fireEvent.press(await screen.findByRole('button', { name: 'Plan next mesocycle' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Copy current meso' }));
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/meso-editor/copy',

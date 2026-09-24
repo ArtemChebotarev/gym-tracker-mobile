@@ -24,7 +24,7 @@
 // there is no next session because the block is done, `showFinishMesocycle` puts a primary
 // `Finish mesocycle` there instead (052): the block is closed by hand, never on its own, so the
 // last workout of a mesocycle ends with the button that ends the mesocycle. Finishing it doesn't
-// take the screen anywhere — `Plan next mesocycle` appears in the same place instead, so the block
+// take the screen anywhere — `Copy current meso` appears in the same place instead, so the block
 // you just closed is still the thing on screen when you decide what follows it (Artem, 24.09.2026).
 //
 // Presentational: the model and every outcome come in as props from the Today tab
@@ -96,8 +96,8 @@ export type WorkoutScreenProps = {
   isFinishing: boolean;
   /** Opens the session `Next workout` points at. Read-only only. */
   onOpenNext: (sessionId: string) => void;
-  /** Flow C on the block this session belongs to. Only offered when `showPlanNextMesocycle`. */
-  onPlanNextMesocycle: () => void;
+  /** Flow C on the block this session belongs to. Only offered when `showCopyMesocycle`. */
+  onCopyMesocycle: () => void;
   /** Closes the mesocycle (052). Only offered when `showFinishMesocycle`. */
   onFinishMesocycle: () => void;
   /** The mesocycle's Finish is being saved — the button is disabled so it can't be pressed twice. */
@@ -125,7 +125,7 @@ export function WorkoutScreen({
   isFinishing,
   onOpenNext,
   onFinishMesocycle,
-  onPlanNextMesocycle,
+  onCopyMesocycle,
   isFinishingMesocycle,
   fallback,
 }: WorkoutScreenProps) {
@@ -241,9 +241,9 @@ export function WorkoutScreen({
               />
             </View>
           )}
-          {model.showPlanNextMesocycle && (
+          {model.showCopyMesocycle && (
             <View style={styles.finish}>
-              <Button label="Plan next mesocycle" onPress={onPlanNextMesocycle} />
+              <Button label="Copy current meso" onPress={onCopyMesocycle} />
             </View>
           )}
           {model.unlocksAfter !== undefined && (

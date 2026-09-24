@@ -40,7 +40,7 @@
 // invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
 // action of the `Block complete` EmptyState, so leaving that screen isn't a dead end — closes the
 // block through `useFinishMesocycle` after a plain confirmation: it throws nothing away. The screen
-// does not move afterwards — `Finish mesocycle` is replaced in place by `Plan next mesocycle`
+// does not move afterwards — `Finish mesocycle` is replaced in place by `Copy current meso`
 // (04, "Завершение мезоцикла"), which opens Flow C on the block that just ended. Stopping gets no
 // such button: a block called off is a poor thing to build the next one from.
 //
@@ -160,7 +160,7 @@ export default function TodayScreen() {
    *
    * Leaving and coming back is the whole rule. Finishing or stopping the block deliberately does
    * *not* release it: standing on the workout you just finished is the point, and that is where
-   * `Plan next mesocycle` — and, later, the block's history — is offered from.
+   * `Copy current meso` — and, later, the block's history — is offered from.
    *
    * `setParams` merges, so an explicit `undefined` is what removes a key rather than leaving the
    * old value in place.
@@ -234,7 +234,7 @@ export default function TodayScreen() {
         onPress: () =>
           finishMesocycle.mutate(mesoId, {
             // Nothing navigates: the screen stays on the workout it was on, and `Finish mesocycle`
-            // is replaced in place by `Plan next mesocycle` once the re-read model comes back
+            // is replaced in place by `Copy current meso` once the re-read model comes back
             // (Artem, 24.09.2026 — a finished block is still worth standing on, and block-level
             // actions like its history will land beside that button).
             onError: () => Alert.alert("Couldn't finish the mesocycle", 'Please try again.'),
@@ -427,7 +427,7 @@ export default function TodayScreen() {
             confirmFinishMesocycle(model.mesoId);
           }
         }}
-        onPlanNextMesocycle={() => {
+        onCopyMesocycle={() => {
           if (model !== undefined) {
             router.push({
               pathname: '/meso-editor/copy',
