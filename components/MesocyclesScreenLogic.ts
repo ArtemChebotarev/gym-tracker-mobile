@@ -8,7 +8,7 @@ import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { PlayIcon } from '@design/icons/PlayIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import type { Mesocycle } from '@domain/mesocycle';
-import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
+import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
 import { parseUtcIso } from '@domain/time';
 import type { ListRowBadge } from '@design/components/ListRow';
 import { formatAbsoluteDate } from '@design/formatDate';
@@ -29,15 +29,15 @@ export type MesocycleGroups = {
  * could produce one; once Stop mesocycle could, stopping a block made it and every set logged in
  * it disappear from the app, with no screen left to reach its history from. A stopped block is
  * still a block that happened, so it is listed with the rest and told apart by its badge
- * (`mesocycleStoppedBadge`) rather than hidden.
+ * (`mesocycleStoppedBadge`) rather than hidden. Which blocks those are, and in what order, is
+ * `finishedMesocyclesNewestFirst` in the domain — Flow C's source dropdown (124) offers the same
+ * set and must not disagree with this list about it.
  */
 export function groupMesocycles(mesocycles: readonly Mesocycle[]): MesocycleGroups {
   return {
     active: mesocycles.find((mesocycle) => mesocycle.status === 'active') ?? null,
     planned: mesocycles.filter((mesocycle) => mesocycle.status === 'planned'),
-    completed: mesocycles
-      .filter((mesocycle) => isFinalMesocycle(mesocycle))
-      .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '')),
+    completed: finishedMesocyclesNewestFirst(mesocycles),
   };
 }
 

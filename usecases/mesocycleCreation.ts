@@ -1,8 +1,9 @@
-// Mesocycle creation-flow use cases — tasks 071 and 041 (04 · Meso Creation Flows, "Сохранение
-// при подтверждении (Confirm)"). Orchestrates a flow's domain builder with `MesocycleRepository`;
-// contains no business logic of its own, per usecases/README.md — building the draft
-// (`buildScratchMesocycleDraft`, `buildCopyWeekMesocycleDraft`) and reading a week back out of
-// its sessions (`extractWeekPlan`) both stay in `domain/`.
+// Mesocycle creation-flow use cases — tasks 071, 041 and 124 (04 · Meso Creation Flows,
+// "Сохранение при подтверждении (Confirm)"). Orchestrates a flow's domain builder with
+// `MesocycleRepository`; contains no business logic of its own, per usecases/README.md — building
+// the draft (`buildScratchMesocycleDraft`, `buildCopyWeekMesocycleDraft`), reading a week back out
+// of its sessions (`extractWeekPlan`) and deciding which weeks may be copied at all
+// (`buildSourceWeekOptions`) all stay in `domain/`.
 //
 // Flow B (039) will get its own sibling function here once its builder exists, the same shape as
 // these: build the draft, then `mesocycleRepo.create` it.
@@ -18,6 +19,8 @@ import {
 import type { WeekPlan } from '@domain/plan';
 import { extractWeekPlan } from '@domain/planConverters';
 import { validateCopyableSourceWeek } from '@domain/mesocycleValidators';
+import type { SourceWeekOption } from '@domain/sourceWeek';
+import { buildSourceWeekOptions } from '@domain/sourceWeekBuilders';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { SessionRepository } from '@repositories/session';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
@@ -44,6 +47,30 @@ export async function confirmScratchMesocycleDraft(
   const settings = await deps.settingsRepo.read();
   const draft = buildScratchMesocycleDraft(input, settings.defaultProgressionSettings);
   return deps.mesocycleRepo.create(draft);
+}
+
+export type SourceWeekListDeps = {
+  mesocycleRepo: MesocycleRepository;
+  sessionRepo: SessionRepository;
+};
+
+/**
+ * The weeks of mesocycle `mesoId` that Flow C's step S offers (08.8, "Шаг S — Source week"), with
+ * how many workouts each one has and how many were trained. Ascending by week number; the deload
+ * week and weeks the block never reached are not among them (`buildSourceWeekOptions`).
+ *
+ * Reads sessions only — the week's exercises are fetched later, by `extractSourceWeekPlan`, once
+ * a week is actually picked. Rejects with `NotFoundError` if the mesocycle doesn't exist.
+ */
+export async function listSourceWeeks(
+  mesoId: string,
+  deps: SourceWeekListDeps,
+): Promise<SourceWeekOption[]> {
+  const source = await deps.mesocycleRepo.getById(mesoId);
+  if (!source) {
+    throw new NotFoundError(`Mesocycle "${mesoId}" does not exist.`);
+  }
+  return buildSourceWeekOptions(source, await deps.sessionRepo.listByMesoId(mesoId));
 }
 
 export type SourceWeekDeps = {

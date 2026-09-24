@@ -17,11 +17,16 @@ export default function RootLayout() {
         <QueryProvider>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {/* One route for the whole mesocycle editor flow (all of Flow A's steps) — see
+            {/* One route per mesocycle editor flow, each covering all of that flow's steps — see
               components/MesoEditorScreen.tsx for why step transitions are handled inside that single
-              screen instead of by pushing a route per step. */}
+              screen instead of by pushing a route per step. Flow C's source-week step is part of
+              its flow the same way, not a route in front of it (08.8, task 124). */}
             <Stack.Screen
               name="meso-editor/new"
+              options={{ headerShown: false, presentation: 'fullScreenModal' }}
+            />
+            <Stack.Screen
+              name="meso-editor/copy"
               options={{ headerShown: false, presentation: 'fullScreenModal' }}
             />
             <Stack.Screen
