@@ -6,6 +6,7 @@ import {
   canFinishMesocycle,
   closedMesocycle,
   FINAL_MESOCYCLE_STATUSES,
+  finishedMesocyclesNewestFirst,
   isFinalMesocycle,
   unfinishedSessions,
 } from '@domain/mesocycleLifecycle';
@@ -125,5 +126,54 @@ describe('closedMesocycle', () => {
       status: 'abandoned',
       completedAt: '2026-09-28T18:00:00.000Z',
     });
+  });
+});
+
+// Shared by 08.3's Completed group and Flow C's source dropdown (124) — the two must agree on
+// which blocks have ended and in what order.
+describe('finishedMesocyclesNewestFirst', () => {
+  function closed(id: string, status: Mesocycle['status'], completedAt?: string): Mesocycle {
+    return { ...mesocycle, id, status, completedAt };
+  }
+
+  test('keeps finished and stopped blocks, and nothing else', () => {
+    const result = finishedMesocyclesNewestFirst([
+      closed('done', 'completed', '2026-08-01T00:00:00.000Z'),
+      closed('running', 'active'),
+      closed('stopped', 'abandoned', '2026-08-02T00:00:00.000Z'),
+      closed('upcoming', 'planned'),
+    ]);
+
+    expect(result.map((block) => block.id)).toEqual(['stopped', 'done']);
+  });
+
+  test('orders by when they ended, newest first', () => {
+    const result = finishedMesocyclesNewestFirst([
+      closed('older', 'completed', '2026-06-01T00:00:00.000Z'),
+      closed('newest', 'completed', '2026-09-01T00:00:00.000Z'),
+      closed('middle', 'completed', '2026-07-01T00:00:00.000Z'),
+    ]);
+
+    expect(result.map((block) => block.id)).toEqual(['newest', 'middle', 'older']);
+  });
+
+  test('puts a block with no end date last rather than throwing the order off', () => {
+    const result = finishedMesocyclesNewestFirst([
+      closed('undated', 'completed'),
+      closed('dated', 'completed', '2026-06-01T00:00:00.000Z'),
+    ]);
+
+    expect(result.map((block) => block.id)).toEqual(['dated', 'undated']);
+  });
+
+  test('does not mutate the list it was given', () => {
+    const input = [
+      closed('older', 'completed', '2026-06-01T00:00:00.000Z'),
+      closed('newest', 'completed', '2026-09-01T00:00:00.000Z'),
+    ];
+
+    finishedMesocyclesNewestFirst(input);
+
+    expect(input.map((block) => block.id)).toEqual(['older', 'newest']);
   });
 });

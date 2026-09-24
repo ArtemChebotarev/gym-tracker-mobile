@@ -1,6 +1,9 @@
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import type { WeekPlan } from '@domain/plan';
 import {
   DEFAULT_MESO_BUILDER_DRAFT,
+  toCopiedMesoBuilderDraft,
+  toCopyWeekMesocycleConfirmInput,
   toMesoBuilderDraft,
   toScratchMesocycleDraftInput,
   useDraftStore,
@@ -169,5 +172,86 @@ describe('toMesoBuilderDraft', () => {
 
   test('loads a mesocycle without a weekPlan with no exercises', () => {
     expect(toMesoBuilderDraft({ ...planned, weekPlan: undefined }).exercisesByDay).toEqual({});
+  });
+});
+
+describe('toCopiedMesoBuilderDraft', () => {
+  const source: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-source',
+    name: 'Push/Pull',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    status: 'completed',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    completedAt: '2026-08-15T00:00:00.000Z',
+  };
+
+  const extracted: WeekPlan = {
+    days: [
+      { dayNumber: 1, name: 'Push', exercises: [{ exerciseId: 'bench-press', order: 1, sets: 3 }] },
+      { dayNumber: 2, name: 'Pull', exercises: [{ exerciseId: 'row', order: 1, sets: 4 }] },
+    ],
+  };
+
+  // DoD: after picking a week the draft holds that week's days, exercises and set counts.
+  test('prefills the name, the block’s shape and the week’s days and exercises', () => {
+    expect(toCopiedMesoBuilderDraft(source, extracted, 3)).toEqual({
+      name: 'Push/Pull 2',
+      lengthWeeks: 6,
+      daysPerWeek: 2,
+      exercisesByDay: {
+        1: [{ exerciseId: 'bench-press', order: 1, sets: 3 }],
+        2: [{ exerciseId: 'row', order: 1, sets: 4 }],
+      },
+      source: { mesoId: 'meso-source', weekNumber: 3 },
+    });
+  });
+
+  test('carries no reps or weights — week 1 is priced at Start, not here', () => {
+    const draft = toCopiedMesoBuilderDraft(source, extracted, 3);
+
+    for (const exercises of Object.values(draft.exercisesByDay)) {
+      for (const exercise of exercises) {
+        expect(Object.keys(exercise).sort()).toEqual(['exerciseId', 'order', 'sets']);
+      }
+    }
+  });
+});
+
+describe('toCopyWeekMesocycleConfirmInput', () => {
+  const copied = toCopiedMesoBuilderDraft(
+    {
+      id: 'meso-source',
+      name: 'Push/Pull',
+      lengthWeeks: 6,
+      daysPerWeek: 2,
+    },
+    { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench', order: 1, sets: 3 }] }] },
+    4,
+  );
+
+  // DoD: Save records a copyWeek origin with the week number — this is what it passes on.
+  test('carries the source block and week alongside Flow A’s own input', () => {
+    expect(toCopyWeekMesocycleConfirmInput(copied)).toEqual({
+      name: 'Push/Pull 2',
+      lengthWeeks: 6,
+      daysPerWeek: 2,
+      weekPlan: {
+        days: [
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench', order: 1, sets: 3 }] },
+          { dayNumber: 2, name: '', exercises: [] },
+        ],
+      },
+      sourceMesoId: 'meso-source',
+      sourceWeekNumber: 4,
+    });
+  });
+
+  test('refuses a draft that was never copied from anything', () => {
+    expect(() => toCopyWeekMesocycleConfirmInput(DEFAULT_MESO_BUILDER_DRAFT)).toThrow(
+      /no source week/,
+    );
   });
 });

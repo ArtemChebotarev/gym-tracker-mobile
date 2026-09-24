@@ -13,7 +13,11 @@
 
 import { useRepositories } from '@state/repositories';
 import type { MesocycleClosingDeps } from '@usecases/mesocycleClosing';
-import type { MesocycleCreationDeps } from '@usecases/mesocycleCreation';
+import type {
+  MesocycleCreationDeps,
+  SourceWeekDeps,
+  SourceWeekListDeps,
+} from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
@@ -48,4 +52,16 @@ export function useMesocycleClosingDeps(): MesocycleClosingDeps {
 export function useMesoGridDeps(): MesoGridDeps {
   const { mesocycleRepo, sessionRepo } = useRepositories();
   return { mesocycleRepo, sessionRepo };
+}
+
+/** Flow C's step S (124): which weeks of a finished block may be copied — sessions only. */
+export function useSourceWeekListDeps(): SourceWeekListDeps {
+  const { mesocycleRepo, sessionRepo } = useRepositories();
+  return { mesocycleRepo, sessionRepo };
+}
+
+/** Flow C (041/124): reading the chosen week's structure back out, exercises included. */
+export function useSourceWeekDeps(): SourceWeekDeps {
+  const { mesocycleRepo, sessionRepo, sessionExerciseRepo } = useRepositories();
+  return { mesocycleRepo, sessionRepo, sessionExerciseRepo };
 }

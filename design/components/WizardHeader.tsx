@@ -14,17 +14,42 @@ import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { IconButton } from './IconButton';
 
+/**
+ * Where a step's title goes.
+ *
+ * `heading` — the default and what every numbered step uses: a large heading under the bar, with
+ * `Step N of M` in the bar itself.
+ *
+ * `bar` — the title moves into the bar, centred, in place of the step counter, and no heading is
+ * drawn. For a step that stands outside the numbering: Flow C's Source week comes before Basics
+ * without being one of the steps Basics/Days/Review are numbered among (08.8 · Редактор
+ * мезоцикла — Flow C, "Шаг S"), so a counter there would have to name a number the flow doesn't
+ * use. `currentStep` still fills the progress bar — the step has a position even without a name
+ * for it.
+ */
+export type WizardTitlePlacement = 'heading' | 'bar';
+
 export type WizardHeaderProps = {
   title: string;
   currentStep: number;
   totalSteps: number;
+  /** Defaults to `heading`. */
+  titlePlacement?: WizardTitlePlacement;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
 
 // Mockup (01-new-meso-basics.html / 02-new-meso-days.html): .progress div{gap:4px;height:3px;
 // border-radius:2px}, .title's 6px/4px top/bottom padding, .header's 18px/6px top/bottom padding.
 
-export function WizardHeader({ title, currentStep, totalSteps, onClose, onBack }: WizardHeaderProps) {
+export function WizardHeader({
+  title,
+  currentStep,
+  totalSteps,
+  titlePlacement = 'heading',
+  onClose,
+  onBack,
+}: WizardHeaderProps) {
   const isClose = onClose !== undefined;
+  const inBar = titlePlacement === 'bar';
 
   return (
     <View>
@@ -32,10 +57,22 @@ export function WizardHeader({ title, currentStep, totalSteps, onClose, onBack }
         <IconButton accessibilityLabel={isClose ? 'Close' : 'Back'} onPress={isClose ? onClose : onBack!}>
           <Text style={styles.icon}>{isClose ? '✕' : '‹'}</Text>
         </IconButton>
-        <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
+        {inBar ? (
+          <>
+            <Text style={styles.barTitle} numberOfLines={1}>
+              {title}
+            </Text>
+            {/* Balances the icon button so the title is centred on the bar, not on what is left
+                of it. An absolutely positioned title would centre too, but over the button's own
+                tap target. */}
+            <View style={styles.barTitleSpacer} />
+          </>
+        ) : (
+          <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
+        )}
       </View>
 
-      <Text style={styles.title}>{title}</Text>
+      {!inBar && <Text style={styles.title}>{title}</Text>}
 
       <View style={styles.progress}>
         {Array.from({ length: totalSteps }, (_, index) => (
@@ -65,6 +102,18 @@ const styles = StyleSheet.create({
   stepLabel: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     color: COLORS['text/faint'],
+  },
+  // The title of an unnumbered step, in the bar. `type/card-title` rather than the heading's
+  // `type/sheet-title`: it has a bar's height to fit into, beside a 36pt button.
+  barTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: TYPOGRAPHY['type/card-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
+    color: COLORS['text/primary'],
+  },
+  barTitleSpacer: {
+    width: SIZES['size/icon-button'],
   },
   title: {
     fontSize: TYPOGRAPHY['type/sheet-title'].fontSize,

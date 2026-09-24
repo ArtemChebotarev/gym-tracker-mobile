@@ -27,12 +27,14 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { BORDER_WIDTHS, COLORS, SPACING } from '../tokens';
-import { WizardHeader } from './WizardHeader';
+import { WizardHeader, type WizardTitlePlacement } from './WizardHeader';
 
 export type WizardScreenProps = {
   title: string;
   currentStep: number;
   totalSteps: number;
+  /** Passed through to WizardHeader — see `WizardTitlePlacement`. Defaults to `heading`. */
+  titlePlacement?: WizardTitlePlacement;
   footer: ReactNode;
   children: ReactNode;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
@@ -41,6 +43,7 @@ export function WizardScreen({
   title,
   currentStep,
   totalSteps,
+  titlePlacement,
   footer,
   children,
   onClose,
@@ -50,9 +53,21 @@ export function WizardScreen({
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {onClose ? (
-          <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onClose={onClose} />
+          <WizardHeader
+            title={title}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            titlePlacement={titlePlacement}
+            onClose={onClose}
+          />
         ) : (
-          <WizardHeader title={title} currentStep={currentStep} totalSteps={totalSteps} onBack={onBack!} />
+          <WizardHeader
+            title={title}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            titlePlacement={titlePlacement}
+            onBack={onBack!}
+          />
         )}
 
         <View style={styles.body}>{children}</View>

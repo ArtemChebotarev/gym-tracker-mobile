@@ -3,12 +3,12 @@
 //
 // Start (042) materializes week 1 and the list refreshes in place: the mesocycle moves up into the
 // Active card, which leads on to the Today tab.
-// Several destinations don't exist yet, so they're explicit "not available yet" popups rather
-// than buttons that silently do nothing:
-// - Copy, from either entry point → Flow C's Source week step, which task 124 builds. Both lead to
-//   the same step and differ only in what it already knows (04, "Точки входа"), so they share the
-//   one placeholder until then.
-// - Completed `⋯` → a mesocycle's History screen.
+// Copy, from either entry point, opens Flow C at its Source week step (124). Both lead to the same
+// step and differ only in what it already knows (04, "Точки входа"): the `+` sheet's row knows
+// nothing, a Completed row passes the block it was swiped on as `sourceMesoId`. The step is never
+// skipped — it just opens with that block already chosen.
+// One destination doesn't exist yet, so it's an explicit "not available yet" popup rather than a
+// button that silently does nothing: Completed `⋯` → a mesocycle's History screen.
 // Planned `⋯` → Edit opens the same editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
 // The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
@@ -45,7 +45,7 @@ export default function MesocyclesRoute() {
       isPending={query.isPending || (activeId !== undefined && activeGrid.isPending)}
       activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
       onCreateFromScratch={() => router.push('/meso-editor/new')}
-      onCopyMesocycle={() => showNotAvailable('Copying a mesocycle')}
+      onCopyMesocycle={() => router.push('/meso-editor/copy')}
       onOpenActive={() => router.navigate('/')}
       onStart={(mesocycle) =>
         startMesocycle.mutate(mesocycle.id, {
@@ -65,7 +65,12 @@ export default function MesocyclesRoute() {
           },
         })
       }
-      onCopy={() => showNotAvailable('Copying a mesocycle')}
+      onCopy={(mesocycle) =>
+        router.push({
+          pathname: '/meso-editor/copy',
+          params: { sourceMesoId: mesocycle.id },
+        })
+      }
       onOpenHistory={() => showNotAvailable('Mesocycle history')}
     />
   );

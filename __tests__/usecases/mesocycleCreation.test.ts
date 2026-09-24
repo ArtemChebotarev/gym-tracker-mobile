@@ -11,6 +11,7 @@ import {
   confirmCopyWeekMesocycleDraft,
   confirmScratchMesocycleDraft,
   extractSourceWeekPlan,
+  listSourceWeeks,
 } from '@usecases/mesocycleCreation';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -321,6 +322,37 @@ describe('extractSourceWeekPlan', () => {
         await rejectionOf(extractSourceWeekPlan({ sourceMesoId: 'nope', sourceWeekNumber: 1 }, deps)),
       ),
     ).toBe(true);
+  });
+});
+
+describe('listSourceWeeks', () => {
+  // DoD: weeks with no sessions don't show up, and the deload week isn't among the options.
+  test('offers the weeks that have sessions, deload excluded', async () => {
+    const deps = makeDeps();
+    await seedSource(deps);
+
+    // The source block has sessions in weeks 3 and 6 only; 6 is its deload.
+    await expect(listSourceWeeks(SOURCE_ID, deps)).resolves.toEqual([
+      { weekNumber: 3, completedCount: 1, sessionCount: 2 },
+    ]);
+  });
+
+  // DoD: a week without a single finished session is still on offer — week 3's day 2 was never
+  // trained, and the week is there all the same, counted as it really is.
+  test('counts what was trained without hiding what was not', async () => {
+    const deps = makeDeps();
+    await seedSource(deps);
+
+    const [week] = await listSourceWeeks(SOURCE_ID, deps);
+
+    expect(week?.completedCount).toBe(1);
+    expect(week?.sessionCount).toBe(2);
+  });
+
+  test('rejects a mesocycle that does not exist', async () => {
+    const deps = makeDeps();
+
+    expect(isNotFoundError(await rejectionOf(listSourceWeeks('nope', deps)))).toBe(true);
   });
 });
 

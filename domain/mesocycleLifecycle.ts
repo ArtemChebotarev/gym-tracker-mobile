@@ -24,6 +24,23 @@ export function isFinalMesocycle(mesocycle: Pick<Mesocycle, 'status'>): boolean 
 }
 
 /**
+ * Every block that has ended — finished or stopped — newest end first. Both ways out leave a
+ * block that happened and weeks worth copying, so neither is filtered away here; a stopped one is
+ * told apart where it's shown, by its badge (08.3).
+ *
+ * Two screens ask this exact question and must not answer it differently: 08.3's Completed group
+ * (074) and Flow C's source-mesocycle dropdown (124, 08.8 — "`Mesocycle` со `status = completed`
+ * или `abandoned`, как в секции Completed на 08.3"). A block with no `completedAt` sorts last
+ * rather than throwing off the order — the field is set by both closing actions (052), so this
+ * only covers a record that predates them.
+ */
+export function finishedMesocyclesNewestFirst(mesocycles: readonly Mesocycle[]): Mesocycle[] {
+  return mesocycles
+    .filter((mesocycle) => isFinalMesocycle(mesocycle))
+    .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''));
+}
+
+/**
  * How a block ends: `completed` by Finish mesocycle, once nothing is left to train, `abandoned` by
  * Stop mesocycle, at any point. Both stamp `completedAt` — 08.3's Completed card reads it as the
  * block's end date either way.
