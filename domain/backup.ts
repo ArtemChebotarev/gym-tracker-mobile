@@ -12,7 +12,11 @@ import type { MesoTemplate } from './plan';
 import type { Settings } from '@repositories/settings';
 import { ConflictError } from './errors';
 
-/** Marks the file as ours, so a JSON that is merely well-formed isn't mistaken for a backup. */
+/**
+ * Marks the file as ours, so a JSON that is merely well-formed isn't mistaken for a backup.
+ * This string is on disk in every backup already exported, so it keeps the pre-Hybro name:
+ * renaming it would make those files unrestorable (task 131).
+ */
 export const BACKUP_KIND = 'gymtracker-backup' as const;
 
 /**
@@ -64,7 +68,7 @@ export type BackupFile = {
 export function assertRestorable(value: unknown, schemaVersion: number): asserts value is BackupFile {
   const file = value as Partial<BackupFile> | null;
   if (file === null || typeof file !== 'object' || file.kind !== BACKUP_KIND) {
-    throw new ConflictError('This file is not a GymTracker backup.');
+    throw new ConflictError('This file is not a Hybro backup.');
   }
   if (file.schemaVersion !== schemaVersion) {
     throw new ConflictError(

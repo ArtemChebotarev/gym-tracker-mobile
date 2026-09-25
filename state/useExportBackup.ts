@@ -14,9 +14,9 @@ import { exportBackupJson, type BackupDeps } from '@usecases/backup';
 
 import { useBackupDeps } from './backupStore';
 
-/** `gymtracker-backup-2026-09-21.json` — the date is the file's own, in UTC like every stamp. */
+/** `hybro-backup-2026-09-21.json` — the date is the file's own, in UTC like every stamp. */
 export function backupFileName(now: Date = new Date()): string {
-  return `gymtracker-backup-${now.toISOString().slice(0, 10)}.json`;
+  return `hybro-backup-${now.toISOString().slice(0, 10)}.json`;
 }
 
 async function shareBackup(deps: BackupDeps): Promise<void> {
@@ -34,7 +34,7 @@ async function shareBackup(deps: BackupDeps): Promise<void> {
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
     UTI: 'public.json',
-    dialogTitle: 'GymTracker backup',
+    dialogTitle: 'Hybro backup',
   });
 }
 
