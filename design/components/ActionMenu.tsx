@@ -21,6 +21,18 @@
 // `ShadowNodeProxy.clearContentOrigin`, which expo-modules-core only grows in a later SDK patch
 // line, and the iOS build fails to compile its own `RNHostView.swift`. Move it when Expo moves.
 //
+// **`expo` must stay at 57.0.25 or newer.** UIKit mounts the open menu's container in the app's
+// own window and hit-tests the tap that dismisses it straight through: native controls ride the
+// suppressed responder path and stay quiet, but React Native drives its whole surface from one
+// gesture recognizer, which still gets the touch and presses whatever is under the plate. Closing
+// a Mesocycles row's menu therefore opened the row (08.3, found on the device). The fix is
+// `SystemMenuTouchGate` in expo-modules-core — a recognizer on the window that tells React
+// Native's handler to skip that touch while the container is up — and it only works whole from
+// **expo-modules-core 57.0.19**, which `expo@57.0.25` pulls in: 57.0.13 shipped the first version,
+// gated on `accessibilityViewIsModal`, which UIKit implements only while an accessibility client
+// is attached, so on a normal launch it did nothing (expo/expo#48419, #48463, #49775, #49916).
+// Nothing in this app implements that gate; don't try to, and don't drop below that version.
+//
 // Off iOS there is no SwiftUI: the trigger falls back to the IconButton and BottomSheet pairing
 // this replaced, with one ActionRow per item — same actions, same order, same destructive
 // treatment. The sheet's open state lives here rather than in the caller, so a screen wires the
