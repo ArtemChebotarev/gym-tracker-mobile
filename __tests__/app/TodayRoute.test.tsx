@@ -115,10 +115,13 @@ describe('Today tab — mesocycle overview', () => {
 
     expect(await screen.findByText('Week 2 of 5 · 4 days a week')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Week 1 Day 1, completed' })).toBeTruthy();
-    // The open day is ringed.
-    expect(
-      within(screen.getByTestId('meso-grid-cell-2-1')).getByTestId('meso-grid-open-ring'),
-    ).toBeTruthy();
+    // The open day carries the accent outline — the shown session is the one it marks (task 127).
+    expect(screen.getByTestId('meso-grid-cell-2-1').props.accessibilityState).toMatchObject({
+      selected: true,
+    });
+    expect(screen.getByTestId('meso-grid-cell-1-1').props.accessibilityState).toMatchObject({
+      selected: false,
+    });
   });
 
   test('a cell with a session closes the sheet and opens that session', async () => {
