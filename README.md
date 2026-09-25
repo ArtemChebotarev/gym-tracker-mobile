@@ -1,4 +1,4 @@
-# GymTracker
+# Hybro
 
 ## Running and debugging
 
