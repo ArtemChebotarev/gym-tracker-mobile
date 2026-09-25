@@ -13,7 +13,8 @@ import { formatRowWeight, initialWeightText, parseWeight, rowEvaluation } from '
  * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
  * plus the exercise's own status:
  * - live — everything, including `⋯`;
- * - read-only — no `⋯`;
+ * - read-only, and history with it (08.9) — no `⋯`. A card reads the same in both: history takes
+ *   things off the header, not off the cards;
  * - skipped (either mode) — the card at 50% opacity. With sets logged, every row shows: the logged
  *   ones as usual, the rest as `Skipped` rows. With nothing logged, one `Skipped` line in place of
  *   the rows;

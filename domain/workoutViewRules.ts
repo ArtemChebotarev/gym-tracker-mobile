@@ -3,12 +3,27 @@
 // the session tree and maps it with these.
 
 import type { Session, SessionExercise, SetLog, SetTarget, WeightHint } from '@domain/execution';
-import type { ProgressionSettings } from '@domain/mesocycle';
+import type { Mesocycle, ProgressionSettings } from '@domain/mesocycle';
+import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
 import { isFinalSession } from '@domain/sessionLifecycle';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
 
-/** The screen mode a session opens in (08.7, "Режимы экрана"). */
-export function workoutMode(session: Pick<Session, 'status' | 'prescriptionStatus'>): WorkoutMode {
+/**
+ * The screen mode a session opens in (08.7, "Режимы экрана").
+ *
+ * The block decides first: every session of one that has ended — finished or stopped — opens in
+ * `history`, whatever its own status (08.9, "History-режим экрана тренировки"). There is no route
+ * parameter for it, so the one place that could get it wrong is this function. A closed block has
+ * no non-final session left to tell apart anyway — Stop closes each of them (05) — so `history`
+ * replaces `readonly` there rather than competing with `live` or `preview`.
+ */
+export function workoutMode(
+  session: Pick<Session, 'status' | 'prescriptionStatus'>,
+  mesocycle: Pick<Mesocycle, 'status'>,
+): WorkoutMode {
+  if (isFinalMesocycle(mesocycle)) {
+    return 'history';
+  }
   if (isFinalSession(session)) {
     return 'readonly';
   }

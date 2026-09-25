@@ -1,7 +1,18 @@
 // Pure helpers behind components/WorkoutScreen.tsx — see the code-style skill.
 
 import { formatWeekdayDate } from '@design/formatDate';
+import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutHeader, WorkoutSessionModel } from '@usecases/workoutSession';
+
+/**
+ * Whether the header carries the grid button and the `⋯` menu (08.9, "History-режим экрана
+ * тренировки"): every mode but history. A block that has ended keeps its grid and its actions on
+ * its own detail screen, which is where a history session is opened from — putting them here too
+ * would only lead back to the screen the user just came off.
+ */
+export function showsHeaderActions(mode: WorkoutMode): boolean {
+  return mode !== 'history';
+}
 
 /**
  * The line under the title (08.7, "Шапка"): `Tue, 15 Sep · Upper/lower` — the session's date, then

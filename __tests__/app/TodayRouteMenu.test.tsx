@@ -192,15 +192,23 @@ describe('Today tab — header menu', () => {
     expect(await screen.findByText('Plan your training block')).toBeTruthy();
   });
 
-  test('a day of a block that is no longer active has nothing to stop (052)', async () => {
+  // Stop used to be the only thing a closed block took off this menu (052). Since 128 the whole
+  // header goes with it: a day of a block that has ended opens in history mode, which carries
+  // neither the `⋯` nor the grid button — that block's actions and its grid live on its own detail
+  // screen, which is where the day was opened from (08.9).
+  test('DoD: a day of a block that is no longer active has no header menu at all', async () => {
     const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
     await repositories().mesocycleRepo.update({ ...mesocycle!, status: 'abandoned' });
     mockParams = { sessionId: WORKOUT_FIXTURE_IDS.completed };
     renderToday();
     await screen.findByText('Week 1 Day 1');
 
+    expect(screen.queryByTestId('action-menu')).toBeNull();
     expect(menuItem('stopMesocycle')).toBeNull();
-    expect(menuItem('mesocycleHistory')).toBeTruthy();
+    expect(menuItem('mesocycleHistory')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Mesocycle overview' })).toBeNull();
+    // The session itself is still all there — that is what history is for.
+    expect(screen.getByText('Week 1 Day 1')).toBeTruthy();
   });
 
   test('Add exercise adds the picked exercises to the end of the session', async () => {

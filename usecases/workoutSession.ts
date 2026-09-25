@@ -148,9 +148,10 @@ export type WorkoutSessionActions = {
    */
   canSkipWorkout: boolean;
   /**
-   * The mesocycle is `active` (052). Stop is a mesocycle action, so it's there in every mode — a
-   * day of the block opened read-only can still be the one you call the block off from — but a
-   * block already closed has nothing to stop.
+   * The mesocycle is `active` (052). Stop is a mesocycle action, so it's there in every mode that
+   * shows the menu — a day of the block opened read-only can still be the one you call the block
+   * off from — but a block already closed has nothing to stop, and its sessions open in history,
+   * which has no menu at all (08.9).
    */
   canStopMesocycle: boolean;
 };
@@ -200,7 +201,8 @@ export type WorkoutSessionModel = {
   showCopyMesocycle: boolean;
   /**
    * Read-only only: the session the `Next workout` button opens — the mesocycle's current one (in
-   * progress, else the earliest ready; see `currentSession`). Absent when nothing is left to do.
+   * progress, else the earliest ready; see `currentSession`). Absent when nothing is left to do,
+   * and in history mode always — a block that has ended has no next workout (08.9).
    */
   nextSessionId?: string;
   /** Preview only — `Unlocks when you finish Week W Day D`. */
@@ -362,11 +364,12 @@ function toExercise(
 }
 
 /**
- * A live or read-only session, from its own tree. `source` is the tree of the session a deload
- * session was planned from (`null` otherwise) — see `referenceReps`. `mesoSessions` is every
+ * A live, read-only or history session, from its own tree. `source` is the tree of the session a
+ * deload session was planned from (`null` otherwise) — see `referenceReps`. `mesoSessions` is every
  * session of the mesocycle, which answers what `Next workout` opens and whether the block has
- * anything left to train; it is loaded for a read-only session only, and `null` while the session
- * is live — a live session is itself the proof that the block isn't done.
+ * anything left to train; it is loaded for a read-only session only, and `null` for a live or
+ * history one — a live session is itself the proof that the block isn't done, and a closed block
+ * has neither a next workout nor a Finish left in it.
  */
 function fromTree(
   tree: SessionTree,
@@ -374,7 +377,7 @@ function fromTree(
   mesoSessions: readonly Session[] | null,
 ): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
-  const mode = workoutMode(session);
+  const mode = workoutMode(session, mesocycle);
   const live = mode === 'live';
   const next = mesoSessions === null ? undefined : currentSession(mesoSessions);
   const header: WorkoutHeader = {
@@ -492,7 +495,8 @@ async function previewOf(
 
 /**
  * The workout screen model of session `sessionId`, in the mode its status calls for: live,
- * read-only, or — for an `awaiting_source` session — preview.
+ * read-only, history — any session of a block that has ended (08.9) — or, for an `awaiting_source`
+ * session, preview.
  *
  * Rejects with `NotFoundError` if the session doesn't exist, if its mesocycle or one of its
  * exercises is missing, or if a preview has no programmed session of the same day to show.
@@ -505,7 +509,8 @@ export async function getWorkoutSession(
   if (!tree) {
     throw new NotFoundError(`Session "${sessionId}" does not exist.`);
   }
-  if (workoutMode(tree.session) === 'preview') {
+  const mode = workoutMode(tree.session, tree.mesocycle);
+  if (mode === 'preview') {
     const { mesoId, weekNumber, dayNumber } = tree.session;
     return previewOf({ mesoId, weekNumber, dayNumber }, tree.session, deps);
   }
@@ -514,8 +519,7 @@ export async function getWorkoutSession(
     isDeload && sourceSessionId !== undefined
       ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
       : null;
-  const mesoSessions =
-    workoutMode(tree.session) === 'readonly' ? await deps.sessionRepo.listByMesoId(mesoId) : null;
+  const mesoSessions = mode === 'readonly' ? await deps.sessionRepo.listByMesoId(mesoId) : null;
   return fromTree(tree, source, mesoSessions);
 }
 

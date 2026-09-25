@@ -1,12 +1,16 @@
-// Workout screen frame — 08.7 · Тренировка, "Шапка" (task 091). One layout for all three modes
-// (live, read-only, preview — 088's `mode`): the header, the 3pt progress bar, and a single
-// ScrollView of exercise cards.
+// Workout screen frame — 08.7 · Тренировка, "Шапка" (task 091). One layout for all four modes
+// (live, read-only, history, preview — 088's `mode`): the header, the 3pt progress bar, and a
+// single ScrollView of exercise cards.
 //
 // Header: `Week N` + faint `Day N` in RootScreen's title line (the Today tab shows this screen, so
 // it shares the root screens' title treatment), the subtitle `date · mesocycle`, a round accent
 // check for a completed session only (not pressable), and the grid and `⋯` buttons, which exist in
-// every mode. A deload session gets a neutral `Deload` badge right after the title, ahead of the
-// check — lighter weights and fewer sets otherwise read like a mistake. The progress ratio comes straight from the model (088) — nothing is computed here.
+// every mode but history (`showsHeaderActions`, 128): a day of a block that has ended is opened
+// from that block's detail screen, which is where its grid and its actions live — so the header
+// here holds nothing but the title, the subtitle and the way back. A deload session gets a neutral
+// `Deload` badge right after the title, ahead of the check — lighter weights and fewer sets
+// otherwise read like a mistake. The progress ratio comes straight from the model (088) — nothing
+// is computed here.
 //
 // The `⋯` is an ActionMenu (117): its actions open as a native menu out of the button itself
 // rather than as a sheet, so the screen holds the actions (`menuActions`, one handler per action)
@@ -20,7 +24,8 @@
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
 // A read-only session shows a secondary `Next workout` button in the same place when the model has
-// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap. When
+// a `nextSessionId` — the mesocycle's current session — so moving on after Finish is one tap. A
+// history session never has one (088): a block that has ended has no next workout. When
 // there is no next session because the block is done, `showFinishMesocycle` puts a primary
 // `Finish mesocycle` there instead (052): the block is closed by hand, never on its own, so the
 // last workout of a mesocycle ends with the button that ends the mesocycle. Finishing it doesn't
@@ -58,7 +63,11 @@ import {
   workoutMenuActions,
   type WorkoutMenuItem,
 } from './WorkoutHeaderMenuLogic';
-import { formatUnlocksCaption, formatWorkoutSubtitle } from './WorkoutScreenLogic';
+import {
+  formatUnlocksCaption,
+  formatWorkoutSubtitle,
+  showsHeaderActions,
+} from './WorkoutScreenLogic';
 import { styles } from './WorkoutScreenStyles';
 
 export type WorkoutScreenProps = {
@@ -178,17 +187,19 @@ export function WorkoutScreen({
         }
         subtitle={formatWorkoutSubtitle(header)}
         trailing={
-          <View style={styles.actions}>
-            <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
-              <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-            </IconButton>
-            <ActionMenu
-              accessibilityLabel="Workout menu"
-              title={formatWorkoutMenuTitle(header)}
-              subtitle={header.mesocycleName}
-              items={workoutMenuActions(model.actions, menuActions)}
-            />
-          </View>
+          showsHeaderActions(model.mode) ? (
+            <View style={styles.actions}>
+              <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
+                <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+              </IconButton>
+              <ActionMenu
+                accessibilityLabel="Workout menu"
+                title={formatWorkoutMenuTitle(header)}
+                subtitle={header.mesocycleName}
+                items={workoutMenuActions(model.actions, menuActions)}
+              />
+            </View>
+          ) : undefined
         }
       >
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
