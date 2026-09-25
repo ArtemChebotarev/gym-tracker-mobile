@@ -17,21 +17,24 @@
 //   teaches what the second way is before there is anything to use it on.
 // - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
-// - Delete (revealed by swiping a Planned row) opens `Delete mesocycle? This can't be undone` and
+// - Delete (the Planned row's one `⋯` action) opens `Delete mesocycle? This can't be undone` and
 //   calls `onDelete` only from its destructive button.
 //
 // Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
 // Rows inside a group sit in their own gap-less View: the group's `gap` is for the label only, and
 // applied between rows it pushed each row's content below the visual middle of its divider band.
 //
-// Since task 117 a row carries nothing but its name and caption: every action is behind a swipe
-// (`SwipeableRow`). Right to left reveals the secondary ones — Edit and Delete on a Planned row,
-// History on a Completed one. Left to right reveals the row's primary one — Start, or Copy on a
-// finished block — as a button to tap, and pulling all the way runs it without the tap. The pill
-// and the `⋯` both went with it, because the right edge is where the hand goes to swipe and a
-// button sitting there competed with the gesture (Artem's call). With the `⋯` sheet gone, so is
-// the `presentation: overlay` workaround it needed: Delete's confirmation is raised from a plain
-// button now, with no modal dismissing underneath it.
+// Every action is visible on the row again (117, after two days on the device). Swipes are gone:
+// the screen never showed what it could do, so opening it with no active block said nothing about
+// where to start. A row now reads as what it is — a tap opens the obvious thing, the pill is the
+// one action worth a button, and the rest live behind the `⋯`, which opens the same native menu
+// as every other `⋯` in the app (`ActionMenu`, the other half of 117):
+// - Planned: tap opens the editor, `Start` is the accent pill, `⋯` holds Delete.
+// - Completed: tap opens that block's history (`onOpenHistory`), `⋯` holds Copy and Archive.
+//   Archive is a stub — the route says "not available yet" rather than the row going quiet.
+// The tap and the buttons don't overlap: `ListRow` keeps an actions row's accessories outside its
+// press region, so a tap on `Start` starts and a tap anywhere else on the row opens the editor.
+// `SwipeableRow` stays in the SDK, unused for now (Artem's call).
 //
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
@@ -45,14 +48,12 @@ import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
-import { SwipeableRow } from '@design/components/SwipeableRow';
 
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
 
 import {
-  completedLeadingAction,
-  completedRowActions,
+  completedMenuItems,
   formatActiveCaption,
   formatCompletedCaption,
   formatPlannedCaption,
@@ -63,8 +64,7 @@ import {
   isEmptyGroups,
   mesocycleStoppedBadge,
   PLAN_MESOCYCLE_LABEL,
-  plannedLeadingAction,
-  plannedRowActions,
+  plannedMenuItems,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
 
@@ -86,6 +86,8 @@ export type MesocyclesScreenProps = {
   onDelete: (mesocycle: Mesocycle) => void;
   onCopy: (mesocycle: Mesocycle) => void;
   onOpenHistory: (mesocycle: Mesocycle) => void;
+  /** Still a stub — see the note at the top. */
+  onArchive: (mesocycle: Mesocycle) => void;
 };
 
 export function MesocyclesScreen({
@@ -100,6 +102,7 @@ export function MesocyclesScreen({
   onDelete,
   onCopy,
   onOpenHistory,
+  onArchive,
 }: MesocyclesScreenProps) {
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
   const methodSheet = useMesoCreationMethodSheet();
@@ -191,21 +194,24 @@ export function MesocyclesScreen({
                 <Text style={styles.groupLabel}>Planned</Text>
                 <View>
                   {groups.planned.map((mesocycle) => (
-                    <SwipeableRow
+                    <ListRow
                       key={mesocycle.id}
-                      testID={`mesocycle-row-${mesocycle.id}`}
-                      accessibilityLabel={mesocycle.name}
-                      leadingAction={plannedLeadingAction(mesocycle, { onStart: handleStart })}
-                      trailingActions={plannedRowActions(mesocycle, {
-                        onEdit,
-                        onDelete: confirmDelete,
-                      })}
-                    >
-                      <ListRow
-                        title={mesocycle.name}
-                        subtitle={formatPlannedCaption(mesocycle)}
-                      />
-                    </SwipeableRow>
+                      title={mesocycle.name}
+                      subtitle={formatPlannedCaption(mesocycle)}
+                      onPress={() => onEdit(mesocycle)}
+                      trailing={{
+                        type: 'actions',
+                        action: {
+                          label: 'Start',
+                          variant: 'primary',
+                          onPress: () => handleStart(mesocycle),
+                        },
+                        menu: {
+                          testID: `mesocycle-menu-${mesocycle.id}`,
+                          items: plannedMenuItems(mesocycle, { onDelete: confirmDelete }),
+                        },
+                      }}
+                    />
                   ))}
                 </View>
               </View>
@@ -216,19 +222,20 @@ export function MesocyclesScreen({
                 <Text style={styles.groupLabel}>Completed</Text>
                 <View>
                   {groups.completed.map((mesocycle) => (
-                    <SwipeableRow
+                    <ListRow
                       key={mesocycle.id}
-                      testID={`mesocycle-row-${mesocycle.id}`}
-                      accessibilityLabel={mesocycle.name}
-                      leadingAction={completedLeadingAction(mesocycle, { onCopy })}
-                      trailingActions={completedRowActions(mesocycle, { onOpenHistory })}
-                    >
-                      <ListRow
-                        title={mesocycle.name}
-                        subtitle={formatCompletedCaption(mesocycle)}
-                        badge={mesocycleStoppedBadge(mesocycle)}
-                      />
-                    </SwipeableRow>
+                      title={mesocycle.name}
+                      subtitle={formatCompletedCaption(mesocycle)}
+                      badge={mesocycleStoppedBadge(mesocycle)}
+                      onPress={() => onOpenHistory(mesocycle)}
+                      trailing={{
+                        type: 'actions',
+                        menu: {
+                          testID: `mesocycle-menu-${mesocycle.id}`,
+                          items: completedMenuItems(mesocycle, { onCopy, onArchive }),
+                        },
+                      }}
+                    />
                   ))}
                 </View>
               </View>

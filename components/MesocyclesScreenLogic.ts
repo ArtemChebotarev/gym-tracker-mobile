@@ -1,11 +1,9 @@
 // Pure helpers behind components/MesocyclesScreen.tsx — see the code-style skill and
 // 08.3 · Мезоциклы — список (task 074).
 
-import type { SwipeAction } from '@design/components/SwipeableRow';
+import type { ActionMenuItem } from '@design/components/ActionMenu';
+import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { CopyIcon } from '@design/icons/CopyIcon';
-import { EditIcon } from '@design/icons/EditIcon';
-import { HistoryIcon } from '@design/icons/HistoryIcon';
-import { PlayIcon } from '@design/icons/PlayIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import type { Mesocycle } from '@domain/mesocycle';
 import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
@@ -115,20 +113,20 @@ export function formatStartBlockedMessage(active: Mesocycle): string {
 }
 
 /**
- * What a Planned row reveals when swiped right to left (08.3, task 117) — the two actions that
- * used to sit in its `⋯` sheet. Delete is last, so it lands under the thumb at the very edge the
- * swipe came from, the way iOS orders a destructive action.
+ * What a Planned row's `⋯` offers (08.3, task 117). Only Delete: Edit is the row's own tap, and a
+ * menu that repeats what a tap already does teaches nothing. Destructive, so iOS draws it red —
+ * the confirmation in front of it is the screen's, not the menu's.
  */
-export function plannedRowActions(
+export function plannedMenuItems(
   mesocycle: Mesocycle,
-  handlers: { onEdit: (mesocycle: Mesocycle) => void; onDelete: (mesocycle: Mesocycle) => void },
-): SwipeAction[] {
+  handlers: { onDelete: (mesocycle: Mesocycle) => void },
+): ActionMenuItem[] {
   return [
-    { key: 'edit', label: 'Edit', icon: EditIcon, onPress: () => handlers.onEdit(mesocycle) },
     {
       key: 'delete',
       label: 'Delete',
       icon: TrashIcon,
+      systemImage: 'trash',
       destructive: true,
       onPress: () => handlers.onDelete(mesocycle),
     },
@@ -136,50 +134,32 @@ export function plannedRowActions(
 }
 
 /**
- * What a Completed row reveals when swiped right to left. Only History: a finished block can't be
- * edited, and deleting one is not offered anywhere (there is no hard delete in this app).
+ * What a Completed row's `⋯` offers. Copy plans the next block from this one (Flow C); Archive
+ * takes it out of the list without touching anything logged in it, and is still a stub — nothing
+ * archives a block yet, so the screen says so rather than the row going quiet. No Delete: a
+ * finished block is history, and nothing in the app hard-deletes one.
  */
-export function completedRowActions(
+export function completedMenuItems(
   mesocycle: Mesocycle,
-  handlers: { onOpenHistory: (mesocycle: Mesocycle) => void },
-): SwipeAction[] {
+  handlers: {
+    onCopy: (mesocycle: Mesocycle) => void;
+    onArchive: (mesocycle: Mesocycle) => void;
+  },
+): ActionMenuItem[] {
   return [
     {
-      key: 'history',
-      label: 'History',
-      icon: HistoryIcon,
-      onPress: () => handlers.onOpenHistory(mesocycle),
+      key: 'copy',
+      label: 'Copy',
+      icon: CopyIcon,
+      systemImage: 'doc.on.doc',
+      onPress: () => handlers.onCopy(mesocycle),
+    },
+    {
+      key: 'archive',
+      label: 'Archive',
+      icon: ArchiveIcon,
+      systemImage: 'archivebox',
+      onPress: () => handlers.onArchive(mesocycle),
     },
   ];
-}
-
-/**
- * A Planned row's primary action — run by pulling the row left to right (08.3, task 117). Start is
- * what you came to this screen for, so it gets the leading pull rather than a place among the
- * secondary actions. It can't fire by accident: the pull has to be a long one, and `Start` asks
- * for confirmation after that.
- */
-export function plannedLeadingAction(
-  mesocycle: Mesocycle,
-  handlers: { onStart: (mesocycle: Mesocycle) => void },
-): SwipeAction {
-  return {
-    key: 'start',
-    label: 'Start',
-    icon: PlayIcon,
-    onPress: () => handlers.onStart(mesocycle),
-  };
-}
-
-/** A Completed row's primary action — the same leading pull, planning the next block from this one. */
-export function completedLeadingAction(
-  mesocycle: Mesocycle,
-  handlers: { onCopy: (mesocycle: Mesocycle) => void },
-): SwipeAction {
-  return {
-    key: 'copy',
-    label: 'Copy',
-    icon: CopyIcon,
-    onPress: () => handlers.onCopy(mesocycle),
-  };
 }

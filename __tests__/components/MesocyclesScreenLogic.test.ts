@@ -1,8 +1,7 @@
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
-  completedLeadingAction,
-  completedRowActions,
+  completedMenuItems,
   formatActiveCaption,
   formatCompletedCaption,
   formatPlannedCaption,
@@ -10,8 +9,7 @@ import {
   groupMesocycles,
   isEmptyGroups,
   mesocycleStoppedBadge,
-  plannedLeadingAction,
-  plannedRowActions,
+  plannedMenuItems,
 } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -117,74 +115,50 @@ describe('captions', () => {
   });
 });
 
-describe('plannedRowActions', () => {
+describe('plannedMenuItems', () => {
   const mesocycle = makeMesocycle({ id: 'p', status: 'planned' });
 
-  test('offers Edit and Delete, with Delete last and destructive', () => {
-    const items = plannedRowActions(mesocycle, { onEdit: jest.fn(), onDelete: jest.fn() });
-
-    expect(items.map((item) => item.key)).toEqual(['edit', 'delete']);
-    expect(items.map((item) => item.label)).toEqual(['Edit', 'Delete']);
-    // Last in the list is furthest right — under the thumb the swipe came from.
-    expect(items.at(-1)?.destructive).toBe(true);
-    expect(items[0]?.destructive).toBeUndefined();
-  });
-
-  test('each action calls its handler with that mesocycle', () => {
-    const onEdit = jest.fn();
+  test('offers Delete alone, destructive and with the handler for that mesocycle', () => {
     const onDelete = jest.fn();
-    const items = plannedRowActions(mesocycle, { onEdit, onDelete });
+    const items = plannedMenuItems(mesocycle, { onDelete });
 
-    items.find((item) => item.key === 'edit')?.onPress();
-    items.find((item) => item.key === 'delete')?.onPress();
+    expect(items.map((item) => item.key)).toEqual(['delete']);
+    expect(items[0]?.label).toBe('Delete');
+    expect(items[0]?.destructive).toBe(true);
 
-    expect(onEdit).toHaveBeenCalledWith(mesocycle);
+    items[0]?.onPress();
     expect(onDelete).toHaveBeenCalledWith(mesocycle);
   });
 
-  test('Start is not among them — it is the leading pull, not a trailing button', () => {
-    const items = plannedRowActions(mesocycle, { onEdit: jest.fn(), onDelete: jest.fn() });
+  test('Edit and Start are not in it — the row tap opens the editor, the pill starts the block', () => {
+    const items = plannedMenuItems(mesocycle, { onDelete: jest.fn() });
 
+    expect(items.map((item) => item.key)).not.toContain('edit');
     expect(items.map((item) => item.key)).not.toContain('start');
   });
 });
 
-describe('leading actions', () => {
-  const planned = makeMesocycle({ id: 'p', status: 'planned' });
-  const completed = makeMesocycle({ id: 'c', status: 'completed' });
-
-  test('a Planned row pulls to Start, a Completed one to Copy', () => {
-    const onStart = jest.fn();
-    const onCopy = jest.fn();
-
-    const start = plannedLeadingAction(planned, { onStart });
-    const copy = completedLeadingAction(completed, { onCopy });
-
-    expect([start.key, copy.key]).toEqual(['start', 'copy']);
-    expect([start.label, copy.label]).toEqual(['Start', 'Copy']);
-    start.onPress();
-    copy.onPress();
-    expect(onStart).toHaveBeenCalledWith(planned);
-    expect(onCopy).toHaveBeenCalledWith(completed);
-  });
-
-  test('neither is destructive — a pull that fires one must never be the red kind', () => {
-    expect(plannedLeadingAction(planned, { onStart: jest.fn() }).destructive).toBeUndefined();
-    expect(completedLeadingAction(completed, { onCopy: jest.fn() }).destructive).toBeUndefined();
-  });
-});
-
-describe('completedRowActions', () => {
+describe('completedMenuItems', () => {
   const mesocycle = makeMesocycle({ id: 'c', status: 'completed' });
 
-  test('offers History alone — a finished block is neither edited nor deleted', () => {
-    const onOpenHistory = jest.fn();
-    const items = completedRowActions(mesocycle, { onOpenHistory });
+  test('offers Copy and Archive, each calling its handler with that mesocycle', () => {
+    const onCopy = jest.fn();
+    const onArchive = jest.fn();
+    const items = completedMenuItems(mesocycle, { onCopy, onArchive });
 
-    expect(items.map((item) => item.key)).toEqual(['history']);
-    expect(items[0]?.destructive).toBeUndefined();
+    expect(items.map((item) => item.key)).toEqual(['copy', 'archive']);
+    expect(items.map((item) => item.label)).toEqual(['Copy', 'Archive']);
 
     items[0]?.onPress();
-    expect(onOpenHistory).toHaveBeenCalledWith(mesocycle);
+    items[1]?.onPress();
+    expect(onCopy).toHaveBeenCalledWith(mesocycle);
+    expect(onArchive).toHaveBeenCalledWith(mesocycle);
+  });
+
+  test('nothing here is destructive — a finished block is never hard-deleted', () => {
+    const items = completedMenuItems(mesocycle, { onCopy: jest.fn(), onArchive: jest.fn() });
+
+    expect(items.every((item) => item.destructive === undefined)).toBe(true);
+    expect(items.map((item) => item.key)).not.toContain('delete');
   });
 });

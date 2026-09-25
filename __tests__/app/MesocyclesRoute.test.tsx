@@ -1,8 +1,8 @@
 // Where the Mesocycles tab's two Copy entry points lead (task 124; 04 · Meso Creation Flows,
-// "Точки входа"). components/MesocyclesScreen.test.tsx already covers that each one fires its
-// callback; this covers what the route does with it, which is the one link a wrong path or a
-// misspelled param would break silently — step S would then open on the newest block rather than
-// the one whose row was swiped, and nothing else would look wrong.
+// "Точки входа"), and where a Completed row's tap goes (117). components/MesocyclesScreen.test.tsx
+// already covers that each one fires its callback; this covers what the route does with it, which
+// is the one link a wrong path or a misspelled param would break silently — step S would then open
+// on the newest block rather than the one whose `⋯` was used, and nothing else would look wrong.
 
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
@@ -10,7 +10,6 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import MesocyclesRoute from '@app/(tabs)/mesocycles';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
-import { pressSwipeAction } from '../fixtures/swipeActions';
 
 const mockPush = jest.fn();
 
@@ -66,11 +65,24 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
   test('DoD: Copy on a finished row opens step S on that block', async () => {
     await renderRoute();
 
-    pressSwipeAction(`mesocycle-row-${FINISHED_ID}-copy`);
+    fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-copy`), 'buttonPress');
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/meso-editor/copy',
       params: { sourceMesoId: FINISHED_ID },
+    });
+  });
+
+  // The History screen is still a stub (098), but it is a screen with this block's id — the row's
+  // tap goes there rather than raising a "not available yet" popup.
+  test('tapping a finished row opens that mesocycle’s history', async () => {
+    await renderRoute();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Upper/Lower' }));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/meso/[id]',
+      params: { id: FINISHED_ID },
     });
   });
 
