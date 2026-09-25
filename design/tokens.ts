@@ -13,8 +13,6 @@ export const COLORS = {
   'surface/sheet': '#17191C',
   'surface/card': '#1A1C1F',
   'surface/control-active': '#2C3036',
-  /** A completed day's cell in the mesocycle overview (08.7, task 107) — 3.2:1 on `surface/sheet`. */
-  'surface/cell-done': '#626973',
   /**
    * A Popover's plate (08.7.1). Sits *above* a card rather than under it, so it is lighter than
    * `surface/card` — on `surface/sheet`, as 08.7.1 first had it, a plate floating over a card was
@@ -36,8 +34,6 @@ export const COLORS = {
   'text/muted': '#8A9099',
   'text/faint': '#6B7076',
   'text/disabled': '#5A5F65',
-  /** A glyph drawn on a light fill, e.g. the check of a completed cell — 3.5:1 on `surface/cell-done`. */
-  'text/on-light': '#0E0F11',
 
   accent: '#CDFF57',
   'accent/on': '#232B0A',
@@ -175,7 +171,7 @@ export const ICON_STROKE_WIDTH = 1.8;
 export const BORDER_WIDTHS = {
   /** Outlines of fields, chips, cards, list and card dividers. */
   'border/default': 1,
-  /** The ring marking the open cell of the mesocycle overview grid (08.7). */
+  /** The accent outline marking the open cell of the mesocycle overview grid (08.7, task 127). */
   'border/emphasis': 2,
 } as const;
 

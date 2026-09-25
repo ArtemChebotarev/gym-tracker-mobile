@@ -470,7 +470,7 @@ export default function TodayScreen() {
         visible={isGridOpen}
         onClose={() => setIsGridOpen(false)}
         grid={grid.data}
-        openDay={model?.header}
+        openSessionId={currentSessionId}
         onOpenCell={(cell) => {
           setIsGridOpen(false);
           if (grid.data !== undefined) {
