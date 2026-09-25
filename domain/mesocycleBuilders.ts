@@ -9,6 +9,7 @@ import { generateId } from '@domain/id';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
+  normalizeMesocycleName,
   validateCopyableSourceWeek,
   validateMesocycleCanStart,
   validateMesocycleDaysPerWeek,
@@ -153,6 +154,19 @@ export function applyPlannedMesocycleEdit(
     daysPerWeek: input.daysPerWeek,
     weekPlan: input.weekPlan,
   };
+}
+
+/**
+ * Renames `current` — task 087 (05 · Workout Execution & Logging, "Переименовать мезоцикл").
+ * Pure: returns the renamed `Mesocycle` without saving it.
+ *
+ * Unlike `applyPlannedMesocycleEdit`, this one has no status gate: a name is a label, not part of
+ * the plan, so it is editable "в любом статусе" — the action sits in the workout header menu,
+ * which is reached from an active block and stays there once the block is read-only. Nothing else
+ * changes; the name arrives trimmed and never empty (`normalizeMesocycleName`).
+ */
+export function renamedMesocycle(current: Mesocycle, name: string): Mesocycle {
+  return { ...current, name: normalizeMesocycleName(name) };
 }
 
 /**

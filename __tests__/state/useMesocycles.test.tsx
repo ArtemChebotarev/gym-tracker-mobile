@@ -5,6 +5,7 @@ import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesocycles } from '@state/useMesocycles';
+import { useRenameMesocycle } from '@state/useRenameMesocycle';
 
 const repositories = withRepositories();
 
@@ -41,5 +42,31 @@ describe('useMesocycles / useDeletePlannedMesocycle', () => {
     await expect(
       repositories().mesocycleRepo.getById(MOCK_MESOCYCLE_IDS.planned),
     ).resolves.toBeNull();
+  });
+});
+
+describe('useRenameMesocycle', () => {
+  test('DoD: renaming a block refreshes the list it is shown in (087)', async () => {
+    const { result } = renderHookWithRepositories(() => ({
+      list: useMesocycles(),
+      rename: useRenameMesocycle(),
+    }));
+    await waitFor(() => expect(result.current.list.isSuccess).toBe(true));
+
+    act(() =>
+      result.current.rename.mutate({
+        mesoId: MOCK_MESOCYCLE_IDS.completed,
+        name: '  Autumn block  ',
+      }),
+    );
+
+    await waitFor(() => expect(result.current.rename.isSuccess).toBe(true));
+    await waitFor(() =>
+      expect(
+        result.current.list.data!.find(
+          (mesocycle) => mesocycle.id === MOCK_MESOCYCLE_IDS.completed,
+        )?.name,
+      ).toBe('Autumn block'),
+    );
   });
 });

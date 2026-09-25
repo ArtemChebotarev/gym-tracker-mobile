@@ -3,7 +3,7 @@ import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
-import { editPlannedMesocycle } from '@usecases/mesocycleEditing';
+import { editPlannedMesocycle, renameMesocycle } from '@usecases/mesocycleEditing';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -113,6 +113,55 @@ describe('editPlannedMesocycle', () => {
         deps,
       ),
     );
+
+    expect(isNotFoundError(error)).toBe(true);
+  });
+});
+
+describe('renameMesocycle', () => {
+  test('DoD: renames an active mesocycle, trimming the name', async () => {
+    const deps = makeDeps();
+    const existing = makeMesocycle({
+      status: 'active',
+      startDate: '2026-09-02T08:00:00.000Z',
+      weekPlan: undefined,
+    });
+    await deps.mesocycleRepo.create(existing);
+
+    const renamed = await renameMesocycle('meso', '  Autumn block  ', deps);
+
+    expect(renamed).toEqual({ ...existing, name: 'Autumn block', updatedAt: renamed.updatedAt });
+    await expect(deps.mesocycleRepo.getById('meso')).resolves.toEqual(renamed);
+  });
+
+  test.each(['planned', 'completed', 'abandoned'] as const)(
+    'renames a %s mesocycle too — the name is editable in any status',
+    async (status) => {
+      const deps = makeDeps();
+      await deps.mesocycleRepo.create(makeMesocycle({ status }));
+
+      await expect(renameMesocycle('meso', 'Autumn block', deps)).resolves.toMatchObject({
+        name: 'Autumn block',
+        status,
+      });
+    },
+  );
+
+  test('DoD: rejects an empty name and leaves the stored one alone', async () => {
+    const deps = makeDeps();
+    const existing = makeMesocycle({ status: 'active', weekPlan: undefined });
+    await deps.mesocycleRepo.create(existing);
+
+    await expect(renameMesocycle('meso', '   ', deps)).rejects.toThrow(
+      /Mesocycle name is required/,
+    );
+    await expect(deps.mesocycleRepo.getById('meso')).resolves.toMatchObject({ name: 'Push/Pull' });
+  });
+
+  test('rejects an unknown id with a NotFoundError', async () => {
+    const deps = makeDeps();
+
+    const error = await rejectionOf(renameMesocycle('missing', 'Autumn block', deps));
 
     expect(isNotFoundError(error)).toBe(true);
   });

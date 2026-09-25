@@ -128,13 +128,31 @@ describe('Today tab — header menu', () => {
     expect(mockPush).toHaveBeenCalledWith(mesocycleDetailHref(WORKOUT_FIXTURE_IDS.mesocycle));
   });
 
-  test('Rename mesocycle explains it is not available yet', async () => {
+  test('DoD: Rename mesocycle opens prefilled, saves the new name and re-reads the header (087)', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
     pickMenuItem('renameMesocycle');
 
-    expect(alertSpy).toHaveBeenCalledWith('Not available yet', expect.any(String));
+    // Prefilled with the current name — renaming is an edit of what is there.
+    const field = await screen.findByLabelText('Mesocycle name');
+    expect(field.props.value).toBe('Upper/Lower');
+    // Empty is not a name, and Save says so before the domain has to.
+    fireEvent.changeText(field, '   ');
+    expect(
+      screen.getByRole('button', { name: 'Save' }).props.accessibilityState?.disabled,
+    ).toBe(true);
+
+    fireEvent.changeText(field, '  Autumn block  ');
+    fireEvent.press(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(async () => {
+      expect(
+        (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.name,
+      ).toBe('Autumn block');
+    });
+    // The header subtitle carries the mesocycle name, so the screen re-reads it.
+    expect(await screen.findByText(/Autumn block/)).toBeTruthy();
   });
 
   test('DoD: Stop mesocycle waits for the phrase, then abandons the block (052)', async () => {

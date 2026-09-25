@@ -5,6 +5,7 @@ import {
   buildCopyWeekMesocycleDraft,
   buildMesocycleStart,
   buildScratchMesocycleDraft,
+  renamedMesocycle,
   weekPlanSlotKey,
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
@@ -265,6 +266,39 @@ describe('applyPlannedMesocycleEdit', () => {
         weekPlan: twoDayWeekPlan,
       }),
     ).toThrow(/lengthWeeks must be between 3 and 8/);
+  });
+});
+
+describe('renamedMesocycle', () => {
+  const mesocycle: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-1',
+    name: 'Push/Pull/Legs',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    startDate: '2026-09-02T08:00:00.000Z',
+    status: 'active',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+
+  test('replaces the name, trimmed, and leaves everything else as it was', () => {
+    expect(renamedMesocycle(mesocycle, '  Autumn block  ')).toEqual({
+      ...mesocycle,
+      name: 'Autumn block',
+    });
+  });
+
+  test.each(['planned', 'active', 'completed', 'abandoned'] as const)(
+    'renames a %s mesocycle — a name is editable in any status',
+    (status) => {
+      expect(renamedMesocycle({ ...mesocycle, status }, 'Autumn block').name).toBe('Autumn block');
+    },
+  );
+
+  test('rejects a name that is empty after trimming', () => {
+    expect(() => renamedMesocycle(mesocycle, '   ')).toThrow(/Mesocycle name is required/);
   });
 });
 

@@ -5,6 +5,7 @@
 
 import { ConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
+import { normalizeRequiredName } from '@domain/names';
 import type { WeekPlan } from '@domain/plan';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 
@@ -15,6 +16,17 @@ export const MIN_LENGTH_WEEKS = 3;
 export const MAX_LENGTH_WEEKS = 8;
 export const MIN_DAYS_PER_WEEK = 1;
 export const MAX_DAYS_PER_WEEK = 7;
+
+/**
+ * Trims `name` and throws if the result is empty (task 087, 05 · Workout Execution & Logging,
+ * "Переименовать мезоцикл"). Backs the Rename mesocycle sheet's field the way
+ * `normalizeExerciseName` backs the New exercise one — both go through the same rule in
+ * `domain/names.ts`; the sheet's Save is already disabled on an empty field, this is what makes
+ * it true of the stored name as well.
+ */
+export function normalizeMesocycleName(name: string): string {
+  return normalizeRequiredName(name, 'Mesocycle');
+}
 
 /**
  * Throws if `lengthWeeks` is outside the 3..8 range (03 · Progression Engine,
