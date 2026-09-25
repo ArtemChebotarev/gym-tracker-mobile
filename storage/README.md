@@ -50,6 +50,14 @@ as JavaScript). `migrationBundle.ts` is the single place that imports the genera
 `drizzle/migrations.js`. `state/bootstrap.ts` is what runs them, once, before any screen mounts
 (task 111).
 
+Generate one with `npm run migration <name>` (`scripts/generateMigration.ts`), never with a bare
+`drizzle-kit generate`. The wrapper exists to make the name non-optional: left to itself
+drizzle-kit invents one, and the obvious correction — delete it, generate again with a better
+name — is the one move that breaks every database that already ran it. The stamp is the version,
+so regenerating produces a *different* migration carrying the same SQL, which then runs its DDL a
+second time against a schema that already has it. That took the app down on 25.09.2026, and the
+fix was putting the original stamp back.
+
 `drizzle/` is generated. Never hand-edit a migration that has shipped: a database that already
 applied it will not apply it again. `0000_initial_schema.sql` was edited by hand once, in task
 111, to drop a `catalog_version` column nobody read — the last moment that was safe, since no

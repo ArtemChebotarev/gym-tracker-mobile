@@ -26,6 +26,19 @@ Open the JS debugger (React Native DevTools): run `npm run start` (or any of the
 | `npm run format`          | Formats the project with Prettier                                      |
 | `npm run format:check`    | Checks formatting without writing changes                              |
 
+### Database migrations
+
+| Command | What it does |
+| --- | --- |
+| `npm run migration <name>` | Generates a migration for the change you made in `storage/sqlite/schema.ts` (name in snake_case, e.g. `mesocycle_archived_at`) |
+| `npm run catalog:migration` | Generates a migration carrying the current exercise catalog, after editing `domain/exerciseCatalog.ts` |
+
+Name a migration when you create it. Generating one and then regenerating it for a nicer name
+gives it a new timestamp, and that timestamp is the schema version a database records — so every
+database that ran the first one re-runs the same DDL and fails to open. `npm run migration`
+refuses to run without a name for exactly that reason; don't call `drizzle-kit generate` directly.
+Details in [storage/README.md](storage/README.md).
+
 `verify` runs automatically before every command in the table above (`start`, `start:clean`, `ios`, `ios:device`, `ios:device:release`, `android`, `web`) via npm's `pre*` script hooks — a lint, type, or test error stops the run before Metro/Xcode/Gradle even starts, the same way a failed `dotnet build` blocks `dotnet run`.
 
 ### Running on a physical iPhone

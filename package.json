@@ -75,6 +75,7 @@
     "verify": "npm run lint && npm run typecheck && npm run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "migration": "tsx scripts/generateMigration.ts",
     "catalog:migration": "tsx scripts/generateCatalogMigration.ts"
   },
   "private": true
