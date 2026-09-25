@@ -5,11 +5,13 @@
 // Active card, which leads on to the Today tab.
 // Copy, from either entry point, opens Flow C at its Source week step (124). Both lead to the same
 // step and differ only in what it already knows (04, "Точки входа"): the `+` sheet's row knows
-// nothing, a Completed row passes the block it was swiped on as `sourceMesoId`. The step is never
-// skipped — it just opens with that block already chosen.
+// nothing, a Completed row's `⋯` passes that block as `sourceMesoId`. The step is never skipped —
+// it just opens with that block already chosen.
+// A tap on a Completed row opens that mesocycle's History screen (app/meso/[id].tsx) — still the
+// task 098 stub, but a real screen with the block's id, not a popup.
 // One destination doesn't exist yet, so it's an explicit "not available yet" popup rather than a
-// button that silently does nothing: Completed `⋯` → a mesocycle's History screen.
-// Planned `⋯` → Edit opens the same editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
+// menu item that silently does nothing: Completed `⋯` → Archive.
+// A tap on a Planned row opens the editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
 // The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
 // not the calendar — so a break of a few days between workouts doesn't move it.
@@ -19,6 +21,7 @@
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
+import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesocyclesScreen } from '@components/MesocyclesScreen';
 import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
@@ -71,7 +74,8 @@ export default function MesocyclesRoute() {
           params: { sourceMesoId: mesocycle.id },
         })
       }
-      onOpenHistory={() => showNotAvailable('Mesocycle history')}
+      onOpenHistory={(mesocycle) => router.push(mesocycleDetailHref(mesocycle.id))}
+      onArchive={() => showNotAvailable('Archiving a mesocycle')}
     />
   );
 }

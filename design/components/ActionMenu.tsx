@@ -28,6 +28,13 @@
 //
 // An item's `onPress` runs after the menu has closed. A confirmation belongs inside it (the
 // caller's), not here: this component decides nothing about the actions it lists.
+//
+// Opening the menu arms `design/menuDismissGuard`. iOS does not swallow the tap that dismisses a
+// hosted menu — it reaches whatever is drawn under it, so a tappable thing beneath one fires while
+// the user was only closing the menu (Artem, on the device: closing a row's menu opened the row).
+// The first item carries the `onAppear` that arms it and an `onDisappear` that would disarm it if
+// it ever fired; picking an item disarms it outright. Who honours the guard is up to the caller —
+// `ListRow` does.
 
 import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
@@ -39,10 +46,13 @@ import {
   frame,
   menuIndicator,
   menuStyle,
+  onAppear,
+  onDisappear,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
+import { armMenuDismissGuard, disarmMenuDismissGuard } from '../menuDismissGuard';
 import { square } from '../shapes';
 import { COLORS, ICON_SIZES, SIZES } from '../tokens';
 import type { IconComponent } from '../icons/IconFrame';
@@ -99,6 +109,23 @@ export function ActionMenu({
 }: ActionMenuProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  /** The open signal rides on the first item — the menu's content is what SwiftUI builds on open. */
+  function itemModifiers(item: ActionMenuItem, index: number) {
+    const modifiers = [
+      ...(item.disabledReason === undefined ? [] : [disabled(true)]),
+      ...(index === 0
+        ? [onAppear(armMenuDismissGuard), onDisappear(disarmMenuDismissGuard)]
+        : []),
+    ];
+    return modifiers.length === 0 ? undefined : modifiers;
+  }
+
+  /** Picking an item closed the menu, so no press is left over for the guard to swallow. */
+  function runItem(item: ActionMenuItem) {
+    disarmMenuDismissGuard();
+    item.onPress();
+  }
+
   if (Platform.OS === 'ios') {
     return (
       <View testID={testID} accessibilityLabel={accessibilityLabel} style={iconButtonFrame()}>
@@ -128,15 +155,15 @@ export function ActionMenu({
             }
             modifiers={[menuStyle('button'), buttonStyle('plain'), menuIndicator('hidden')]}
           >
-            {items.map((item) => (
+            {items.map((item, index) => (
               <NativeMenuButton
                 key={item.key}
                 testID={`${testID}-${item.key}`}
                 label={item.label}
                 systemImage={item.systemImage}
                 role={item.destructive === true ? 'destructive' : 'default'}
-                modifiers={item.disabledReason === undefined ? undefined : [disabled(true)]}
-                onPress={item.onPress}
+                modifiers={itemModifiers(item, index)}
+                onPress={() => runItem(item)}
               />
             ))}
           </Menu>

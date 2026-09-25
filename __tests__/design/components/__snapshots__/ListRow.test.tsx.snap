@@ -22,76 +22,87 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
     <View
       style={
         {
+          "alignItems": "center",
           "flex": 1,
+          "flexDirection": "row",
+          "gap": 8,
         }
       }
     >
       <View
         style={
           {
-            "alignItems": "baseline",
-            "flexDirection": "row",
+            "flex": 1,
           }
         }
       >
+        <View
+          style={
+            {
+              "alignItems": "baseline",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <Text
+            numberOfLines={1}
+            style={
+              {
+                "color": "#F5F5F4",
+                "flexShrink": 1,
+                "fontSize": 17,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Test
+          </Text>
+        </View>
         <Text
           numberOfLines={1}
           style={
             {
-              "color": "#F5F5F4",
-              "flexShrink": 1,
-              "fontSize": 17,
+              "color": "#6B7076",
+              "fontSize": 15,
               "fontWeight": "400",
             }
           }
         >
-          Test
+          3 weeks
         </Text>
       </View>
-      <Text
-        numberOfLines={1}
-        style={
-          {
-            "color": "#6B7076",
-            "fontSize": 15,
-            "fontWeight": "400",
-          }
-        }
-      >
-        3 weeks
-      </Text>
-    </View>
-    <View>
-      <View
-        style={
-          [
-            {
-              "alignSelf": "flex-start",
-              "borderRadius": 20,
-              "paddingHorizontal": 10,
-              "paddingVertical": 8,
-            },
-            {
-              "backgroundColor": "#1A1C1F",
-            },
-          ]
-        }
-      >
-        <Text
+      <View>
+        <View
           style={
             [
               {
-                "fontSize": 12,
-                "fontWeight": "400",
+                "alignSelf": "flex-start",
+                "borderRadius": 20,
+                "paddingHorizontal": 10,
+                "paddingVertical": 8,
               },
               {
-                "color": "#C9CDD2",
+                "backgroundColor": "#1A1C1F",
               },
             ]
           }
         >
-          Stopped
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 12,
+                  "fontWeight": "400",
+                },
+                {
+                  "color": "#C9CDD2",
+                },
+              ]
+            }
+          >
+            Stopped
+          </Text>
+        </View>
       </View>
     </View>
     <View
@@ -170,37 +181,6 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
       </View>
       <View
         accessibilityLabel="More actions for Test"
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": false,
-            "expanded": undefined,
-            "selected": undefined,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        hitSlop={4}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -213,21 +193,91 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
             {
               "backgroundColor": "#1A1C1F",
             },
-            false,
-            false,
           ]
         }
+        testID="action-menu"
       >
-        <Text
+        <ViewManagerAdapter_ExpoUI
+          layoutDirection="leftToRight"
           style={
             {
-              "color": "#C9CDD2",
-              "fontSize": 20,
+              "height": 36,
+              "width": 36,
             }
           }
         >
-          ⋯
-        </Text>
+          <ViewManagerAdapter_ExpoUI
+            hasPrimaryAction={false}
+            modifiers={
+              [
+                {
+                  "$type": "menuStyle",
+                  "style": "button",
+                },
+                {
+                  "$type": "buttonStyle",
+                  "style": "plain",
+                },
+                {
+                  "$type": "menuIndicator",
+                  "visibility": "hidden",
+                },
+              ]
+            }
+          >
+            <ViewManagerAdapter_ExpoUI
+              name="label"
+            >
+              <ViewManagerAdapter_ExpoUI
+                modifiers={
+                  [
+                    {
+                      "$type": "frame",
+                      "height": 36,
+                      "width": 36,
+                    },
+                    {
+                      "$type": "contentShape",
+                      "kind": undefined,
+                      "shape": "rectangle",
+                    },
+                    {
+                      "$type": "font",
+                      "size": 20,
+                    },
+                    {
+                      "$type": "foregroundStyle",
+                      "color": "#C9CDD2",
+                      "styleType": "color",
+                    },
+                  ]
+                }
+                onGlobalEvent={[Function]}
+                systemName="ellipsis"
+              />
+            </ViewManagerAdapter_ExpoUI>
+            <ViewManagerAdapter_ExpoUI
+              label="Delete"
+              modifiers={
+                [
+                  {
+                    "$type": "onAppear",
+                    "eventListener": [Function],
+                  },
+                  {
+                    "$type": "onDisappear",
+                    "eventListener": [Function],
+                  },
+                ]
+              }
+              onButtonPress={[Function]}
+              onGlobalEvent={[Function]}
+              role="destructive"
+              systemImage="trash"
+              testID="action-menu-delete"
+            />
+          </ViewManagerAdapter_ExpoUI>
+        </ViewManagerAdapter_ExpoUI>
       </View>
     </View>
   </View>

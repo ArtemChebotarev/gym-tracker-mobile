@@ -1,3 +1,4 @@
+import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { CheckIcon } from '@design/icons/CheckIcon';
@@ -35,6 +36,7 @@ const ICONS: [string, IconComponent][] = [
   ['skip', SkipIcon],
   ['play', PlayIcon],
   ['copy', CopyIcon],
+  ['archive', ArchiveIcon],
   ['trash', TrashIcon],
   ['edit', EditIcon],
   ['stop', StopIcon],

@@ -91,14 +91,27 @@ exports[`ActionMenu — iOS DoD: the trigger is the native menu, one native butt
         </ViewManagerAdapter_ExpoUI>
         <ViewManagerAdapter_ExpoUI
           label="Add exercise"
-          onButtonPress={[MockFunction]}
+          modifiers={
+            [
+              {
+                "$type": "onAppear",
+                "eventListener": [Function],
+              },
+              {
+                "$type": "onDisappear",
+                "eventListener": [Function],
+              },
+            ]
+          }
+          onButtonPress={[Function]}
+          onGlobalEvent={[Function]}
           role="default"
           systemImage="plus"
           testID="action-menu-add"
         />
         <ViewManagerAdapter_ExpoUI
           label="Stop mesocycle"
-          onButtonPress={[MockFunction]}
+          onButtonPress={[Function]}
           role="destructive"
           systemImage="stop.circle"
           testID="action-menu-stop"

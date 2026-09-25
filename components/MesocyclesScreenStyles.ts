@@ -76,18 +76,4 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
   },
-  // Sized like an ActionRow — the rows of every other action sheet.
-  menuItem: {
-    paddingVertical: SPACING['space/action-row-y'],
-    borderBottomWidth: BORDER_WIDTHS['border/default'],
-    borderBottomColor: COLORS['border/divider'],
-  },
-  menuItemLabel: {
-    fontSize: TYPOGRAPHY['type/row-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/row-title'].fontWeight,
-    color: COLORS['text/primary'],
-  },
-  menuItemLabelDanger: {
-    color: COLORS.danger,
-  },
 });

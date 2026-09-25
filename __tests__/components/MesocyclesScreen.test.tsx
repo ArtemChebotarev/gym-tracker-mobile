@@ -1,7 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { Alert, Modal, type AlertButton } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import type { Mesocycle } from '@domain/mesocycle';
@@ -10,11 +9,9 @@ import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/Mesocy
 import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
-import { pressSwipeAction } from '../fixtures/swipeActions';
 
 // SafeAreaView (used by RootScreen) throws without a SafeAreaProvider ancestor — same fixture
-// RootScreen.test.tsx uses. `GestureHandlerRootView` is the same kind of requirement for the rows'
-// swipe actions: gesture-handler 3.x throws when a gesture renders without one (task 117).
+// RootScreen.test.tsx uses.
 const TEST_SAFE_AREA_METRICS: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
   frame: { x: 0, y: 0, width: 402, height: 874 },
@@ -22,10 +19,13 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 
 function renderWithSafeArea(ui: ReactElement) {
   return render(
-    <GestureHandlerRootView>
-      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>{ui}</SafeAreaProvider>
-    </GestureHandlerRootView>,
+    <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>{ui}</SafeAreaProvider>,
   );
+}
+
+/** Picks an item of a row's `⋯` — a native menu button, which RNTL presses as `buttonPress`. */
+function pickMenuItem(mesocycleId: string, key: string) {
+  fireEvent(screen.getByTestId(`mesocycle-menu-${mesocycleId}-${key}`), 'buttonPress');
 }
 
 const ACTIVE: Mesocycle = {
@@ -81,6 +81,7 @@ function makeProps(overrides: Partial<MesocyclesScreenProps> = {}): MesocyclesSc
     onDelete: jest.fn(),
     onCopy: jest.fn(),
     onOpenHistory: jest.fn(),
+    onArchive: jest.fn(),
     ...overrides,
   };
 }
@@ -161,8 +162,10 @@ describe('MesocyclesScreen', () => {
     expect(screen.getByText('Completed')).toBeTruthy();
     expect(screen.getByText('Cut')).toBeTruthy();
     expect(screen.getByText('Stopped')).toBeTruthy();
-    // Its history is reachable again: the row keeps Copy and `⋯` like any finished block.
-    expect(screen.getByRole('button', { name: 'Copy Cut' })).toBeTruthy();
+    // Its history is reachable again: the row taps through to it and keeps the `⋯` of any
+    // finished block.
+    expect(screen.getByRole('button', { name: 'Cut' })).toBeTruthy();
+    expect(screen.getByTestId('mesocycle-menu-stopped-copy')).toBeTruthy();
   });
 
   test('a block that ran its course carries no badge — that is what the section means', () => {
@@ -295,7 +298,7 @@ describe('MesocyclesScreen', () => {
         <MesocyclesScreen {...makeProps({ mesocycles: [PLANNED, COMPLETED], onStart })} />,
       );
 
-      pressSwipeAction('mesocycle-row-planned-start');
+      fireEvent.press(screen.getByRole('button', { name: 'Start Push/Pull/Legs' }));
 
       expect(alertSpy).toHaveBeenCalledWith(
         'Start this mesocycle?',
@@ -313,7 +316,7 @@ describe('MesocyclesScreen', () => {
       const onStart = jest.fn();
       renderWithSafeArea(<MesocyclesScreen {...makeProps({ onStart })} />);
 
-      pressSwipeAction('mesocycle-row-planned-start');
+      fireEvent.press(screen.getByRole('button', { name: 'Start Push/Pull/Legs' }));
 
       expect(alertSpy).toHaveBeenCalledTimes(1);
       const [title, message, buttons] = alertSpy.mock.calls[0];
@@ -324,12 +327,12 @@ describe('MesocyclesScreen', () => {
     });
   });
 
-  describe('Planned swipe actions', () => {
-    test('Delete is not performed without accepting the confirmation popup', () => {
+  describe('Planned row actions', () => {
+    test('Delete, the row\u2019s one `\u22ef` action, is not performed without accepting the confirmation', () => {
       const onDelete = jest.fn();
       renderWithSafeArea(<MesocyclesScreen {...makeProps({ onDelete })} />);
 
-      pressSwipeAction('mesocycle-row-planned-delete');
+      pickMenuItem('planned', 'delete');
 
       expect(alertSpy).toHaveBeenCalledWith(
         'Delete mesocycle?',
@@ -345,42 +348,60 @@ describe('MesocyclesScreen', () => {
       expect(onDelete).toHaveBeenCalledWith(PLANNED);
     });
 
-    test('Edit calls onEdit with that mesocycle', () => {
+    test('tapping the row opens the editor on that mesocycle', () => {
       const onEdit = jest.fn();
       renderWithSafeArea(<MesocyclesScreen {...makeProps({ onEdit })} />);
 
-      pressSwipeAction('mesocycle-row-planned-edit');
+      fireEvent.press(screen.getByRole('button', { name: 'Push/Pull/Legs' }));
 
       expect(onEdit).toHaveBeenCalledWith(PLANNED);
     });
 
-    test('the row itself carries nothing — every action is behind a swipe', () => {
-      renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
+    test('the row shows what it can do: Start as a button, the rest behind `\u22ef`', () => {
+      const onStart = jest.fn();
+      const onEdit = jest.fn();
+      renderWithSafeArea(<MesocyclesScreen {...makeProps({ onStart, onEdit })} />);
 
-      // No pill and no `⋯`: the right edge is where the hand goes to swipe (117).
-      expect(screen.queryByRole('button', { name: 'More actions for Push/Pull/Legs' })).toBeNull();
-      // Start moved to the leading pull; Edit and Delete to the trailing one. Named per row, so
-      // two rows' Delete buttons stay apart to a screen reader.
+      // Named per row, so two rows' buttons stay apart to a screen reader.
       expect(screen.getByRole('button', { name: 'Start Push/Pull/Legs' })).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Delete Push/Pull/Legs' })).toBeTruthy();
+      expect(screen.getByTestId('mesocycle-menu-planned').props.accessibilityLabel).toBe(
+        'More actions for Push/Pull/Legs',
+      );
+      // Edit is the tap, not a menu item — the menu holds Delete alone.
+      expect(screen.queryByTestId('mesocycle-menu-planned-edit')).toBeNull();
+      expect(screen.getByTestId('mesocycle-menu-planned-delete')).toBeTruthy();
+      // Starting is the pill's job alone: the tap opens the editor instead.
+      fireEvent.press(screen.getByRole('button', { name: 'Push/Pull/Legs' }));
+      expect(onStart).not.toHaveBeenCalled();
+      expect(onEdit).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Completed', () => {
-    test('Copy is the leading pull, History the trailing one — and there is no Delete', () => {
+    test('the row taps through to its history, and the `\u22ef` holds Copy and Archive', () => {
       const onCopy = jest.fn();
       const onOpenHistory = jest.fn();
-      renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCopy, onOpenHistory })} />);
+      const onArchive = jest.fn();
+      renderWithSafeArea(
+        <MesocyclesScreen {...makeProps({ onCopy, onOpenHistory, onArchive })} />,
+      );
 
-      pressSwipeAction('mesocycle-row-completed-copy');
-      expect(onCopy).toHaveBeenCalledWith(COMPLETED);
-
-      pressSwipeAction('mesocycle-row-completed-history');
+      fireEvent.press(screen.getByRole('button', { name: 'Strength Base' }));
       expect(onOpenHistory).toHaveBeenCalledWith(COMPLETED);
 
-      // A finished block can't be edited, and nothing in the app hard-deletes one.
-      expect(screen.queryByTestId('mesocycle-row-completed-delete')).toBeNull();
-      expect(screen.queryByTestId('mesocycle-row-completed-edit')).toBeNull();
+      pickMenuItem('completed', 'copy');
+      expect(onCopy).toHaveBeenCalledWith(COMPLETED);
+
+      pickMenuItem('completed', 'archive');
+      expect(onArchive).toHaveBeenCalledWith(COMPLETED);
+    });
+
+    test('a finished block is neither edited nor deleted, and carries no pill', () => {
+      renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [COMPLETED] })} />);
+
+      expect(screen.queryByTestId('mesocycle-menu-completed-delete')).toBeNull();
+      expect(screen.queryByTestId('mesocycle-menu-completed-edit')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Copy Strength Base' })).toBeNull();
     });
   });
 });

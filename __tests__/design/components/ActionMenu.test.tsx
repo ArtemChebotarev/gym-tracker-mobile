@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
+import { consumeMenuDismissPress, disarmMenuDismissGuard } from '@design/menuDismissGuard';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 
@@ -48,6 +49,7 @@ function renderMenu() {
 beforeEach(() => {
   onAdd.mockClear();
   onStop.mockClear();
+  disarmMenuDismissGuard();
 });
 
 describe('ActionMenu — iOS', () => {
@@ -93,8 +95,11 @@ describe('ActionMenu — iOS', () => {
     // The label stays clean — a native menu row has no column for a reason, and greying the row
     // says enough on its own.
     expect(screen.getByTestId('action-menu-moveUp').props.label).toBe('Move up');
+    // It is also the first item, so it carries the guard's appear/disappear pair after it.
     expect(screen.getByTestId('action-menu-moveUp').props.modifiers).toEqual([
       expect.objectContaining({ $type: 'disabled' }),
+      expect.objectContaining({ $type: 'onAppear' }),
+      expect.objectContaining({ $type: 'onDisappear' }),
     ]);
   });
 
@@ -105,6 +110,28 @@ describe('ActionMenu — iOS', () => {
 
     expect(onAdd).toHaveBeenCalledTimes(1);
     expect(onStop).not.toHaveBeenCalled();
+  });
+
+  // The open signal for `menuDismissGuard`: iOS doesn't swallow the tap that closes the plate, and
+  // `Menu` has no open-state prop — the content's own `onAppear` is what there is.
+  test('the first item carries the appear/disappear pair the dismiss guard listens to', () => {
+    renderMenu();
+
+    expect(screen.getByTestId('action-menu-add').props.modifiers).toEqual([
+      expect.objectContaining({ $type: 'onAppear' }),
+      expect.objectContaining({ $type: 'onDisappear' }),
+    ]);
+    expect(screen.getByTestId('action-menu-stop').props.modifiers).toBeUndefined();
+  });
+
+  test('picking an action leaves no press for the guard to swallow', () => {
+    renderMenu();
+
+    // As if the menu had opened: SwiftUI builds its content and `onAppear` arms the guard.
+    fireEvent(screen.getByTestId('action-menu-add'), 'onAppear');
+    fireEvent(screen.getByTestId('action-menu-add'), 'buttonPress');
+
+    expect(consumeMenuDismissPress()).toBe(false);
   });
 
   test('no sheet is rendered — nothing opens over the screen', () => {
