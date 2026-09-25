@@ -1,0 +1,1 @@
+ALTER TABLE `mesocycle` ADD `archived_at` text;

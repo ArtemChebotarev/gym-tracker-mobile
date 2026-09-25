@@ -15,6 +15,13 @@
       "when": 1789938887567,
       "tag": "0001_seed_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790351056868,
+      "tag": "0002_mesocycle_archived_at",
+      "breakpoints": true
     }
   ]
 }

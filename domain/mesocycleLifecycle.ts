@@ -23,21 +23,54 @@ export function isFinalMesocycle(mesocycle: Pick<Mesocycle, 'status'>): boolean 
   return FINAL_MESOCYCLE_STATUSES.includes(mesocycle.status);
 }
 
+/** Whether the block has been archived — put out of sight, `Mesocycle.archivedAt`. */
+export function isArchivedMesocycle(mesocycle: Pick<Mesocycle, 'archivedAt'>): boolean {
+  return mesocycle.archivedAt !== undefined;
+}
+
 /**
- * Every block that has ended — finished or stopped — newest end first. Both ways out leave a
- * block that happened and weeks worth copying, so neither is filtered away here; a stopped one is
- * told apart where it's shown, by its badge (08.3).
+ * Every block that has ended — finished or stopped — newest end first, archived ones left out.
+ * Both ways out leave a block that happened and weeks worth copying, so neither *status* is
+ * filtered away here; a stopped one is told apart where it's shown, by its badge (08.3).
  *
  * Two screens ask this exact question and must not answer it differently: 08.3's Completed group
  * (074) and Flow C's source-mesocycle dropdown (124, 08.8 — "`Mesocycle` со `status = completed`
  * или `abandoned`, как в секции Completed на 08.3"). A block with no `completedAt` sorts last
  * rather than throwing off the order — the field is set by both closing actions (052), so this
  * only covers a record that predates them.
+ *
+ * Archiving hides a block from both at once, and does so from here on purpose: two call sites that
+ * each remembered to skip archived blocks would be two chances to forget. Hidden means hidden —
+ * a block the user took off the list has no business turning up in the dropdown that plans the
+ * next one (Artem, 25.09.2026).
  */
 export function finishedMesocyclesNewestFirst(mesocycles: readonly Mesocycle[]): Mesocycle[] {
   return mesocycles
-    .filter((mesocycle) => isFinalMesocycle(mesocycle))
+    .filter((mesocycle) => isFinalMesocycle(mesocycle) && !isArchivedMesocycle(mesocycle))
     .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''));
+}
+
+/**
+ * Archives `mesocycle` as of `now` — pure, returns the record to save. Nothing but `archivedAt`
+ * moves: the block keeps its status, its `completedAt` and every row under it (see
+ * `Mesocycle.archivedAt`).
+ *
+ * Throws `ConflictError` unless the block has ended. Archiving is offered on the Completed group
+ * only (08.3): an `active` block is stopped or finished first, and a `planned` one is deleted —
+ * it has no history to preserve, which is the whole reason archiving exists instead of a delete.
+ * Archiving an already-archived block is refused too, so the original `archivedAt` can't be
+ * quietly overwritten by a second tap.
+ */
+export function archivedMesocycle(mesocycle: Mesocycle, now: string): Mesocycle {
+  if (!isFinalMesocycle(mesocycle)) {
+    throw new ConflictError(
+      `Mesocycle "${mesocycle.id}" is ${mesocycle.status}; only a finished or stopped one can be archived.`,
+    );
+  }
+  if (isArchivedMesocycle(mesocycle)) {
+    throw new ConflictError(`Mesocycle "${mesocycle.id}" is already archived.`);
+  }
+  return { ...mesocycle, archivedAt: now };
 }
 
 /**

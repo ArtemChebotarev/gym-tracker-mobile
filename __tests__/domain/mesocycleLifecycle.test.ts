@@ -6,7 +6,9 @@ import {
   canFinishMesocycle,
   closedMesocycle,
   FINAL_MESOCYCLE_STATUSES,
+  archivedMesocycle,
   finishedMesocyclesNewestFirst,
+  isArchivedMesocycle,
   isFinalMesocycle,
   unfinishedSessions,
 } from '@domain/mesocycleLifecycle';
@@ -24,6 +26,9 @@ const mesocycle: Mesocycle = {
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
 };
+
+/** A fixed "now" for the archive stamp — the rules never read the clock themselves. */
+const NOW = '2026-09-25T10:00:00.000Z';
 
 function session(id: string, status: Session['status'], mesoId = 'meso'): Session {
   return {
@@ -166,6 +171,16 @@ describe('finishedMesocyclesNewestFirst', () => {
     expect(result.map((block) => block.id)).toEqual(['dated', 'undated']);
   });
 
+  test('leaves out an archived block — hidden from the list and from Flow C alike', () => {
+    const result = finishedMesocyclesNewestFirst([
+      closed('kept', 'completed', '2026-08-01T00:00:00.000Z'),
+      { ...closed('hidden', 'completed', '2026-09-01T00:00:00.000Z'), archivedAt: NOW },
+      { ...closed('hidden-stopped', 'abandoned', '2026-09-02T00:00:00.000Z'), archivedAt: NOW },
+    ]);
+
+    expect(result.map((block) => block.id)).toEqual(['kept']);
+  });
+
   test('does not mutate the list it was given', () => {
     const input = [
       closed('older', 'completed', '2026-06-01T00:00:00.000Z'),
@@ -175,5 +190,48 @@ describe('finishedMesocyclesNewestFirst', () => {
     finishedMesocyclesNewestFirst(input);
 
     expect(input.map((block) => block.id)).toEqual(['older', 'newest']);
+  });
+});
+
+describe('isArchivedMesocycle', () => {
+  test('is the presence of archivedAt, nothing more', () => {
+    expect(isArchivedMesocycle({ archivedAt: undefined })).toBe(false);
+    expect(isArchivedMesocycle({ archivedAt: NOW })).toBe(true);
+  });
+});
+
+describe('archivedMesocycle', () => {
+  const finished: Mesocycle = {
+    ...mesocycle,
+    status: 'completed',
+    completedAt: '2026-09-20T08:00:00.000Z',
+  };
+
+  test.each(['completed', 'abandoned'] as const)(
+    'stamps archivedAt on a %s block and changes nothing else',
+    (status) => {
+      const block = { ...finished, status };
+
+      expect(archivedMesocycle(block, NOW)).toEqual({ ...block, archivedAt: NOW });
+    },
+  );
+
+  test.each(['planned', 'active'] as const)(
+    'refuses a %s block — it is deleted or closed, not archived',
+    (status) => {
+      let error: unknown;
+      try {
+        archivedMesocycle({ ...finished, status }, NOW);
+      } catch (thrown) {
+        error = thrown;
+      }
+      expect(isConflictError(error)).toBe(true);
+    },
+  );
+
+  test('refuses a block that is archived already, so the first date survives', () => {
+    const already = { ...finished, archivedAt: '2026-09-21T08:00:00.000Z' };
+
+    expect(() => archivedMesocycle(already, NOW)).toThrow(/already archived/);
   });
 });

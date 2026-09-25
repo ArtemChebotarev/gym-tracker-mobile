@@ -4,7 +4,8 @@
 // is the one link a wrong path or a misspelled param would break silently — step S would then open
 // on the newest block rather than the one whose `⋯` was used, and nothing else would look wrong.
 
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesocyclesRoute from '@app/(tabs)/mesocycles';
@@ -39,7 +40,24 @@ beforeEach(async () => {
     completedAt: '2026-08-20T00:00:00.000Z',
   });
   mockPush.mockClear();
+  alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
 });
+
+afterEach(() => {
+  alertSpy.mockRestore();
+});
+
+let alertSpy: jest.SpyInstance;
+
+/** Presses the named button of the most recent Alert.alert call. */
+function pressAlertButton(text: string) {
+  const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[] | undefined;
+  const button = buttons?.find((candidate) => candidate.text === text);
+  if (!button) {
+    throw new Error(`No "${text}" button in the last alert`);
+  }
+  act(() => button.onPress?.());
+}
 
 async function renderRoute() {
   renderWithRepositories(
@@ -93,5 +111,38 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/meso-editor/new'));
+  });
+});
+
+describe('MesocyclesRoute — Archive', () => {
+  test('archiving a finished block takes it off the list without deleting anything', async () => {
+    await renderRoute();
+
+    fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Archive mesocycle?',
+      expect.stringContaining('Upper/Lower'),
+      expect.any(Array),
+    );
+
+    pressAlertButton('Archive');
+
+    // Off the screen...
+    await waitFor(() => expect(screen.queryByText('Upper/Lower')).toBeNull());
+    // ...but still in storage, stamped rather than deleted — a soft delete, no cascade.
+    const stored = await repositories().mesocycleRepo.getById(FINISHED_ID);
+    expect(stored).toMatchObject({ status: 'completed' });
+    expect(stored?.archivedAt).toEqual(expect.any(String));
+  });
+
+  test('cancelling the confirmation leaves the block where it was', async () => {
+    await renderRoute();
+
+    fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
+    pressAlertButton('Cancel');
+
+    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+    const stored = await repositories().mesocycleRepo.getById(FINISHED_ID);
+    expect(stored?.archivedAt).toBeUndefined();
   });
 });

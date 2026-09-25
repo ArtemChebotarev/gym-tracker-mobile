@@ -104,4 +104,15 @@ export type Mesocycle = Timestamps & {
    */
   weekPlan?: WeekPlan;
   completedAt?: string;
+  /**
+   * When the block was archived — put out of sight without being deleted. Absent for every block
+   * still on the list, which is all of them until the user archives one.
+   *
+   * A soft delete and nothing more: no cascade, no status change. The block keeps being
+   * `completed` or `abandoned`, and every session, exercise and set log under it stays exactly as
+   * it was — archiving is about the list being long, not about the training being wrong. What it
+   * changes is where the block is offered: `finishedMesocyclesNewestFirst` skips it, so it leaves
+   * both 08.3's Completed group and Flow C's source dropdown at once.
+   */
+  archivedAt?: string;
 };
