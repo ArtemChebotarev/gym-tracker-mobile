@@ -1,6 +1,5 @@
 import type { ActionMenuItem } from '@design/components/ActionMenu';
 import { ListRow } from '@design/components/ListRow';
-import { armMenuDismissGuard, disarmMenuDismissGuard } from '@design/menuDismissGuard';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
@@ -16,10 +15,6 @@ function menuItems(onDelete: () => void): ActionMenuItem[] {
     },
   ];
 }
-
-beforeEach(() => {
-  disarmMenuDismissGuard();
-});
 
 describe('ListRow', () => {
   test('renders without a subtitle', () => {
@@ -139,27 +134,6 @@ describe('ListRow', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Push/Pull/Legs' }));
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onAction).toHaveBeenCalledTimes(1);
-  });
-
-  // iOS hands the tap that closes a native menu to whatever is under it, so without this a tap
-  // meant to put the menu away opened the row as well (Artem, on the device).
-  test('a tappable row drops the press that closed a menu, and only that one', () => {
-    const onPress = jest.fn();
-    render(
-      <ListRow
-        title="Push/Pull/Legs"
-        onPress={onPress}
-        trailing={{ type: 'actions', menu: { items: menuItems(jest.fn()) } }}
-      />,
-    );
-    const row = screen.getByRole('button', { name: 'Push/Pull/Legs' });
-
-    armMenuDismissGuard();
-    fireEvent.press(row);
-    expect(onPress).not.toHaveBeenCalled();
-
-    fireEvent.press(row);
-    expect(onPress).toHaveBeenCalledTimes(1);
   });
 
   test('renders a chevron trailing accessory', () => {

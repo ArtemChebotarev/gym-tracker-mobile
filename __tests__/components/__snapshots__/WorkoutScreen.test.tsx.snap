@@ -430,34 +430,21 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                 </ViewManagerAdapter_ExpoUI>
                 <ViewManagerAdapter_ExpoUI
                   label="Rename mesocycle"
-                  modifiers={
-                    [
-                      {
-                        "$type": "onAppear",
-                        "eventListener": [Function],
-                      },
-                      {
-                        "$type": "onDisappear",
-                        "eventListener": [Function],
-                      },
-                    ]
-                  }
-                  onButtonPress={[Function]}
-                  onGlobalEvent={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Mesocycle history"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Stop mesocycle"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"
                   testID="action-menu-stopMesocycle"
@@ -1179,41 +1166,28 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                 </ViewManagerAdapter_ExpoUI>
                 <ViewManagerAdapter_ExpoUI
                   label="Add exercise"
-                  modifiers={
-                    [
-                      {
-                        "$type": "onAppear",
-                        "eventListener": [Function],
-                      },
-                      {
-                        "$type": "onDisappear",
-                        "eventListener": [Function],
-                      },
-                    ]
-                  }
-                  onButtonPress={[Function]}
-                  onGlobalEvent={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="plus"
                   testID="action-menu-addExercise"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Rename mesocycle"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Mesocycle history"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Stop mesocycle"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"
                   testID="action-menu-stopMesocycle"
@@ -1660,20 +1634,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                         </ViewManagerAdapter_ExpoUI>
                         <ViewManagerAdapter_ExpoUI
                           label="Replace exercise"
-                          modifiers={
-                            [
-                              {
-                                "$type": "onAppear",
-                                "eventListener": [Function],
-                              },
-                              {
-                                "$type": "onDisappear",
-                                "eventListener": [Function],
-                              },
-                            ]
-                          }
                           onButtonPress={[Function]}
-                          onGlobalEvent={[Function]}
                           role="default"
                           systemImage="arrow.triangle.2.circlepath"
                           testID="exercise-menu-session-exercise-1-replace"
@@ -2104,34 +2065,21 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                 </ViewManagerAdapter_ExpoUI>
                 <ViewManagerAdapter_ExpoUI
                   label="Rename mesocycle"
-                  modifiers={
-                    [
-                      {
-                        "$type": "onAppear",
-                        "eventListener": [Function],
-                      },
-                      {
-                        "$type": "onDisappear",
-                        "eventListener": [Function],
-                      },
-                    ]
-                  }
-                  onButtonPress={[Function]}
-                  onGlobalEvent={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Mesocycle history"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
                   label="Stop mesocycle"
-                  onButtonPress={[Function]}
+                  onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"
                   testID="action-menu-stopMesocycle"

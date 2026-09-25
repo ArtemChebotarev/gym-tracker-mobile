@@ -258,20 +258,7 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
             </ViewManagerAdapter_ExpoUI>
             <ViewManagerAdapter_ExpoUI
               label="Delete"
-              modifiers={
-                [
-                  {
-                    "$type": "onAppear",
-                    "eventListener": [Function],
-                  },
-                  {
-                    "$type": "onDisappear",
-                    "eventListener": [Function],
-                  },
-                ]
-              }
-              onButtonPress={[Function]}
-              onGlobalEvent={[Function]}
+              onButtonPress={[MockFunction]}
               role="destructive"
               systemImage="trash"
               testID="action-menu-delete"

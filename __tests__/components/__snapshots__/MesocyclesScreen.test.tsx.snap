@@ -746,20 +746,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                           </ViewManagerAdapter_ExpoUI>
                           <ViewManagerAdapter_ExpoUI
                             label="Copy"
-                            modifiers={
-                              [
-                                {
-                                  "$type": "onAppear",
-                                  "eventListener": [Function],
-                                },
-                                {
-                                  "$type": "onDisappear",
-                                  "eventListener": [Function],
-                                },
-                              ]
-                            }
                             onButtonPress={[Function]}
-                            onGlobalEvent={[Function]}
                             role="default"
                             systemImage="doc.on.doc"
                             testID="mesocycle-menu-completed-copy"
@@ -1217,20 +1204,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                           </ViewManagerAdapter_ExpoUI>
                           <ViewManagerAdapter_ExpoUI
                             label="Delete"
-                            modifiers={
-                              [
-                                {
-                                  "$type": "onAppear",
-                                  "eventListener": [Function],
-                                },
-                                {
-                                  "$type": "onDisappear",
-                                  "eventListener": [Function],
-                                },
-                              ]
-                            }
                             onButtonPress={[Function]}
-                            onGlobalEvent={[Function]}
                             role="destructive"
                             systemImage="trash"
                             testID="mesocycle-menu-planned-delete"
@@ -1904,20 +1878,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           </ViewManagerAdapter_ExpoUI>
                           <ViewManagerAdapter_ExpoUI
                             label="Delete"
-                            modifiers={
-                              [
-                                {
-                                  "$type": "onAppear",
-                                  "eventListener": [Function],
-                                },
-                                {
-                                  "$type": "onDisappear",
-                                  "eventListener": [Function],
-                                },
-                              ]
-                            }
                             onButtonPress={[Function]}
-                            onGlobalEvent={[Function]}
                             role="destructive"
                             systemImage="trash"
                             testID="mesocycle-menu-planned-delete"
@@ -2144,20 +2105,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                           </ViewManagerAdapter_ExpoUI>
                           <ViewManagerAdapter_ExpoUI
                             label="Copy"
-                            modifiers={
-                              [
-                                {
-                                  "$type": "onAppear",
-                                  "eventListener": [Function],
-                                },
-                                {
-                                  "$type": "onDisappear",
-                                  "eventListener": [Function],
-                                },
-                              ]
-                            }
                             onButtonPress={[Function]}
-                            onGlobalEvent={[Function]}
                             role="default"
                             systemImage="doc.on.doc"
                             testID="mesocycle-menu-completed-copy"

@@ -31,11 +31,6 @@
 // on both (the `⋯` is a native menu hosted in its own view, which would open *and* navigate).
 // Every other row keeps the whole-row Pressable it had.
 //
-// A tappable row also drops the press that closes a menu: iOS delivers that tap to whatever is
-// under the plate, so closing a row's `⋯` by tapping the row opened the row as well (Artem, on the
-// device). Which press that is comes from `design/menuDismissGuard`, shared by every row on the
-// screen — the tap that closes a menu rarely lands back on the row it came out of.
-//
 // `titleSuffix` is task 081's secondary qualifier on the title line (`Bench Press · Dumbbell`),
 // for rows whose titles alone collide. Rendered as a sibling Text in `text/faint` — the subtitle's
 // color at the title's size — rather than nested inside the title Text, so the title keeps its own
@@ -43,7 +38,6 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
-import { consumeMenuDismissPress } from '../menuDismissGuard';
 import { square, tapTargetSlop } from '../shapes';
 import { ActionMenu, type ActionMenuItem } from './ActionMenu';
 import { Badge, type BadgeVariant } from './Badge';
@@ -92,13 +86,6 @@ export function ListRow({
   trailing,
   onPress,
 }: ListRowProps) {
-  function handlePress() {
-    if (consumeMenuDismissPress()) {
-      return;
-    }
-    onPress?.();
-  }
-
   const body = (
     <>
       {leading !== undefined && <Leading leading={leading} />}
@@ -147,7 +134,7 @@ export function ListRow({
           ) : (
             <Pressable
               {...accessibility}
-              onPress={handlePress}
+              onPress={onPress}
               style={({ pressed }) => [styles.body, pressed && styles.pressed]}
             >
               {body}
