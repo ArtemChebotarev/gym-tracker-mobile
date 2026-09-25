@@ -7,7 +7,10 @@ import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/MesocyclesScreen';
 import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
-import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
+import {
+  formatArchiveConfirmMessage,
+  PLAN_MESOCYCLE_LABEL,
+} from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
 // SafeAreaView (used by RootScreen) throws without a SafeAreaProvider ancestor — same fixture
@@ -393,6 +396,27 @@ describe('MesocyclesScreen', () => {
       expect(onCopy).toHaveBeenCalledWith(COMPLETED);
 
       pickMenuItem('completed', 'archive');
+      pressAlertButton(alertSpy, 'Archive');
+      expect(onArchive).toHaveBeenCalledWith(COMPLETED);
+    });
+
+    test('Archive is not performed without accepting the confirmation', () => {
+      const onArchive = jest.fn();
+      renderWithSafeArea(<MesocyclesScreen {...makeProps({ onArchive })} />);
+
+      pickMenuItem('completed', 'archive');
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Archive mesocycle?',
+        formatArchiveConfirmMessage(COMPLETED),
+        expect.any(Array),
+      );
+      expect(onArchive).not.toHaveBeenCalled();
+
+      pressAlertButton(alertSpy, 'Cancel');
+      expect(onArchive).not.toHaveBeenCalled();
+
+      pressAlertButton(alertSpy, 'Archive');
       expect(onArchive).toHaveBeenCalledWith(COMPLETED);
     });
 

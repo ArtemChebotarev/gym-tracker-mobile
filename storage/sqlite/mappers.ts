@@ -73,6 +73,7 @@ export function rowToMesocycle(row: Row<typeof mesocycles>): Mesocycle {
     ...optional('bodyWeight', row.bodyWeight),
     ...optional('weekPlan', row.weekPlan),
     ...optional('completedAt', row.completedAt),
+    ...optional('archivedAt', row.archivedAt),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -166,6 +167,7 @@ export function mesocycleToRow(mesocycle: Mesocycle): Insert<typeof mesocycles> 
     bodyWeight: nullable(mesocycle.bodyWeight),
     weekPlan: nullable(mesocycle.weekPlan),
     completedAt: nullable(mesocycle.completedAt),
+    archivedAt: nullable(mesocycle.archivedAt),
     createdAt: mesocycle.createdAt,
     updatedAt: mesocycle.updatedAt,
   };

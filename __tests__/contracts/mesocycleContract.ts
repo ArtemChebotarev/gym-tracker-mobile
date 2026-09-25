@@ -31,6 +31,18 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
       await expect(mesocycleRepo.getById('missing')).resolves.toBeNull();
     });
 
+    test('round-trips an archived mesocycle — archivedAt survives the adapter', async () => {
+      const { mesocycleRepo } = repositories();
+      const archivedAt = '2026-09-25T10:00:00.000Z';
+
+      const created = await mesocycleRepo.create(
+        makeMesocycle({ id: 'meso-archived', status: 'completed', archivedAt }),
+      );
+
+      expect(created.archivedAt).toBe(archivedAt);
+      await expect(mesocycleRepo.getById('meso-archived')).resolves.toEqual(created);
+    });
+
     test('getActive returns the single active mesocycle, or null when none is active', async () => {
       const { mesocycleRepo } = repositories();
       await mesocycleRepo.create(makeMesocycle({ id: 'meso-done', status: 'completed' }));

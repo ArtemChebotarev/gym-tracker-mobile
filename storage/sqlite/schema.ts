@@ -70,6 +70,8 @@ export const mesocycles = sqliteTable(
     // Draft week 1, present only while the mesocycle is `planned` (02 · Domain Model).
     weekPlan: text('week_plan', { mode: 'json' }).$type<WeekPlan>(),
     completedAt: text('completed_at'),
+    // Set when the block is put out of sight; the row and everything under it stay (soft delete).
+    archivedAt: text('archived_at'),
     ...timestamps,
   },
   (table) => [index('mesocycle_status').on(table.status)],

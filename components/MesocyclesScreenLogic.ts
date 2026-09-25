@@ -134,10 +134,23 @@ export function plannedMenuItems(
 }
 
 /**
+ * What the `Archive mesocycle?` confirmation says under its title. It names the block, because the
+ * menu it was opened from is gone by the time the popup is on screen and a list of finished blocks
+ * is a list of similar names. Then the two halves of what archiving is: the block goes, the
+ * training stays — and, for now, it doesn't come back (there is no Unarchive yet).
+ */
+export function formatArchiveConfirmMessage(mesocycle: Mesocycle): string {
+  return `"${mesocycle.name}" leaves this list. Everything you logged in it is kept, but you won't be able to bring the block back.`;
+}
+
+/**
  * What a Completed row's `⋯` offers. Copy plans the next block from this one (Flow C); Archive
- * takes it out of the list without touching anything logged in it, and is still a stub — nothing
- * archives a block yet, so the screen says so rather than the row going quiet. No Delete: a
- * finished block is history, and nothing in the app hard-deletes one.
+ * takes it out of the list — and out of Flow C's source dropdown — without touching anything
+ * logged in it. No Delete: a finished block is history, and nothing in the app hard-deletes one.
+ *
+ * Archive is not marked `destructive`: iOS red means data goes, and here none does — the
+ * confirmation in front of it, which is the screen's rather than the menu's (as with Delete), is
+ * what says the block won't come back.
  */
 export function completedMenuItems(
   mesocycle: Mesocycle,

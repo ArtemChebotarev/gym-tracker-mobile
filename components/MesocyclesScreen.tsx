@@ -31,7 +31,8 @@
 // as every other `⋯` in the app (`ActionMenu`, the other half of 117):
 // - Planned: tap opens the editor, `Start` is the accent pill, `⋯` holds Delete.
 // - Completed: tap opens that block's history (`onOpenHistory`), `⋯` holds Copy and Archive.
-//   Archive is a stub — the route says "not available yet" rather than the row going quiet.
+//   Archive asks first (`Archive mesocycle?`) and then takes the block off the list for good —
+//   a soft delete, so nothing logged in it is touched, but there is no way back from the app yet.
 // The tap and the buttons don't overlap: `ListRow` keeps an actions row's accessories outside its
 // press region, so a tap on `Start` starts and a tap anywhere else on the row opens the editor.
 // `SwipeableRow` stays in the SDK, unused for now (Artem's call).
@@ -55,6 +56,7 @@ import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
 import {
   completedMenuItems,
   formatActiveCaption,
+  formatArchiveConfirmMessage,
   formatCompletedCaption,
   formatPlannedCaption,
   formatStartBlockedMessage,
@@ -86,7 +88,7 @@ export type MesocyclesScreenProps = {
   onDelete: (mesocycle: Mesocycle) => void;
   onCopy: (mesocycle: Mesocycle) => void;
   onOpenHistory: (mesocycle: Mesocycle) => void;
-  /** Still a stub — see the note at the top. */
+  /** Called from the confirmation's button, never straight off the menu. */
   onArchive: (mesocycle: Mesocycle) => void;
 };
 
@@ -122,6 +124,13 @@ export function MesocyclesScreen({
     Alert.alert('Delete mesocycle?', "This can't be undone.", [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDelete(mesocycle) },
+    ]);
+  }
+
+  function confirmArchive(mesocycle: Mesocycle) {
+    Alert.alert('Archive mesocycle?', formatArchiveConfirmMessage(mesocycle), [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Archive', onPress: () => onArchive(mesocycle) },
     ]);
   }
 
@@ -232,7 +241,7 @@ export function MesocyclesScreen({
                         type: 'actions',
                         menu: {
                           testID: `mesocycle-menu-${mesocycle.id}`,
-                          items: completedMenuItems(mesocycle, { onCopy, onArchive }),
+                          items: completedMenuItems(mesocycle, { onCopy, onArchive: confirmArchive }),
                         },
                       }}
                     />

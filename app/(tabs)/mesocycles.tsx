@@ -9,8 +9,9 @@
 // it just opens with that block already chosen.
 // A tap on a Completed row opens that mesocycle's History screen (app/meso/[id].tsx) — still the
 // task 098 stub, but a real screen with the block's id, not a popup.
-// One destination doesn't exist yet, so it's an explicit "not available yet" popup rather than a
-// menu item that silently does nothing: Completed `⋯` → Archive.
+// Completed `⋯` → Archive hides the block (`useArchiveMesocycle`) after the screen's own
+// confirmation: a soft delete, so its sessions and set logs stay — it just stops being listed, and
+// stops being offered as a Flow C source. There is no Unarchive yet.
 // A tap on a Planned row opens the editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
 // The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
@@ -24,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesocyclesScreen } from '@components/MesocyclesScreen';
 import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
+import { useArchiveMesocycle } from '@state/useArchiveMesocycle';
 import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
@@ -35,12 +37,9 @@ export default function MesocyclesRoute() {
   const activeId = query.data?.find((mesocycle) => mesocycle.status === 'active')?.id;
   const activeGrid = useMesoGrid(activeId);
   const deleteMesocycle = useDeletePlannedMesocycle();
+  const archiveMesocycle = useArchiveMesocycle();
   const startMesocycle = useStartMesocycle();
   const setDraft = useDraftStore((state) => state.setMesoBuilder);
-
-  function showNotAvailable(feature: string) {
-    Alert.alert('Not available yet', `${feature} is coming in a later update.`);
-  }
 
   return (
     <MesocyclesScreen
@@ -75,7 +74,13 @@ export default function MesocyclesRoute() {
         })
       }
       onOpenHistory={(mesocycle) => router.push(mesocycleDetailHref(mesocycle.id))}
-      onArchive={() => showNotAvailable('Archiving a mesocycle')}
+      onArchive={(mesocycle) =>
+        archiveMesocycle.mutate(mesocycle.id, {
+          onError: () => {
+            Alert.alert("Couldn't archive mesocycle", 'Something went wrong. Please try again.');
+          },
+        })
+      }
     />
   );
 }

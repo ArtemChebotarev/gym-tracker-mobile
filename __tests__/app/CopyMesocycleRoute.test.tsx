@@ -187,6 +187,22 @@ describe('CopyMesocycleRoute — step S', () => {
     expect(screen.getByText('Week 3 · 0 of 2 workouts')).toBeTruthy();
   });
 
+  // Archiving hides a block everywhere, not just on the list it was archived from: the dropdown
+  // that plans the next block must not offer one the user has taken off the shelf.
+  test('an archived block is not offered as a source at all', async () => {
+    const repos = repositories();
+    const newest = await repos.mesocycleRepo.getById(NEWEST_ID);
+    await repos.mesocycleRepo.update({ ...newest!, archivedAt: '2026-09-25T10:00:00.000Z' });
+
+    renderRoute();
+    await readyToContinue();
+
+    // The default falls through to the older block, and the archived one is nowhere in the picker.
+    expect(screen.getByText('Push/Pull')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle' }));
+    expect(screen.queryByRole('button', { name: 'Upper/Lower' })).toBeNull();
+  });
+
   // DoD: an entry point that already knows the block opens on its weeks straight away.
   test('DoD: opens on the block it was given, not the newest one', async () => {
     mockSearchParams = { sourceMesoId: OLDER_ID };
