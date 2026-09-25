@@ -44,8 +44,9 @@
 // (04, "Завершение мезоцикла"), which opens Flow C on the block that just ended. Stopping gets no
 // such button: a block called off is a poor thing to build the next one from.
 //
-// Rename mesocycle (087) isn't built yet, so until then it explains that it's not available yet
-// rather than doing nothing.
+// Rename mesocycle (087) opens `RenameMesocycleSheet` prefilled with the block's current name;
+// saving it renames the block (`useRenameMesocycle`) and the header's subtitle, the overview
+// sheet and the Mesocycles list all re-read it.
 
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -53,6 +54,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 
 import { BodyWeightSheet } from '@components/BodyWeightSheet';
 import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
+import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
@@ -89,6 +91,7 @@ import {
 } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
+import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
@@ -122,6 +125,7 @@ export default function TodayScreen() {
   const setBodyWeight = useSetBodyWeight();
   const finishMesocycle = useFinishMesocycle();
   const stopMesocycle = useStopMesocycle();
+  const renameMesocycle = useRenameMesocycle();
   // Only for the creation-method sheet's second row: whether there is anything to copy at all.
   const mesocycles = useMesocycles();
   const methodSheet = useMesoCreationMethodSheet();
@@ -140,6 +144,10 @@ export default function TodayScreen() {
   // half-typed `END MES` from a cancelled attempt never sits there waiting to be completed.
   const [isStopOpen, setIsStopOpen] = useState(false);
   const [stopText, setStopText] = useState('');
+  // The Rename mesocycle sheet and the name being typed into it (087) — prefilled with the current
+  // name on every opening, since renaming is usually an edit of what is there, not a fresh title.
+  const [isRenameOpen, setIsRenameOpen] = useState(false);
+  const [renameText, setRenameText] = useState('');
   // The body weight sheet (105) opens from the Weight cell of a bodyweight exercise, never by
   // itself: that cell stays on screen, so closing the sheet costs nothing and is never a dead end.
   const [bodyWeightText, setBodyWeightText] = useState('');
@@ -184,10 +192,6 @@ export default function TodayScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [navigation],
   );
-
-  function showNotAvailable(feature: string) {
-    Alert.alert('Not available yet', `${feature} is coming in a later update.`);
-  }
 
   /**
    * Pins the tab to the shown session before an action that ends it (Finish, Skip): the
@@ -349,7 +353,10 @@ export default function TodayScreen() {
         menuActions={{
           addExercise: () => setIsAddExerciseOpen(true),
           skipWorkout: confirmSkipWorkout,
-          renameMesocycle: () => showNotAvailable('Renaming a mesocycle'),
+          renameMesocycle: () => {
+            setRenameText(model?.header.mesocycleName ?? '');
+            setIsRenameOpen(true);
+          },
           mesocycleHistory: () => {
             if (model !== undefined) {
               router.push(mesocycleDetailHref(model.mesoId));
@@ -490,6 +497,23 @@ export default function TodayScreen() {
           });
         }}
         isStopping={stopMesocycle.isPending}
+      />
+      <RenameMesocycleSheet
+        visible={isRenameOpen}
+        onClose={() => setIsRenameOpen(false)}
+        value={renameText}
+        onChangeValue={setRenameText}
+        onSave={(name) => {
+          if (model === undefined) {
+            return;
+          }
+          setIsRenameOpen(false);
+          renameMesocycle.mutate(
+            { mesoId: model.mesoId, name },
+            { onError: () => Alert.alert("Couldn't rename the mesocycle", 'Please try again.') },
+          );
+        }}
+        isSaving={renameMesocycle.isPending}
       />
       <WorkoutExercisePickerSheet
         mode="multi"

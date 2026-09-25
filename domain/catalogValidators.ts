@@ -3,6 +3,7 @@
 // AGENTS.md.
 
 import { EQUIPMENT_OPTIONS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from './catalog';
+import { normalizeRequiredName } from './names';
 
 /**
  * Trims `name` and throws if the result is empty. Backs the "New exercise" sheet's Name field
@@ -11,11 +12,7 @@ import { EQUIPMENT_OPTIONS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } fr
  * rule.
  */
 export function normalizeExerciseName(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    throw new Error('Exercise name is required.');
-  }
-  return trimmed;
+  return normalizeRequiredName(name, 'Exercise');
 }
 
 /**

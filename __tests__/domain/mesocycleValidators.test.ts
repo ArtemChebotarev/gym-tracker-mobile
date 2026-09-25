@@ -2,6 +2,7 @@ import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { isConflictError } from '@domain/errors';
 import {
+  normalizeMesocycleName,
   validateCopyableSourceWeek,
   validateMesocycleCanStart,
   validateMesocycleDaysPerWeek,
@@ -24,6 +25,16 @@ const mesocycleFixture: Mesocycle = {
   progressionSettings: defaultProgressionSettings,
   createdAt: '2026-08-24T00:00:00.000Z',
 };
+
+describe('normalizeMesocycleName', () => {
+  test('trims leading and trailing whitespace', () => {
+    expect(normalizeMesocycleName('  Push/Pull  ')).toBe('Push/Pull');
+  });
+
+  test.each(['', '   ', '\t\n'])('rejects a name that is empty after trimming ("%s")', (name) => {
+    expect(() => normalizeMesocycleName(name)).toThrow(/Mesocycle name is required/);
+  });
+});
 
 describe('validateMesocycleLengthWeeks', () => {
   test.each([3, 8])('accepts the boundary value %i', (lengthWeeks) => {
