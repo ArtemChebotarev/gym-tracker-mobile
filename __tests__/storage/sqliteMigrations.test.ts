@@ -154,4 +154,53 @@ describe('the app’s own migrations', () => {
     await expect(migrateToLatest(db, bundle)).resolves.toBeUndefined();
     close();
   });
+
+  /**
+   * Every already-shipped migration's stamp, pinned. The `when` in the journal *is* the schema
+   * version a database records for it, so changing one renames a migration that has already run:
+   * the database's stamp no longer matches, the migrator calls it new, and it runs a second time
+   * against a schema that already has it. `ALTER TABLE ... ADD COLUMN` then fails and the app
+   * cannot open at all.
+   *
+   * That is not hypothetical — it happened on 25.09.2026, to 0002, by regenerating it to give the
+   * file a better name. Drizzle stamps each `generate` with the moment it ran, so regenerating is
+   * never a rename; it is a different migration with the same SQL. Once a migration has run
+   * anywhere real, the only way to change anything about it is a new migration (AGENTS.md).
+   *
+   * Adding a migration means adding its line here. Changing a line means the change is wrong.
+   */
+  test('keep the stamps they have already run under — a shipped one is frozen', () => {
+    const stamps = Object.fromEntries(
+      readMigrationBundle().journal.entries.map((entry) => [entry.tag, entry.when]),
+    );
+
+    expect(stamps).toMatchObject({
+      '0000_initial_schema': 1789936766954,
+      '0001_seed_catalog': 1789938887567,
+      '0002_mesocycle_archived_at': 1790351056868,
+    });
+  });
+
+  test('upgrade a database that stopped at an earlier one, without re-running what it has', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+
+    // Every prefix of the journal is a build that once shipped; each one has to be able to hand
+    // its database over to the build after it.
+    for (let count = 1; count <= full.journal.entries.length; count += 1) {
+      const entries = full.journal.entries.slice(0, count);
+      await expect(
+        migrateToLatest(db, {
+          journal: { entries },
+          migrations: Object.fromEntries(
+            entries.map((entry) => [
+              `m${entry.idx.toString().padStart(4, '0')}`,
+              full.migrations[`m${entry.idx.toString().padStart(4, '0')}`]!,
+            ]),
+          ),
+        }),
+      ).resolves.toBeUndefined();
+    }
+    close();
+  });
 });
