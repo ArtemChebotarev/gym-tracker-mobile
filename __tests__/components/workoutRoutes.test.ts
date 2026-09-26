@@ -1,4 +1,5 @@
 import {
+  historySessionHref,
   mesoGridCellHref,
   workoutHref,
   workoutPickFromParams,
@@ -6,6 +7,13 @@ import {
 } from '@components/workoutRoutes';
 
 describe('workoutRoutes', () => {
+  test('historySessionHref pushes the session as its own page, outside the Today tab', () => {
+    expect(historySessionHref('session-1')).toEqual({
+      pathname: '/session/[id]',
+      params: { id: 'session-1' },
+    });
+  });
+
   test('workoutHref opens the session inside the Today tab', () => {
     expect(workoutHref('session-1')).toEqual({
       pathname: '/',

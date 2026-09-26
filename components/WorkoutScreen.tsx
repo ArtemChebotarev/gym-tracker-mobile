@@ -116,6 +116,11 @@ export type WorkoutScreenProps = {
    * or it couldn't be loaded. The caller knows which, so it supplies the copy and the way forward.
    */
   fallback: { title: string; description: string; actionLabel: string; onAction: () => void };
+  /**
+   * Pushed as a page (`session/[id]`, 08.9, task 130) rather than shown as the Today tab: a back
+   * button above the title, in every state, loading and the fallback included.
+   */
+  onBack?: () => void;
 };
 
 export function WorkoutScreen({
@@ -137,11 +142,12 @@ export function WorkoutScreen({
   onCopyMesocycle,
   isFinishingMesocycle,
   fallback,
+  onBack,
 }: WorkoutScreenProps) {
   if (isPending) {
     return (
       <View style={styles.root}>
-        <RootScreen title="Workout">
+        <RootScreen title="Workout" onBack={onBack}>
           <Text style={styles.status}>Loading…</Text>
         </RootScreen>
       </View>
@@ -151,7 +157,7 @@ export function WorkoutScreen({
   if (model === undefined) {
     return (
       <View style={styles.root}>
-        <RootScreen title="Workout">
+        <RootScreen title="Workout" onBack={onBack}>
           <EmptyState {...fallback} />
         </RootScreen>
       </View>
@@ -163,6 +169,7 @@ export function WorkoutScreen({
   return (
     <View style={styles.root}>
       <RootScreen
+        onBack={onBack}
         title={`Week ${header.weekNumber}`}
         titleSuffix={`Day ${header.dayNumber}`}
         titleAccessory={

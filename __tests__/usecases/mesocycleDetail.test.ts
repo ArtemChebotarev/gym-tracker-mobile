@@ -28,6 +28,14 @@ describe('loadMesocycleDetail', () => {
 
     expect(detail?.mesocycle.name).toBe('Upper/Lower');
     expect(detail?.weekNumber).toBe(2);
+    // The grid of the same sessions, for a closed block's WORKOUTS section (130).
+    expect(detail?.grid.weeks[0]?.cells[0]).toEqual({
+      weekNumber: 1,
+      dayNumber: 1,
+      status: 'completed',
+      sessionId: WORKOUT_FIXTURE_IDS.completed,
+    });
+    expect(detail?.grid.weeks[2]?.cells[0]?.sessionId).toBeUndefined();
     expect(detail?.summary).toEqual({
       workouts: { value: 1, total: 20 },
       strengthSets: 8,
@@ -39,7 +47,7 @@ describe('loadMesocycleDetail', () => {
     });
   });
 
-  test('a skipped day adds to its week but not to the workouts done', async () => {
+  test('a skipped day is not a workout done, and a later one does not move the week', async () => {
     const { repositories, deps } = await seeded();
     const skipped: Session = {
       id: 'w3d1',
@@ -57,7 +65,9 @@ describe('loadMesocycleDetail', () => {
     const detail = await loadMesocycleDetail(WORKOUT_FIXTURE_IDS.mesocycle, deps);
 
     expect(detail?.summary.workouts).toEqual({ value: 1, total: 20 });
-    expect(detail?.summary.weeks).toEqual({ value: 3, total: 5 });
+    // Still on week 2, where Day 1 is in progress — the same week the subtitle names.
+    expect(detail?.summary.weeks).toEqual({ value: 2, total: 5 });
+    expect(detail?.weekNumber).toBe(2);
   });
 
   test('null for a mesocycle that does not exist', async () => {

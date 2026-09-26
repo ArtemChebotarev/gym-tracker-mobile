@@ -4,6 +4,7 @@
 import type { ActionMenuItem } from '@design/components/ActionMenu';
 import type { BadgeVariant } from '@design/components/Badge';
 import { formatAbsoluteDate } from '@design/formatDate';
+import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { CopyIcon } from '@design/icons/CopyIcon';
 import { EditIcon } from '@design/icons/EditIcon';
 import {
@@ -138,12 +139,22 @@ export function weeklySetsRowViews(rows: readonly MesoWeeklySetsRow[]): WeeklySe
 }
 
 /**
- * What the header's `⋯` offers (08.9, "Шапка"): Rename always, Copy only for a closed block — the
- * same way into Flow C as 08.3's Completed row. Stop isn't here; it stays in the workout's menu.
+ * Whether the screen draws the workout grid (08.9, "Идея"): only for a closed block — `completed`
+ * or `abandoned`. An active block's grid is a button away on its workout screen already.
+ */
+export function showsWorkoutGrid(status: Mesocycle['status']): boolean {
+  return FINAL_MESOCYCLE_STATUSES.includes(status);
+}
+
+/**
+ * What the header's `⋯` offers (08.9, "Шапка"): Rename always; Copy and Archive only for a closed
+ * block — the same two a Completed row's `⋯` holds on 08.3, in the same order and with the same
+ * icons. Stop isn't here; it stays in the workout's menu. Archive isn't `destructive`, for the
+ * reason `completedMenuItems` gives: nothing logged goes, and the confirmation says the rest.
  */
 export function mesocycleDetailMenuItems(
   status: Mesocycle['status'],
-  handlers: { onRename: () => void; onCopy: () => void },
+  handlers: { onRename: () => void; onCopy: () => void; onArchive: () => void },
 ): ActionMenuItem[] {
   const items: ActionMenuItem[] = [
     {
@@ -154,13 +165,20 @@ export function mesocycleDetailMenuItems(
       onPress: handlers.onRename,
     },
   ];
-  if (FINAL_MESOCYCLE_STATUSES.includes(status)) {
+  if (showsWorkoutGrid(status)) {
     items.push({
       key: 'copy',
       label: 'Copy',
       icon: CopyIcon,
       systemImage: 'doc.on.doc',
       onPress: handlers.onCopy,
+    });
+    items.push({
+      key: 'archive',
+      label: 'Archive',
+      icon: ArchiveIcon,
+      systemImage: 'archivebox',
+      onPress: handlers.onArchive,
     });
   }
   return items;

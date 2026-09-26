@@ -20,6 +20,21 @@ function renderWithSafeArea(ui: ReactElement) {
 }
 
 describe('RootScreen', () => {
+  test('a tab root has no back button', () => {
+    renderWithSafeArea(<RootScreen title="Today" />);
+
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+  });
+
+  test('onBack draws a back button above the title, for a screen pushed as a page (130)', () => {
+    const onBack = jest.fn();
+    renderWithSafeArea(<RootScreen title="Week 1" onBack={onBack} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+
+    expect(onBack).toHaveBeenCalled();
+  });
+
   test('renders the title', () => {
     renderWithSafeArea(<RootScreen title="Exercises" />);
 

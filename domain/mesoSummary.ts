@@ -44,9 +44,10 @@ export type MesoSummary = {
    */
   strengthSets: number;
   /**
-   * `Weeks`: the weeks holding at least one session, out of `lengthWeeks` — always with its
-   * denominator. A finished block reads `7 / 7` on purpose: seeing the whole block done is the
-   * motivation to get there (Artem's call, 26.09.2026).
+   * `Weeks`: the week the block is on, by workouts — the subtitle's `Week N` (08.3's rule), the
+   * week a stopped block stopped in, every week of a finished one — out of `lengthWeeks`, always
+   * with its denominator. A finished block reads `7 / 7` on purpose: seeing the whole block done is
+   * the motivation to get there (Artem's call, 26.09.2026).
    */
   weeks: Required<MesoSummaryCount>;
   /**

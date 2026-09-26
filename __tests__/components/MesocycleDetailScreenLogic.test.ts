@@ -98,7 +98,7 @@ describe('weeklySetsRowViews', () => {
 });
 
 describe('mesocycleDetailMenuItems', () => {
-  const handlers = { onRename: jest.fn(), onCopy: jest.fn() };
+  const handlers = { onRename: jest.fn(), onCopy: jest.fn(), onArchive: jest.fn() };
 
   test('an active block: Rename only — Stop stays in the workout menu', () => {
     expect(mesocycleDetailMenuItems('active', handlers).map((item) => item.key)).toEqual([
@@ -106,11 +106,18 @@ describe('mesocycleDetailMenuItems', () => {
     ]);
   });
 
-  test.each(['completed', 'abandoned'] as const)('a %s block: Rename and Copy', (status) => {
-    const items = mesocycleDetailMenuItems(status, handlers);
-    expect(items.map((item) => item.label)).toEqual(['Rename mesocycle', 'Copy']);
+  test.each(['completed', 'abandoned'] as const)(
+    'a %s block: Rename, then Copy and Archive as on its Completed row',
+    (status) => {
+      const items = mesocycleDetailMenuItems(status, handlers);
+      expect(items.map((item) => item.label)).toEqual(['Rename mesocycle', 'Copy', 'Archive']);
+      // Nothing logged goes — not red.
+      expect(items[2]?.destructive).toBeUndefined();
 
-    items[1]?.onPress();
-    expect(handlers.onCopy).toHaveBeenCalled();
-  });
+      items[1]?.onPress();
+      items[2]?.onPress();
+      expect(handlers.onCopy).toHaveBeenCalled();
+      expect(handlers.onArchive).toHaveBeenCalled();
+    },
+  );
 });

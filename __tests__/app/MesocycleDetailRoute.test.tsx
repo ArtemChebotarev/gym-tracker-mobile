@@ -1,7 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesocycleDetailRoute from '@app/meso/[id]';
+import { historySessionHref } from '@components/workoutRoutes';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
@@ -17,9 +19,14 @@ let mockParams: Record<string, string | undefined> = {};
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 
+const mockSetOptions = jest.fn();
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, push: mockPush }),
   useLocalSearchParams: () => mockParams,
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+  // Focus is mount here: the route is rendered on its own, never covered and uncovered.
+  useFocusEffect: (effect: () => void) => jest.requireActual('react').useEffect(effect, [effect]),
 }));
 
 const TEST_SAFE_AREA_METRICS: Metrics = {
@@ -33,6 +40,7 @@ beforeEach(async () => {
   mockParams = { id: WORKOUT_FIXTURE_IDS.mesocycle };
   mockBack.mockClear();
   mockPush.mockClear();
+  mockSetOptions.mockClear();
 });
 
 function renderRoute() {
@@ -85,6 +93,7 @@ describe('Mesocycle detail route', () => {
 
     expect(screen.queryByTestId('action-menu-rename')).toBeTruthy();
     expect(screen.queryByTestId('action-menu-copy')).toBeNull();
+    expect(screen.queryByTestId('action-menu-archive')).toBeNull();
   });
 
   test('a stopped block: Stopped badge, no workouts denominator, Copy opens Flow C on it', async () => {
@@ -97,8 +106,13 @@ describe('Mesocycle detail route', () => {
     expect(screen.queryByText('1 / 20')).toBeNull();
     expect(screen.getByText('2 / 5')).toBeTruthy();
 
+    // Focused, the page pops with the default animation.
+    expect(mockSetOptions).toHaveBeenLastCalledWith({ animation: 'default' });
+
     pickMenuItem('copy');
 
+    // Saving the copy takes this page off under the modal — in the modal's slide only.
+    expect(mockSetOptions).toHaveBeenLastCalledWith({ animation: 'none' });
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/meso-editor/copy',
       params: { sourceMesoId: WORKOUT_FIXTURE_IDS.mesocycle },
@@ -138,5 +152,50 @@ describe('Mesocycle detail route', () => {
     await screen.findByText('Upper/Lower');
 
     expect(screen.queryByText(/tonnage|volume, kg|\bkg\b|\bt\b/i)).toBeNull();
+  });
+
+  test('DoD: an active block has no workout grid', async () => {
+    renderRoute();
+    await screen.findByText('Upper/Lower');
+
+    expect(screen.queryByText('tap to open')).toBeNull();
+    expect(screen.queryByTestId('meso-grid-cell-1-1')).toBeNull();
+  });
+
+  test('DoD: a stopped block has one; a cell pushes its session, an empty one nothing', async () => {
+    await stopFixtureBlock();
+    renderRoute();
+    await screen.findByText('Stopped');
+
+    fireEvent.press(screen.getByTestId('meso-grid-cell-1-1'));
+    expect(mockPush).toHaveBeenCalledWith(historySessionHref(WORKOUT_FIXTURE_IDS.completed));
+
+    mockPush.mockClear();
+    fireEvent.press(screen.getByTestId('meso-grid-cell-3-1'));
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  test('Archive asks first, archives the block and goes back — the block has left the list', async () => {
+    await stopFixtureBlock();
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    renderRoute();
+    await screen.findByText('Stopped');
+
+    pickMenuItem('archive');
+
+    expect(alertSpy.mock.calls.at(-1)?.[0]).toBe('Archive mesocycle?');
+    // Nothing happens until it's confirmed.
+    expect(
+      (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.archivedAt,
+    ).toBeUndefined();
+
+    const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[] | undefined;
+    buttons?.find((button) => button.text === 'Archive')?.onPress?.();
+
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect(
+      (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.archivedAt,
+    ).toEqual(expect.any(String));
+    alertSpy.mockRestore();
   });
 });

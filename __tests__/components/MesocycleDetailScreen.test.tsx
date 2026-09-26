@@ -6,7 +6,9 @@ import {
   type MesocycleDetailScreenProps,
 } from '@components/MesocycleDetailScreen';
 import { mesocycleDetailMenuItems } from '@components/MesocycleDetailScreenLogic';
+import type { Session } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { buildMesoGrid } from '@domain/mesoGridBuilders';
 import type { MesoSummary } from '@domain/mesoSummary';
 import type { MesocycleDetail } from '@usecases/mesocycleDetail';
 import { STAMPS } from '../fixtures/stamps';
@@ -43,9 +45,44 @@ const summary: MesoSummary = {
   ],
 };
 
-function detail(overrides: Partial<MesocycleDetail> = {}): MesocycleDetail {
-  return { mesocycle, summary, weekNumber: 4, ...overrides };
+function session(week: number, day: number, status: Session['status']): Session {
+  return {
+    ...STAMPS,
+    id: `w${week}d${day}`,
+    mesoId: 'meso',
+    weekNumber: week,
+    dayNumber: day,
+    isDeload: week === 4,
+    prescriptionStatus: 'ready',
+    status,
+  };
 }
+
+// Every day of the block trained but week 3 day 2, which was skipped.
+const allSessions = [1, 2, 3, 4].flatMap((week) =>
+  [1, 2].map((day) => session(week, day, week === 3 && day === 2 ? 'skipped' : 'completed')),
+);
+
+// Stopped in week 3: day 1 trained, day 2 closed as skipped by the Stop; week 4 never came.
+const stoppedSessions = [
+  ...allSessions.filter((one) => one.weekNumber < 3),
+  session(3, 1, 'completed'),
+  session(3, 2, 'skipped'),
+];
+
+function detail(overrides: Partial<MesocycleDetail> = {}): MesocycleDetail {
+  const shown = overrides.mesocycle ?? mesocycle;
+  const sessions = shown.status === 'abandoned' ? stoppedSessions : allSessions;
+  return {
+    mesocycle: shown,
+    summary,
+    weekNumber: 4,
+    grid: buildMesoGrid(shown, sessions),
+    ...overrides,
+  };
+}
+
+const stopped = { ...mesocycle, status: 'abandoned' as const, completedAt: '2026-08-20T12:00:00.000Z' };
 
 function renderScreen(props: Partial<MesocycleDetailScreenProps> = {}) {
   const shown = props.detail === undefined ? detail() : props.detail;
@@ -55,9 +92,11 @@ function renderScreen(props: Partial<MesocycleDetailScreenProps> = {}) {
         detail={shown}
         isPending={false}
         onBack={jest.fn()}
+        onOpenSession={jest.fn()}
         menuItems={mesocycleDetailMenuItems(shown?.mesocycle.status ?? 'completed', {
           onRename: jest.fn(),
           onCopy: jest.fn(),
+          onArchive: jest.fn(),
         })}
         {...props}
       />
@@ -83,7 +122,7 @@ describe('MesocycleDetailScreen', () => {
   test('Stopped: the Stopped badge and no workouts denominator', () => {
     renderScreen({
       detail: detail({
-        mesocycle: { ...mesocycle, status: 'abandoned', completedAt: '2026-08-20T12:00:00.000Z' },
+        mesocycle: stopped,
         summary: { ...summary, workouts: { value: 5 }, weeks: { value: 3, total: 4 } },
         weekNumber: 3,
       }),
@@ -149,5 +188,47 @@ describe('MesocycleDetailScreen', () => {
 
     expect(screen.getByText('Loading…')).toBeTruthy();
     expect(screen.queryByText('Upper/lower')).toBeNull();
+  });
+
+  describe('the workout grid (130)', () => {
+    test.each([
+      ['completed', mesocycle],
+      ['abandoned', stopped],
+    ] as const)('a %s block has it', (_status, shown) => {
+      renderScreen({ detail: detail({ mesocycle: shown }) });
+
+      // The tile and the section share the name.
+      expect(screen.getAllByText('Workouts')).toHaveLength(2);
+      expect(screen.getByText('tap to open')).toBeTruthy();
+      expect(screen.getByTestId('meso-grid-cell-1-1')).toBeTruthy();
+    });
+
+    test('an active block has none — its workout screen carries it', () => {
+      renderScreen({
+        detail: detail({ mesocycle: { ...mesocycle, status: 'active', completedAt: undefined } }),
+      });
+
+      expect(screen.queryByText('tap to open')).toBeNull();
+      expect(screen.queryByTestId('meso-grid-cell-1-1')).toBeNull();
+    });
+
+    test('a cell with a session opens that session — a skipped one included', () => {
+      const onOpenSession = jest.fn();
+      renderScreen({ detail: detail({ mesocycle: stopped }), onOpenSession });
+
+      fireEvent.press(screen.getByTestId('meso-grid-cell-2-1'));
+      fireEvent.press(screen.getByTestId('meso-grid-cell-3-2'));
+
+      expect(onOpenSession.mock.calls).toEqual([['w2d1'], ['w3d2']]);
+    });
+
+    test('a cell without a session opens nothing', () => {
+      const onOpenSession = jest.fn();
+      renderScreen({ detail: detail({ mesocycle: stopped }), onOpenSession });
+
+      fireEvent.press(screen.getByTestId('meso-grid-cell-4-1'));
+
+      expect(onOpenSession).not.toHaveBeenCalled();
+    });
   });
 });
