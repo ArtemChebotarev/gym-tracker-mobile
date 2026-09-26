@@ -9,13 +9,18 @@ import { COLORS, RADII, SPACING, TYPOGRAPHY } from '../tokens';
 export type StatTileProps = {
   label: string;
   value: string;
+  /** Pre-formatted denominator: the tile reads `value / total`. */
+  total?: string;
 };
 
-export function StatTile({ label, value }: StatTileProps) {
+export function StatTile({ label, value, total }: StatTileProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={styles.value}>
+        {value}
+        {total !== undefined && <Text style={styles.total}> / {total}</Text>}
+      </Text>
     </View>
   );
 }
@@ -40,5 +45,10 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/value'].fontSize,
     fontWeight: TYPOGRAPHY['type/value'].fontWeight,
     color: COLORS['text/primary'],
+  },
+  total: {
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
+    color: COLORS['text/secondary'],
   },
 });

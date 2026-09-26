@@ -5,7 +5,7 @@
 // "Производные значения выводятся ... по правилу, а не задаются вручную").
 
 import type { MuscleGroup } from '@domain/catalog';
-import { COLORS } from './tokens';
+import { COLORS, OPACITY } from './tokens';
 
 export const MUSCLE_GROUP_COLOR_CATEGORIES = [
   'chest',
@@ -94,6 +94,19 @@ export function getMuscleGroupChipColors(muscleGroupId: string): MuscleGroupChip
   };
 }
 
+/**
+ * A cell of 08.9's weekly sets card (task 129): the category color over `surface/card`, the more
+ * saturated the more sets — `share` is the cell's sets over the card's largest cell, 0..1, and maps
+ * onto `opacity/volume-min`..`opacity/volume-max`. Blended to an opaque color rather than drawn
+ * translucent, like the chip tint, so the cell reads the same whatever it sits on.
+ */
+export function getCategoryVolumeFill(category: MuscleGroupColorCategory, share: number): string {
+  const min = OPACITY['opacity/volume-min'];
+  const max = OPACITY['opacity/volume-max'];
+  const clamped = Math.max(0, Math.min(1, share));
+  return blendOver(COLORS['surface/card'], CATEGORY_COLOR[category], min + (max - min) * clamped);
+}
+
 // --- color math, private to this module -------------------------------------------------
 
 type Rgb = [number, number, number];
@@ -112,12 +125,16 @@ function rgbToHex([r, g, b]: Rgb): string {
     .join('')}`;
 }
 
-// Standard sRGB alpha blend: `opacity` of `color` painted over `surface/page`.
-function blendOverPage(color: string, opacity: number): string {
-  const [pageR, pageG, pageB] = hexToRgb(COLORS['surface/page']);
+// Standard sRGB alpha blend: `opacity` of `color` painted over `background`.
+function blendOver(background: string, color: string, opacity: number): string {
+  const [bgR, bgG, bgB] = hexToRgb(background);
   const [fgR, fgG, fgB] = hexToRgb(color);
   const blend = (bg: number, fg: number) => bg * (1 - opacity) + fg * opacity;
-  return rgbToHex([blend(pageR, fgR), blend(pageG, fgG), blend(pageB, fgB)]);
+  return rgbToHex([blend(bgR, fgR), blend(bgG, fgG), blend(bgB, fgB)]);
+}
+
+function blendOverPage(color: string, opacity: number): string {
+  return blendOver(COLORS['surface/page'], color, opacity);
 }
 
 function rgbToHsl([r, g, b]: Rgb): Hsl {

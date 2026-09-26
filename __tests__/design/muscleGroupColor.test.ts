@@ -3,6 +3,7 @@ import {
   getCategoryColor,
   getCategoryTextOnTint,
   getCategoryTint,
+  getCategoryVolumeFill,
   getMuscleGroupCategory,
   getMuscleGroupChipColors,
   MUSCLE_GROUP_COLOR_CATEGORIES,
@@ -101,5 +102,17 @@ describe('getMuscleGroupChipColors', () => {
 
   test('groups sharing a family resolve to the same colors (traps shares "back" with back)', () => {
     expect(getMuscleGroupChipColors('traps')).toEqual(getMuscleGroupChipColors('back'));
+  });
+});
+
+describe('getCategoryVolumeFill', () => {
+  test('the category color over surface/card, from opacity/volume-min to opacity/volume-max', () => {
+    expect(getCategoryVolumeFill('back', 0)).toBe('#222B39');
+    expect(getCategoryVolumeFill('back', 1)).toBe('#426BA6');
+  });
+
+  test('clamps a share outside 0..1', () => {
+    expect(getCategoryVolumeFill('back', -1)).toBe(getCategoryVolumeFill('back', 0));
+    expect(getCategoryVolumeFill('back', 2)).toBe(getCategoryVolumeFill('back', 1));
   });
 });

@@ -182,6 +182,12 @@ export const OPACITY = {
   'opacity/pressed': 0.7,
   /** A disabled control, a skipped exercise card. */
   'opacity/dimmed': 0.5,
+  /**
+   * The weekly sets card of 08.9 (task 129): a cell's fill is its group's category color at an
+   * opacity between these two — the fewest sets in the card at the floor, the most at the ceiling.
+   */
+  'opacity/volume-min': 0.12,
+  'opacity/volume-max': 0.62,
 } as const;
 
 export type OpacityToken = keyof typeof OPACITY;
@@ -219,6 +225,10 @@ export const SIZES = {
   'size/cell': 44,
   /** Mesocycle overview: the week label column. */
   'size/week-column': 64,
+  /** Mesocycle detail, weekly sets card: the muscle-group column — wide enough for `Hamstrings`. */
+  'size/group-column': 96,
+  /** Mesocycle detail, weekly sets card: a week cell's height (08.9, task 129). */
+  'size/volume-cell': 28,
   /**
    * One capsule revealed by swiping a row (`SwipeableRow`, 08.3). Wide enough for a 20pt icon over
    * a short one-word label and, at 64, still past the 44pt tap target in the one direction a swipe

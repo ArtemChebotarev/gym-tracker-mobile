@@ -27,7 +27,7 @@
 // picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the
 // session (`useAddExercises`, 048). Skip workout, once confirmed, skips every unfinished
 // exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
-// now read-only. Mesocycle history opens the mesocycle detail stub (098).
+// now read-only. Mesocycle history opens the mesocycle detail screen (08.9, 129).
 //
 // An exercise card's `⋯` opens the exercise menu (097, `WorkoutExerciseMenuSheet`) for that
 // exercise. Its one-tap actions — add or remove a set, move, skip or unskip, delete — run through

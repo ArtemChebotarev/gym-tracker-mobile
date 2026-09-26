@@ -19,6 +19,7 @@ import type {
   SourceWeekListDeps,
 } from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
+import type { MesocycleDetailDeps } from '@usecases/mesocycleDetail';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
 import type { MesocycleStartDeps } from '@usecases/mesocycleStart';
@@ -52,6 +53,12 @@ export function useMesocycleClosingDeps(): MesocycleClosingDeps {
 export function useMesoGridDeps(): MesoGridDeps {
   const { mesocycleRepo, sessionRepo } = useRepositories();
   return { mesocycleRepo, sessionRepo };
+}
+
+/** "Мезоцикл (деталь)" (129): the block, its sessions and set logs, and the exercises behind them. */
+export function useMesocycleDetailDeps(): MesocycleDetailDeps {
+  const { mesocycleRepo, sessionRepo, setLogRepo, exerciseRepo } = useRepositories();
+  return { mesocycleRepo, sessionRepo, setLogRepo, exerciseRepo };
 }
 
 /** Flow C's step S (124): which weeks of a finished block may be copied — sessions only. */
