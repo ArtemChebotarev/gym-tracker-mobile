@@ -4,10 +4,20 @@ import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { TargetIndicator } from '@domain/execution';
 import { validateSetEntry } from '@domain/executionValidators';
+import type { NotDoneStatus } from '@domain/sessionExerciseStatus';
 import type { WeightSwapEvaluation } from '@domain/weightSwap';
 import { evaluateWeightSwap } from '@domain/weightSwapRules';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
+
+/**
+ * The word for rows that were never done (08.7, "Строка подхода"): `Skipped` when the user skipped
+ * the exercise, `Abandoned` when Stop mesocycle closed it (136) — the status's own name, so the
+ * card never says `Skipped` about a day the user didn't pass on. Same look either way.
+ */
+export function formatNotDone(status: NotDoneStatus): string {
+  return status === 'abandoned' ? 'Abandoned' : 'Skipped';
+}
 
 /** A weight as the row shows it — `62.5`, no unit (the column header says `kg`). */
 export function formatRowWeight(weight: number): string {

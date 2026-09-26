@@ -169,7 +169,7 @@ describe('stopMesocycle', () => {
     await expect(deps.store.repos.mesocycleRepo.getActive()).resolves.toBeNull();
   });
 
-  test('DoD: the session in progress with a logged set is completed, its unfinished exercises skipped, its logs kept', async () => {
+  test('DoD: the session in progress with a logged set is completed, its unfinished exercises abandoned, its logs kept', async () => {
     const deps = await setUp({
       sessions: [
         makeSession({
@@ -195,12 +195,13 @@ describe('stopMesocycle', () => {
     const exercises = await deps.store.repos.sessionExerciseRepo.listBySessionId('live');
     expect(exercises.map((exercise) => [exercise.id, exercise.status])).toEqual([
       ['live-bench', 'completed'],
-      ['live-row', 'skipped'],
+      // Stop closed it, not the user (136).
+      ['live-row', 'abandoned'],
     ]);
     await expect(deps.store.repos.setLogRepo.listBySessionId('live')).resolves.toHaveLength(1);
   });
 
-  test('DoD: the session in progress with nothing logged is skipped, undated', async () => {
+  test('DoD: the session in progress with nothing logged is abandoned, undated, and so are its exercises', async () => {
     const deps = await setUp({
       sessions: [makeSession({ id: 'live', status: 'in_progress' })],
       exercises: [makeExercise({ id: 'live-bench', sessionId: 'live' })],
@@ -209,11 +210,14 @@ describe('stopMesocycle', () => {
     await stopMesocycle('meso', deps, NOW);
 
     const session = await deps.store.repos.sessionRepo.getById('live');
-    expect(session?.status).toBe('skipped');
+    expect(session?.status).toBe('abandoned');
     expect(session?.completedAt).toBeUndefined();
+    await expect(
+      deps.store.repos.sessionExerciseRepo.listBySessionId('live'),
+    ).resolves.toMatchObject([{ id: 'live-bench', status: 'abandoned' }]);
   });
 
-  test('DoD: every other unfinished session is skipped, and finished ones are left alone', async () => {
+  test('DoD: every other unfinished session is abandoned, and finished ones — a skip included — are left alone', async () => {
     const completedAt = '2026-09-07T10:00:00.000Z';
     const deps = await setUp({
       sessions: [
@@ -238,9 +242,10 @@ describe('stopMesocycle', () => {
         session,
       ]),
     );
-    expect(byId.get('ready')?.status).toBe('skipped');
-    expect(byId.get('awaiting')?.status).toBe('skipped');
+    expect(byId.get('ready')?.status).toBe('abandoned');
+    expect(byId.get('awaiting')?.status).toBe('abandoned');
     expect(byId.get('done')).toMatchObject({ status: 'completed', completedAt });
+    // The user's own skip stays theirs: `skipped` is never what Stop writes (136).
     expect(byId.get('was-skipped')?.status).toBe('skipped');
   });
 

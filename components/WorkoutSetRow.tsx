@@ -14,7 +14,8 @@
 //   filled Log box. Tapping it un-logs the set, and the fields come back holding the logged values.
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
 // values with nothing to type or press. An unlogged row of a skipped exercise reads `Skipped` across
-// Weight and Reps, with no Log box (05, "Пропустить упражнение").
+// Weight and Reps, with no Log box (05, "Пропустить упражнение"); of an abandoned one, `Abandoned`
+// in the same place (136).
 //
 // Laid out after the 08.7 mockup's set table: Weight · Reps · indicator · Log, all centered (no set
 // number — Artem's review); the focused field's outline brightens.
@@ -38,6 +39,7 @@ import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSessi
 import {
   formatIndicator,
   formatLoggedWeight,
+  formatNotDone,
   isRirPlaceholder,
   isStrongIndicator,
   repsPlaceholder,
@@ -103,11 +105,11 @@ export function WorkoutSetRow({
     onUnlog();
   }
 
-  if (row.isSkipped) {
+  if (row.notDone !== undefined) {
     return (
       <View testID={`set-row-${setNumber}`} style={styles.row}>
         <View style={styles.skippedValues}>
-          <Text style={styles.skippedLabel}>Skipped</Text>
+          <Text style={styles.skippedLabel}>{formatNotDone(row.notDone)}</Text>
         </View>
         <Text style={styles.indicator} />
         <View style={styles.logColumn} />

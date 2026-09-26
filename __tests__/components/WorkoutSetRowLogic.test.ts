@@ -3,6 +3,7 @@ import { buildWeightSwap } from '@domain/weightSwapRules';
 import {
   formatIndicator,
   formatLoggedWeight,
+  formatNotDone,
   formatRowWeight,
   initialWeightText,
   isRirPlaceholder,
@@ -13,6 +14,13 @@ import {
   resolveSetEntry,
   rowEvaluation,
 } from '@components/WorkoutSetRowLogic';
+
+describe('formatNotDone', () => {
+  test('the status by its own name — Skipped is only ever the user’s skip (136)', () => {
+    expect(formatNotDone('skipped')).toBe('Skipped');
+    expect(formatNotDone('abandoned')).toBe('Abandoned');
+  });
+});
 
 describe('formatRowWeight', () => {
   test('a plain number, no unit', () => {

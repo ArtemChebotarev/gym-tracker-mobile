@@ -64,6 +64,9 @@ export async function closeSession(
   now: string,
 ): Promise<SessionFinishResult> {
   const logs = await repos.setLogRepo.listBySessionId(session.id);
-  const finished = await repos.sessionRepo.update(closedSession(session, logs.length > 0, now));
+  // Finish and Skip workout are both the user ending the day, so nothing logged reads `skipped`.
+  const finished = await repos.sessionRepo.update(
+    closedSession(session, logs.length > 0, now, 'skipped'),
+  );
   return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
 }

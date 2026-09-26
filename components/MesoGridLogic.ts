@@ -12,8 +12,10 @@ import type { MesoGridCell, MesoGridCellStatus } from '@domain/mesoGrid';
  *   green redesign (Artem's call, 25.09.2026): in the old grey grid a skipped day was
  *   indistinguishable from a trained one, so task 107 folded the two together; against `accent/bg`
  *   it tells itself apart without adding weight.
- * - `left` — `ready`, `in_progress`, `awaiting` or no session at all. Telling a programmed day from
- *   an unprogrammed one was never something the grid needed to say.
+ * - `left` — `ready`, `in_progress`, `awaiting`, `abandoned` or no session at all. Telling a
+ *   programmed day from an unprogrammed one was never something the grid needed to say, and an
+ *   abandoned day — one Stop closed before anyone got to it (136) — is as empty as either. `Skip`
+ *   stays for a day the user passed on themselves.
  */
 export type MesoGridCellLook = 'done' | 'skip' | 'left';
 
@@ -29,6 +31,7 @@ const STATUS_LABELS: Record<MesoGridCellStatus, string> = {
   in_progress: 'in progress',
   ready: 'ready',
   skipped: 'skipped',
+  abandoned: 'abandoned',
   awaiting: 'not programmed yet',
 };
 

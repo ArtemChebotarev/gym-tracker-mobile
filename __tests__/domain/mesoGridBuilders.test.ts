@@ -41,6 +41,7 @@ describe('mesoGridCellStatus', () => {
     [{ status: 'completed', prescriptionStatus: 'ready' }, 'completed'],
     [{ status: 'in_progress', prescriptionStatus: 'ready' }, 'in_progress'],
     [{ status: 'skipped', prescriptionStatus: 'ready' }, 'skipped'],
+    [{ status: 'abandoned', prescriptionStatus: 'ready' }, 'abandoned'],
     [{ status: 'planned', prescriptionStatus: 'ready' }, 'ready'],
     [{ status: 'planned', prescriptionStatus: 'awaiting_source' }, 'awaiting'],
   ] as const)('%o is %s', (state, status) => {
@@ -235,5 +236,21 @@ describe('buildMesoGrid', () => {
       ['awaiting', 'awaiting'],
     ]);
     expect(grid.weeks[2]?.cells.every((cell) => cell.sessionId === undefined)).toBe(true);
+  });
+
+  test('an abandoned day leads nowhere — as empty as one the block never reached (136)', () => {
+    const grid = buildMesoGrid({ ...mesocycle, status: 'abandoned' }, [
+      session(1, 1, { status: 'completed' }),
+      session(1, 2, { status: 'skipped' }),
+      session(2, 1, { status: 'abandoned' }),
+    ]);
+
+    expect(grid.weeks[0]?.cells[1]).toEqual({
+      weekNumber: 1,
+      dayNumber: 2,
+      status: 'skipped',
+      sessionId: 'w1d2',
+    });
+    expect(grid.weeks[1]?.cells[0]).toEqual({ weekNumber: 2, dayNumber: 1, status: 'abandoned' });
   });
 });

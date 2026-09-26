@@ -16,16 +16,16 @@ import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 const ROW: WorkoutSetRow = { setNumber: 1, isFirstUnlogged: false, log: { weight: 60, reps: 10 } };
-const SKIPPED_ROW: WorkoutSetRow = { setNumber: 2, isFirstUnlogged: false, isSkipped: true };
+const SKIPPED_ROW: WorkoutSetRow = { setNumber: 2, isFirstUnlogged: false, notDone: 'skipped' };
 
 describe('exerciseCardView', () => {
   test('live: the menu and the RIR badge, set rows, no plate', () => {
     expect(exerciseCardView('live', { status: 'planned', targetRir: 2, rows: [ROW] })).toEqual({
       showMenu: true,
       rirLabel: '2 RIR',
-      isSkipped: false,
+      isNotDone: false,
       showSets: true,
-      showSkippedNote: false,
+      notDoneNote: undefined,
       showNotProgrammed: false,
     });
   });
@@ -36,9 +36,9 @@ describe('exerciseCardView', () => {
     ).toEqual({
       showMenu: false,
       rirLabel: '2 RIR',
-      isSkipped: false,
+      isNotDone: false,
       showSets: true,
-      showSkippedNote: false,
+      notDoneNote: undefined,
       showNotProgrammed: false,
     });
   });
@@ -48,14 +48,14 @@ describe('exerciseCardView', () => {
       exerciseCardView('live', { status: 'skipped', targetRir: 2, rows: [ROW, SKIPPED_ROW] }),
     ).toMatchObject({
       showMenu: true,
-      isSkipped: true,
+      isNotDone: true,
       showSets: true,
     });
     expect(
       exerciseCardView('readonly', { status: 'skipped', targetRir: 2, rows: [ROW, SKIPPED_ROW] }),
     ).toMatchObject({
       showMenu: false,
-      isSkipped: true,
+      isNotDone: true,
       showSets: true,
     });
   });
@@ -67,16 +67,30 @@ describe('exerciseCardView', () => {
         targetRir: 2,
         rows: [{ ...SKIPPED_ROW, setNumber: 1 }, SKIPPED_ROW],
       }),
-    ).toMatchObject({ isSkipped: true, showSets: false, showSkippedNote: true });
+    ).toMatchObject({ isNotDone: true, showSets: false, notDoneNote: 'Skipped' });
+  });
+
+  test('an abandoned exercise reads the same, under its own word (136)', () => {
+    const abandonedRow: WorkoutSetRow = { ...SKIPPED_ROW, notDone: 'abandoned' };
+    expect(
+      exerciseCardView('history', {
+        status: 'abandoned',
+        targetRir: 2,
+        rows: [{ ...abandonedRow, setNumber: 1 }, abandonedRow],
+      }),
+    ).toMatchObject({ isNotDone: true, showSets: false, notDoneNote: 'Abandoned' });
+    expect(
+      exerciseCardView('history', { status: 'abandoned', targetRir: 2, rows: [ROW, abandonedRow] }),
+    ).toMatchObject({ isNotDone: true, showSets: true, notDoneNote: undefined });
   });
 
   test('preview: the plate only — no menu, no RIR badge, no set rows', () => {
     expect(exerciseCardView('preview', { status: 'planned', targetRir: 2, rows: [ROW] })).toEqual({
       showMenu: false,
       rirLabel: undefined,
-      isSkipped: false,
+      isNotDone: false,
       showSets: false,
-      showSkippedNote: false,
+      notDoneNote: undefined,
       showNotProgrammed: true,
     });
   });

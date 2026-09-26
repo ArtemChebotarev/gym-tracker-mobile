@@ -1,13 +1,20 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
 import type { Equipment } from '@domain/catalog';
+import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
-import { formatRowWeight, initialWeightText, parseWeight, rowEvaluation } from './WorkoutSetRowLogic';
+import {
+  formatNotDone,
+  formatRowWeight,
+  initialWeightText,
+  parseWeight,
+  rowEvaluation,
+} from './WorkoutSetRowLogic';
 
 /**
  * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
@@ -15,9 +22,9 @@ import { formatRowWeight, initialWeightText, parseWeight, rowEvaluation } from '
  * - live — everything, including `⋯`;
  * - read-only, and history with it (08.9) — no `⋯`. A card reads the same in both: history takes
  *   things off the header, not off the cards;
- * - skipped (either mode) — the card at 50% opacity. With sets logged, every row shows: the logged
- *   ones as usual, the rest as `Skipped` rows. With nothing logged, one `Skipped` line in place of
- *   the rows;
+ * - skipped or abandoned (either mode) — the card at 50% opacity. With sets logged, every row
+ *   shows: the logged ones as usual, the rest as `Skipped` rows — `Abandoned` for an exercise Stop
+ *   mesocycle closed (136). With nothing logged, one such line in place of the rows;
  * - preview — no RIR badge, no set rows, the `Not programmed yet` plate instead.
  * The history button is there in every variant.
  */
@@ -25,11 +32,15 @@ export type ExerciseCardView = {
   showMenu: boolean;
   /** `2 RIR`, or `undefined` when the badge isn't shown. */
   rirLabel: string | undefined;
-  isSkipped: boolean;
-  /** The column header and set rows — everything but preview and a skipped card with nothing logged. */
+  /** Skipped or abandoned: the card is dimmed and nothing in it is editable. */
+  isNotDone: boolean;
+  /**
+   * The column header and set rows — everything but preview and a not-done card with nothing
+   * logged.
+   */
   showSets: boolean;
-  /** Skipped with nothing logged: one `Skipped` line instead of the rows. */
-  showSkippedNote: boolean;
+  /** Not done with nothing logged: this one line (`Skipped` / `Abandoned`) instead of the rows. */
+  notDoneNote: string | undefined;
   showNotProgrammed: boolean;
 };
 
@@ -38,15 +49,16 @@ export function exerciseCardView(
   exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'>,
 ): ExerciseCardView {
   const isPreview = mode === 'preview';
-  const isSkipped = !isPreview && exercise.status === 'skipped';
-  const skippedWhole = isSkipped && exercise.rows.every((row) => row.isSkipped === true);
+  const notDone = !isPreview && isNotDone(exercise.status) ? exercise.status : undefined;
+  const notDoneWhole =
+    notDone !== undefined && exercise.rows.every((row) => row.notDone !== undefined);
   return {
     showMenu: mode === 'live',
     rirLabel:
       !isPreview && exercise.targetRir !== undefined ? formatRir(exercise.targetRir) : undefined,
-    isSkipped,
-    showSets: !isPreview && !skippedWhole && exercise.rows.length > 0,
-    showSkippedNote: skippedWhole,
+    isNotDone: notDone !== undefined,
+    showSets: !isPreview && !notDoneWhole && exercise.rows.length > 0,
+    notDoneNote: notDoneWhole ? formatNotDone(notDone) : undefined,
     showNotProgrammed: isPreview,
   };
 }

@@ -11,6 +11,7 @@ import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
+import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import { targetIndicatorAtWeight } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -66,10 +67,11 @@ export type WorkoutSetRow = {
   /** The exercise's first unlogged row, whose Log box gets the accent outline. Live mode only. */
   isFirstUnlogged: boolean;
   /**
-   * An unlogged row of a skipped exercise — skipped along with it (05, "Пропустить упражнение").
-   * The card shows it as a `Skipped` row; absent otherwise.
+   * An unlogged row of an exercise closed without being done, and how: `skipped` along with it
+   * (05, "Пропустить упражнение"), or `abandoned` by Stop mesocycle (136). The card shows it as a
+   * `Skipped` or `Abandoned` row; absent otherwise.
    */
-  isSkipped?: true;
+  notDone?: NotDoneStatus;
 };
 
 /**
@@ -116,7 +118,8 @@ export type WorkoutExercise = {
    */
   weightHints?: ExerciseWeightHint[];
   /**
-   * Every set row — in a skipped exercise the unlogged ones flagged `isSkipped`; none in preview.
+   * Every set row — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in
+   * preview.
    */
   rows: WorkoutSetRow[];
   /** Rows planned, for the menu subtitle `2 sets planned · 1 logged`. */
@@ -255,9 +258,9 @@ function toRows(
 ): WorkoutSetRow[] {
   const { sessionExercise, exercise, setLogs } = tree;
   const exerciseReferenceLogs = context.referenceLogs.get(sessionExercise.exerciseId) ?? [];
-  const skipped = sessionExercise.status === 'skipped';
+  const notDone = isNotDone(sessionExercise.status) ? sessionExercise.status : undefined;
   const firstUnlogged =
-    mode === 'live' && !skipped
+    mode === 'live' && notDone === undefined
       ? sessionExercise.setTargets.find(
           (target) => !setLogs.some((log) => log.setNumber === target.setNumber),
         )
@@ -270,8 +273,8 @@ function toRows(
       setNumber: target.setNumber,
       isFirstUnlogged: target === firstUnlogged,
     };
-    if (skipped && !log) {
-      row.isSkipped = true;
+    if (notDone !== undefined && !log) {
+      row.notDone = notDone;
     }
     if (target.targetReps !== undefined) {
       row.targetReps = target.targetReps;

@@ -39,6 +39,7 @@ describe('isFinalSession', () => {
     ['in_progress', false],
     ['completed', true],
     ['skipped', true],
+    ['abandoned', true],
   ] as const)('%s → %s', (status, expected) => {
     expect(isFinalSession({ status })).toBe(expected);
   });
@@ -50,7 +51,7 @@ describe('assertSessionOpen', () => {
     expect(() => assertSessionOpen(makeSession({ status: 'in_progress' }))).not.toThrow();
   });
 
-  test.each(['completed', 'skipped'] as const)('rejects a %s session', (status) => {
+  test.each(['completed', 'skipped', 'abandoned'] as const)('rejects a %s session', (status) => {
     expect(isConflictError(errorFrom(() => assertSessionOpen(makeSession({ status }))))).toBe(true);
   });
 
@@ -101,15 +102,24 @@ describe('decideSessionStart', () => {
 
 describe('closedSession', () => {
   test('a session with a logged set is completed, and dated', () => {
-    expect(closedSession(makeSession({ status: 'in_progress' }), true, NOW)).toEqual(
-      makeSession({ status: 'completed', completedAt: NOW }),
-    );
+    for (const notDone of ['skipped', 'abandoned'] as const) {
+      expect(closedSession(makeSession({ status: 'in_progress' }), true, NOW, notDone)).toEqual(
+        makeSession({ status: 'completed', completedAt: NOW }),
+      );
+    }
   });
 
-  test('a session with nothing logged is skipped, and undated', () => {
-    const closed = closedSession(makeSession({ status: 'in_progress' }), false, NOW);
+  test('a session with nothing logged is skipped when the user ended it, and undated', () => {
+    const closed = closedSession(makeSession({ status: 'in_progress' }), false, NOW, 'skipped');
 
     expect(closed.status).toBe('skipped');
+    expect(closed.completedAt).toBeUndefined();
+  });
+
+  test('…and abandoned when Stop mesocycle did (136)', () => {
+    const closed = closedSession(makeSession({ status: 'planned' }), false, NOW, 'abandoned');
+
+    expect(closed.status).toBe('abandoned');
     expect(closed.completedAt).toBeUndefined();
   });
 });

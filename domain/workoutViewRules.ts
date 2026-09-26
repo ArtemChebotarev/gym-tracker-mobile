@@ -5,6 +5,7 @@
 import type { Session, SessionExercise, SetLog, SetTarget, WeightHint } from '@domain/execution';
 import type { Mesocycle, ProgressionSettings } from '@domain/mesocycle';
 import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
+import { isNotDone } from '@domain/sessionExerciseStatus';
 import { isFinalSession } from '@domain/sessionLifecycle';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
 
@@ -48,7 +49,7 @@ export type ProgressExercise = {
 
 /**
  * Share of the session's set rows that are done, 0..1 (08.7, "Шапка", progress bar): logged rows
- * plus every row of a skipped exercise, over all rows. A completed session is always 1; a session
+ * plus every row of a skipped or abandoned exercise (`isNotDone`), over all rows. A completed session is always 1; a session
  * with no rows is 0.
  */
 export function sessionProgress(
@@ -63,7 +64,7 @@ export function sessionProgress(
   for (const { sessionExercise, setLogs } of exercises) {
     const rows = sessionExercise.setTargets.length;
     total += rows;
-    if (sessionExercise.status === 'skipped') {
+    if (isNotDone(sessionExercise.status)) {
       done += rows;
     } else {
       const logged = new Set(setLogs.map((log) => log.setNumber));

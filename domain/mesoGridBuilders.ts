@@ -88,7 +88,9 @@ export function buildMesoGrid(mesocycle: Mesocycle, sessions: readonly Session[]
         const dayNumber = dayIndex + 1;
         const session = bySlot.get(`${weekNumber}:${dayNumber}`);
         const status = mesoGridCellStatus(session);
-        return session
+        // An abandoned session has no set logged and no decision in it (136) — its day is as
+        // empty as one the block never reached, so the cell doesn't lead to it.
+        return session && status !== 'abandoned'
           ? { weekNumber, dayNumber, status, sessionId: session.id }
           : { weekNumber, dayNumber, status };
       }),

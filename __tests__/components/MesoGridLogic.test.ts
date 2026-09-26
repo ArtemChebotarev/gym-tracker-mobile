@@ -16,6 +16,10 @@ describe('mesoGridCellLook', () => {
     expect(mesoGridCellLook({ status: 'skipped' })).toBe('skip');
   });
 
+  test('an abandoned day is empty — not a Skip: the user never passed on it (136)', () => {
+    expect(mesoGridCellLook({ status: 'abandoned' })).toBe('left');
+  });
+
   test.each(['ready', 'in_progress', 'awaiting'] as const)(
     'a %s day is still to do — the grid draws them alike',
     (status) => {
@@ -36,6 +40,9 @@ describe('mesoGridCellAccessibilityLabel', () => {
     expect(
       mesoGridCellAccessibilityLabel({ weekNumber: 3, dayNumber: 3, status: 'skipped' }),
     ).toBe('Week 3 Day 3, skipped');
+    expect(
+      mesoGridCellAccessibilityLabel({ weekNumber: 4, dayNumber: 2, status: 'abandoned' }),
+    ).toBe('Week 4 Day 2, abandoned');
   });
 });
 

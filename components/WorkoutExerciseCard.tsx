@@ -3,7 +3,8 @@
 // name, equipment, the `N RIR` chip, the history button, `⋯` in live mode only, the `Weight, kg` ·
 // `Reps` · `Log` column header, and the set rows. Which of these show is `exerciseCardView`'s call
 // (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity; every row, the unlogged ones
-// as `Skipped` rows — just one `Skipped` note when nothing was logged), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
+// as `Skipped` rows — just one `Skipped` note when nothing was logged; `Abandoned` instead for an
+// exercise Stop mesocycle closed, 136), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
 //
 // Under the title, one line per weight hint (03, rule 3: `↑ Go heavier — 30+ reps last week` /
 // `↓ Go lighter — under 5 reps last week`), in live mode only. 08 · Screens & Navigation leaves it
@@ -110,7 +111,7 @@ export function WorkoutExerciseCard({
   onUnlogSet,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
-  const editable = mode === 'live' && !view.isSkipped;
+  const editable = mode === 'live' && !view.isNotDone;
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
   const popover = weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir);
@@ -135,7 +136,7 @@ export function WorkoutExerciseCard({
       {showGroupChip && <GroupChip muscleGroup={exercise.muscleGroup} />}
       <View
         testID={`exercise-card-${exercise.sessionExerciseId}`}
-        style={[styles.card, view.isSkipped && styles.skipped]}
+        style={[styles.card, view.isNotDone && styles.skipped]}
       >
         <View style={styles.titleRow}>
           <View style={styles.titleBlock}>
@@ -231,7 +232,9 @@ export function WorkoutExerciseCard({
             onUnlogSet={onUnlogSet}
           />
         )}
-        {view.showSkippedNote && <Text style={styles.skippedNote}>Skipped</Text>}
+        {view.notDoneNote !== undefined && (
+          <Text style={styles.skippedNote}>{view.notDoneNote}</Text>
+        )}
       </View>
       {popover !== undefined && (
         <WeightSwapPopoverPlate

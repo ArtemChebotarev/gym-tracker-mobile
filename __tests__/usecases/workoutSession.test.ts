@@ -310,10 +310,10 @@ describe('getWorkoutSession — live', () => {
 
     const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(benchCard?.rows.map((setRow) => [setRow.setNumber, setRow.isSkipped ?? false])).toEqual([
+    expect(benchCard?.rows.map((setRow) => [setRow.setNumber, setRow.notDone ?? false])).toEqual([
       [1, false],
-      [2, true],
-      [3, true],
+      [2, 'skipped'],
+      [3, 'skipped'],
     ]);
     expect(benchCard?.rows.some((setRow) => setRow.isFirstUnlogged)).toBe(false);
     expect(benchCard?.actions).toMatchObject({ canSkip: false, canUnskip: true, canDelete: true });
@@ -328,7 +328,7 @@ describe('getWorkoutSession — live', () => {
     const [rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
     expect(rowCard?.rows).toHaveLength(2);
-    expect(rowCard?.rows.some((setRow) => setRow.isSkipped)).toBe(false);
+    expect(rowCard?.rows.some((setRow) => setRow.notDone !== undefined)).toBe(false);
   });
 
   test('a ready session not started yet has no date and can be skipped', async () => {
@@ -759,7 +759,7 @@ describe('storage is the source of truth', () => {
     ]);
     const [rowCard, benchCard] = after.exercises;
     expect(rowCard).toMatchObject({ status: 'skipped', loggedSetCount: 1 });
-    expect(rowCard?.rows.map((setRow) => setRow.isSkipped ?? false)).toEqual([false, true]);
+    expect(rowCard?.rows.map((setRow) => setRow.notDone ?? false)).toEqual([false, 'skipped']);
     expect(benchCard?.plannedSetCount).toBe(4);
     expect(benchCard?.rows.map((setRow) => setRow.log?.weight)).toEqual([
       62.5,
