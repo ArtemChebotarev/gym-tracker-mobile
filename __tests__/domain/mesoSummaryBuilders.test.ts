@@ -116,7 +116,7 @@ describe('buildMesoSummary', () => {
     expect(summary.weeks).toEqual({ value: 2, total: 4 });
   });
 
-  test('a completed block has no weeks denominator', () => {
+  test('a completed block keeps its weeks denominator: 4 / 4', () => {
     const all = [1, 2, 3, 4].flatMap((week) => [
       logged(session(week, 1), sets(`w${week}d1`, 'bench', 3)),
       logged(session(week, 2), sets(`w${week}d2`, 'squat', 3)),
@@ -125,7 +125,7 @@ describe('buildMesoSummary', () => {
     const summary = buildMesoSummary({ ...mesocycle, status: 'completed' }, all, exercises);
 
     expect(summary.workouts).toEqual({ value: 8, total: 8 });
-    expect(summary.weeks).toEqual({ value: 4 });
+    expect(summary.weeks).toEqual({ value: 4, total: 4 });
     expect(summary.strengthSets).toBe(24);
   });
 

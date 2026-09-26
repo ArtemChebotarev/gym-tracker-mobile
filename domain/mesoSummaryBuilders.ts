@@ -34,10 +34,7 @@ export function buildMesoSummary(
         ? { value: completed }
         : { value: completed, total: mesocycle.lengthWeeks * mesocycle.daysPerWeek },
     strengthSets: own.reduce((sum, { setLogs }) => sum + setLogs.length, 0),
-    weeks:
-      mesocycle.status === 'completed'
-        ? { value: weeksWithSessions }
-        : { value: weeksWithSessions, total: mesocycle.lengthWeeks },
+    weeks: { value: weeksWithSessions, total: mesocycle.lengthWeeks },
     weeklySets: weeklySets(mesocycle.lengthWeeks, own, exercises),
   };
 }
