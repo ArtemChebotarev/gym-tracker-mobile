@@ -182,6 +182,8 @@ export const OPACITY = {
   'opacity/pressed': 0.7,
   /** A disabled control, a skipped exercise card. */
   'opacity/dimmed': 0.5,
+  /** Laid out but not yet shown — a RangeTrack label until it has been measured and placed. */
+  'opacity/hidden': 0,
   /**
    * The weekly sets card of 08.9 (task 129): a cell's fill is its group's category color at an
    * opacity between these two — the fewest sets in the card at the floor, the most at the ceiling.

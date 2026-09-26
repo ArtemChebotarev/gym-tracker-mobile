@@ -1,20 +1,21 @@
 // RangeTrack — see 08.0 · Design SDK, "Компоненты": a span of values with a narrower span
-// highlighted inside it and one value marked. Reference only — no accent and nothing to press
-// (08.7.1 shows the weights a rep target still reaches).
+// highlighted inside it and one value marked. Nothing to press; the inner span is drawn in the
+// accent, as the part worth aiming for (08.7.1 shows the weights a rep target still reaches).
 //
 // The outer span is a row of dashes clipped to the track, the inner one a solid bar over it, and
-// the marker a dot. Each label is a full-width centred line shifted onto its own point, which
-// needs the track's measured width but nothing about how wide the label itself renders; until the
-// first layout there is no width to shift by, so the labels wait for it.
-//
+// the marker a dot. Each label is measured and centred on its own point, so the track needs both
+// its own measured width and each label's. The two end labels set the track's ends: it is pulled in
+// from each side by half the label that sits there, so that label's outer edge lines up with the
+// edge of the text around it (task 137). Until everything is measured the labels stay invisible.
+
 // Values come in as numbers with text the caller has already formatted — the track never learns
 // whether it is showing kilos, reps or anything else.
 
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 
 import { centerOffset, roundedBar } from '../shapes';
-import { COLORS, LINE_HEIGHTS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, LINE_HEIGHTS, OPACITY, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
 /** A tick under the track: the value it sits over, and what it reads. */
 export type RangeTrackLabel = { value: number; text: string };
@@ -41,6 +42,7 @@ function toPercent(share: number): `${number}%` {
 
 export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }: RangeTrackProps) {
   const [width, setWidth] = useState(0);
+  const [labelWidths, setLabelWidths] = useState<ReadonlyMap<number, number>>(new Map());
 
   function share(value: number): number {
     const span = outer.max - outer.min;
@@ -50,11 +52,25 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
     return Math.min(Math.max((value - outer.min) / span, 0), 1);
   }
 
+  function measureLabel(value: number, event: LayoutChangeEvent) {
+    const measured = event.nativeEvent.layout.width;
+    setLabelWidths((current) =>
+      current.get(value) === measured ? current : new Map(current).set(value, measured),
+    );
+  }
+
+  // Half of the label on each end of the track — how far the track is pulled in from that side.
+  function endInset(value: number): number {
+    return -centerOffset(labelWidths.get(value) ?? 0);
+  }
+  const insetStart = endInset(outer.min);
+  const insetEnd = endInset(outer.max);
+
   return (
     <View accessible accessibilityLabel={accessibilityLabel} style={styles.root}>
       <View
         testID="range-track"
-        style={styles.track}
+        style={[styles.track, { marginLeft: insetStart, marginRight: insetEnd }]}
         onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       >
         <View style={styles.bars}>
@@ -77,18 +93,25 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
         />
       </View>
       <View style={styles.labels}>
-        {width > 0 &&
-          labels.map((label) => (
+        {labels.map((label) => {
+          const labelWidth = labelWidths.get(label.value);
+          const placed = width > 0 && labelWidth !== undefined;
+          return (
             <Text
               key={label.value}
+              numberOfLines={1}
+              onLayout={(event) => measureLabel(label.value, event)}
               style={[
                 styles.label,
-                { transform: [{ translateX: share(label.value) * width - width / 2 }] },
+                placed
+                  ? { left: insetStart + share(label.value) * width + centerOffset(labelWidth) }
+                  : styles.unplaced,
               ]}
             >
               {label.text}
             </Text>
-          ))}
+          );
+        })}
       </View>
     </View>
   );
@@ -116,7 +139,7 @@ export function RangeTrackSwatch({ span }: { span: 'outer' | 'inner' }) {
 
 const styles = StyleSheet.create({
   root: {
-    marginTop: SPACING['space/md'],
+    marginTop: SPACING['space/xl'],
   },
   track: {
     height: SIZES['size/dot-large'],
@@ -140,7 +163,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     ...roundedBar(SIZES['size/progress']),
-    backgroundColor: COLORS['text/secondary'],
+    backgroundColor: COLORS.accent,
   },
   marker: {
     position: 'absolute',
@@ -155,7 +178,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   innerSwatch: {
-    backgroundColor: COLORS['text/secondary'],
+    backgroundColor: COLORS.accent,
   },
   labels: {
     marginTop: SPACING['space/xs'],
@@ -163,11 +186,11 @@ const styles = StyleSheet.create({
   },
   label: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    textAlign: 'center',
     fontSize: TYPOGRAPHY['type/label'].fontSize,
     lineHeight: LINE_HEIGHTS['line-height/caption'],
     color: COLORS['text/secondary'],
+  },
+  unplaced: {
+    opacity: OPACITY['opacity/hidden'],
   },
 });
