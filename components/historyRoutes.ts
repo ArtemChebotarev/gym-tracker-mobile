@@ -1,6 +1,6 @@
 // Navigation targets for the screens the workout screen and the library link to: an exercise's own
 // screen ("Exercise", 08.6 · Библиотека упражнений) and "Мезоцикл (деталь)" (08 · Screens &
-// Navigation, 06 · History & Analytics), still an EmptyState stub (task 098). Callers build their
+// Navigation, 06 · History & Analytics; 08.9, task 129). Callers build their
 // hrefs here so each path and its `[id]` param live in one place, not spelled out at every call
 // site.
 

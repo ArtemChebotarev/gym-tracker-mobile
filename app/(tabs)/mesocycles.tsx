@@ -7,8 +7,7 @@
 // step and differ only in what it already knows (04, "Точки входа"): the `+` sheet's row knows
 // nothing, a Completed row's `⋯` passes that block as `sourceMesoId`. The step is never skipped —
 // it just opens with that block already chosen.
-// A tap on a Completed row opens that mesocycle's History screen (app/meso/[id].tsx) — still the
-// task 098 stub, but a real screen with the block's id, not a popup.
+// A tap on a Completed row opens that mesocycle's detail screen (app/meso/[id].tsx, 08.9).
 // Completed `⋯` → Archive hides the block (`useArchiveMesocycle`) after the screen's own
 // confirmation: a soft delete, so its sessions and set logs stay — it just stops being listed, and
 // stops being offered as a Flow C source. There is no Unarchive yet.
