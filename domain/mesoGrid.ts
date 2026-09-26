@@ -4,10 +4,13 @@
 /**
  * A grid cell's state (08.7, the cell-state table):
  * - `completed` / `in_progress` / `skipped` — the session's own status.
+ * - `abandoned` — a session Stop mesocycle closed before anyone got to it (136). It reads as a day
+ *   the stopped block never reached, and carries no `sessionId`: there is nothing in it to open.
  * - `ready` — a `planned` session that's programmed and can be started.
  * - `awaiting` — an `awaiting_source` session, or none yet: the day isn't programmed.
  */
-export type MesoGridCellStatus = 'completed' | 'in_progress' | 'ready' | 'skipped' | 'awaiting';
+export type MesoGridCellStatus =
+  'completed' | 'in_progress' | 'ready' | 'skipped' | 'abandoned' | 'awaiting';
 
 export type MesoGridCell = {
   weekNumber: number;

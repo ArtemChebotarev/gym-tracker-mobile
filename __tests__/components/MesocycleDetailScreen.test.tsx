@@ -222,6 +222,22 @@ describe('MesocycleDetailScreen', () => {
       expect(onOpenSession.mock.calls).toEqual([['w2d1'], ['w3d2']]);
     });
 
+    test('DoD 136: an abandoned day opens nothing — Stop closed it before anyone got to it', () => {
+      const onOpenSession = jest.fn();
+      renderScreen({
+        detail: detail({
+          mesocycle: stopped,
+          grid: buildMesoGrid(stopped, [...stoppedSessions, session(4, 1, 'abandoned')]),
+        }),
+        onOpenSession,
+      });
+
+      fireEvent.press(screen.getByTestId('meso-grid-cell-4-1'));
+
+      expect(onOpenSession).not.toHaveBeenCalled();
+      expect(screen.getByLabelText('Week 4 Day 1, abandoned')).toBeTruthy();
+    });
+
     test('a cell without a session opens nothing', () => {
       const onOpenSession = jest.fn();
       renderScreen({ detail: detail({ mesocycle: stopped }), onOpenSession });

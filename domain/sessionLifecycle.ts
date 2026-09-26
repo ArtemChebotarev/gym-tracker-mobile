@@ -1,13 +1,17 @@
 // Session lifecycle rules — see 05 · Workout Execution & Logging, "Жизненный цикл сессии":
-// `planned` → `in_progress` → `completed`, any unfinished state may become `skipped`, and the two
-// final states are irreversible. Pure: the use case layer reads the sessions and persists the
+// `planned` → `in_progress` → `completed`, any unfinished state may become `skipped` (the user's
+// call) or `abandoned` (Stop mesocycle's, 136), and the final states are irreversible. Pure: the use case layer reads the sessions and persists the
 // outcome.
 
 import { ConflictError } from '@domain/errors';
 import type { Session, SessionStatus } from '@domain/execution';
 
-/** `completed` and `skipped` can't be left or changed (05, "Жизненный цикл сессии"). */
-export const FINAL_SESSION_STATUSES: readonly SessionStatus[] = ['completed', 'skipped'];
+/** `completed`, `skipped` and `abandoned` can't be left or changed (05, "Жизненный цикл сессии"). */
+export const FINAL_SESSION_STATUSES: readonly SessionStatus[] = [
+  'completed',
+  'skipped',
+  'abandoned',
+];
 
 export function isFinalSession(session: Pick<Session, 'status'>): boolean {
   return FINAL_SESSION_STATUSES.includes(session.status);
@@ -32,15 +36,21 @@ export function assertSessionOpen(session: Session): void {
 
 /**
  * How a session ends once nothing is left to do in it (05, "Завершение тренировки"): with at least
- * one logged set it becomes `completed` with `completedAt = now`; with none — every exercise
- * skipped before a set was logged — it becomes `skipped`. Finish workout (050), Skip workout (049)
- * and Stop mesocycle (052) all close a session by this one rule, so it lives here rather than in
- * any one of them.
+ * one logged set it becomes `completed` with `completedAt = now` — whatever was trained stays
+ * trained. With none, it becomes `notDone`: `skipped` when the user ended it (Finish with every
+ * exercise skipped, Skip workout), `abandoned` when Stop mesocycle did (136). Finish workout (050),
+ * Skip workout (049) and Stop mesocycle (052) all close a session by this one rule, so it lives
+ * here rather than in any one of them.
  */
-export function closedSession(session: Session, hasLoggedSet: boolean, now: string): Session {
+export function closedSession(
+  session: Session,
+  hasLoggedSet: boolean,
+  now: string,
+  notDone: Extract<SessionStatus, 'skipped' | 'abandoned'>,
+): Session {
   return hasLoggedSet
     ? { ...session, status: 'completed', completedAt: now }
-    : { ...session, status: 'skipped' };
+    : { ...session, status: notDone };
 }
 
 export type SessionStartDecision =

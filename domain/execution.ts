@@ -2,9 +2,16 @@ import type { Timestamps } from './timestamps';
 
 export type SessionPrescriptionStatus = 'awaiting_source' | 'ready';
 
-export type SessionStatus = 'planned' | 'in_progress' | 'completed' | 'skipped';
+/**
+ * `skipped` is only ever the user's own call — Skip workout, or a session whose every exercise was
+ * skipped. `abandoned` is what Stop mesocycle leaves on a session nobody got to: closed by the
+ * block ending, not by a decision about that day (task 136). Both are final; they differ in who
+ * made them so, which is what history has to tell apart.
+ */
+export type SessionStatus = 'planned' | 'in_progress' | 'completed' | 'skipped' | 'abandoned';
 
-export type SessionExerciseStatus = 'planned' | 'completed' | 'skipped';
+/** `skipped` and `abandoned` split the same way as on `SessionStatus` (task 136). */
+export type SessionExerciseStatus = 'planned' | 'completed' | 'skipped' | 'abandoned';
 
 export type WeightHint = 'decrease' | 'increase';
 

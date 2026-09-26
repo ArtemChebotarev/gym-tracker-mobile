@@ -62,7 +62,7 @@ const COMPLETED_EXERCISE = makeExercise({
 });
 
 function skippedRow(setNumber: number): WorkoutSetRow {
-  return { ...unloggedRow(setNumber), isSkipped: true };
+  return { ...unloggedRow(setNumber), notDone: 'skipped' };
 }
 
 const SKIPPED_NOTHING_LOGGED = makeExercise({
@@ -149,7 +149,13 @@ describe('WorkoutExerciseCard', () => {
   test('the ⋯ menu is there in live mode only, and lists what it was given', () => {
     const onPress = jest.fn();
     const menuItems = [
-      { key: 'delete', label: 'Delete exercise', icon: TrashIcon, systemImage: 'trash' as const, onPress },
+      {
+        key: 'delete',
+        label: 'Delete exercise',
+        icon: TrashIcon,
+        systemImage: 'trash' as const,
+        onPress,
+      },
     ];
     render(<WorkoutExerciseCard {...makeProps({ menuItems })} />);
     fireEvent(screen.getByTestId('exercise-menu-session-exercise-1-delete'), 'buttonPress');
@@ -189,6 +195,53 @@ describe('WorkoutExerciseCard', () => {
 
     expect(screen.getAllByText('Skipped')).toHaveLength(1);
     expect(screen.queryByText('Weight, kg')).toBeNull();
+    expect(screen.queryByTestId('set-row-1')).toBeNull();
+  });
+
+  test('DoD 136: an abandoned exercise reads like a skipped one, under Abandoned', () => {
+    const abandonedRow = (setNumber: number): WorkoutSetRow => ({
+      ...unloggedRow(setNumber),
+      notDone: 'abandoned',
+    });
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({
+          mode: 'history',
+          exercise: makeExercise({
+            status: 'abandoned',
+            rows: [loggedRow(1, 62.5, 10), abandonedRow(2)],
+            loggedSetCount: 1,
+          }),
+        })}
+      />,
+    );
+
+    const card = screen.getByTestId('exercise-card-session-exercise-1');
+    const flatStyle = Object.assign({}, ...card.props.style.filter(Boolean));
+    expect(flatStyle.opacity).toBe(0.5);
+    expect(screen.getByTestId('set-row-2')).toHaveTextContent('Abandoned');
+    expect(screen.queryByText('Skipped')).toBeNull();
+  });
+
+  test('DoD 136: an abandoned exercise with nothing logged shows one Abandoned note', () => {
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({
+          mode: 'history',
+          exercise: makeExercise({
+            status: 'abandoned',
+            rows: [1, 2].map((setNumber) => ({
+              ...unloggedRow(setNumber),
+              notDone: 'abandoned' as const,
+            })),
+            loggedSetCount: 0,
+            hasLoggedSets: false,
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.getAllByText('Abandoned')).toHaveLength(1);
     expect(screen.queryByTestId('set-row-1')).toBeNull();
   });
 
@@ -336,17 +389,13 @@ describe('WorkoutExerciseCard — the weight carries into the later sets (task 1
       hasLoggedSets: true,
     });
     const onUnlogSet = jest.fn();
-    const { rerender } = render(
-      <WorkoutExerciseCard {...makeProps({ exercise, onUnlogSet })} />,
-    );
+    const { rerender } = render(<WorkoutExerciseCard {...makeProps({ exercise, onUnlogSet })} />);
 
     fireEvent.press(screen.getByRole('checkbox', { name: 'Set 1 logged' }));
     expect(onUnlogSet).toHaveBeenCalledWith(1);
 
     // Storage answers: the set is no longer logged.
-    rerender(
-      <WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS, onUnlogSet })} />,
-    );
+    rerender(<WorkoutExerciseCard {...makeProps({ exercise: THREE_EMPTY_SETS, onUnlogSet })} />);
 
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('65');
   });
@@ -415,9 +464,7 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
 
   test('DoD: with no body weight yet, the Weight cell asks for one instead of taking a number', () => {
     const onRequestBodyWeight = jest.fn();
-    render(
-      <WorkoutExerciseCard {...makeProps({ exercise: PULL_UP, onRequestBodyWeight })} />,
-    );
+    render(<WorkoutExerciseCard {...makeProps({ exercise: PULL_UP, onRequestBodyWeight })} />);
 
     // No field to type into — the load is your body weight, and the block doesn't know it yet.
     expect(screen.queryByLabelText('Set 1 weight')).toBeNull();
@@ -647,8 +694,20 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     name: 'Dumbbell curl',
     equipment: 'dumbbell',
     rows: [
-      { setNumber: 1, targetReps: 10, suggestedWeight: 15, weightSwap: swap, isFirstUnlogged: true },
-      { setNumber: 2, targetReps: 9, suggestedWeight: 15, weightSwap: swap, isFirstUnlogged: false },
+      {
+        setNumber: 1,
+        targetReps: 10,
+        suggestedWeight: 15,
+        weightSwap: swap,
+        isFirstUnlogged: true,
+      },
+      {
+        setNumber: 2,
+        targetReps: 9,
+        suggestedWeight: 15,
+        weightSwap: swap,
+        isFirstUnlogged: false,
+      },
     ],
     loggedSetCount: 0,
     hasLoggedSets: false,

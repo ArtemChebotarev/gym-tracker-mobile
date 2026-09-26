@@ -6,7 +6,9 @@
 //   there is nothing left to close along with it: status and `completedAt`, and that's all.
 // - `stopMesocycle` — the block is called off mid-way. It ends every session that still had
 //   training left in it, in the same transaction, and generates nothing: the next week would be
-//   planned from a block that no longer exists.
+//   planned from a block that no longer exists. What it ends is `abandoned`, never `skipped`
+//   (136): `skipped` stays the user's own call, so history can tell a day they passed on from one
+//   the Stop closed.
 //
 // Orchestration only, per usecases/README.md — the rules are in `domain/mesocycleLifecycle.ts` and
 // `domain/sessionLifecycle.ts`.
@@ -76,10 +78,11 @@ export type MesocycleStopResult = {
 
 /**
  * Stops mesocycle `id`, in one transaction (05, "Остановить мезоцикл"): the block becomes
- * `abandoned` with `completedAt = now`, and each of its sessions that wasn't final ends the way
- * Skip workout ends one — every `planned` exercise becomes `skipped`, and the session itself
- * becomes `completed` with `completedAt = now` if it has a logged set and `skipped` otherwise.
- * Every set log is kept: what was trained stays trained (05, "История неизменяема").
+ * `abandoned` with `completedAt = now`, and so does whatever of it wasn't finished (136) — every
+ * `planned` exercise becomes `abandoned`, and each session that wasn't final becomes `completed`
+ * with `completedAt = now` if it has a logged set and `abandoned` otherwise. Every set log is kept:
+ * what was trained stays trained (05, "История неизменяема"), and a session that has any stays
+ * open to look at.
  *
  * Next week's sessions are deliberately not generated — there is no next week in a block that has
  * been called off.
@@ -101,11 +104,13 @@ export async function stopMesocycle(
       const exercises = await repos.sessionExerciseRepo.listBySessionId(session.id);
       for (const exercise of exercises) {
         if (exercise.status === 'planned') {
-          await repos.sessionExerciseRepo.update({ ...exercise, status: 'skipped' });
+          await repos.sessionExerciseRepo.update({ ...exercise, status: 'abandoned' });
         }
       }
       const logs = await repos.setLogRepo.listBySessionId(session.id);
-      closed.push(await repos.sessionRepo.update(closedSession(session, logs.length > 0, now)));
+      closed.push(
+        await repos.sessionRepo.update(closedSession(session, logs.length > 0, now, 'abandoned')),
+      );
     }
 
     return {

@@ -114,6 +114,15 @@ describe('sessionProgress', () => {
     expect(progress).toBeCloseTo(3 / 8);
   });
 
+  test('counts every row of an abandoned exercise the same way (136)', () => {
+    const progress = sessionProgress(session({ status: 'in_progress' }), [
+      exercise(3, 'planned', [1]),
+      exercise(2, 'abandoned'),
+    ]);
+
+    expect(progress).toBeCloseTo(3 / 5);
+  });
+
   test('ignores logs of rows that no longer exist', () => {
     expect(sessionProgress(session(), [exercise(2, 'planned', [1, 3])])).toBe(0.5);
   });

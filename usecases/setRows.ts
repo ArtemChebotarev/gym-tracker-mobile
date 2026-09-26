@@ -6,21 +6,23 @@
 
 import type { SessionExercise, SetLog } from '@domain/execution';
 import { withAddedSet, withoutLastSet } from '@domain/sessionExerciseSets';
-import { statusFromLogs } from '@domain/sessionExerciseStatus';
+import { isNotDone, statusFromLogs } from '@domain/sessionExerciseStatus';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 
 /**
  * Saves `sessionExercise` with the status its rows and logs now call for. A skipped exercise stays
- * skipped — changing its row count only shapes later weeks' volume, it doesn't unskip it.
+ * skipped — changing its row count only shapes later weeks' volume, it doesn't unskip it. The same
+ * holds for an abandoned one (136), though no open session ever has it.
  */
 async function saveWithStatus(
   sessionExercise: SessionExercise,
   logs: readonly SetLog[],
   repos: WorkoutRepositories,
 ): Promise<SessionExercise> {
-  const status =
-    sessionExercise.status === 'skipped' ? 'skipped' : statusFromLogs(sessionExercise, logs);
+  const status = isNotDone(sessionExercise.status)
+    ? sessionExercise.status
+    : statusFromLogs(sessionExercise, logs);
   return repos.sessionExerciseRepo.update({ ...sessionExercise, status });
 }
 

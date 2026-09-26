@@ -1,5 +1,5 @@
 import type { SessionExercise, SetLog } from '@domain/execution';
-import { statusFromLogs } from '@domain/sessionExerciseStatus';
+import { isNotDone, statusFromLogs } from '@domain/sessionExerciseStatus';
 import { STAMPS } from '../fixtures/stamps';
 
 const benchPress: Pick<SessionExercise, 'id' | 'setTargets'> = {
@@ -41,5 +41,16 @@ describe('statusFromLogs', () => {
 
   test('a log for a row that no longer exists does not count toward the rows that do', () => {
     expect(statusFromLogs(benchPress, [logFor(1), logFor(2), logFor(4)])).toBe('planned');
+  });
+});
+
+describe('isNotDone', () => {
+  test.each([
+    ['planned', false],
+    ['completed', false],
+    ['skipped', true],
+    ['abandoned', true],
+  ] as const)('%s → %s', (status, expected) => {
+    expect(isNotDone(status)).toBe(expected);
   });
 });
