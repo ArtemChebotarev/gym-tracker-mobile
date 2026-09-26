@@ -40,14 +40,46 @@ function exercise(
 }
 
 describe('workoutMode', () => {
+  const ACTIVE = { status: 'active' } as const;
+
   test.each([
     [{ status: 'planned', prescriptionStatus: 'ready' }, 'live'],
     [{ status: 'in_progress', prescriptionStatus: 'ready' }, 'live'],
     [{ status: 'completed', prescriptionStatus: 'ready' }, 'readonly'],
     [{ status: 'skipped', prescriptionStatus: 'ready' }, 'readonly'],
     [{ status: 'planned', prescriptionStatus: 'awaiting_source' }, 'preview'],
-  ] as const)('%o opens in %s mode', (state, mode) => {
-    expect(workoutMode(state)).toBe(mode);
+  ] as const)('%o of an active block opens in %s mode', (state, mode) => {
+    expect(workoutMode(state, ACTIVE)).toBe(mode);
+  });
+
+  // DoD of task 128: the mode comes from the block, not from a route parameter (08.9).
+  test.each(['completed', 'abandoned'] as const)(
+    'DoD: a session of a %s block opens in history mode',
+    (status) => {
+      expect(workoutMode({ status: 'completed', prescriptionStatus: 'ready' }, { status })).toBe(
+        'history',
+      );
+    },
+  );
+
+  test('DoD: the same session in an active block is read-only, not history', () => {
+    expect(workoutMode({ status: 'completed', prescriptionStatus: 'ready' }, ACTIVE)).toBe(
+      'readonly',
+    );
+  });
+
+  test('a closed block leaves no session out of history, whatever its own status', () => {
+    const closed = { status: 'abandoned' } as const;
+
+    expect(workoutMode({ status: 'skipped', prescriptionStatus: 'awaiting_source' }, closed)).toBe(
+      'history',
+    );
+  });
+
+  test('a planned block is not history — nothing in it has been trained yet', () => {
+    expect(
+      workoutMode({ status: 'planned', prescriptionStatus: 'ready' }, { status: 'planned' }),
+    ).toBe('live');
   });
 });
 

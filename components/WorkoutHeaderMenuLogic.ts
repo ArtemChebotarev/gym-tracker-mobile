@@ -44,9 +44,11 @@ export const WORKOUT_MENU_ACTIONS: Record<
  * The actions the header menu lists for a session. Rename and Mesocycle history are there in every
  * mode; Add exercise and Skip workout only when the model allows them — live, and for Skip while an
  * exercise is still unfinished (088 works both out, including that a deload session takes no
- * additions) — and Stop mesocycle while the block is still active (052): a day of a block that has
- * already been finished or stopped opens read-only, and there is nothing left there to stop. An
- * action that isn't allowed is left out rather than shown disabled.
+ * additions) — and Stop mesocycle while the block is still active (052). An action that isn't
+ * allowed is left out rather than shown disabled.
+ *
+ * "Every mode" means every mode that has this menu: a day of a block that has already been
+ * finished or stopped opens in history, where the header carries no `⋯` at all (08.9, task 128).
  */
 export function workoutMenuItems(actions: WorkoutSessionActions): WorkoutMenuItem[] {
   const items: WorkoutMenuItem[] = [];

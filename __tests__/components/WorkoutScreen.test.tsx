@@ -75,6 +75,14 @@ const COMPLETED: WorkoutSessionModel = {
   actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
 };
 
+// The same completed day, read out of a block that has ended (08.9, task 128). The model carries
+// no `nextSessionId` and no Stop — a closed block has neither.
+const HISTORY: WorkoutSessionModel = {
+  ...COMPLETED,
+  mode: 'history',
+  actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: false },
+};
+
 const PREVIEW: WorkoutSessionModel = {
   mesoId: 'meso-1',
   mode: 'preview',
@@ -136,6 +144,7 @@ describe('WorkoutScreen header', () => {
   test.each([
     ['live', LIVE],
     ['completed', COMPLETED],
+    ['history', HISTORY],
     ['preview', PREVIEW],
   ])('matches the %s snapshot', (_mode, model) => {
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model })} />);
@@ -208,6 +217,22 @@ describe('WorkoutScreen header', () => {
 
     expect(onOpenGrid).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('action-menu')).toBeTruthy();
+  });
+
+  test('DoD: neither is there in history mode — the block carries them on its own screen', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: HISTORY })} />);
+
+    expect(screen.queryByRole('button', { name: 'Mesocycle overview' })).toBeNull();
+    expect(screen.queryByTestId('action-menu')).toBeNull();
+  });
+
+  test('history keeps the title, the subtitle and the completed check', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: HISTORY })} />);
+
+    expect(screen.getByText('Week 6 Day 2')).toBeTruthy();
+    expect(screen.getByText('Tue, 15 Sep · Upper/lower')).toBeTruthy();
+    expect(screen.getByTestId('workout-completed-check')).toBeTruthy();
+    expect(renderedProgress()).toBe(100);
   });
 
   test('the ⋯ menu lists what the session allows, and picking one runs it', () => {
@@ -372,6 +397,14 @@ describe('WorkoutScreen Next workout', () => {
 
   test('no Next workout without a next session', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
+
+    expect(screen.queryByRole('button', { name: 'Next workout' })).toBeNull();
+  });
+
+  // The model is what leaves it out — a history session never carries a `nextSessionId` (088) —
+  // so this holds the screen to showing what it is given, and nothing of its own.
+  test('DoD: a history session has no Next workout', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: HISTORY })} />);
 
     expect(screen.queryByRole('button', { name: 'Next workout' })).toBeNull();
   });

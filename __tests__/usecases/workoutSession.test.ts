@@ -167,6 +167,24 @@ async function setUp(setup: Setup = {}) {
   return { store, workout, deps: depsOver(store) };
 }
 
+/**
+ * A block whose two sessions are both final and whose own status is `closure` — what Stop and
+ * Finish mesocycle leave behind (05): Stop closes whatever was left, and Finish is only offered
+ * once nothing is. Its sessions are `w1d1` (completed) and `w1d2` (skipped).
+ */
+async function closedBlock(closure: 'completed' | 'abandoned'): Promise<WorkoutSessionDeps> {
+  const { store, deps } = await setUp({
+    sessions: [w1d1, { ...w1d2, status: 'skipped' }],
+    exercises: [w1Bench, w1Squat],
+  });
+  await new SqliteMesocycleRepository(store).update({
+    ...mesocycle,
+    status: closure,
+    completedAt: NOW,
+  });
+  return deps;
+}
+
 function depsOver(store: SqliteDatabase): WorkoutSessionDeps {
   return {
     sessionTreeRepo: new SqliteSessionTreeRepository(store),
@@ -448,15 +466,6 @@ describe('getWorkoutSession — Finish mesocycle', () => {
 // The button that takes Finish mesocycle's place once the block is closed, so finishing one
 // doesn't have to move the screen off it (Artem, 24.09.2026).
 describe('getWorkoutSession — Copy current meso', () => {
-  async function closedBlock(status: 'completed' | 'abandoned') {
-    const { store, deps } = await setUp({
-      sessions: [w1d1, { ...w1d2, status: 'skipped' }],
-      exercises: [w1Bench, w1Squat],
-    });
-    await new SqliteMesocycleRepository(store).update({ ...mesocycle, status, completedAt: NOW });
-    return deps;
-  }
-
   test('a finished block offers the next one', async () => {
     const model = await getWorkoutSession('w1d1', await closedBlock('completed'));
 
@@ -550,6 +559,74 @@ describe('getWorkoutSession — read-only', () => {
     expect(model.mode).toBe('readonly');
     expect(model.header.isCompleted).toBe(false);
     expect(model.actions.canSkipWorkout).toBe(false);
+  });
+});
+
+// The fourth mode (task 128, 08.9 · Мезоцикл (деталь), "History-режим экрана тренировки"): a day of
+// a block that has ended, opened from that block's detail screen to be read and left again.
+describe('getWorkoutSession — history', () => {
+  test.each(['completed', 'abandoned'] as const)(
+    'DoD: a session of a %s block opens in history mode',
+    async (status) => {
+      const model = await getWorkoutSession('w1d1', await closedBlock(status));
+
+      expect(model.mode).toBe('history');
+    },
+  );
+
+  test('DoD: the same session of an active block stays read-only', async () => {
+    const { deps } = await setUp({
+      sessions: [w1d1, { ...w1d2, status: 'skipped' }],
+      exercises: [w1Bench, w1Squat],
+    });
+
+    expect((await getWorkoutSession('w1d1', deps)).mode).toBe('readonly');
+  });
+
+  test('DoD: history has no Next workout — a block that has ended has no next day', async () => {
+    const deps = await closedBlock('completed');
+
+    // The active block with the very same sessions does offer one, so this is the mode's doing and
+    // not an empty block: see "Finish mesocycle" above, where w1d1 is the last workout.
+    expect((await getWorkoutSession('w1d1', deps)).nextSessionId).toBeUndefined();
+    expect((await getWorkoutSession('w1d2', deps)).nextSessionId).toBeUndefined();
+  });
+
+  test('a history session is inert, like read-only: no Finish and no exercise actions', async () => {
+    const model = await getWorkoutSession('w1d1', await closedBlock('abandoned'));
+
+    expect(model.showFinish).toBe(false);
+    expect(model.showFinishMesocycle).toBe(false);
+    expect(model.actions).toEqual({
+      canAddExercise: false,
+      canSkipWorkout: false,
+      canStopMesocycle: false,
+    });
+    expect(model.exercises[0]?.actions.canReplace).toBe(false);
+  });
+
+  test('it still shows everything that was logged — that is what it is for', async () => {
+    const model = await getWorkoutSession('w1d1', await closedBlock('completed'));
+
+    expect(model.header).toMatchObject({
+      weekNumber: 1,
+      dayNumber: 1,
+      date: '2026-09-01T10:00:00.000Z',
+      mesocycleName: 'Upper/lower',
+      isCompleted: true,
+    });
+    expect(model.progress).toBe(1);
+    expect(model.exercises[0]?.rows).toHaveLength(2);
+    expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 60, reps: 10 });
+    expect(model.exercises[0]?.targetRir).toBe(2);
+  });
+
+  test('a session of a still-running block is never history, whatever its own status', async () => {
+    const { deps } = await setUp();
+
+    for (const sessionId of ['w1d1', 'w2d1', 'w2d2']) {
+      expect((await getWorkoutSession(sessionId, deps)).mode).not.toBe('history');
+    }
   });
 });
 

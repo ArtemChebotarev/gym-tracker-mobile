@@ -1,4 +1,18 @@
-import { formatUnlocksCaption, formatWorkoutSubtitle } from '@components/WorkoutScreenLogic';
+import {
+  formatUnlocksCaption,
+  formatWorkoutSubtitle,
+  showsHeaderActions,
+} from '@components/WorkoutScreenLogic';
+
+describe('showsHeaderActions', () => {
+  test.each(['live', 'readonly', 'preview'] as const)('%s carries the grid and ⋯', (mode) => {
+    expect(showsHeaderActions(mode)).toBe(true);
+  });
+
+  test('DoD: history carries neither — they live on the mesocycle detail screen (08.9)', () => {
+    expect(showsHeaderActions('history')).toBe(false);
+  });
+});
 
 describe('formatWorkoutSubtitle', () => {
   test('shows the date, then the mesocycle name', () => {
