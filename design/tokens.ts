@@ -147,9 +147,6 @@ export const SPACING = {
   'space/button': 15,
   'space/pill-x': 18,
   'space/xl': 24,
-  /** RangeTrack: in from each side of its row, so a label centred on either end of the track
-   * stays inside the text beside and below it (08.7.1, task 137). */
-  'space/range-track-x': 20,
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;
@@ -185,6 +182,8 @@ export const OPACITY = {
   'opacity/pressed': 0.7,
   /** A disabled control, a skipped exercise card. */
   'opacity/dimmed': 0.5,
+  /** Laid out but not yet shown — a RangeTrack label until it has been measured and placed. */
+  'opacity/hidden': 0,
   /**
    * The weekly sets card of 08.9 (task 129): a cell's fill is its group's category color at an
    * opacity between these two — the fewest sets in the card at the floor, the most at the ceiling.

@@ -89,7 +89,6 @@ const EXPECTED_SPACING_TOKENS = [
   'space/button',
   'space/pill-x',
   'space/xl',
-  'space/range-track-x',
 ];
 
 function sorted(values: string[]): string[] {
@@ -157,8 +156,9 @@ describe('design tokens', () => {
   });
 
   test('OPACITY tokens are fractions of full opacity', () => {
+    // `opacity/hidden` is the one zero: laid out for measuring, not yet shown (RangeTrack).
     for (const value of Object.values(OPACITY)) {
-      expect(value).toBeGreaterThan(0);
+      expect(value).toBeGreaterThanOrEqual(0);
       expect(value).toBeLessThan(1);
     }
   });

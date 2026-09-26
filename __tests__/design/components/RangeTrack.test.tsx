@@ -29,6 +29,16 @@ function layOutTrack() {
   });
 }
 
+const LABEL_WIDTHS = { '4': 8, '12': 16, '15': 16, '17.5': 28 } as const;
+
+function layOutLabels() {
+  for (const [text, width] of Object.entries(LABEL_WIDTHS)) {
+    fireEvent(screen.getByText(text), 'layout', {
+      nativeEvent: { layout: { width, height: 16 } },
+    });
+  }
+}
+
 function styleOf(testID: string) {
   return StyleSheet.flatten(screen.getByTestId(testID).props.style);
 }
@@ -62,19 +72,35 @@ describe('RangeTrack', () => {
     });
   });
 
-  test('labels wait for the track to be measured, then shift onto their values', () => {
+  test('labels stay hidden until the track and each label are measured, then centre on their values', () => {
     renderTrack();
 
-    expect(screen.queryByText('12')).toBeNull();
+    expect(StyleSheet.flatten(screen.getByText('15').props.style)).toMatchObject({ opacity: 0 });
 
     layOutTrack();
+    layOutLabels();
 
-    expect(screen.getByText('4')).toBeTruthy();
-    // A label is a full-width centred line, so its shift is measured from the middle of the track.
-    expect(screen.getByText('15').props.style).toEqual(
-      expect.arrayContaining([
-        { transform: [{ translateX: ((15 - 4) / 13.5) * TRACK_WIDTH - TRACK_WIDTH / 2 }] },
-      ]),
+    const placed = StyleSheet.flatten(screen.getByText('15').props.style);
+    expect(placed.opacity).toBeUndefined();
+    // Pulled in by half the "4" label, then the label's own centre put on 15.
+    expect(placed.left).toBe(
+      LABEL_WIDTHS['4'] / 2 + ((15 - 4) / 13.5) * TRACK_WIDTH - LABEL_WIDTHS['15'] / 2,
+    );
+  });
+
+  test('the end labels pull the track in so their outer edges meet the row edges', () => {
+    renderTrack();
+    layOutTrack();
+    layOutLabels();
+
+    expect(styleOf('range-track')).toMatchObject({
+      marginLeft: LABEL_WIDTHS['4'] / 2,
+      marginRight: LABEL_WIDTHS['17.5'] / 2,
+    });
+    expect(StyleSheet.flatten(screen.getByText('4').props.style).left).toBe(0);
+    const last = StyleSheet.flatten(screen.getByText('17.5').props.style);
+    expect(last.left + LABEL_WIDTHS['17.5']).toBe(
+      LABEL_WIDTHS['4'] / 2 + TRACK_WIDTH + LABEL_WIDTHS['17.5'] / 2,
     );
   });
 
