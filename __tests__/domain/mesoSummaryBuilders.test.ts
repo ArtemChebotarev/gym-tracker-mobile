@@ -76,13 +76,30 @@ describe('buildMesoSummary', () => {
     expect(summary).toEqual({
       workouts: { value: 3, total: 8 },
       strengthSets: 15,
-      weeks: { value: 3, total: 4 },
+      // On week 2 — the one in progress — though week 3 already holds generated sessions.
+      weeks: { value: 2, total: 4 },
       weeklySets: [
         { muscleGroup: 'chest', sets: [3, 6, 0, 0] },
         { muscleGroup: 'back', sets: [3, 1, 0, 0] },
         { muscleGroup: 'quads', sets: [2, 0, 0, 0] },
       ],
     });
+  });
+
+  test("Weeks is the week the block is on, not the weeks generation has run ahead into", () => {
+    // Artem's check on 130: W1 Day 1 done, which generated W2 Day 1; W1 Day 2 is next. The
+    // subtitle says `Week 1 of 4`, and so must the tile — not `2 / 4`.
+    const summary = buildMesoSummary(
+      mesocycle,
+      [
+        logged(session(1, 1), sets('w1d1', 'bench', 2)),
+        logged(session(1, 2, { status: 'planned' })),
+        logged(session(2, 1, { status: 'planned' })),
+      ],
+      exercises,
+    );
+
+    expect(summary.weeks).toEqual({ value: 1, total: 4 });
   });
 
   test('a skipped workout is not a completed one', () => {

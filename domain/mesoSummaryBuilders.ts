@@ -5,6 +5,7 @@
 
 import { MUSCLE_GROUPS, type Exercise, type MuscleGroup } from './catalog';
 import type { Mesocycle } from './mesocycle';
+import { currentWeekNumber } from './mesoGridBuilders';
 import type { MesoSessionLog, MesoSummary, MesoWeeklySetsRow } from './mesoSummary';
 
 /**
@@ -26,7 +27,12 @@ export function buildMesoSummary(
   );
 
   const completed = own.filter(({ session }) => session.status === 'completed').length;
-  const weeksWithSessions = new Set(own.map(({ session }) => session.weekNumber)).size;
+  // The week the block is on, by workouts — the same number its subtitle shows (08.3's rule). Not
+  // the weeks that merely hold a session: generation runs a day ahead (03, "Ленивая генерация по
+  // дням"), so finishing W1 Day 1 already creates W2 Day 1, and a count of those read `2 / 4` under
+  // `Week 1 of 4` (Artem's check on 130, 26.09.2026). A block with no session yet is on no week.
+  const weeksReached =
+    own.length === 0 ? 0 : currentWeekNumber(own.map(({ session }) => session));
 
   return {
     workouts:
@@ -34,7 +40,7 @@ export function buildMesoSummary(
         ? { value: completed }
         : { value: completed, total: mesocycle.lengthWeeks * mesocycle.daysPerWeek },
     strengthSets: own.reduce((sum, { setLogs }) => sum + setLogs.length, 0),
-    weeks: { value: weeksWithSessions, total: mesocycle.lengthWeeks },
+    weeks: { value: weeksReached, total: mesocycle.lengthWeeks },
     weeklySets: weeklySets(mesocycle.lengthWeeks, own, exercises),
   };
 }
