@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import { RangeTrack } from '@design/components/RangeTrack';
+import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
+import { COLORS } from '@design/tokens';
 
 const TRACK_WIDTH = 300;
 
@@ -42,6 +43,15 @@ describe('RangeTrack', () => {
       left: `${((12 - 4) / 13.5) * 100}%`,
       right: '0%',
     });
+  });
+
+  test('the inner span and its legend swatch are drawn in the accent', () => {
+    renderTrack();
+    expect(styleOf('range-track-inner').backgroundColor).toBe(COLORS.accent);
+
+    render(<RangeTrackSwatch span="inner" />);
+    const swatchFill = screen.getByTestId('range-track-swatch-inner').props.children;
+    expect(StyleSheet.flatten(swatchFill.props.style).backgroundColor).toBe(COLORS.accent);
   });
 
   test('the marker sits over its own value', () => {

@@ -127,7 +127,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   legend: {
-    marginTop: SPACING['space/row'],
+    marginTop: SPACING['space/xl'],
     gap: SPACING['space/dots'],
   },
   legendRow: {

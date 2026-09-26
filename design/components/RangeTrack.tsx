@@ -1,9 +1,10 @@
 // RangeTrack — see 08.0 · Design SDK, "Компоненты": a span of values with a narrower span
-// highlighted inside it and one value marked. Reference only — no accent and nothing to press
-// (08.7.1 shows the weights a rep target still reaches).
+// highlighted inside it and one value marked. Nothing to press; the inner span is drawn in the
+// accent, as the part worth aiming for (08.7.1 shows the weights a rep target still reaches).
 //
 // The outer span is a row of dashes clipped to the track, the inner one a solid bar over it, and
-// the marker a dot. Each label is a full-width centred line shifted onto its own point, which
+// the marker a dot. The row is inset from both sides so a label centred on either end of the track
+// stays inside the text around it. Each label is a full-width centred line shifted onto its own point, which
 // needs the track's measured width but nothing about how wide the label itself renders; until the
 // first layout there is no width to shift by, so the labels wait for it.
 //
@@ -116,7 +117,8 @@ export function RangeTrackSwatch({ span }: { span: 'outer' | 'inner' }) {
 
 const styles = StyleSheet.create({
   root: {
-    marginTop: SPACING['space/md'],
+    marginTop: SPACING['space/xl'],
+    paddingHorizontal: SPACING['space/range-track-x'],
   },
   track: {
     height: SIZES['size/dot-large'],
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     ...roundedBar(SIZES['size/progress']),
-    backgroundColor: COLORS['text/secondary'],
+    backgroundColor: COLORS.accent,
   },
   marker: {
     position: 'absolute',
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   innerSwatch: {
-    backgroundColor: COLORS['text/secondary'],
+    backgroundColor: COLORS.accent,
   },
   labels: {
     marginTop: SPACING['space/xs'],
