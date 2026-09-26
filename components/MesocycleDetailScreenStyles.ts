@@ -56,11 +56,24 @@ export const styles = StyleSheet.create({
   block: {
     gap: SPACING['space/gap-tight'],
   },
+  /** `WORKOUTS` on the left, `tap to open` on the right. */
+  blockLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: SPACING['space/gap'],
+  },
   blockLabel: {
     fontSize: TYPOGRAPHY['type/label'].fontSize,
     fontWeight: TYPOGRAPHY['type/label'].fontWeight,
     letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
     textTransform: TYPOGRAPHY['type/label'].textTransform,
+    color: COLORS['text/muted'],
+  },
+  // The mockup's `text/faint`, a step brighter like every quiet line since Artem's review on 107.
+  blockHint: {
+    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
     color: COLORS['text/muted'],
   },
   card: {

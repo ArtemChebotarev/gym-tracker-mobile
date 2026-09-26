@@ -138,6 +138,14 @@ export function weeklySetsRowViews(rows: readonly MesoWeeklySetsRow[]): WeeklySe
 }
 
 /**
+ * Whether the screen draws the workout grid (08.9, "Идея"): only for a closed block — `completed`
+ * or `abandoned`. An active block's grid is a button away on its workout screen already.
+ */
+export function showsWorkoutGrid(status: Mesocycle['status']): boolean {
+  return FINAL_MESOCYCLE_STATUSES.includes(status);
+}
+
+/**
  * What the header's `⋯` offers (08.9, "Шапка"): Rename always, Copy only for a closed block — the
  * same way into Flow C as 08.3's Completed row. Stop isn't here; it stays in the workout's menu.
  */
@@ -154,7 +162,7 @@ export function mesocycleDetailMenuItems(
       onPress: handlers.onRename,
     },
   ];
-  if (FINAL_MESOCYCLE_STATUSES.includes(status)) {
+  if (showsWorkoutGrid(status)) {
     items.push({
       key: 'copy',
       label: 'Copy',

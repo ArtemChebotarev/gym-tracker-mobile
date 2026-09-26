@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesocycleDetailRoute from '@app/meso/[id]';
+import { historySessionHref } from '@components/workoutRoutes';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
@@ -138,5 +139,26 @@ describe('Mesocycle detail route', () => {
     await screen.findByText('Upper/Lower');
 
     expect(screen.queryByText(/tonnage|volume, kg|\bkg\b|\bt\b/i)).toBeNull();
+  });
+
+  test('DoD: an active block has no workout grid', async () => {
+    renderRoute();
+    await screen.findByText('Upper/Lower');
+
+    expect(screen.queryByText('tap to open')).toBeNull();
+    expect(screen.queryByTestId('meso-grid-cell-1-1')).toBeNull();
+  });
+
+  test('DoD: a stopped block has one; a cell pushes its session, an empty one nothing', async () => {
+    await stopFixtureBlock();
+    renderRoute();
+    await screen.findByText('Stopped');
+
+    fireEvent.press(screen.getByTestId('meso-grid-cell-1-1'));
+    expect(mockPush).toHaveBeenCalledWith(historySessionHref(WORKOUT_FIXTURE_IDS.completed));
+
+    mockPush.mockClear();
+    fireEvent.press(screen.getByTestId('meso-grid-cell-3-1'));
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

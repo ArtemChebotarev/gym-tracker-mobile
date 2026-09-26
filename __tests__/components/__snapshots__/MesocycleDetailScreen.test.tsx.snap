@@ -2132,6 +2132,1175 @@ exports[`MesocycleDetailScreen Completed: no badge, both denominators, the weekl
             </View>
           </View>
         </View>
+        <View
+          style={
+            {
+              "gap": 8,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "baseline",
+                "flexDirection": "row",
+                "gap": 10,
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#8A9099",
+                  "fontSize": 13,
+                  "fontWeight": "400",
+                  "letterSpacing": 0.5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Workouts
+            </Text>
+            <Text
+              style={
+                {
+                  "color": "#8A9099",
+                  "fontSize": 12,
+                  "fontWeight": "400",
+                }
+              }
+            >
+              tap to open
+            </Text>
+          </View>
+          <View
+            style={
+              {
+                "gap": 8,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              />
+              <Text
+                style={
+                  {
+                    "color": "#F5F5F4",
+                    "flex": 1,
+                    "fontSize": 15,
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Day 
+                1
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#F5F5F4",
+                    "flex": 1,
+                    "fontSize": 15,
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Day 
+                2
+              </Text>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-1"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  1
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 1 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-1-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 1 Day 2, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-1-2"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-2"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  2
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 2 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-2-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 2 Day 2, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-2-2"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-3"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  3
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 3 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-3-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 3 Day 2, skipped"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    undefined,
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-3-2"
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#8A9099",
+                      "fontSize": 15,
+                      "textDecorationLine": "line-through",
+                    }
+                  }
+                >
+                  Skip
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-4"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  4
+                </Text>
+                <Text
+                  style={
+                    {
+                      "color": "#C9CDD2",
+                      "fontSize": 12,
+                    }
+                  }
+                >
+                  Deload
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 4 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-4-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 4 Day 2, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-4-2"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+          </View>
+        </View>
       </View>
     </RCTScrollView>
   </RNCSafeAreaView>
@@ -3205,6 +4374,1033 @@ exports[`MesocycleDetailScreen Stopped: the Stopped badge and no workouts denomi
                   –
                 </Text>
               </View>
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "gap": 8,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "baseline",
+                "flexDirection": "row",
+                "gap": 10,
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#8A9099",
+                  "fontSize": 13,
+                  "fontWeight": "400",
+                  "letterSpacing": 0.5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Workouts
+            </Text>
+            <Text
+              style={
+                {
+                  "color": "#8A9099",
+                  "fontSize": 12,
+                  "fontWeight": "400",
+                }
+              }
+            >
+              tap to open
+            </Text>
+          </View>
+          <View
+            style={
+              {
+                "gap": 8,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              />
+              <Text
+                style={
+                  {
+                    "color": "#F5F5F4",
+                    "flex": 1,
+                    "fontSize": 15,
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Day 
+                1
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#F5F5F4",
+                    "flex": 1,
+                    "fontSize": 15,
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Day 
+                2
+              </Text>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-1"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  1
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 1 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-1-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 1 Day 2, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-1-2"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-2"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  2
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 2 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-2-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 2 Day 2, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-2-2"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-3"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  3
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 3 Day 1, completed"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "backgroundColor": "#232B0A",
+                      "borderColor": "#4A5A20",
+                    },
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-3-1"
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={17}
+                  bbWidth={17}
+                  focusable={false}
+                  height={17}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 17,
+                        "width": 17,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={17}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4291690327,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                            "strokeLinejoin",
+                          ]
+                        }
+                        strokeLinecap={1}
+                        strokeLinejoin={1}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                accessibilityLabel="Week 3 Day 2, skipped"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    undefined,
+                    false,
+                    false,
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-3-2"
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#8A9099",
+                      "fontSize": 15,
+                      "textDecorationLine": "line-through",
+                    }
+                  }
+                >
+                  Skip
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 8,
+                }
+              }
+              testID="meso-grid-week-4"
+            >
+              <View
+                style={
+                  {
+                    "width": 64,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#F5F5F4",
+                      "fontSize": 15,
+                    }
+                  }
+                >
+                  Week 
+                  4
+                </Text>
+                <Text
+                  style={
+                    {
+                      "color": "#C9CDD2",
+                      "fontSize": 12,
+                    }
+                  }
+                >
+                  Deload
+                </Text>
+              </View>
+              <View
+                accessibilityLabel="Week 4 Day 1, not programmed yet"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": true,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "borderColor": "#6B7076",
+                    },
+                    false,
+                    {
+                      "opacity": 0.5,
+                    },
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-4-1"
+              />
+              <View
+                accessibilityLabel="Week 4 Day 2, not programmed yet"
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": true,
+                    "expanded": undefined,
+                    "selected": false,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onBlur={[Function]}
+                onClick={[Function]}
+                onFocus={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "borderColor": "transparent",
+                      "borderRadius": 10,
+                      "borderWidth": 1,
+                      "flex": 1,
+                      "height": 44,
+                      "justifyContent": "center",
+                    },
+                    {
+                      "borderColor": "#6B7076",
+                    },
+                    false,
+                    {
+                      "opacity": 0.5,
+                    },
+                    false,
+                  ]
+                }
+                testID="meso-grid-cell-4-2"
+              />
             </View>
           </View>
         </View>

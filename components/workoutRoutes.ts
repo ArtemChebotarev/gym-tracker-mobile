@@ -1,10 +1,15 @@
-// Navigation target for opening a given day of the workout (08.7 · Тренировка, task 091) — used by
-// the mesocycle overview's cells (095) and `Next workout`. Every session opens inside the Today tab,
-// with the tab bar, rather than as a separate pushed page: the tab reads the params below and shows
-// that day instead of the current one. A cell with a session opens it by `sessionId`; one without
-// (not programmed yet — 03, "Ленивая генерация по дням") is addressed by mesocycle, week and day and
-// opens as a preview. Callers build the href here and the tab parses it here, so the params live in
-// one place, same as components/historyRoutes.ts.
+// Navigation targets for opening a given day of the workout (08.7 · Тренировка, task 091). The
+// workout screen has two hosts:
+// - The Today tab, for the block being trained — the mesocycle overview's cells (095) and `Next
+//   workout`. The day opens inside the tab, with the tab bar: the tab reads the params below and
+//   shows that day instead of the current one. A cell with a session opens it by `sessionId`; one
+//   without (not programmed yet — 03, "Ленивая генерация по дням") is addressed by mesocycle, week
+//   and day and opens as a preview.
+// - `session/[id]`, a page pushed from a closed block's detail screen (08.9, task 130). Such a day
+//   is History, looked at and left the way it came — so it goes on the stack above the detail
+//   screen with a back button, not into the Today tab, which belongs to the block being trained.
+// Callers build the href here and the tab parses it here, so the params live in one place, same as
+// components/historyRoutes.ts.
 
 import type { Href } from 'expo-router';
 
@@ -22,6 +27,14 @@ export type WorkoutRouteParams = {
 /** The Today tab on session `sessionId` — `app/(tabs)/index.tsx`. */
 export function workoutHref(sessionId: string): Href {
   return { pathname: '/', params: { sessionId } };
+}
+
+/**
+ * Session `sessionId` of a closed block, pushed over its detail screen — `app/session/[id].tsx`.
+ * Only a day with a session gets here: a closed block's cell without one opens nothing (08.9).
+ */
+export function historySessionHref(sessionId: string): Href {
+  return { pathname: '/session/[id]', params: { id: sessionId } };
 }
 
 /** The Today tab on the day at `slot`, whose session may not exist yet. */

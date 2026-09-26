@@ -8,7 +8,11 @@
 // stopped block has none — the weeks after the Stop were never in the plan. Both come decided from
 // the domain (055); this screen only draws what it gets.
 //
-// The workout grid of a closed block is task 130 and not drawn here yet.
+// A closed block — `completed` or `abandoned` — also gets its workout grid (130): the same
+// `MesoGrid` the overview sheet draws (127), under `WORKOUTS` and `tap to open`. A cell with a
+// session opens that day in History mode; the days a stopped block never reached have no session
+// and are dimmed and inert (`dimsEmptyCells`) — there's nothing to open. An active block has no
+// grid here: its workout screen has one a button away.
 //
 // A block without a single set replaces the card with a line saying so. It isn't the Design SDK's
 // EmptyState, which always renders an action ("EmptyState всегда рендерит действие") and has none
@@ -27,6 +31,7 @@ import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { StatTile } from '@design/components/StatTile';
+import { MesoGrid } from './MesoGrid';
 import { BackIcon } from '@design/icons/BackIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MesoWeeklySetsRow } from '@domain/mesoSummary';
@@ -36,6 +41,7 @@ import {
   formatMesocycleDetailSubtitle,
   formatSummaryCount,
   mesocycleDetailBadge,
+  showsWorkoutGrid,
   weekColumnLabels,
   weeklySetsRowViews,
 } from './MesocycleDetailScreenLogic';
@@ -48,6 +54,8 @@ export type MesocycleDetailScreenProps = {
   onBack: () => void;
   /** What the header's `⋯` offers — Rename, and Copy for a closed block. */
   menuItems: ActionMenuItem[];
+  /** A grid cell with a session was tapped — the caller opens that day in History mode. */
+  onOpenSession: (sessionId: string) => void;
 };
 
 export function MesocycleDetailScreen({
@@ -55,6 +63,7 @@ export function MesocycleDetailScreen({
   isPending,
   onBack,
   menuItems,
+  onOpenSession,
 }: MesocycleDetailScreenProps) {
   const backButton = (
     <IconButton accessibilityLabel="Back" onPress={onBack}>
@@ -80,7 +89,7 @@ export function MesocycleDetailScreen({
     );
   }
 
-  const { mesocycle, summary, weekNumber } = detail;
+  const { mesocycle, summary, weekNumber, grid } = detail;
   const badge = mesocycleDetailBadge(mesocycle.status);
 
   return (
@@ -117,6 +126,24 @@ export function MesocycleDetailScreen({
             <WeeklySetsCard rows={summary.weeklySets} lengthWeeks={mesocycle.lengthWeeks} />
           )}
         </View>
+
+        {showsWorkoutGrid(mesocycle.status) && (
+          <View style={styles.block}>
+            <View style={styles.blockLabelRow}>
+              <Text style={styles.blockLabel}>Workouts</Text>
+              <Text style={styles.blockHint}>tap to open</Text>
+            </View>
+            <MesoGrid
+              grid={grid}
+              dimsEmptyCells
+              onCellPress={(cell) => {
+                if (cell.sessionId !== undefined) {
+                  onOpenSession(cell.sessionId);
+                }
+              }}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

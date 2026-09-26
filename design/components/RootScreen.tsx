@@ -14,12 +14,19 @@
 // shown by the Today tab): a faint `titleSuffix` in the same `type/screen-title` line (`Week 6` +
 // `Day 2`), a `titleAccessory` right after the title (the completed check), and a `subtitle` line
 // under it. They stay generic — the caller resolves their content.
+//
+// `onBack` is for the one screen that is a tab root in one place and a pushed page in another: the
+// workout screen, which the Today tab shows and which a closed block's grid pushes as `session/[id]`
+// (08.9, task 130). Pushed, it needs a way back, so a back button sits on a row of its own above the
+// title, where 08.9's mockup puts it. A tab root never passes it, and then nothing changes.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { BackIcon } from '../icons/BackIcon';
+import { COLORS, ICON_SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { IconButton } from './IconButton';
 
 export type RootScreenProps = {
   title: string;
@@ -36,6 +43,8 @@ export type RootScreenProps = {
    * behind repeated taps on it.
    */
   onTitlePress?: () => void;
+  /** Draws a back button above the title — only for the screen pushed as a page (see above). */
+  onBack?: () => void;
   children?: ReactNode;
 };
 
@@ -46,6 +55,7 @@ export function RootScreen({
   subtitle,
   trailing,
   onTitlePress,
+  onBack,
   children,
 }: RootScreenProps) {
   const titleLine = (
@@ -60,6 +70,13 @@ export function RootScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {onBack !== undefined && (
+        <View style={styles.navigation}>
+          <IconButton accessibilityLabel="Back" onPress={onBack}>
+            <BackIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+          </IconButton>
+        </View>
+      )}
       <View style={styles.header}>
         <View style={styles.heading}>
           {/* A plain View unless someone is listening: a Pressable, even a disabled one, adds
@@ -87,6 +104,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/screen'],
     paddingTop: SPACING['space/screen'],
     gap: SPACING['space/gap'],
+  },
+  navigation: {
+    flexDirection: 'row',
   },
   header: {
     flexDirection: 'row',

@@ -1,13 +1,15 @@
 // "Мезоцикл (деталь)" — 08.9, task 129. Orchestration only: reads the mesocycle, its sessions,
 // their set logs and the exercises behind those sets, and hands them to the domain — the summary is
 // `buildMesoSummary` (055) and the week is `currentWeekNumber` (089), per 06 · History & Analytics
-// ("Агрегаты считаются в доменном слое поверх сырых данных").
+// ("Агрегаты считаются в доменном слое поверх сырых данных"). The workout grid of a closed block
+// (130) is `buildMesoGrid` (089) over the same sessions.
 
 import { toExerciseId } from '@domain/catalog';
 import type { Mesocycle } from '@domain/mesocycle';
+import type { MesoGrid } from '@domain/mesoGrid';
 import type { MesoSummary } from '@domain/mesoSummary';
 import { buildMesoSummary } from '@domain/mesoSummaryBuilders';
-import { currentWeekNumber } from '@domain/mesoGridBuilders';
+import { buildMesoGrid, currentWeekNumber } from '@domain/mesoGridBuilders';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { SessionRepository } from '@repositories/session';
@@ -29,6 +31,8 @@ export type MesocycleDetail = {
    * latest week that has one, the `Stopped in week 4`.
    */
   weekNumber: number;
+  /** The week × day grid — the screen draws it for a closed block only (08.9, task 130). */
+  grid: MesoGrid;
 };
 
 /**
@@ -59,5 +63,6 @@ export async function loadMesocycleDetail(
     mesocycle,
     summary: buildMesoSummary(mesocycle, sessionLogs, exercises),
     weekNumber: currentWeekNumber(sessions),
+    grid: buildMesoGrid(mesocycle, sessions),
   };
 }

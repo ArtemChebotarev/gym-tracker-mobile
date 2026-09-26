@@ -38,6 +38,9 @@ export default function RootLayout() {
             <Stack.Screen name="exercise/[id]/index" options={{ headerShown: false }} />
             {/* Mesocycle detail (08.9, task 129) — pushed from 08.3 and the workout menu, own back. */}
             <Stack.Screen name="meso/[id]" options={{ headerShown: false }} />
+            {/* A day of a closed block (08.9, task 130) — pushed from the detail screen's grid, in
+              History mode, with its own back button. */}
+            <Stack.Screen name="session/[id]" options={{ headerShown: false }} />
             {/* The developer door (task 070) — no link leads here, five taps on the Library title do. */}
             <Stack.Screen name="debug" options={{ headerShown: false, presentation: 'modal' }} />
           </Stack>

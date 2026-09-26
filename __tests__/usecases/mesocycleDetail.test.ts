@@ -28,6 +28,14 @@ describe('loadMesocycleDetail', () => {
 
     expect(detail?.mesocycle.name).toBe('Upper/Lower');
     expect(detail?.weekNumber).toBe(2);
+    // The grid of the same sessions, for a closed block's WORKOUTS section (130).
+    expect(detail?.grid.weeks[0]?.cells[0]).toEqual({
+      weekNumber: 1,
+      dayNumber: 1,
+      status: 'completed',
+      sessionId: WORKOUT_FIXTURE_IDS.completed,
+    });
+    expect(detail?.grid.weeks[2]?.cells[0]?.sessionId).toBeUndefined();
     expect(detail?.summary).toEqual({
       workouts: { value: 1, total: 20 },
       strengthSets: 8,
