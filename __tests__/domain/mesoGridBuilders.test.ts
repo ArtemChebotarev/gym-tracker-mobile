@@ -219,4 +219,21 @@ describe('buildMesoGrid', () => {
       sessionId: 'w2d2',
     });
   });
+
+  test('a stopped block: the days after the Stop have no session and open nothing', () => {
+    // Stopped in week 2 — the Stop closed the sessions that existed; later ones never came to be.
+    const grid = buildMesoGrid({ ...mesocycle, status: 'abandoned' }, [
+      session(1, 1, { status: 'completed' }),
+      session(1, 2, { status: 'completed' }),
+      session(2, 1, { status: 'skipped' }),
+      session(2, 2, { status: 'skipped', prescriptionStatus: 'awaiting_source' }),
+    ]);
+
+    expect(grid.weeks.map((week) => week.cells.map((cell) => cell.status))).toEqual([
+      ['completed', 'completed'],
+      ['skipped', 'skipped'],
+      ['awaiting', 'awaiting'],
+    ]);
+    expect(grid.weeks[2]?.cells.every((cell) => cell.sessionId === undefined)).toBe(true);
+  });
 });
