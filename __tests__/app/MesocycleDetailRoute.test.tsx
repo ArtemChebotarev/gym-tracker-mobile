@@ -19,9 +19,14 @@ let mockParams: Record<string, string | undefined> = {};
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 
+const mockSetOptions = jest.fn();
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, push: mockPush }),
   useLocalSearchParams: () => mockParams,
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+  // Focus is mount here: the route is rendered on its own, never covered and uncovered.
+  useFocusEffect: (effect: () => void) => jest.requireActual('react').useEffect(effect, [effect]),
 }));
 
 const TEST_SAFE_AREA_METRICS: Metrics = {
@@ -35,6 +40,7 @@ beforeEach(async () => {
   mockParams = { id: WORKOUT_FIXTURE_IDS.mesocycle };
   mockBack.mockClear();
   mockPush.mockClear();
+  mockSetOptions.mockClear();
 });
 
 function renderRoute() {
@@ -100,8 +106,13 @@ describe('Mesocycle detail route', () => {
     expect(screen.queryByText('1 / 20')).toBeNull();
     expect(screen.getByText('2 / 5')).toBeTruthy();
 
+    // Focused, the page pops with the default animation.
+    expect(mockSetOptions).toHaveBeenLastCalledWith({ animation: 'default' });
+
     pickMenuItem('copy');
 
+    // Saving the copy takes this page off under the modal — in the modal's slide only.
+    expect(mockSetOptions).toHaveBeenLastCalledWith({ animation: 'none' });
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/meso-editor/copy',
       params: { sourceMesoId: WORKOUT_FIXTURE_IDS.mesocycle },

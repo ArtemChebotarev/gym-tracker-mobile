@@ -14,9 +14,14 @@ let mockParams: Record<string, string | undefined> = {};
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 
+const mockSetOptions = jest.fn();
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, push: mockPush }),
   useLocalSearchParams: () => mockParams,
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+  // Focus is mount here: the route is rendered on its own, never covered and uncovered.
+  useFocusEffect: (effect: () => void) => jest.requireActual('react').useEffect(effect, [effect]),
 }));
 
 const TEST_SAFE_AREA_METRICS: Metrics = {
@@ -39,6 +44,7 @@ beforeEach(async () => {
   mockParams = { id: WORKOUT_FIXTURE_IDS.completed };
   mockBack.mockClear();
   mockPush.mockClear();
+  mockSetOptions.mockClear();
 });
 
 function renderRoute() {

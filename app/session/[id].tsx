@@ -11,6 +11,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { exerciseDetailHref } from '@components/historyRoutes';
+import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import { useWorkoutSession } from '@state/useWorkoutSession';
 
@@ -19,6 +20,7 @@ export default function HistorySessionRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useWorkoutSession(id);
   const model = query.data;
+  const quietPop = useQuietPopUnderModal();
   // What every live-only handler does here — see the header comment.
   const inert = () => undefined;
 
@@ -47,6 +49,8 @@ export default function HistorySessionRoute() {
       isFinishingMesocycle={false}
       onCopyMesocycle={() => {
         if (model !== undefined) {
+          // Saving the copy takes this page and the detail screen under it off too — in one slide.
+          quietPop();
           router.push({ pathname: '/meso-editor/copy', params: { sourceMesoId: model.mesoId } });
         }
       }}
