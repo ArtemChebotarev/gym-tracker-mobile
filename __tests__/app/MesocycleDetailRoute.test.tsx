@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesocycleDetailRoute from '@app/meso/[id]';
@@ -86,6 +87,7 @@ describe('Mesocycle detail route', () => {
 
     expect(screen.queryByTestId('action-menu-rename')).toBeTruthy();
     expect(screen.queryByTestId('action-menu-copy')).toBeNull();
+    expect(screen.queryByTestId('action-menu-archive')).toBeNull();
   });
 
   test('a stopped block: Stopped badge, no workouts denominator, Copy opens Flow C on it', async () => {
@@ -160,5 +162,29 @@ describe('Mesocycle detail route', () => {
     mockPush.mockClear();
     fireEvent.press(screen.getByTestId('meso-grid-cell-3-1'));
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  test('Archive asks first, archives the block and goes back — the block has left the list', async () => {
+    await stopFixtureBlock();
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    renderRoute();
+    await screen.findByText('Stopped');
+
+    pickMenuItem('archive');
+
+    expect(alertSpy.mock.calls.at(-1)?.[0]).toBe('Archive mesocycle?');
+    // Nothing happens until it's confirmed.
+    expect(
+      (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.archivedAt,
+    ).toBeUndefined();
+
+    const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[] | undefined;
+    buttons?.find((button) => button.text === 'Archive')?.onPress?.();
+
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect(
+      (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.archivedAt,
+    ).toEqual(expect.any(String));
+    alertSpy.mockRestore();
   });
 });

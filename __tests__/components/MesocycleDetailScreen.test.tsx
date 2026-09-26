@@ -96,6 +96,7 @@ function renderScreen(props: Partial<MesocycleDetailScreenProps> = {}) {
         menuItems={mesocycleDetailMenuItems(shown?.mesocycle.status ?? 'completed', {
           onRename: jest.fn(),
           onCopy: jest.fn(),
+          onArchive: jest.fn(),
         })}
         {...props}
       />
