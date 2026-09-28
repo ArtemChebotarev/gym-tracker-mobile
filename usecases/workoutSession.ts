@@ -6,7 +6,13 @@
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
-import type { Session, SessionExerciseStatus, SetLog, TargetIndicator } from '@domain/execution';
+import type {
+  Session,
+  SessionExerciseStatus,
+  SetLog,
+  SetTarget,
+  TargetIndicator,
+} from '@domain/execution';
 import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
@@ -55,7 +61,13 @@ export type WorkoutSetRow = {
    * stays what it was even after the block's body weight changes (task 105).
    */
   log?: { weight: number; reps: number; bodyWeight?: number };
-  /** `✓` / `+N` / `−N` — only for a logged row whose set had `targetReps`. */
+  /**
+   * Present when `targetReps` / `suggestedWeight` are only an estimate, and why (03, "Оценка";
+   * task 134.1): the placeholder reads `~15`, the card's note explains, and no indicator follows
+   * a Log.
+   */
+  estimate?: SetTarget['estimate'];
+  /** `✓` / `+N` / `−N` — only for a logged row whose set had `targetReps` that weren't an estimate. */
   indicator?: TargetIndicator;
   /**
    * What this set's target is worth at another weight (03, rule 7; task 120) — the screen reads
@@ -281,6 +293,9 @@ function toRows(
     }
     if (target.suggestedWeight !== undefined) {
       row.suggestedWeight = target.suggestedWeight;
+    }
+    if (target.estimate !== undefined) {
+      row.estimate = target.estimate;
     }
     // Rule 7 asks only about this set's own target, so every row gets its own: with targets
     // 10 / 10 / 9 the same weight is worth different reps in the third set than in the first.

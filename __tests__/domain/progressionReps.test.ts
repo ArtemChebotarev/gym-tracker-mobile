@@ -119,6 +119,27 @@ describe('nextSetTarget', () => {
       ),
     ).toEqual<SetTarget>({ setNumber: 2, targetReps: 30, suggestedWeight: 40 });
   });
+
+  // Task 134.1: rule 2 doesn't carry an estimate — it isn't a target to carry.
+  test('an unlogged estimate comes back with no numbers', () => {
+    expect(
+      nextSetTarget(
+        { setNumber: 1, targetReps: 15, suggestedWeight: 4.5, estimate: 'other_slot' },
+        undefined,
+        defaultProgressionSettings,
+      ),
+    ).toEqual<SetTarget>({ setNumber: 1 });
+  });
+
+  test('a logged estimate progresses from the fact like any set, and is a target again', () => {
+    expect(
+      nextSetTarget(
+        { setNumber: 1, targetReps: 15, suggestedWeight: 4.5, estimate: 'other_slot' },
+        { reps: 15, weight: 4.5 },
+        defaultProgressionSettings,
+      ),
+    ).toEqual<SetTarget>({ setNumber: 1, targetReps: 16, suggestedWeight: 4.5 });
+  });
 });
 
 describe('a pure bodyweight exercise progresses on reps alone (task 105)', () => {

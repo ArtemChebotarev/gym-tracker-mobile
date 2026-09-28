@@ -21,7 +21,8 @@ export function nextTargetReps(loggedReps: number, settings: RepCorridor): numbe
  * - Logged: reps progress by rule 2, the logged weight becomes the next `suggestedWeight`, and
  *   the set gets its own weight hint by rule 3.
  * - Not logged (skipped): the row carries over its previous `targetReps` and `suggestedWeight`
- *   with no increment. There is no new fact to judge, so no weight hint is carried.
+ *   with no increment. There is no new fact to judge, so no weight hint is carried. An estimate
+ *   (task 134.1) isn't carried at all — the row comes back with no numbers, `N RIR`.
  *
  * A pure `bodyweight` exercise takes the reps half of that and nothing else (task 105): its load
  * is the body weight, which the block already knows and the screen fills in, so a weight target
@@ -35,6 +36,11 @@ export function nextSetTarget(
 ): SetTarget {
   const carriesWeight = !isPureBodyWeight(equipment);
   if (log === undefined) {
+    if (source.estimate !== undefined) {
+      // An estimate isn't a target to carry (03, "Оценка"): with nothing logged, the row has
+      // nothing of its own to go by next week either.
+      return { setNumber: source.setNumber };
+    }
     const target: SetTarget = { setNumber: source.setNumber, targetReps: source.targetReps };
     if (carriesWeight && source.suggestedWeight !== undefined) {
       target.suggestedWeight = source.suggestedWeight;

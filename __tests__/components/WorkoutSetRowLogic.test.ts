@@ -51,6 +51,31 @@ describe('repsPlaceholder', () => {
   });
 });
 
+// Task 134.1: a set whose own numbers come from another day or block reads as an estimate.
+describe('a set with an estimate', () => {
+  const row = { targetReps: 15, suggestedWeight: 4.5, estimate: 'other_slot' } as const;
+  const swap = buildWeightSwap({
+    target: row,
+    settings: defaultProgressionSettings,
+    isDeload: false,
+    equipment: 'cable',
+  });
+
+  test('the placeholder carries the ~', () => {
+    expect(repsPlaceholder(row, 2)).toBe('~15');
+  });
+
+  test('stays an estimate at its own weight and at a close one', () => {
+    const withSwap = { ...row, weightSwap: swap };
+    expect(repsPlaceholder(row, 2, rowEvaluation(withSwap, '4.5'))).toBe('~15');
+    expect(repsPlaceholder(row, 2, rowEvaluation(withSwap, '5'))).toMatch(/^~\d+$/);
+  });
+
+  test('a one-tap Log records the estimated reps', () => {
+    expect(resolveSetEntry('4.5', '', row)).toEqual({ weight: 4.5, reps: 15 });
+  });
+});
+
 describe('formatIndicator', () => {
   test('✓ on target, +N over, −N under', () => {
     expect(formatIndicator({ kind: 'hit' })).toBe('✓');
@@ -195,7 +220,7 @@ describe('the Weight column on a bodyweight exercise (task 105)', () => {
       expect(initialWeightText({}, 'bodyweight', undefined)).toBe('');
     });
 
-    test("a pure bodyweight exercise has no suggested weight to prefer anyway", () => {
+    test('a pure bodyweight exercise has no suggested weight to prefer anyway', () => {
       expect(initialWeightText({ suggestedWeight: 62.5 }, 'bodyweight', 80)).toBe('80');
     });
 

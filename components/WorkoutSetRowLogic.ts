@@ -89,20 +89,25 @@ export type PlaceholderReps = { reps: number; isEstimate: boolean };
  *
  * With a weight in the field that isn't the one the target was issued for, the number is what
  * *that* weight is worth (08.7.1): a close weight reads as an ordinary target, a far one as an
- * estimate, and a weight off the rep corridor has no target at all. Without an evaluation it is
- * the set's own `targetReps`, or — in a deload — last working week's reps as a guide.
+ * estimate, and a weight off the rep corridor has no target at all. A set whose own numbers are an
+ * estimate from another day or block (task 134.1) reads as an estimate throughout. Without an
+ * evaluation it is the set's own `targetReps`, or — in a deload — last working week's reps as a
+ * guide.
  */
 export function placeholderReps(
-  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
   evaluation?: WeightSwapEvaluation,
 ): PlaceholderReps | undefined {
+  // A set whose own numbers are an estimate (task 134.1) stays one at any weight — rule 7 read
+  // off an estimate is an estimate of an estimate.
+  const ownEstimate = row.estimate !== undefined;
   if (evaluation !== undefined) {
     return evaluation.zone === 'out'
       ? undefined
-      : { reps: evaluation.reps, isEstimate: evaluation.zone === 'estimate' };
+      : { reps: evaluation.reps, isEstimate: ownEstimate || evaluation.zone === 'estimate' };
   }
   if (row.targetReps !== undefined) {
-    return { reps: row.targetReps, isEstimate: false };
+    return { reps: row.targetReps, isEstimate: ownEstimate };
   }
   if (row.referenceReps !== undefined) {
     return { reps: row.referenceReps, isEstimate: false };
@@ -116,7 +121,7 @@ export function placeholderReps(
  * no number to aim for.
  */
 export function repsPlaceholder(
-  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
   targetRir: number | undefined,
   evaluation?: WeightSwapEvaluation,
 ): string {
@@ -132,7 +137,7 @@ export function repsPlaceholder(
  * the field.
  */
 export function isRirPlaceholder(
-  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
   targetRir: number | undefined,
   evaluation?: WeightSwapEvaluation,
 ): boolean {
@@ -184,7 +189,7 @@ export function parseReps(text: string): number | null {
 export function resolveSetEntry(
   weightText: string,
   repsText: string,
-  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps'>,
+  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
   evaluation?: WeightSwapEvaluation,
 ): { weight: number; reps: number } | null {
   const reps =

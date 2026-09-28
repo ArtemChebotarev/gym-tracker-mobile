@@ -8,7 +8,7 @@ import {
   holdLoggedWeight,
   showsGroupChip,
   weightFieldText,
-  weightSwapNote,
+  estimateNote,
   weightSwapPopover,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
@@ -294,6 +294,11 @@ describe('the weight swap popover and note', () => {
   });
 
   describe('weightSwapPopover', () => {
+    test('an estimate is titled as one (task 134.1)', () => {
+      const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' }, 2);
+      expect(popover?.title).toBe('Current set estimate: 4.5 kg × 15');
+    });
+
     test('the ranges of the set, from its own target and never from what is typed', () => {
       const popover = weightSwapPopover(rowWith(10, 15), 2);
 
@@ -362,44 +367,65 @@ describe('the weight swap popover and note', () => {
     });
   });
 
-  describe('weightSwapNote', () => {
+  describe('estimateNote', () => {
     test('a weight that still hits the target needs no note', () => {
-      expect(weightSwapNote(rowWith(10, 15), '15', 2)).toBeUndefined();
-      expect(weightSwapNote(rowWith(10, 15), '14', 2)).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '15', 2)).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '14', 2)).toBeUndefined();
     });
 
     test('an estimate says where the number came from and what to go by instead', () => {
-      expect(weightSwapNote(rowWith(10, 15), '10', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '10', 2)).toEqual({
         lead: '~ Estimated from 15 kg × 10.',
         text: 'Stop at 2 RIR, not at the number.',
       });
     });
 
     test('too heavy says how far the target still reaches', () => {
-      expect(weightSwapNote(rowWith(10, 15), '20', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '20', 2)).toEqual({
         lead: '20 kg is too heavy for 5+ reps.',
         text: 'Up to 17.5 kg keeps a rep target.',
       });
     });
 
     test('too light says where it starts again', () => {
-      expect(weightSwapNote(rowWith(10, 15), '2', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '2', 2)).toEqual({
         lead: '2 kg is too light for 30 reps.',
         text: 'From 4 kg keeps a rep target.',
       });
     });
 
     test('on a weighted bodyweight set the weights read as added ones', () => {
-      expect(weightSwapNote(dipRow, '30', 2)).toEqual({
+      expect(estimateNote(dipRow, '30', 2)).toEqual({
         lead: '+30 kg is too heavy for 5+ reps.',
         text: 'Up to +22.5 kg keeps a rep target.',
       });
     });
 
+    // Task 134.1: the second reason — numbers from another day or block.
+    test('an estimate from another slot says so, with nothing typed', () => {
+      const row = { ...rowWith(15, 4.5), estimate: 'other_slot' as const };
+      expect(estimateNote(row, '4.5', 2)).toEqual({
+        lead: '~ Estimated from another day or block.',
+        text: 'Not done in this spot of the week yet — stop at 2 RIR, not at the number.',
+      });
+    });
+
+    test('an estimate from another slot on a pure bodyweight set, with no swap at all', () => {
+      expect(estimateNote({ estimate: 'other_slot' }, '80', undefined)).toEqual({
+        lead: '~ Estimated from another day or block.',
+        text: 'Not done in this spot of the week yet — stop at the effort, not at the number.',
+      });
+    });
+
+    test('the weight in the field speaks first when it has moved the target away', () => {
+      const row = { ...rowWith(10, 15), estimate: 'other_slot' as const };
+      expect(estimateNote(row, '20', 2)?.lead).toBe('20 kg is too heavy for 5+ reps.');
+    });
+
     test('nothing typed, no note — and none without a swap behind the set', () => {
-      expect(weightSwapNote(rowWith(10, 15), '', 2)).toBeUndefined();
-      expect(weightSwapNote({ weightSwap: { unavailable: 'no_history' } }, '10', 2)).toBeUndefined();
-      expect(weightSwapNote(undefined, '10', 2)).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '', 2)).toBeUndefined();
+      expect(estimateNote({ weightSwap: { unavailable: 'no_history' } }, '10', 2)).toBeUndefined();
+      expect(estimateNote(undefined, '10', 2)).toBeUndefined();
     });
   });
 });

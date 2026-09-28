@@ -367,5 +367,78 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-week-2-bench']);
       });
     });
+
+    // Task 134.1: the reference resolver's window — every performance since `since`, with where
+    // its session stood. Which of them count is the resolver's business.
+    describe('listPerformances', () => {
+      test('returns every performance since the window opened, newest first, with its slot', async () => {
+        await seedPerformances(repositories(), [
+          { sessionExerciseId: 'se-too-old', completedAt: OLDER_THAN_SINCE },
+          {
+            sessionExerciseId: 'se-older',
+            completedAt: '2026-09-01T08:00:00.000Z',
+            mesoId: PAST_MESO,
+            setNumbers: [2, 1],
+            targetRir: 1,
+          },
+          {
+            sessionExerciseId: 'se-deload',
+            completedAt: '2026-09-15T08:00:00.000Z',
+            isDeload: true,
+          },
+        ]);
+
+        const performances = await repositories().setLogRepo.listPerformances({
+          exerciseId: BENCH_PRESS,
+          since: SINCE,
+        });
+
+        expect(
+          performances.map(({ setLogs, ...rest }) => ({
+            ...rest,
+            setLogIds: setLogs.map((setLog) => setLog.id),
+          })),
+        ).toEqual([
+          {
+            mesoId: CURRENT_MESO,
+            weekNumber: 1,
+            dayNumber: 3,
+            isDeload: true,
+            targetRir: 2,
+            performedAt: '2026-09-15T08:00:00.000Z',
+            setLogIds: ['se-deload-set-1'],
+          },
+          {
+            mesoId: PAST_MESO,
+            weekNumber: 1,
+            dayNumber: 2,
+            isDeload: false,
+            targetRir: 1,
+            performedAt: '2026-09-01T08:00:00.000Z',
+            setLogIds: ['se-older-set-1', 'se-older-set-2'],
+          },
+        ]);
+      });
+
+      test('the window binds the current mesocycle too, and the asking exercise is left out', async () => {
+        await seedPerformances(repositories(), [
+          { sessionExerciseId: 'se-current-old', completedAt: OLDER_THAN_SINCE },
+          { sessionExerciseId: 'se-today', completedAt: NEWER_THAN_SINCE },
+          {
+            sessionExerciseId: 'se-dumbbell',
+            completedAt: NEWER_THAN_SINCE,
+            exerciseId: DUMBBELL_PRESS,
+          },
+        ]);
+
+        await expect(
+          repositories().setLogRepo.listPerformances({
+            exerciseId: BENCH_PRESS,
+            since: SINCE,
+            excludeSessionExerciseId: 'se-today',
+          }),
+        ).resolves.toEqual([]);
+      });
+    });
   });
 }

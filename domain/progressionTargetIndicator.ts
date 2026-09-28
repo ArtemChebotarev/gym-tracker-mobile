@@ -9,13 +9,14 @@ import { evaluateWeightSwap } from '@domain/weightSwapRules';
 /**
  * `hit` when the logged reps equal the set's target, `over` / `under` with the absolute rep
  * difference otherwise. Returns `undefined` when the set has no `targetReps` (e.g. week 1 of
- * Flow A/B, or the deload week) — there is no marker then.
+ * Flow A/B, or the deload week), or when its numbers are only an estimate (task 134.1) — there is
+ * no marker then.
  */
 export function targetIndicator(
-  target: Pick<SetTarget, 'targetReps'>,
+  target: Pick<SetTarget, 'targetReps' | 'estimate'>,
   log: Pick<SetLog, 'reps'>,
 ): TargetIndicator | undefined {
-  if (target.targetReps === undefined) {
+  if (target.targetReps === undefined || target.estimate !== undefined) {
     return undefined;
   }
   const diff = log.reps - target.targetReps;
@@ -35,11 +36,11 @@ export function targetIndicator(
  * and a `✓` against it would claim a precision the formula doesn't have.
  */
 export function targetIndicatorAtWeight(
-  target: Pick<SetTarget, 'targetReps'>,
+  target: Pick<SetTarget, 'targetReps' | 'estimate'>,
   log: Pick<SetLog, 'reps' | 'weight' | 'bodyWeight'>,
   swap: WeightSwap | undefined,
 ): TargetIndicator | undefined {
-  if (swap === undefined || 'unavailable' in swap) {
+  if (target.estimate !== undefined || swap === undefined || 'unavailable' in swap) {
     return targetIndicator(target, log);
   }
   const evaluation = evaluateWeightSwap(swap, log.weight, log.bodyWeight);

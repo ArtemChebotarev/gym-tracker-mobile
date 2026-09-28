@@ -29,6 +29,25 @@ describe('targetIndicator', () => {
   });
 });
 
+// Task 134.1: an estimate is a guide — a ✓ or −1 against it would claim a precision it lacks.
+describe('an estimate gets no marker', () => {
+  const estimate = { targetReps: 15, estimate: 'other_slot' } as const;
+
+  test('in the plain comparison', () => {
+    expect(targetIndicator(estimate, { reps: 14 })).toBeUndefined();
+  });
+
+  test('at its own weight, with a swap built from it', () => {
+    const swap = buildWeightSwap({
+      target: { targetReps: 15, suggestedWeight: 4.5 },
+      settings: defaultProgressionSettings,
+      isDeload: false,
+      equipment: 'cable',
+    });
+    expect(targetIndicatorAtWeight(estimate, { reps: 15, weight: 4.5 }, swap)).toBeUndefined();
+  });
+});
+
 describe('targetIndicatorAtWeight', () => {
   const settings = defaultProgressionSettings;
   const swap = buildWeightSwap({

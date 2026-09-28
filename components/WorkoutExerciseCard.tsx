@@ -53,12 +53,12 @@ import {
   type WeightSwapPopover,
   carryWeightForward,
   editWeightText,
+  estimateNote,
   exerciseCardView,
   firstUnloggedRow,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
-  weightSwapNote,
   weightSwapPopover,
 } from './WorkoutExerciseCardLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
@@ -355,10 +355,11 @@ function SetRows({
     }
   }
 
-  // One note per card, for the set that is next to do and only while its weight has taken the
-  // target out of reach (08.7.1) — the Weight fields live here, so this is where it can be read.
+  // One note per card, for the set that is next to do and only while its numbers aren't a target
+  // to hit — its weight has taken the target out of reach (08.7.1), or they are an estimate from
+  // another day or block (134.1). The Weight fields live here, so this is where it can be read.
   const next = firstUnloggedRow(rows);
-  const note = weightSwapNote(
+  const note = estimateNote(
     next,
     next === undefined ? '' : weightFieldText(weights, next, exercise.equipment, bodyWeight),
     exercise.targetRir,
