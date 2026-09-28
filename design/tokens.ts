@@ -52,6 +52,15 @@ export const COLORS = {
   /** Text and icons on `danger/fill`. */
   'danger/on': '#F5F5F4',
 
+  /**
+   * The floating tab bar's glass (08.0, "Таб-бар", task 151): the tint laid over the blur so the
+   * bar stays legible over a list scrolling under it, the highlight on its edge, and the lighter
+   * capsule that marks the active tab.
+   */
+  'glass/fill': 'rgba(20, 22, 25, 0.72)',
+  'glass/edge': 'rgba(255, 255, 255, 0.12)',
+  'glass/active': 'rgba(255, 255, 255, 0.1)',
+
   /** The dimmed backdrop behind a bottom sheet, and behind a Popover. */
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
   /** Drop shadow under a lifted (dragged) row. */
@@ -201,6 +210,10 @@ export const SIZES = {
    * reaches it through `hitSlop` — `tapTargetSlop` in design/shapes.ts.
    */
   'size/tap-target': 44,
+  /** The floating tab bar's height, padding included (08.0, "Таб-бар", task 151). */
+  'size/tabbar': 64,
+  /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
+  'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */
   'size/dot': 8,
   /** The larger group dot of the mesocycle editor and the mesocycle list's week dots. */
@@ -284,6 +297,13 @@ export const SHADOWS = {
     shadowOpacity: 0.5,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
+  },
+  /** The floating tab bar: a soft lift off the screen, lighter than a Popover's. */
+  'shadow/tabbar': {
+    shadowColor: COLORS.shadow,
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
   },
 } as const;
 
