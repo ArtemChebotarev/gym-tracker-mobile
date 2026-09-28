@@ -1,11 +1,11 @@
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppTabBarStyles as styles } from './AppTabBarStyles';
+import { useTabBarLift } from './useTabBarClearance';
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
 import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
-import { COLORS } from '@design/tokens';
 
 // The tabs, in bar order, keyed by their route name in app/(tabs). The bar's labels are short
 // ("Cycles"); inside the screens the concept stays "training cycle" (08 · Screens & Navigation).
@@ -32,9 +32,10 @@ type AppTabBarProps = {
 };
 
 // The navigator's tab bar, replaced by the floating design/components/TabBar. Keeps the bar clear
-// of the home indicator and on the page colour the screens sit on.
+// of the home indicator and laid over the screens rather than under them, so the list scrolls
+// beneath the glass; a screen leaves room for it with `useTabBarClearance`.
 export function AppTabBar({ state, navigation }: AppTabBarProps) {
-  const insets = useSafeAreaInsets();
+  const lift = useTabBarLift();
   const activeKey = state.routes[state.index]?.name ?? '';
 
   // What the navigator's own bar does on a press: announce `tabPress` first — Today listens, to
@@ -48,7 +49,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
   }
 
   return (
-    <View style={{ backgroundColor: COLORS['surface/page'], paddingBottom: insets.bottom }}>
+    <View pointerEvents="box-none" style={[styles.overlay, { paddingBottom: lift }]}>
       <TabBar items={TABS} activeKey={activeKey} onChange={handlePress} />
     </View>
   );

@@ -41,6 +41,7 @@ import {
 } from './ExerciseLibraryScreenLogic';
 import { styles } from './ExerciseLibraryScreenStyles';
 import { useSecretTaps } from './useSecretTaps';
+import { useTabBarClearance } from './useTabBarClearance';
 
 export type ExerciseLibraryFilters = Omit<ExerciseListQuery, 'search'>;
 
@@ -71,6 +72,7 @@ export function ExerciseLibraryScreen({
   onOpenExercise,
   onOpenDebug,
 }: ExerciseLibraryScreenProps) {
+  const tabBarClearance = useTabBarClearance();
   const countTitleTap = useSecretTaps(5, onOpenDebug);
   const trimmedSearch = search.trim();
   const filtersActive = hasActiveFilters(filters);
@@ -128,6 +130,7 @@ export function ExerciseLibraryScreen({
       {showList && (
         <SectionList<ExerciseListEntry, ExerciseSection>
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: tabBarClearance }}
           sections={sections}
           keyExtractor={(item) => item.exercise.id}
           stickySectionHeadersEnabled

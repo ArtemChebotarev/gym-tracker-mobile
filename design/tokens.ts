@@ -57,7 +57,7 @@ export const COLORS = {
    * bar stays legible over a list scrolling under it, the highlight on its edge, and the lighter
    * capsule that marks the active tab.
    */
-  'glass/fill': 'rgba(20, 22, 25, 0.72)',
+  'glass/fill': 'rgba(20, 22, 25, 0.4)',
   'glass/edge': 'rgba(255, 255, 255, 0.12)',
   'glass/active': 'rgba(255, 255, 255, 0.1)',
 
