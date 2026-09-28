@@ -405,15 +405,15 @@ describe('the weight swap popover and note', () => {
     test('an estimate from another slot says so, with nothing typed', () => {
       const row = { ...rowWith(15, 4.5), estimate: 'other_slot' as const };
       expect(estimateNote(row, '4.5', 2)).toEqual({
-        lead: '~ Estimated from another day or block.',
-        text: 'Not done in this spot of the week yet — stop at 2 RIR, not at the number.',
+        lead: 'Approximate estimation based on your previous activity.',
+        text: 'Stop at 2 RIR.',
       });
     });
 
     test('an estimate from another slot on a pure bodyweight set, with no swap at all', () => {
       expect(estimateNote({ estimate: 'other_slot' }, '80', undefined)).toEqual({
-        lead: '~ Estimated from another day or block.',
-        text: 'Not done in this spot of the week yet — stop at the effort, not at the number.',
+        lead: 'Approximate estimation based on your previous activity.',
+        text: 'Stop at the effort.',
       });
     });
 

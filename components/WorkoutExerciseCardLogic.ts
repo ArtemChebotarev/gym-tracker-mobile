@@ -340,9 +340,10 @@ export function estimateNote(
     return otherWeight;
   }
   if (row.estimate === 'other_slot') {
+    // Artem's wording: where the number comes from, and what to go by instead.
     return {
-      lead: '~ Estimated from another day or block.',
-      text: `Not done in this spot of the week yet — stop at ${effort}, not at the number.`,
+      lead: 'Approximate estimation based on your previous activity.',
+      text: `Stop at ${effort}.`,
     };
   }
   return undefined;
