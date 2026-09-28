@@ -2,8 +2,6 @@ import type { SetLog } from '@domain/execution';
 import type { ExercisePerformance } from '@domain/progression';
 import type { Incoming } from '@domain/timestamps';
 import type {
-  FindLastPerformanceQuery,
-  LastPerformance,
   ListPerformancesQuery,
   ListSetLogsByExerciseIdOptions,
   SetLogRepository,
@@ -67,33 +65,9 @@ export class SqliteSetLogRepository implements SetLogRepository {
   }
 
   /**
-   * Rule 6's reference (03 · Progression Engine): the newest performance that qualifies. The
-   * Session join it needs is the same one exercise history starts from, so it comes from
-   * `readExercisePerformances` rather than being written out a second time here — this method
-   * only adds the rule's own narrowing on top.
-   */
-  async findLastPerformance({
-    exerciseId,
-    mesoId,
-    since,
-    excludeSessionExerciseId,
-  }: FindLastPerformanceQuery): Promise<LastPerformance | null> {
-    const performances = (
-      await readExercisePerformances(this.db, exerciseId, { excludeSessionExerciseId })
-    ).map((performance) => ({ ...performance, completedAt: performedAt(performance) }));
-    performances.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
-
-    for (const { session, setLogs: logs, targetRir, completedAt } of performances) {
-      if (!session.isDeload && (session.mesoId === mesoId || completedAt >= since)) {
-        return { setLogs: logs, targetRir };
-      }
-    }
-    return null;
-  }
-
-  /**
-   * The reference resolver's window (task 134.1). The same join as `findLastPerformance`, cut to
-   * `since` and flattened into where each performance stood in its block.
+   * The reference resolver's window (task 134.1). The Session join exercise history starts from
+   * (`readExercisePerformances`), cut to `since` and flattened into where each performance stood
+   * in its block.
    */
   async listPerformances({
     exerciseId,

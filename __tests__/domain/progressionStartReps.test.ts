@@ -1,5 +1,6 @@
 import type { SetLog } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import type { EstimateSource, ReferenceResolution } from '@domain/progression';
 import { prescribeBlockStart, startTargetReps } from '@domain/progressionStartReps';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -52,12 +53,43 @@ describe('startTargetReps', () => {
   });
 });
 
+/** The resolver's answer around `setLogs`, performed at `targetRir`. */
+function performance(setLogs: SetLog[], targetRir: number) {
+  return {
+    mesoId: 'meso-past',
+    weekNumber: 3,
+    dayNumber: 1,
+    isDeload: false,
+    targetRir,
+    performedAt: '2026-09-10T08:00:00.000Z',
+    setLogs,
+  };
+}
+
+function target(setLogs: SetLog[], targetRir: number): ReferenceResolution {
+  return { kind: 'target', reference: performance(setLogs, targetRir) };
+}
+
+function estimate(
+  setLogs: SetLog[],
+  targetRir: number,
+  source: EstimateSource = 'other_block',
+): ReferenceResolution {
+  return {
+    kind: 'estimate',
+    reference: performance(setLogs, targetRir),
+    reason: 'other_slot',
+    source,
+  };
+}
+
+const NONE: ReferenceResolution = { kind: 'none' };
+
 describe('prescribeBlockStart', () => {
   test('DoD: each set is re-priced on its own — 10/9/8 at RIR 0 with startRir 3 give 8/7/6', () => {
     expect(
       prescribeBlockStart(
-        [log(1, 60, 10), log(2, 60, 9), log(3, 55, 8)],
-        0,
+        target([log(1, 60, 10), log(2, 60, 9), log(3, 55, 8)], 0),
         3,
         3,
         defaultProgressionSettings,
@@ -70,57 +102,129 @@ describe('prescribeBlockStart', () => {
   });
 
   test('the reference weight is carried over as is', () => {
-    expect(prescribeBlockStart([log(1, 62.5, 12)], 1, 3, 1, defaultProgressionSettings)).toEqual([
-      { setNumber: 1, targetReps: 11, suggestedWeight: 62.5 },
-    ]);
+    expect(
+      prescribeBlockStart(target([log(1, 62.5, 12)], 1), 3, 1, defaultProgressionSettings),
+    ).toEqual([{ setNumber: 1, targetReps: 11, suggestedWeight: 62.5 }]);
   });
 
-  test.each([
-    ['null', null],
-    ['empty', []],
-  ])('no reference (%s): rows carry neither target reps nor weight', (_, logs) => {
-    expect(prescribeBlockStart(logs, 0, 3, 2, defaultProgressionSettings)).toEqual([
+  test('no reference: rows carry neither target reps nor weight', () => {
+    expect(prescribeBlockStart(NONE, 3, 2, defaultProgressionSettings)).toEqual([
       { setNumber: 1 },
       { setNumber: 2 },
     ]);
   });
 
-  test('more rows than reference sets: extra rows repeat the last reference set', () => {
+  test('task 134.2: set on set — a row the reference has no set for stays bare', () => {
     expect(
-      prescribeBlockStart([log(1, 60, 10), log(2, 60, 9)], 0, 3, 4, defaultProgressionSettings),
+      prescribeBlockStart(
+        target([log(1, 60, 10), log(2, 60, 9)], 0),
+        3,
+        4,
+        defaultProgressionSettings,
+      ),
     ).toEqual([
       { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
       { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 7, suggestedWeight: 60 },
-      { setNumber: 4, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3 },
+      { setNumber: 4 },
     ]);
+  });
+
+  test('task 134.2: reference sets past the row count are left out', () => {
+    expect(
+      prescribeBlockStart(
+        target([log(1, 60, 10), log(2, 60, 9), log(3, 55, 8)], 0),
+        3,
+        2,
+        defaultProgressionSettings,
+      ),
+    ).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+  });
+
+  test('matches rows to reference sets by set number, not by position', () => {
+    // Set 2 was never logged: row 2 has nothing to go by, row 3 takes set 3.
+    expect(
+      prescribeBlockStart(
+        target([log(3, 55, 8), log(1, 60, 10)], 0),
+        3,
+        3,
+        defaultProgressionSettings,
+      ),
+    ).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2 },
+      { setNumber: 3, targetReps: 6, suggestedWeight: 55 },
+    ]);
+  });
+
+  describe('an estimate', () => {
+    test('has the same numbers as a target — + 1 and the RIR gap — and says it is an estimate', () => {
+      // 10 at RIR 2, new startRir 3: 10 + 1 − (3 − 2) = 10.
+      expect(
+        prescribeBlockStart(estimate([log(1, 60, 10)], 2), 3, 1, defaultProgressionSettings),
+      ).toEqual([{ setNumber: 1, targetReps: 10, suggestedWeight: 60, estimate: 'other_slot' }]);
+    });
+
+    test.each<EstimateSource>(['earlier_week', 'other_block', 'current_week'])(
+      'is priced the same whatever the resolver named its source (%s)',
+      (source) => {
+        expect(
+          prescribeBlockStart(
+            estimate([log(1, 60, 10)], 0, source),
+            3,
+            1,
+            defaultProgressionSettings,
+          ),
+        ).toEqual([{ setNumber: 1, targetReps: 8, suggestedWeight: 60, estimate: 'other_slot' }]);
+      },
+    );
+
+    test('goes set on set too: a row past the reference is bare, not an estimate', () => {
+      expect(
+        prescribeBlockStart(estimate([log(1, 60, 10)], 0), 3, 2, defaultProgressionSettings),
+      ).toEqual([
+        { setNumber: 1, targetReps: 8, suggestedWeight: 60, estimate: 'other_slot' },
+        { setNumber: 2 },
+      ]);
+    });
   });
 
   test('no weight hint is carried, at either end of the corridor', () => {
-    expect(prescribeBlockStart([log(1, 100, 4)], 0, 0, 1, defaultProgressionSettings)).toEqual([
-      { setNumber: 1, targetReps: 5, suggestedWeight: 100 },
-    ]);
-    expect(prescribeBlockStart([log(1, 10, 30)], 0, 0, 1, defaultProgressionSettings)).toEqual([
-      { setNumber: 1, targetReps: 30, suggestedWeight: 10 },
-    ]);
+    expect(
+      prescribeBlockStart(target([log(1, 100, 4)], 0), 0, 1, defaultProgressionSettings),
+    ).toEqual([{ setNumber: 1, targetReps: 5, suggestedWeight: 100 }]);
+    expect(
+      prescribeBlockStart(target([log(1, 10, 30)], 0), 0, 1, defaultProgressionSettings),
+    ).toEqual([{ setNumber: 1, targetReps: 30, suggestedWeight: 10 }]);
   });
 
   test('zero rows give an empty plan', () => {
-    expect(prescribeBlockStart([log(1, 60, 10)], 0, 3, 0, defaultProgressionSettings)).toEqual([]);
+    expect(
+      prescribeBlockStart(target([log(1, 60, 10)], 0), 3, 0, defaultProgressionSettings),
+    ).toEqual([]);
   });
 
   test('is deterministic and leaves its input untouched', () => {
-    const logs = [log(3, 55, 8), log(1, 60, 10), log(2, 60, 9)];
-    const snapshot = structuredClone(logs);
-    const first = prescribeBlockStart(logs, 0, 3, 4, defaultProgressionSettings);
-    const second = prescribeBlockStart(logs, 0, 3, 4, defaultProgressionSettings);
+    const resolution = target([log(3, 55, 8), log(1, 60, 10), log(2, 60, 9)], 0);
+    const snapshot = structuredClone(resolution);
+    const first = prescribeBlockStart(resolution, 3, 4, defaultProgressionSettings);
+    const second = prescribeBlockStart(resolution, 3, 4, defaultProgressionSettings);
     expect(second).toEqual(first);
-    expect(logs).toEqual(snapshot);
+    expect(resolution).toEqual(snapshot);
   });
 
   test('a pure bodyweight exercise takes the reps and no weight (task 105)', () => {
     expect(
-      prescribeBlockStart([log(1, 80, 12)], 0, 3, 2, defaultProgressionSettings, 'bodyweight'),
+      prescribeBlockStart(
+        target([log(1, 80, 12), log(2, 80, 12)], 0),
+        3,
+        2,
+        defaultProgressionSettings,
+        'bodyweight',
+      ),
     ).toEqual([
       { setNumber: 1, targetReps: 10 },
       { setNumber: 2, targetReps: 10 },

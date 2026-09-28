@@ -257,13 +257,142 @@ describe('resolveReference — rule 6', () => {
   });
 });
 
+// Task 134.2 — Flow C: the slot is a day of the block being copied, and there is no current
+// week, so the reference week is simply the latest one in the window. C1–C7 are the cases of 03,
+// rule 6, "Резолвер референса" for Flow C.
 describe('resolveReference — no current week (Flow C’s shape)', () => {
-  test('the latest week is the reference, same-day in the copied mesocycle → target', () => {
+  /** Flow C: week 1 of a block copied from `OWN_MESO`, day `dayNumber`. */
+  function flowC(dayNumber: number): ReferenceSlot {
+    return { mesoId: OWN_MESO, dayNumber };
+  }
+
+  test('C1: nothing in the window → none', () => {
+    expect(resolveReference([], flowC(1))).toEqual({ kind: 'none' });
+  });
+
+  test('C2: same day in the copied block → target from that day, whatever the other day says', () => {
+    const day1 = performance({ weekNumber: 3, dayNumber: 1 }, LATERAL_DAY_1);
+    const day3 = performance({ weekNumber: 3, dayNumber: 3 }, LATERAL_DAY_3);
+
+    expect(resolveReference([day1, day3], flowC(1))).toEqual({ kind: 'target', reference: day1 });
+    expect(resolveReference([day1, day3], flowC(3))).toEqual({ kind: 'target', reference: day3 });
+  });
+
+  test('C2: the latest week of the copied block is the reference, not an earlier one', () => {
+    const week2 = performance({ weekNumber: 2, dayNumber: 1 }, TRICEPS);
+    const week3 = performance({ weekNumber: 3, dayNumber: 1 }, [[4.5, 16]]);
+
+    expect(resolveReference([week2, week3], flowC(1))).toEqual({
+      kind: 'target',
+      reference: week3,
+    });
+  });
+
+  test('C3: no same day, several identical in the copied block → target', () => {
+    const day1 = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS);
+    const day3 = performance({ weekNumber: 3, dayNumber: 3 }, TRICEPS);
+
+    expect(resolveReference([day1, day3], flowC(2))).toEqual({ kind: 'target', reference: day3 });
+  });
+
+  test('C4: no same day, one performance in the copied block → estimate', () => {
     const day1 = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS);
 
-    expect(resolveReference([day1], { mesoId: OWN_MESO, dayNumber: 1 })).toEqual({
-      kind: 'target',
+    expect(resolveReference([day1], flowC(3))).toEqual({
+      kind: 'estimate',
       reference: day1,
+      reason: 'other_slot',
+      source: 'earlier_week',
+    });
+  });
+
+  test('C4: the latest week decides even when an earlier one had the same day', () => {
+    const week2Day1 = performance({ weekNumber: 2, dayNumber: 1 }, TRICEPS);
+    const week3Day2 = performance({ weekNumber: 3, dayNumber: 2 }, [[4.5, 16]]);
+
+    expect(resolveReference([week2Day1, week3Day2], flowC(1))).toEqual({
+      kind: 'estimate',
+      reference: week3Day2,
+      reason: 'other_slot',
+      source: 'earlier_week',
+    });
+  });
+
+  test('C5: no same day, several that differ in the copied block → none', () => {
+    const day1 = performance({ weekNumber: 3, dayNumber: 1 }, LATERAL_DAY_1);
+    const day3 = performance({ weekNumber: 3, dayNumber: 3 }, LATERAL_DAY_3);
+
+    expect(resolveReference([day1, day3], flowC(2))).toEqual({ kind: 'none' });
+  });
+
+  describe('C6: the latest week is from another block (the split changed)', () => {
+    test('one performance → estimate, and the day number isn’t compared across blocks', () => {
+      const other = performance({ mesoId: OTHER_MESO, weekNumber: 4, dayNumber: 1 }, TRICEPS);
+
+      expect(resolveReference([other], flowC(1))).toEqual({
+        kind: 'estimate',
+        reference: other,
+        reason: 'other_slot',
+        source: 'other_block',
+      });
+    });
+
+    test('several identical → estimate from the newest', () => {
+      const day1 = performance({ mesoId: OTHER_MESO, weekNumber: 4, dayNumber: 1 }, TRICEPS);
+      const day2 = performance({ mesoId: OTHER_MESO, weekNumber: 4, dayNumber: 2 }, TRICEPS);
+
+      expect(resolveReference([day1, day2], flowC(1))).toEqual({
+        kind: 'estimate',
+        reference: day2,
+        reason: 'other_slot',
+        source: 'other_block',
+      });
+    });
+
+    test('several that differ → none', () => {
+      const day1 = performance({ mesoId: OTHER_MESO, weekNumber: 4, dayNumber: 1 }, LATERAL_DAY_1);
+      const day2 = performance({ mesoId: OTHER_MESO, weekNumber: 4, dayNumber: 2 }, LATERAL_DAY_3);
+
+      expect(resolveReference([day1, day2], flowC(1))).toEqual({ kind: 'none' });
+    });
+
+    test('an older same-day performance in the copied block doesn’t win over the newer week', () => {
+      const copied = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS, {
+        performedAt: '2026-09-01T10:00:00.000Z',
+      });
+      const other = performance({ mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 1 }, [[5, 12]], {
+        performedAt: '2026-09-15T10:00:00.000Z',
+      });
+
+      expect(resolveReference([copied, other], flowC(1))).toEqual({
+        kind: 'estimate',
+        reference: other,
+        reason: 'other_slot',
+        source: 'other_block',
+      });
+    });
+  });
+
+  test('C7: an exercise added to the draft by hand goes through the same resolver', () => {
+    // Not in the copied week at all, but done on day 2 of the copied block: placed on day 1 of
+    // the new one, it is a C4 like any other.
+    const day2 = performance({ weekNumber: 3, dayNumber: 2 }, TRICEPS);
+
+    expect(resolveReference([day2], flowC(1))).toEqual({
+      kind: 'estimate',
+      reference: day2,
+      reason: 'other_slot',
+      source: 'earlier_week',
+    });
+  });
+
+  test('deload performances don’t count here either', () => {
+    const working = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS);
+    const deload = performance({ weekNumber: 4, dayNumber: 1 }, [[2, 10]], { isDeload: true });
+
+    expect(resolveReference([working, deload], flowC(1))).toEqual({
+      kind: 'target',
+      reference: working,
     });
   });
 });
