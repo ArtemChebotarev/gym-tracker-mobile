@@ -16,10 +16,10 @@ import { weightHintForReps } from '@domain/progressionWeightHint';
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
 /**
- * The reference set row `setNumber` takes under rule 6: the reference's set with that very
- * number, or none (task 134.1). A set the history never had is a set nobody knows the numbers
- * for — one set of 13 says nothing about whether a second one would make 13 too — so that row
- * gets no target and the screen shows `N RIR`. Reference sets past the row count are left out.
+ * The reference set row `setNumber` takes under rule 6 and in Flow C: the reference's set with
+ * that very number, or none (tasks 134.1, 134.2). A set the history never had is a set nobody
+ * knows the numbers for — one set of 13 says nothing about whether a second one would make 13
+ * too — so that row gets no target and the screen shows `N RIR`. Reference sets past the row count are left out.
  */
 export function referenceSetAt(
   referenceLogs: readonly SetLog[],
@@ -50,20 +50,6 @@ function estimatedReps(
     case 'current_week':
       return reference.reps;
   }
-}
-
-/**
- * The reference set row `setNumber` (1-based) takes in Flow C (04, "Расчёт startReps"): the
- * reference's N-th set in `setNumber` order, or its last set when the reference has fewer sets
- * than the row number. `undefined` only when there is no reference at all. Rule 6 no longer
- * stretches the last set (task 134.1, `referenceSetAt`); Flow C follows in 134.2.
- */
-export function referenceSetFor(
-  referenceLogs: readonly SetLog[],
-  setNumber: number,
-): SetLog | undefined {
-  const sorted = [...referenceLogs].sort((a, b) => a.setNumber - b.setNumber);
-  return sorted[setNumber - 1] ?? sorted[sorted.length - 1];
 }
 
 /**

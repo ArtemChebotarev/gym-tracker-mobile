@@ -1,7 +1,7 @@
 import type { SetLog } from '@domain/execution';
 import type { EstimateSource, ReferenceResolution } from '@domain/progression';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { prescribeFromHistory, referenceSetFor } from '@domain/progressionHistory';
+import { prescribeFromHistory } from '@domain/progressionHistory';
 import { STAMPS } from '../fixtures/stamps';
 
 function log(setNumber: number, weight: number, reps: number): SetLog {
@@ -57,26 +57,6 @@ function estimate(
 }
 
 const NONE: ReferenceResolution = { kind: 'none' };
-
-describe('referenceSetFor', () => {
-  test('row N takes the reference’s set N', () => {
-    expect(referenceSetFor(reference, 2)).toBe(set2);
-  });
-
-  test('rows past the reference take its last set', () => {
-    expect(referenceSetFor(reference, 5)).toBe(set3);
-  });
-
-  test('goes by set order, not by the order logs were passed in', () => {
-    const shuffled = [set3, set1, set2];
-    expect(referenceSetFor(shuffled, 1)).toBe(set1);
-    expect(referenceSetFor(shuffled, 4)).toBe(set3);
-  });
-
-  test('is undefined without a reference', () => {
-    expect(referenceSetFor([], 1)).toBeUndefined();
-  });
-});
 
 describe('prescribeFromHistory', () => {
   test('reference found: reps + 1 and the reference weight per row', () => {

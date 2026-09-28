@@ -201,9 +201,13 @@ describe('startMesocycle', () => {
 // --- Flow C week 1 targets (task 122) -----------------------------------------------------
 //
 // A `copyWeek` block copies structure only; its week 1 reps and weights are priced here, at
-// Start, from each exercise's own reference performance — not from the week that was copied.
+// Start, from the history window — not from the week that was copied. Which performance each day
+// builds on is the reference resolver's call, per target day (task 134.2, cases C1–C7).
 
+/** The block being copied. */
 const PAST_MESO = 'meso-past';
+/** A block trained on another split, after or around the copied one. */
+const OTHER_MESO = 'meso-other';
 
 const copied: Mesocycle = {
   ...planned,
@@ -230,6 +234,12 @@ const copied: Mesocycle = {
 type Performance = {
   sessionExerciseId: string;
   exerciseId: string;
+  /** `PAST_MESO` when omitted. */
+  mesoId?: string;
+  /** Week 1 when omitted. */
+  weekNumber?: number;
+  /** A day of its own per performance (its position, from 1) when omitted. */
+  dayNumber?: number;
   /** The RIR the reference was performed at — what its reps get re-priced from. */
   targetRir: number;
   isDeload?: boolean;
@@ -239,9 +249,9 @@ type Performance = {
 };
 
 /**
- * Writes a past performance the way the app would: a completed session in `PAST_MESO`, one
- * session exercise on it, and a set log per set. Real rows, so `findLastPerformance` walks the
- * same join it walks on the phone.
+ * Writes a past performance the way the app would: a completed session, one session exercise on
+ * it, and a set log per set. Real rows, so `listPerformances` walks the same join it walks on the
+ * phone.
  */
 async function seedPerformance(
   store: MesocycleStartStore,
@@ -252,9 +262,9 @@ async function seedPerformance(
   await store.repos.sessionRepo.create({
     ...STAMPS,
     id: sessionId,
-    mesoId: PAST_MESO,
-    weekNumber: 1,
-    dayNumber,
+    mesoId: performance.mesoId ?? PAST_MESO,
+    weekNumber: performance.weekNumber ?? 1,
+    dayNumber: performance.dayNumber ?? dayNumber,
     isDeload: performance.isDeload ?? false,
     prescriptionStatus: 'ready',
     status: 'completed',
@@ -284,20 +294,28 @@ async function seedPerformance(
   }
 }
 
-async function setUpCopied(performances: Performance[]): Promise<MesocycleStartStore> {
-  const store = await setUp([copied]);
-  await store.repos.mesocycleRepo.create({
-    ...STAMPS,
-    id: PAST_MESO,
-    name: 'Upper/Lower',
-    lengthWeeks: 8,
-    daysPerWeek: 1,
-    startDate: '2026-07-01T00:00:00.000Z',
-    status: 'completed',
-    origin: { type: 'scratch' },
-    progressionSettings: defaultProgressionSettings,
-    completedAt: '2026-09-10T00:00:00.000Z',
-  });
+async function setUpCopied(
+  performances: Performance[],
+  weekPlan: Mesocycle['weekPlan'] = copied.weekPlan,
+): Promise<MesocycleStartStore> {
+  const store = await setUp([{ ...copied, weekPlan }]);
+  for (const [id, name] of [
+    [PAST_MESO, 'Upper/Lower'],
+    [OTHER_MESO, 'Arms/Shoulders'],
+  ] as const) {
+    await store.repos.mesocycleRepo.create({
+      ...STAMPS,
+      id,
+      name,
+      lengthWeeks: 8,
+      daysPerWeek: 1,
+      startDate: '2026-07-01T00:00:00.000Z',
+      status: 'completed',
+      origin: { type: 'scratch' },
+      progressionSettings: defaultProgressionSettings,
+      completedAt: '2026-09-10T00:00:00.000Z',
+    });
+  }
   for (const [index, performance] of performances.entries()) {
     await seedPerformance(store, performance, index + 1);
   }
@@ -319,11 +337,11 @@ function countingLookups(store: MesocycleStartStore): {
           work({
             ...repos,
             setLogRepo: Object.assign(Object.create(repos.setLogRepo), {
-              findLastPerformance: (query: Parameters<
-                typeof repos.setLogRepo.findLastPerformance
-              >[0]) => {
+              listPerformances: (
+                query: Parameters<typeof repos.setLogRepo.listPerformances>[0],
+              ) => {
                 calls += 1;
-                return repos.setLogRepo.findLastPerformance(query);
+                return repos.setLogRepo.listPerformances(query);
               },
             }),
           }),
@@ -332,8 +350,9 @@ function countingLookups(store: MesocycleStartStore): {
   };
 }
 
-async function startedTargetsOf(store: MesocycleStartStore, exerciseId: string) {
-  const [session] = await store.repos.sessionRepo.listByMesoId('meso-copy');
+async function startedTargetsOf(store: MesocycleStartStore, exerciseId: string, dayNumber = 1) {
+  const sessions = await store.repos.sessionRepo.listByMesoId('meso-copy');
+  const session = sessions.find((candidate) => candidate.dayNumber === dayNumber);
   const exercises = await store.repos.sessionExerciseRepo.listBySessionId(session!.id);
   return exercises.find((exercise) => exercise.exerciseId === exerciseId)?.setTargets;
 }
@@ -386,7 +405,8 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     ]);
   });
 
-  // DoD: a reference from mid-block is re-priced by its own targetRir.
+  // DoD: a reference from mid-block is re-priced by its own targetRir. Set on set since 134.2:
+  // the reference had one set, so only row 1 has numbers to go by (was: all three took set 1).
   test('re-prices a mid-block reference by the RIR it was actually performed at', async () => {
     const store = await setUpCopied([
       {
@@ -404,8 +424,8 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     // 10 + 1 − (3 − 2) = 10, not 10 + 1 − 3 = 8.
     await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
       { setNumber: 1, targetReps: 10, suggestedWeight: 60 },
-      { setNumber: 2, targetReps: 10, suggestedWeight: 60 },
-      { setNumber: 3, targetReps: 10, suggestedWeight: 60 },
+      { setNumber: 2 },
+      { setNumber: 3 },
     ]);
   });
 
@@ -541,5 +561,163 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
 
     // The copied week has `bench` and `row`, one day.
     expect(counted.lookups()).toBe(2);
+  });
+});
+
+// Task 134.2 — the resolver per target day. The copied block trained bench twice a week; the new
+// one keeps both days and adds a third.
+describe('startMesocycle — copyWeek targets per target day', () => {
+  const threeDays: Mesocycle['weekPlan'] = {
+    days: [1, 2, 3].map((dayNumber) => ({
+      dayNumber,
+      name: '',
+      exercises: [{ exerciseId: 'bench', order: 0, sets: 2 }],
+    })),
+  };
+
+  function bench(
+    id: string,
+    slot: Pick<Performance, 'mesoId' | 'weekNumber' | 'dayNumber'>,
+    sets: [number, number][],
+    completedAt = '2026-09-10T08:00:00.000Z',
+  ): Performance {
+    return { sessionExerciseId: id, exerciseId: 'bench', targetRir: 0, completedAt, sets, ...slot };
+  }
+
+  test('C2 / C5: each day takes its own numbers; a new day with two that differ gets none', async () => {
+    const store = await setUpCopied(
+      [
+        bench('sx-day-1', { weekNumber: 3, dayNumber: 1 }, [
+          [60, 10],
+          [60, 9],
+        ]),
+        bench(
+          'sx-day-2',
+          { weekNumber: 3, dayNumber: 2 },
+          [
+            [55, 12],
+            [55, 11],
+          ],
+          '2026-09-12T08:00:00.000Z',
+        ),
+      ],
+      threeDays,
+    );
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // startRir 3, reference at RIR 0 → reps + 1 − 3.
+    await expect(startedTargetsOf(store, 'bench', 1)).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+    await expect(startedTargetsOf(store, 'bench', 2)).resolves.toEqual([
+      { setNumber: 1, targetReps: 10, suggestedWeight: 55 },
+      { setNumber: 2, targetReps: 9, suggestedWeight: 55 },
+    ]);
+    await expect(startedTargetsOf(store, 'bench', 3)).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
+  });
+
+  test('C3: a new day where both old days said the same gets a target', async () => {
+    const sets: [number, number][] = [
+      [60, 10],
+      [60, 9],
+    ];
+    const store = await setUpCopied(
+      [
+        bench('sx-day-1', { weekNumber: 3, dayNumber: 1 }, sets),
+        bench('sx-day-2', { weekNumber: 3, dayNumber: 2 }, sets, '2026-09-12T08:00:00.000Z'),
+      ],
+      threeDays,
+    );
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench', 3)).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+  });
+
+  test('C4: done on day 1 only — day 1 gets a target, the other days an estimate, with the RIR gap', async () => {
+    const store = await setUpCopied(
+      [
+        bench('sx-day-1', { weekNumber: 3, dayNumber: 1 }, [
+          [60, 10],
+          [60, 9],
+        ]),
+      ],
+      threeDays,
+    );
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench', 1)).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+    for (const dayNumber of [2, 3]) {
+      await expect(startedTargetsOf(store, 'bench', dayNumber)).resolves.toEqual([
+        { setNumber: 1, targetReps: 8, suggestedWeight: 60, estimate: 'other_slot' },
+        { setNumber: 2, targetReps: 7, suggestedWeight: 60, estimate: 'other_slot' },
+      ]);
+    }
+  });
+
+  test('C6: the latest week is from another split — an estimate, re-priced for the RIR gap', async () => {
+    const store = await setUpCopied([
+      // The copied block's own day 1, older…
+      bench('sx-copied', { weekNumber: 3, dayNumber: 1 }, [[60, 10]], '2026-09-01T08:00:00.000Z'),
+      // …then a newer week on another split, performed at RIR 2.
+      {
+        ...bench('sx-other', { mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 2 }, [[62.5, 9]]),
+        targetRir: 2,
+        completedAt: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // 9 + 1 − (3 − 2) = 9, from the newer block; the copied block's day 1 doesn't win.
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 9, suggestedWeight: 62.5, estimate: 'other_slot' },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  test('C6: another split with two days that differ — no numbers', async () => {
+    const store = await setUpCopied([
+      bench('sx-other-1', { mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 1 }, [[60, 10]]),
+      bench(
+        'sx-other-2',
+        { mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 2 },
+        [[50, 12]],
+        '2026-09-12T08:00:00.000Z',
+      ),
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  test('reads each exercise’s history once, however many days it is on', async () => {
+    const store = await setUpCopied(
+      [bench('sx-day-1', { weekNumber: 3, dayNumber: 1 }, [[60, 10]])],
+      threeDays,
+    );
+    const counted = countingLookups(store);
+
+    await startMesocycle('meso-copy', { store: counted.store }, NOW);
+
+    expect(counted.lookups()).toBe(1);
   });
 });

@@ -1,11 +1,9 @@
-import type { LastPerformance } from '@repositories/setLogRepository';
-
 import { makeSession, makeSessionExercise, makeSetLog, seedParents } from './fixtures';
 import { type RepositoryHarness, type RepositorySet, useRepositories } from './harness';
 
 // SetLogRepository — see 07 · Persistence Layer Contract, "SetLogRepository", and
-// repositories/setLogRepository.ts. `findLastPerformance` backs rule 6 of 03 · Progression
-// Engine: the reference performance an added or swapped exercise takes its targets from.
+// repositories/setLogRepository.ts. `listPerformances` is the history window the reference
+// resolver of 03 · Progression Engine reads — for rule 6 and for Flow C's start targets.
 
 const BENCH_PRESS = 'exercise-bench-press';
 const DUMBBELL_PRESS = 'exercise-dumbbell-press';
@@ -31,7 +29,7 @@ type Performance = {
 /**
  * Seeds one session and one session exercise per performance, plus a set log per set number, so
  * a test reads as a list of past performances rather than as rows of three collections. Written
- * entirely through the repositories — the join `findLastPerformance` walks is the thing under
+ * entirely through the repositories — the join `listPerformances` walks is the thing under
  * test, so the data it walks has to arrive the way the app would write it.
  *
  * Each performance lands on a day of its own: `(mesoId, weekNumber, dayNumber)` identifies a
@@ -78,24 +76,9 @@ async function seedPerformances(
   }
 }
 
-function sessionExerciseIdsOf(reference: LastPerformance | null): string[] {
-  return [...new Set((reference?.setLogs ?? []).map((setLog) => setLog.sessionExerciseId))];
-}
-
 export function describeSetLogContract(harness: RepositoryHarness): void {
   describe('SetLogRepository', () => {
     const repositories = useRepositories(harness);
-
-    function findBenchReference(
-      excludeSessionExerciseId?: string,
-    ): Promise<LastPerformance | null> {
-      return repositories().setLogRepo.findLastPerformance({
-        exerciseId: BENCH_PRESS,
-        mesoId: CURRENT_MESO,
-        since: SINCE,
-        excludeSessionExerciseId,
-      });
-    }
 
     beforeEach(async () => {
       await seedParents(repositories(), {
@@ -218,154 +201,6 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
       await expect(setLogRepo.listBySessionExerciseId(setLog.sessionExerciseId)).resolves.toEqual(
         [],
       );
-    });
-
-    describe('findLastPerformance', () => {
-      test('finds a performance in the current mesocycle even when it is older than since', async () => {
-        await seedPerformances(repositories(), [
-          { sessionExerciseId: 'se-current-old', completedAt: OLDER_THAN_SINCE },
-        ]);
-
-        expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-current-old']);
-      });
-
-      test('finds a performance in a past mesocycle that is newer than since', async () => {
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-past-recent',
-            completedAt: NEWER_THAN_SINCE,
-            mesoId: PAST_MESO,
-          },
-        ]);
-
-        expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-past-recent']);
-      });
-
-      test('ignores a performance in a past mesocycle that is older than since', async () => {
-        await seedPerformances(repositories(), [
-          { sessionExerciseId: 'se-past-old', completedAt: OLDER_THAN_SINCE, mesoId: PAST_MESO },
-        ]);
-
-        await expect(findBenchReference()).resolves.toBeNull();
-      });
-
-      test('excludes the session exercise asking for the reference', async () => {
-        await seedPerformances(repositories(), [
-          { sessionExerciseId: 'se-previous', completedAt: '2026-09-10T08:00:00.000Z' },
-          { sessionExerciseId: 'se-today', completedAt: '2026-09-18T08:00:00.000Z' },
-        ]);
-
-        expect(sessionExerciseIdsOf(await findBenchReference('se-today'))).toEqual(['se-previous']);
-      });
-
-      test('takes the most recent of several qualifying performances, sorted by setNumber', async () => {
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-older',
-            completedAt: '2026-09-01T08:00:00.000Z',
-            setNumbers: [1, 2],
-          },
-          {
-            sessionExerciseId: 'se-newest',
-            completedAt: '2026-09-15T08:00:00.000Z',
-            mesoId: PAST_MESO,
-            setNumbers: [3, 1, 2],
-          },
-          { sessionExerciseId: 'se-middle', completedAt: '2026-09-08T08:00:00.000Z' },
-        ]);
-
-        const reference = await findBenchReference();
-
-        expect(reference?.setLogs.map((setLog) => setLog.id)).toEqual([
-          'se-newest-set-1',
-          'se-newest-set-2',
-          'se-newest-set-3',
-        ]);
-      });
-
-      test('skips a deload performance even when it is newer, falling back to the working one', async () => {
-        await seedPerformances(repositories(), [
-          { sessionExerciseId: 'se-working', completedAt: '2026-09-01T08:00:00.000Z' },
-          {
-            sessionExerciseId: 'se-deload',
-            completedAt: '2026-09-15T08:00:00.000Z',
-            isDeload: true,
-          },
-        ]);
-
-        expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-working']);
-      });
-
-      test('answers null when only deload performances fall in the window', async () => {
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-deload-current',
-            completedAt: OLDER_THAN_SINCE,
-            isDeload: true,
-          },
-          {
-            sessionExerciseId: 'se-deload-past',
-            completedAt: NEWER_THAN_SINCE,
-            mesoId: PAST_MESO,
-            isDeload: true,
-          },
-        ]);
-
-        await expect(findBenchReference()).resolves.toBeNull();
-      });
-
-      // DoD (task 122): the reference carries the RIR it was performed at, so Flow C can re-price
-      // its reps for the new block's starting RIR even when it came from mid-block.
-      test('carries the targetRir of the performance it found', async () => {
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-mid-block',
-            completedAt: NEWER_THAN_SINCE,
-            mesoId: PAST_MESO,
-            targetRir: 2,
-          },
-        ]);
-
-        await expect(findBenchReference()).resolves.toEqual(
-          expect.objectContaining({ targetRir: 2 }),
-        );
-      });
-
-      test('the targetRir is the found performance’s own, not the newest one’s', async () => {
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-working',
-            completedAt: '2026-09-01T08:00:00.000Z',
-            targetRir: 1,
-          },
-          // Newer, but a deload — skipped, and its RIR must not travel instead.
-          {
-            sessionExerciseId: 'se-deload',
-            completedAt: '2026-09-15T08:00:00.000Z',
-            isDeload: true,
-            targetRir: 8,
-          },
-        ]);
-
-        const reference = await findBenchReference();
-
-        expect(sessionExerciseIdsOf(reference)).toEqual(['se-working']);
-        expect(reference?.targetRir).toBe(1);
-      });
-
-      test('references the exercise performed last, not whatever filled the same slot', async () => {
-        // Week 1: dumbbell press; week 2: the slot swapped to barbell bench press.
-        await seedPerformances(repositories(), [
-          {
-            sessionExerciseId: 'se-week-1-dumbbell',
-            completedAt: '2026-08-25T08:00:00.000Z',
-            exerciseId: DUMBBELL_PRESS,
-          },
-          { sessionExerciseId: 'se-week-2-bench', completedAt: NEWER_THAN_SINCE },
-        ]);
-
-        expect(sessionExerciseIdsOf(await findBenchReference())).toEqual(['se-week-2-bench']);
-      });
     });
 
     // Task 134.1: the reference resolver's window — every performance since `since`, with where
