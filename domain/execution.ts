@@ -15,6 +15,14 @@ export type SessionExerciseStatus = 'planned' | 'completed' | 'skipped' | 'aband
 
 export type WeightHint = 'decrease' | 'increase';
 
+/**
+ * Why a set's numbers are an estimate rather than a target (03 · Progression Engine, "Оценка";
+ * task 134.1). `other_slot` is the reference resolver's: they come from another day or another
+ * block, not from this spot of the week. `other_weight` is rule 7's `estimate` zone — never
+ * stored, the screen works it out from the weight in the field.
+ */
+export type EstimateReason = 'other_slot' | 'other_weight';
+
 export type Session = Timestamps & {
   id: string;
   mesoId: string;
@@ -40,6 +48,12 @@ export type SetTarget = {
    * concrete weight and reps per set rather than only a direction.
    */
   weightHint?: WeightHint;
+  /**
+   * Present when `targetReps` / `suggestedWeight` are an estimate, not a target (03, "Оценка";
+   * task 134.1): a guide with no rep increment. The set shows no hit indicator once logged, and
+   * rule 2 doesn't carry it into the next week. Absent on an ordinary target.
+   */
+  estimate?: Extract<EstimateReason, 'other_slot'>;
 };
 
 export type SessionExercise = Timestamps & {

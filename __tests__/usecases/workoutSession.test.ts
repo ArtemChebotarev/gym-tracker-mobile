@@ -933,4 +933,24 @@ describe('weight swap on the workout data (task 120)', () => {
     expect(benchCard?.rows[0]?.log).toEqual({ weight: 40, reps: 20 });
     expect(benchCard?.rows[0]).not.toHaveProperty('indicator');
   });
+
+  // Task 134.1: the 26.09.2026 case — 15 done against an estimate of 15 × 4.5 is not a −1.
+  test('an estimate carries its reason to the row, and a logged one gets no marker', async () => {
+    const estimated: SessionExercise = {
+      ...bench,
+      setTargets: [
+        { setNumber: 1, targetReps: 15, suggestedWeight: 4.5, estimate: 'other_slot' },
+        { setNumber: 2, targetReps: 13, suggestedWeight: 4.5, estimate: 'other_slot' },
+      ],
+    };
+    const { deps } = await setUp({
+      exercises: [estimated],
+      logs: [{ ...logOf(estimated, 1, 14), weight: 4.5 }],
+    });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card?.rows[0]).not.toHaveProperty('indicator');
+    expect(card?.rows.map((candidate) => candidate.estimate)).toEqual(['other_slot', 'other_slot']);
+  });
 });

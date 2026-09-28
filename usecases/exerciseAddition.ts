@@ -77,6 +77,7 @@ export async function addExercises(
             exerciseId,
             session,
             rowCount: ADDED_EXERCISE_SET_COUNT,
+            weekRir,
             settings: mesocycle.progressionSettings,
             equipment: equipmentById.get(exerciseId),
             now,

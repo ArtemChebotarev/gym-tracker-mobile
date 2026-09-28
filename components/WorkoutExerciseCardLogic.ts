@@ -168,9 +168,7 @@ export function carryWeightForward(
 // and spans the ⓘ popover and the card's InlineNote show. Nothing here computes reps or ranges.
 
 /** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
-export function firstUnloggedRow(
-  rows: readonly WorkoutSetRow[],
-): WorkoutSetRow | undefined {
+export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow | undefined {
   return rows.find((row) => row.isFirstUnlogged);
 }
 
@@ -263,7 +261,7 @@ export type WeightSwapPopover =
   | { kind: 'no-history'; title: string; text: string };
 
 export function weightSwapPopover(
-  row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap'> | undefined,
+  row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
   targetRir: number | undefined,
 ): WeightSwapPopover | undefined {
   if (row === undefined || row.weightSwap === undefined) {
@@ -282,7 +280,11 @@ export function weightSwapPopover(
   const marker = targetWeightOf(swap);
   const spans = estimateSpans(swap);
   const legend: WeightSwapLegendRow[] = [
-    { span: 'inner', label: 'Recommended weight', value: formatSwapSpans([swap.closeRange], added) },
+    {
+      span: 'inner',
+      label: 'Recommended weight',
+      value: formatSwapSpans([swap.closeRange], added),
+    },
   ];
   if (spans.length > 0) {
     legend.push({
@@ -296,7 +298,8 @@ export function weightSwapPopover(
     // The target leads and the instruction sits under it: the number you are anchored to is what
     // you scan first, and the line under it says what may be done about it. The instruction is
     // the whole of it, so the plate needs no closing line (Artem's wording).
-    title: `Current set target: ${formatSwapTarget(swap)}`,
+    // An estimate (task 134.1) says so here too: it is what the ranges are worked out from.
+    title: `Current set ${row.estimate === undefined ? 'target' : 'estimate'}: ${formatSwapTarget(swap)}`,
     subtitle: 'You can choose another weight — reps will update',
     outer: swap.estimateRange,
     inner: swap.closeRange,
@@ -310,19 +313,49 @@ export function weightSwapPopover(
 }
 
 /** The card's one InlineNote (08.7.1) — the lead phrase, then the way out of it. */
-export type WeightSwapNote = { lead: string; text: string };
+export type EstimateNote = { lead: string; text: string };
 
 /**
- * The note under the set rows: it speaks for the first unlogged set, and only while the weight in
- * its field has taken the target out of reach — an `estimate`, or off the rep corridor entirely.
- * A close weight needs no explaining, and neither does a card with nothing typed into it.
+ * The note under the set rows. It speaks for the first unlogged set, and only while that set's
+ * numbers aren't a target to hit — by reason (03, "Оценка"):
+ *
+ * - the weight in its field has taken the target out of reach (rule 7, 08.7.1) — an `estimate`,
+ *   or off the rep corridor entirely. That one comes first: it is about the weight in hand now;
+ * - the set's own numbers are an estimate from another day or block (`other_slot`, task 134.1).
+ *
+ * A close weight on an ordinary target needs no explaining, and neither does a card with nothing
+ * typed into it.
  */
-export function weightSwapNote(
-  row: Pick<WorkoutSetRow, 'weightSwap'> | undefined,
+export function estimateNote(
+  row: Pick<WorkoutSetRow, 'weightSwap' | 'estimate'> | undefined,
   weightText: string,
   targetRir: number | undefined,
-): WeightSwapNote | undefined {
-  if (row === undefined || row.weightSwap === undefined || 'unavailable' in row.weightSwap) {
+): EstimateNote | undefined {
+  if (row === undefined) {
+    return undefined;
+  }
+  const effort = targetRir === undefined ? 'the effort' : formatRir(targetRir);
+  const otherWeight = otherWeightNote(row, weightText, effort);
+  if (otherWeight !== undefined) {
+    return otherWeight;
+  }
+  if (row.estimate === 'other_slot') {
+    // Artem's wording: where the number comes from, and what to go by instead.
+    return {
+      lead: 'Approximate estimation based on your previous activity.',
+      text: `Stop at ${effort}.`,
+    };
+  }
+  return undefined;
+}
+
+/** Rule 7's half of `estimateNote` — the weight in the field against the set's own numbers. */
+function otherWeightNote(
+  row: Pick<WorkoutSetRow, 'weightSwap'>,
+  weightText: string,
+  effort: string,
+): EstimateNote | undefined {
+  if (row.weightSwap === undefined || 'unavailable' in row.weightSwap) {
     return undefined;
   }
   const swap = row.weightSwap;
@@ -345,10 +378,9 @@ export function weightSwapNote(
         };
   }
   if (evaluation.zone !== 'estimate') {
-    // `target` and `close` read as an ordinary target — there is nothing to explain.
+    // `target` and `close` read as the set's own numbers — there is nothing to explain.
     return undefined;
   }
-  const effort = targetRir === undefined ? 'the effort' : formatRir(targetRir);
   return {
     lead: `~ Estimated from ${formatSwapTarget(swap)}.`,
     text: `Stop at ${effort}, not at the number.`,

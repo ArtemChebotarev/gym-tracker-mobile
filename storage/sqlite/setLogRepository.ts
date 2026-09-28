@@ -1,8 +1,10 @@
 import type { SetLog } from '@domain/execution';
+import type { ExercisePerformance } from '@domain/progression';
 import type { Incoming } from '@domain/timestamps';
 import type {
   FindLastPerformanceQuery,
   LastPerformance,
+  ListPerformancesQuery,
   ListSetLogsByExerciseIdOptions,
   SetLogRepository,
 } from '@repositories/setLogRepository';
@@ -87,6 +89,32 @@ export class SqliteSetLogRepository implements SetLogRepository {
       }
     }
     return null;
+  }
+
+  /**
+   * The reference resolver's window (task 134.1). The same join as `findLastPerformance`, cut to
+   * `since` and flattened into where each performance stood in its block.
+   */
+  async listPerformances({
+    exerciseId,
+    since,
+    excludeSessionExerciseId,
+  }: ListPerformancesQuery): Promise<ExercisePerformance[]> {
+    const performances = await readExercisePerformances(this.db, exerciseId, {
+      excludeSessionExerciseId,
+    });
+    return performances
+      .map((performance): ExercisePerformance => ({
+        mesoId: performance.session.mesoId,
+        weekNumber: performance.session.weekNumber,
+        dayNumber: performance.session.dayNumber,
+        isDeload: performance.session.isDeload,
+        targetRir: performance.targetRir,
+        performedAt: performedAt(performance),
+        setLogs: performance.setLogs,
+      }))
+      .filter((performance) => performance.performedAt >= since)
+      .sort((a, b) => b.performedAt.localeCompare(a.performedAt));
   }
 
   async create(setLog: Incoming<SetLog>): Promise<SetLog> {

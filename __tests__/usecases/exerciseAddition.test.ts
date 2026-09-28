@@ -149,9 +149,9 @@ describe('addExercises', () => {
     expect(stored).toHaveLength(3);
   });
 
-  test('DoD: history in this mesocycle → reps + 1 and its weight', async () => {
+  test('DoD: last week’s same day in this mesocycle → reps + 1 and its weight', async () => {
     const deps = await setUp();
-    await curlPerformedIn(deps, 'meso', '2026-06-01T10:00:00.000Z', [12, 10]);
+    await curlPerformedIn(deps, 'meso', '2026-09-11T10:00:00.000Z', [12, 10]);
 
     const [added] = await addExercises({ sessionId: 'session-w2', exerciseIds: [CURL] }, deps, NOW);
 
@@ -161,13 +161,18 @@ describe('addExercises', () => {
     ]);
   });
 
-  test('DoD: history 20 days ago in a past mesocycle → targets too', async () => {
+  // Task 134.1: another block is another slot — its numbers are an estimate, carried over as Flow C
+  // carries a block: + 1 and the RIR gap (both RIR 2 here, so + 1).
+  test('DoD: history 20 days ago in a past mesocycle → an estimate, carried over', async () => {
     const deps = await setUp();
     await curlPerformedIn(deps, 'meso-past', '2026-08-29T10:00:00.000Z', [12, 10]);
 
     const [added] = await addExercises({ sessionId: 'session-w2', exerciseIds: [CURL] }, deps, NOW);
 
-    expect(added?.setTargets.map((target) => target.targetReps)).toEqual([13, 11]);
+    expect(added?.setTargets).toEqual([
+      { setNumber: 1, targetReps: 13, suggestedWeight: 14, estimate: 'other_slot' },
+      { setNumber: 2, targetReps: 11, suggestedWeight: 14, estimate: 'other_slot' },
+    ]);
   });
 
   test('DoD: history 40 days ago in a past mesocycle → only RIR', async () => {

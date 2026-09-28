@@ -249,10 +249,12 @@ describe('swapExercise', () => {
     const swapped = await swapExercise(swapToBarbell, deps, NOW);
 
     expect(swapped.targetRir).toBe(2);
+    // The history is another block's, so the numbers come as an estimate (task 134.1), carried
+    // over as Flow C does: + 1, and no RIR gap — both were planned at RIR 2.
     expect(swapped.setTargets).toEqual([
-      { setNumber: 1, targetReps: 9, suggestedWeight: 80 },
-      { setNumber: 2, targetReps: 9, suggestedWeight: 80 },
-      { setNumber: 3, targetReps: 7, suggestedWeight: 80 },
+      { setNumber: 1, targetReps: 9, suggestedWeight: 80, estimate: 'other_slot' },
+      { setNumber: 2, targetReps: 9, suggestedWeight: 80, estimate: 'other_slot' },
+      { setNumber: 3, targetReps: 7, suggestedWeight: 80, estimate: 'other_slot' },
     ]);
   });
 

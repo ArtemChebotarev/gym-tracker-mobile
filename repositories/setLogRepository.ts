@@ -1,4 +1,5 @@
 import type { SetLog } from '@domain/execution';
+import type { ExercisePerformance } from '@domain/progression';
 import type { Incoming } from '@domain/timestamps';
 
 // SetLogRepository — contract for the SetLog slice of the execution repositories.
@@ -58,6 +59,14 @@ export type LastPerformance = {
   targetRir: number;
 };
 
+export type ListPerformancesQuery = {
+  exerciseId: string;
+  /** UTC ISO timestamp — `now − historyLookbackDays`, computed by the use-case layer. */
+  since: string;
+  /** The session exercise asking for a reference — never returned as one of its own. */
+  excludeSessionExerciseId?: string;
+};
+
 export interface SetLogRepository {
   /** All set logs for one session exercise (a single exercise instance within a session). */
   listBySessionExerciseId(sessionExerciseId: string): Promise<SetLog[]>;
@@ -86,6 +95,15 @@ export interface SetLogRepository {
    * join happens inside the repository (07 · Persistence Layer Contract, rule 4).
    */
   findLastPerformance(query: FindLastPerformanceQuery): Promise<LastPerformance | null>;
+
+  /**
+   * Every performance of `exerciseId` logged no earlier than `since` — the history window the
+   * reference resolver reads (03 · Progression Engine, "Резолвер референса"; task 134.1) — each
+   * with the mesocycle, week and day of its session, newest first. Deload performances are
+   * included: which ones count is the resolver's call, not the repository's (07, rule 2). A
+   * performance is one session exercise's logged sets; one with none logged doesn't exist here.
+   */
+  listPerformances(query: ListPerformancesQuery): Promise<ExercisePerformance[]>;
 
   /** Persists a set log that already carries its domain-generated id. */
   create(setLog: Incoming<SetLog>): Promise<SetLog>;
