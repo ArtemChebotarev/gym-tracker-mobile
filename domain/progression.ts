@@ -65,12 +65,26 @@ export type ReferenceSlot = {
 };
 
 /**
+ * Where an estimate's reference came from, which decides its arithmetic (03, "Оценка"):
+ * - `earlier_week` — an earlier week of the slot's own mesocycle: + 1, as a week of progression.
+ * - `other_block` — another mesocycle: + 1 and the RIR gap, as Flow C carries a block over.
+ * - `current_week` — the fallback when no earlier week has any: a parallel performance, reps as
+ *   they were.
+ */
+export type EstimateSource = 'earlier_week' | 'other_block' | 'current_week';
+
+/**
  * What the resolver found:
  * - `target` — a reference in the exercise's own slot; targets progress from it (+1).
- * - `estimate` — numbers to go by, not a base to progress from; reps as they were.
+ * - `estimate` — numbers to go by, not a target to hit; how they're priced depends on `source`.
  * - `none` — nothing to go by; the screen shows `N RIR`.
  */
 export type ReferenceResolution =
   | { kind: 'target'; reference: ExercisePerformance }
-  | { kind: 'estimate'; reference: ExercisePerformance; reason: 'other_slot' }
+  | {
+      kind: 'estimate';
+      reference: ExercisePerformance;
+      reason: 'other_slot';
+      source: EstimateSource;
+    }
   | { kind: 'none' };

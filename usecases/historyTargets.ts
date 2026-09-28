@@ -16,6 +16,11 @@ export type HistoryTargetsQuery = {
   /** The session the exercise is being placed into. */
   session: Pick<Session, 'mesoId' | 'weekNumber' | 'dayNumber' | 'isDeload'>;
   rowCount: number;
+  /**
+   * The target RIR of the session's week (rule 4) — an estimate from another block is re-priced
+   * to it, as Flow C does (task 134.1).
+   */
+  weekRir: number;
   /** The session exercise asking — never its own reference (see `listPerformances`). */
   sessionExerciseId?: string;
   /** The session's mesocycle settings: rep corridor and `historyLookbackDays`. */
@@ -35,16 +40,17 @@ export type HistoryTargetsQuery = {
  *   enough, so no reference is looked up.
  * - Otherwise the exercise's performances logged no earlier than `now − historyLookbackDays` go
  *   to the reference resolver with the session's slot: a reference in the exercise's own slot
- *   gives targets (reps + 1), one from another day or block an estimate (reps as they were), and
- *   none leaves the rows empty — the screen shows `N RIR`.
+ *   gives targets (reps + 1), one from another day or block an estimate (priced by where it came
+ *   from — `prescribeFromHistory`), and none leaves the rows empty — the screen shows `N RIR`.
  */
 export async function targetsFromHistory(
   query: HistoryTargetsQuery,
   setLogRepo: SetLogRepository,
 ): Promise<SetTarget[]> {
-  const { exerciseId, session, rowCount, sessionExerciseId, settings, equipment, now } = query;
+  const { exerciseId, session, rowCount, weekRir, sessionExerciseId, settings, equipment, now } =
+    query;
   if (session.isDeload) {
-    return prescribeFromHistory({ kind: 'none' }, rowCount, settings, equipment);
+    return prescribeFromHistory({ kind: 'none' }, rowCount, weekRir, settings, equipment);
   }
   const performances = await setLogRepo.listPerformances({
     exerciseId,
@@ -56,6 +62,5 @@ export async function targetsFromHistory(
     dayNumber: session.dayNumber,
     currentWeek: { mesoId: session.mesoId, weekNumber: session.weekNumber },
   });
-  // Rule 6 progresses from the reps alone; the RIR they were done at is Flow C's business (122).
-  return prescribeFromHistory(resolution, rowCount, settings, equipment);
+  return prescribeFromHistory(resolution, rowCount, weekRir, settings, equipment);
 }

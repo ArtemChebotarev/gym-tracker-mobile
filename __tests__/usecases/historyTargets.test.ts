@@ -30,6 +30,8 @@ type Performance = {
   weekNumber?: number;
   /** A day of its own (`index + 1`) unless given. */
   dayNumber?: number;
+  /** The RIR it was planned at; 2 unless given. */
+  targetRir?: number;
 };
 
 /**
@@ -58,7 +60,7 @@ async function setLogRepoWith(performances: Performance[]) {
       exerciseId: BARBELL,
       order: 1,
       setTargets: performance.reps.map((_, index) => ({ setNumber: index + 1 })),
-      targetRir: 2,
+      targetRir: performance.targetRir ?? 2,
       status: 'completed',
     };
     const logs: SetLog[] = performance.reps.map((reps, index) => ({
@@ -90,6 +92,7 @@ function query(overrides: Partial<Parameters<typeof targetsFromHistory>[0]> = {}
     exerciseId: BARBELL,
     session: currentSession,
     rowCount: 3,
+    weekRir: 2,
     settings: defaultProgressionSettings,
     now: NOW,
     ...overrides,
@@ -168,8 +171,49 @@ describe('targetsFromHistory', () => {
       },
     ]);
 
+    // Carried over as Flow C carries a block: + 1, and no RIR gap — both at RIR 2.
     await expect(targetsFromHistory(query({ rowCount: 1 }), setLogRepo)).resolves.toEqual([
-      { setNumber: 1, targetReps: 10, suggestedWeight: 70, estimate: 'other_slot' },
+      { setNumber: 1, targetReps: 11, suggestedWeight: 70, estimate: 'other_slot' },
+    ]);
+  });
+
+  // The review case of task 134.1: bench 10 × 13 at the end of the last block (RIR 0), 10 × 14 on
+  // day 1 of this one (RIR 1), then added to day 2. The earlier week wins, so the estimate comes
+  // from the last block, re-priced to this week's RIR: 13 + 1 − (1 − 0) — what Flow C gave day 1.
+  test('an earlier week in another block beats this week, re-priced for the RIR gap', async () => {
+    const setLogRepo = await setLogRepoWith([
+      {
+        key: 'last-block',
+        mesoId: 'meso-past',
+        loggedAt: '2026-09-10T10:00:00.000Z',
+        reps: [13],
+        weight: 10,
+        weekNumber: 4,
+        targetRir: 0,
+      },
+      {
+        key: 'this-week',
+        mesoId: 'meso-now',
+        loggedAt: '2026-09-17T10:00:00.000Z',
+        reps: [14],
+        weight: 10,
+        weekNumber: 1,
+        dayNumber: 1,
+        targetRir: 1,
+      },
+    ]);
+
+    await expect(
+      targetsFromHistory(
+        query({
+          session: { ...currentSession, weekNumber: 1, dayNumber: 2 },
+          rowCount: 1,
+          weekRir: 1,
+        }),
+        setLogRepo,
+      ),
+    ).resolves.toEqual([
+      { setNumber: 1, targetReps: 13, suggestedWeight: 10, estimate: 'other_slot' },
     ]);
   });
 

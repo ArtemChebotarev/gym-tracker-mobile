@@ -69,6 +69,7 @@ export async function swapExercise(
         exerciseId: input.exerciseId,
         session,
         rowCount: current.setTargets.length,
+        weekRir: current.targetRir,
         sessionExerciseId: current.id,
         settings: mesocycle.progressionSettings,
         equipment: swappedIn?.equipment,

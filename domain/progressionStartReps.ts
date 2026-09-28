@@ -13,32 +13,13 @@ import type { Equipment } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { referenceSetFor } from '@domain/progressionHistory';
+import { startTargetReps } from '@domain/progressionReps';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
-/**
- * `clamp(referenceReps + 1 − (startRir − referenceTargetRir), minReps, maxReps)` — rule 2's
- * increment on the reference, then re-priced for a higher target RIR.
- *
- * The `+ 1` is what carries progression *across* blocks (task 125). Without it, a block copied
- * from the one that just ended lands back where that block started: a 3-week block runs week 1
- * at RIR 1 for 10 reps and week 2 at RIR 0 for 11, and re-pricing 11 reps for a `startRir` of 1
- * gives 10 again — the same number, block after block, forever. The increment earns the reps
- * back; the RIR term is what still makes the first week easier than the last.
- *
- * A reference performed at a *higher* RIR than the new block's start
- * (`startRir < referenceTargetRir`) moves the reps up further rather than down, which is the
- * same formula read the other way round — nothing special-cases it.
- */
-export function startTargetReps(
-  referenceReps: number,
-  referenceTargetRir: number,
-  startRir: number,
-  settings: RepCorridor,
-): number {
-  const reps = referenceReps + 1 - (startRir - referenceTargetRir);
-  return Math.min(Math.max(reps, settings.minReps), settings.maxReps);
-}
+// `startTargetReps` lives with the rest of the rep arithmetic now that rule 6's estimate from
+// another block uses it too (task 134.1); Flow C's callers keep reaching it here.
+export { startTargetReps };
 
 /**
  * Week 1 set targets for one exercise of a `copyWeek` mesocycle: `rowCount` rows (numbered from

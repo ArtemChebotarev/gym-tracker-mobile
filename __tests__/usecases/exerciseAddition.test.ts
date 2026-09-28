@@ -161,16 +161,17 @@ describe('addExercises', () => {
     ]);
   });
 
-  // Task 134.1: another block is another slot — its numbers are a guide, not a base for +1.
-  test('DoD: history 20 days ago in a past mesocycle → an estimate, reps as they were', async () => {
+  // Task 134.1: another block is another slot — its numbers are an estimate, carried over as Flow C
+  // carries a block: + 1 and the RIR gap (both RIR 2 here, so + 1).
+  test('DoD: history 20 days ago in a past mesocycle → an estimate, carried over', async () => {
     const deps = await setUp();
     await curlPerformedIn(deps, 'meso-past', '2026-08-29T10:00:00.000Z', [12, 10]);
 
     const [added] = await addExercises({ sessionId: 'session-w2', exerciseIds: [CURL] }, deps, NOW);
 
     expect(added?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 12, suggestedWeight: 14, estimate: 'other_slot' },
-      { setNumber: 2, targetReps: 10, suggestedWeight: 14, estimate: 'other_slot' },
+      { setNumber: 1, targetReps: 13, suggestedWeight: 14, estimate: 'other_slot' },
+      { setNumber: 2, targetReps: 11, suggestedWeight: 14, estimate: 'other_slot' },
     ]);
   });
 

@@ -97,6 +97,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: day1,
       reason: 'other_slot',
+      source: 'earlier_week',
     });
   });
 
@@ -126,6 +127,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: day1,
       reason: 'other_slot',
+      source: 'current_week',
     });
   });
 
@@ -137,6 +139,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: day2,
       reason: 'other_slot',
+      source: 'current_week',
     });
   });
 
@@ -147,6 +150,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: day3,
       reason: 'other_slot',
+      source: 'current_week',
     });
   });
 
@@ -167,6 +171,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: lastWeek,
       reason: 'other_slot',
+      source: 'earlier_week',
     });
   });
 
@@ -178,6 +183,7 @@ describe('resolveReference — rule 6', () => {
       kind: 'estimate',
       reference: newerOtherDay,
       reason: 'other_slot',
+      source: 'earlier_week',
     });
   });
 
@@ -189,6 +195,7 @@ describe('resolveReference — rule 6', () => {
         kind: 'estimate',
         reference: other,
         reason: 'other_slot',
+        source: 'other_block',
       });
     });
 
@@ -200,6 +207,7 @@ describe('resolveReference — rule 6', () => {
         kind: 'estimate',
         reference: day2,
         reason: 'other_slot',
+        source: 'other_block',
       });
     });
 
@@ -234,6 +242,7 @@ describe('resolveReference — rule 6', () => {
         kind: 'estimate',
         reference: logged,
         reason: 'other_slot',
+        source: 'earlier_week',
       });
     });
 

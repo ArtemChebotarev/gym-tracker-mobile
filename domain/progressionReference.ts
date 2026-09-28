@@ -8,6 +8,7 @@
 
 import type { SetLog } from '@domain/execution';
 import type {
+  EstimateSource,
   ExercisePerformance,
   ReferenceResolution,
   ReferenceSlot,
@@ -61,10 +62,13 @@ function byWeekNewestFirst(performances: readonly ExercisePerformance[]): Exerci
 }
 
 /** One performance, or several that say the same thing: an estimate from the newest. */
-function estimateIfUnambiguous(week: readonly ExercisePerformance[]): ReferenceResolution {
+function estimateIfUnambiguous(
+  week: readonly ExercisePerformance[],
+  source: EstimateSource,
+): ReferenceResolution {
   const [newest] = week;
   return newest !== undefined && areIdentical(week)
-    ? { kind: 'estimate', reference: newest, reason: 'other_slot' }
+    ? { kind: 'estimate', reference: newest, reason: 'other_slot', source }
     : { kind: 'none' };
 }
 
@@ -76,12 +80,13 @@ function estimateIfUnambiguous(week: readonly ExercisePerformance[]): ReferenceR
  * week is the latest training week that has any; for rule 6 (`slot.currentWeek` given) that is the
  * latest week **before** the current one, and the current week only when there is none. Then:
  *
- * - Reference week is the current one: one performance, or several identical → estimate; several
- *   that differ → none. There is no +1 inside a week.
+ * - Reference week is the current one: one performance, or several identical → estimate from the
+ *   current week; several that differ → none. There is no +1 inside a week.
  * - Same day in the slot's own mesocycle → target from that day's performance, whatever the rest
  *   of the week says. Day numbers aren't compared across mesocycles.
  * - Several identical, own mesocycle → target: the result didn't depend on the slot.
- * - One performance, or several identical in another mesocycle → estimate.
+ * - One performance → estimate from an earlier week; one, or several identical, in another
+ *   mesocycle → estimate from another block. How each is priced is `prescribeFromHistory`'s.
  * - Several that differ → none. Rule 6 doesn't fall back onto the current week then.
  */
 export function resolveReference(
@@ -99,7 +104,9 @@ export function resolveReference(
   const referenceWeek = weeks.find((week) => !isCurrent(week));
   if (referenceWeek === undefined) {
     const current = weeks.find(isCurrent);
-    return current === undefined ? { kind: 'none' } : estimateIfUnambiguous(current);
+    return current === undefined
+      ? { kind: 'none' }
+      : estimateIfUnambiguous(current, 'current_week');
   }
 
   const ownMeso = referenceWeek[0]?.mesoId === slot.mesoId;
@@ -115,5 +122,5 @@ export function resolveReference(
       ? { kind: 'target', reference: newest }
       : { kind: 'none' };
   }
-  return estimateIfUnambiguous(referenceWeek);
+  return estimateIfUnambiguous(referenceWeek, ownMeso ? 'earlier_week' : 'other_block');
 }

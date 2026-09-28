@@ -16,6 +16,32 @@ export function nextTargetReps(loggedReps: number, settings: RepCorridor): numbe
 }
 
 /**
+ * `clamp(referenceReps + 1 − (startRir − referenceTargetRir), minReps, maxReps)` — rule 2's
+ * increment on the reference, then re-priced for a higher target RIR. Flow C's start reps (04,
+ * "Расчёт startReps"), and rule 6's estimate from another block (task 134.1): both carry a
+ * performance over into a block that runs at another RIR.
+ *
+ * The `+ 1` is what carries progression *across* blocks (task 125). Without it, a block copied
+ * from the one that just ended lands back where that block started: a 3-week block runs week 1
+ * at RIR 1 for 10 reps and week 2 at RIR 0 for 11, and re-pricing 11 reps for a `startRir` of 1
+ * gives 10 again — the same number, block after block, forever. The increment earns the reps
+ * back; the RIR term is what still makes the first week easier than the last.
+ *
+ * A reference performed at a *higher* RIR than the new block's start
+ * (`startRir < referenceTargetRir`) moves the reps up further rather than down, which is the
+ * same formula read the other way round — nothing special-cases it.
+ */
+export function startTargetReps(
+  referenceReps: number,
+  referenceTargetRir: number,
+  startRir: number,
+  settings: RepCorridor,
+): number {
+  const reps = referenceReps + 1 - (startRir - referenceTargetRir);
+  return Math.min(Math.max(reps, settings.minReps), settings.maxReps);
+}
+
+/**
  * Next week's target for one set row.
  *
  * - Logged: reps progress by rule 2, the logged weight becomes the next `suggestedWeight`, and
