@@ -99,14 +99,26 @@ describe('prescribeFromHistory', () => {
     ]);
   });
 
-  test('more rows than reference sets: extra rows repeat the last reference set', () => {
+  // Task 134.1: set on set. One set of 13 says nothing about a second one, so a row the
+  // reference has no set for gets no numbers — `N RIR` — instead of repeating the last set.
+  test('more rows than reference sets: the extra rows get no numbers', () => {
     expect(
       prescribeFromHistory(target(reference.slice(0, 2)), 4, WEEK_RIR, defaultProgressionSettings),
     ).toEqual([
       { setNumber: 1, targetReps: 13, suggestedWeight: 20 },
       { setNumber: 2, targetReps: 11, suggestedWeight: 20 },
-      { setNumber: 3, targetReps: 11, suggestedWeight: 20 },
-      { setNumber: 4, targetReps: 11, suggestedWeight: 20 },
+      { setNumber: 3 },
+      { setNumber: 4 },
+    ]);
+  });
+
+  test('matches by set number — a set skipped in the reference stays empty here', () => {
+    expect(
+      prescribeFromHistory(target([set1, set3]), 3, WEEK_RIR, defaultProgressionSettings),
+    ).toEqual([
+      { setNumber: 1, targetReps: 13, suggestedWeight: 20 },
+      { setNumber: 2 },
+      { setNumber: 3, targetReps: 10, suggestedWeight: 17.5 },
     ]);
   });
 
@@ -152,7 +164,7 @@ describe('prescribeFromHistory with an estimate (task 134.1)', () => {
       { setNumber: 1, targetReps: 12, suggestedWeight: 20, estimate: 'other_slot' },
       { setNumber: 2, targetReps: 10, suggestedWeight: 20, estimate: 'other_slot' },
       { setNumber: 3, targetReps: 9, suggestedWeight: 17.5, estimate: 'other_slot' },
-      { setNumber: 4, targetReps: 9, suggestedWeight: 17.5, estimate: 'other_slot' },
+      { setNumber: 4 },
     ]);
   });
 
@@ -214,10 +226,7 @@ describe('rule 6 and the bodyweight exercises (task 105)', () => {
       'bodyweight',
     );
 
-    expect(targets).toEqual([
-      { setNumber: 1, targetReps: 13 },
-      { setNumber: 2, targetReps: 13 },
-    ]);
+    expect(targets).toEqual([{ setNumber: 1, targetReps: 13 }, { setNumber: 2 }]);
   });
 
   test('DoD: a weighted bodyweight exercise takes the added weight as its suggestion', () => {

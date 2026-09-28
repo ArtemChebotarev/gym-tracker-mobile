@@ -16,6 +16,19 @@ import { weightHintForReps } from '@domain/progressionWeightHint';
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
 /**
+ * The reference set row `setNumber` takes under rule 6: the reference's set with that very
+ * number, or none (task 134.1). A set the history never had is a set nobody knows the numbers
+ * for — one set of 13 says nothing about whether a second one would make 13 too — so that row
+ * gets no target and the screen shows `N RIR`. Reference sets past the row count are left out.
+ */
+export function referenceSetAt(
+  referenceLogs: readonly SetLog[],
+  setNumber: number,
+): SetLog | undefined {
+  return referenceLogs.find((log) => log.setNumber === setNumber);
+}
+
+/**
  * The reps an estimate's set N stands at (03, "Оценка"; task 134.1), by where its reference came
  * from. Progression doesn't stop at the slot boundary — only the claim to precision does:
  *
@@ -40,9 +53,10 @@ function estimatedReps(
 }
 
 /**
- * The reference set row `setNumber` (1-based) takes: the reference's N-th set in `setNumber`
- * order, or its last set when the reference has fewer sets than the row number. `undefined`
- * only when there is no reference at all.
+ * The reference set row `setNumber` (1-based) takes in Flow C (04, "Расчёт startReps"): the
+ * reference's N-th set in `setNumber` order, or its last set when the reference has fewer sets
+ * than the row number. `undefined` only when there is no reference at all. Rule 6 no longer
+ * stretches the last set (task 134.1, `referenceSetAt`); Flow C follows in 134.2.
  */
 export function referenceSetFor(
   referenceLogs: readonly SetLog[],
@@ -65,7 +79,8 @@ export function referenceSetFor(
  *   estimate from another block is re-priced to.
  * - `none` — neither: the screen falls back to showing `N RIR`.
  *
- * Row N takes the reference's set N, or its last set past the end (`referenceSetFor`). A pure
+ * Row N takes the reference's set N and nothing else (`referenceSetAt`): a row the reference
+ * has no set for gets no numbers, `N RIR`. A pure
  * `bodyweight` exercise takes the reps and skips the weight and the hint, as everywhere else
  * (task 105, `domain/bodyWeightLoad.ts`).
  *
@@ -87,7 +102,7 @@ export function prescribeFromHistory(
     const reference =
       resolution.kind === 'none'
         ? undefined
-        : referenceSetFor(resolution.reference.setLogs, setNumber);
+        : referenceSetAt(resolution.reference.setLogs, setNumber);
     if (reference === undefined) {
       return { setNumber };
     }

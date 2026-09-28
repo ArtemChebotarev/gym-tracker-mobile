@@ -234,7 +234,7 @@ describe('targetsFromHistory', () => {
     ]);
   });
 
-  test('rows beyond the reference’s set count take its last set', async () => {
+  test('rows beyond the reference’s set count get no numbers — set on set', async () => {
     const setLogRepo = await setLogRepoWith([
       {
         key: 'short',
@@ -247,7 +247,7 @@ describe('targetsFromHistory', () => {
 
     const targets = await targetsFromHistory(query({ rowCount: 3 }), setLogRepo);
 
-    expect(targets.map((target) => target.targetReps)).toEqual([11, 10, 10]);
+    expect(targets.map((target) => target.targetReps)).toEqual([11, 10, undefined]);
   });
 
   test('a deload session gets no targets, even with a reference', async () => {
