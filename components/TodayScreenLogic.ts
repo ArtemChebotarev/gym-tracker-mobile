@@ -36,20 +36,20 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
     case 'noActiveMesocycle':
       return {
         title: 'Plan your training block',
-        description: 'Plan a mesocycle and start it — its workouts show up here.',
+        description: 'Plan a training cycle and start it — its workouts show up here.',
         actionLabel: PLAN_MESOCYCLE_LABEL,
       };
     case 'allDone':
       return {
         title: 'Block complete',
-        description: 'Every workout of this mesocycle is done. Finish it to close the block.',
-        actionLabel: 'Finish mesocycle',
+        description: 'Every workout of this training cycle is done. Finish it to close the block.',
+        actionLabel: 'Finish cycle',
       };
     case 'unavailable':
       return {
         title: 'Pick another workout',
         description: "This workout isn't available anymore. Choose another day to train.",
-        actionLabel: 'Open mesocycles',
+        actionLabel: 'Open cycles',
       };
   }
 }

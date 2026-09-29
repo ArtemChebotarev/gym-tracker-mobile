@@ -22,7 +22,7 @@ describe('MesoEditorBasicsStep', () => {
     render(<MesoEditorBasicsStep {...BASE_PROPS} />);
 
     expect(screen.getByText('Name')).toBeTruthy();
-    expect(screen.getByText('Mesocycle length')).toBeTruthy();
+    expect(screen.getByText('Cycle length')).toBeTruthy();
     expect(screen.getByText('6 weeks')).toBeTruthy();
     expect(screen.getByText('Includes a deload week')).toBeTruthy();
     expect(screen.getByText('Days per week')).toBeTruthy();
@@ -40,20 +40,20 @@ describe('MesoEditorBasicsStep', () => {
   });
 
   describe('stepper boundaries', () => {
-    test('Mesocycle length decrement is disabled at the minimum (3)', () => {
+    test('Cycle length decrement is disabled at the minimum (3)', () => {
       render(<MesoEditorBasicsStep {...BASE_PROPS} lengthWeeks={3} />);
 
       expect(
-        screen.getByRole('button', { name: 'Decrease Mesocycle length' }).props.accessibilityState
+        screen.getByRole('button', { name: 'Decrease Cycle length' }).props.accessibilityState
           .disabled,
       ).toBe(true);
     });
 
-    test('Mesocycle length increment is disabled at the maximum (8)', () => {
+    test('Cycle length increment is disabled at the maximum (8)', () => {
       render(<MesoEditorBasicsStep {...BASE_PROPS} lengthWeeks={8} />);
 
       expect(
-        screen.getByRole('button', { name: 'Increase Mesocycle length' }).props.accessibilityState
+        screen.getByRole('button', { name: 'Increase Cycle length' }).props.accessibilityState
           .disabled,
       ).toBe(true);
     });

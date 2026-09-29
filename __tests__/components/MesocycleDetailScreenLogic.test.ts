@@ -110,7 +110,7 @@ describe('mesocycleDetailMenuItems', () => {
     'a %s block: Rename, then Copy and Archive as on its Completed row',
     (status) => {
       const items = mesocycleDetailMenuItems(status, handlers);
-      expect(items.map((item) => item.label)).toEqual(['Rename mesocycle', 'Copy', 'Archive']);
+      expect(items.map((item) => item.label)).toEqual(['Rename cycle', 'Copy', 'Archive']);
       // Nothing logged goes — not red.
       expect(items[2]?.destructive).toBeUndefined();
 

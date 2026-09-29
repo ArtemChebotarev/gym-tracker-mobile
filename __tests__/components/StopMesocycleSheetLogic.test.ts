@@ -5,17 +5,17 @@ import {
 } from '@components/StopMesocycleSheetLogic';
 
 describe('isStopMesocycleConfirmed', () => {
-  test('the phrase is `END MESO`, typed out', () => {
-    expect(STOP_MESOCYCLE_PHRASE).toBe('END MESO');
+  test('the phrase is `END CYCLE`, typed out', () => {
+    expect(STOP_MESOCYCLE_PHRASE).toBe('END CYCLE');
     expect(isStopMesocycleConfirmed(STOP_MESOCYCLE_PHRASE)).toBe(true);
   });
 
   test('case and surrounding spaces are forgiven', () => {
-    expect(isStopMesocycleConfirmed('end meso')).toBe(true);
-    expect(isStopMesocycleConfirmed('  End Meso  ')).toBe(true);
+    expect(isStopMesocycleConfirmed('end cycle')).toBe(true);
+    expect(isStopMesocycleConfirmed('  End Cycle  ')).toBe(true);
   });
 
-  test.each(['', 'END', 'END MES', 'ENDMESO', 'end  meso', 'end meso now'])(
+  test.each(['', 'END', 'END CYC', 'ENDCYCLE', 'end  cycle', 'end cycle now'])(
     '%p is not the phrase',
     (text) => {
       expect(isStopMesocycleConfirmed(text)).toBe(false);

@@ -37,8 +37,8 @@ describe('RenameMesocycleSheet', () => {
   test('shows the name it was given, ready to be edited', () => {
     renderWithSafeArea(<RenameMesocycleSheet {...makeProps()} />);
 
-    expect(screen.getByText('Rename mesocycle')).toBeTruthy();
-    expect(screen.getByLabelText('Mesocycle name').props.value).toBe('Upper/Lower');
+    expect(screen.getByText('Rename training cycle')).toBeTruthy();
+    expect(screen.getByLabelText('Cycle name').props.value).toBe('Upper/Lower');
   });
 
   test.each(['', '   ', '\t'])(
@@ -76,7 +76,7 @@ describe('RenameMesocycleSheet', () => {
     const onChangeValue = jest.fn();
     renderWithSafeArea(<RenameMesocycleSheet {...makeProps({ onChangeValue })} />);
 
-    fireEvent.changeText(screen.getByLabelText('Mesocycle name'), 'Autumn block');
+    fireEvent.changeText(screen.getByLabelText('Cycle name'), 'Autumn block');
 
     expect(onChangeValue).toHaveBeenCalledWith('Autumn block');
   });

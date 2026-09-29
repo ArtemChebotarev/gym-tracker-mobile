@@ -17,7 +17,7 @@ import { formatAbsoluteDate } from '@design/formatDate';
  * (04 · Meso Creation Flows, "Сохранение при подтверждении"). One constant rather than the same
  * string typed into two empty states, so the two can't drift apart.
  */
-export const PLAN_MESOCYCLE_LABEL = 'Plan mesocycle';
+export const PLAN_MESOCYCLE_LABEL = 'Plan cycle';
 
 export type MesocycleGroups = {
   active: Mesocycle | null;
@@ -102,14 +102,14 @@ export function formatCompletedCaption(mesocycle: Mesocycle): string {
   return `${base} · ${start} – ${end}`;
 }
 
-/** The short summary under the `Start this mesocycle?` confirmation's title. */
+/** The short summary under the `Start this training cycle?` confirmation's title. */
 export function formatStartConfirmMessage(mesocycle: Mesocycle): string {
   return `${mesocycle.name} · ${formatPlannedCaption(mesocycle)}. Week 1 starts today.`;
 }
 
 /** Why Start is unavailable while another mesocycle is active (08.3: the message is mandatory). */
 export function formatStartBlockedMessage(active: Mesocycle): string {
-  return `"${active.name}" is still active. Finish or abandon it before starting another mesocycle.`;
+  return `"${active.name}" is still active. Finish or abandon it before starting another training cycle.`;
 }
 
 /**
@@ -134,7 +134,7 @@ export function plannedMenuItems(
 }
 
 /**
- * What the `Archive mesocycle?` confirmation says under its title. It names the block, because the
+ * What the `Archive training cycle?` confirmation says under its title. It names the block, because the
  * menu it was opened from is gone by the time the popup is on screen and a list of finished blocks
  * is a list of similar names. Then the two halves of what archiving is: the block goes, the
  * training stays — and, for now, it doesn't come back (there is no Unarchive yet).

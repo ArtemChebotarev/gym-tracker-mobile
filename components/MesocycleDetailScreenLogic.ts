@@ -159,7 +159,7 @@ export function mesocycleDetailMenuItems(
   const items: ActionMenuItem[] = [
     {
       key: 'rename',
-      label: 'Rename mesocycle',
+      label: 'Rename cycle',
       icon: EditIcon,
       systemImage: 'pencil',
       onPress: handlers.onRename,

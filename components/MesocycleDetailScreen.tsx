@@ -79,7 +79,7 @@ export function MesocycleDetailScreen({
           <Text style={styles.status}>Loading…</Text>
         ) : (
           <EmptyState
-            title="Mesocycle not found"
+            title="Training cycle not found"
             description="It may have been removed."
             actionLabel="Go back"
             onAction={onBack}
@@ -96,7 +96,7 @@ export function MesocycleDetailScreen({
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         {backButton}
-        <ActionMenu accessibilityLabel="Mesocycle menu" title={mesocycle.name} items={menuItems} />
+        <ActionMenu accessibilityLabel="Cycle menu" title={mesocycle.name} items={menuItems} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>

@@ -74,12 +74,12 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                 }
               }
             >
-              Mesocycles
+              Training cycles
             </Text>
           </View>
         </View>
         <View
-          accessibilityLabel="New mesocycle"
+          accessibilityLabel="New cycle"
           accessibilityRole="button"
           accessibilityState={
             {
@@ -460,12 +460,12 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                 }
               }
             >
-              Mesocycles
+              Training cycles
             </Text>
           </View>
         </View>
         <View
-          accessibilityLabel="New mesocycle"
+          accessibilityLabel="New cycle"
           accessibilityRole="button"
           accessibilityState={
             {
@@ -857,12 +857,12 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                 }
               }
             >
-              Mesocycles
+              Training cycles
             </Text>
           </View>
         </View>
         <View
-          accessibilityLabel="New mesocycle"
+          accessibilityLabel="New cycle"
           accessibilityRole="button"
           accessibilityState={
             {
@@ -1313,12 +1313,12 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                 }
               }
             >
-              Mesocycles
+              Training cycles
             </Text>
           </View>
         </View>
         <View
-          accessibilityLabel="New mesocycle"
+          accessibilityLabel="New cycle"
           accessibilityRole="button"
           accessibilityState={
             {
@@ -2226,12 +2226,12 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
                 }
               }
             >
-              Mesocycles
+              Training cycles
             </Text>
           </View>
         </View>
         <View
-          accessibilityLabel="New mesocycle"
+          accessibilityLabel="New cycle"
           accessibilityRole="button"
           accessibilityState={
             {
@@ -2313,7 +2313,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
             }
           }
         >
-          Plan your first mesocycle
+          Plan your first training cycle
         </Text>
         <Text
           style={
@@ -2394,7 +2394,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
                 ]
               }
             >
-              Plan mesocycle
+              Plan cycle
             </Text>
           </View>
         </View>

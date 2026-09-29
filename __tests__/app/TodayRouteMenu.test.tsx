@@ -135,7 +135,7 @@ describe('Today tab — header menu', () => {
     pickMenuItem('renameMesocycle');
 
     // Prefilled with the current name — renaming is an edit of what is there.
-    const field = await screen.findByLabelText('Mesocycle name');
+    const field = await screen.findByLabelText('Cycle name');
     expect(field.props.value).toBe('Upper/Lower');
     // Empty is not a name, and Save says so before the domain has to.
     fireEvent.changeText(field, '   ');
@@ -162,7 +162,7 @@ describe('Today tab — header menu', () => {
     pickMenuItem('stopMesocycle');
 
     // The sheet's own button — it stays inert until the phrase has been typed into it.
-    const confirm = await screen.findByRole('button', { name: 'Stop mesocycle' });
+    const confirm = await screen.findByRole('button', { name: 'Stop cycle' });
     expect(confirm.props.accessibilityState?.disabled).toBe(true);
     fireEvent.press(confirm);
     expect(
@@ -173,7 +173,7 @@ describe('Today tab — header menu', () => {
       screen.getByLabelText(`Type ${STOP_MESOCYCLE_PHRASE} to confirm`),
       STOP_MESOCYCLE_PHRASE,
     );
-    fireEvent.press(screen.getByRole('button', { name: 'Stop mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Stop cycle' }));
 
     await waitFor(async () => {
       expect(await repositories().mesocycleRepo.getActive()).toBeNull();
@@ -206,7 +206,7 @@ describe('Today tab — header menu', () => {
     expect(screen.queryByTestId('action-menu')).toBeNull();
     expect(menuItem('stopMesocycle')).toBeNull();
     expect(menuItem('mesocycleHistory')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Mesocycle overview' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cycle overview' })).toBeNull();
     // The session itself is still all there — that is what history is for.
     expect(screen.getByText('Week 1 Day 1')).toBeTruthy();
   });
@@ -333,10 +333,10 @@ describe('Today tab — Finish mesocycle, then plan the next one', () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish cycle' }));
     pressAlertButton('Finish');
 
-    expect(await screen.findByRole('button', { name: 'Copy current meso' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Copy current cycle' })).toBeTruthy();
     // Still the same workout — nothing navigated, and the pin was not released.
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     expect(mockParams.sessionId).toBe(WORKOUT_FIXTURE_IDS.live);
@@ -347,10 +347,10 @@ describe('Today tab — Finish mesocycle, then plan the next one', () => {
     mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
     renderToday();
     await screen.findByText('Week 2 Day 1');
-    fireEvent.press(await screen.findByRole('button', { name: 'Finish mesocycle' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Finish cycle' }));
     pressAlertButton('Finish');
 
-    fireEvent.press(await screen.findByRole('button', { name: 'Copy current meso' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Copy current cycle' }));
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/meso-editor/copy',

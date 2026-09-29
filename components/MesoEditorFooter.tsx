@@ -23,7 +23,7 @@ export type MesoEditorFooterProps = {
   onContinue: () => void;
   continueDisabled: boolean;
   hint?: string;
-  /** Defaults to `Continue`; step 3 passes `Save mesocycle` (08.5, "Шаг 3"). */
+  /** Defaults to `Continue`; step 3 passes `Save cycle` (08.5, "Шаг 3"). */
   continueLabel?: string;
 };
 

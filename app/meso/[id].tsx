@@ -58,7 +58,7 @@ export default function MesocycleDetailRoute() {
                   });
                 },
                 onArchive: () =>
-                  Alert.alert('Archive mesocycle?', formatArchiveConfirmMessage(mesocycle), [
+                  Alert.alert('Archive training cycle?', formatArchiveConfirmMessage(mesocycle), [
                     { text: 'Cancel', style: 'cancel' },
                     {
                       text: 'Archive',
@@ -69,7 +69,7 @@ export default function MesocycleDetailRoute() {
                           onSuccess: () => router.back(),
                           onError: () =>
                             Alert.alert(
-                              "Couldn't archive mesocycle",
+                              "Couldn't archive training cycle",
                               'Something went wrong. Please try again.',
                             ),
                         }),
@@ -88,7 +88,7 @@ export default function MesocycleDetailRoute() {
           setIsRenameOpen(false);
           renameMesocycle.mutate(
             { mesoId: id, name },
-            { onError: () => Alert.alert("Couldn't rename the mesocycle", 'Please try again.') },
+            { onError: () => Alert.alert("Couldn't rename the training cycle", 'Please try again.') },
           );
         }}
         isSaving={renameMesocycle.isPending}

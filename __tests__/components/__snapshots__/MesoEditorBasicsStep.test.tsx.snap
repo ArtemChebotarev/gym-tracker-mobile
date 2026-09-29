@@ -79,7 +79,7 @@ exports[`MesoEditorBasicsStep matches the step 1 content snapshot 1`] = `
           }
         }
       >
-        Mesocycle length
+        Cycle length
       </Text>
       <View
         style={
@@ -131,7 +131,7 @@ exports[`MesoEditorBasicsStep matches the step 1 content snapshot 1`] = `
           }
         >
           <View
-            accessibilityLabel="Decrease Mesocycle length"
+            accessibilityLabel="Decrease Cycle length"
             accessibilityRole="button"
             accessibilityState={
               {
@@ -194,7 +194,7 @@ exports[`MesoEditorBasicsStep matches the step 1 content snapshot 1`] = `
             </Text>
           </View>
           <View
-            accessibilityLabel="Increase Mesocycle length"
+            accessibilityLabel="Increase Cycle length"
             accessibilityRole="button"
             accessibilityState={
               {

@@ -6,7 +6,7 @@
 // Flows, "Каталожные и пользовательские шаблоны"), so there is no row for them — a disabled one
 // would promise a feature that isn't there. They arrive with task 043.
 //
-// `Copy a mesocycle` is the one row that can be present and not work: the feature exists, the data
+// `Copy a cycle` is the one row that can be present and not work: the feature exists, the data
 // may not. With no finished or stopped block to copy from it is disabled and its caption says so
 // (`copyMethodCaption`).
 //
@@ -27,7 +27,7 @@ import { copyMethodCaption } from './MesoCreationMethodSheetLogic';
 export type MesoCreationMethodSheetProps = {
   visible: boolean;
   onClose: () => void;
-  /** False with no finished or stopped mesocycle — `Copy a mesocycle` is then off. */
+  /** False with no finished or stopped mesocycle — `Copy a cycle` is then off. */
   canCopy: boolean;
   onCreateFromScratch: () => void;
   onCopyMesocycle: () => void;
@@ -44,7 +44,7 @@ export function MesoCreationMethodSheet({
   animated,
 }: MesoCreationMethodSheetProps) {
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="New mesocycle" animated={animated}>
+    <BottomSheet visible={visible} onClose={onClose} title="New training cycle" animated={animated}>
       <ActionRow
         icon={PlusIcon}
         label="From scratch"
@@ -53,7 +53,7 @@ export function MesoCreationMethodSheet({
       />
       <ActionRow
         icon={CopyIcon}
-        label="Copy a mesocycle"
+        label="Copy a cycle"
         caption={copyMethodCaption(canCopy)}
         onPress={onCopyMesocycle}
         disabled={!canCopy}

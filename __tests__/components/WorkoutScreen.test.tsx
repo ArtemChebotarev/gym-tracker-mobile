@@ -213,7 +213,7 @@ describe('WorkoutScreen header', () => {
     const onOpenGrid = jest.fn();
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model, onOpenGrid })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle overview' }));
 
     expect(onOpenGrid).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('action-menu')).toBeTruthy();
@@ -222,7 +222,7 @@ describe('WorkoutScreen header', () => {
   test('DoD: neither is there in history mode — the block carries them on its own screen', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: HISTORY })} />);
 
-    expect(screen.queryByRole('button', { name: 'Mesocycle overview' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cycle overview' })).toBeNull();
     expect(screen.queryByTestId('action-menu')).toBeNull();
   });
 
@@ -422,7 +422,7 @@ describe('WorkoutScreen Finish mesocycle', () => {
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Finish cycle' }));
 
     expect(onFinishMesocycle).toHaveBeenCalledTimes(1);
   });
@@ -433,7 +433,7 @@ describe('WorkoutScreen Finish mesocycle', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Next workout' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Finish mesocycle' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Finish cycle' })).toBeNull();
   });
 
   test('waits while the block is being closed, so a double tap cannot repeat it', () => {
@@ -448,7 +448,7 @@ describe('WorkoutScreen Finish mesocycle', () => {
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Finish cycle' }));
 
     expect(onFinishMesocycle).not.toHaveBeenCalled();
   });
@@ -471,7 +471,7 @@ describe('WorkoutScreen states', () => {
           fallback: {
             title: 'Block complete',
             description: 'Every workout is done.',
-            actionLabel: 'Open mesocycles',
+            actionLabel: 'Open cycles',
             onAction,
           },
         })}
@@ -480,7 +480,7 @@ describe('WorkoutScreen states', () => {
 
     expect(screen.getByText('Block complete')).toBeTruthy();
     expect(screen.getByText('Every workout is done.')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Open mesocycles' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Open cycles' }));
 
     expect(onAction).toHaveBeenCalledTimes(1);
   });
@@ -501,7 +501,7 @@ describe('WorkoutScreen Copy current meso', () => {
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Copy current meso' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Copy current cycle' }));
 
     expect(onCopyMesocycle).toHaveBeenCalledTimes(1);
   });
@@ -509,7 +509,7 @@ describe('WorkoutScreen Copy current meso', () => {
   test('not there while the block is still running', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: COMPLETED })} />);
 
-    expect(screen.queryByRole('button', { name: 'Copy current meso' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy current cycle' })).toBeNull();
   });
 
   test('takes the place of Finish mesocycle rather than sitting beside it', () => {
@@ -519,7 +519,7 @@ describe('WorkoutScreen Copy current meso', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Copy current meso' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Finish mesocycle' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Copy current cycle' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish cycle' })).toBeNull();
   });
 });

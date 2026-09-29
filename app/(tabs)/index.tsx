@@ -35,7 +35,7 @@
 // exercise (`useSwapExercise`, 047). Delete, Skip and — with logged sets — Replace are confirmed in
 // the menu first.
 //
-// Stop mesocycle (052) opens `StopMesocycleSheet`, which stops the block once `END MESO` has been
+// Stop mesocycle (052) opens `StopMesocycleSheet`, which stops the block once `END CYCLE` has been
 // typed into it (`useStopMesocycle`); the tab then re-reads and, with no active mesocycle left,
 // invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
 // action of the `Block complete` EmptyState, so leaving that screen isn't a dead end — closes the
@@ -230,7 +230,7 @@ export default function TodayScreen() {
 
   /** Finish mesocycle (052), from the last workout or the `Block complete` EmptyState. */
   function confirmFinishMesocycle(mesoId: string) {
-    Alert.alert('Finish mesocycle?', FINISH_MESOCYCLE_CONFIRMATION, [
+    Alert.alert('Finish training cycle?', FINISH_MESOCYCLE_CONFIRMATION, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Finish',
@@ -240,7 +240,7 @@ export default function TodayScreen() {
             // is replaced in place by `Copy current meso` once the re-read model comes back
             // (Artem, 24.09.2026 — a finished block is still worth standing on, and block-level
             // actions like its history will land beside that button).
-            onError: () => Alert.alert("Couldn't finish the mesocycle", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't finish the training cycle", 'Please try again.'),
           }),
       },
     ]);
@@ -493,7 +493,7 @@ export default function TodayScreen() {
             // Like Finish, this doesn't navigate. Releasing the picked day is the tab bar's job
             // and only the tab bar's, so there is one rule for it rather than a list of actions
             // that each remember to do it.
-            onError: () => Alert.alert("Couldn't stop the mesocycle", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't stop the training cycle", 'Please try again.'),
           });
         }}
         isStopping={stopMesocycle.isPending}
@@ -510,7 +510,7 @@ export default function TodayScreen() {
           setIsRenameOpen(false);
           renameMesocycle.mutate(
             { mesoId: model.mesoId, name },
-            { onError: () => Alert.alert("Couldn't rename the mesocycle", 'Please try again.') },
+            { onError: () => Alert.alert("Couldn't rename the training cycle", 'Please try again.') },
           );
         }}
         isSaving={renameMesocycle.isPending}

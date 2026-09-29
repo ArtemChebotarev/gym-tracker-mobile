@@ -183,11 +183,11 @@ describe('MesocyclesScreen', () => {
     expect(screen.getAllByText('Planned')).toHaveLength(1); // group label only, no row badge
     expect(screen.queryByText('Active')).toBeNull();
     expect(screen.queryByText('Completed')).toBeNull();
-    expect(screen.queryByText('Plan your first mesocycle')).toBeNull();
+    expect(screen.queryByText('Plan your first training cycle')).toBeNull();
   });
 
   // The empty state raises the same sheet as `+` (Artem's call): the gesture that starts a block
-  // is the same one everywhere, even here, where `Copy a mesocycle` is provably off.
+  // is the same one everywhere, even here, where `Copy a cycle` is provably off.
   test('an entirely empty list shows the EmptyState, whose action opens the creation-method sheet', () => {
     const onCreateFromScratch = jest.fn();
     renderWithSafeArea(
@@ -207,7 +207,7 @@ describe('MesocyclesScreen', () => {
 
     fireEvent.press(screen.getByText(PLAN_MESOCYCLE_LABEL));
 
-    expect(screen.getByRole('button', { name: 'Copy a mesocycle' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copy a cycle' })).toBeDisabled();
     expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
   });
 
@@ -216,8 +216,8 @@ describe('MesocyclesScreen', () => {
     const onCreateFromScratch = jest.fn();
     renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCreateFromScratch })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
-    expect(screen.getByText('New mesocycle')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
+    expect(screen.getByText('New training cycle')).toBeTruthy();
 
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
@@ -228,8 +228,8 @@ describe('MesocyclesScreen', () => {
     const onCopyMesocycle = jest.fn();
     renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCopyMesocycle })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Copy a mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Copy a cycle' }));
 
     expect(onCopyMesocycle).toHaveBeenCalledTimes(1);
   });
@@ -241,8 +241,8 @@ describe('MesocyclesScreen', () => {
       <MesocyclesScreen {...makeProps({ mesocycles: [ACTIVE, PLANNED], onCopyMesocycle })} />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
-    const row = screen.getByRole('button', { name: 'Copy a mesocycle' });
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
+    const row = screen.getByRole('button', { name: 'Copy a cycle' });
 
     expect(row).toBeDisabled();
     expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
@@ -255,16 +255,16 @@ describe('MesocyclesScreen', () => {
     const stopped: Mesocycle = { ...COMPLETED, id: 'stopped', status: 'abandoned' };
     renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [stopped] })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
 
-    expect(screen.getByRole('button', { name: 'Copy a mesocycle' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copy a cycle' })).not.toBeDisabled();
   });
 
   // DoD (task 123): the sheet closes on a choice, so coming back doesn't land on it still open.
   test('choosing a method closes the sheet', () => {
     renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
     expect(screen.queryByRole('button', { name: 'From scratch' })).toBeNull();
@@ -274,14 +274,14 @@ describe('MesocyclesScreen', () => {
   test('a choice closes the sheet instantly, a dismissal still slides', () => {
     renderWithSafeArea(<MesocyclesScreen {...makeProps()} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
     expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
 
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
     expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('none');
 
     // Reopening slides again — the instant close was for that one hand-off only.
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
     expect(screen.UNSAFE_getByType(Modal).props.animationType).toBe('slide');
   });
 
@@ -304,7 +304,7 @@ describe('MesocyclesScreen', () => {
       fireEvent.press(screen.getByRole('button', { name: 'Start Push/Pull/Legs' }));
 
       expect(alertSpy).toHaveBeenCalledWith(
-        'Start this mesocycle?',
+        'Start this training cycle?',
         'Push/Pull/Legs · 6 weeks · 3 days/week. Week 1 starts today.',
         expect.any(Array),
       );
@@ -338,7 +338,7 @@ describe('MesocyclesScreen', () => {
       pickMenuItem('planned', 'delete');
 
       expect(alertSpy).toHaveBeenCalledWith(
-        'Delete mesocycle?',
+        'Delete training cycle?',
         "This can't be undone.",
         expect.any(Array),
       );
@@ -407,7 +407,7 @@ describe('MesocyclesScreen', () => {
       pickMenuItem('completed', 'archive');
 
       expect(alertSpy).toHaveBeenCalledWith(
-        'Archive mesocycle?',
+        'Archive training cycle?',
         formatArchiveConfirmMessage(COMPLETED),
         expect.any(Array),
       );

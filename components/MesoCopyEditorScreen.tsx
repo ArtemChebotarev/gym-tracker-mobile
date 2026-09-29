@@ -4,7 +4,7 @@
 // MesoEditorScreen with step S as its `leadStep`, so all four steps share one mounted wizard and
 // no chrome is recreated between them.
 //
-// Every entry point lands here (04, "Точки входа"): `+` → `Copy a mesocycle` knows nothing,
+// Every entry point lands here (04, "Точки входа"): `+` → `Copy a cycle` knows nothing,
 // `Copy` on a Completed row knows the block. The difference is `initialMesoId` and nothing else —
 // the step is never skipped, it just opens with that block already chosen, and the week is
 // resolved by the same default either way.
@@ -79,7 +79,7 @@ export function MesoCopyEditorScreen({ initialMesoId }: MesoCopyEditorScreenProp
 
   return (
     <MesoEditorScreen
-      title="New mesocycle"
+      title="New training cycle"
       saveMutation={confirmCopyWeekDraft}
       leadStep={{
         title: 'Select a week to copy',

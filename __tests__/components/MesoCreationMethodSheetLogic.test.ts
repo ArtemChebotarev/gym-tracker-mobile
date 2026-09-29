@@ -8,6 +8,6 @@ describe('copyMethodCaption', () => {
   // The row is greyed out in this case, so its line has to carry the reason — and name the way
   // out of it, not just state the fact.
   test('says why the row is off, and what makes it work', () => {
-    expect(copyMethodCaption(false)).toBe('Nothing to copy yet — finish a mesocycle first');
+    expect(copyMethodCaption(false)).toBe('Nothing to copy yet — finish a training cycle first');
   });
 });

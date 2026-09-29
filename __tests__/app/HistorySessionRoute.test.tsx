@@ -62,7 +62,7 @@ describe('History session route', () => {
     expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
     expect(screen.getByLabelText('Completed')).toBeTruthy();
     // History: no grid button, no header menu, no Next workout.
-    expect(screen.queryByLabelText('Mesocycle overview')).toBeNull();
+    expect(screen.queryByLabelText('Cycle overview')).toBeNull();
     expect(screen.queryByLabelText('Workout menu')).toBeNull();
     expect(screen.queryByText('Next workout')).toBeNull();
     expect(screen.queryByLabelText('Bench Press menu')).toBeNull();

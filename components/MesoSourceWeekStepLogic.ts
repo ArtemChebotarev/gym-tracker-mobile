@@ -22,7 +22,7 @@ export const SOURCE_WEEK_HINT =
  * other blocks are still in the dropdown above it.
  */
 export const NO_SOURCE_WEEKS_HINT =
-  'This mesocycle has no week to copy — nothing was trained outside its deload week.';
+  'This training cycle has no week to copy — nothing was trained outside its deload week.';
 
 /** Options for the mesocycle dropdown, in the order given — newest-finished first (08.3's own). */
 export function toMesocycleOptions(mesocycles: readonly Mesocycle[]): DropdownOption[] {

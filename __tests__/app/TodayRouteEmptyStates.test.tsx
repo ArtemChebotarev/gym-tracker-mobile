@@ -106,7 +106,7 @@ describe('Today tab — no session to show', () => {
     renderToday();
 
     fireEvent.press(await screen.findByRole('button', { name: PLAN_MESOCYCLE_LABEL }));
-    const copy = await screen.findByRole('button', { name: 'Copy a mesocycle' });
+    const copy = await screen.findByRole('button', { name: 'Copy a cycle' });
     await waitFor(() => expect(copy).not.toBeDisabled());
     fireEvent.press(copy);
 
@@ -118,10 +118,10 @@ describe('Today tab — no session to show', () => {
     renderToday();
 
     expect(await screen.findByText('Block complete')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Finish mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Finish cycle' }));
 
     expect(alertSpy).toHaveBeenCalledWith(
-      'Finish mesocycle?',
+      'Finish training cycle?',
       FINISH_MESOCYCLE_CONFIRMATION,
       expect.any(Array),
     );

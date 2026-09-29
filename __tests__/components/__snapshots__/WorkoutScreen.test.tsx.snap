@@ -195,7 +195,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
           }
         >
           <View
-            accessibilityLabel="Mesocycle overview"
+            accessibilityLabel="Cycle overview"
             accessibilityRole="button"
             accessibilityState={
               {
@@ -429,21 +429,21 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                   />
                 </ViewManagerAdapter_ExpoUI>
                 <ViewManagerAdapter_ExpoUI
-                  label="Rename mesocycle"
+                  label="Rename cycle"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Mesocycle history"
+                  label="Cycle history"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Stop mesocycle"
+                  label="Stop cycle"
                   onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"
@@ -1497,7 +1497,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
           }
         >
           <View
-            accessibilityLabel="Mesocycle overview"
+            accessibilityLabel="Cycle overview"
             accessibilityRole="button"
             accessibilityState={
               {
@@ -1738,21 +1738,21 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                   testID="action-menu-addExercise"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Rename mesocycle"
+                  label="Rename cycle"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Mesocycle history"
+                  label="Cycle history"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Stop mesocycle"
+                  label="Stop cycle"
                   onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"
@@ -2401,7 +2401,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
           }
         >
           <View
-            accessibilityLabel="Mesocycle overview"
+            accessibilityLabel="Cycle overview"
             accessibilityRole="button"
             accessibilityState={
               {
@@ -2635,21 +2635,21 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                   />
                 </ViewManagerAdapter_ExpoUI>
                 <ViewManagerAdapter_ExpoUI
-                  label="Rename mesocycle"
+                  label="Rename cycle"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="pencil"
                   testID="action-menu-renameMesocycle"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Mesocycle history"
+                  label="Cycle history"
                   onButtonPress={[MockFunction]}
                   role="default"
                   systemImage="clock.arrow.circlepath"
                   testID="action-menu-mesocycleHistory"
                 />
                 <ViewManagerAdapter_ExpoUI
-                  label="Stop mesocycle"
+                  label="Stop cycle"
                   onButtonPress={[MockFunction]}
                   role="destructive"
                   systemImage="stop.circle"

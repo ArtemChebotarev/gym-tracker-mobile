@@ -3,7 +3,7 @@
 // components/MesoCopyEditorScreen.tsx; this route only reads which block, if any, the entry point
 // already knew about.
 //
-// `sourceMesoId` is optional by design, not a missing case: `+` → `Copy a mesocycle` arrives
+// `sourceMesoId` is optional by design, not a missing case: `+` → `Copy a cycle` arrives
 // without one and the step resolves its own default, while `Copy` on a Completed row (08.3) and
 // the offer after Finish mesocycle pass the block they were pressed on. Step S is shown either
 // way — it is never skipped (04, "Точки входа").

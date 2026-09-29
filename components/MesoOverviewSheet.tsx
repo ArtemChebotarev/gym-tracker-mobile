@@ -39,7 +39,7 @@ export function MesoOverviewSheet({
 }: MesoOverviewSheetProps) {
   if (grid === undefined) {
     return (
-      <BottomSheet visible={visible} onClose={onClose} title="Mesocycle">
+      <BottomSheet visible={visible} onClose={onClose} title="Training cycle">
         <Text style={styles.status}>Loading…</Text>
       </BottomSheet>
     );

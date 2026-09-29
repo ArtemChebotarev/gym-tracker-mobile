@@ -2,7 +2,7 @@
 // 08.8 · Редактор мезоцикла — Flow C, "Лист «Способ создания»".
 
 /**
- * The line under `Copy a mesocycle`.
+ * The line under `Copy a cycle`.
  *
  * Normally it says what copying is for. With nothing finished yet it says why the row is off
  * instead: the row exists because the feature does, it just has no data to work from, and a row
@@ -13,5 +13,5 @@
 export function copyMethodCaption(canCopy: boolean): string {
   return canCopy
     ? "Start from a week you've already trained"
-    : "Nothing to copy yet — finish a mesocycle first";
+    : "Nothing to copy yet — finish a training cycle first";
 }

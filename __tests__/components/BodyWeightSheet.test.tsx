@@ -35,7 +35,7 @@ describe('BodyWeightSheet', () => {
     renderWithSafeArea(<BodyWeightSheet {...makeProps()} />);
 
     expect(screen.getByText('Your body weight')).toBeTruthy();
-    expect(screen.getByText("Used for this mesocycle's bodyweight exercises")).toBeTruthy();
+    expect(screen.getByText("Used for this training cycle's bodyweight exercises")).toBeTruthy();
     expect(screen.getByLabelText('Body weight, kg')).toBeTruthy();
   });
 

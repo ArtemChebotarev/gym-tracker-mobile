@@ -5,7 +5,7 @@
 // ревью") and hands `dayNumber` back to the caller, which returns to step 2 with that day active.
 //
 // Fully controlled, the same way MesoEditorDaysStep.tsx is: the caller (app/meso-editor/new.tsx)
-// owns the draft and the resolved exercise records. `Save mesocycle` lives in the shared footer,
+// owns the draft and the resolved exercise records. `Save cycle` lives in the shared footer,
 // not here — see app/meso-editor/new.tsx.
 //
 // JSX/rendering only — styles live in MesoEditorReviewStepStyles.ts and pure helpers in

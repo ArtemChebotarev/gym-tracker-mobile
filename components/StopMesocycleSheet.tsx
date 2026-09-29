@@ -2,7 +2,7 @@
 // мезоцикл"). Opened by the header menu's danger `Stop mesocycle`, which only closes the menu; the
 // block is called off from here.
 //
-// A sheet rather than an Alert, because what it asks for is typed: `END MESO` into the field
+// A sheet rather than an Alert, because what it asks for is typed: `END CYCLE` into the field
 // before the button does anything (Artem's review of 052 — a yes/no popup is too small a gate for
 // ending weeks of training, and RP's own app asks for the words). The warning above the field says
 // what goes and, as importantly, what stays: every logged set does.
@@ -52,11 +52,11 @@ export function StopMesocycleSheet({
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title="Stop mesocycle"
+      title="Stop training cycle"
       subtitle={mesocycleName}
       footer={
         <Button
-          label="Stop mesocycle"
+          label="Stop cycle"
           variant="danger"
           onPress={() => {
             if (confirmed) {

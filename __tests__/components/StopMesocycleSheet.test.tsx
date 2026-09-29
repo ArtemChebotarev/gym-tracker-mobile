@@ -32,15 +32,16 @@ function makeProps(overrides: Partial<StopMesocycleSheetProps> = {}): StopMesocy
 }
 
 function stopButton() {
-  return screen.getByRole('button', { name: 'Stop mesocycle' });
+  return screen.getByRole('button', { name: 'Stop cycle' });
 }
 
 describe('StopMesocycleSheet', () => {
   test('names the block and says what stopping does', () => {
     renderWithSafeArea(<StopMesocycleSheet {...makeProps()} />);
 
-    // Title and button both read `Stop mesocycle` — the sheet says once more what was tapped.
-    expect(screen.getAllByText('Stop mesocycle')).toHaveLength(2);
+    // The title spells the concept out; the button under it keeps the short form.
+    expect(screen.getByText('Stop training cycle')).toBeTruthy();
+    expect(screen.getByText('Stop cycle')).toBeTruthy();
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
     expect(screen.getByText(STOP_MESOCYCLE_WARNING)).toBeTruthy();
     expect(screen.getByLabelText(`Type ${STOP_MESOCYCLE_PHRASE} to confirm`)).toBeTruthy();

@@ -195,7 +195,7 @@ export function WorkoutScreen({
         trailing={
           showsHeaderActions(model.mode) ? (
             <View style={styles.actions}>
-              <IconButton accessibilityLabel="Mesocycle overview" onPress={onOpenGrid}>
+              <IconButton accessibilityLabel="Cycle overview" onPress={onOpenGrid}>
                 <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
               </IconButton>
               <ActionMenu
@@ -252,7 +252,7 @@ export function WorkoutScreen({
           {model.showFinishMesocycle && (
             <View style={styles.finish}>
               <Button
-                label="Finish mesocycle"
+                label="Finish cycle"
                 onPress={onFinishMesocycle}
                 disabled={isFinishingMesocycle}
               />
@@ -260,7 +260,7 @@ export function WorkoutScreen({
           )}
           {model.showCopyMesocycle && (
             <View style={styles.finish}>
-              <Button label="Copy current meso" onPress={onCopyMesocycle} />
+              <Button label="Copy current cycle" onPress={onCopyMesocycle} />
             </View>
           )}
           {model.unlocksAfter !== undefined && (

@@ -80,14 +80,14 @@ async function openEditorOn(mesocycle: Mesocycle) {
 async function goToReviewStep() {
   fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
   fireEvent.press(await screen.findByRole('button', { name: 'Continue' }));
-  await screen.findByRole('button', { name: 'Save mesocycle' });
+  await screen.findByRole('button', { name: 'Save cycle' });
 }
 
 describe('EditMesocycleRoute', () => {
-  test('opens the editor titled Edit mesocycle, prefilled with the saved mesocycle', async () => {
+  test('opens the editor titled Edit training cycle, prefilled with the saved mesocycle', async () => {
     await openEditorOn(makePlanned('edit-route-prefill'));
 
-    expect(screen.getByText('Edit mesocycle')).toBeTruthy();
+    expect(screen.getByText('Edit training cycle')).toBeTruthy();
     expect(screen.getByDisplayValue('Edit Route Block')).toBeTruthy();
   });
 
@@ -97,7 +97,7 @@ describe('EditMesocycleRoute', () => {
 
     fireEvent.changeText(screen.getByDisplayValue('Edit Route Block'), 'Renamed Block');
     await goToReviewStep();
-    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Save cycle' }));
 
     await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/mesocycles'));
 
@@ -120,11 +120,11 @@ describe('EditMesocycleRoute', () => {
     });
 
     await goToReviewStep();
-    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Save cycle' }));
 
     await waitFor(() =>
       expect(alertSpy).toHaveBeenCalledWith(
-        "Couldn't save mesocycle",
+        "Couldn't save training cycle",
         'Something went wrong. Please try again.',
       ),
     );
