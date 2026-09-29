@@ -156,6 +156,8 @@ export const SPACING = {
   'space/button': 15,
   'space/pill-x': 18,
   'space/xl': 24,
+  /** Between the header of a screen and an EmptyState's icon — it sits high, not in the middle (08.0.1). */
+  'space/empty-top': 72,
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;

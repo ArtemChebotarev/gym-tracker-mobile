@@ -5,9 +5,9 @@
 // action rather than a second button implementation.
 //
 // The layout belongs here, not to the screens: the component fills whatever room is left under a
-// screen's header (a title, a back button or a search field — it doesn't care which) and centres
-// its content in it, so every empty state sits the same way. A screen passes the icon, the copy
-// and the action, and `bottomInset` when something covers the bottom of that room (the tab bar).
+// screen's header (a title, a back button or a search field — it doesn't care which) and starts
+// its content a fixed distance below the top of it — high on the screen, not in the middle — so
+// every empty state sits the same way. A screen passes the icon, the copy and the action.
 
 import { StyleSheet, Text, View } from 'react-native';
 import type { IconComponent } from '../icons/IconFrame';
@@ -32,8 +32,6 @@ export type EmptyStateProps = {
   description: string;
   actionLabel: string;
   onAction: () => void;
-  /** Room to leave at the bottom of the centred area — the tab bar's clearance on a tab screen. */
-  bottomInset?: number;
 };
 
 export function EmptyState({
@@ -42,10 +40,9 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
-  bottomInset = 0,
 }: EmptyStateProps) {
   return (
-    <View testID="empty-state" style={[styles.container, { paddingBottom: bottomInset }]}>
+    <View testID="empty-state" style={styles.container}>
       {Icon !== undefined && (
         <View testID="empty-state-icon" style={styles.iconCircle}>
           <Icon size={ICON_SIZES['icon/tab']} color={COLORS.accent} />
@@ -66,7 +63,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: SPACING['space/empty-top'],
     paddingHorizontal: SPACING['space/screen'],
     gap: SPACING['space/gap-tight'],
   },

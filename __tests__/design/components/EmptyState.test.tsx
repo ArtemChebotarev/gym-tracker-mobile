@@ -1,5 +1,6 @@
 import { EmptyState } from '@design/components/EmptyState';
 import { CheckIcon } from '@design/icons/CheckIcon';
+import { SPACING } from '@design/tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
@@ -50,19 +51,12 @@ describe('EmptyState', () => {
     expect(screen.queryByTestId('empty-state-icon')).toBeNull();
   });
 
-  test('fills the room it is given and leaves the bottom inset clear', () => {
-    render(
-      <EmptyState
-        title="Plan"
-        description="Here"
-        actionLabel="Go"
-        onAction={() => {}}
-        bottomInset={90}
-      />,
-    );
+  test('fills the room it is given and starts its content near the top of it', () => {
+    render(<EmptyState title="Plan" description="Here" actionLabel="Go" onAction={() => {}} />);
 
     const style = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
     expect(style.flex).toBe(1);
-    expect(style.paddingBottom).toBe(90);
+    expect(style.paddingTop).toBe(SPACING['space/empty-top']);
+    expect(style.justifyContent).toBeUndefined();
   });
 });
