@@ -18,8 +18,8 @@ describe('todayEmptyCopy', () => {
     expect(todayEmptyCopy('unavailable').actionLabel).toBe('Open cycles');
   });
 
-  test('says the block is complete once nothing is left, and offers to finish it (052)', () => {
-    expect(todayEmptyCopy('allDone').title).toBe('Block complete');
+  test('says the cycle is complete once nothing is left, and offers to finish it (052)', () => {
+    expect(todayEmptyCopy('allDone').title).toBe('Training cycle complete');
     expect(todayEmptyCopy('allDone').actionLabel).toBe('Finish cycle');
   });
 });

@@ -1,5 +1,8 @@
 import { EmptyState } from '@design/components/EmptyState';
+import { CheckIcon } from '@design/icons/CheckIcon';
+import { SPACING } from '@design/tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 describe('EmptyState', () => {
   test('renders the title, description, and action', () => {
@@ -26,5 +29,41 @@ describe('EmptyState', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  test('draws the icon above the title when given one', () => {
+    render(
+      <EmptyState
+        icon={CheckIcon}
+        title="Training cycle complete"
+        description="Every workout is done."
+        actionLabel="Finish cycle"
+        onAction={() => {}}
+      />,
+    );
+
+    expect(screen.getByTestId('empty-state-icon')).toBeTruthy();
+  });
+
+  test('draws no icon circle without one', () => {
+    render(<EmptyState title="Nothing" description="Here" actionLabel="Go" onAction={() => {}} />);
+
+    expect(screen.queryByTestId('empty-state-icon')).toBeNull();
+  });
+
+  test('fills the room it is given and leaves the bottom inset clear', () => {
+    render(
+      <EmptyState
+        title="Plan"
+        description="Here"
+        actionLabel="Go"
+        onAction={() => {}}
+        bottomInset={90}
+      />,
+    );
+
+    const style = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
+    expect(style.flex).toBe(1);
+    expect(style.paddingBottom).toBe(90 + SPACING['space/empty-lift']);
   });
 });

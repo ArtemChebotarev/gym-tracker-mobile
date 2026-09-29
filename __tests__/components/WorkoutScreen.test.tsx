@@ -469,7 +469,7 @@ describe('WorkoutScreen states', () => {
         {...makeProps({
           model: undefined,
           fallback: {
-            title: 'Block complete',
+            title: 'Training cycle complete',
             description: 'Every workout is done.',
             actionLabel: 'Open cycles',
             onAction,
@@ -478,7 +478,7 @@ describe('WorkoutScreen states', () => {
       />,
     );
 
-    expect(screen.getByText('Block complete')).toBeTruthy();
+    expect(screen.getByText('Training cycle complete')).toBeTruthy();
     expect(screen.getByText('Every workout is done.')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Open cycles' }));
 

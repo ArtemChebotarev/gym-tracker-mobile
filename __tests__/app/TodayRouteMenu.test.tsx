@@ -189,7 +189,7 @@ describe('Today tab — header menu', () => {
       repositories().workoutStore.repos.setLogRepo.listBySessionId(WORKOUT_FIXTURE_IDS.live),
     ).resolves.toHaveLength(2);
     // With no active mesocycle left, the tab invites planning the next one.
-    expect(await screen.findByText('Plan your training block')).toBeTruthy();
+    expect(await screen.findByText('Start your next training cycle')).toBeTruthy();
   });
 
   // Stop used to be the only thing a closed block took off this menu (052). Since 128 the whole

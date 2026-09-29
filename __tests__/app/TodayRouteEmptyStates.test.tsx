@@ -117,7 +117,7 @@ describe('Today tab — no session to show', () => {
     mockToday = { kind: 'allDone', mesoId: await seedFinishableBlock() };
     renderToday();
 
-    expect(await screen.findByText('Block complete')).toBeTruthy();
+    expect(await screen.findByText('Training cycle complete')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Finish cycle' }));
 
     expect(alertSpy).toHaveBeenCalledWith(

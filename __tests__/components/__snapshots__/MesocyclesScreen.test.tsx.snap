@@ -2295,20 +2295,29 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
       </View>
       <View
         style={
-          {
-            "alignItems": "center",
-            "gap": 8,
-            "paddingHorizontal": 16,
-            "paddingVertical": 24,
-          }
+          [
+            {
+              "alignItems": "center",
+              "flex": 1,
+              "gap": 8,
+              "justifyContent": "center",
+              "paddingHorizontal": 16,
+            },
+            {
+              "paddingBottom": 48,
+            },
+          ]
         }
+        testID="empty-state"
       >
         <Text
+          numberOfLines={2}
           style={
             {
-              "color": "#5A5F65",
-              "fontSize": 24,
+              "color": "#F5F5F4",
+              "fontSize": 17,
               "fontWeight": "500",
+              "maxWidth": 320,
               "textAlign": "center",
             }
           }
@@ -2318,8 +2327,10 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
         <Text
           style={
             {
-              "color": "#5A5F65",
-              "fontSize": 17,
+              "color": "#C9CDD2",
+              "fontSize": 15,
+              "fontWeight": "400",
+              "maxWidth": 320,
               "textAlign": "center",
             }
           }
