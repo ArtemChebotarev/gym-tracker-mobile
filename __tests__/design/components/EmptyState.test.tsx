@@ -51,12 +51,19 @@ describe('EmptyState', () => {
     expect(screen.queryByTestId('empty-state-icon')).toBeNull();
   });
 
-  test('fills the room it is given and starts its content near the top of it', () => {
-    render(<EmptyState title="Plan" description="Here" actionLabel="Go" onAction={() => {}} />);
+  test('fills the room it is given and leaves the bottom inset clear', () => {
+    render(
+      <EmptyState
+        title="Plan"
+        description="Here"
+        actionLabel="Go"
+        onAction={() => {}}
+        bottomInset={90}
+      />,
+    );
 
     const style = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
     expect(style.flex).toBe(1);
-    expect(style.paddingTop).toBe(SPACING['space/empty-top']);
-    expect(style.justifyContent).toBeUndefined();
+    expect(style.paddingBottom).toBe(90 + SPACING['space/empty-lift']);
   });
 });

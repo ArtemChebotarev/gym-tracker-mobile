@@ -92,7 +92,7 @@ const EXPECTED_SPACING_TOKENS = [
   'space/button',
   'space/pill-x',
   'space/xl',
-  'space/empty-top',
+  'space/empty-lift',
 ];
 
 function sorted(values: string[]): string[] {

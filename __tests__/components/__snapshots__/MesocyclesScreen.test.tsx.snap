@@ -2295,13 +2295,18 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
       </View>
       <View
         style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "gap": 8,
-            "paddingHorizontal": 16,
-            "paddingTop": 72,
-          }
+          [
+            {
+              "alignItems": "center",
+              "flex": 1,
+              "gap": 8,
+              "justifyContent": "center",
+              "paddingHorizontal": 16,
+            },
+            {
+              "paddingBottom": 48,
+            },
+          ]
         }
         testID="empty-state"
       >

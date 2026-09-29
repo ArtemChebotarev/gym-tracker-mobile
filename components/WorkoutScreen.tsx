@@ -164,7 +164,7 @@ export function WorkoutScreen({
     return (
       <View style={styles.root}>
         <RootScreen title="Workout" onBack={onBack}>
-          <EmptyState {...fallback} />
+          <EmptyState {...fallback} bottomInset={onBack === undefined ? tabBarClearance : 0} />
         </RootScreen>
       </View>
     );

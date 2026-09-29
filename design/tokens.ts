@@ -156,8 +156,12 @@ export const SPACING = {
   'space/button': 15,
   'space/pill-x': 18,
   'space/xl': 24,
-  /** Between the header of a screen and an EmptyState's icon — it sits high, not in the middle (08.0.1). */
-  'space/empty-top': 72,
+  /**
+   * How far above the geometric centre an EmptyState sits: the eye reads the middle of a screen
+   * higher than the middle of the room it is measured in, and a tall icon over light text pulls
+   * the mass down (08.0.1).
+   */
+  'space/empty-lift': 48,
 } as const;
 
 export type SpacingToken = keyof typeof SPACING;
@@ -167,6 +171,8 @@ export type SpacingToken = keyof typeof SPACING;
 // The smaller ones size inline marks and text glyphs used as icons (✕, ›, ⋮⋮, +).
 export const ICON_SIZES = {
   'icon/tab': 24,
+  /** The icon inside an EmptyState's circle — large, so the state reads as a place, not a caption (08.0.1). */
+  'icon/empty': 48,
   'icon/button': 20,
   'icon/chevron': 22,
   'icon/small': 18,
@@ -279,7 +285,7 @@ export const SIZES = {
    */
   'size/glyph-button': 24,
   /** The circle behind an EmptyState's icon (08.0.1). */
-  'size/empty-icon': 52,
+  'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */
   'size/empty-text': 320,
 } as const;
