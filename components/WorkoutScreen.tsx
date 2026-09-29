@@ -49,6 +49,7 @@ import { ProgressBar } from '@design/components/ProgressBar';
 import { RootScreen } from '@design/components/RootScreen';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
+import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
@@ -113,7 +114,13 @@ export type WorkoutScreenProps = {
    * The EmptyState shown in place of the screen when there's no session to show — none to pick,
    * or it couldn't be loaded. The caller knows which, so it supplies the copy and the way forward.
    */
-  fallback: { title: string; description: string; actionLabel: string; onAction: () => void };
+  fallback: {
+    icon?: IconComponent;
+    title: string;
+    description: string;
+    actionLabel: string;
+    onAction: () => void;
+  };
   /**
    * Pushed as a page (`session/[id]`, 08.9, task 130) rather than shown as the Today tab: a back
    * button above the title, in every state, loading and the fallback included.
@@ -157,7 +164,7 @@ export function WorkoutScreen({
     return (
       <View style={styles.root}>
         <RootScreen title="Workout" onBack={onBack}>
-          <EmptyState {...fallback} />
+          <EmptyState {...fallback} bottomInset={onBack === undefined ? tabBarClearance : 0} />
         </RootScreen>
       </View>
     );

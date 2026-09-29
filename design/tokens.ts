@@ -276,6 +276,10 @@ export const SIZES = {
    * Reps column header (08.7.1). Drawn at 24, 44pt to the touch through `tapTargetSlop`.
    */
   'size/glyph-button': 24,
+  /** The circle behind an EmptyState's icon (08.0.1). */
+  'size/empty-icon': 52,
+  /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */
+  'size/empty-text': 320,
 } as const;
 
 export type SizeToken = keyof typeof SIZES;

@@ -38,7 +38,7 @@
 // Stop mesocycle (052) opens `StopMesocycleSheet`, which stops the block once `END CYCLE` has been
 // typed into it (`useStopMesocycle`); the tab then re-reads and, with no active mesocycle left,
 // invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
-// action of the `Block complete` EmptyState, so leaving that screen isn't a dead end — closes the
+// action of the `Training cycle complete` EmptyState, so leaving that screen isn't a dead end — closes the
 // block through `useFinishMesocycle` after a plain confirmation: it throws nothing away. The screen
 // does not move afterwards — `Finish mesocycle` is replaced in place by `Copy current meso`
 // (04, "Завершение мезоцикла"), which opens Flow C on the block that just ended. Stopping gets no
@@ -130,7 +130,7 @@ export default function TodayScreen() {
   const mesocycles = useMesocycles();
   const methodSheet = useMesoCreationMethodSheet();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
-  // The block the `Block complete` EmptyState would finish — there's no session model to read it
+  // The block the `Training cycle complete` EmptyState would finish — there's no session model to read it
   // from, since the tab has no session left to show.
   const allDoneMesoId = query.data?.kind === 'allDone' ? query.data.mesoId : undefined;
   const currentSessionId = model?.sessionId;
@@ -228,7 +228,7 @@ export default function TodayScreen() {
     ]);
   }
 
-  /** Finish mesocycle (052), from the last workout or the `Block complete` EmptyState. */
+  /** Finish mesocycle (052), from the last workout or the `Training cycle complete` EmptyState. */
   function confirmFinishMesocycle(mesoId: string) {
     Alert.alert('Finish training cycle?', FINISH_MESOCYCLE_CONFIRMATION, [
       { text: 'Cancel', style: 'cancel' },

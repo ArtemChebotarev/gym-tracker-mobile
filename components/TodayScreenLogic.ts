@@ -2,6 +2,10 @@
 // skill; they live here because every file under app/ is a route.
 
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
+import { CheckIcon } from '@design/icons/CheckIcon';
+import type { IconComponent } from '@design/icons/IconFrame';
+import { InfoIcon } from '@design/icons/InfoIcon';
+import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -21,13 +25,14 @@ export function formatInProgressConflict(session: {
 export type TodayEmptyReason = 'noActiveMesocycle' | 'allDone' | 'unavailable';
 
 /**
- * The EmptyState copy for `reason` — an invitation, not an apology (08.0, "EmptyState"). Without an
- * active mesocycle it invites planning one (08, "Сегодня") — through the same creation-method sheet
- * the `+` on 08.3 raises, since finished blocks may well exist to copy even when none is running;
- * with the block done it closes it (052 — the same Finish the last workout offers, so leaving that
- * screen isn't a dead end); otherwise it leads to the mesocycles.
+ * The EmptyState for `reason` — an invitation, not an apology (08.0.1, "Empty states"). Without an
+ * active cycle it invites planning one (08, "Сегодня") — through the same creation-method sheet
+ * the `+` on 08.3 raises, since finished cycles may well exist to copy even when none is running;
+ * with the cycle done it closes it (052 — the same Finish the last workout offers, so leaving that
+ * screen isn't a dead end); otherwise it leads to the cycles.
  */
 export function todayEmptyCopy(reason: TodayEmptyReason): {
+  icon: IconComponent;
   title: string;
   description: string;
   actionLabel: string;
@@ -35,18 +40,21 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
   switch (reason) {
     case 'noActiveMesocycle':
       return {
-        title: 'Plan your training block',
-        description: 'Plan a training cycle and start it — its workouts show up here.',
+        icon: TabTodayIcon,
+        title: 'Start your next training cycle',
+        description: 'Plan one and its workouts will show up here.',
         actionLabel: PLAN_MESOCYCLE_LABEL,
       };
     case 'allDone':
       return {
-        title: 'Block complete',
-        description: 'Every workout of this training cycle is done. Finish it to close the block.',
+        icon: CheckIcon,
+        title: 'Training cycle complete',
+        description: 'Every workout is done. Finish it to move it to Completed.',
         actionLabel: 'Finish cycle',
       };
     case 'unavailable':
       return {
+        icon: InfoIcon,
         title: 'Pick another workout',
         description: "This workout isn't available anymore. Choose another day to train.",
         actionLabel: 'Open cycles',
