@@ -83,7 +83,7 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
   test('Save mesocycle saves a planned mesocycle via Confirm, creates no Session, and closes', async () => {
     await renderAtReviewStep();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Save cycle' }));
 
     // The saved block ends on the Mesocycles tab, where it now sits, rather than back on
     // whatever opened the editor (Artem, 24.09.2026).
@@ -116,11 +116,11 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
       .mockRejectedValueOnce(new Error('storage down'));
     await renderAtReviewStep();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Save cycle' }));
 
     await waitFor(() =>
       expect(alertSpy).toHaveBeenCalledWith(
-        "Couldn't save mesocycle",
+        "Couldn't save training cycle",
         'Something went wrong. Please try again.',
       ),
     );

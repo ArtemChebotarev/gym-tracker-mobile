@@ -8,5 +8,5 @@ import { useConfirmMesocycleDraft } from '@state/useConfirmMesocycleDraft';
 export default function MesoEditorRoute() {
   const confirmMesocycleDraft = useConfirmMesocycleDraft();
 
-  return <MesoEditorScreen title="New mesocycle" saveMutation={confirmMesocycleDraft} />;
+  return <MesoEditorScreen title="New training cycle" saveMutation={confirmMesocycleDraft} />;
 }

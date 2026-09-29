@@ -26,14 +26,14 @@ export const WORKOUT_MENU_ACTIONS: Record<
 > = {
   addExercise: { label: 'Add exercise', icon: PlusIcon, systemImage: 'plus' },
   skipWorkout: { label: 'Skip workout', icon: SkipIcon, systemImage: 'forward.end' },
-  renameMesocycle: { label: 'Rename mesocycle', icon: EditIcon, systemImage: 'pencil' },
+  renameMesocycle: { label: 'Rename cycle', icon: EditIcon, systemImage: 'pencil' },
   mesocycleHistory: {
-    label: 'Mesocycle history',
+    label: 'Cycle history',
     icon: HistoryIcon,
     systemImage: 'clock.arrow.circlepath',
   },
   stopMesocycle: {
-    label: 'Stop mesocycle',
+    label: 'Stop cycle',
     icon: StopIcon,
     systemImage: 'stop.circle',
     destructive: true,

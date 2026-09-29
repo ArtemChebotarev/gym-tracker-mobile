@@ -42,10 +42,10 @@ describe('MesoEditorFooter', () => {
   test('renders a custom continue label', () => {
     const onContinue = jest.fn();
     render(
-      <MesoEditorFooter onContinue={onContinue} continueDisabled={false} continueLabel="Save mesocycle" />,
+      <MesoEditorFooter onContinue={onContinue} continueDisabled={false} continueLabel="Save cycle" />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Save cycle' }));
 
     expect(onContinue).toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();

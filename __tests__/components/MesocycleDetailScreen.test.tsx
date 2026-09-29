@@ -178,7 +178,7 @@ describe('MesocycleDetailScreen', () => {
     const onBack = jest.fn();
     renderScreen({ detail: null, onBack });
 
-    expect(screen.getByText('Mesocycle not found')).toBeTruthy();
+    expect(screen.getByText('Training cycle not found')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Go back' }));
     expect(onBack).toHaveBeenCalled();
   });

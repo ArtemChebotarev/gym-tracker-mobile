@@ -15,11 +15,11 @@ describe('todayEmptyCopy', () => {
   });
 
   test('a workout that is gone leads to the mesocycles', () => {
-    expect(todayEmptyCopy('unavailable').actionLabel).toBe('Open mesocycles');
+    expect(todayEmptyCopy('unavailable').actionLabel).toBe('Open cycles');
   });
 
   test('says the block is complete once nothing is left, and offers to finish it (052)', () => {
     expect(todayEmptyCopy('allDone').title).toBe('Block complete');
-    expect(todayEmptyCopy('allDone').actionLabel).toBe('Finish mesocycle');
+    expect(todayEmptyCopy('allDone').actionLabel).toBe('Finish cycle');
   });
 });

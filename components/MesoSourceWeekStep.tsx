@@ -55,11 +55,11 @@ export function MesoSourceWeekStep({
     <View style={styles.content}>
       <View style={styles.section}>
         <Dropdown
-          label="Mesocycle"
+          label="Cycle"
           options={toMesocycleOptions(mesocycles)}
           value={selectedMesoId}
           onChange={onChangeMesoId}
-          placeholder="Select a mesocycle"
+          placeholder="Select a cycle"
         />
       </View>
 

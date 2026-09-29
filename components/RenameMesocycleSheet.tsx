@@ -44,7 +44,7 @@ export function RenameMesocycleSheet({
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title="Rename mesocycle"
+      title="Rename training cycle"
       footer={
         <Button
           label="Save"
@@ -59,7 +59,7 @@ export function RenameMesocycleSheet({
     >
       <View style={styles.content}>
         <TextField
-          label="Mesocycle name"
+          label="Cycle name"
           value={value}
           onChangeText={onChangeValue}
           placeholder="Push/Pull/Legs"

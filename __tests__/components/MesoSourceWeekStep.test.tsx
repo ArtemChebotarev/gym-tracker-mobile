@@ -54,7 +54,7 @@ describe('MesoSourceWeekStep', () => {
   test('shows both fields, each answered by its default', () => {
     render(<MesoSourceWeekStep {...makeProps()} />);
 
-    expect(screen.getByRole('button', { name: 'Mesocycle' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cycle' })).toBeTruthy();
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Week' })).toBeTruthy();
     expect(screen.getByText('Week 4 · 1 of 3 workouts')).toBeTruthy();
@@ -100,7 +100,7 @@ describe('MesoSourceWeekStep', () => {
     const onChangeMesoId = jest.fn();
     render(<MesoSourceWeekStep {...makeProps({ onChangeMesoId })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle' }));
     fireEvent.press(screen.getByRole('button', { name: 'Push/Pull' }));
 
     expect(onChangeMesoId).toHaveBeenCalledWith('meso-1');
@@ -110,7 +110,7 @@ describe('MesoSourceWeekStep', () => {
     render(<MesoSourceWeekStep {...makeProps({ weeks: undefined })} />);
 
     expect(screen.queryByRole('button', { name: 'Week' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Mesocycle' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cycle' })).toBeTruthy();
   });
 
   test('explains a block with no week to copy instead of an empty dropdown', () => {
@@ -119,7 +119,7 @@ describe('MesoSourceWeekStep', () => {
     expect(screen.getByText(NO_SOURCE_WEEKS_HINT)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Week' })).toBeNull();
     // The other blocks are still reachable — it is an explanation, not a dead end.
-    expect(screen.getByRole('button', { name: 'Mesocycle' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cycle' })).toBeTruthy();
   });
 
   // 08.8, "Чего на этом шаге нет": the source week gives structure only, so nothing here may

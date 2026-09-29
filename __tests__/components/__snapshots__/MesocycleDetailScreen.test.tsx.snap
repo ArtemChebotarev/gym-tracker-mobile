@@ -163,7 +163,7 @@ exports[`MesocycleDetailScreen Active: the Active badge and the week by workouts
         </RNSVGSvgView>
       </View>
       <View
-        accessibilityLabel="Mesocycle menu"
+        accessibilityLabel="Cycle menu"
         style={
           [
             {
@@ -240,7 +240,7 @@ exports[`MesocycleDetailScreen Active: the Active badge and the week by workouts
               />
             </ViewManagerAdapter_ExpoUI>
             <ViewManagerAdapter_ExpoUI
-              label="Rename mesocycle"
+              label="Rename cycle"
               onButtonPress={[MockFunction]}
               role="default"
               systemImage="pencil"
@@ -1244,7 +1244,7 @@ exports[`MesocycleDetailScreen Completed: no badge, both denominators, the weekl
         </RNSVGSvgView>
       </View>
       <View
-        accessibilityLabel="Mesocycle menu"
+        accessibilityLabel="Cycle menu"
         style={
           [
             {
@@ -1321,7 +1321,7 @@ exports[`MesocycleDetailScreen Completed: no badge, both denominators, the weekl
               />
             </ViewManagerAdapter_ExpoUI>
             <ViewManagerAdapter_ExpoUI
-              label="Rename mesocycle"
+              label="Rename cycle"
               onButtonPress={[MockFunction]}
               role="default"
               systemImage="pencil"
@@ -3477,7 +3477,7 @@ exports[`MesocycleDetailScreen Stopped: the Stopped badge and no workouts denomi
         </RNSVGSvgView>
       </View>
       <View
-        accessibilityLabel="Mesocycle menu"
+        accessibilityLabel="Cycle menu"
         style={
           [
             {
@@ -3554,7 +3554,7 @@ exports[`MesocycleDetailScreen Stopped: the Stopped badge and no workouts denomi
               />
             </ViewManagerAdapter_ExpoUI>
             <ViewManagerAdapter_ExpoUI
-              label="Rename mesocycle"
+              label="Rename cycle"
               onButtonPress={[MockFunction]}
               role="default"
               systemImage="pencil"

@@ -61,7 +61,7 @@ export function MesoEditorBasicsStep({
 
       <View style={styles.section}>
         <Stepper
-          label="Mesocycle length"
+          label="Cycle length"
           value={lengthWeeks}
           onChange={onChangeLengthWeeks}
           min={MIN_LENGTH_WEEKS}

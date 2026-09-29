@@ -38,7 +38,7 @@ describe('MesoCreationMethodSheet', () => {
 
     expect(screen.getByRole('button', { name: 'From scratch' })).toBeTruthy();
     expect(screen.getByText('Build the week yourself')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Copy a mesocycle' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Copy a cycle' })).toBeTruthy();
     expect(screen.getByText(copyMethodCaption(true))).toBeTruthy();
   });
 
@@ -63,7 +63,7 @@ describe('MesoCreationMethodSheet', () => {
     const onCopyMesocycle = jest.fn();
     renderWithSafeArea(<MesoCreationMethodSheet {...makeProps({ onCopyMesocycle })} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Copy a mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Copy a cycle' }));
 
     expect(onCopyMesocycle).toHaveBeenCalledTimes(1);
   });
@@ -76,7 +76,7 @@ describe('MesoCreationMethodSheet', () => {
       <MesoCreationMethodSheet {...makeProps({ canCopy: false, onCopyMesocycle })} />,
     );
 
-    const row = screen.getByRole('button', { name: 'Copy a mesocycle' });
+    const row = screen.getByRole('button', { name: 'Copy a cycle' });
     expect(row).toBeDisabled();
     expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
     expect(screen.queryByText(copyMethodCaption(true))).toBeNull();

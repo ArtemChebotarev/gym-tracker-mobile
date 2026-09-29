@@ -78,10 +78,10 @@ export type MesoEditorLeadStep = {
 };
 
 export type MesoEditorScreenProps = {
-  /** The first step's title — "New mesocycle" when creating, "Edit mesocycle" when editing. */
+  /** The first step's title — "New training cycle" when creating, "Edit training cycle" when editing. */
   title: string;
   /**
-   * Persists the draft on the final step's `Save mesocycle`. Shaped like a TanStack Query mutation
+   * Persists the draft on the final step's `Save cycle`. Shaped like a TanStack Query mutation
    * so a route can pass `useConfirmMesocycleDraft()` / `useEditPlannedMesocycleDraft(id)` /
    * `useConfirmCopyWeekDraft()` as-is.
    */
@@ -202,7 +202,7 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
         router.dismissTo('/mesocycles');
       },
       onError: () => {
-        Alert.alert("Couldn't save mesocycle", 'Something went wrong. Please try again.');
+        Alert.alert("Couldn't save training cycle", 'Something went wrong. Please try again.');
       },
     });
   }
@@ -271,7 +271,7 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
           <MesoEditorFooter
             onContinue={handleSave}
             continueDisabled={saveMutation.isPending}
-            continueLabel="Save mesocycle"
+            continueLabel="Save cycle"
           />
         }
       >

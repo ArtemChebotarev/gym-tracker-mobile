@@ -92,9 +92,9 @@ describe('workoutMenuActions', () => {
       'stopMesocycle',
     ]);
     expect(items.map((item) => item.label)).toEqual([
-      'Rename mesocycle',
-      'Mesocycle history',
-      'Stop mesocycle',
+      'Rename cycle',
+      'Cycle history',
+      'Stop cycle',
     ]);
     items.forEach((item) => item.onPress());
     expect(handlers.renameMesocycle).toHaveBeenCalledTimes(1);

@@ -11,13 +11,13 @@
 //   Completed group, which already holds both ways a block ends. How the sheet opens and closes is
 //   `useMesoCreationMethodSheet`, shared with the Today tab's own empty state.
 // - The empty state raises the same sheet rather than going straight to Flow A. It used to go
-//   direct, on the grounds that this state means no block exists at all, so `Copy a mesocycle` is
+//   direct, on the grounds that this state means no block exists at all, so `Copy a cycle` is
 //   provably off and the sheet would be one live row. Artem's call: the gesture that starts a
 //   block should be the same one everywhere, and a disabled row that says `Nothing to copy yet`
 //   teaches what the second way is before there is anything to use it on.
-// - Start opens a `Start this mesocycle?` popup and calls `onStart` only once accepted — or, if a
+// - Start opens a `Start this training cycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
-// - Delete (the Planned row's one `⋯` action) opens `Delete mesocycle? This can't be undone` and
+// - Delete (the Planned row's one `⋯` action) opens `Delete training cycle? This can't be undone` and
 //   calls `onDelete` only from its destructive button.
 //
 // Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
@@ -31,7 +31,7 @@
 // as every other `⋯` in the app (`ActionMenu`, the other half of 117):
 // - Planned: tap opens the editor, `Start` is the accent pill, `⋯` holds Delete.
 // - Completed: tap opens that block's history (`onOpenHistory`), `⋯` holds Copy and Archive.
-//   Archive asks first (`Archive mesocycle?`) and then takes the block off the list for good —
+//   Archive asks first (`Archive training cycle?`) and then takes the block off the list for good —
 //   a soft delete, so nothing logged in it is touched, but there is no way back from the app yet.
 // The tap and the buttons don't overlap: `ListRow` keeps an actions row's accessories outside its
 // press region, so a tap on `Start` starts and a tap anywhere else on the row opens the editor.
@@ -116,21 +116,21 @@ export function MesocyclesScreen({
       Alert.alert("Can't start yet", formatStartBlockedMessage(groups.active));
       return;
     }
-    Alert.alert('Start this mesocycle?', formatStartConfirmMessage(mesocycle), [
+    Alert.alert('Start this training cycle?', formatStartConfirmMessage(mesocycle), [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Start', onPress: () => onStart(mesocycle) },
     ]);
   }
 
   function confirmDelete(mesocycle: Mesocycle) {
-    Alert.alert('Delete mesocycle?', "This can't be undone.", [
+    Alert.alert('Delete training cycle?', "This can't be undone.", [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDelete(mesocycle) },
     ]);
   }
 
   function confirmArchive(mesocycle: Mesocycle) {
-    Alert.alert('Archive mesocycle?', formatArchiveConfirmMessage(mesocycle), [
+    Alert.alert('Archive training cycle?', formatArchiveConfirmMessage(mesocycle), [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Archive', onPress: () => onArchive(mesocycle) },
     ]);
@@ -141,10 +141,10 @@ export function MesocyclesScreen({
   return (
     <View style={styles.root}>
       <RootScreen
-        title="Mesocycles"
+        title="Training cycles"
         trailing={
           <IconButton
-            accessibilityLabel="New mesocycle"
+            accessibilityLabel="New cycle"
             variant="accent"
             onPress={methodSheet.open}
           >
@@ -156,7 +156,7 @@ export function MesocyclesScreen({
 
         {!isPending && isEmptyGroups(groups) && (
           <EmptyState
-            title="Plan your first mesocycle"
+            title="Plan your first training cycle"
             description="Build a training block, then start it when you're ready."
             actionLabel={PLAN_MESOCYCLE_LABEL}
             onAction={methodSheet.open}

@@ -124,7 +124,7 @@ describe('Mesocycle detail route', () => {
     await screen.findByText('Upper/Lower');
 
     pickMenuItem('rename');
-    const field = await screen.findByLabelText('Mesocycle name');
+    const field = await screen.findByLabelText('Cycle name');
     expect(field.props.value).toBe('Upper/Lower');
     fireEvent.changeText(field, 'Autumn block');
     fireEvent.press(screen.getByRole('button', { name: 'Save' }));
@@ -141,7 +141,7 @@ describe('Mesocycle detail route', () => {
     mockParams = { id: 'missing' };
     renderRoute();
 
-    expect(await screen.findByText('Mesocycle not found')).toBeTruthy();
+    expect(await screen.findByText('Training cycle not found')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Go back' }));
 
     expect(mockBack).toHaveBeenCalled();
@@ -183,7 +183,7 @@ describe('Mesocycle detail route', () => {
 
     pickMenuItem('archive');
 
-    expect(alertSpy.mock.calls.at(-1)?.[0]).toBe('Archive mesocycle?');
+    expect(alertSpy.mock.calls.at(-1)?.[0]).toBe('Archive training cycle?');
     // Nothing happens until it's confirmed.
     expect(
       (await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle))?.archivedAt,

@@ -85,7 +85,7 @@ describe('Today tab', () => {
 
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
     expect(screen.getByRole('progressbar', { name: 'Workout progress' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Mesocycle overview' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cycle overview' })).toBeTruthy();
     expect(screen.getByText('Bench Press')).toBeTruthy();
     expect(screen.queryByTestId('workout-completed-check')).toBeNull();
   });
@@ -102,7 +102,7 @@ describe('Today tab', () => {
     mockParams = { sessionId: 'missing-session' };
     renderToday();
 
-    expect(await screen.findByRole('button', { name: 'Open mesocycles' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Open cycles' })).toBeTruthy();
   });
 });
 
@@ -111,7 +111,7 @@ describe('Today tab — mesocycle overview', () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle overview' }));
 
     expect(await screen.findByText('Week 2 of 5 · 4 days a week')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Week 1 Day 1, completed' })).toBeTruthy();
@@ -127,7 +127,7 @@ describe('Today tab — mesocycle overview', () => {
   test('a cell with a session closes the sheet and opens that session', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle overview' }));
 
     fireEvent.press(await screen.findByRole('button', { name: 'Week 1 Day 1, completed' }));
 
@@ -138,7 +138,7 @@ describe('Today tab — mesocycle overview', () => {
   test('DoD: an awaiting cell closes the sheet and opens that day as a preview', async () => {
     const view = renderToday();
     await screen.findByText('Week 2 Day 1');
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle overview' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle overview' }));
 
     // Week 3 Day 1 has no session yet — it's generated when Week 2 Day 1 is finished.
     fireEvent.press(

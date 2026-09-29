@@ -199,7 +199,7 @@ describe('CopyMesocycleRoute — step S', () => {
 
     // The default falls through to the older block, and the archived one is nowhere in the picker.
     expect(screen.getByText('Push/Pull')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle' }));
     expect(screen.queryByRole('button', { name: 'Upper/Lower' })).toBeNull();
   });
 
@@ -217,7 +217,7 @@ describe('CopyMesocycleRoute — step S', () => {
     renderRoute();
     await readyToContinue();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Cycle' }));
     fireEvent.press(screen.getByRole('button', { name: 'Push/Pull' }));
 
     expect(await screen.findByText('Week 1 · 1 of 1 workout')).toBeTruthy();
@@ -309,7 +309,7 @@ describe('CopyMesocycleRoute — Save', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
     fireEvent.press(await screen.findByRole('button', { name: 'Continue' }));
     fireEvent.press(await screen.findByRole('button', { name: 'Continue' }));
-    fireEvent.press(await screen.findByRole('button', { name: 'Save mesocycle' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Save cycle' }));
 
     await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/mesocycles'));
     await flushQueryNotifications();

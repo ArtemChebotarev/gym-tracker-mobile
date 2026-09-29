@@ -47,7 +47,7 @@ export function BodyWeightSheet({
       visible={visible}
       onClose={onClose}
       title="Your body weight"
-      subtitle="Used for this mesocycle's bodyweight exercises"
+      subtitle="Used for this training cycle's bodyweight exercises"
       footer={
         <Button
           label="Save"

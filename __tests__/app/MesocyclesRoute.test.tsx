@@ -72,8 +72,8 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
   test('`+` → Copy a mesocycle opens step S knowing nothing', async () => {
     await renderRoute();
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Copy a mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Copy a cycle' }));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/meso-editor/copy'));
   });
@@ -107,7 +107,7 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
   test('From scratch still goes to Flow A, not the copy route', async () => {
     await renderRoute();
 
-    fireEvent.press(screen.getByRole('button', { name: 'New mesocycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
     fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/meso-editor/new'));
@@ -120,7 +120,7 @@ describe('MesocyclesRoute — Archive', () => {
 
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
-      'Archive mesocycle?',
+      'Archive training cycle?',
       expect.stringContaining('Upper/Lower'),
       expect.any(Array),
     );

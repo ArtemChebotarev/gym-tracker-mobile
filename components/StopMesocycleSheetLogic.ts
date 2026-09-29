@@ -5,7 +5,7 @@
  * this one: it ends weeks of a block in one press, and it is offered in the same menu as Add
  * exercise, mid-workout, on a phone (Artem's review of 052 — RP's own app asks for the words too).
  */
-export const STOP_MESOCYCLE_PHRASE = 'END MESO';
+export const STOP_MESOCYCLE_PHRASE = 'END CYCLE';
 
 /**
  * Whether `text` is the confirmation phrase. Case and surrounding spaces are forgiven — typing the
