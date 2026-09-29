@@ -42,6 +42,7 @@ import { IconButton } from '@design/components/IconButton';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
 import { BackIcon } from '@design/icons/BackIcon';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -110,6 +111,7 @@ export function ExerciseDetailScreen({
           <Text style={styles.status}>Loading…</Text>
         ) : (
           <EmptyState
+            icon={InfoIcon}
             title="Exercise not found"
             description="It isn't in the library any more."
             actionLabel="Go back"

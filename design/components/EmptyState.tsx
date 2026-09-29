@@ -24,11 +24,8 @@ import {
 import { Button } from './Button';
 
 export type EmptyStateProps = {
-  /**
-   * The icon drawn in the circle above the title. Optional only while the screens move over one
-   * at a time (task 143); every empty state is meant to have one.
-   */
-  icon?: IconComponent;
+  /** The icon drawn in the circle above the title. */
+  icon: IconComponent;
   title: string;
   description: string;
   actionLabel: string;
@@ -50,11 +47,9 @@ export function EmptyState({
       testID="empty-state"
       style={[styles.container, { paddingBottom: bottomInset + SPACING['space/empty-lift'] }]}
     >
-      {Icon !== undefined && (
-        <View testID="empty-state-icon" style={styles.iconCircle}>
-          <Icon size={ICON_SIZES['icon/empty']} color={COLORS.accent} />
-        </View>
-      )}
+      <View testID="empty-state-icon" style={styles.iconCircle}>
+        <Icon size={ICON_SIZES['icon/empty']} color={COLORS.accent} />
+      </View>
       <Text style={styles.title} numberOfLines={2}>
         {title}
       </Text>

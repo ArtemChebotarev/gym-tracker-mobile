@@ -115,7 +115,7 @@ export type WorkoutScreenProps = {
    * or it couldn't be loaded. The caller knows which, so it supplies the copy and the way forward.
    */
   fallback: {
-    icon?: IconComponent;
+    icon: IconComponent;
     title: string;
     description: string;
     actionLabel: string;
