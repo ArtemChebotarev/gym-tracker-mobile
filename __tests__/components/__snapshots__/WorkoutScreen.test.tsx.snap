@@ -491,11 +491,16 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
       <RCTScrollView
         automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
-          {
-            "gap": 12,
-            "paddingBottom": 24,
-            "paddingTop": 10,
-          }
+          [
+            {
+              "gap": 12,
+              "paddingBottom": 24,
+              "paddingTop": 10,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -1047,11 +1052,16 @@ exports[`WorkoutScreen header matches the history snapshot 1`] = `
       <RCTScrollView
         automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
-          {
-            "gap": 12,
-            "paddingBottom": 24,
-            "paddingTop": 10,
-          }
+          [
+            {
+              "gap": 12,
+              "paddingBottom": 24,
+              "paddingTop": 10,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -1790,11 +1800,16 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
       <RCTScrollView
         automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
-          {
-            "gap": 12,
-            "paddingBottom": 24,
-            "paddingTop": 10,
-          }
+          [
+            {
+              "gap": 12,
+              "paddingBottom": 24,
+              "paddingTop": 10,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -2682,11 +2697,16 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
       <RCTScrollView
         automaticallyAdjustKeyboardInsets={true}
         contentContainerStyle={
-          {
-            "gap": 12,
-            "paddingBottom": 24,
-            "paddingTop": 10,
-          }
+          [
+            {
+              "gap": 12,
+              "paddingBottom": 24,
+              "paddingTop": 10,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

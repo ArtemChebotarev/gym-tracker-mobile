@@ -16,7 +16,8 @@ import { SkipIcon } from '@design/icons/SkipIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
-import { TabMesocyclesIcon } from '@design/icons/TabMesocyclesIcon';
+import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
+import { TabSettingsIcon } from '@design/icons/TabSettingsIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -24,8 +25,9 @@ import { render } from '@testing-library/react-native';
 
 const ICONS: [string, IconComponent][] = [
   ['tab-today', TabTodayIcon],
-  ['tab-mesocycles', TabMesocyclesIcon],
+  ['tab-cycles', TabCyclesIcon],
   ['tab-library', TabLibraryIcon],
+  ['tab-settings', TabSettingsIcon],
   ['check', CheckIcon],
   ['grid', GridIcon],
   ['more', MoreIcon],

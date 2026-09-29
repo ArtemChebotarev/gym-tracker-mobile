@@ -4,389 +4,474 @@ exports[`TabBar matches the snapshot with Library active 1`] = `
 <View
   style={
     {
-      "backgroundColor": "#141619",
-      "flexDirection": "row",
+      "paddingBottom": 8,
+      "paddingHorizontal": 16,
     }
   }
 >
   <View
-    accessibilityLabel="Today"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": false,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
     style={
-      [
-        {
-          "alignItems": "center",
-          "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
+      {
+        "backgroundColor": "rgba(20, 22, 25, 0.4)",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 999,
+        "borderWidth": 1,
+        "height": 64,
+        "overflow": "hidden",
+        "shadowColor": "#000000",
+        "shadowOffset": {
+          "height": 6,
+          "width": 0,
         },
-        false,
-      ]
+        "shadowOpacity": 0.35,
+        "shadowRadius": 16,
+      }
     }
   >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
+    <View
       style={
         [
           {
             "backgroundColor": "transparent",
-            "borderWidth": 0,
           },
           {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
           },
         ]
       }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
     >
-      <RNSVGGroup
-        fill={
+      <ViewManagerAdapter_ExpoBlur
+        blurMethod="none"
+        blurReductionFactor={4}
+        intensity={40}
+        style={
           {
-            "payload": 4278190080,
-            "type": 0,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
           }
         }
-      >
-        <RNSVGGroup
-          fill={null}
-          propList={
-            [
-              "fill",
-              "stroke",
-              "strokeWidth",
-            ]
-          }
-          stroke={
-            {
-              "payload": 4285231222,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
-        >
-          <RNSVGRect
-            fill={
-              {
-                "payload": 4278190080,
-                "type": 0,
-              }
-            }
-            height={15}
-            rx={2.5}
-            width={16}
-            x={4}
-            y={5}
-          />
-          <RNSVGPath
-            d="M4 10h16M9 3v4M15 3v4"
-            fill={
-              {
-                "payload": 4278190080,
-                "type": 0,
-              }
-            }
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
+        tint="dark"
+      />
+    </View>
+    <View
       style={
         {
-          "color": "#6B7076",
-          "fontSize": 12,
-          "fontWeight": "400",
-        }
-      }
-    >
-      Today
-    </Text>
-  </View>
-  <View
-    accessibilityLabel="Mesocycles"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": false,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
-    style={
-      [
-        {
-          "alignItems": "center",
           "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
-        },
-        false,
-      ]
-    }
-  >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
-      style={
-        [
-          {
-            "backgroundColor": "transparent",
-            "borderWidth": 0,
-          },
-          {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
-          },
-        ]
+          "flexDirection": "row",
+          "padding": 4,
+        }
       }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
     >
-      <RNSVGGroup
-        fill={
+      <View
+        accessibilityLabel="Today"
+        accessibilityRole="button"
+        accessibilityState={
           {
-            "payload": 4278190080,
-            "type": 0,
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": false,
           }
         }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            false,
+            false,
+          ]
+        }
       >
-        <RNSVGGroup
-          fill={null}
-          propList={
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
             [
-              "fill",
-              "stroke",
-              "strokeWidth",
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
             ]
           }
-          stroke={
-            {
-              "payload": 4285231222,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
         >
-          <RNSVGPath
-            d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+          <RNSVGGroup
             fill={
               {
                 "payload": 4278190080,
                 "type": 0,
               }
             }
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
-      style={
-        {
-          "color": "#6B7076",
-          "fontSize": 12,
-          "fontWeight": "400",
-        }
-      }
-    >
-      Mesocycles
-    </Text>
-  </View>
-  <View
-    accessibilityLabel="Library"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": true,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
-    style={
-      [
-        {
-          "alignItems": "center",
-          "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
-        },
-        false,
-      ]
-    }
-  >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
-      style={
-        [
-          {
-            "backgroundColor": "transparent",
-            "borderWidth": 0,
-          },
-          {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
-    >
-      <RNSVGGroup
-        fill={
-          {
-            "payload": 4278190080,
-            "type": 0,
-          }
-        }
-      >
-        <RNSVGGroup
-          fill={null}
-          propList={
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4285231222,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGRect
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+                height={15}
+                rx={2.5}
+                width={16}
+                x={4}
+                y={5}
+              />
+              <RNSVGPath
+                d="M4 10h16M9 3v4M15 3v4"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
             [
-              "fill",
-              "stroke",
-              "strokeWidth",
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#6B7076",
+              },
             ]
           }
-          stroke={
-            {
-              "payload": 4291690327,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
         >
-          <RNSVGPath
-            d="M3 12h2M19 12h2M7 8v8M17 8v8M5 10v4M19 10v4M7 12h10"
+          Today
+        </Text>
+      </View>
+      <View
+        accessibilityLabel="Cycles"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": false,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            false,
+            false,
+          ]
+        }
+      >
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
+            [
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
+            ]
+          }
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
+        >
+          <RNSVGGroup
             fill={
               {
                 "payload": 4278190080,
                 "type": 0,
               }
             }
-            propList={
-              [
-                "strokeLinecap",
-              ]
-            }
-            strokeLinecap={1}
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
-      style={
-        {
-          "color": "#CDFF57",
-          "fontSize": 12,
-          "fontWeight": "400",
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4285231222,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGPath
+                d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
+            [
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#6B7076",
+              },
+            ]
+          }
+        >
+          Cycles
+        </Text>
+      </View>
+      <View
+        accessibilityLabel="Library"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": true,
+          }
         }
-      }
-    >
-      Library
-    </Text>
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            {
+              "backgroundColor": "rgba(255, 255, 255, 0.1)",
+            },
+            false,
+          ]
+        }
+      >
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
+            [
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
+            ]
+          }
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
+        >
+          <RNSVGGroup
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4291690327,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGPath
+                d="M3 12h2M19 12h2M7 8v8M17 8v8M5 10v4M19 10v4M7 12h10"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+                propList={
+                  [
+                    "strokeLinecap",
+                  ]
+                }
+                strokeLinecap={1}
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
+            [
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#CDFF57",
+              },
+            ]
+          }
+        >
+          Library
+        </Text>
+      </View>
+    </View>
   </View>
 </View>
 `;
@@ -395,389 +480,474 @@ exports[`TabBar matches the snapshot with Today active 1`] = `
 <View
   style={
     {
-      "backgroundColor": "#141619",
-      "flexDirection": "row",
+      "paddingBottom": 8,
+      "paddingHorizontal": 16,
     }
   }
 >
   <View
-    accessibilityLabel="Today"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": true,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
     style={
-      [
-        {
-          "alignItems": "center",
-          "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
+      {
+        "backgroundColor": "rgba(20, 22, 25, 0.4)",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 999,
+        "borderWidth": 1,
+        "height": 64,
+        "overflow": "hidden",
+        "shadowColor": "#000000",
+        "shadowOffset": {
+          "height": 6,
+          "width": 0,
         },
-        false,
-      ]
+        "shadowOpacity": 0.35,
+        "shadowRadius": 16,
+      }
     }
   >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
+    <View
       style={
         [
           {
             "backgroundColor": "transparent",
-            "borderWidth": 0,
           },
           {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
           },
         ]
       }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
     >
-      <RNSVGGroup
-        fill={
+      <ViewManagerAdapter_ExpoBlur
+        blurMethod="none"
+        blurReductionFactor={4}
+        intensity={40}
+        style={
           {
-            "payload": 4278190080,
-            "type": 0,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
           }
         }
-      >
-        <RNSVGGroup
-          fill={null}
-          propList={
-            [
-              "fill",
-              "stroke",
-              "strokeWidth",
-            ]
-          }
-          stroke={
-            {
-              "payload": 4291690327,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
-        >
-          <RNSVGRect
-            fill={
-              {
-                "payload": 4278190080,
-                "type": 0,
-              }
-            }
-            height={15}
-            rx={2.5}
-            width={16}
-            x={4}
-            y={5}
-          />
-          <RNSVGPath
-            d="M4 10h16M9 3v4M15 3v4"
-            fill={
-              {
-                "payload": 4278190080,
-                "type": 0,
-              }
-            }
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
+        tint="dark"
+      />
+    </View>
+    <View
       style={
         {
-          "color": "#CDFF57",
-          "fontSize": 12,
-          "fontWeight": "400",
-        }
-      }
-    >
-      Today
-    </Text>
-  </View>
-  <View
-    accessibilityLabel="Mesocycles"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": false,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
-    style={
-      [
-        {
-          "alignItems": "center",
           "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
-        },
-        false,
-      ]
-    }
-  >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
-      style={
-        [
-          {
-            "backgroundColor": "transparent",
-            "borderWidth": 0,
-          },
-          {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
-          },
-        ]
+          "flexDirection": "row",
+          "padding": 4,
+        }
       }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
     >
-      <RNSVGGroup
-        fill={
+      <View
+        accessibilityLabel="Today"
+        accessibilityRole="button"
+        accessibilityState={
           {
-            "payload": 4278190080,
-            "type": 0,
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": true,
           }
         }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            {
+              "backgroundColor": "rgba(255, 255, 255, 0.1)",
+            },
+            false,
+          ]
+        }
       >
-        <RNSVGGroup
-          fill={null}
-          propList={
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
             [
-              "fill",
-              "stroke",
-              "strokeWidth",
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
             ]
           }
-          stroke={
-            {
-              "payload": 4285231222,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
         >
-          <RNSVGPath
-            d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+          <RNSVGGroup
             fill={
               {
                 "payload": 4278190080,
                 "type": 0,
               }
             }
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
-      style={
-        {
-          "color": "#6B7076",
-          "fontSize": 12,
-          "fontWeight": "400",
-        }
-      }
-    >
-      Mesocycles
-    </Text>
-  </View>
-  <View
-    accessibilityLabel="Library"
-    accessibilityRole="button"
-    accessibilityState={
-      {
-        "busy": undefined,
-        "checked": undefined,
-        "disabled": undefined,
-        "expanded": undefined,
-        "selected": false,
-      }
-    }
-    accessibilityValue={
-      {
-        "max": undefined,
-        "min": undefined,
-        "now": undefined,
-        "text": undefined,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
-    style={
-      [
-        {
-          "alignItems": "center",
-          "flex": 1,
-          "gap": 8,
-          "justifyContent": "center",
-          "paddingVertical": 12,
-        },
-        false,
-      ]
-    }
-  >
-    <RNSVGSvgView
-      align="xMidYMid"
-      bbHeight={24}
-      bbWidth={24}
-      focusable={false}
-      height={24}
-      meetOrSlice={0}
-      minX={0}
-      minY={0}
-      style={
-        [
-          {
-            "backgroundColor": "transparent",
-            "borderWidth": 0,
-          },
-          {
-            "flex": 0,
-            "height": 24,
-            "width": 24,
-          },
-        ]
-      }
-      vbHeight={24}
-      vbWidth={24}
-      width={24}
-    >
-      <RNSVGGroup
-        fill={
-          {
-            "payload": 4278190080,
-            "type": 0,
-          }
-        }
-      >
-        <RNSVGGroup
-          fill={null}
-          propList={
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4291690327,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGRect
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+                height={15}
+                rx={2.5}
+                width={16}
+                x={4}
+                y={5}
+              />
+              <RNSVGPath
+                d="M4 10h16M9 3v4M15 3v4"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
             [
-              "fill",
-              "stroke",
-              "strokeWidth",
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#CDFF57",
+              },
             ]
           }
-          stroke={
-            {
-              "payload": 4285231222,
-              "type": 0,
-            }
-          }
-          strokeWidth={1.8}
         >
-          <RNSVGPath
-            d="M3 12h2M19 12h2M7 8v8M17 8v8M5 10v4M19 10v4M7 12h10"
+          Today
+        </Text>
+      </View>
+      <View
+        accessibilityLabel="Cycles"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": false,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            false,
+            false,
+          ]
+        }
+      >
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
+            [
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
+            ]
+          }
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
+        >
+          <RNSVGGroup
             fill={
               {
                 "payload": 4278190080,
                 "type": 0,
               }
             }
-            propList={
-              [
-                "strokeLinecap",
-              ]
-            }
-            strokeLinecap={1}
-          />
-        </RNSVGGroup>
-      </RNSVGGroup>
-    </RNSVGSvgView>
-    <Text
-      style={
-        {
-          "color": "#6B7076",
-          "fontSize": 12,
-          "fontWeight": "400",
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4285231222,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGPath
+                d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
+            [
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#6B7076",
+              },
+            ]
+          }
+        >
+          Cycles
+        </Text>
+      </View>
+      <View
+        accessibilityLabel="Library"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": false,
+          }
         }
-      }
-    >
-      Library
-    </Text>
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderRadius": 999,
+              "flex": 1,
+              "gap": 2,
+              "justifyContent": "center",
+              "minHeight": 44,
+            },
+            false,
+            false,
+          ]
+        }
+      >
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={24}
+          bbWidth={24}
+          focusable={false}
+          height={24}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
+            [
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 24,
+                "width": 24,
+              },
+            ]
+          }
+          vbHeight={24}
+          vbWidth={24}
+          width={24}
+        >
+          <RNSVGGroup
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+          >
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
+                {
+                  "payload": 4285231222,
+                  "type": 0,
+                }
+              }
+              strokeWidth={1.8}
+            >
+              <RNSVGPath
+                d="M3 12h2M19 12h2M7 8v8M17 8v8M5 10v4M19 10v4M7 12h10"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+                propList={
+                  [
+                    "strokeLinecap",
+                  ]
+                }
+                strokeLinecap={1}
+              />
+            </RNSVGGroup>
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          numberOfLines={1}
+          style={
+            [
+              {
+                "fontSize": 12,
+                "fontWeight": "400",
+              },
+              {
+                "color": "#6B7076",
+              },
+            ]
+          }
+        >
+          Library
+        </Text>
+      </View>
+    </View>
   </View>
 </View>
 `;

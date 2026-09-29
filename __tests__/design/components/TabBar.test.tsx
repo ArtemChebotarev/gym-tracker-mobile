@@ -1,15 +1,16 @@
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
-import { TabMesocyclesIcon } from '@design/icons/TabMesocyclesIcon';
+import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
+import { TabSettingsIcon } from '@design/icons/TabSettingsIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 import type { IconProps } from '@design/icons/IconFrame';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 const ITEMS: TabBarItem[] = [
   { key: 'today', label: 'Today', icon: TabTodayIcon },
-  { key: 'mesocycles', label: 'Mesocycles', icon: TabMesocyclesIcon },
+  { key: 'cycles', label: 'Cycles', icon: TabCyclesIcon },
   { key: 'library', label: 'Library', icon: TabLibraryIcon },
 ];
 
@@ -24,14 +25,14 @@ describe('TabBar', () => {
     render(<TabBar items={ITEMS} activeKey="today" onChange={() => {}} />);
 
     expect(screen.getByRole('button', { name: 'Today' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Mesocycles' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cycles' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Library' })).toBeTruthy();
   });
 
   test('marks the active tab as selected', () => {
-    render(<TabBar items={ITEMS} activeKey="mesocycles" onChange={() => {}} />);
+    render(<TabBar items={ITEMS} activeKey="cycles" onChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'Mesocycles' }).props.accessibilityState).toEqual(
+    expect(screen.getByRole('button', { name: 'Cycles' }).props.accessibilityState).toEqual(
       expect.objectContaining({ selected: true }),
     );
     expect(screen.getByRole('button', { name: 'Today' }).props.accessibilityState).toEqual(
@@ -57,6 +58,29 @@ describe('TabBar', () => {
 
     expect(screen.getByText(`${ICON_SIZES['icon/tab']} ${COLORS.accent}`)).toBeTruthy();
     expect(screen.getByText(`${ICON_SIZES['icon/tab']} ${COLORS['text/faint']}`)).toBeTruthy();
+  });
+
+  test('renders four tabs as readily as three', () => {
+    const four: TabBarItem[] = [
+      ...ITEMS,
+      { key: 'settings', label: 'Settings', icon: TabSettingsIcon },
+    ];
+    render(<TabBar items={four} activeKey="settings" onChange={() => {}} />);
+
+    expect(screen.getAllByRole('button')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: 'Settings' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ selected: true }),
+    );
+  });
+
+  test('gives every tab at least the minimum tap target', () => {
+    render(<TabBar items={ITEMS} activeKey="today" onChange={() => {}} />);
+
+    for (const tab of screen.getAllByRole('button')) {
+      expect(StyleSheet.flatten(tab.props.style).minHeight).toBeGreaterThanOrEqual(
+        SIZES['size/tap-target'],
+      );
+    }
   });
 
   test('matches the snapshot with Today active', () => {

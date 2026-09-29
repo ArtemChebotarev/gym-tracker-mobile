@@ -52,6 +52,7 @@ import { RootScreen } from '@design/components/RootScreen';
 
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
+import { useTabBarClearance } from './useTabBarClearance';
 
 import {
   completedMenuItems,
@@ -106,6 +107,7 @@ export function MesocyclesScreen({
   onOpenHistory,
   onArchive,
 }: MesocyclesScreenProps) {
+  const tabBarClearance = useTabBarClearance();
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
   const methodSheet = useMesoCreationMethodSheet();
 
@@ -162,7 +164,10 @@ export function MesocyclesScreen({
         )}
 
         {!isPending && !isEmptyGroups(groups) && (
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
+            showsVerticalScrollIndicator={false}
+          >
             {active !== null && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Active</Text>
@@ -241,7 +246,10 @@ export function MesocyclesScreen({
                         type: 'actions',
                         menu: {
                           testID: `mesocycle-menu-${mesocycle.id}`,
-                          items: completedMenuItems(mesocycle, { onCopy, onArchive: confirmArchive }),
+                          items: completedMenuItems(mesocycle, {
+                            onCopy,
+                            onArchive: confirmArchive,
+                          }),
                         },
                       }}
                     />

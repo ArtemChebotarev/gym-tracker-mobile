@@ -54,10 +54,7 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
-import {
-  workoutExerciseMenuActions,
-  type ExerciseMenuItem,
-} from './WorkoutExerciseMenuLogic';
+import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
 import {
   formatWorkoutMenuTitle,
   workoutMenuActions,
@@ -69,6 +66,7 @@ import {
   showsHeaderActions,
 } from './WorkoutScreenLogic';
 import { styles } from './WorkoutScreenStyles';
+import { useTabBarClearance } from './useTabBarClearance';
 
 export type WorkoutScreenProps = {
   model: WorkoutSessionModel | undefined;
@@ -144,6 +142,7 @@ export function WorkoutScreen({
   fallback,
   onBack,
 }: WorkoutScreenProps) {
+  const tabBarClearance = useTabBarClearance();
   if (isPending) {
     return (
       <View style={styles.root}>
@@ -212,7 +211,7 @@ export function WorkoutScreen({
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
           // A tap on Log while the keyboard is up logs the set rather than only closing the
           // keyboard; the inset keeps the focused row above the keyboard.
           keyboardShouldPersistTaps="handled"

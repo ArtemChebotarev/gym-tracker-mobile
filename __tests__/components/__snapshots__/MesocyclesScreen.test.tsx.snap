@@ -143,10 +143,15 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
       </View>
       <RCTScrollView
         contentContainerStyle={
-          {
-            "gap": 24,
-            "paddingBottom": 24,
-          }
+          [
+            {
+              "gap": 24,
+              "paddingBottom": 24,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         showsVerticalScrollIndicator={false}
       >
@@ -524,10 +529,15 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
       </View>
       <RCTScrollView
         contentContainerStyle={
-          {
-            "gap": 24,
-            "paddingBottom": 24,
-          }
+          [
+            {
+              "gap": 24,
+              "paddingBottom": 24,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         showsVerticalScrollIndicator={false}
       >
@@ -916,10 +926,15 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
       </View>
       <RCTScrollView
         contentContainerStyle={
-          {
-            "gap": 24,
-            "paddingBottom": 24,
-          }
+          [
+            {
+              "gap": 24,
+              "paddingBottom": 24,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         showsVerticalScrollIndicator={false}
       >
@@ -1367,10 +1382,15 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
       </View>
       <RCTScrollView
         contentContainerStyle={
-          {
-            "gap": 24,
-            "paddingBottom": 24,
-          }
+          [
+            {
+              "gap": 24,
+              "paddingBottom": 24,
+            },
+            {
+              "paddingBottom": 99,
+            },
+          ]
         }
         showsVerticalScrollIndicator={false}
       >
