@@ -46,6 +46,7 @@ import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import type { Mesocycle } from '@domain/mesocycle';
 import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
+import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
@@ -156,10 +157,12 @@ export function MesocyclesScreen({
 
         {!isPending && isEmptyGroups(groups) && (
           <EmptyState
+            icon={TabCyclesIcon}
             title="Plan your first training cycle"
-            description="Build a training block, then start it when you're ready."
+            description="Choose your days and exercises, then start when you're ready."
             actionLabel={PLAN_MESOCYCLE_LABEL}
             onAction={methodSheet.open}
+            bottomInset={tabBarClearance}
           />
         )}
 

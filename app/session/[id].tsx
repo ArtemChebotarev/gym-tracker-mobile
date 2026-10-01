@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { exerciseDetailHref } from '@components/historyRoutes';
 import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { WorkoutScreen } from '@components/WorkoutScreen';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import { useWorkoutSession } from '@state/useWorkoutSession';
 
 export default function HistorySessionRoute() {
@@ -55,6 +56,7 @@ export default function HistorySessionRoute() {
         }
       }}
       fallback={{
+        icon: InfoIcon,
         title: 'Workout not found',
         description: 'It may have been removed.',
         actionLabel: 'Go back',

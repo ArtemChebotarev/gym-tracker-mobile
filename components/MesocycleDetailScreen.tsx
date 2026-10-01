@@ -33,6 +33,7 @@ import { IconButton } from '@design/components/IconButton';
 import { StatTile } from '@design/components/StatTile';
 import { MesoGrid } from './MesoGrid';
 import { BackIcon } from '@design/icons/BackIcon';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MesoWeeklySetsRow } from '@domain/mesoSummary';
 import type { MesocycleDetail } from '@usecases/mesocycleDetail';
@@ -79,6 +80,7 @@ export function MesocycleDetailScreen({
           <Text style={styles.status}>Loading…</Text>
         ) : (
           <EmptyState
+            icon={InfoIcon}
             title="Training cycle not found"
             description="It may have been removed."
             actionLabel="Go back"

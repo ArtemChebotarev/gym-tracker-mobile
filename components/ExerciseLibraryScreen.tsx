@@ -23,6 +23,7 @@ import type {
   ExerciseListGroup,
 } from '@domain/catalogListing';
 import { EmptyState } from '@design/components/EmptyState';
+import { SearchIcon } from '@design/icons/SearchIcon';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
@@ -111,19 +112,23 @@ export function ExerciseLibraryScreen({
 
       {showSearchEmptyState && (
         <EmptyState
+          icon={SearchIcon}
           title={`No exercises match "${trimmedSearch}"`}
-          description="Try a different search, or add it as a new exercise."
+          description="Check the spelling or add it as a new exercise."
           actionLabel={`Create "${trimmedSearch}"`}
           onAction={() => onRequestCreate(trimmedSearch)}
+          bottomInset={tabBarClearance}
         />
       )}
 
       {showFilterEmptyState && (
         <EmptyState
+          icon={SearchIcon}
           title="No exercises match your filters"
           description="Try different filters, or reset them."
           actionLabel="Reset filters"
           onAction={onResetFilters}
+          bottomInset={tabBarClearance}
         />
       )}
 

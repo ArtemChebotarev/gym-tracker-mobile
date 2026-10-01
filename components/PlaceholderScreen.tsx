@@ -6,6 +6,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@design/components/EmptyState';
+import { InfoIcon } from '@design/icons/InfoIcon';
 
 import { styles } from './PlaceholderScreenStyles';
 
@@ -18,7 +19,13 @@ export type PlaceholderScreenProps = {
 export function PlaceholderScreen({ title, description, onBack }: PlaceholderScreenProps) {
   return (
     <SafeAreaView style={styles.container}>
-      <EmptyState title={title} description={description} actionLabel="Go back" onAction={onBack} />
+      <EmptyState
+        icon={InfoIcon}
+        title={title}
+        description={description}
+        actionLabel="Go back"
+        onAction={onBack}
+      />
     </SafeAreaView>
   );
 }

@@ -2304,12 +2304,92 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
               "paddingHorizontal": 16,
             },
             {
-              "paddingBottom": 48,
+              "paddingBottom": 147,
             },
           ]
         }
         testID="empty-state"
       >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "backgroundColor": "#1A1C1F",
+              "borderColor": "#2A2D31",
+              "borderRadius": 56,
+              "borderWidth": 1,
+              "height": 112,
+              "justifyContent": "center",
+              "marginBottom": 14,
+              "width": 112,
+            }
+          }
+          testID="empty-state-icon"
+        >
+          <RNSVGSvgView
+            align="xMidYMid"
+            bbHeight={48}
+            bbWidth={48}
+            focusable={false}
+            height={48}
+            meetOrSlice={0}
+            minX={0}
+            minY={0}
+            style={
+              [
+                {
+                  "backgroundColor": "transparent",
+                  "borderWidth": 0,
+                },
+                {
+                  "flex": 0,
+                  "height": 48,
+                  "width": 48,
+                },
+              ]
+            }
+            vbHeight={24}
+            vbWidth={24}
+            width={48}
+          >
+            <RNSVGGroup
+              fill={
+                {
+                  "payload": 4278190080,
+                  "type": 0,
+                }
+              }
+            >
+              <RNSVGGroup
+                fill={null}
+                propList={
+                  [
+                    "fill",
+                    "stroke",
+                    "strokeWidth",
+                  ]
+                }
+                stroke={
+                  {
+                    "payload": 4291690327,
+                    "type": 0,
+                  }
+                }
+                strokeWidth={1.8}
+              >
+                <RNSVGPath
+                  d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+                  fill={
+                    {
+                      "payload": 4278190080,
+                      "type": 0,
+                    }
+                  }
+                />
+              </RNSVGGroup>
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
         <Text
           numberOfLines={2}
           style={
@@ -2335,7 +2415,7 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
             }
           }
         >
-          Build a training block, then start it when you're ready.
+          Choose your days and exercises, then start when you're ready.
         </Text>
         <View
           style={

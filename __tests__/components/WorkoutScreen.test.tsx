@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { WorkoutScreen, type WorkoutScreenProps } from '@components/WorkoutScreen';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
 // SafeAreaView (used by RootScreen) throws without a SafeAreaProvider ancestor — same fixture
@@ -126,6 +127,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onFinishMesocycle: jest.fn(),
     isFinishingMesocycle: false,
     fallback: {
+      icon: InfoIcon,
       title: 'Pick another workout',
       description: 'Choose another day to train.',
       actionLabel: 'Go back',
@@ -469,6 +471,7 @@ describe('WorkoutScreen states', () => {
         {...makeProps({
           model: undefined,
           fallback: {
+            icon: InfoIcon,
             title: 'Training cycle complete',
             description: 'Every workout is done.',
             actionLabel: 'Open cycles',
