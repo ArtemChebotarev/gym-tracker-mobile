@@ -408,7 +408,7 @@ describe('MesocyclesScreen', () => {
 
       expect(alertSpy).toHaveBeenCalledWith(
         'Archive training cycle?',
-        formatArchiveConfirmMessage(COMPLETED),
+        formatArchiveConfirmMessage(),
         expect.any(Array),
       );
       expect(onArchive).not.toHaveBeenCalled();

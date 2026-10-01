@@ -35,7 +35,7 @@ exports[`MesoEditorBasicsStep matches the step 1 content snapshot 1`] = `
       <TextInput
         accessibilityLabel="Name"
         onChangeText={[MockFunction]}
-        placeholder="e.g. Upper/Lower — Block 6"
+        placeholder="e.g. Upper/Lower — Autumn"
         placeholderTextColor="#6B7076"
         style={
           [
@@ -320,7 +320,7 @@ exports[`MesoEditorBasicsStep matches the step 1 content snapshot 1`] = `
               }
             }
           >
-            You'll pick exercises for each next
+            Next, you'll pick exercises for each day.
           </Text>
         </View>
         <View

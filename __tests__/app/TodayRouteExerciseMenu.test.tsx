@@ -143,7 +143,7 @@ describe('Today tab — exercise menu', () => {
     pickMenuItem(ROW, 'skip');
     expect(alertSpy).toHaveBeenCalledWith(
       'Skip exercise?',
-      'All 3 sets will be skipped.',
+      'Skip the exercise with 3 unlogged sets?',
       expect.any(Array),
     );
     pressAlertButton('Skip');

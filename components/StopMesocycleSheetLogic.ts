@@ -22,4 +22,4 @@ export function isStopMesocycleConfirmed(text: string): boolean {
  * logged stays, which is the one reassuring half of it.
  */
 export const STOP_MESOCYCLE_WARNING =
-  "The block ends here. Workouts you haven't done are marked skipped and no further weeks are planned. Everything you logged stays in your history. This can't be undone.";
+  "Are you sure you want to stop this training cycle? This can't be undone.";

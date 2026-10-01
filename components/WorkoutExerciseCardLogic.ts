@@ -273,7 +273,7 @@ export function weightSwapPopover(
     return {
       kind: 'no-history',
       title: 'Not enough history yet',
-      text: `Pick a weight you can lift for ${effort} short of failure. After this workout you’ll get rep targets, and any weight you pick will get its own.`,
+      text: `Pick a weight that leaves you ${effort} in reserve (RIR). After this workout you'll get rep targets.`,
     };
   }
   const added = swap.bodyWeight !== undefined;
@@ -300,7 +300,7 @@ export function weightSwapPopover(
     // the whole of it, so the plate needs no closing line (Artem's wording).
     // An estimate (task 134.1) says so here too: it is what the ranges are worked out from.
     title: `Current set ${row.estimate === undefined ? 'target' : 'estimate'}: ${formatSwapTarget(swap)}`,
-    subtitle: 'You can choose another weight — reps will update',
+    subtitle: 'Pick another weight and the reps update.',
     outer: swap.estimateRange,
     inner: swap.closeRange,
     marker,

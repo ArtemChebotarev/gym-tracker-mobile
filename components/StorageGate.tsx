@@ -56,8 +56,8 @@ export function StorageGate({ children }: PropsWithChildren) {
   if (bootstrap.status === 'failed') {
     return (
       <View style={styles.screen} testID="storage-gate-error">
-        <Text style={styles.title}>Can’t open your data</Text>
-        <Text style={styles.description}>Please restart the app.</Text>
+        <Text style={styles.title}>{"Can't open your data"}</Text>
+        <Text style={styles.description}>Restart the app and try again.</Text>
       </View>
     );
   }

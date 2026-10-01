@@ -125,7 +125,7 @@ describe('EditMesocycleRoute', () => {
     await waitFor(() =>
       expect(alertSpy).toHaveBeenCalledWith(
         "Couldn't save training cycle",
-        'Something went wrong. Please try again.',
+        'Something went wrong. Try again.',
       ),
     );
     expect(mockBack).not.toHaveBeenCalled();

@@ -70,7 +70,7 @@ describe('StorageGate', () => {
 
     expect(screen.queryByText('Today')).toBeNull();
     expect(screen.getByTestId('storage-gate-error')).toBeTruthy();
-    expect(screen.getByText('Please restart the app.')).toBeTruthy();
+    expect(screen.getByText('Restart the app and try again.')).toBeTruthy();
     // No technical detail, and nothing to press: a second attempt fails the same way.
     expect(screen.queryByText(/database is locked/)).toBeNull();
     expect(screen.queryAllByRole('button')).toEqual([]);

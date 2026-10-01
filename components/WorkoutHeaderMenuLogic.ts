@@ -82,7 +82,7 @@ export function workoutMenuActions(
  * completed is skipped, so rows left unlogged in them — and anything typed there — are gone.
  */
 export const SKIP_WORKOUT_WARNING =
-  "Exercises you haven't finished will be skipped, and anything not logged in them will be lost. This can't be undone.";
+  "Exercises and sets you haven't finished will be skipped. This can't be undone.";
 
 /** The fallback sheet's title (08.7, "Меню шапки"): `Week 6 Day 2`. */
 export function formatWorkoutMenuTitle(

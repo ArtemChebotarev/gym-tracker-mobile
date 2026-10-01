@@ -164,7 +164,7 @@ describe('MesocycleDetailScreen', () => {
       }),
     });
 
-    expect(screen.getByText('No sets logged in this block')).toBeTruthy();
+    expect(screen.getByText('No sets logged in this cycle')).toBeTruthy();
     expect(screen.queryByTestId('weekly-sets')).toBeNull();
   });
 

@@ -51,6 +51,7 @@ describe('formatHideExerciseWarning', () => {
     const message = formatHideExerciseWarning('Bench Press');
 
     expect(message).toContain('Bench Press');
-    expect(message).toContain('stays in your history');
+    expect(message).toContain('stay in your history');
+    expect(message).toContain("This can't be undone.");
   });
 });

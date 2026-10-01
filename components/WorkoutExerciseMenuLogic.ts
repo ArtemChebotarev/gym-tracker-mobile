@@ -66,8 +66,9 @@ export function exerciseMenuRows(actions: WorkoutExerciseActions): ExerciseMenuR
   ];
 }
 
-function formatSetCount(count: number): string {
-  return `${count} set${count === 1 ? '' : 's'}`;
+function formatSetCount(count: number, qualifier?: string): string {
+  const noun = `set${count === 1 ? '' : 's'}`;
+  return qualifier === undefined ? `${count} ${noun}` : `${count} ${qualifier} ${noun}`;
 }
 
 /** The sheet's subtitle (08.7, "Меню упражнения"): `2 sets planned · 1 logged`. */
@@ -76,30 +77,22 @@ export function formatExerciseMenuSubtitle(plannedSetCount: number, loggedSetCou
 }
 
 /**
- * The Delete exercise confirmation's message (05, "Удалить упражнение"): the exercise won't carry
- * over to next week, and — once it's started — its logged sets go with it.
+ * The Delete exercise confirmation's message (05, "Удалить упражнение"): it names what goes with
+ * the exercise — its logged sets. By the app's own logic there are never none here (Artem,
+ * 29.09.2026), so there is no wording for none.
  */
 export function formatDeleteExerciseWarning(loggedSetCount: number): string {
-  const fromNextWeek = "It won't carry over to next week.";
-  if (loggedSetCount === 0) {
-    return fromNextWeek;
-  }
-  return `Its ${formatSetCount(loggedSetCount)} logged will be deleted too. ${fromNextWeek}`;
+  return `Delete exercise with ${formatSetCount(loggedSetCount, 'logged')}?`;
 }
 
 /**
- * The Skip exercise confirmation's message (05, "Пропустить упражнение"): logged sets stay, the
- * rest of the rows are skipped. The exercise carries over to next week either way.
+ * The Skip exercise confirmation's message (05, "Пропустить упражнение"): it names what the skip
+ * takes — the sets not logged yet. Logged sets stay either way. By the app's own logic there are
+ * never none left here (Artem, 29.09.2026), so there is no wording for none.
  */
 export function formatSkipExerciseWarning(plannedSetCount: number, loggedSetCount: number) {
   const unlogged = plannedSetCount - loggedSetCount;
-  if (loggedSetCount === 0) {
-    return `All ${formatSetCount(plannedSetCount)} will be skipped.`;
-  }
-  if (unlogged === 0) {
-    return `All ${formatSetCount(loggedSetCount)} are logged and will stay.`;
-  }
-  return `Its ${formatSetCount(loggedSetCount)} logged will stay; ${formatSetCount(unlogged)} not logged will be skipped.`;
+  return `Skip the exercise with ${formatSetCount(unlogged, 'unlogged')}?`;
 }
 
 /**

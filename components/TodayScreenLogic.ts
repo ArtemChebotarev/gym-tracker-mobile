@@ -63,9 +63,9 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
 }
 
 /**
- * The Finish mesocycle confirmation's message (052). Finishing loses nothing — it is the block
- * ending the way it was meant to — but it can't be taken back, and the block is where the next one
- * is copied from (04, Flow C), so the confirmation says where it goes rather than warning.
+ * The Finish mesocycle confirmation's message (052). Finishing loses nothing — it is the cycle
+ * ending the way it was meant to — and the cycle is where the next one is copied from (04, Flow C),
+ * so the confirmation says where it goes rather than warning.
  */
 export const FINISH_MESOCYCLE_CONFIRMATION =
-  "Every workout is done. The block moves to Completed, with all of it kept — you can start the next one from any of its weeks. This can't be undone.";
+  "Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.";
