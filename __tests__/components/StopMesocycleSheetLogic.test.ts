@@ -24,8 +24,9 @@ describe('isStopMesocycleConfirmed', () => {
 });
 
 describe('STOP_MESOCYCLE_WARNING', () => {
-  test('says what goes and that what was logged stays', () => {
-    expect(STOP_MESOCYCLE_WARNING).toMatch(/skipped/);
-    expect(STOP_MESOCYCLE_WARNING).toMatch(/logged stays/);
+  test('asks whether to stop, and says it can\'t be undone', () => {
+    expect(STOP_MESOCYCLE_WARNING).toBe(
+      "Are you sure you want to stop this training cycle? This can't be undone.",
+    );
   });
 });

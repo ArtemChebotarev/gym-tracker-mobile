@@ -202,7 +202,7 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
         router.dismissTo('/mesocycles');
       },
       onError: () => {
-        Alert.alert("Couldn't save training cycle", 'Something went wrong. Please try again.');
+        Alert.alert("Couldn't save training cycle", 'Something went wrong. Try again.');
       },
     });
   }

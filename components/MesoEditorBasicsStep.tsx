@@ -55,7 +55,7 @@ export function MesoEditorBasicsStep({
           label="Name"
           value={name}
           onChangeText={onChangeName}
-          placeholder="e.g. Upper/Lower — Block 6"
+          placeholder="e.g. Upper/Lower — Autumn"
         />
       </View>
 
@@ -79,7 +79,7 @@ export function MesoEditorBasicsStep({
           min={MIN_DAYS_PER_WEEK}
           max={MAX_DAYS_PER_WEEK}
           formatValue={formatDaysPerWeekValue}
-          caption="You'll pick exercises for each next"
+          caption="Next, you'll pick exercises for each day."
         />
       </View>
     </View>

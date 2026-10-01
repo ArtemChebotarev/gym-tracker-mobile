@@ -767,7 +767,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
 
     expect(screen.getByText('Not enough history yet')).toBeTruthy();
     expect(
-      screen.getByText(/Pick a weight you can lift for about 3 reps short of failure/),
+      screen.getByText(/Pick a weight that leaves you about 3 reps in reserve \(RIR\)/),
     ).toBeTruthy();
   });
 });

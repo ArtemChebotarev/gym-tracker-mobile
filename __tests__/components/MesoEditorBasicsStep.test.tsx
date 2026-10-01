@@ -27,7 +27,7 @@ describe('MesoEditorBasicsStep', () => {
     expect(screen.getByText('Includes a deload week')).toBeTruthy();
     expect(screen.getByText('Days per week')).toBeTruthy();
     expect(screen.getByText('4 days')).toBeTruthy();
-    expect(screen.getByText("You'll pick exercises for each next")).toBeTruthy();
+    expect(screen.getByText("Next, you'll pick exercises for each day.")).toBeTruthy();
   });
 
   test('typing a name calls onChangeName', () => {

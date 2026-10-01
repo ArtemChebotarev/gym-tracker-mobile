@@ -47,5 +47,5 @@ export function exerciseOverviewMenuActions(
  * is why it asks at all.
  */
 export function formatHideExerciseWarning(exerciseName: string): string {
-  return `${exerciseName} will disappear from the library and from every exercise picker. Everything you have logged for it stays in your history.`;
+  return `${exerciseName} will disappear from the library and from every exercise picker. Your logged sets stay in your history. This can't be undone.`;
 }

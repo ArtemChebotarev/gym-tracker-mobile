@@ -47,7 +47,7 @@ export function BodyWeightSheet({
       visible={visible}
       onClose={onClose}
       title="Your body weight"
-      subtitle="Used for this training cycle's bodyweight exercises"
+      subtitle="Used for bodyweight exercises in this cycle"
       footer={
         <Button
           label="Save"
@@ -68,7 +68,7 @@ export function BodyWeightSheet({
           placeholder="80"
         />
         <Text style={styles.note}>
-          You can change it later by editing the weight of any bodyweight exercise.
+          You can change it later in any bodyweight exercise.
         </Text>
       </View>
     </BottomSheet>

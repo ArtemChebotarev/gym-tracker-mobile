@@ -109,33 +109,16 @@ describe('formatExerciseMenuSubtitle', () => {
 });
 
 describe('formatDeleteExerciseWarning', () => {
-  test('with nothing logged, only says it leaves next week', () => {
-    expect(formatDeleteExerciseWarning(0)).toBe("It won't carry over to next week.");
-  });
-
-  test('warns that logged sets are deleted too', () => {
-    expect(formatDeleteExerciseWarning(1)).toBe(
-      "Its 1 set logged will be deleted too. It won't carry over to next week.",
-    );
-    expect(formatDeleteExerciseWarning(2)).toBe(
-      "Its 2 sets logged will be deleted too. It won't carry over to next week.",
-    );
+  test('names how many logged sets go with the exercise', () => {
+    expect(formatDeleteExerciseWarning(1)).toBe('Delete exercise with 1 logged set?');
+    expect(formatDeleteExerciseWarning(2)).toBe('Delete exercise with 2 logged sets?');
   });
 });
 
 describe('formatSkipExerciseWarning', () => {
-  test('with nothing logged, every set is skipped', () => {
-    expect(formatSkipExerciseWarning(3, 0)).toBe('All 3 sets will be skipped.');
-  });
-
-  test('with some sets logged, those stay and the rest are skipped', () => {
-    expect(formatSkipExerciseWarning(3, 2)).toBe(
-      'Its 2 sets logged will stay; 1 set not logged will be skipped.',
-    );
-  });
-
-  test('with every set logged, nothing is lost', () => {
-    expect(formatSkipExerciseWarning(2, 2)).toBe('All 2 sets are logged and will stay.');
+  test('names how many sets are still unlogged', () => {
+    expect(formatSkipExerciseWarning(3, 0)).toBe('Skip the exercise with 3 unlogged sets?');
+    expect(formatSkipExerciseWarning(3, 2)).toBe('Skip the exercise with 1 unlogged set?');
   });
 });
 

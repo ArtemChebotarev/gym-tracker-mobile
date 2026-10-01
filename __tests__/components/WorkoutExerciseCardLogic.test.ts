@@ -305,7 +305,7 @@ describe('the weight swap popover and note', () => {
       expect(popover).toMatchObject({
         kind: 'ranges',
         title: 'Current set target: 15 kg × 10',
-        subtitle: 'You can choose another weight — reps will update',
+        subtitle: 'Pick another weight and the reps update.',
         outer: { min: 4, max: 17.5 },
         inner: { min: 12, max: 17.5 },
         marker: 15,
@@ -357,7 +357,7 @@ describe('the weight swap popover and note', () => {
       ).toEqual({
         kind: 'no-history',
         title: 'Not enough history yet',
-        text: 'Pick a weight you can lift for about 3 reps short of failure. After this workout you’ll get rep targets, and any weight you pick will get its own.',
+        text: "Pick a weight that leaves you about 3 reps in reserve (RIR). After this workout you'll get rep targets.",
       });
     });
 

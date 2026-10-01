@@ -109,7 +109,7 @@ export function formatStartConfirmMessage(mesocycle: Mesocycle): string {
 
 /** Why Start is unavailable while another mesocycle is active (08.3: the message is mandatory). */
 export function formatStartBlockedMessage(active: Mesocycle): string {
-  return `"${active.name}" is still active. Finish or abandon it before starting another training cycle.`;
+  return `"${active.name}" is still active. Finish or stop it before starting another cycle.`;
 }
 
 /**
@@ -134,13 +134,11 @@ export function plannedMenuItems(
 }
 
 /**
- * What the `Archive training cycle?` confirmation says under its title. It names the block, because the
- * menu it was opened from is gone by the time the popup is on screen and a list of finished blocks
- * is a list of similar names. Then the two halves of what archiving is: the block goes, the
- * training stays — and, for now, it doesn't come back (there is no Unarchive yet).
+ * What the `Archive training cycle?` confirmation says under its title: it asks, and says it can't be
+ * undone — for now there is no Unarchive.
  */
-export function formatArchiveConfirmMessage(mesocycle: Mesocycle): string {
-  return `"${mesocycle.name}" leaves this list. Everything you logged in it is kept, but you won't be able to bring the block back.`;
+export function formatArchiveConfirmMessage(): string {
+  return "Are you sure you want to archive this training cycle? This can't be undone.";
 }
 
 /**

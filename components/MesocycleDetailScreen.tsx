@@ -122,7 +122,7 @@ export function MesocycleDetailScreen({
           <Text style={styles.blockLabel}>Weekly sets</Text>
           {summary.weeklySets.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No sets logged in this block</Text>
+              <Text style={styles.emptyTitle}>No sets logged in this cycle</Text>
             </View>
           ) : (
             <WeeklySetsCard rows={summary.weeklySets} lengthWeeks={mesocycle.lengthWeeks} />

@@ -51,7 +51,7 @@ export default function MesocyclesRoute() {
       onStart={(mesocycle) =>
         startMesocycle.mutate(mesocycle.id, {
           onError: () => {
-            Alert.alert("Couldn't start training cycle", 'Something went wrong. Please try again.');
+            Alert.alert("Couldn't start training cycle", 'Something went wrong. Try again.');
           },
         })
       }
@@ -62,7 +62,7 @@ export default function MesocyclesRoute() {
       onDelete={(mesocycle) =>
         deleteMesocycle.mutate(mesocycle.id, {
           onError: () => {
-            Alert.alert("Couldn't delete training cycle", 'Something went wrong. Please try again.');
+            Alert.alert("Couldn't delete training cycle", 'Something went wrong. Try again.');
           },
         })
       }
@@ -76,7 +76,7 @@ export default function MesocyclesRoute() {
       onArchive={(mesocycle) =>
         archiveMesocycle.mutate(mesocycle.id, {
           onError: () => {
-            Alert.alert("Couldn't archive training cycle", 'Something went wrong. Please try again.');
+            Alert.alert("Couldn't archive training cycle", 'Something went wrong. Try again.');
           },
         })
       }

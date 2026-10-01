@@ -221,7 +221,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           skipWorkout.mutate(currentSessionId, {
-            onError: () => Alert.alert("Couldn't skip the workout", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't skip the workout", 'Try again.'),
           });
         },
       },
@@ -240,18 +240,18 @@ export default function TodayScreen() {
             // is replaced in place by `Copy current meso` once the re-read model comes back
             // (Artem, 24.09.2026 — a finished block is still worth standing on, and block-level
             // actions like its history will land beside that button).
-            onError: () => Alert.alert("Couldn't finish the training cycle", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't finish the training cycle", 'Try again.'),
           }),
       },
     ]);
   }
 
   function showSaveError() {
-    Alert.alert("Couldn't save the set", 'Please try again.');
+    Alert.alert("Couldn't save the set", 'Try again.');
   }
 
   function showExerciseError() {
-    Alert.alert("Couldn't update the exercise", 'Please try again.');
+    Alert.alert("Couldn't update the exercise", 'Try again.');
   }
 
   /**
@@ -330,7 +330,7 @@ export default function TodayScreen() {
     }
     setBodyWeight.mutate(
       { mesoId: model.mesoId, bodyWeight },
-      { onError: () => Alert.alert("Couldn't save your body weight", 'Please try again.') },
+      { onError: () => Alert.alert("Couldn't save your body weight", 'Try again.') },
     );
   }
 
@@ -424,7 +424,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           finishSession.mutate(currentSessionId, {
-            onError: () => Alert.alert("Couldn't finish the workout", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't finish the workout", 'Try again.'),
           });
         }}
         onOpenNext={(nextSessionId) => router.navigate(workoutHref(nextSessionId))}
@@ -493,7 +493,7 @@ export default function TodayScreen() {
             // Like Finish, this doesn't navigate. Releasing the picked day is the tab bar's job
             // and only the tab bar's, so there is one rule for it rather than a list of actions
             // that each remember to do it.
-            onError: () => Alert.alert("Couldn't stop the training cycle", 'Please try again.'),
+            onError: () => Alert.alert("Couldn't stop the training cycle", 'Try again.'),
           });
         }}
         isStopping={stopMesocycle.isPending}
@@ -510,7 +510,7 @@ export default function TodayScreen() {
           setIsRenameOpen(false);
           renameMesocycle.mutate(
             { mesoId: model.mesoId, name },
-            { onError: () => Alert.alert("Couldn't rename the training cycle", 'Please try again.') },
+            { onError: () => Alert.alert("Couldn't rename the training cycle", 'Try again.') },
           );
         }}
         isSaving={renameMesocycle.isPending}
@@ -528,7 +528,7 @@ export default function TodayScreen() {
           addExercises.mutate(
             { sessionId: currentSessionId, exerciseIds },
             {
-              onError: () => Alert.alert("Couldn't add the exercises", 'Please try again.'),
+              onError: () => Alert.alert("Couldn't add the exercises", 'Try again.'),
             },
           );
         }}

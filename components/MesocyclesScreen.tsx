@@ -131,7 +131,7 @@ export function MesocyclesScreen({
   }
 
   function confirmArchive(mesocycle: Mesocycle) {
-    Alert.alert('Archive training cycle?', formatArchiveConfirmMessage(mesocycle), [
+    Alert.alert('Archive training cycle?', formatArchiveConfirmMessage(), [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Archive', onPress: () => onArchive(mesocycle) },
     ]);

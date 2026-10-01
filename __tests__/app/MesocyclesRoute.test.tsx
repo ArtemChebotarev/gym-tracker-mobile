@@ -121,7 +121,7 @@ describe('MesocyclesRoute — Archive', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Archive training cycle?',
-      expect.stringContaining('Upper/Lower'),
+      "Are you sure you want to archive this training cycle? This can't be undone.",
       expect.any(Array),
     );
 
