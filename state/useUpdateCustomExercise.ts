@@ -15,6 +15,7 @@ export function useUpdateCustomExercise() {
   const deps = useExerciseLibraryDeps();
 
   return useMutation({
+    meta: { operation: 'updateCustomExercise' },
     mutationFn: (input: UpdateCustomExerciseInput) =>
       updateCustomExercise(input, deps),
     onSuccess: () => {

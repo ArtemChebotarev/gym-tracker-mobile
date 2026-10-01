@@ -17,6 +17,7 @@ export function useSkipWorkout() {
   const deps = useWorkoutSkipDeps();
 
   return useMutation({
+    meta: { operation: 'skipWorkout' },
     mutationFn: (sessionId: string) => skipWorkout(sessionId, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });

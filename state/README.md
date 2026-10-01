@@ -26,3 +26,7 @@ A test renders its own set instead — one per test, through `withRepositories()
 Nothing here seeds anything any more (task 112). The catalog arrives as a migration, and
 mesocycles arrive because the user made them — a clean install starts with an empty list, and
 the stub mesocycles are a test fixture (`__tests__/fixtures/mesocycleMocks.ts`).
+
+## Logging (task 141.1)
+
+`logger.ts` is the app's one `Logger` (port and entries in `domain/logging.ts`). It starts with no sinks, so tests write nowhere; `app/_layout.tsx` installs the real ones at startup through `defaultLogSinks.ts` — the log file (`storage/fileLogSink.ts`) always, the console too in development. Failures reach it from three places and nowhere else: `queryClient.ts` (`QueryCache` / `MutationCache` `onError`, named by the `meta.operation` every `useMutation` here carries), `useStorageBootstrap.ts`, and — from task 141.2 — the error boundary. Two levels only, `error` and `warn`; entries hold ids and event names, never what the user typed. The debug screen's "Export logs" hands the files to the share sheet (`useExportLogs.ts`).

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import type { RepositorySet } from '@repositories/repositorySet';
 
 import { bootstrapStorage } from './bootstrap';
+import { logger } from './logger';
 
 /**
  * Nothing has been read yet · storage is ready, and here it is · storage cannot be opened at all.
@@ -37,7 +38,7 @@ export function resetStorageBootstrap(): void {
 
 /**
  * Runs the bootstrap and reports where it got to. `failed` is terminal: the error is not shown to
- * the user (there is nothing they could do with it) but it is logged, because a migration that
+ * the user (there is nothing they could do with it) but it is written to the log, because a migration that
  * fails on a phone is otherwise invisible.
  */
 export function useStorageBootstrap(): StorageBootstrap {
@@ -52,7 +53,7 @@ export function useStorageBootstrap(): StorageBootstrap {
         }
       },
       (error: unknown) => {
-        console.error('Storage could not be initialized.', error);
+        logger.error('storage.bootstrap', error);
         if (mounted) {
           setState({ status: 'failed' });
         }

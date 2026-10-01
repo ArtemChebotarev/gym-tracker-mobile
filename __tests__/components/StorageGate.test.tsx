@@ -3,6 +3,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Text } from 'react-native';
 
 import { StorageGate } from '@components/StorageGate';
+import type { LogEntry } from '@domain/logging';
+import { setLogSinks } from '@state/logger';
 import { resetStorageBootstrap } from '@state/useStorageBootstrap';
 
 // The two states task 111's DoD names: screens must not render data before storage is ready, and
@@ -60,10 +62,10 @@ describe('StorageGate', () => {
     expect(hideAsync).toHaveBeenCalled();
   });
 
-  test('a failed bootstrap shows the restart screen instead of the app', async () => {
-    // The gate logs the failure — a migration that fails on a phone is invisible otherwise — and
-    // this is the one place that expects it, so the run's console check is silenced for it.
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  test('a failed bootstrap shows the restart screen instead of the app, and is written to the log', async () => {
+    // The failure is logged — a migration that fails on a phone is invisible otherwise.
+    const written: LogEntry[] = [];
+    setLogSinks([{ write: (entry) => written.push(entry) }]);
     renderGate();
 
     await act(async () => settle.reject(new Error('database is locked')));
@@ -75,5 +77,7 @@ describe('StorageGate', () => {
     expect(screen.queryByText(/database is locked/)).toBeNull();
     expect(screen.queryAllByRole('button')).toEqual([]);
     expect(hideAsync).toHaveBeenCalled();
+    expect(written).toMatchObject([{ level: 'error', event: 'storage.bootstrap', message: 'database is locked' }]);
+    setLogSinks([]);
   });
 });

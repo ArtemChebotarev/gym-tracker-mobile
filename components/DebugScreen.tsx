@@ -20,10 +20,22 @@ export type DebugScreenProps = {
   isExporting: boolean;
   /** Set when the last export failed — the reason, as plainly as it can be put. */
   error?: string;
+  onExportLogs: () => void;
+  isExportingLogs: boolean;
+  /** Set when the last log export failed. */
+  logsError?: string;
   onBack: () => void;
 };
 
-export function DebugScreen({ onExport, isExporting, error, onBack }: DebugScreenProps) {
+export function DebugScreen({
+  onExport,
+  isExporting,
+  error,
+  onExportLogs,
+  isExportingLogs,
+  logsError,
+  onBack,
+}: DebugScreenProps) {
   return (
     <RootScreen title="Debug" trailing={<Button label="Done" variant="secondary" onPress={onBack} />}>
       <View style={styles.body}>
@@ -37,6 +49,17 @@ export function DebugScreen({ onExport, isExporting, error, onBack }: DebugScree
           disabled={isExporting}
         />
         {error !== undefined && <Text style={styles.error}>{error}</Text>}
+        <Text style={styles.description}>
+          A record of what went wrong in the app — failures and expected business conflicts, ids
+          only, nothing you typed. Kept in a file, so it is there even when the data would not open.
+        </Text>
+        <Button
+          label={isExportingLogs ? 'Exporting…' : 'Export logs'}
+          variant="secondary"
+          onPress={onExportLogs}
+          disabled={isExportingLogs}
+        />
+        {logsError !== undefined && <Text style={styles.error}>{logsError}</Text>}
       </View>
     </RootScreen>
   );

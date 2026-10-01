@@ -49,6 +49,7 @@ export function useExerciseCommand() {
   const store = useWorkoutStore();
 
   return useMutation({
+    meta: { operation: 'exerciseCommand' },
     mutationFn: ({ command, ref }: { command: ExerciseCommand; ref: SessionExerciseRef }) =>
       runExerciseCommand(command, ref, store),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
@@ -64,6 +65,7 @@ export function useSwapExercise() {
   const deps = useExerciseSwapDeps();
 
   return useMutation({
+    meta: { operation: 'swapExercise' },
     mutationFn: (input: ExerciseSwapInput) => swapExercise(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });

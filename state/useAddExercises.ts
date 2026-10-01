@@ -16,6 +16,7 @@ export function useAddExercises() {
   const deps = useExerciseAdditionDeps();
 
   return useMutation({
+    meta: { operation: 'addExercises' },
     mutationFn: (input: ExerciseAdditionInput) => addExercises(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });

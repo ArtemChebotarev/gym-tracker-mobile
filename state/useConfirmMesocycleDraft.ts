@@ -16,6 +16,7 @@ export function useConfirmMesocycleDraft() {
   const deps = useMesocycleCreationDeps();
 
   return useMutation({
+    meta: { operation: 'confirmMesocycleDraft' },
     mutationFn: (draft: MesoBuilderDraft) =>
       confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), deps),
     onSuccess: () => {

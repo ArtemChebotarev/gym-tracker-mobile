@@ -13,6 +13,7 @@ export function useDeletePlannedMesocycle() {
   const deps = useMesocycleListDeps();
 
   return useMutation({
+    meta: { operation: 'deletePlannedMesocycle' },
     mutationFn: (id: string) => deletePlannedMesocycle(id, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });

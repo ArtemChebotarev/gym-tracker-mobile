@@ -15,6 +15,7 @@ export function useStartMesocycle() {
   const deps = useMesocycleStartDeps();
 
   return useMutation({
+    meta: { operation: 'startMesocycle' },
     mutationFn: (id: string) => startMesocycle(id, deps),
     onSuccess: () =>
       Promise.all([

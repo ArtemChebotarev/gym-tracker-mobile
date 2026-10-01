@@ -15,6 +15,7 @@ export function useSetBodyWeight() {
   const deps = useBodyWeightDeps();
 
   return useMutation({
+    meta: { operation: 'setBodyWeight' },
     mutationFn: (input: BodyWeightInput) => setBodyWeight(input, deps),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });
