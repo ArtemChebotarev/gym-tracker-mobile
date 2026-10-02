@@ -4,16 +4,21 @@ import { useRouter } from 'expo-router';
 
 import { DebugScreen } from '@components/DebugScreen';
 import { useExportBackup } from '@state/useExportBackup';
+import { useExportLogs } from '@state/useExportLogs';
 
 export default function DebugRoute() {
   const router = useRouter();
   const exportBackup = useExportBackup();
+  const exportLogs = useExportLogs();
 
   return (
     <DebugScreen
       onExport={() => exportBackup.mutate()}
       isExporting={exportBackup.isPending}
       error={exportBackup.error?.message}
+      onExportLogs={() => exportLogs.mutate()}
+      isExportingLogs={exportLogs.isPending}
+      logsError={exportLogs.error?.message}
       onBack={() => router.back()}
     />
   );

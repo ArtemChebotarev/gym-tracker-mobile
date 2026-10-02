@@ -21,6 +21,7 @@ export function useConfirmCopyWeekDraft() {
   const deps = useMesocycleCreationDeps();
 
   return useMutation({
+    meta: { operation: 'confirmCopyWeekDraft' },
     mutationFn: async (draft: MesoBuilderDraft) =>
       confirmCopyWeekMesocycleDraft(toCopyWeekMesocycleConfirmInput(draft), deps),
     onSuccess: () => {

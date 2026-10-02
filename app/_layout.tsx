@@ -10,8 +10,13 @@ import { Stack, ThemeProvider } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { StorageGate } from '@components/StorageGate';
+import { installDefaultLogSinks } from '@state/defaultLogSinks';
 import { QueryProvider } from '@state/QueryProvider';
 import { navigationTheme, styles } from '@components/RootLayoutStyles';
+
+// Module scope, like the splash in StorageGate: the log has to be listening before the storage
+// bootstrap runs, since that is the failure it matters most for (task 141.1).
+installDefaultLogSinks();
 
 export default function RootLayout() {
   return (

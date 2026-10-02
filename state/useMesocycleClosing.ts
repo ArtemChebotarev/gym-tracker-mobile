@@ -27,6 +27,7 @@ export function useFinishMesocycle() {
   const deps = useMesocycleClosingDeps();
 
   return useMutation({
+    meta: { operation: 'finishMesocycle' },
     mutationFn: (mesoId: string) => finishMesocycle(mesoId, deps),
     onSuccess: () => invalidateClosedMesocycle(queryClient),
   });
@@ -38,6 +39,7 @@ export function useStopMesocycle() {
   const deps = useMesocycleClosingDeps();
 
   return useMutation({
+    meta: { operation: 'stopMesocycle' },
     mutationFn: (mesoId: string) => stopMesocycle(mesoId, deps),
     onSuccess: () => invalidateClosedMesocycle(queryClient),
   });

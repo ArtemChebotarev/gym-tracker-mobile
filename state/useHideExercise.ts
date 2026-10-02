@@ -14,6 +14,7 @@ export function useHideExercise() {
   const deps = useExerciseLibraryDeps();
 
   return useMutation({
+    meta: { operation: 'hideExercise' },
     mutationFn: (id: ExerciseId) => hideExercise(id, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });

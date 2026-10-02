@@ -18,6 +18,7 @@ export function useLogSet() {
   const store = useWorkoutStore();
 
   return useMutation({
+    meta: { operation: 'logSet' },
     mutationFn: ({ ref, entry }: { ref: SetRowRef; entry: SetEntry }) =>
       logSet(ref, entry, store),
     onSuccess: (result) => {
@@ -34,6 +35,7 @@ export function useUnlogSet() {
   const store = useWorkoutStore();
 
   return useMutation({
+    meta: { operation: 'unlogSet' },
     mutationFn: (ref: SetRowRef) => unlogSet(ref, store),
     onSuccess: () => invalidateWorkoutQueries(queryClient),
   });

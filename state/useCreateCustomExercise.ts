@@ -15,6 +15,7 @@ export function useCreateCustomExercise() {
   const deps = useExerciseLibraryDeps();
 
   return useMutation({
+    meta: { operation: 'createCustomExercise' },
     mutationFn: (input: CreateCustomExerciseInput) => createCustomExercise(input, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exerciseLibrary'] });

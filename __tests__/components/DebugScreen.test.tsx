@@ -11,6 +11,8 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 const BASE_PROPS: DebugScreenProps = {
   onExport: jest.fn(),
   isExporting: false,
+  onExportLogs: jest.fn(),
+  isExportingLogs: false,
   onBack: jest.fn(),
 };
 
@@ -53,5 +55,26 @@ describe('DebugScreen', () => {
 
     expect(screen.queryByText(/import/i)).toBeNull();
     expect(screen.queryByText(/restore/i)).toBeNull();
+  });
+});
+
+describe('DebugScreen log export', () => {
+  test('exports the logs on press', () => {
+    const onExportLogs = jest.fn();
+    renderScreen({ onExportLogs });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Export logs' }));
+
+    expect(onExportLogs).toHaveBeenCalledTimes(1);
+  });
+
+  test('takes no second press while the logs are being exported, and shows why one failed', () => {
+    const onExportLogs = jest.fn();
+    renderScreen({ onExportLogs, isExportingLogs: true, logsError: 'Disk is full.' });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Exporting…' }));
+
+    expect(onExportLogs).not.toHaveBeenCalled();
+    expect(screen.getByText('Disk is full.')).toBeTruthy();
   });
 });

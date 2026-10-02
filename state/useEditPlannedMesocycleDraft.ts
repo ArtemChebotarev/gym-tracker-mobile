@@ -14,6 +14,7 @@ export function useEditPlannedMesocycleDraft(id: string) {
   const deps = useMesocycleEditingDeps();
 
   return useMutation({
+    meta: { operation: 'editPlannedMesocycleDraft' },
     mutationFn: (draft: MesoBuilderDraft) =>
       editPlannedMesocycle(id, toScratchMesocycleDraftInput(draft), deps),
     onSuccess: () => {

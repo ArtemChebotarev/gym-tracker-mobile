@@ -22,6 +22,7 @@ export function useRenameMesocycle() {
   const deps = useMesocycleEditingDeps();
 
   return useMutation({
+    meta: { operation: 'renameMesocycle' },
     mutationFn: ({ mesoId, name }: RenameMesocycleInput) => renameMesocycle(mesoId, name, deps),
     onSuccess: () =>
       Promise.all([

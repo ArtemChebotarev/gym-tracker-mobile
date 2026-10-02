@@ -17,6 +17,7 @@ export function useArchiveMesocycle() {
   const deps = useMesocycleListDeps();
 
   return useMutation({
+    meta: { operation: 'archiveMesocycle' },
     mutationFn: (id: string) => archiveMesocycle(id, deps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
