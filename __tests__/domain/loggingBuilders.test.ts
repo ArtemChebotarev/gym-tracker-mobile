@@ -2,6 +2,7 @@ import { ConflictError, NotFoundError, StorageUnavailableError } from '@domain/e
 import {
   buildFailureEntry,
   buildWarningEntry,
+  logLinesToJsonArray,
   errorKindOf,
   levelOfErrorKind,
   MAX_LOG_MESSAGE_LENGTH,
@@ -32,13 +33,9 @@ describe('levelOfErrorKind', () => {
 
 describe('buildFailureEntry', () => {
   test('carries the event, the kind, the message and the run it belongs to', () => {
-    const entry = buildFailureEntry(
-      'error',
-      'mutation.startMesocycle',
-      new Error('boom'),
-      META,
-      { mesocycleId: 'm1' },
-    );
+    const entry = buildFailureEntry('error', 'mutation.startMesocycle', new Error('boom'), META, {
+      mesocycleId: 'm1',
+    });
 
     expect(entry).toEqual({
       ...META,
@@ -62,7 +59,12 @@ describe('buildFailureEntry', () => {
   });
 
   test('cuts a message that would fill the file on its own', () => {
-    const entry = buildFailureEntry('error', 'e', new Error('x'.repeat(MAX_LOG_MESSAGE_LENGTH + 50)), META);
+    const entry = buildFailureEntry(
+      'error',
+      'e',
+      new Error('x'.repeat(MAX_LOG_MESSAGE_LENGTH + 50)),
+      META,
+    );
 
     expect(entry.message).toHaveLength(MAX_LOG_MESSAGE_LENGTH + 1);
     expect(entry.message?.endsWith('…')).toBe(true);
@@ -85,5 +87,23 @@ describe('buildWarningEntry', () => {
       event: 'session.notFound',
       context: { sessionId: 's1' },
     });
+  });
+});
+
+describe('logLinesToJsonArray', () => {
+  test('turns JSON Lines into one valid JSON array, oldest first', () => {
+    const lines = `${JSON.stringify({ event: 'a' })}\n${JSON.stringify({ event: 'b' })}\n`;
+
+    expect(JSON.parse(logLinesToJsonArray(lines))).toEqual([{ event: 'a' }, { event: 'b' }]);
+  });
+
+  test('skips a line cut off by a crash and keeps the rest', () => {
+    const lines = `${JSON.stringify({ event: 'a' })}\n{"event":"b","mess`;
+
+    expect(JSON.parse(logLinesToJsonArray(lines))).toEqual([{ event: 'a' }]);
+  });
+
+  test('an empty log is an empty array', () => {
+    expect(JSON.parse(logLinesToJsonArray(''))).toEqual([]);
   });
 });

@@ -53,3 +53,24 @@ export function buildFailureEntry(
 export function buildWarningEntry(event: string, meta: EntryMeta, context?: LogContext): LogEntry {
   return { ...meta, level: 'warn', event, ...(context !== undefined && { context }) };
 }
+
+/**
+ * The log file is JSON Lines — one entry per line, so appending never rewrites anything. As a
+ * whole it is not valid JSON, and previews and tools that expect JSON refuse it, so an export
+ * turns it into one array. A line that does not parse (a write cut off when the app died) is
+ * skipped rather than failing the whole export.
+ */
+export function logLinesToJsonArray(lines: string): string {
+  const entries: unknown[] = [];
+  for (const line of lines.split('\n')) {
+    if (line.trim() === '') {
+      continue;
+    }
+    try {
+      entries.push(JSON.parse(line));
+    } catch {
+      // A torn last line; the entries before it are still worth handing over.
+    }
+  }
+  return JSON.stringify(entries, null, 2);
+}
