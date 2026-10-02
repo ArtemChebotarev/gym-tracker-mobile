@@ -8,6 +8,14 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
+/** The device has no share sheet to offer — nothing the user can fix, and not worth a retry. */
+export class SharingUnavailableError extends Error {
+  constructor() {
+    super('Sharing is not available on this device.');
+    this.name = 'SharingUnavailableError';
+  }
+}
+
 export type ShareFileOptions = {
   fileName: string;
   content: string;
@@ -32,7 +40,7 @@ export async function shareTextFile({
   file.write(content);
 
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error('Sharing is not available on this device.');
+    throw new SharingUnavailableError();
   }
   await Sharing.shareAsync(file.uri, { mimeType, UTI: uti, dialogTitle });
 }

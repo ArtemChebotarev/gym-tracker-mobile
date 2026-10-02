@@ -15,9 +15,11 @@ import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixt
 // checks how the tab renders the two outcomes that have no session, with the pick mocked so each
 // one is reached directly rather than set up in the app-wide store.
 let mockToday: TodayWorkout = { kind: 'noActiveMesocycle' };
+let mockTodayFails = false;
 
 jest.mock('@usecases/todayWorkout', () => ({
-  getTodayWorkout: () => Promise.resolve(mockToday),
+  getTodayWorkout: () =>
+    mockTodayFails ? Promise.reject(new Error('storage down')) : Promise.resolve(mockToday),
 }));
 
 const mockNavigate = jest.fn();
@@ -41,6 +43,7 @@ let alertSpy: jest.SpyInstance;
 
 const repositories = withRepositories();
 beforeEach(() => {
+  mockTodayFails = false;
   mockNavigate.mockClear();
   mockPush.mockClear();
   mockSetParams.mockClear();
@@ -133,5 +136,20 @@ describe('Today tab — no session to show', () => {
       ).toBe('completed');
     });
     expect(await repositories().mesocycleRepo.getActive()).toBeNull();
+  });
+
+  test('a failed read says so and retries, instead of inviting to plan a cycle that may exist', async () => {
+    mockToday = { kind: 'noActiveMesocycle' };
+    mockTodayFails = true;
+    renderToday();
+
+    expect(await screen.findByText("Couldn't load this screen")).toBeTruthy();
+    expect(screen.queryByRole('button', { name: PLAN_MESOCYCLE_LABEL })).toBeNull();
+
+    mockTodayFails = false;
+    fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByRole('button', { name: PLAN_MESOCYCLE_LABEL })).toBeTruthy();
+    expect(screen.queryByText("Couldn't load this screen")).toBeNull();
   });
 });

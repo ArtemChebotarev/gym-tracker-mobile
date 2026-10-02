@@ -29,6 +29,7 @@ import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useStartMesocycle } from '@state/useStartMesocycle';
+import { loadErrorOf } from '@state/loadError';
 
 export default function MesocyclesRoute() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function MesocyclesRoute() {
   return (
     <MesocyclesScreen
       mesocycles={query.data}
+      loadError={loadErrorOf(query)}
       isPending={query.isPending || (activeId !== undefined && activeGrid.isPending)}
       activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
       onCreateFromScratch={() => router.push('/meso-editor/new')}

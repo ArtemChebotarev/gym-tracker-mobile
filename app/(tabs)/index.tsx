@@ -98,6 +98,7 @@ import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
+import { loadErrorOf } from '@state/loadError';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
@@ -349,6 +350,7 @@ export default function TodayScreen() {
       <WorkoutScreen
         model={model}
         isPending={query.isPending}
+        loadError={loadErrorOf(query)}
         onOpenGrid={() => setIsGridOpen(true)}
         menuActions={{
           addExercise: () => setIsAddExerciseOpen(true),

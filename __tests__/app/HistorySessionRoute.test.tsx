@@ -94,4 +94,19 @@ describe('History session route', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Go back' }));
     expect(mockBack).toHaveBeenCalled();
   });
+
+  test('a failed read says so and retries, instead of calling the workout missing', async () => {
+    const read = jest
+      .spyOn(repositories().sessionTreeRepo, 'getBySessionId')
+      .mockRejectedValueOnce(new Error('storage down'));
+    renderRoute();
+
+    expect(await screen.findByText("Couldn't load this screen")).toBeTruthy();
+    expect(screen.queryByText('Workout not found')).toBeNull();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Week 1 Day 1')).toBeTruthy();
+    read.mockRestore();
+  });
 });

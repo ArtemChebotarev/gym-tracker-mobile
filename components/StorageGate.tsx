@@ -21,13 +21,14 @@
 
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, type PropsWithChildren } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { COLORS } from '@design/tokens';
 import { RepositoriesProvider } from '@state/repositories';
 import { useStorageBootstrap } from '@state/useStorageBootstrap';
 
-import { styles } from './StorageGateStyles';
+import { FullScreenMessage } from './FullScreenMessage';
+import { styles } from './FullScreenMessageStyles';
 
 // Module scope, not an effect: the splash has to be claimed before React renders anything, which
 // is already too late once a component's effect runs. Both calls swallow their rejection, which
@@ -55,12 +56,15 @@ export function StorageGate({ children }: PropsWithChildren) {
 
   if (bootstrap.status === 'failed') {
     return (
-      <View style={styles.screen} testID="storage-gate-error">
-        <Text style={styles.title}>{"Can't open your data"}</Text>
-        <Text style={styles.description}>Restart the app and try again.</Text>
-      </View>
+      <FullScreenMessage
+        testID="storage-gate-error"
+        title="Can't open your data"
+        description="Restart the app and try again."
+      />
     );
   }
 
-  return <RepositoriesProvider repositories={bootstrap.repositories}>{children}</RepositoriesProvider>;
+  return (
+    <RepositoriesProvider repositories={bootstrap.repositories}>{children}</RepositoriesProvider>
+  );
 }

@@ -9,6 +9,7 @@
 import { Stack, ThemeProvider } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AppErrorBoundary } from '@components/AppErrorBoundary';
 import { StorageGate } from '@components/StorageGate';
 import { installDefaultLogSinks } from '@state/defaultLogSinks';
 import { QueryProvider } from '@state/QueryProvider';
@@ -17,6 +18,9 @@ import { navigationTheme, styles } from '@components/RootLayoutStyles';
 // Module scope, like the splash in StorageGate: the log has to be listening before the storage
 // bootstrap runs, since that is the failure it matters most for (task 141.1).
 installDefaultLogSinks();
+
+// What Expo Router shows when anything below throws while rendering (task 141.2).
+export const ErrorBoundary = AppErrorBoundary;
 
 export default function RootLayout() {
   return (

@@ -29,7 +29,9 @@ import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
 import { SectionHeader } from '@design/components/SectionHeader';
+import type { LoadError } from '@state/loadError';
 
+import { LoadErrorState } from './LoadErrorState';
 import { ExerciseFilterRow } from './ExerciseFilterRow';
 import {
   buildSections,
@@ -49,6 +51,8 @@ export type ExerciseLibraryFilters = Omit<ExerciseListQuery, 'search'>;
 export type ExerciseLibraryScreenProps = {
   groups: ExerciseListGroup[] | undefined;
   isPending: boolean;
+  /** Set when reading the library failed — shown instead of an empty list. */
+  loadError?: LoadError;
   search: string;
   onSearchChange: (search: string) => void;
   filters: ExerciseLibraryFilters;
@@ -64,6 +68,7 @@ export type ExerciseLibraryScreenProps = {
 export function ExerciseLibraryScreen({
   groups,
   isPending,
+  loadError,
   search,
   onSearchChange,
   filters,
@@ -84,6 +89,7 @@ export function ExerciseLibraryScreen({
   const showFilterEmptyState =
     !isPending && groups?.length === 0 && trimmedSearch.length === 0 && filtersActive;
   const showList = !isPending && (groups?.length ?? 0) > 0;
+  const showLoadError = !isPending && loadError !== undefined;
 
   return (
     <RootScreen
@@ -109,6 +115,8 @@ export function ExerciseLibraryScreen({
       />
 
       {isPending && <Text style={styles.status}>Loading…</Text>}
+
+      {showLoadError && <LoadErrorState loadError={loadError} bottomInset={tabBarClearance} />}
 
       {showSearchEmptyState && (
         <EmptyState

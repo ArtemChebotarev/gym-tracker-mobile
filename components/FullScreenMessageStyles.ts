@@ -1,4 +1,4 @@
-// Styles behind components/StorageGate.tsx — see the `code-style` skill.
+// Styles behind components/FullScreenMessage.tsx — see the `code-style` skill.
 
 import { StyleSheet } from 'react-native';
 
@@ -23,5 +23,8 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/secondary'],
     textAlign: 'center',
+  },
+  action: {
+    marginTop: SPACING['space/gap'],
   },
 });

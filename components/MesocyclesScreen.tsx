@@ -50,7 +50,9 @@ import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
+import type { LoadError } from '@state/loadError';
 
+import { LoadErrorState } from './LoadErrorState';
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
 import { useTabBarClearance } from './useTabBarClearance';
@@ -75,6 +77,8 @@ import { styles } from './MesocyclesScreenStyles';
 export type MesocyclesScreenProps = {
   mesocycles: Mesocycle[] | undefined;
   isPending: boolean;
+  /** Set when reading the cycles failed — shown instead of the first-cycle invitation. */
+  loadError?: LoadError;
   /**
    * The Active card's current week — from the mesocycle's sessions (the week of the one in
    * progress, else of the next ready one), not the calendar. Unused without an active mesocycle.
@@ -97,6 +101,7 @@ export type MesocyclesScreenProps = {
 export function MesocyclesScreen({
   mesocycles,
   isPending,
+  loadError,
   activeWeekNumber,
   onCreateFromScratch,
   onCopyMesocycle,
@@ -144,18 +149,18 @@ export function MesocyclesScreen({
       <RootScreen
         title="Training cycles"
         trailing={
-          <IconButton
-            accessibilityLabel="New cycle"
-            variant="accent"
-            onPress={methodSheet.open}
-          >
+          <IconButton accessibilityLabel="New cycle" variant="accent" onPress={methodSheet.open}>
             <Text style={styles.addIcon}>+</Text>
           </IconButton>
         }
       >
         {isPending && <Text style={styles.status}>Loading…</Text>}
 
-        {!isPending && isEmptyGroups(groups) && (
+        {!isPending && loadError && (
+          <LoadErrorState loadError={loadError} bottomInset={tabBarClearance} />
+        )}
+
+        {!isPending && !loadError && isEmptyGroups(groups) && (
           <EmptyState
             icon={TabCyclesIcon}
             title="Plan your first training cycle"
@@ -166,7 +171,7 @@ export function MesocyclesScreen({
           />
         )}
 
-        {!isPending && !isEmptyGroups(groups) && (
+        {!isPending && !loadError && !isEmptyGroups(groups) && (
           <ScrollView
             contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
             showsVerticalScrollIndicator={false}
