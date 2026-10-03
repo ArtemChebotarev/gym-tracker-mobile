@@ -59,17 +59,11 @@ export const styles = StyleSheet.create({
   rowLast: {
     borderBottomWidth: 0,
   },
+  /** `Set 1` — a counter beside its value. */
   rowLabel: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
-  },
-  /** `Set 1` — a counter beside its value. */
-  rowLabelMuted: {
     color: COLORS['text/muted'],
-  },
-  /** `W2 · D1 · 3 Aug` — a fact in its own right, so a step brighter than a counter. */
-  rowLabelStrong: {
-    color: COLORS['text/secondary'],
   },
   rowValue: {
     flexShrink: 1,

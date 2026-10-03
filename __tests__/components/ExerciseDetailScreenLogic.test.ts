@@ -1,9 +1,6 @@
 import type { SetLog } from '@domain/execution';
 import {
   formatBestSet,
-  formatEarlierSessionLabel,
-  formatEarlierSessionTail,
-  formatEarlierSessionValue,
   formatLastDone,
   formatLastSessionMeta,
   formatSetLabel,
@@ -79,28 +76,5 @@ describe('a logged set row', () => {
     expect(formatSetValue(setLog({ weight: 5, bodyWeight: 83 }), 'bodyweight-weighted')).toBe(
       '83 (+5) kg × 8',
     );
-  });
-});
-
-describe('an earlier session row', () => {
-  const session = {
-    weekNumber: 2,
-    dayNumber: 1,
-    completedAt: '2026-08-03T12:00:00.000Z',
-    bestSet: { weight: 80, reps: 8 },
-    setCount: 3,
-  };
-
-  test('reads as week, day and date on the left', () => {
-    expect(formatEarlierSessionLabel(session)).toBe('W2 · D1 · 3 Aug');
-  });
-
-  test('reads as its heaviest set on the right, with the set count as a tail', () => {
-    expect(formatEarlierSessionValue(session)).toBe('80 × 8');
-    expect(formatEarlierSessionTail(session)).toBe(' · 3 sets');
-  });
-
-  test('says one set in the singular', () => {
-    expect(formatEarlierSessionTail({ ...session, setCount: 1 })).toBe(' · 1 set');
   });
 });

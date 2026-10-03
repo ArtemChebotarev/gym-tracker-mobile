@@ -39,7 +39,6 @@ describe('useExerciseOverview', () => {
 
     expect(result.current.data?.stats).toBeNull();
     expect(result.current.data?.lastSession).toBeNull();
-    expect(result.current.data?.earlierSessions).toEqual([]);
   });
 
   test('resolves to null for an id no exercise carries', async () => {

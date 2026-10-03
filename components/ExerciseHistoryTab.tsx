@@ -26,11 +26,7 @@ import type { ExerciseHistoryMesocycle, ExerciseHistorySession } from '@domain/e
 import { SectionHeader } from '@design/components/SectionHeader';
 
 import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard';
-import {
-  formatSetLabel,
-  formatSetRirTail,
-  formatSetValue,
-} from './ExerciseDetailScreenLogic';
+import { formatSetLabel, formatSetRirTail, formatSetValue } from './ExerciseDetailScreenLogic';
 import {
   buildHistorySections,
   formatHistorySessionDate,
@@ -74,7 +70,6 @@ export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHis
             <ExerciseDetailCardRow
               key={setLog.id}
               label={formatSetLabel(setLog)}
-              labelTone="counter"
               value={formatSetValue(setLog, equipment)}
               tail={formatSetRirTail(setLog)}
               isLast={index === item.setLogs.length - 1}

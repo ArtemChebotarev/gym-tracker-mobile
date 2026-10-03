@@ -8,8 +8,12 @@
 //
 // The screen opens on Overview every time, so the History tab's own read (108) waits until that
 // tab is first picked and then stays loaded — switching back and forth doesn't re-read.
+//
+// `Watch how to perform exercise` (task 153) hands over to a YouTube Shorts search built from the exercise's
+// name and equipment — the app ships no technique media of its own in v1.
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import {
@@ -24,8 +28,10 @@ import {
   formatHideExerciseWarning,
 } from '@components/ExerciseMenuLogic';
 import { toExerciseId } from '@domain/catalog';
+import { buildHowToUrl } from '@domain/exerciseHowTo';
 import { useExerciseHistory } from '@state/useExerciseHistory';
 import { loadErrorOf } from '@state/loadError';
+import { logger } from '@state/logger';
 import { useExerciseOverview } from '@state/useExerciseOverview';
 import { useHideExercise } from '@state/useHideExercise';
 import { useUpdateCustomExercise } from '@state/useUpdateCustomExercise';
@@ -69,6 +75,19 @@ export default function ExerciseDetailRoute() {
     );
   }
 
+  async function handleWatchHowTo() {
+    if (!exercise) {
+      return;
+    }
+    try {
+      await Linking.openURL(buildHowToUrl(exercise.name, exercise.equipment));
+    } catch (error) {
+      // No exercise name in the record: a log carries ids, never what the user typed (141.1).
+      logger.error('exercise.howTo.open', error, { exerciseId });
+      Alert.alert("Couldn't open the link", 'Try again.');
+    }
+  }
+
   /**
    * Hide asks first (08.6): the exercise keeps its whole history but drops out of the library and
    * every picker, and nothing in the app brings it back today.
@@ -108,6 +127,7 @@ export default function ExerciseDetailRoute() {
             setIsHistoryOpened(true);
           }
         }}
+        onWatchHowTo={handleWatchHowTo}
       />
       <ExerciseFormSheet
         visible={isFormSheetOpen}

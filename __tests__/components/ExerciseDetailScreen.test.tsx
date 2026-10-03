@@ -59,15 +59,6 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
       completedAt: '2026-09-17T12:00:00.000Z',
       setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
     },
-    earlierSessions: [
-      {
-        weekNumber: 2,
-        dayNumber: 1,
-        completedAt: '2026-08-03T12:00:00.000Z',
-        bestSet: { weight: 80, reps: 8 },
-        setCount: 3,
-      },
-    ],
     actions: ['hide'],
     ...overrides,
   };
@@ -97,6 +88,7 @@ function renderScreen(overrides: Partial<ExerciseDetailScreenProps> = {}) {
     isHistoryPending: false,
     onBack: jest.fn(),
     menuItems: [],
+    onWatchHowTo: jest.fn(),
     ...overrides,
   };
   const view = render(
@@ -149,17 +141,10 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('85 kg × 7 · 1 RIR')).toBeTruthy();
   });
 
-  test('lists the earlier sessions by their heaviest set and set count', () => {
+  test('does not repeat the earlier sessions — History has them', () => {
     renderScreen();
 
-    expect(screen.getByText('Earlier')).toBeTruthy();
-    expect(screen.getByText('W2 · D1 · 3 Aug')).toBeTruthy();
-    expect(screen.getByText('80 × 8 · 3 sets')).toBeTruthy();
-  });
-
-  test('hides the Earlier block when the exercise was only ever done once', () => {
-    renderScreen({ overview: overview({ earlierSessions: [] }) });
-
+    expect(screen.queryByText('Earlier')).toBeNull();
     expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
     expect(screen.getByTestId('exercise-last-session')).toBeTruthy();
   });
@@ -173,7 +158,6 @@ describe('ExerciseDetailScreen', () => {
           completedAt: '2026-09-17T12:00:00.000Z',
           setLogs: [setLog()],
         },
-        earlierSessions: [],
       }),
     });
 
@@ -183,7 +167,7 @@ describe('ExerciseDetailScreen', () => {
 
   test('with nothing logged, the tiles and the last session give way to the empty state', () => {
     renderScreen({
-      overview: overview({ stats: null, lastSession: null, earlierSessions: [] }),
+      overview: overview({ stats: null, lastSession: null }),
       history: [],
     });
 
@@ -191,13 +175,11 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText('Best set')).toBeNull();
     expect(screen.queryByText('Sessions')).toBeNull();
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
-    expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
-    expect(screen.queryByText('See full history')).toBeNull();
   });
 
   test('the empty state answers the History tab too — no sets means no history', () => {
     renderScreen({
-      overview: overview({ stats: null, lastSession: null, earlierSessions: [] }),
+      overview: overview({ stats: null, lastSession: null }),
       history: [],
     });
 
@@ -207,7 +189,7 @@ describe('ExerciseDetailScreen', () => {
   });
 
   test('hides the last-session block when no completed session holds a set', () => {
-    renderScreen({ overview: overview({ lastSession: null, earlierSessions: [] }) });
+    renderScreen({ overview: overview({ lastSession: null }) });
 
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
     expect(screen.getByText('Best set')).toBeTruthy();
@@ -224,13 +206,10 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
   });
 
-  test('See full history switches to the History tab', () => {
+  test('has no See full history link — the History tab is right there', () => {
     renderScreen();
 
-    fireEvent.press(screen.getByText('See full history'));
-
-    expect(screen.queryByText('Best set')).toBeNull();
-    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+    expect(screen.queryByText('See full history')).toBeNull();
   });
 
   test('reports the switch so the caller can start loading the history', () => {
@@ -290,5 +269,46 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Exercise not found')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Go back' }));
     expect(props.onBack).toHaveBeenCalled();
+  });
+
+  test('offers Watch how to perform exercise on Overview, and pressing it reports so', () => {
+    const { props } = renderScreen();
+
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
+
+    expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
+  });
+
+  test('offers Watch how to perform exercise on the empty state too', () => {
+    const { props } = renderScreen({
+      overview: overview({ stats: null, lastSession: null }),
+      history: [],
+    });
+
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
+
+    expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
+  });
+
+  test('on the empty state the how-to card comes first, above the note', () => {
+    renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
+
+    const rendered = JSON.stringify(screen.toJSON());
+
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeGreaterThan(-1);
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
+      rendered.indexOf('No sets logged yet'),
+    );
+  });
+
+  test('has no Watch how to perform exercise on the History tab, populated or empty', () => {
+    const populated = renderScreen();
+    fireEvent.press(screen.getByText('History'));
+    expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
+    populated.view.unmount();
+
+    renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
+    fireEvent.press(screen.getByText('History'));
+    expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
   });
 });

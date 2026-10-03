@@ -94,6 +94,5 @@ describe('loadExerciseOverview', () => {
       lastDoneAt: '2026-09-10T11:30:00.000Z',
     });
     expect(overview?.lastSession?.weekNumber).toBe(2);
-    expect(overview?.earlierSessions).toEqual([]);
   });
 });

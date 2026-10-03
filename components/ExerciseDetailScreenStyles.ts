@@ -19,7 +19,7 @@
 import { StyleSheet } from 'react-native';
 
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
-import { circle } from '@design/shapes';
+import { circle, square } from '@design/shapes';
 
 export const styles = StyleSheet.create({
   container: {
@@ -139,20 +139,36 @@ export const styles = StyleSheet.create({
   rowValueTail: {
     color: COLORS['text/muted'],
   },
-  earlierLabel: {
+  // The how-to card: the same fill and corner as the cards above it, with a mark, two lines and a
+  // chevron in one row. The mark's PNG has its own clear space, so the card's padding is small.
+  howTo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/xs'],
+    backgroundColor: COLORS['surface/card'],
+    borderRadius: RADII['radius/field'],
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/xs'],
+  },
+  howToMark: {
+    ...square(SIZES['size/brand-mark']),
+  },
+  howToText: {
+    flex: 1,
+  },
+  howToTitle: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
-    color: COLORS['text/secondary'],
+    color: COLORS['text/primary'],
   },
-  link: {
-    alignSelf: 'center',
-    paddingVertical: SPACING['space/md'],
-    paddingHorizontal: SPACING['space/screen'],
+  howToCaption: {
+    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
+    color: COLORS['text/muted'],
   },
-  linkLabel: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS.accent,
+  howToChevron: {
+    fontSize: TYPOGRAPHY['type/value'].fontSize,
+    color: COLORS['text/faint'],
   },
   linkPressed: {
     opacity: OPACITY['opacity/pressed'],
