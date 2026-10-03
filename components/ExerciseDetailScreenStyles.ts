@@ -140,22 +140,18 @@ export const styles = StyleSheet.create({
     color: COLORS['text/muted'],
   },
   // The how-to card: the same fill and corner as the cards above it, with a mark, two lines and a
-  // chevron in one row.
+  // chevron in one row. The mark's PNG has its own clear space, so the card's padding is small.
   howTo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING['space/row'],
+    gap: SPACING['space/xs'],
     backgroundColor: COLORS['surface/card'],
     borderRadius: RADII['radius/field'],
     paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/row'],
+    paddingVertical: SPACING['space/xs'],
   },
   howToMark: {
-    ...square(SIZES['size/icon-button']),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: RADII['radius/control'],
-    backgroundColor: COLORS['surface/control-active'],
+    ...square(SIZES['size/brand-mark']),
   },
   howToText: {
     flex: 1,

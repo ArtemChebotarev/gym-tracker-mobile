@@ -9,7 +9,7 @@
 // The screen opens on Overview every time, so the History tab's own read (108) waits until that
 // tab is first picked and then stays loaded — switching back and forth doesn't re-read.
 //
-// `Watch how to do it` (task 153) hands over to a YouTube Shorts search built from the exercise's
+// `Watch how to perform exercise` (task 153) hands over to a YouTube Shorts search built from the exercise's
 // name and equipment — the app ships no technique media of its own in v1.
 import { useState } from 'react';
 import { Alert } from 'react-native';

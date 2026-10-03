@@ -174,13 +174,13 @@ describe('Exercise screen route', () => {
     alert.mockRestore();
   });
 
-  test('Watch how to do it opens the Shorts search for the exercise and its equipment', async () => {
+  test('Watch how to perform exercise opens the Shorts search for the exercise and its equipment', async () => {
     mockParams = { id: 'bench-press-barbell' };
     mockOpenURL.mockResolvedValue(true);
     renderRoute();
     await screen.findByText('Bench Press');
 
-    fireEvent.press(screen.getByText('Watch how to do it'));
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
 
     await waitFor(() =>
       expect(mockOpenURL).toHaveBeenCalledWith(
@@ -196,7 +196,7 @@ describe('Exercise screen route', () => {
     renderRoute();
     await screen.findByText('Bench Press');
 
-    fireEvent.press(screen.getByText('Watch how to do it'));
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
 
     await waitFor(() => expect(alert).toHaveBeenCalledWith("Couldn't open the link", 'Try again.'));
 

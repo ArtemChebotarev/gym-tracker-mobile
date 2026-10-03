@@ -271,33 +271,33 @@ describe('ExerciseDetailScreen', () => {
     expect(props.onBack).toHaveBeenCalled();
   });
 
-  test('offers Watch how to do it on Overview, and pressing it reports so', () => {
+  test('offers Watch how to perform exercise on Overview, and pressing it reports so', () => {
     const { props } = renderScreen();
 
-    fireEvent.press(screen.getByText('Watch how to do it'));
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
 
     expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
   });
 
-  test('offers Watch how to do it on the empty state too', () => {
+  test('offers Watch how to perform exercise on the empty state too', () => {
     const { props } = renderScreen({
       overview: overview({ stats: null, lastSession: null }),
       history: [],
     });
 
-    fireEvent.press(screen.getByText('Watch how to do it'));
+    fireEvent.press(screen.getByText('Watch how to perform exercise'));
 
     expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
   });
 
-  test('has no Watch how to do it on the History tab, populated or empty', () => {
+  test('has no Watch how to perform exercise on the History tab, populated or empty', () => {
     const populated = renderScreen();
     fireEvent.press(screen.getByText('History'));
-    expect(screen.queryByText('Watch how to do it')).toBeNull();
+    expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
     populated.view.unmount();
 
     renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
     fireEvent.press(screen.getByText('History'));
-    expect(screen.queryByText('Watch how to do it')).toBeNull();
+    expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
   });
 });

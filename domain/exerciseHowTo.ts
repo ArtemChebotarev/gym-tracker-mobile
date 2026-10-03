@@ -1,4 +1,4 @@
-// The "Watch how to do it" link of the Exercise screen — task 153. v1 ships no pictures or
+// The "Watch how to perform exercise" link of the Exercise screen — task 153. v1 ships no pictures or
 // animations of its own (the spike "Remove older sets from exercise overview", 2026-10-03:
 // licences and animation are post-release work), so technique is one tap away in YouTube's Shorts
 // search instead. Nothing is stored: the link is built from what the exercise already has.

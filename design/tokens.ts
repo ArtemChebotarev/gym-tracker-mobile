@@ -218,6 +218,12 @@ export const SIZES = {
    * reaches it through `hitSlop` — `tapTargetSlop` in design/shapes.ts.
    */
   'size/tap-target': 44,
+  /**
+   * The box of the official YouTube icon on the Exercise screen's how-to card (task 153). The PNG
+   * carries its own clear space, so the visible mark is ~65% of this wide and ~45% tall: 52 gives a
+   * mark 24pt tall, above the 20pt minimum YouTube's brand rules set for digital use.
+   */
+  'size/brand-mark': 52,
   /** The floating tab bar's height, padding included (08.0, "Таб-бар", task 151). */
   'size/tabbar': 64,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */

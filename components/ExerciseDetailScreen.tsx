@@ -6,7 +6,7 @@
 // Overview answers one question — what did I do last time, before I get under the bar: three
 // tiles (Best set, Sessions, Last done) and the last completed session set by set. Earlier
 // sessions are not repeated here: the History tab right above has them (ExerciseHistoryTab, task
-// 108). `Watch how to do it` closes the tab (task 153): the screen shows no technique of its own,
+// 108). `Watch how to perform exercise` closes the tab (task 153): the screen shows no technique of its own,
 // so it hands over to a YouTube Shorts search. With
 // nothing ever logged, both tabs are replaced by a line saying so (08.6, "Пустое состояние") —
 // tiles of zeros would be worse than no tiles, and with no set logged there is no history either.
@@ -26,7 +26,7 @@
 // and pure helpers in ExerciseDetailScreenLogic.ts, per the code-style skill.
 
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
@@ -40,7 +40,6 @@ import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
 import { BackIcon } from '@design/icons/BackIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import { PlayIcon } from '@design/icons/PlayIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -80,7 +79,7 @@ export type ExerciseDetailScreenProps = {
   menuItems: ActionMenuItem[];
   /** The tab was switched — the caller loads the history the first time it's History. */
   onTabChange?: (tab: ExerciseDetailTab) => void;
-  /** `Watch how to do it` was pressed — the caller opens the search (task 153). */
+  /** `Watch how to perform exercise` was pressed — the caller opens the search (task 153). */
   onWatchHowTo: () => void;
 };
 
@@ -235,10 +234,15 @@ function LastSessionBlock({
   );
 }
 
+// YouTube's own red icon, as downloaded from brand.youtube — unmodified, since the brand rules
+// allow only its red, almost-black or white and ask for it to link back to YouTube content, which
+// this card does. Sized by SIZES['size/brand-mark'] so the mark stays above their 20pt minimum.
+const YOUTUBE_ICON = require('../assets/brand/yt_icon_red_digital.png');
+
 /**
- * Technique lives on YouTube, not in the app. A card in the look of the blocks above it — a mark
- * on the left, what it does and where it goes under it, a chevron — so it reads as one more thing
- * on the screen rather than a stray link.
+ * Technique lives on YouTube, not in the app. A card in the look of the blocks above it — the
+ * YouTube mark on the left, what it does and where it goes under it, a chevron — so it reads as
+ * one more thing on the screen rather than a stray link.
  */
 function WatchHowToCard({ onPress }: { onPress: () => void }) {
   return (
@@ -247,11 +251,9 @@ function WatchHowToCard({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       style={({ pressed }) => [styles.howTo, pressed && styles.linkPressed]}
     >
-      <View style={styles.howToMark}>
-        <PlayIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-      </View>
+      <Image source={YOUTUBE_ICON} resizeMode="contain" style={styles.howToMark} />
       <View style={styles.howToText}>
-        <Text style={styles.howToTitle}>Watch how to do it</Text>
+        <Text style={styles.howToTitle}>Watch how to perform exercise</Text>
         <Text style={styles.howToCaption}>YouTube Shorts</Text>
       </View>
       <Text style={styles.howToChevron}>›</Text>
