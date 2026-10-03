@@ -175,7 +175,6 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText('Best set')).toBeNull();
     expect(screen.queryByText('Sessions')).toBeNull();
     expect(screen.queryByTestId('exercise-last-session')).toBeNull();
-    expect(screen.queryByText('See full history')).toBeNull();
   });
 
   test('the empty state answers the History tab too — no sets means no history', () => {
@@ -207,13 +206,10 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
   });
 
-  test('See full history switches to the History tab', () => {
+  test('has no See full history link — the History tab is right there', () => {
     renderScreen();
 
-    fireEvent.press(screen.getByText('See full history'));
-
-    expect(screen.queryByText('Best set')).toBeNull();
-    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+    expect(screen.queryByText('See full history')).toBeNull();
   });
 
   test('reports the switch so the caller can start loading the history', () => {

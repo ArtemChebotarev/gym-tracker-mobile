@@ -19,7 +19,7 @@
 import { StyleSheet } from 'react-native';
 
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
-import { circle } from '@design/shapes';
+import { circle, square } from '@design/shapes';
 
 export const styles = StyleSheet.create({
   container: {
@@ -139,20 +139,40 @@ export const styles = StyleSheet.create({
   rowValueTail: {
     color: COLORS['text/muted'],
   },
-  link: {
-    alignSelf: 'center',
-    paddingVertical: SPACING['space/md'],
-    paddingHorizontal: SPACING['space/screen'],
-  },
-  howToLink: {
+  // The how-to card: the same fill and corner as the cards above it, with a mark, two lines and a
+  // chevron in one row.
+  howTo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING['space/gap-tight'],
+    gap: SPACING['space/row'],
+    backgroundColor: COLORS['surface/card'],
+    borderRadius: RADII['radius/field'],
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/row'],
   },
-  linkLabel: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS.accent,
+  howToMark: {
+    ...square(SIZES['size/icon-button']),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: RADII['radius/control'],
+    backgroundColor: COLORS['surface/control-active'],
+  },
+  howToText: {
+    flex: 1,
+  },
+  howToTitle: {
+    fontSize: TYPOGRAPHY['type/body'].fontSize,
+    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
+    color: COLORS['text/primary'],
+  },
+  howToCaption: {
+    fontSize: TYPOGRAPHY['type/caption'].fontSize,
+    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
+    color: COLORS['text/muted'],
+  },
+  howToChevron: {
+    fontSize: TYPOGRAPHY['type/value'].fontSize,
+    color: COLORS['text/faint'],
   },
   linkPressed: {
     opacity: OPACITY['opacity/pressed'],
@@ -164,6 +184,11 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/gap-tight'],
     paddingVertical: SPACING['space/section'],
     alignItems: 'center',
+  },
+  // The empty state is centred; the card still spans the width, like on the populated Overview.
+  emptyHowTo: {
+    alignSelf: 'stretch',
+    marginTop: SPACING['space/xl'],
   },
   emptyTitle: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,

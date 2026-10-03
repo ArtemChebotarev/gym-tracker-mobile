@@ -4,10 +4,10 @@
 // `Catalog`/`Custom` badge, then the Overview / History switcher.
 //
 // Overview answers one question — what did I do last time, before I get under the bar: three
-// tiles (Best set, Sessions, Last done) and the last completed session set by set. `See full
-// history` under them goes to the History tab for the rest (ExerciseHistoryTab, task 108) — the
-// earlier sessions are not repeated on Overview. `Watch how to do it` closes the tab (task 153):
-// the screen shows no technique of its own, so it hands over to a YouTube Shorts search. With
+// tiles (Best set, Sessions, Last done) and the last completed session set by set. Earlier
+// sessions are not repeated here: the History tab right above has them (ExerciseHistoryTab, task
+// 108). `Watch how to do it` closes the tab (task 153): the screen shows no technique of its own,
+// so it hands over to a YouTube Shorts search. With
 // nothing ever logged, both tabs are replaced by a line saying so (08.6, "Пустое состояние") —
 // tiles of zeros would be worse than no tiles, and with no set logged there is no history either.
 // The how-to link stays there, since someone who has never done the exercise wants it most.
@@ -160,7 +160,11 @@ export function ExerciseDetailScreen({
           <Text style={styles.emptyDescription}>
             Your first workout with this exercise fills this in.
           </Text>
-          {tab === 'overview' && <WatchHowToLink onPress={onWatchHowTo} />}
+          {tab === 'overview' && (
+            <View style={styles.emptyHowTo}>
+              <WatchHowToCard onPress={onWatchHowTo} />
+            </View>
+          )}
         </View>
       ) : tab === 'history' ? (
         <ExerciseHistoryTab
@@ -180,15 +184,7 @@ export function ExerciseDetailScreen({
             <LastSessionBlock lastSession={lastSession} equipment={exercise.equipment} />
           )}
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => openTab('history')}
-            style={({ pressed }) => [styles.link, pressed && styles.linkPressed]}
-          >
-            <Text style={styles.linkLabel}>See full history</Text>
-          </Pressable>
-
-          <WatchHowToLink onPress={onWatchHowTo} />
+          <WatchHowToCard onPress={onWatchHowTo} />
         </ScrollView>
       )}
     </SafeAreaView>
@@ -239,16 +235,26 @@ function LastSessionBlock({
   );
 }
 
-/** Technique lives on YouTube, not in the app — the link says so with a play mark, not a logo. */
-function WatchHowToLink({ onPress }: { onPress: () => void }) {
+/**
+ * Technique lives on YouTube, not in the app. A card in the look of the blocks above it — a mark
+ * on the left, what it does and where it goes under it, a chevron — so it reads as one more thing
+ * on the screen rather than a stray link.
+ */
+function WatchHowToCard({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="link"
       onPress={onPress}
-      style={({ pressed }) => [styles.link, styles.howToLink, pressed && styles.linkPressed]}
+      style={({ pressed }) => [styles.howTo, pressed && styles.linkPressed]}
     >
-      <PlayIcon size={ICON_SIZES['icon/glyph']} color={COLORS.accent} />
-      <Text style={styles.linkLabel}>Watch how to do it</Text>
+      <View style={styles.howToMark}>
+        <PlayIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+      </View>
+      <View style={styles.howToText}>
+        <Text style={styles.howToTitle}>Watch how to do it</Text>
+        <Text style={styles.howToCaption}>YouTube Shorts</Text>
+      </View>
+      <Text style={styles.howToChevron}>›</Text>
     </Pressable>
   );
 }
