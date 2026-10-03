@@ -6,11 +6,11 @@
 // Overview answers one question — what did I do last time, before I get under the bar: three
 // tiles (Best set, Sessions, Last done) and the last completed session set by set. Earlier
 // sessions are not repeated here: the History tab right above has them (ExerciseHistoryTab, task
-// 108). `Watch how to perform exercise` closes the tab (task 153): the screen shows no technique of its own,
-// so it hands over to a YouTube Shorts search. With
-// nothing ever logged, both tabs are replaced by a line saying so (08.6, "Пустое состояние") —
-// tiles of zeros would be worse than no tiles, and with no set logged there is no history either.
-// The how-to link stays there, since someone who has never done the exercise wants it most.
+// 108). `Watch how to perform exercise` closes the tab (task 153): the screen shows no technique of
+// its own, so it hands over to a YouTube Shorts search. With nothing ever logged, both tabs are
+// replaced by a line saying so (08.6, "Пустое состояние") — tiles of zeros would be worse than no
+// tiles, and with no set logged there is no history either. The how-to card then moves up to the
+// top, under the switcher, since someone who has never done the exercise wants it most.
 //
 // The switcher is the only way into History (08.6: "Единственная точка входа — переключатель
 // Overview / History на самом экране Exercise"), and Overview always opens first, from wherever
@@ -153,18 +153,18 @@ export function ExerciseDetailScreen({
 
       {stats === null ? (
         // No set ever logged: there are no tiles to show and no history to show either, so the
-        // same line answers both tabs (08.6, "Пустое состояние").
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No sets logged yet</Text>
-          <Text style={styles.emptyDescription}>
-            Your first workout with this exercise fills this in.
-          </Text>
-          {tab === 'overview' && (
-            <View style={styles.emptyHowTo}>
-              <WatchHowToCard onPress={onWatchHowTo} />
-            </View>
-          )}
-        </View>
+        // same line answers both tabs (08.6, "Пустое состояние"). On Overview the how-to card
+        // goes first, right under the switcher: it is the one useful thing on a screen that
+        // has nothing to report yet, and the line below reads as a note rather than the page.
+        <>
+          {tab === 'overview' && <WatchHowToCard onPress={onWatchHowTo} />}
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No sets logged yet</Text>
+            <Text style={styles.emptyDescription}>
+              Your first workout with this exercise fills this in.
+            </Text>
+          </View>
+        </>
       ) : tab === 'history' ? (
         <ExerciseHistoryTab
           groups={history}

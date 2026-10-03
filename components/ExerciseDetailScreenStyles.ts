@@ -181,11 +181,6 @@ export const styles = StyleSheet.create({
     paddingVertical: SPACING['space/section'],
     alignItems: 'center',
   },
-  // The empty state is centred; the card still spans the width, like on the populated Overview.
-  emptyHowTo: {
-    alignSelf: 'stretch',
-    marginTop: SPACING['space/xl'],
-  },
   emptyTitle: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,

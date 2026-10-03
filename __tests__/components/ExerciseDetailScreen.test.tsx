@@ -290,6 +290,17 @@ describe('ExerciseDetailScreen', () => {
     expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
   });
 
+  test('on the empty state the how-to card comes first, above the note', () => {
+    renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
+
+    const rendered = JSON.stringify(screen.toJSON());
+
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeGreaterThan(-1);
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
+      rendered.indexOf('No sets logged yet'),
+    );
+  });
+
   test('has no Watch how to perform exercise on the History tab, populated or empty', () => {
     const populated = renderScreen();
     fireEvent.press(screen.getByText('History'));
