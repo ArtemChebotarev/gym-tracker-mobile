@@ -18,7 +18,7 @@ import { styles } from './DebugScreenStyles';
 export type DebugScreenProps = {
   onExport: () => void;
   isExporting: boolean;
-  /** Set when the last export failed — the reason, as plainly as it can be put. */
+  /** Set when the last export failed — what to do about it, in plain words. */
   error?: string;
   onExportLogs: () => void;
   isExportingLogs: boolean;
@@ -37,7 +37,10 @@ export function DebugScreen({
   onBack,
 }: DebugScreenProps) {
   return (
-    <RootScreen title="Debug" trailing={<Button label="Done" variant="secondary" onPress={onBack} />}>
+    <RootScreen
+      title="Debug"
+      trailing={<Button label="Done" variant="secondary" onPress={onBack} />}
+    >
       <View style={styles.body}>
         <Text style={styles.description}>
           Writes everything in this app — exercises, mesocycles, sessions and logged sets — to a

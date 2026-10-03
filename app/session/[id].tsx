@@ -15,6 +15,7 @@ import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { useWorkoutSession } from '@state/useWorkoutSession';
+import { loadErrorOf } from '@state/loadError';
 
 export default function HistorySessionRoute() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function HistorySessionRoute() {
     <WorkoutScreen
       model={model}
       isPending={query.isPending}
+      loadError={loadErrorOf(query)}
       onBack={() => router.back()}
       onOpenGrid={inert}
       menuActions={{

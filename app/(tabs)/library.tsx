@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
@@ -8,11 +9,15 @@ import {
   type ExerciseFormSubmitInput,
   type ExerciseFormValues,
 } from '@components/ExerciseFormSheet';
-import { ExerciseLibraryScreen, type ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
+import {
+  ExerciseLibraryScreen,
+  type ExerciseLibraryFilters,
+} from '@components/ExerciseLibraryScreen';
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
 import { exerciseDetailHref } from '@components/historyRoutes';
 import { useCreateCustomExercise } from '@state/useCreateCustomExercise';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
+import { loadErrorOf } from '@state/loadError';
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -45,7 +50,11 @@ export default function LibraryScreen() {
   }
 
   function handleSubmitForm(input: ExerciseFormSubmitInput) {
-    createExercise.mutate(input, { onSuccess: () => setIsFormSheetOpen(false) });
+    createExercise.mutate(input, {
+      onSuccess: () => setIsFormSheetOpen(false),
+      // The form stays open with what was typed, so Save can simply be pressed again.
+      onError: () => Alert.alert("Couldn't save the exercise", 'Try again.'),
+    });
   }
 
   return (
@@ -53,6 +62,7 @@ export default function LibraryScreen() {
       <ExerciseLibraryScreen
         groups={query.data}
         isPending={query.isPending}
+        loadError={loadErrorOf(query)}
         search={search}
         onSearchChange={setSearch}
         filters={filters}

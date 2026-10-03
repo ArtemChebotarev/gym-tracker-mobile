@@ -126,4 +126,45 @@ describe('Exercise screen route', () => {
 
     expect(await screen.findByText('Exercise not found')).toBeTruthy();
   });
+
+  test('a failed read says so and retries, instead of calling the exercise missing', async () => {
+    mockParams = { id: 'bench-press-barbell' };
+    const read = jest
+      .spyOn(repositories().exerciseRepo, 'getById')
+      .mockRejectedValueOnce(new Error('storage down'));
+    renderRoute();
+
+    expect(await screen.findByText("Couldn't load this screen")).toBeTruthy();
+    expect(screen.queryByText('Exercise not found')).toBeNull();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Bench Press')).toBeTruthy();
+    read.mockRestore();
+  });
+
+  test('a failed hide says so and stays on the screen', async () => {
+    const custom = await createCustomExercise(
+      { name: 'Route Test Cable Fly', muscleGroup: 'chest' },
+      repositories(),
+    );
+    mockParams = { id: custom.id };
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    renderRoute();
+    await screen.findByText('Route Test Cable Fly');
+    const update = jest
+      .spyOn(repositories().exerciseRepo, 'toggleHidden')
+      .mockRejectedValueOnce(new Error('storage down'));
+
+    fireEvent(screen.getByTestId('action-menu-hide'), 'buttonPress');
+    confirmAlert(alert, 'Hide');
+
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith("Couldn't hide the exercise", 'Try again.'),
+    );
+    expect(mockBack).not.toHaveBeenCalled();
+
+    update.mockRestore();
+    alert.mockRestore();
+  });
 });

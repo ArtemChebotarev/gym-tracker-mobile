@@ -25,6 +25,7 @@ import {
 } from '@components/ExerciseMenuLogic';
 import { toExerciseId } from '@domain/catalog';
 import { useExerciseHistory } from '@state/useExerciseHistory';
+import { loadErrorOf } from '@state/loadError';
 import { useExerciseOverview } from '@state/useExerciseOverview';
 import { useHideExercise } from '@state/useHideExercise';
 import { useUpdateCustomExercise } from '@state/useUpdateCustomExercise';
@@ -60,7 +61,11 @@ export default function ExerciseDetailRoute() {
   function handleSubmitForm(input: ExerciseFormSubmitInput) {
     updateExercise.mutate(
       { ...input, id: exerciseId },
-      { onSuccess: () => setIsFormSheetOpen(false) },
+      {
+        onSuccess: () => setIsFormSheetOpen(false),
+        // The form stays open with what was typed, so Save can simply be pressed again.
+        onError: () => Alert.alert("Couldn't save the exercise", 'Try again.'),
+      },
     );
   }
 
@@ -77,7 +82,11 @@ export default function ExerciseDetailRoute() {
       {
         text: 'Hide',
         style: 'destructive',
-        onPress: () => hideExercise.mutate(exerciseId, { onSuccess: () => router.back() }),
+        onPress: () =>
+          hideExercise.mutate(exerciseId, {
+            onSuccess: () => router.back(),
+            onError: () => Alert.alert("Couldn't hide the exercise", 'Try again.'),
+          }),
       },
     ]);
   }
@@ -87,6 +96,7 @@ export default function ExerciseDetailRoute() {
       <ExerciseDetailScreen
         overview={query.data}
         isPending={query.isPending}
+        loadError={loadErrorOf(query)}
         history={historyQuery.data}
         isHistoryPending={historyQuery.isPending}
         onBack={() => router.back()}

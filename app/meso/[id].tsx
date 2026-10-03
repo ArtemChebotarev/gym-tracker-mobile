@@ -20,6 +20,7 @@ import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { useArchiveMesocycle } from '@state/useArchiveMesocycle';
 import { useMesocycleDetail } from '@state/useMesocycleDetail';
+import { loadErrorOf } from '@state/loadError';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
 
 export default function MesocycleDetailRoute() {
@@ -41,6 +42,7 @@ export default function MesocycleDetailRoute() {
       <MesocycleDetailScreen
         detail={query.data}
         isPending={query.isPending}
+        loadError={loadErrorOf(query)}
         onBack={() => router.back()}
         onOpenSession={(sessionId) => router.push(historySessionHref(sessionId))}
         menuItems={

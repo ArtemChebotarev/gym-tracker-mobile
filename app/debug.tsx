@@ -2,6 +2,7 @@
 // by any link. See components/DebugScreen.tsx for why it exists and when it goes away.
 import { useRouter } from 'expo-router';
 
+import { exportErrorMessage } from '@components/DebugRouteLogic';
 import { DebugScreen } from '@components/DebugScreen';
 import { useExportBackup } from '@state/useExportBackup';
 import { useExportLogs } from '@state/useExportLogs';
@@ -15,10 +16,10 @@ export default function DebugRoute() {
     <DebugScreen
       onExport={() => exportBackup.mutate()}
       isExporting={exportBackup.isPending}
-      error={exportBackup.error?.message}
+      error={exportBackup.error ? exportErrorMessage(exportBackup.error, 'data') : undefined}
       onExportLogs={() => exportLogs.mutate()}
       isExportingLogs={exportLogs.isPending}
-      logsError={exportLogs.error?.message}
+      logsError={exportLogs.error ? exportErrorMessage(exportLogs.error, 'log') : undefined}
       onBack={() => router.back()}
     />
   );

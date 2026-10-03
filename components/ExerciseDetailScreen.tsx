@@ -46,7 +46,9 @@ import { InfoIcon } from '@design/icons/InfoIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
+import type { LoadError } from '@state/loadError';
 
+import { LoadErrorState } from './LoadErrorState';
 import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard';
 import {
   EXERCISE_DETAIL_TABS,
@@ -69,6 +71,8 @@ export type ExerciseDetailScreenProps = {
   /** `undefined` while it loads, `null` when no such exercise exists. */
   overview: ExerciseOverview | undefined | null;
   isPending: boolean;
+  /** Set when reading the exercise failed — shown instead of “not found”, which would be untrue. */
+  loadError?: LoadError;
   /** The History tab's list — `undefined` until the caller starts loading it. */
   history: ExerciseHistoryMesocycle[] | undefined;
   isHistoryPending: boolean;
@@ -86,6 +90,7 @@ export type ExerciseDetailScreenProps = {
 export function ExerciseDetailScreen({
   overview,
   isPending,
+  loadError,
   history,
   isHistoryPending,
   onBack,
@@ -109,6 +114,8 @@ export function ExerciseDetailScreen({
         </View>
         {isPending ? (
           <Text style={styles.status}>Loading…</Text>
+        ) : loadError ? (
+          <LoadErrorState loadError={loadError} />
         ) : (
           <EmptyState
             icon={InfoIcon}
@@ -130,11 +137,7 @@ export function ExerciseDetailScreen({
         <IconButton accessibilityLabel="Back" onPress={onBack}>
           <BackIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
         </IconButton>
-        <ActionMenu
-          accessibilityLabel="Exercise menu"
-          title={exercise.name}
-          items={menuItems}
-        />
+        <ActionMenu accessibilityLabel="Exercise menu" title={exercise.name} items={menuItems} />
       </View>
 
       <View style={styles.heading}>

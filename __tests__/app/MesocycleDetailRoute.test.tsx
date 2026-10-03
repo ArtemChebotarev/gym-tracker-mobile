@@ -198,4 +198,19 @@ describe('Mesocycle detail route', () => {
     ).toEqual(expect.any(String));
     alertSpy.mockRestore();
   });
+
+  test('a failed read says so and retries, instead of calling the cycle missing', async () => {
+    const read = jest
+      .spyOn(repositories().mesocycleRepo, 'getById')
+      .mockRejectedValueOnce(new Error('storage down'));
+    renderRoute();
+
+    expect(await screen.findByText("Couldn't load this screen")).toBeTruthy();
+    expect(screen.queryByText('Training cycle not found')).toBeNull();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Upper/Lower')).toBeTruthy();
+    read.mockRestore();
+  });
 });

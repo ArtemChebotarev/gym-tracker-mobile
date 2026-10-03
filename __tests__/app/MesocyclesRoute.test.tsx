@@ -145,4 +145,23 @@ describe('MesocyclesRoute — Archive', () => {
     const stored = await repositories().mesocycleRepo.getById(FINISHED_ID);
     expect(stored?.archivedAt).toBeUndefined();
   });
+
+  test('a failed read says so and retries, instead of inviting to plan the first cycle', async () => {
+    const read = jest
+      .spyOn(repositories().mesocycleRepo, 'getAll')
+      .mockRejectedValueOnce(new Error('storage down'));
+    renderWithRepositories(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <MesocyclesRoute />
+      </SafeAreaProvider>,
+    );
+
+    expect(await screen.findByText("Couldn't load this screen")).toBeTruthy();
+    expect(screen.queryByText('Plan your first training cycle')).toBeNull();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('Upper/Lower')).toBeTruthy();
+    read.mockRestore();
+  });
 });

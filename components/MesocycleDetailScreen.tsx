@@ -31,12 +31,14 @@ import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { StatTile } from '@design/components/StatTile';
+import { LoadErrorState } from './LoadErrorState';
 import { MesoGrid } from './MesoGrid';
 import { BackIcon } from '@design/icons/BackIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { MesoWeeklySetsRow } from '@domain/mesoSummary';
 import type { MesocycleDetail } from '@usecases/mesocycleDetail';
+import type { LoadError } from '@state/loadError';
 
 import {
   formatMesocycleDetailSubtitle,
@@ -52,6 +54,8 @@ export type MesocycleDetailScreenProps = {
   /** `undefined` while it loads, `null` when no such mesocycle exists. */
   detail: MesocycleDetail | undefined | null;
   isPending: boolean;
+  /** Set when reading the cycle failed — shown instead of “not found”, which would be untrue. */
+  loadError?: LoadError;
   onBack: () => void;
   /** What the header's `⋯` offers — Rename, and Copy for a closed block. */
   menuItems: ActionMenuItem[];
@@ -62,6 +66,7 @@ export type MesocycleDetailScreenProps = {
 export function MesocycleDetailScreen({
   detail,
   isPending,
+  loadError,
   onBack,
   menuItems,
   onOpenSession,
@@ -78,6 +83,8 @@ export function MesocycleDetailScreen({
         <View style={styles.header}>{backButton}</View>
         {isPending ? (
           <Text style={styles.status}>Loading…</Text>
+        ) : loadError ? (
+          <LoadErrorState loadError={loadError} />
         ) : (
           <EmptyState
             icon={InfoIcon}

@@ -51,8 +51,10 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES } from '@design/tokens';
+import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
+import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
@@ -121,6 +123,8 @@ export type WorkoutScreenProps = {
     actionLabel: string;
     onAction: () => void;
   };
+  /** Set when reading the session failed — shown instead of `fallback`, which would claim there is none. */
+  loadError?: LoadError;
   /**
    * Pushed as a page (`session/[id]`, 08.9, task 130) rather than shown as the Today tab: a back
    * button above the title, in every state, loading and the fallback included.
@@ -147,6 +151,7 @@ export function WorkoutScreen({
   onCopyMesocycle,
   isFinishingMesocycle,
   fallback,
+  loadError,
   onBack,
 }: WorkoutScreenProps) {
   const tabBarClearance = useTabBarClearance();
@@ -164,7 +169,14 @@ export function WorkoutScreen({
     return (
       <View style={styles.root}>
         <RootScreen title="Workout" onBack={onBack}>
-          <EmptyState {...fallback} bottomInset={onBack === undefined ? tabBarClearance : 0} />
+          {loadError ? (
+            <LoadErrorState
+              loadError={loadError}
+              bottomInset={onBack === undefined ? tabBarClearance : 0}
+            />
+          ) : (
+            <EmptyState {...fallback} bottomInset={onBack === undefined ? tabBarClearance : 0} />
+          )}
         </RootScreen>
       </View>
     );
