@@ -13,7 +13,7 @@ import type { ExercisePerformance } from './exerciseHistory';
 
 export type { ExercisePerformance };
 
-/** The heaviest set of a range of sets — the `Best set` tile, and each earlier session's line. */
+/** The heaviest set of a range of sets — the `Best set` tile. */
 export type ExerciseBestSet = {
   weight: number;
   reps: number;
@@ -38,16 +38,6 @@ export type ExerciseLastSession = {
   setLogs: SetLog[];
 };
 
-/** One line of the `Earlier` block: a session before the last one, at a glance. */
-export type ExerciseSessionSummary = {
-  weekNumber: number;
-  dayNumber: number;
-  completedAt: string;
-  /** That session's heaviest set — `80 × 8` in the mockup. */
-  bestSet: ExerciseBestSet;
-  setCount: number;
-};
-
 /** What the `⋯` menu offers, by `Exercise.source` (08.6, "Меню и действия"). */
 export type ExerciseOverviewAction = 'edit' | 'hide';
 
@@ -57,7 +47,5 @@ export type ExerciseOverview = {
   stats: ExerciseOverviewStats | null;
   /** `null` when no *completed* session holds a set of it, even if some in-progress one does. */
   lastSession: ExerciseLastSession | null;
-  /** The completed sessions before `lastSession`, newest first — empty when there are none. */
-  earlierSessions: ExerciseSessionSummary[];
   actions: ExerciseOverviewAction[];
 };

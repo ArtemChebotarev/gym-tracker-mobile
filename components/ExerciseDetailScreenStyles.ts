@@ -139,15 +139,15 @@ export const styles = StyleSheet.create({
   rowValueTail: {
     color: COLORS['text/muted'],
   },
-  earlierLabel: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
-    color: COLORS['text/secondary'],
-  },
   link: {
     alignSelf: 'center',
     paddingVertical: SPACING['space/md'],
     paddingHorizontal: SPACING['space/screen'],
+  },
+  howToLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/gap-tight'],
   },
   linkLabel: {
     fontSize: TYPOGRAPHY['type/meta'].fontSize,

@@ -12,15 +12,7 @@ import type {
   ExerciseOverviewAction,
   ExerciseOverviewStats,
   ExercisePerformance,
-  ExerciseSessionSummary,
 } from './exerciseOverview';
-
-/**
- * How many sessions the `Earlier` block lists under the last one. Overview is the quick recall
- * before a set, not the history screen (06 · History & Analytics) — three lines are enough to see
- * where the weight is going, and `See full history` sits right under them for the rest.
- */
-export const EARLIER_SESSION_LIMIT = 3;
 
 /**
  * The Overview model for `exercise` over every performance of it, in any order.
@@ -33,13 +25,12 @@ export function buildExerciseOverview(
   performances: readonly ExercisePerformance[],
 ): ExerciseOverview {
   const performed = performances.filter((performance) => performance.setLogs.length > 0);
-  const [last, ...earlier] = completedNewestFirst(performed);
+  const [last] = completedNewestFirst(performed);
 
   return {
     exercise,
     stats: buildExerciseOverviewStats(performed),
     lastSession: last ? toLastSession(last) : null,
-    earlierSessions: earlier.slice(0, EARLIER_SESSION_LIMIT).map(toSessionSummary),
     actions: exerciseOverviewActions(exercise),
   };
 }
@@ -92,17 +83,6 @@ function toLastSession(performance: ExercisePerformance): ExerciseLastSession {
     dayNumber: performance.session.dayNumber,
     completedAt: completionOf(performance),
     setLogs: [...performance.setLogs].sort((a, b) => a.setNumber - b.setNumber),
-  };
-}
-
-function toSessionSummary(performance: ExercisePerformance): ExerciseSessionSummary {
-  return {
-    weekNumber: performance.session.weekNumber,
-    dayNumber: performance.session.dayNumber,
-    completedAt: completionOf(performance),
-    // Never null here: only performances carrying at least one set get this far.
-    bestSet: findBestSet(performance.setLogs) ?? { weight: 0, reps: 0 },
-    setCount: performance.setLogs.length,
   };
 }
 

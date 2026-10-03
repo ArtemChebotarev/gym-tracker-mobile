@@ -4,12 +4,13 @@
 // `Catalog`/`Custom` badge, then the Overview / History switcher.
 //
 // Overview answers one question — what did I do last time, before I get under the bar: three
-// tiles (Best set, Sessions, Last done), the last completed session set by set, then `Earlier` —
-// the few sessions before it as one line each, heaviest set and how many sets, which is where you
-// see the weight actually moving. `See full history` under them goes to the History tab for the
-// rest (ExerciseHistoryTab, task 108). With nothing ever logged, both tabs are replaced by a line
-// saying so (08.6, "Пустое состояние") — tiles of zeros would be worse than no tiles, and with no
-// set logged there is no history either.
+// tiles (Best set, Sessions, Last done) and the last completed session set by set. `See full
+// history` under them goes to the History tab for the rest (ExerciseHistoryTab, task 108) — the
+// earlier sessions are not repeated on Overview. `Watch how to do it` closes the tab (task 153):
+// the screen shows no technique of its own, so it hands over to a YouTube Shorts search. With
+// nothing ever logged, both tabs are replaced by a line saying so (08.6, "Пустое состояние") —
+// tiles of zeros would be worse than no tiles, and with no set logged there is no history either.
+// The how-to link stays there, since someone who has never done the exercise wants it most.
 //
 // The switcher is the only way into History (08.6: "Единственная точка входа — переключатель
 // Overview / History на самом экране Exercise"), and Overview always opens first, from wherever
@@ -20,7 +21,7 @@
 // outward, so the route can start loading the history the first time it's actually asked for —
 // the tab still belongs to this component.
 //
-// Presentational otherwise: the overview model and what back and `⋯` do come in as props from
+// Presentational otherwise: the overview model and what back, `⋯` and the how-to link do come in as props from
 // app/exercise/[id]/index.tsx. JSX/rendering only — styles live in ExerciseDetailScreenStyles.ts
 // and pure helpers in ExerciseDetailScreenLogic.ts, per the code-style skill.
 
@@ -30,11 +31,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
-import type {
-  ExerciseLastSession,
-  ExerciseOverview,
-  ExerciseSessionSummary,
-} from '@domain/exerciseOverview';
+import type { ExerciseLastSession, ExerciseOverview } from '@domain/exerciseOverview';
 import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
@@ -43,6 +40,7 @@ import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
 import { BackIcon } from '@design/icons/BackIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
+import { PlayIcon } from '@design/icons/PlayIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -53,9 +51,6 @@ import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard'
 import {
   EXERCISE_DETAIL_TABS,
   formatBestSet,
-  formatEarlierSessionLabel,
-  formatEarlierSessionTail,
-  formatEarlierSessionValue,
   formatLastDone,
   formatLastSessionMeta,
   formatSetLabel,
@@ -85,6 +80,8 @@ export type ExerciseDetailScreenProps = {
   menuItems: ActionMenuItem[];
   /** The tab was switched — the caller loads the history the first time it's History. */
   onTabChange?: (tab: ExerciseDetailTab) => void;
+  /** `Watch how to do it` was pressed — the caller opens the search (task 153). */
+  onWatchHowTo: () => void;
 };
 
 export function ExerciseDetailScreen({
@@ -96,6 +93,7 @@ export function ExerciseDetailScreen({
   onBack,
   menuItems,
   onTabChange,
+  onWatchHowTo,
 }: ExerciseDetailScreenProps) {
   const [tab, setTab] = useState<ExerciseDetailTab>('overview');
 
@@ -129,7 +127,7 @@ export function ExerciseDetailScreen({
     );
   }
 
-  const { exercise, stats, lastSession, earlierSessions } = overview;
+  const { exercise, stats, lastSession } = overview;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -162,6 +160,7 @@ export function ExerciseDetailScreen({
           <Text style={styles.emptyDescription}>
             Your first workout with this exercise fills this in.
           </Text>
+          {tab === 'overview' && <WatchHowToLink onPress={onWatchHowTo} />}
         </View>
       ) : tab === 'history' ? (
         <ExerciseHistoryTab
@@ -181,8 +180,6 @@ export function ExerciseDetailScreen({
             <LastSessionBlock lastSession={lastSession} equipment={exercise.equipment} />
           )}
 
-          {earlierSessions.length > 0 && <EarlierBlock sessions={earlierSessions} />}
-
           <Pressable
             accessibilityRole="button"
             onPress={() => openTab('history')}
@@ -190,6 +187,8 @@ export function ExerciseDetailScreen({
           >
             <Text style={styles.linkLabel}>See full history</Text>
           </Pressable>
+
+          <WatchHowToLink onPress={onWatchHowTo} />
         </ScrollView>
       )}
     </SafeAreaView>
@@ -231,7 +230,6 @@ function LastSessionBlock({
         <ExerciseDetailCardRow
           key={setLog.id}
           label={formatSetLabel(setLog)}
-          labelTone="counter"
           value={formatSetValue(setLog, equipment)}
           tail={formatSetRirTail(setLog)}
           isLast={index === lastSession.setLogs.length - 1}
@@ -241,19 +239,16 @@ function LastSessionBlock({
   );
 }
 
-function EarlierBlock({ sessions }: { sessions: ExerciseSessionSummary[] }) {
+/** Technique lives on YouTube, not in the app — the link says so with a play mark, not a logo. */
+function WatchHowToLink({ onPress }: { onPress: () => void }) {
   return (
-    <ExerciseDetailCard testID="exercise-earlier-sessions" label="Earlier">
-      {sessions.map((session, index) => (
-        <ExerciseDetailCardRow
-          key={`${session.completedAt}-${session.weekNumber}-${session.dayNumber}`}
-          label={formatEarlierSessionLabel(session)}
-          labelTone="fact"
-          value={formatEarlierSessionValue(session)}
-          tail={formatEarlierSessionTail(session)}
-          isLast={index === sessions.length - 1}
-        />
-      ))}
-    </ExerciseDetailCard>
+    <Pressable
+      accessibilityRole="link"
+      onPress={onPress}
+      style={({ pressed }) => [styles.link, styles.howToLink, pressed && styles.linkPressed]}
+    >
+      <PlayIcon size={ICON_SIZES['icon/glyph']} color={COLORS.accent} />
+      <Text style={styles.linkLabel}>Watch how to do it</Text>
+    </Pressable>
   );
 }

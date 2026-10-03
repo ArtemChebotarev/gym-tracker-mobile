@@ -2,8 +2,8 @@
 // mockup 02-exercise-detail.html. A section label (with an optional right-hand meta line) over a
 // filled card of `label ↔ value` rows separated by hairlines.
 //
-// Three callers, one look: Overview's `Last session` (a row per set), Overview's `Earlier` (a row
-// per session) and every session of the History tab (a row per set again). Shared rather than
+// Two callers, one look: Overview's `Last session` and every session of the History tab, a row per
+// set in both. Shared rather than
 // re-styled per tab so a change to the card is one change — and so the History tab reads as the
 // same object as the block on Overview it grew out of.
 //
@@ -38,8 +38,6 @@ export function ExerciseDetailCard({ label, meta, testID, children }: ExerciseDe
 
 export type ExerciseDetailCardRowProps = {
   label: string;
-  /** `counter` for `Set 1`, `fact` for a date — a counter reads a step quieter than a fact. */
-  labelTone: 'counter' | 'fact';
   value: string;
   /** Rendered inside the value, a step quieter — ` · 2 RIR`, ` · 3 sets`. */
   tail?: string;
@@ -47,23 +45,10 @@ export type ExerciseDetailCardRowProps = {
   isLast: boolean;
 };
 
-export function ExerciseDetailCardRow({
-  label,
-  labelTone,
-  value,
-  tail,
-  isLast,
-}: ExerciseDetailCardRowProps) {
+export function ExerciseDetailCardRow({ label, value, tail, isLast }: ExerciseDetailCardRowProps) {
   return (
     <View style={[styles.row, isLast && styles.rowLast]}>
-      <Text
-        style={[
-          styles.rowLabel,
-          labelTone === 'counter' ? styles.rowLabelMuted : styles.rowLabelStrong,
-        ]}
-      >
-        {label}
-      </Text>
+      <Text style={styles.rowLabel}>{label}</Text>
       <Text style={styles.rowValue}>
         {value}
         {tail !== undefined && <Text style={styles.rowValueTail}>{tail}</Text>}

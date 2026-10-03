@@ -2,11 +2,7 @@
 
 import type { Equipment } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
-import type {
-  ExerciseBestSet,
-  ExerciseLastSession,
-  ExerciseSessionSummary,
-} from '@domain/exerciseOverview';
+import type { ExerciseBestSet, ExerciseLastSession } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
 import { formatAbsoluteDate } from '@design/formatDate';
 import { formatRir } from '@design/formatRir';
@@ -61,20 +57,4 @@ export function formatSetValue(setLog: SetLog, equipment?: Equipment): string {
  */
 export function formatSetRirTail(setLog: SetLog): string | undefined {
   return setLog.rir === undefined ? undefined : ` · ${formatRir(setLog.rir)}`;
-}
-
-/** An earlier session's left side — `W2 · D1 · 3 Aug` (the mockup's compact form). */
-export function formatEarlierSessionLabel(session: ExerciseSessionSummary): string {
-  const date = formatAbsoluteDate(parseUtcIso(session.completedAt));
-  return `W${session.weekNumber} · D${session.dayNumber} · ${date}`;
-}
-
-/** An earlier session's right side — `80 × 8`, its heaviest set, no unit. */
-export function formatEarlierSessionValue(session: ExerciseSessionSummary): string {
-  return `${session.bestSet.weight} × ${session.bestSet.reps}`;
-}
-
-/** The quieter tail after it — ` · 3 sets`. */
-export function formatEarlierSessionTail(session: ExerciseSessionSummary): string {
-  return ` · ${session.setCount} ${session.setCount === 1 ? 'set' : 'sets'}`;
 }

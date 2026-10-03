@@ -20,6 +20,11 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
 }));
 
+const mockOpenURL = jest.fn();
+jest.mock('expo-linking', () => ({
+  openURL: (url: string) => mockOpenURL(url),
+}));
+
 jest.mock('expo-crypto', () => {
   let counter = 0;
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
@@ -35,6 +40,7 @@ beforeEach(async () => {
   await seedWorkoutFixture(repositories());
   mockParams = {};
   mockBack.mockClear();
+  mockOpenURL.mockReset();
 });
 
 function renderRoute() {
@@ -165,6 +171,35 @@ describe('Exercise screen route', () => {
     expect(mockBack).not.toHaveBeenCalled();
 
     update.mockRestore();
+    alert.mockRestore();
+  });
+
+  test('Watch how to do it opens the Shorts search for the exercise and its equipment', async () => {
+    mockParams = { id: 'bench-press-barbell' };
+    mockOpenURL.mockResolvedValue(true);
+    renderRoute();
+    await screen.findByText('Bench Press');
+
+    fireEvent.press(screen.getByText('Watch how to do it'));
+
+    await waitFor(() =>
+      expect(mockOpenURL).toHaveBeenCalledWith(
+        'https://www.youtube.com/results?search_query=Bench+Press+barbell+form&sp=EgIQCQ%253D%253D',
+      ),
+    );
+  });
+
+  test('a link that cannot be opened says so', async () => {
+    mockParams = { id: 'bench-press-barbell' };
+    mockOpenURL.mockRejectedValue(new Error('no app for the url'));
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    renderRoute();
+    await screen.findByText('Bench Press');
+
+    fireEvent.press(screen.getByText('Watch how to do it'));
+
+    await waitFor(() => expect(alert).toHaveBeenCalledWith("Couldn't open the link", 'Try again.'));
+
     alert.mockRestore();
   });
 });
