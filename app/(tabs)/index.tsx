@@ -465,6 +465,7 @@ export default function TodayScreen() {
         animated={methodSheet.animated}
         onClose={methodSheet.close}
         canCopy={finishedMesocyclesNewestFirst(mesocycles.data ?? []).length > 0}
+        onCreateFromTemplate={methodSheet.choose(() => router.push('/meso-editor/template'))}
         onCreateFromScratch={methodSheet.choose(() => router.push('/meso-editor/new'))}
         onCopyMesocycle={methodSheet.choose(() => router.push('/meso-editor/copy'))}
       />

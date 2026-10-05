@@ -33,9 +33,14 @@ export default function RootLayout() {
               {/* One route per mesocycle editor flow, each covering all of that flow's steps — see
               components/MesoEditorScreen.tsx for why step transitions are handled inside that single
               screen instead of by pushing a route per step. Flow C's source-week step is part of
-              its flow the same way, not a route in front of it (08.8, task 124). */}
+              its flow the same way, not a route in front of it (08.8, task 124), and so is Flow B's template
+              step (08.10, GT-6). */}
               <Stack.Screen
                 name="meso-editor/new"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              <Stack.Screen
+                name="meso-editor/template"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
               <Stack.Screen

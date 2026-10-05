@@ -1,12 +1,13 @@
 // The mesocycle editor wizard — shared by creating from scratch (app/meso-editor/new.tsx, Flow A),
-// copying a week (components/MesoCopyEditorScreen.tsx, Flow C, task 124) and editing a planned
-// mesocycle (app/meso-editor/edit/[id].tsx, task 072). All three work on the same zustand draft
-// (state/draftStore.ts); they differ in the first step's title, in what Save does, and — Flow C
-// only — in the extra `leadStep` mounted in front of Basics.
+// from a template (components/MesoTemplateEditorScreen.tsx, Flow B, GT-6), copying a week
+// (components/MesoCopyEditorScreen.tsx, Flow C, task 124) and editing a planned mesocycle
+// (app/meso-editor/edit/[id].tsx, task 072). All four work on the same zustand draft
+// (state/draftStore.ts); they differ in the first step's title, in what Save does, and — Flows B
+// and C — in the extra `leadStep` mounted in front of Basics.
 //
-// Basics / Days & exercises / Review are reused by Flow C exactly as they are, with no branch of
-// their own anywhere: its draft arrives prefilled and is otherwise an ordinary draft (08.8 ·
-// Редактор мезоцикла — Flow C, "Отдельного редактора нет").
+// Basics / Days & exercises / Review are reused by Flows B and C exactly as they are, with no
+// branch of their own anywhere: their draft arrives prefilled and is otherwise an ordinary draft
+// (08.8 and 08.10, "Отдельного редактора нет").
 //
 // One component for the whole flow: step number lives in local state here, not in the URL, and
 // WizardScreen (design/components) stays mounted across every step change — only its
@@ -57,25 +58,37 @@ export type MesoEditorSaveOptions = {
 
 /**
  * An extra step mounted in front of Basics, inside this same wizard — Flow C's Source week
- * (08.8 · Редактор мезоцикла — Flow C, task 124). Its own screen would have meant a second
- * WizardScreen and the header/progress-bar jump the one-mounted-wizard design exists to avoid
- * (see the note at the top of this file), so the wizard takes the step's content instead and
+ * (08.8, task 124) and Flow B's Choose a template (08.10, GT-6). Its own screen would have meant a
+ * second WizardScreen and the header/progress-bar jump the one-mounted-wizard design exists to
+ * avoid (see the note at the top of this file), so the wizard takes the step's content instead and
  * keeps owning the chrome around it.
  *
  * With one present the flow is four steps, not three: the bar gets a fourth segment and Basics
- * becomes `Step 2 of 4`. The lead step itself isn't numbered — it shows its title in the bar
- * instead of a counter (`titlePlacement: 'bar'`), because the steps it precedes are the ones
- * Flow A numbers and it is not one of them.
+ * becomes `Step 2 of 4`.
+ *
+ * The two lead steps differ in two ways, both from their specs:
+ * - Flow C's isn't numbered — its title sits in the bar instead of a counter, because the steps it
+ *   precedes are the ones Flow A numbers and it is not one of them. Flow B's is `Step 1 of 4` with
+ *   its title as the heading, as 08.10 draws it (`numbered`).
+ * - Flow C's moves on with Continue in the footer (`onContinue`). Flow B's has no footer: a
+ *   template is chosen in its preview sheet, whose `Use this template` is the step's way forward,
+ *   so the step gets `next` to call when it is done.
  */
 export type MesoEditorLeadStep = {
-  /** Shown centred in the header bar, in place of the step counter. */
+  /** In the header bar, or — `numbered` — as the heading under `Step 1 of N`. */
   title: string;
-  content: ReactNode;
-  /** False while the step can't be left — e.g. its selection hasn't finished loading. */
-  canContinue: boolean;
-  /** Runs before moving on to Basics; where the lead step applies itself to the draft. */
-  onContinue: () => void;
-};
+  numbered?: boolean;
+  /** The step's content; a function receives `next`, which moves the wizard on to Basics. */
+  content: ReactNode | ((next: () => void) => ReactNode);
+} & (
+  | {
+      /** False while the step can't be left — e.g. its selection hasn't finished loading. */
+      canContinue: boolean;
+      /** Runs before moving on to Basics; where the lead step applies itself to the draft. */
+      onContinue: () => void;
+    }
+  | { canContinue?: never; onContinue?: never }
+);
 
 export type MesoEditorScreenProps = {
   /** The first step's title — "New training cycle" when creating, "Edit training cycle" when editing. */
@@ -89,7 +102,7 @@ export type MesoEditorScreenProps = {
     mutate: (draft: MesoBuilderDraft, options: MesoEditorSaveOptions) => void;
     isPending: boolean;
   };
-  /** Flow C only (124). Absent in Flow A and when editing a planned mesocycle. */
+  /** Flows B and C only. Absent in Flow A and when editing a planned mesocycle. */
   leadStep?: MesoEditorLeadStep;
 };
 
@@ -208,24 +221,29 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
   }
 
   if (step === 0 && leadStep) {
+    const { onContinue } = leadStep;
     return (
       <WizardScreen
         title={leadStep.title}
-        titlePlacement="bar"
+        titlePlacement={leadStep.numbered ? 'heading' : 'bar'}
         currentStep={1}
         totalSteps={totalSteps}
         onClose={handleClose}
         footer={
-          <MesoEditorFooter
-            onContinue={() => {
-              leadStep.onContinue();
-              setStep(1);
-            }}
-            continueDisabled={!leadStep.canContinue}
-          />
+          onContinue === undefined ? undefined : (
+            <MesoEditorFooter
+              onContinue={() => {
+                onContinue();
+                setStep(1);
+              }}
+              continueDisabled={!leadStep.canContinue}
+            />
+          )
         }
       >
-        {leadStep.content}
+        {typeof leadStep.content === 'function'
+          ? leadStep.content(() => setStep(1))
+          : leadStep.content}
       </WizardScreen>
     );
   }
@@ -237,7 +255,8 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
         currentStep={stepNumber}
         totalSteps={totalSteps}
         // With a lead step in front of it, Basics is no longer where the flow starts: ‹ goes back
-        // to the source week, and ✕ — abandoning the whole thing — belongs to that step instead.
+        // to the source week or the template list, and ✕ — abandoning the whole thing — belongs to
+        // that step instead.
         {...(leadStep ? { onBack: () => setStep(0) } : { onClose: handleClose })}
         footer={
           <MesoEditorFooter

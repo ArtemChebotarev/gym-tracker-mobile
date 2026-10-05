@@ -35,7 +35,11 @@ export type WizardScreenProps = {
   totalSteps: number;
   /** Passed through to WizardHeader — see `WizardTitlePlacement`. Defaults to `heading`. */
   titlePlacement?: WizardTitlePlacement;
-  footer: ReactNode;
+  /**
+   * The step's action bar, under a divider. Absent on a step that moves on some other way — Flow B's
+   * template list, where a template is picked in its own sheet — so no empty bar is drawn there.
+   */
+  footer?: ReactNode;
   children: ReactNode;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
 
@@ -72,7 +76,7 @@ export function WizardScreen({
 
         <View style={styles.body}>{children}</View>
 
-        <View style={styles.footer}>{footer}</View>
+        {footer !== undefined && footer !== null && <View style={styles.footer}>{footer}</View>}
       </SafeAreaView>
     </SafeAreaProvider>
   );

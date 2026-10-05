@@ -1,4 +1,5 @@
-// `grid` — Four-cell grid — opens the mesocycle overview sheet (08.7, "Кнопка сетки").
+// `grid` — Four-cell grid — opens the mesocycle overview sheet (08.7, "Кнопка сетки"), and marks
+// `From template` on the creation-method sheet (08.10's mockup draws the same four cells).
 
 import { Rect } from 'react-native-svg';
 

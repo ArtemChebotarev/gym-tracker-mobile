@@ -47,6 +47,7 @@ export default function MesocyclesRoute() {
       loadError={loadErrorOf(query)}
       isPending={query.isPending || (activeId !== undefined && activeGrid.isPending)}
       activeWeekNumber={activeGrid.data?.currentWeekNumber ?? 1}
+      onCreateFromTemplate={() => router.push('/meso-editor/template')}
       onCreateFromScratch={() => router.push('/meso-editor/new')}
       onCopyMesocycle={() => router.push('/meso-editor/copy')}
       onOpenActive={() => router.navigate('/')}
