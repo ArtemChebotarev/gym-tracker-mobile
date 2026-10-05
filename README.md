@@ -32,6 +32,7 @@ Open the JS debugger (React Native DevTools): run `npm run start` (or any of the
 | --- | --- |
 | `npm run migration <name>` | Generates a migration for the change you made in `storage/sqlite/schema.ts` (name in snake_case, e.g. `mesocycle_archived_at`) |
 | `npm run catalog:migration` | Generates a migration carrying the current exercise catalog, after editing `domain/exerciseCatalog.ts` |
+| `npm run dev:seed-templates [-- --clean]` | Writes throwaway `Dev · …` templates (`scripts/devTemplates.ts`) into the app's database on the booted iOS simulator; `--clean` removes them. Simulator only, touches only `dev-*` rows. Relaunch the app afterwards |
 
 Name a migration when you create it. Generating one and then regenerating it for a nicer name
 gives it a new timestamp, and that timestamp is the schema version a database records — so every

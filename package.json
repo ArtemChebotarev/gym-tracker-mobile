@@ -77,7 +77,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "migration": "tsx scripts/generateMigration.ts",
-    "catalog:migration": "tsx scripts/generateCatalogMigration.ts"
+    "catalog:migration": "tsx scripts/generateCatalogMigration.ts",
+    "dev:seed-templates": "tsx scripts/devSeedTemplates.ts"
   },
   "private": true
 }
