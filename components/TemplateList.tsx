@@ -8,8 +8,7 @@
 // templates are never shown and rows come in `listTemplates` order.
 //
 // No Filters button, chips, sections or muscle-group colors — deliberately left out of v1.0
-// (08.10, "Чего нет в v1.0"). No subtitle yet either: it is `MesoTemplate.description`, which GT-5
-// adds; until then a row is the name and its day count.
+// (08.10, "Чего нет в v1.0"). Every row has a subtitle — see `formatTemplateSubtitle`.
 //
 // JSX only — pure helpers live in TemplateListLogic.ts, per AGENTS.md's "Code organization".
 
@@ -23,7 +22,7 @@ import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
 import { listTemplates } from '@domain/templateListing';
 
-import { formatDayCount, templateBadge } from './TemplateListLogic';
+import { formatTemplateSubtitle, formatTemplateTitle, templateBadge } from './TemplateListLogic';
 
 export type TemplateListProps = {
   templates: readonly MesoTemplate[];
@@ -61,8 +60,8 @@ export function TemplateList({
           keyExtractor={(template) => template.id}
           renderItem={({ item }) => (
             <ListRow
-              title={item.name}
-              titleSuffix={formatDayCount(item)}
+              title={formatTemplateTitle(item)}
+              subtitle={formatTemplateSubtitle(item)}
               badge={templateBadge(item)}
               trailing={{ type: 'chevron' }}
               onPress={() => onSelectTemplate(item)}

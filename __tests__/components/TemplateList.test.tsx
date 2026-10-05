@@ -49,22 +49,26 @@ describe('TemplateList', () => {
   test("shows each visible template's name with its day count", () => {
     renderList();
 
-    expect(screen.getByText('Full Body')).toBeTruthy();
-    expect(screen.getByText(' · 3 days')).toBeTruthy();
-    expect(screen.getByText('Upper / Lower')).toBeTruthy();
-    expect(screen.getByText(' · 4 days')).toBeTruthy();
+    expect(screen.getByText('Full Body · 3 days')).toBeTruthy();
+    expect(screen.getByText('Upper / Lower · 4 days')).toBeTruthy();
+  });
+
+  test('gives every row a subtitle, so no row is a single line', () => {
+    renderList();
+
+    expect(screen.getAllByText(/a week$/)).toHaveLength(3);
   });
 
   test('does not show hidden templates', () => {
     renderList();
 
-    expect(screen.queryByText('Retired Split')).toBeNull();
+    expect(screen.queryByText(/Retired Split/)).toBeNull();
   });
 
   test('a hidden template stays hidden when the search names it', () => {
     renderList({ search: 'Retired' });
 
-    expect(screen.queryByText('Retired Split')).toBeNull();
+    expect(screen.queryByText(/Retired Split/)).toBeNull();
   });
 
   test('badges a custom template and leaves catalog ones plain', () => {
@@ -84,14 +88,14 @@ describe('TemplateList', () => {
   test('filters the rows by the search text, case-insensitive', () => {
     renderList({ search: 'LOWER' });
 
-    expect(screen.getByText('Upper / Lower')).toBeTruthy();
-    expect(screen.queryByText('Full Body')).toBeNull();
+    expect(screen.getByText('Upper / Lower · 4 days')).toBeTruthy();
+    expect(screen.queryByText('Full Body · 3 days')).toBeNull();
   });
 
   test('hands the tapped template to the caller and decides nothing itself', () => {
     const props = renderList();
 
-    fireEvent.press(screen.getByText('Full Body'));
+    fireEvent.press(screen.getByText('Full Body · 3 days'));
 
     expect(props.onSelectTemplate).toHaveBeenCalledTimes(1);
     expect(props.onSelectTemplate).toHaveBeenCalledWith(fullBody);
