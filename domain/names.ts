@@ -26,3 +26,22 @@ export function normalizeRequiredName(name: string, subject: string): string {
   }
   return name.trim();
 }
+
+/**
+ * `name` if no one has it yet, otherwise `name` with the first free suffix ` 2`, ` 3`, … — how a
+ * name offered by the app avoids one the user already has (04, "Правила Flow B": "Имя цикла").
+ * Names are compared trimmed and exactly, case included: the same comparison a user makes when
+ * reading two names off a list.
+ */
+export function firstFreeName(name: string, takenNames: readonly string[]): string {
+  const taken = new Set(takenNames.map((other) => other.trim()));
+  const base = name.trim();
+  if (!taken.has(base)) {
+    return base;
+  }
+  let suffix = 2;
+  while (taken.has(`${base} ${suffix}`)) {
+    suffix += 1;
+  }
+  return `${base} ${suffix}`;
+}

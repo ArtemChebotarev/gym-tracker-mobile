@@ -6,6 +6,8 @@ import {
   toCopyWeekMesocycleConfirmInput,
   toMesoBuilderDraft,
   toScratchMesocycleDraftInput,
+  toTemplateMesoBuilderDraft,
+  toTemplateMesocycleConfirmInput,
   useDraftStore,
 } from '@state/draftStore';
 import { STAMPS } from '../fixtures/stamps';
@@ -252,6 +254,47 @@ describe('toCopyWeekMesocycleConfirmInput', () => {
   test('refuses a draft that was never copied from anything', () => {
     expect(() => toCopyWeekMesocycleConfirmInput(DEFAULT_MESO_BUILDER_DRAFT)).toThrow(
       /no source week/,
+    );
+  });
+});
+
+describe('toTemplateMesoBuilderDraft', () => {
+  const applied = {
+    name: 'Upper/Lower 2',
+    daysPerWeek: 2,
+    weekPlan: {
+      days: [
+        { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench', order: 1, sets: 3 }] },
+        { dayNumber: 2, name: '', exercises: [] },
+      ],
+    },
+    templateId: 'template-upper-lower',
+  };
+
+  test("takes name, days and exercises from the template, and Flow A's default length", () => {
+    expect(toTemplateMesoBuilderDraft(applied)).toEqual({
+      name: 'Upper/Lower 2',
+      lengthWeeks: DEFAULT_MESO_BUILDER_DRAFT.lengthWeeks,
+      daysPerWeek: 2,
+      exercisesByDay: { 1: [{ exerciseId: 'bench', order: 1, sets: 3 }], 2: [] },
+      templateId: 'template-upper-lower',
+    });
+  });
+
+  // DoD: Save carries `origin: template` — this is what it passes on.
+  test('round-trips into the confirm input with the template alongside Flow A’s own input', () => {
+    expect(toTemplateMesocycleConfirmInput(toTemplateMesoBuilderDraft(applied))).toEqual({
+      name: 'Upper/Lower 2',
+      lengthWeeks: DEFAULT_MESO_BUILDER_DRAFT.lengthWeeks,
+      daysPerWeek: 2,
+      weekPlan: applied.weekPlan,
+      templateId: 'template-upper-lower',
+    });
+  });
+
+  test('refuses to save a draft that was never filled from a template', () => {
+    expect(() => toTemplateMesocycleConfirmInput(DEFAULT_MESO_BUILDER_DRAFT)).toThrow(
+      /no template/,
     );
   });
 });

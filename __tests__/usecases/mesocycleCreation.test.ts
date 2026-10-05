@@ -1,18 +1,26 @@
 import { isNotFoundError } from '@domain/errors';
 import type { Session, SessionExercise } from '@domain/execution';
+import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import type { WeekPlan } from '@domain/plan';
-import type { Unsaved } from '@domain/timestamps';
+import type { MesoTemplate, WeekPlan } from '@domain/plan';
+import type { Incoming, Unsaved } from '@domain/timestamps';
+import { toTemplateMesoBuilderDraft, toTemplateMesocycleConfirmInput } from '@state/draftStore';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
 import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise';
+import { createSqliteMesocycleStartStore } from '@storage/sqlite/mesocycleStartStore';
 import { SqliteSettingsRepository } from '@storage/sqlite/settings';
+import { SqliteTemplateRepository } from '@storage/sqlite/template';
 import {
   confirmCopyWeekMesocycleDraft,
   confirmScratchMesocycleDraft,
+  confirmTemplateMesocycleDraft,
   extractSourceWeekPlan,
   listSourceWeeks,
+  prepareTemplateDraft,
 } from '@usecases/mesocycleCreation';
+import { startMesocycle } from '@usecases/mesocycleStart';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -425,6 +433,152 @@ describe('confirmCopyWeekMesocycleDraft', () => {
     expect(
       isNotFoundError(
         await rejectionOf(confirmCopyWeekMesocycleDraft({ ...copyInput, sourceMesoId: 'gone' }, deps)),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('Flow B — template to started mesocycle', () => {
+  const NOW = '2026-10-05T09:00:00.000Z';
+
+  // Real catalog ids, so Start can write week 1 against the library the app ships.
+  const template: Incoming<MesoTemplate> = {
+    id: 'template-upper-lower',
+    name: 'Upper/Lower',
+    source: 'catalog',
+    defaultLengthWeeks: 5,
+    isHidden: false,
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: 'Upper',
+          exercises: [
+            { exerciseId: 'bench-press-barbell', order: 1, sets: 4 },
+            { exerciseId: 'barbell-row-barbell', order: 2, sets: 3 },
+          ],
+        },
+        {
+          dayNumber: 2,
+          name: 'Lower',
+          exercises: [{ exerciseId: 'squat-barbell', order: 1, sets: 5 }],
+        },
+      ],
+    },
+  };
+
+  async function setUpFlowB() {
+    const store = db();
+    const deps = {
+      ...makeDeps(),
+      templateRepo: new SqliteTemplateRepository(store),
+      exerciseRepo: new SqliteExerciseRepository(store),
+    };
+    await deps.exerciseRepo.seedCatalog(EXERCISE_CATALOG);
+    await deps.templateRepo.create(template);
+    return deps;
+  }
+
+  test('prepareTemplateDraft rejects with NotFoundError for an unknown template', async () => {
+    const deps = await setUpFlowB();
+
+    expect(isNotFoundError(await rejectionOf(prepareTemplateDraft('missing', deps)))).toBe(true);
+  });
+
+  test("prepareTemplateDraft names the draft past the user's existing mesocycles", async () => {
+    const deps = await setUpFlowB();
+    await confirmScratchMesocycleDraft({ ...draftInput, name: 'Upper/Lower' }, deps);
+
+    const draft = await prepareTemplateDraft('template-upper-lower', deps);
+
+    expect(draft.name).toBe('Upper/Lower 2');
+  });
+
+  test('saves a planned mesocycle with a template origin and no sessions', async () => {
+    const deps = await setUpFlowB();
+    const draft = toTemplateMesoBuilderDraft(
+      await prepareTemplateDraft('template-upper-lower', deps),
+    );
+
+    const saved = await confirmTemplateMesocycleDraft(toTemplateMesocycleConfirmInput(draft), deps);
+
+    expect(saved.status).toBe('planned');
+    expect(saved.origin).toEqual({ type: 'template', templateId: 'template-upper-lower' });
+    await expect(deps.mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
+    await expect(deps.sessionRepo.listByMesoId(saved.id)).resolves.toEqual([]);
+  });
+
+  test('changing the template after the mesocycle was made does not change the mesocycle', async () => {
+    const deps = await setUpFlowB();
+    const draft = toTemplateMesoBuilderDraft(
+      await prepareTemplateDraft('template-upper-lower', deps),
+    );
+    const saved = await confirmTemplateMesocycleDraft(toTemplateMesocycleConfirmInput(draft), deps);
+
+    const stored = (await deps.templateRepo.getById('template-upper-lower'))!;
+    await deps.templateRepo.update({
+      ...stored,
+      name: 'Upper/Lower v2',
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [{ exerciseId: 'deadlift-barbell', order: 1, sets: 2 }],
+          },
+        ],
+      },
+    });
+
+    await expect(deps.mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
+  });
+
+  // DoD: template -> draft -> Save -> Start passes the invariant validators, and week 1 carries
+  // only its target RIR — no reps, no weights.
+  test('template -> draft -> Save -> Start gives week 1 with only a target RIR', async () => {
+    const deps = await setUpFlowB();
+    const draft = toTemplateMesoBuilderDraft(
+      await prepareTemplateDraft('template-upper-lower', deps),
+    );
+    const saved = await confirmTemplateMesocycleDraft(toTemplateMesocycleConfirmInput(draft), deps);
+
+    const started = await startMesocycle(
+      saved.id,
+      { store: createSqliteMesocycleStartStore(db()) },
+      NOW,
+    );
+
+    expect(started.status).toBe('active');
+    expect(started.origin).toEqual({ type: 'template', templateId: 'template-upper-lower' });
+    const sessions = await deps.sessionRepo.listByMesoId(saved.id);
+    expect(sessions.map(({ weekNumber, dayNumber }) => [weekNumber, dayNumber]).sort()).toEqual([
+      [1, 1],
+      [1, 2],
+    ]);
+    const week1 = await Promise.all(
+      sessions
+        .sort((a, b) => a.dayNumber - b.dayNumber)
+        .map((session) => deps.sessionExerciseRepo.listBySessionId(session.id)),
+    );
+    expect(
+      week1.map((exercises) =>
+        [...exercises]
+          .sort((a, b) => a.order - b.order)
+          .map(({ exerciseId, setTargets }) => [exerciseId, setTargets.length]),
+      ),
+    ).toEqual([
+      [
+        ['bench-press-barbell', 4],
+        ['barbell-row-barbell', 3],
+      ],
+      [['squat-barbell', 5]],
+    ]);
+    const exercises = week1.flat();
+    // 6 weeks (Flow A's default length): startRir = min(3, 5 − 1) = 3.
+    expect(exercises.every((exercise) => exercise.targetRir === 3)).toBe(true);
+    expect(
+      exercises.flatMap((exercise) => exercise.setTargets).every(
+        (target) => target.targetReps === undefined && target.suggestedWeight === undefined,
       ),
     ).toBe(true);
   });
