@@ -22,6 +22,13 @@
       "when": 1790351056868,
       "tag": "0002_mesocycle_archived_at",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791215245344,
+      "tag": "0003_onboarding_flags",
+      "breakpoints": true
     }
   ]
 }

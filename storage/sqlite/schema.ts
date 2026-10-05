@@ -6,6 +6,8 @@ import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/me
 import type { MesoTemplate, WeekPlan } from '@domain/plan';
 import type { Settings } from '@repositories/settings';
 
+import { DEFAULT_ONBOARDING } from '../settingsDefaults';
+
 // The relational shape of 02 · Domain Model, one table per stored entity. What the domain calls a
 // value object — `WeekPlan`, `origin`, `progressionSettings`, `setTargets` — stays inside its
 // owner as JSON: 02 says WeekPlan is deliberately not a table, and the others are snapshots read
@@ -168,6 +170,12 @@ export const settings = sqliteTable('settings', {
     .notNull()
     .$type<ProgressionSettings>(),
   weightUnit: text('weight_unit').notNull().$type<Settings['weightUnit']>(),
+  // The column's own default is what the row that already exists on a device gets when the
+  // migration adds it (task GT-36) — every flag false, i.e. `DEFAULT_ONBOARDING`.
+  onboarding: text('onboarding', { mode: 'json' })
+    .notNull()
+    .$type<Settings['onboarding']>()
+    .default(DEFAULT_ONBOARDING),
 });
 
 /** The single settings row's id — see `settings`. */

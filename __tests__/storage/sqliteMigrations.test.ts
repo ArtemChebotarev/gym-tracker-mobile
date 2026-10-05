@@ -4,6 +4,8 @@ import { sql } from 'drizzle-orm';
 
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
+import { SqliteSettingsRepository } from '@storage/sqlite/settings';
+import { DEFAULT_ONBOARDING } from '@storage/settingsDefaults';
 import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise';
 import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
 
@@ -204,6 +206,7 @@ describe('the app’s own migrations', () => {
       '0000_initial_schema': 1789936766954,
       '0001_seed_catalog': 1789938887567,
       '0002_mesocycle_archived_at': 1790351056868,
+      '0003_onboarding_flags': 1791215245344,
     });
   });
 
@@ -283,6 +286,30 @@ describe('the app’s own migrations', () => {
 
       // Opening the same database again applies nothing — the second launch after the update.
       await expect(migrateToLatest(db, full)).resolves.toBeUndefined();
+    } finally {
+      close();
+    }
+  });
+
+  // GT-36: the settings row already on the phone predates the onboarding flags. It must read back
+  // exactly as it was, with every flag unset — so the Welcome dialog shows once on that device.
+  test('give the settings row of the previous build every onboarding flag unset', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, full.journal.entries.length - 1));
+      await db.run(sql`
+        INSERT INTO settings (id, default_progression_settings, weight_unit)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'lb')
+      `);
+
+      await migrateToLatest(db, full);
+
+      await expect(new SqliteSettingsRepository(db).read()).resolves.toEqual({
+        defaultProgressionSettings,
+        weightUnit: 'lb',
+        onboarding: DEFAULT_ONBOARDING,
+      });
     } finally {
       close();
     }

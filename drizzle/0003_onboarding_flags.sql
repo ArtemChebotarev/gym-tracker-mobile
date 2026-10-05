@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `onboarding` text DEFAULT '{"welcomeSeen":false,"coachmarksSeen":false,"deloadIntroSeen":false}' NOT NULL;

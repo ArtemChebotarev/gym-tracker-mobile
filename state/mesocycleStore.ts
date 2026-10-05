@@ -24,6 +24,7 @@ import type { MesocycleDetailDeps } from '@usecases/mesocycleDetail';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
 import type { MesocycleStartDeps } from '@usecases/mesocycleStart';
+import type { OnboardingDeps } from '@usecases/onboarding';
 import type { TemplateLibraryDeps } from '@usecases/templateLibrary';
 
 export function useMesocycleCreationDeps(): MesocycleCreationDeps {
@@ -85,4 +86,10 @@ export function useTemplateLibraryDeps(): TemplateLibraryDeps {
 export function useTemplateDraftDeps(): TemplateDraftDeps {
   const { templateRepo, exerciseRepo, mesocycleRepo } = useRepositories();
   return { templateRepo, exerciseRepo, mesocycleRepo };
+}
+
+/** The first-run windows' flags (GT-36, 08.11): they live in `Settings`. */
+export function useOnboardingDeps(): OnboardingDeps {
+  const { settingsRepo } = useRepositories();
+  return { settingsRepo };
 }

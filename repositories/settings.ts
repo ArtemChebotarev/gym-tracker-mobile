@@ -1,6 +1,23 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
 
 /**
+ * Which of the three first-run windows of 08.11 · Onboarding the user has already closed. Each flag
+ * is set when its own window is closed (`Got it`, or `Skip` for the coachmarks), not when it is
+ * shown, so an app killed with a window open shows it again.
+ */
+export type OnboardingFlags = {
+  /** The Welcome dialog over the first Today. */
+  welcomeSeen: boolean;
+  /** The four coachmarks on the first live workout. */
+  coachmarksSeen: boolean;
+  /** The popup on the first deload session. */
+  deloadIntroSeen: boolean;
+};
+
+/** One of the {@link OnboardingFlags}. */
+export type OnboardingFlag = keyof OnboardingFlags;
+
+/**
  * Global, app-wide settings. A single record — there is exactly one `Settings`
  * document, not a collection.
  *
@@ -26,6 +43,11 @@ export type Settings = {
    * never changes how a weight is stored, only how it is shown.
    */
   weightUnit: 'kg' | 'lb';
+  /**
+   * First-run windows already dismissed (08.11 · Onboarding, "Хранение"). Lives with the rest of
+   * the user's data on purpose: wiping the data brings the onboarding back, and a backup carries it.
+   */
+  onboarding: OnboardingFlags;
 };
 
 /**

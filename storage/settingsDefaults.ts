@@ -1,5 +1,12 @@
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import type { Settings } from '@repositories/settings';
+import type { OnboardingFlags, Settings } from '@repositories/settings';
+
+/** Nothing dismissed yet: what a fresh store, and a settings row that predates a flag, reads as. */
+export const DEFAULT_ONBOARDING: OnboardingFlags = {
+  welcomeSeen: false,
+  coachmarksSeen: false,
+  deloadIntroSeen: false,
+};
 
 /**
  * What `SettingsRepository.read()` answers until the first `write()` — reading settings before
@@ -12,4 +19,5 @@ import type { Settings } from '@repositories/settings';
 export const DEFAULT_SETTINGS: Settings = {
   defaultProgressionSettings,
   weightUnit: 'kg',
+  onboarding: DEFAULT_ONBOARDING,
 };
