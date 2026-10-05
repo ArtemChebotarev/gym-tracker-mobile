@@ -2,7 +2,7 @@ import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
 import type { Settings, SettingsRepository } from '@repositories/settings';
 import { eq } from 'drizzle-orm';
 
-import { DEFAULT_SETTINGS } from '../settingsDefaults';
+import { DEFAULT_ONBOARDING, DEFAULT_SETTINGS } from '../settingsDefaults';
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 import { SETTINGS_ROW_ID, settings } from './schema';
@@ -16,7 +16,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
   constructor(private readonly db: SqliteDatabase) {}
 
   // Settings written before a `ProgressionSettings` field existed (e.g. `historyLookbackDays`,
-  // task 083) read back with the spec default for it filled in.
+  // task 083), and onboarding flags that predate a newer flag, read back with the default filled in.
   async read(): Promise<Settings> {
     const row = await runQuery(() =>
       this.db.select().from(settings).where(eq(settings.id, SETTINGS_ROW_ID)).get(),
@@ -25,6 +25,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
       ? {
           defaultProgressionSettings: row.defaultProgressionSettings,
           weightUnit: row.weightUnit,
+          onboarding: row.onboarding,
         }
       : DEFAULT_SETTINGS;
     return {
@@ -32,6 +33,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
       defaultProgressionSettings: withProgressionSettingsDefaults(
         stored.defaultProgressionSettings,
       ),
+      onboarding: { ...DEFAULT_ONBOARDING, ...stored.onboarding },
     };
   }
 
