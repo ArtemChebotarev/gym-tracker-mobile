@@ -46,17 +46,29 @@ function renderList(overrides: Partial<TemplateListProps> = {}) {
 }
 
 describe('TemplateList', () => {
-  test("shows each visible template's name with its day count", () => {
+  test('groups the visible templates by days a week, fewest first, each section with its count', () => {
+    renderList({
+      templates: [upperLower, fullBody, retired, mine, template('ppl', 'Arnold Split', 5)],
+    });
+
+    const headers = screen.getAllByText(/days a week$/).map((node) => node.props.children);
+    expect(headers).toEqual(['3 days a week', '4 days a week', '5 days a week']);
+    // Two 5-day templates, so that section counts 2; the rows carry the bare name.
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.getByText('Full Body')).toBeTruthy();
+    expect(screen.queryByText(/· \d+ days/)).toBeNull();
+  });
+
+  test('a section with no visible template is not drawn', () => {
     renderList();
 
-    expect(screen.getByText('Full Body · 3 days')).toBeTruthy();
-    expect(screen.getByText('Upper / Lower · 4 days')).toBeTruthy();
+    expect(screen.queryByText('2 days a week')).toBeNull();
   });
 
   test('gives every row a subtitle, so no row is a single line', () => {
     renderList();
 
-    expect(screen.getAllByText(/a week$/)).toHaveLength(3);
+    expect(screen.getAllByText(/sets a week$/)).toHaveLength(3);
   });
 
   test('does not show hidden templates', () => {
@@ -88,14 +100,15 @@ describe('TemplateList', () => {
   test('filters the rows by the search text, case-insensitive', () => {
     renderList({ search: 'LOWER' });
 
-    expect(screen.getByText('Upper / Lower · 4 days')).toBeTruthy();
-    expect(screen.queryByText('Full Body · 3 days')).toBeNull();
+    expect(screen.getByText('Upper / Lower')).toBeTruthy();
+    expect(screen.queryByText('Full Body')).toBeNull();
+    expect(screen.queryByText('3 days a week')).toBeNull();
   });
 
   test('hands the tapped template to the caller and decides nothing itself', () => {
     const props = renderList();
 
-    fireEvent.press(screen.getByText('Full Body · 3 days'));
+    fireEvent.press(screen.getByText('Full Body'));
 
     expect(props.onSelectTemplate).toHaveBeenCalledTimes(1);
     expect(props.onSelectTemplate).toHaveBeenCalledWith(fullBody);

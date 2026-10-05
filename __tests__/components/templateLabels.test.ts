@@ -1,4 +1,8 @@
-import { formatTemplateSubtitle, formatTemplateTitle } from '@components/templateLabels';
+import {
+  formatTemplateSubtitle,
+  formatTemplateTitle,
+  templateSectionTitle,
+} from '@components/templateLabels';
 
 /** A week of `days`, each day holding exercises with these set counts. */
 function week(...days: number[][]) {
@@ -40,5 +44,12 @@ describe('formatTemplateSubtitle', () => {
 
   test('is never empty, even for a week with no exercises', () => {
     expect(formatTemplateSubtitle(week([], []))).toBe('0 exercises · 0 sets a week');
+  });
+});
+
+describe('templateSectionTitle', () => {
+  test('names how many days a week the section trains', () => {
+    expect(templateSectionTitle(3)).toBe('3 days a week');
+    expect(templateSectionTitle(1)).toBe('1 day a week');
   });
 });

@@ -23,3 +23,25 @@ export function listTemplates(
     .filter((template) => !template.isHidden && nameMatchesSearch(template.name, search))
     .sort((a, b) => templateDayCount(a) - templateDayCount(b) || a.name.localeCompare(b.name));
 }
+
+/** A run of templates with the same number of training days — one section of the list. */
+export type TemplateDayGroup = {
+  dayCount: number;
+  templates: MesoTemplate[];
+};
+
+/**
+ * `templates` split by how many days a week they train, fewest first — the list's sections, so a
+ * split is found by how often one can train (08.10, "Шаг T"). Within a group the order is kept,
+ * so passing `listTemplates`' result keeps its by-name order.
+ */
+export function groupTemplatesByDayCount(templates: readonly MesoTemplate[]): TemplateDayGroup[] {
+  const groups = new Map<number, MesoTemplate[]>();
+  for (const template of templates) {
+    const dayCount = templateDayCount(template);
+    groups.set(dayCount, [...(groups.get(dayCount) ?? []), template]);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([dayCount, group]) => ({ dayCount, templates: group }));
+}

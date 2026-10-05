@@ -97,7 +97,7 @@ function renderRoute() {
   );
 }
 
-/** Opens `name`'s preview from the list and presses `Use this template`. */
+/** Opens `title`'s preview from the list and presses `Use this template`. */
 async function useTemplate(title: string) {
   fireEvent.press(await screen.findByText(title));
   fireEvent.press(await screen.findByRole('button', { name: 'Use this template' }));
@@ -108,7 +108,8 @@ describe('TemplateMesocycleRoute — step T', () => {
   test('opens as Step 1 of 4, titled, with Close and no Continue', async () => {
     renderRoute();
 
-    expect(await screen.findByText('Upper / Lower · 2 days')).toBeTruthy();
+    expect(await screen.findByText('Upper / Lower')).toBeTruthy();
+    expect(screen.getByText('2 days a week')).toBeTruthy();
     expect(screen.getByText('Step 1 of 4')).toBeTruthy();
     expect(screen.getByText('Choose a template')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy();
@@ -118,7 +119,7 @@ describe('TemplateMesocycleRoute — step T', () => {
   test('a row opens its preview; Close leaves the wizard and drops the draft', async () => {
     renderRoute();
 
-    fireEvent.press(await screen.findByText('Upper / Lower · 2 days'));
+    fireEvent.press(await screen.findByText('Upper / Lower'));
     expect(await screen.findByRole('button', { name: 'Use this template' })).toBeTruthy();
     expect(await screen.findByText('Bench Press · Barbell')).toBeTruthy();
 
@@ -141,7 +142,7 @@ describe('TemplateMesocycleRoute — prefilled draft', () => {
   test('Use this template fills the draft and opens Basics on it, with Back rather than Close', async () => {
     renderRoute();
 
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
 
     expect(useDraftStore.getState().mesoBuilder).toEqual({
       name: 'Upper / Lower',
@@ -163,32 +164,32 @@ describe('TemplateMesocycleRoute — prefilled draft', () => {
 
   test('Back returns to the template list', async () => {
     renderRoute();
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
 
     fireEvent.press(screen.getByRole('button', { name: 'Back' }));
 
     expect(await screen.findByText('Choose a template')).toBeTruthy();
-    expect(screen.getByText('Full Body · 1 day')).toBeTruthy();
+    expect(screen.getByText('Full Body')).toBeTruthy();
   });
 
   test('using the same template again keeps what was edited in between', async () => {
     renderRoute();
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
     fireEvent.changeText(screen.getByDisplayValue('Upper / Lower'), 'Block 7');
     fireEvent.press(screen.getByRole('button', { name: 'Back' }));
 
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
 
     expect(screen.getByDisplayValue('Block 7')).toBeTruthy();
   });
 
   test('using a different template replaces the draft, edits and all', async () => {
     renderRoute();
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
     fireEvent.changeText(screen.getByDisplayValue('Upper / Lower'), 'Block 7');
     fireEvent.press(screen.getByRole('button', { name: 'Back' }));
 
-    await useTemplate('Full Body · 1 day');
+    await useTemplate('Full Body');
 
     expect(screen.getByDisplayValue('Full Body')).toBeTruthy();
     expect(useDraftStore.getState().mesoBuilder).toEqual(
@@ -206,7 +207,7 @@ describe('TemplateMesocycleRoute — Save and Start', () => {
   // week 1 with nothing left to set up.
   test('DoD: saves a planned cycle from the template, and Start makes week 1 from it', async () => {
     renderRoute();
-    await useTemplate('Upper / Lower · 2 days');
+    await useTemplate('Upper / Lower');
 
     fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
     fireEvent.press(await screen.findByRole('button', { name: 'Continue' }));
