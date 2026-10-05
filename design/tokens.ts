@@ -40,6 +40,12 @@ export const COLORS = {
   'accent/bg': '#232B0A',
   'accent/border': '#4A5A20',
 
+  /**
+   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a UI colour: the SDK keeps one
+   * accent per screen, so this is used by the wordmark and nothing else.
+   */
+  'brand/orange': '#FF5B23',
+
   danger: '#E2574C',
   'danger/border': '#5C2320',
   /**
@@ -292,6 +298,12 @@ export const SIZES = {
    * Reps column header (08.7.1). Drawn at 24, 44pt to the touch through `tapTargetSlop`.
    */
   'size/glyph-button': 24,
+  /** A Dialog's card (08.11): wider than a Popover, narrower than a phone, so it floats clear of both edges. */
+  'size/dialog': 342,
+  /** How wide a Dialog's title may run, so a long one wraps to two lines instead of touching the edges (08.11). */
+  'size/dialog-title': 260,
+  /** The Hybro wordmark's drawn width in the Welcome dialog (08.11); its height follows the artwork. */
+  'size/wordmark': 190,
   /** The circle behind an EmptyState's icon (08.0.1). */
   'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */

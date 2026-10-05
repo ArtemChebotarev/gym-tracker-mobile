@@ -56,6 +56,7 @@ import { BodyWeightSheet } from '@components/BodyWeightSheet';
 import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
 import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
+import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
@@ -94,6 +95,7 @@ import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
+import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
@@ -130,6 +132,11 @@ export default function TodayScreen() {
   // Only for the creation-method sheet's second row: whether there is anything to copy at all.
   const mesocycles = useMesocycles();
   const methodSheet = useMesoCreationMethodSheet();
+  // The Welcome dialog (GT-37, 08.11): up until `Got it` has been written, not merely tapped, and
+  // never before the flags have been read — a dialog that flashed and went would be worse than one
+  // that waits a frame.
+  const onboarding = useOnboardingFlags();
+  const markOnboardingSeen = useMarkOnboardingSeen();
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   // The block the `Training cycle complete` EmptyState would finish — there's no session model to read it
   // from, since the tab has no session left to show.
@@ -347,6 +354,10 @@ export default function TodayScreen() {
 
   return (
     <>
+      <WelcomeDialog
+        visible={onboarding.data !== undefined && !onboarding.data.welcomeSeen}
+        onDismiss={() => markOnboardingSeen.mutate('welcomeSeen')}
+      />
       <WorkoutScreen
         model={model}
         isPending={query.isPending}

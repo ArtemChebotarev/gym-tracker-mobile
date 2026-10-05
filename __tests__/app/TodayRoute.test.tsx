@@ -10,7 +10,8 @@ import {
   seedWorkoutFixture,
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
-import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+import { markOnboardingSeen } from '@usecases/onboarding';
+import { queryClient, renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 // Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
 import {
   pressTodayTab,
@@ -410,5 +411,48 @@ describe('Today tab — the pinned day is released', () => {
     expect(mockReplace).toHaveBeenCalledWith('/');
     expect(mockParams).toEqual({});
     expect(await screen.findByText('Week 2 Day 1')).toBeTruthy();
+  });
+});
+
+// GT-37 · the Welcome dialog (08.11) — once on the first launch, closed only by `Got it`, and not
+// again after the flag has been written to the store.
+// The whole suite runs in parallel and a write plus a re-read is slower than waitFor's 1 s default
+// under that load, so these waits say how long they are willing to take.
+const SLOW = { timeout: 5000 };
+
+describe('Welcome dialog', () => {
+  test('DoD: a clean install shows it, and Got it closes it and leaves Today', async () => {
+    renderToday();
+
+    fireEvent.press(await screen.findByText('Got it', {}, SLOW));
+
+    await waitFor(() => expect(screen.queryByText('Got it')).toBeNull(), SLOW);
+    expect(mockNavigate).not.toHaveBeenCalled();
+    await expect(repositories().settingsRepo.read()).resolves.toMatchObject({
+      onboarding: { welcomeSeen: true },
+    });
+  });
+
+  test('DoD: after Got it a relaunch — a fresh render over the same store — does not show it', async () => {
+    const first = renderToday();
+    fireEvent.press(await screen.findByText('Got it', {}, SLOW));
+    await waitFor(() => expect(screen.queryByText('Got it')).toBeNull(), SLOW);
+    first.unmount();
+    queryClient().clear();
+
+    renderToday();
+
+    // Today itself is there, so the absence of the dialog is not just an unfinished load.
+    expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
+    expect(screen.queryByText('Got it')).toBeNull();
+  });
+
+  test('is not shown over a store that has already recorded it', async () => {
+    await markOnboardingSeen('welcomeSeen', { settingsRepo: repositories().settingsRepo });
+
+    renderToday();
+
+    expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
+    expect(screen.queryByText('Got it')).toBeNull();
   });
 });

@@ -29,6 +29,7 @@ const EXPECTED_COLOR_TOKENS = [
   'border/default',
   'border/divider',
   'border/divider-subtle',
+  'brand/orange',
   'border/cell-quiet',
   'text/primary',
   'text/secondary',
