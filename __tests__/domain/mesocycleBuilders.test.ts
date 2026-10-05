@@ -5,6 +5,7 @@ import {
   buildCopyWeekMesocycleDraft,
   buildMesocycleStart,
   buildScratchMesocycleDraft,
+  buildTemplateMesocycleDraft,
   renamedMesocycle,
   weekPlanSlotKey,
 } from '@domain/mesocycleBuilders';
@@ -114,6 +115,39 @@ describe('buildScratchMesocycleDraft', () => {
         weekPlan: twoDayWeekPlan,
       }),
     ).toThrow(/daysPerWeek must be between 1 and 7/);
+  });
+});
+
+describe('buildTemplateMesocycleDraft', () => {
+  const input = {
+    name: 'Upper/Lower',
+    lengthWeeks: 6,
+    daysPerWeek: 2,
+    weekPlan: twoDayWeekPlan,
+    templateId: 'template-upper-lower',
+  };
+
+  test('records the template as a template origin', () => {
+    expect(buildTemplateMesocycleDraft(input).origin).toEqual({
+      type: 'template',
+      templateId: 'template-upper-lower',
+    });
+  });
+
+  test('is otherwise the same planned draft Flow A builds', () => {
+    const draft = buildTemplateMesocycleDraft(input);
+
+    expect(draft).toEqual({
+      ...buildScratchMesocycleDraft(input),
+      origin: { type: 'template', templateId: 'template-upper-lower' },
+    });
+    expect(draft).not.toHaveProperty('templateId');
+  });
+
+  test('validates the draft the same way Flow A does', () => {
+    expect(() => buildTemplateMesocycleDraft({ ...input, daysPerWeek: 3 })).toThrow(
+      /exactly 3 day/,
+    );
   });
 });
 

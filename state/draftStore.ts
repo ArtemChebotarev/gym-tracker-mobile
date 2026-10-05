@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 
 import type { Mesocycle } from '@domain/mesocycle';
-import type { ScratchMesocycleDraftInput } from '@domain/mesocycleBuilders';
+import type {
+  ScratchMesocycleDraftInput,
+  TemplateMesocycleDraftInput,
+} from '@domain/mesocycleBuilders';
 import type { WeekPlan, WeekPlanExercise } from '@domain/plan';
+import type { TemplateDraft } from '@domain/templateConverters';
 import type { CopyWeekMesocycleConfirmInput } from '@usecases/mesocycleCreation';
 
 // Mesocycle builder draft (introduced by task 075 — see 08.5 · Редактор мезоцикла — Flow A) so
@@ -22,7 +26,8 @@ import type { CopyWeekMesocycleConfirmInput } from '@usecases/mesocycleCreation'
 // `source` is set only by Flow C (124): it records which week of which block the draft was
 // copied from, so step 3's Save can record it as the mesocycle's `origin` (04, "Flow C"). It
 // rides on the draft rather than on the copy route's own state because Save reads the draft and
-// nothing else — see `toCopyWeekMesocycleConfirmInput`.
+// nothing else — see `toCopyWeekMesocycleConfirmInput`. `templateId` is Flow B's counterpart
+// (GT-9), there for the same reason: Save records it as `origin: template`.
 export type MesoBuilderDraft = {
   name: string;
   lengthWeeks: number;
@@ -30,6 +35,8 @@ export type MesoBuilderDraft = {
   exercisesByDay: Record<number, WeekPlanExercise[]>;
   /** Flow C only — absent in Flow A and when editing a planned mesocycle. */
   source?: { mesoId: string; weekNumber: number };
+  /** Flow B only — the template the draft was filled from. */
+  templateId?: string;
 };
 
 export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
@@ -85,9 +92,25 @@ export function toCopyWeekMesocycleConfirmInput(
 }
 
 /**
- * A `WeekPlan`'s days keyed by day number, the shape `exercisesByDay` wants. Shared by the two
- * ways a draft arrives already filled in — editing a planned mesocycle and copying a week —
- * because both read the same plan out of the same field.
+ * Flow B's counterpart of `toCopyWeekMesocycleConfirmInput` — what step 3's Save passes to
+ * `confirmTemplateMesocycleDraft` (GT-9). Same week plan as Flow A's, plus the template, recorded
+ * as the mesocycle's `origin`.
+ *
+ * Throws on a draft with no `templateId` — that draft belongs in Flow A's save.
+ */
+export function toTemplateMesocycleConfirmInput(
+  draft: MesoBuilderDraft,
+): TemplateMesocycleDraftInput {
+  if (draft.templateId === undefined) {
+    throw new Error('Flow B save ran on a draft with no template.');
+  }
+  return { ...toScratchMesocycleDraftInput(draft), templateId: draft.templateId };
+}
+
+/**
+ * A `WeekPlan`'s days keyed by day number, the shape `exercisesByDay` wants. Shared by the three
+ * ways a draft arrives already filled in — editing a planned mesocycle, copying a week and
+ * applying a template — because all three read the same plan out of the same field.
  */
 function toExercisesByDay(weekPlan: WeekPlan | undefined): Record<number, WeekPlanExercise[]> {
   const exercisesByDay: Record<number, WeekPlanExercise[]> = {};
@@ -138,6 +161,21 @@ export function toCopiedMesoBuilderDraft(
     daysPerWeek: source.daysPerWeek,
     exercisesByDay: toExercisesByDay(weekPlan),
     source: { mesoId: source.id, weekNumber },
+  };
+}
+
+/**
+ * Flow B's prefilled draft — `Use this template` hands this to the editor (04 · Meso Creation
+ * Flows, "Flow B", step 2). Name, days per week and the week itself come from `applyTemplate`;
+ * the length is Flow A's default, because a template has none.
+ */
+export function toTemplateMesoBuilderDraft(template: TemplateDraft): MesoBuilderDraft {
+  return {
+    name: template.name,
+    lengthWeeks: DEFAULT_MESO_BUILDER_DRAFT.lengthWeeks,
+    daysPerWeek: template.daysPerWeek,
+    exercisesByDay: toExercisesByDay(template.weekPlan),
+    templateId: template.templateId,
   };
 }
 

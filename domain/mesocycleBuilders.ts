@@ -86,6 +86,28 @@ export function buildScratchMesocycleDraft(
   return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings);
 }
 
+export type TemplateMesocycleDraftInput = ScratchMesocycleDraftInput & {
+  /** The template the editor was filled from — `applyTemplate`'s `templateId`. */
+  templateId: string;
+};
+
+/**
+ * Builds a Flow B ("из шаблона") planned-mesocycle draft — task GT-9. Same draft as Flow A's; the
+ * template is recorded in `origin` and nothing more. The link is informational only: `weekPlan` is
+ * already the editor's own copy (`applyTemplate`), so a later change to the template doesn't reach
+ * this mesocycle (04 · Meso Creation Flows, "Шаблон — только слепок").
+ */
+export function buildTemplateMesocycleDraft(
+  input: TemplateMesocycleDraftInput,
+  progressionSettings: ProgressionSettings = defaultProgressionSettings,
+): Unsaved<Mesocycle> {
+  return buildMesocycleDraft(
+    input,
+    { type: 'template', templateId: input.templateId },
+    progressionSettings,
+  );
+}
+
 export type CopyWeekMesocycleDraftInput = ScratchMesocycleDraftInput & {
   /**
    * Which week of `source` the `weekPlan` was extracted from (`extractWeekPlan`). Recorded on the
