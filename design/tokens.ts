@@ -246,6 +246,8 @@ export const SIZES = {
   'size/icon-button': 36,
   /** Set row: the target indicator column. */
   'size/indicator-column': 24,
+  /** Template preview row: the slot's number column (08.10, `1 • Chest`). */
+  'size/order-column': 16,
   /** Set row: the Log checkbox — drawn at 32, 44pt to the touch (`tapTargetSlop`). */
   'size/log-box': 32,
   /** Set row: the Log column — as wide as the checkbox's tap target. */
