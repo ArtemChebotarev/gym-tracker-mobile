@@ -35,6 +35,8 @@ export type TemplatePreviewSheetProps = {
   /** The library — at least every exercise the template suggests; each row's group is read here. */
   exercises: readonly Exercise[];
   onUseTemplate: (template: MesoTemplate) => void;
+  /** False to close instantly — when `Use this template` hands off to the next step. */
+  animated?: boolean;
 };
 
 export function TemplatePreviewSheet({
@@ -43,6 +45,7 @@ export function TemplatePreviewSheet({
   template,
   exercises,
   onUseTemplate,
+  animated,
 }: TemplatePreviewSheetProps) {
   const dayNumbers = useMemo(() => templateDayNumbers(template), [template]);
   const [picked, setPicked] = useState<{ templateId: string; day: number } | null>(null);
@@ -59,6 +62,7 @@ export function TemplatePreviewSheet({
       title={formatTemplateTitle(template)}
       subtitle={formatTemplateSubtitle(template)}
       height="fixed"
+      animated={animated}
       footer={
         <View style={styles.footerButton}>
           <Button label="Use this template" onPress={() => onUseTemplate(template)} />

@@ -2420,6 +2420,8 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
         <View
           style={
             {
+              "alignItems": "stretch",
+              "gap": 8,
               "marginTop": 10,
             }
           }
@@ -2485,7 +2487,71 @@ exports[`MesocyclesScreen snapshots empty state 1`] = `
                 ]
               }
             >
-              Plan cycle
+              Start from a template
+            </Text>
+          </View>
+          <View
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderRadius": 12,
+                  "justifyContent": "center",
+                  "paddingHorizontal": 15,
+                  "paddingVertical": 15,
+                },
+                {
+                  "backgroundColor": "#1A1C1F",
+                },
+                false,
+                false,
+              ]
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "fontSize": 17,
+                    "fontWeight": "400",
+                  },
+                  {
+                    "color": "#C9CDD2",
+                  },
+                ]
+              }
+            >
+              Build from scratch
             </Text>
           </View>
         </View>

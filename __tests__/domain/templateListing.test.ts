@@ -1,5 +1,5 @@
 import type { MesoTemplate, WeekPlanDay } from '@domain/plan';
-import { listTemplates, templateDayCount } from '@domain/templateListing';
+import { groupTemplatesByDayCount, listTemplates, templateDayCount } from '@domain/templateListing';
 import { STAMPS } from '../fixtures/stamps';
 
 function days(count: number): WeekPlanDay[] {
@@ -70,5 +70,24 @@ describe('listTemplates', () => {
     const before = names(all);
     listTemplates(all);
     expect(names(all)).toEqual(before);
+  });
+});
+
+describe('groupTemplatesByDayCount', () => {
+  test('groups by days a week, fewest first, keeping the order within a group', () => {
+    const groups = groupTemplatesByDayCount([
+      template('PPL', 6),
+      template('Arnold Split', 6),
+      template('Full Body', 3),
+    ]);
+
+    expect(groups.map(({ dayCount, templates }) => [dayCount, names(templates)])).toEqual([
+      [3, ['Full Body']],
+      [6, ['PPL', 'Arnold Split']],
+    ]);
+  });
+
+  test('no templates, no groups', () => {
+    expect(groupTemplatesByDayCount([])).toEqual([]);
   });
 });

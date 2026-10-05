@@ -5,24 +5,30 @@
 // `onSelectTemplate` and the host decides.
 //
 // Fully controlled, like ExerciseLibraryScreen: the search text lives in the caller. Hidden
-// templates are never shown and rows come in `listTemplates` order.
+// templates are never shown.
 //
-// No Filters button, chips, sections or muscle-group colors — deliberately left out of v1.0
-// (08.10, "Чего нет в v1.0"). Every row has a subtitle — see `formatTemplateSubtitle`.
+// Grouped by days a week, under the same sticky SectionHeader the library groups exercises by
+// muscle — `3 days a week` and how many templates train that often (Artem, 05.10.2026; 08.10
+// first left sections out on the grounds that the day count was in every row's title, and the
+// count moved from the rows into the headers instead). Within a section, by name.
+//
+// No Filters button, chips or muscle-group colors — deliberately left out of v1.0 (08.10, "Чего
+// нет в v1.0"). Every row has a subtitle — see `formatTemplateSubtitle`.
 //
 // JSX only — pure helpers live in TemplateListLogic.ts, per AGENTS.md's "Code organization".
 
 import { useMemo } from 'react';
-import { FlatList } from 'react-native';
+import { SectionList } from 'react-native';
 
 import { EmptyState } from '@design/components/EmptyState';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
+import { SectionHeader } from '@design/components/SectionHeader';
 import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
-import { listTemplates } from '@domain/templateListing';
+import { groupTemplatesByDayCount, listTemplates } from '@domain/templateListing';
 
-import { formatTemplateSubtitle, formatTemplateTitle } from './templateLabels';
+import { formatTemplateSubtitle, templateSectionTitle } from './templateLabels';
 import { templateBadge } from './TemplateListLogic';
 
 export type TemplateListProps = {
@@ -39,6 +45,15 @@ export function TemplateList({
   onSelectTemplate,
 }: TemplateListProps) {
   const visible = useMemo(() => listTemplates(templates, search), [templates, search]);
+  const sections = useMemo(
+    () =>
+      groupTemplatesByDayCount(visible).map((group) => ({
+        key: String(group.dayCount),
+        title: templateSectionTitle(group.dayCount),
+        data: group.templates,
+      })),
+    [visible],
+  );
   const trimmedSearch = search.trim();
 
   return (
@@ -54,14 +69,18 @@ export function TemplateList({
           onAction={() => onSearchChange('')}
         />
       ) : (
-        <FlatList
+        <SectionList
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          data={visible}
+          stickySectionHeadersEnabled
+          sections={sections}
           keyExtractor={(template) => template.id}
+          renderSectionHeader={({ section }) => (
+            <SectionHeader title={section.title} count={section.data.length} />
+          )}
           renderItem={({ item }) => (
             <ListRow
-              title={formatTemplateTitle(item)}
+              title={item.name}
               subtitle={formatTemplateSubtitle(item)}
               badge={templateBadge(item)}
               trailing={{ type: 'chevron' }}

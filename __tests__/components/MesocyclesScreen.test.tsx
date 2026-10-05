@@ -9,7 +9,6 @@ import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/Mesocy
 import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
 import {
   formatArchiveConfirmMessage,
-  PLAN_MESOCYCLE_LABEL,
 } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -76,6 +75,7 @@ function makeProps(overrides: Partial<MesocyclesScreenProps> = {}): MesocyclesSc
     mesocycles: [ACTIVE, PLANNED, COMPLETED],
     isPending: false,
     activeWeekNumber: 2,
+    onCreateFromTemplate: jest.fn(),
     onCreateFromScratch: jest.fn(),
     onCopyMesocycle: jest.fn(),
     onOpenActive: jest.fn(),
@@ -186,29 +186,33 @@ describe('MesocyclesScreen', () => {
     expect(screen.queryByText('Plan your first training cycle')).toBeNull();
   });
 
-  // The empty state raises the same sheet as `+` (Artem's call): the gesture that starts a block
-  // is the same one everywhere, even here, where `Copy a cycle` is provably off.
-  test('an entirely empty list shows the EmptyState, whose action opens the creation-method sheet', () => {
+  // 08.10, "Вход из empty state" (GT-6): no sheet here — the main action goes straight to Flow B's
+  // step T, the second one to Flow A.
+  test('an entirely empty list offers Start from a template first, then Build from scratch', () => {
+    const onCreateFromTemplate = jest.fn();
     const onCreateFromScratch = jest.fn();
     renderWithSafeArea(
-      <MesocyclesScreen {...makeProps({ mesocycles: [], onCreateFromScratch })} />,
+      <MesocyclesScreen
+        {...makeProps({ mesocycles: [], onCreateFromTemplate, onCreateFromScratch })}
+      />,
     );
 
-    fireEvent.press(screen.getByText(PLAN_MESOCYCLE_LABEL));
-    expect(onCreateFromScratch).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByRole('button', { name: 'Start from a template' }));
+    expect(onCreateFromTemplate).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Copy a cycle' })).toBeNull();
 
-    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
-
-    expect(onCreateFromScratch).toHaveBeenCalled();
+    fireEvent.press(screen.getByRole('button', { name: 'Build from scratch' }));
+    expect(onCreateFromScratch).toHaveBeenCalledTimes(1);
   });
 
-  test('the empty state’s sheet has nothing to copy, and the row says so', () => {
-    renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [] })} />);
+  test('pressing "+" opens the creation-method sheet, and From template goes to Flow B', () => {
+    const onCreateFromTemplate = jest.fn();
+    renderWithSafeArea(<MesocyclesScreen {...makeProps({ onCreateFromTemplate })} />);
 
-    fireEvent.press(screen.getByText(PLAN_MESOCYCLE_LABEL));
+    fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'From template' }));
 
-    expect(screen.getByRole('button', { name: 'Copy a cycle' })).toBeDisabled();
-    expect(screen.getByText(copyMethodCaption(false))).toBeTruthy();
+    expect(onCreateFromTemplate).toHaveBeenCalledTimes(1);
   });
 
   // DoD (task 123): each row of the sheet leads where it should.

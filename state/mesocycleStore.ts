@@ -17,12 +17,14 @@ import type {
   MesocycleCreationDeps,
   SourceWeekDeps,
   SourceWeekListDeps,
+  TemplateDraftDeps,
 } from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
 import type { MesocycleDetailDeps } from '@usecases/mesocycleDetail';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
 import type { MesocycleStartDeps } from '@usecases/mesocycleStart';
+import type { TemplateLibraryDeps } from '@usecases/templateLibrary';
 
 export function useMesocycleCreationDeps(): MesocycleCreationDeps {
   const { mesocycleRepo, settingsRepo } = useRepositories();
@@ -71,4 +73,16 @@ export function useSourceWeekListDeps(): SourceWeekListDeps {
 export function useSourceWeekDeps(): SourceWeekDeps {
   const { mesocycleRepo, sessionRepo, sessionExerciseRepo } = useRepositories();
   return { mesocycleRepo, sessionRepo, sessionExerciseRepo };
+}
+
+/** Flow B's step T (GT-6): the templates to choose from. */
+export function useTemplateLibraryDeps(): TemplateLibraryDeps {
+  const { templateRepo } = useRepositories();
+  return { templateRepo };
+}
+
+/** Flow B (GT-9/GT-6): applying a template — it, the library and the existing cycles' names. */
+export function useTemplateDraftDeps(): TemplateDraftDeps {
+  const { templateRepo, exerciseRepo, mesocycleRepo } = useRepositories();
+  return { templateRepo, exerciseRepo, mesocycleRepo };
 }

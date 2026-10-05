@@ -26,6 +26,7 @@ function makeProps(
     visible: true,
     onClose: jest.fn(),
     canCopy: true,
+    onCreateFromTemplate: jest.fn(),
     onCreateFromScratch: jest.fn(),
     onCopyMesocycle: jest.fn(),
     ...overrides,
@@ -33,21 +34,36 @@ function makeProps(
 }
 
 describe('MesoCreationMethodSheet', () => {
-  test('offers the two ways to build a block, each with its own line', () => {
+  test('offers the three ways to build a block, each with its own line', () => {
     renderWithSafeArea(<MesoCreationMethodSheet {...makeProps()} />);
 
+    expect(screen.getByRole('button', { name: 'From template' })).toBeTruthy();
+    expect(screen.getByText('Start from a ready-made split')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'From scratch' })).toBeTruthy();
     expect(screen.getByText('Build the week yourself')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Copy a cycle' })).toBeTruthy();
     expect(screen.getByText(copyMethodCaption(true))).toBeTruthy();
   });
 
-  // Templates don't exist in this version, so the sheet has no row for them at all — a disabled
-  // one would promise a feature that isn't there (08.8, "Лист «Способ создания»").
-  test('has no third row for templates, not even a disabled one', () => {
+  // 08.10: From template is first — it's the way in for a new user — and carries no `New` label.
+  test('lists From template first, with no New label', () => {
     renderWithSafeArea(<MesoCreationMethodSheet {...makeProps()} />);
 
-    expect(screen.queryByText(/template/i)).toBeNull();
+    const labels = screen
+      .getAllByRole('button')
+      .map((button) => button.props.accessibilityLabel)
+      .filter((label) => ['From template', 'From scratch', 'Copy a cycle'].includes(label));
+    expect(labels).toEqual(['From template', 'From scratch', 'Copy a cycle']);
+    expect(screen.queryByText('New')).toBeNull();
+  });
+
+  test('From template leads to Flow B', () => {
+    const onCreateFromTemplate = jest.fn();
+    renderWithSafeArea(<MesoCreationMethodSheet {...makeProps({ onCreateFromTemplate })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'From template' }));
+
+    expect(onCreateFromTemplate).toHaveBeenCalledTimes(1);
   });
 
   test('DoD: From scratch leads to Flow A', () => {

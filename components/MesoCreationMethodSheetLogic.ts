@@ -7,8 +7,7 @@
  * Normally it says what copying is for. With nothing finished yet it says why the row is off
  * instead: the row exists because the feature does, it just has no data to work from, and a row
  * that is greyed out with its usual caption still under it only leaves the reader guessing.
- * This is the one row on this sheet that can be present and not work — templates, which don't
- * exist in this version, are absent from the sheet entirely rather than shown disabled.
+ * This is the one row on this sheet that can be present and not work.
  */
 export function copyMethodCaption(canCopy: boolean): string {
   return canCopy

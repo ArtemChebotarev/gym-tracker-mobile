@@ -6,15 +6,16 @@
 // app/(tabs)/mesocycles.tsx, so this renders and is tested with plain props. What *does* live
 // here is the gate each action goes through, since those are part of 08.3's own screen behavior
 // rather than something the route decides:
-// - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to Flow A: there are two
-//   ways to build a block now. Whether the second one has anything to copy from is read off the
+// - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to one flow: there are
+//   three ways to build a block. Whether `Copy a cycle` has anything to copy from is read off the
 //   Completed group, which already holds both ways a block ends. How the sheet opens and closes is
 //   `useMesoCreationMethodSheet`, shared with the Today tab's own empty state.
-// - The empty state raises the same sheet rather than going straight to Flow A. It used to go
-//   direct, on the grounds that this state means no block exists at all, so `Copy a cycle` is
-//   provably off and the sheet would be one live row. Artem's call: the gesture that starts a
-//   block should be the same one everywhere, and a disabled row that says `Nothing to copy yet`
-//   teaches what the second way is before there is anything to use it on.
+// - The empty state skips the sheet: `Start from a template` goes straight to Flow B's step T and
+//   `Build from scratch` to Flow A (08.10, "Вход из empty state"; GT-6). With no block at all there
+//   is nothing to copy, and a new user is best served by a template, so the screen says so with
+//   its main button rather than behind a sheet. It used to raise the sheet, so that starting a
+//   block was the same gesture everywhere (Artem's call in 123); 08.10 replaced that for this
+//   screen. The Today tab's empty state still raises the sheet.
 // - Start opens a `Start this training cycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
 // - Delete (the Planned row's one `⋯` action) opens `Delete training cycle? This can't be undone` and
@@ -69,7 +70,6 @@ import {
   groupMesocycles,
   isEmptyGroups,
   mesocycleStoppedBadge,
-  PLAN_MESOCYCLE_LABEL,
   plannedMenuItems,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
@@ -84,6 +84,8 @@ export type MesocyclesScreenProps = {
    * progress, else of the next ready one), not the calendar. Unused without an active mesocycle.
    */
   activeWeekNumber: number;
+  /** Flow B, step Choose a template (GT-6). */
+  onCreateFromTemplate: () => void;
   /** Flow A. */
   onCreateFromScratch: () => void;
   /** Flow C, step Source week (124). */
@@ -103,6 +105,7 @@ export function MesocyclesScreen({
   isPending,
   loadError,
   activeWeekNumber,
+  onCreateFromTemplate,
   onCreateFromScratch,
   onCopyMesocycle,
   onOpenActive,
@@ -165,8 +168,9 @@ export function MesocyclesScreen({
             icon={TabCyclesIcon}
             title="Plan your first training cycle"
             description="Choose your days and exercises, then start when you're ready."
-            actionLabel={PLAN_MESOCYCLE_LABEL}
-            onAction={methodSheet.open}
+            actionLabel="Start from a template"
+            onAction={onCreateFromTemplate}
+            secondaryAction={{ label: 'Build from scratch', onPress: onCreateFromScratch }}
             bottomInset={tabBarClearance}
           />
         )}
@@ -274,6 +278,7 @@ export function MesocyclesScreen({
         animated={methodSheet.animated}
         onClose={methodSheet.close}
         canCopy={groups.completed.length > 0}
+        onCreateFromTemplate={methodSheet.choose(onCreateFromTemplate)}
         onCreateFromScratch={methodSheet.choose(onCreateFromScratch)}
         onCopyMesocycle={methodSheet.choose(onCopyMesocycle)}
       />
