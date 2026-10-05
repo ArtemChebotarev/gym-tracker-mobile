@@ -45,3 +45,13 @@ export function firstFreeName(name: string, takenNames: readonly string[]): stri
   }
   return `${base} ${suffix}`;
 }
+
+/**
+ * Whether `name` matches what was typed into a list's search field: a case-insensitive substring,
+ * with the query trimmed. An empty query matches every name. The one rule behind every search
+ * field in the app — the exercise library's (08.6) and the template list's (08.10) — so typing the
+ * same thing finds things the same way wherever it is typed.
+ */
+export function nameMatchesSearch(name: string, search: string): boolean {
+  return name.toLowerCase().includes(search.trim().toLowerCase());
+}
