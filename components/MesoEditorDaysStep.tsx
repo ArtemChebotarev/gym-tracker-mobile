@@ -88,6 +88,7 @@ import {
   type ExercisesByDay,
   type ExercisesById,
 } from './MesoEditorDaysStepLogic';
+import { DayTabs } from './DayTabs';
 import { styles } from './MesoEditorDaysStepStyles';
 
 export type MesoEditorDaysStepProps = {
@@ -242,29 +243,12 @@ export function MesoEditorDaysStep({
 
   return (
     <>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.dayTabs}
+      <DayTabs
+        dayNumbers={dayNumbers}
+        activeDay={activeDay}
+        onChangeDay={onChangeActiveDay}
         contentContainerStyle={styles.dayTabsContent}
-      >
-        {dayNumbers.map((day) => {
-          const isActive = day === activeDay;
-          return (
-            <Pressable
-              key={day}
-              accessibilityRole="button"
-              accessibilityLabel={`Day ${day}`}
-              accessibilityState={{ selected: isActive }}
-              onPress={() => onChangeActiveDay(day)}
-              hitSlop={tapTargetSlop(SIZES['size/chip'])}
-              style={[styles.dayTab, isActive && styles.dayTabActive]}
-            >
-              <Text style={[styles.dayTabLabel, isActive && styles.dayTabLabelActive]}>{`Day ${day}`}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      />
 
       <ScrollView style={styles.content} bounces={false} showsVerticalScrollIndicator={false}>
         {activeDayExercises.length > 0 && (

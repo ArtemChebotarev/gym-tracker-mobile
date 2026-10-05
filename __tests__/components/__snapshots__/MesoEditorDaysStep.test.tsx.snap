@@ -4,13 +4,17 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
 [
   <RCTScrollView
     contentContainerStyle={
-      {
-        "flexDirection": "row",
-        "gap": 8,
-        "paddingBottom": 24,
-        "paddingHorizontal": 16,
-        "paddingTop": 4,
-      }
+      [
+        {
+          "flexDirection": "row",
+          "gap": 8,
+        },
+        {
+          "paddingBottom": 24,
+          "paddingHorizontal": 16,
+          "paddingTop": 4,
+        },
+      ]
     }
     horizontal={true}
     showsHorizontalScrollIndicator={false}

@@ -22,7 +22,8 @@ import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
 import { listTemplates } from '@domain/templateListing';
 
-import { formatTemplateSubtitle, formatTemplateTitle, templateBadge } from './TemplateListLogic';
+import { formatTemplateSubtitle, formatTemplateTitle } from './templateLabels';
+import { templateBadge } from './TemplateListLogic';
 
 export type TemplateListProps = {
   templates: readonly MesoTemplate[];

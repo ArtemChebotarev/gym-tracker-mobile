@@ -9,7 +9,6 @@ import {
   BORDER_WIDTHS,
   COLORS,
   ICON_SIZES,
-  RADII,
   SHADOWS,
   SIZES,
   SPACING,
@@ -28,37 +27,11 @@ import { circle } from '@design/shapes';
 // N rows would land on N±1.
 
 export const styles = StyleSheet.create({
-  dayTabs: {
-    flexGrow: 0,
-  },
   dayTabsContent: {
-    flexDirection: 'row',
-    gap: SPACING['space/gap-tight'],
     paddingHorizontal: SPACING['space/screen'],
     // The ScrollView clips its content, so this leaves room for the tabs' tap-target slop above.
     paddingTop: SPACING['space/xs'],
     paddingBottom: SPACING['space/section'],
-  },
-  dayTab: {
-    height: SIZES['size/chip'],
-    justifyContent: 'center',
-    borderWidth: BORDER_WIDTHS['border/default'],
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/pill'],
-    backgroundColor: COLORS['surface/card'],
-    paddingHorizontal: SPACING['space/pill-x'],
-  },
-  dayTabActive: {
-    backgroundColor: COLORS['accent/bg'],
-    borderColor: COLORS['accent/border'],
-  },
-  dayTabLabel: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
-    color: COLORS['text/secondary'],
-  },
-  dayTabLabelActive: {
-    color: COLORS.accent,
   },
   content: {
     flex: 1,
