@@ -4,6 +4,7 @@
 
 import { MUSCLE_GROUPS, type Exercise, type ExerciseSource, type MuscleGroup } from './catalog';
 import type { SetLog } from './execution';
+import { nameMatchesSearch } from './names';
 
 export type ExerciseListQuery = {
   /** Case-insensitive substring match against `Exercise.name`. */
@@ -41,7 +42,7 @@ export function buildExerciseListGroups(
   lastSetLogByExerciseId: ReadonlyMap<string, SetLog | null>,
   query: ExerciseListQuery = {},
 ): ExerciseListGroup[] {
-  const search = query.search?.trim().toLowerCase() ?? '';
+  const search = query.search ?? '';
   const muscleGroupFilter = query.muscleGroups?.length ? new Set(query.muscleGroups) : null;
   const sourceFilter = query.sources?.length ? new Set(query.sources) : null;
 
@@ -51,7 +52,7 @@ export function buildExerciseListGroups(
     if (exercise.isHidden) {
       continue;
     }
-    if (search && !exercise.name.toLowerCase().includes(search)) {
+    if (!nameMatchesSearch(exercise.name, search)) {
       continue;
     }
     if (muscleGroupFilter && !muscleGroupFilter.has(exercise.muscleGroup)) {

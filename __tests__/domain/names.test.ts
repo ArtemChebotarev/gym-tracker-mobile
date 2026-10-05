@@ -1,4 +1,9 @@
-import { firstFreeName, isNameEntered, normalizeRequiredName } from '@domain/names';
+import {
+  firstFreeName,
+  isNameEntered,
+  nameMatchesSearch,
+  normalizeRequiredName,
+} from '@domain/names';
 
 describe('isNameEntered', () => {
   test('accepts a name with something in it', () => {
@@ -44,5 +49,25 @@ describe('firstFreeName', () => {
   test('compares trimmed names, case included', () => {
     expect(firstFreeName(' Upper/Lower ', ['Upper/Lower  '])).toBe('Upper/Lower 2');
     expect(firstFreeName('Upper/Lower', ['upper/lower'])).toBe('Upper/Lower');
+  });
+});
+
+describe('nameMatchesSearch', () => {
+  test('matches a substring anywhere in the name, ignoring case', () => {
+    expect(nameMatchesSearch('Upper / Lower', 'lower')).toBe(true);
+    expect(nameMatchesSearch('Upper / Lower', 'PER')).toBe(true);
+  });
+
+  test('ignores whitespace around the query', () => {
+    expect(nameMatchesSearch('Full Body', '  full ')).toBe(true);
+  });
+
+  test('an empty or blank query matches everything', () => {
+    expect(nameMatchesSearch('Full Body', '')).toBe(true);
+    expect(nameMatchesSearch('Full Body', '   ')).toBe(true);
+  });
+
+  test('does not match what the name does not contain', () => {
+    expect(nameMatchesSearch('Full Body', 'push')).toBe(false);
   });
 });
