@@ -1,15 +1,8 @@
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as SQLite from 'expo-sqlite';
 
+import { DATABASE_NAME } from './databaseName';
 import { enableForeignKeys, type SqliteDatabase } from './db';
-
-/**
- * The name of the app's database file, inside the app's own sandboxed documents directory —
- * expo-sqlite puts it there, and the OS backs it up and deletes it with the app. Naming it here
- * rather than at the call site keeps it out of the bootstrap's business: a rename would be a data
- * migration, not a startup detail. It keeps the pre-Hybro name for that reason (task 131).
- */
-export const DATABASE_NAME = 'gymtracker.db';
 
 /**
  * Opens the app's database. This is the one line that differs between running on a phone and
