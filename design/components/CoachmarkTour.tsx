@@ -7,11 +7,11 @@
 // `onFinish`, once. Deciding that the tour has been seen — and remembering it — is the caller's: it
 // is what `onFinish` is for.
 //
-// Finishing hides the tour at once, without waiting for the caller to say `visible={false}`: the
-// caller usually writes a flag first, and for the few milliseconds that takes the tour would still
-// be "visible" — and, having just been reset, would show its first step again before vanishing. The
-// tour goes back to its first step only when it has actually been hidden, so the next time it is
-// shown it starts over.
+// A tour is shown once per mount. Finishing hides it at once, without waiting for the caller to say
+// `visible={false}`: the caller usually writes a flag first, and for the few milliseconds that
+// takes the tour would otherwise still be on screen. Nothing is reset when it goes away — it fades
+// out rather than vanishing, and what it draws during the fade must stay the step it was on, where
+// it was. A caller that wants to run it again mounts a fresh one (a new `key`).
 
 import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
@@ -39,22 +39,9 @@ export type CoachmarkTourProps = {
 export function CoachmarkTour({ visible, steps, onFinish }: CoachmarkTourProps) {
   const [index, setIndex] = useState(0);
   const [anchor, setAnchor] = useState<AnchorRect | null>(null);
-  // Finished, and waiting for the caller to hide it.
+  // Finished — and stays hidden, whatever `visible` says.
   const [finished, setFinished] = useState(false);
   const step = steps[index];
-
-  // Hidden by the caller: ready to start over the next time it is shown. Adjusted while rendering,
-  // on the change of `visible` itself, rather than in an effect — an effect would run after the
-  // frame in which the stale step was already drawn.
-  const [wasVisible, setWasVisible] = useState(visible);
-  if (visible !== wasVisible) {
-    setWasVisible(visible);
-    if (!visible) {
-      setIndex(0);
-      setAnchor(null);
-      setFinished(false);
-    }
-  }
 
   // Measured whenever a step comes up. The previous anchor is kept until the new one arrives, so
   // the ring moves from one element to the next rather than flashing through the middle.

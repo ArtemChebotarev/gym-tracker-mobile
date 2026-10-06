@@ -97,18 +97,6 @@ describe('CoachmarkTour', () => {
     expect(screen.queryByText('1 of 3')).toBeNull();
   });
 
-  test('after it has finished it starts from the first step the next time it is shown', () => {
-    const { list } = steps();
-    const { rerender } = render(<CoachmarkTour visible steps={list} onFinish={() => {}} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
-
-    rerender(<CoachmarkTour visible={false} steps={list} onFinish={() => {}} />);
-    rerender(<CoachmarkTour visible steps={list} onFinish={() => {}} />);
-
-    expect(screen.getByText('1 of 3')).toBeTruthy();
-  });
-
   test('shows nothing while hidden, and nothing for an empty list', () => {
     const { list } = steps();
     const { rerender } = render(<CoachmarkTour visible={false} steps={list} onFinish={() => {}} />);
