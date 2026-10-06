@@ -26,7 +26,7 @@ describe('useStartMesocycle', () => {
       today: useTodayWorkout(),
       start: useStartMesocycle(),
     }));
-    await waitFor(() => expect(result.current.today.data?.kind).toBe('noActiveMesocycle'));
+    await waitFor(() => expect(result.current.today.data?.kind).toBe('cyclePlanned'));
 
     act(() => result.current.start.mutate(MOCK_MESOCYCLE_IDS.planned));
 

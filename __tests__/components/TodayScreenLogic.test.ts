@@ -14,6 +14,14 @@ describe('todayEmptyCopy', () => {
     expect(todayEmptyCopy('noActiveMesocycle').actionLabel).toBe(PLAN_MESOCYCLE_LABEL);
   });
 
+  test('with a cycle already planned, points at Cycles instead of inviting to plan another (GT-38)', () => {
+    expect(todayEmptyCopy('cyclePlanned')).toMatchObject({
+      title: 'Your next cycle is ready',
+      description: 'Open Cycles and tap Start to begin.',
+      actionLabel: 'Go to Cycles',
+    });
+  });
+
   test('a workout that is gone leads to the mesocycles', () => {
     expect(todayEmptyCopy('unavailable').actionLabel).toBe('Open cycles');
   });
