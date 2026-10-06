@@ -156,9 +156,11 @@ const styles = StyleSheet.create({
     lineHeight: LINE_HEIGHTS['line-height/title'],
     color: COLORS['text/primary'],
   },
-  // Six under the title, eight between paragraphs and above the buttons (08.11).
+  // The mockup has six under the title and eight above the buttons; Artem asked for a little more
+  // air at both (06.10.2026): `space/gap` under the title, `space/row` above the buttons. Between
+  // paragraphs it stays eight.
   firstParagraph: {
-    marginTop: SPACING['space/dots'],
+    marginTop: SPACING['space/gap'],
   },
   paragraph: {
     marginTop: SPACING['space/gap-tight'],
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   footer: {
-    marginTop: SPACING['space/gap-tight'],
+    marginTop: SPACING['space/row'],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
