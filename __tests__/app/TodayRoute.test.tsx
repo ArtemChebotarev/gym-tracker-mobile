@@ -1,4 +1,10 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import {
+  fireEvent,
+  screen,
+  waitFor,
+  waitForElementToBeRemoved,
+  within,
+} from '@testing-library/react-native';
 import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
@@ -416,17 +422,17 @@ describe('Today tab — the pinned day is released', () => {
 
 // GT-37 · the Welcome dialog (08.11) — once on the first launch, closed only by `Got it`, and not
 // again after the flag has been written to the store.
-// The whole suite runs in parallel and a write plus a re-read is slower than waitFor's 1 s default
-// under that load, so these waits say how long they are willing to take.
-const SLOW = { timeout: 5000 };
-
+//
+// `waitForElementToBeRemoved` rather than `waitFor(() => expect(...).toBeNull())`: while the element is
+// still there, that assertion fails, and Jest formats the failure by printing the whole React fiber
+// it found — about 0.8 s per poll, which made these tests the slowest in the file by a factor of ten.
 describe('Welcome dialog', () => {
   test('DoD: a clean install shows it, and Got it closes it and leaves Today', async () => {
     renderToday();
 
-    fireEvent.press(await screen.findByText('Got it', {}, SLOW));
+    fireEvent.press(await screen.findByText('Got it'));
 
-    await waitFor(() => expect(screen.queryByText('Got it')).toBeNull(), SLOW);
+    await waitForElementToBeRemoved(() => screen.queryByText('Got it'));
     expect(mockNavigate).not.toHaveBeenCalled();
     await expect(repositories().settingsRepo.read()).resolves.toMatchObject({
       onboarding: { welcomeSeen: true },
@@ -435,15 +441,15 @@ describe('Welcome dialog', () => {
 
   test('DoD: after Got it a relaunch — a fresh render over the same store — does not show it', async () => {
     const first = renderToday();
-    fireEvent.press(await screen.findByText('Got it', {}, SLOW));
-    await waitFor(() => expect(screen.queryByText('Got it')).toBeNull(), SLOW);
+    fireEvent.press(await screen.findByText('Got it'));
+    await waitForElementToBeRemoved(() => screen.queryByText('Got it'));
     first.unmount();
     queryClient().clear();
 
     renderToday();
 
     // Today itself is there, so the absence of the dialog is not just an unfinished load.
-    expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
+    expect(await screen.findByText(/Bench/i)).toBeTruthy();
     expect(screen.queryByText('Got it')).toBeNull();
   });
 
@@ -452,7 +458,7 @@ describe('Welcome dialog', () => {
 
     renderToday();
 
-    expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
+    expect(await screen.findByText(/Bench/i)).toBeTruthy();
     expect(screen.queryByText('Got it')).toBeNull();
   });
 });

@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 
 import { AppTabBar } from '@components/AppTabBar';
+import { useRefreshOnTabFocus } from '@state/useRefreshOnTabFocus';
 
 // Every screen draws its own header inside its content (see e.g. 08.6 · Библиотека упражнений,
 // "Шапка"), so the native per-tab header is redundant chrome — hidden here rather than themed.
@@ -11,9 +12,18 @@ import { AppTabBar } from '@components/AppTabBar';
 // The bar itself is the floating capsule of 08.0 · Design SDK, "Таб-бар" (task 151), drawn by
 // components/AppTabBar.tsx in place of the navigator's default; the tabs, their labels and icons
 // are listed there. The routes below only have to exist under the names it lists.
+//
+// Coming to a tab refreshes what it shows (`useRefreshOnTabFocus`, GT-38): the tabs stay mounted,
+// so their queries would otherwise go on showing what they read last.
 export default function TabLayout() {
+  const screenListeners = useRefreshOnTabFocus();
+
   return (
-    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <AppTabBar {...props} />}>
+    <Tabs
+      screenOptions={{ headerShown: false }}
+      screenListeners={screenListeners}
+      tabBar={(props) => <AppTabBar {...props} />}
+    >
       <Tabs.Screen name="index" options={{ title: 'Today' }} />
       <Tabs.Screen name="mesocycles" options={{ title: 'Cycles' }} />
       <Tabs.Screen name="library" options={{ title: 'Library' }} />

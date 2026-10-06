@@ -166,9 +166,18 @@ describe('getTodayWorkout', () => {
     expect(model.unlocksAfter).toEqual({ weekNumber: 1, dayNumber: 1 });
   });
 
-  test('DoD: no active mesocycle — nothing to open, even with a planned one', async () => {
+  test('DoD: no active mesocycle — nothing to open, and a planned one is named as such (GT-38)', async () => {
     const deps = await setUp({
       mesocycles: [mesocycleOf('next', 'planned'), mesocycleOf('done', 'completed')],
+      sessions: [slotSession(1, 1, { mesoId: 'done', ...completed })],
+    });
+
+    expect(await getTodayWorkout(deps)).toEqual({ kind: 'cyclePlanned' });
+  });
+
+  test('no active and no planned mesocycle — only finished ones — invites planning one', async () => {
+    const deps = await setUp({
+      mesocycles: [mesocycleOf('done', 'completed'), mesocycleOf('stopped', 'abandoned')],
       sessions: [slotSession(1, 1, { mesoId: 'done', ...completed })],
     });
 

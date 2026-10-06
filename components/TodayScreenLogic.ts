@@ -19,10 +19,11 @@ export function formatInProgressConflict(session: {
 }
 
 /**
- * Why the Today tab has no session to show: no active mesocycle, the active one has nothing left
- * (`getTodayWorkout`, 099), or the session couldn't be loaded — a picked day that no longer exists.
+ * Why the Today tab has no session to show: no active mesocycle — and none planned, or one that is
+ * (GT-38) — the active one has nothing left (`getTodayWorkout`, 099), or the session couldn't be
+ * loaded — a picked day that no longer exists.
  */
-export type TodayEmptyReason = 'noActiveMesocycle' | 'allDone' | 'unavailable';
+export type TodayEmptyReason = 'noActiveMesocycle' | 'cyclePlanned' | 'allDone' | 'unavailable';
 
 /**
  * The EmptyState for `reason` — an invitation, not an apology (08.0.1, "Empty states"). Without an
@@ -44,6 +45,15 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
         title: 'Start your next training cycle',
         description: 'Plan one and its workouts will show up here.',
         actionLabel: PLAN_MESOCYCLE_LABEL,
+      };
+    case 'cyclePlanned':
+      // Not a launch from here: several cycles can be planned and only one is started, so the
+      // choice is made in the Cycles list (08.11, "2. Today: цикл запланирован").
+      return {
+        icon: TabTodayIcon,
+        title: 'Your next cycle is ready',
+        description: 'Open Cycles and tap Start to begin.',
+        actionLabel: 'Go to Cycles',
       };
     case 'allDone':
       return {

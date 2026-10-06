@@ -97,6 +97,18 @@ describe('Today tab — no session to show', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
+  test('DoD: with a cycle planned, Today opens Cycles instead of offering to create another (GT-38)', async () => {
+    mockToday = { kind: 'cyclePlanned' };
+    renderToday();
+
+    expect(await screen.findByText('Your next cycle is ready')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: PLAN_MESOCYCLE_LABEL })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Go to Cycles' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/mesocycles');
+    expect(screen.queryByText('From scratch')).toBeNull();
+  });
+
   test('the sheet’s second row leads to Flow C when there is a finished block to copy', async () => {
     await seedWorkoutFixture(repositories());
     const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
