@@ -118,6 +118,10 @@ export const LINE_HEIGHTS = {
   /** A caption line whose height has to be reserved — RangeTrack's value labels, each of which
    * is positioned over the row rather than flowing in it (08.7.1). */
   'line-height/caption': 16,
+  /** A plate's or a coachmark's title (17, 08.11) — a step more air than the font's own. */
+  'line-height/title': 22,
+  /** The text under it (15). */
+  'line-height/text': 21,
 } as const;
 
 export type LineHeightToken = keyof typeof LINE_HEIGHTS;
@@ -138,6 +142,8 @@ export const RADII = {
   'radius/segment-inner': 8,
   'radius/small': 4,
   'radius/progress': 2,
+  /** The softened corner of a coachmark bubble's arrow (08.11). */
+  'radius/arrow': 2,
 } as const;
 
 export type RadiusToken = keyof typeof RADII;
@@ -163,6 +169,8 @@ export const SPACING = {
   'space/pill-x': 18,
   'space/xl': 24,
   /** Inside a Dialog's card, all round: the card is the room around its message, so it is given more of it than a sheet (08.11). */
+  /** Either side of the label in a coachmark's `Next` / `Got it` button (08.11). */
+  'space/coachmark-button': 22,
   'space/dialog': 32,
   /** Above and below a Dialog's content: a little more than at its sides, so the card reads as taller than it is wide-padded (08.11). */
   'space/dialog-y': 40,
@@ -295,6 +303,8 @@ export const SIZES = {
   'size/sheet-max': '80%',
   /** Popover's arrow to its anchor — a square of this side, turned 45°. */
   'size/popover-arrow': 12,
+  /** A coachmark bubble's arrow — bigger and rounder than a Popover's, so it reads at a glance (08.11). */
+  'size/coachmark-arrow': 14,
   /** The bar of track beside a RangeTrack legend line, showing which span it names (08.7.1). */
   'size/legend-swatch': 24,
   /**

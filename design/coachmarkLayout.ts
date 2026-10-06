@@ -5,13 +5,27 @@
 
 import type { AnchorRect, WindowSize } from './popoverLayout';
 
-/** The element's rect grown by `gap` on every side: where the ring is drawn, and the hole cut. */
+/**
+ * The element's rect grown by `gap` on every side: the ring's whole box. The hole is cut to its
+ * outer edge, and the ring's stroke is drawn inside it (`ringStrokeRect`).
+ */
 export function ringRect(anchor: AnchorRect, gap: number): AnchorRect {
   return {
     x: anchor.x - gap,
     y: anchor.y - gap,
     width: anchor.width + gap * 2,
     height: anchor.height + gap * 2,
+  };
+}
+
+/** The rect the ring's stroke is drawn on: `box` pulled in by half the stroke, so the stroke sits inside it. */
+export function ringStrokeRect(box: AnchorRect, strokeWidth: number): AnchorRect {
+  const half = strokeWidth / 2;
+  return {
+    x: box.x + half,
+    y: box.y + half,
+    width: box.width - strokeWidth,
+    height: box.height - strokeWidth,
   };
 }
 

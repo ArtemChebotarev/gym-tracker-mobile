@@ -22,15 +22,28 @@ export type AnchoredPlateProps = {
   /** Where the element it points at sits in the window; `null` until measured. */
   anchor: AnchorRect | null;
   testID: string;
+  /** The arrow's side — a `SIZES` token. A Popover's by default. */
+  arrowSize?: number;
+  /** The arrow's softened corner — a `RADII` token. None by default. */
+  arrowRadius?: number;
+  /** Gap between the anchor and the plate's edge, arrow included; see `popoverLayout`. */
+  distance?: number;
   children?: ReactNode;
 };
 
-export function AnchoredPlate({ anchor, testID, children }: AnchoredPlateProps) {
+export function AnchoredPlate({
+  anchor,
+  testID,
+  arrowSize = SIZES['size/popover-arrow'],
+  arrowRadius = 0,
+  distance,
+  children,
+}: AnchoredPlateProps) {
   const window = useWindowDimensions();
   const layout =
     anchor === null
       ? null
-      : popoverLayout(anchor, window, SPACING['space/screen'], SIZES['size/popover-arrow']);
+      : popoverLayout(anchor, window, SPACING['space/screen'], arrowSize, distance);
 
   if (layout === null) {
     return (
@@ -57,7 +70,10 @@ export function AnchoredPlate({ anchor, testID, children }: AnchoredPlateProps) 
         testID={`${testID}-arrow`}
         style={[
           styles.arrow,
-          layout.placement === 'below' ? styles.arrowUp : styles.arrowDown,
+          { width: arrowSize, height: arrowSize, borderRadius: arrowRadius },
+          layout.placement === 'below'
+            ? { top: arrowOffset(arrowSize) }
+            : { bottom: arrowOffset(arrowSize) },
           { left: layout.arrowLeft },
         ]}
       />
@@ -65,8 +81,6 @@ export function AnchoredPlate({ anchor, testID, children }: AnchoredPlateProps) 
     </View>
   );
 }
-
-const ARROW_OFFSET = arrowOffset(SIZES['size/popover-arrow']);
 
 const styles = StyleSheet.create({
   centered: {
@@ -87,15 +101,7 @@ const styles = StyleSheet.create({
   },
   arrow: {
     position: 'absolute',
-    width: SIZES['size/popover-arrow'],
-    height: SIZES['size/popover-arrow'],
     backgroundColor: COLORS['surface/popover'],
     transform: [{ rotate: '45deg' }],
-  },
-  arrowUp: {
-    top: ARROW_OFFSET,
-  },
-  arrowDown: {
-    bottom: ARROW_OFFSET,
   },
 });

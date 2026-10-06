@@ -1,4 +1,4 @@
-import { dimWithHolePath, ringRadius, ringRect } from '@design/coachmarkLayout';
+import { dimWithHolePath, ringRadius, ringRect, ringStrokeRect } from '@design/coachmarkLayout';
 
 describe('ringRect', () => {
   test('grows the element’s rect by the gap on every side', () => {
@@ -7,6 +7,17 @@ describe('ringRect', () => {
       y: 196,
       width: 48,
       height: 28,
+    });
+  });
+});
+
+describe('ringStrokeRect', () => {
+  test('pulls the box in by half the stroke on every side, so the stroke sits inside it', () => {
+    expect(ringStrokeRect({ x: 100, y: 200, width: 50, height: 40 }, 2)).toEqual({
+      x: 101,
+      y: 201,
+      width: 48,
+      height: 38,
     });
   });
 });

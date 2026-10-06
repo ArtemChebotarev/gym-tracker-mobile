@@ -41,4 +41,14 @@ describe('popoverLayout', () => {
       window.width - MARGIN * 2 - MARGIN - ARROW,
     );
   });
+
+  // A coachmark's anchor has a ring round it; the plate keeps its own distance from it, and the
+  // arrow's size still decides where the arrow sits.
+  test('a given distance replaces the arrow’s overlap, below and above', () => {
+    const below = popoverLayout({ x: 180, y: 200, width: 24, height: 24 }, window, MARGIN, 14, 16);
+    const above = popoverLayout({ x: 180, y: 700, width: 24, height: 24 }, window, MARGIN, 14, 16);
+
+    expect(below).toMatchObject({ placement: 'below', top: 200 + 24 + 16 });
+    expect(above).toMatchObject({ placement: 'above', bottom: 844 - 700 + 16 });
+  });
 });

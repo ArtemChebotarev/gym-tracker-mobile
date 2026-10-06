@@ -9,19 +9,22 @@
 // it. Nothing under the dim can be touched: a coachmark is read first, and the walk-through is left
 // by its own buttons — or by Android's back button, which counts as `Skip`.
 //
-// The bubble is the Popover's plate (`AnchoredPlate`), placed against the *ring* rather than the
-// element, so its arrow stops short of the highlight instead of touching it. With no anchor — not
+// The ring hugs the element, `space/dots` clear of it, with its stroke inside that box; the hole is
+// cut to the box's outer edge. The bubble is the Popover's plate (`AnchoredPlate`) with a bigger,
+// softer arrow, `space/screen` from the ring so the arrow stops short of the highlight instead of
+// touching it. What gets measured is whatever the caller's ref points at — the visible element, not
+// a larger touch area around it, or the ring would hug the touch area instead. With no anchor — not
 // measured yet, or a platform that can't — there is no hole and no ring, and the bubble is centred.
 
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
-import { dimWithHolePath, ringRadius, ringRect } from '../coachmarkLayout';
+import { dimWithHolePath, ringRadius, ringRect, ringStrokeRect } from '../coachmarkLayout';
 import type { AnchorRect } from '../popoverLayout';
-import { tapTargetSlop } from '../shapes';
 import {
   BORDER_WIDTHS,
   COLORS,
+  LINE_HEIGHTS,
   OPACITY,
   RADII,
   SIZES,
@@ -59,7 +62,7 @@ export function Coachmark({
 }: CoachmarkProps) {
   const window = useWindowDimensions();
   const isLast = step >= total;
-  const ring = anchor === null ? null : ringRect(anchor, SPACING['space/xs']);
+  const ring = anchor === null ? null : ringRect(anchor, SPACING['space/dots']);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onSkip}>
@@ -76,11 +79,8 @@ export function Coachmark({
               />
               <Rect
                 testID="coachmark-ring"
-                x={ring.x}
-                y={ring.y}
-                width={ring.width}
-                height={ring.height}
-                rx={ringRadius(ring, radius)}
+                {...strokeRect(ring)}
+                rx={ringRadius(ring, radius) - BORDER_WIDTHS['border/emphasis'] / 2}
                 fill="none"
                 stroke={COLORS['text/primary']}
                 strokeWidth={BORDER_WIDTHS['border/emphasis']}
@@ -90,11 +90,20 @@ export function Coachmark({
         </Svg>
         {/* Swallows touches: nothing under the dim answers while a step is on screen. */}
         <View style={styles.fill} />
-        <AnchoredPlate testID="coachmark" anchor={ring}>
+        <AnchoredPlate
+          testID="coachmark"
+          anchor={ring}
+          arrowSize={SIZES['size/coachmark-arrow']}
+          arrowRadius={RADII['radius/arrow']}
+          distance={SPACING['space/screen']}
+        >
           <Text style={styles.counter}>{`${step} of ${total}`}</Text>
           <Text style={styles.title}>{title}</Text>
-          {paragraphs.map((paragraph) => (
-            <Text key={paragraph} style={styles.paragraph}>
+          {paragraphs.map((paragraph, index) => (
+            <Text
+              key={paragraph}
+              style={[styles.paragraph, index === 0 && styles.firstParagraph]}
+            >
               {paragraph}
             </Text>
           ))}
@@ -105,7 +114,6 @@ export function Coachmark({
               <Pressable
                 accessibilityRole="button"
                 onPress={onSkip}
-                hitSlop={tapTargetSlop(SIZES['size/pill'])}
                 style={({ pressed }) => [styles.skip, pressed && styles.pressed]}
               >
                 <Text style={styles.skipLabel}>Skip</Text>
@@ -114,7 +122,6 @@ export function Coachmark({
             <Pressable
               accessibilityRole="button"
               onPress={onNext}
-              hitSlop={tapTargetSlop(SIZES['size/pill'])}
               style={({ pressed }) => [styles.next, pressed && styles.pressed]}
             >
               <Text style={styles.nextLabel}>{isLast ? 'Got it' : 'Next'}</Text>
@@ -126,47 +133,61 @@ export function Coachmark({
   );
 }
 
+/** The ring's stroke sits inside its box, so it is drawn on the box pulled in by half of it. */
+function strokeRect(box: AnchorRect) {
+  return ringStrokeRect(box, BORDER_WIDTHS['border/emphasis']);
+}
+
 const styles = StyleSheet.create({
   fill: {
     ...StyleSheet.absoluteFill,
   },
+  // 13 like a column label, without its capitals and tracking (08.11).
   counter: {
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
-    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
+    lineHeight: LINE_HEIGHTS['line-height/caption'],
     color: COLORS['text/muted'],
   },
   title: {
     marginTop: SPACING['space/dots'],
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
+    lineHeight: LINE_HEIGHTS['line-height/title'],
     color: COLORS['text/primary'],
+  },
+  // Six under the title, eight between paragraphs and above the buttons (08.11).
+  firstParagraph: {
+    marginTop: SPACING['space/dots'],
   },
   paragraph: {
     marginTop: SPACING['space/gap-tight'],
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
+    lineHeight: LINE_HEIGHTS['line-height/text'],
     color: COLORS['text/secondary'],
   },
   footer: {
-    marginTop: SPACING['space/md'],
+    marginTop: SPACING['space/gap-tight'],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // Both buttons are the full 44pt tall — their own touch area, no slop needed.
   skip: {
-    minHeight: SIZES['size/pill'],
+    minHeight: SIZES['size/tap-target'],
     justifyContent: 'center',
   },
   skipLabel: {
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS['text/secondary'],
+    color: COLORS['text/muted'],
   },
   next: {
-    minHeight: SIZES['size/pill'],
+    minHeight: SIZES['size/tap-target'],
     justifyContent: 'center',
-    borderRadius: RADII['radius/pill'],
-    paddingHorizontal: SPACING['space/pill-x'],
+    borderRadius: RADII['radius/control'],
+    paddingHorizontal: SPACING['space/coachmark-button'],
     backgroundColor: COLORS.accent,
   },
   nextLabel: {

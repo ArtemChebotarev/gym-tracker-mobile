@@ -38,9 +38,9 @@ describe('CoachmarkTour', () => {
     expect(screen.getByText('1 of 3')).toBeTruthy();
     expect(screen.getByText('First')).toBeTruthy();
     expect(first.measured).toHaveBeenCalled();
-    // The ring is drawn round the measured element: (20, 100) grown by 4.
-    expect(screen.getByTestId('coachmark-ring').props.x).toBe(16);
-    expect(screen.getByTestId('coachmark-ring').props.y).toBe(96);
+    // The ring is drawn round the measured element: (20, 100) grown by 6, its stroke 1 inside.
+    expect(screen.getByTestId('coachmark-ring').props.x).toBe(15);
+    expect(screen.getByTestId('coachmark-ring').props.y).toBe(95);
   });
 
   test('DoD: Next walks the list, measuring each step’s own element', () => {
@@ -52,7 +52,7 @@ describe('CoachmarkTour', () => {
     expect(screen.getByText('2 of 3')).toBeTruthy();
     expect(screen.getByText('Second')).toBeTruthy();
     expect(second.measured).toHaveBeenCalled();
-    expect(screen.getByTestId('coachmark-ring').props.x).toBe(196);
+    expect(screen.getByTestId('coachmark-ring').props.x).toBe(195);
 
     fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
