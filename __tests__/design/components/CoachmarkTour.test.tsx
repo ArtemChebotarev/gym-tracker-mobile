@@ -84,16 +84,17 @@ describe('CoachmarkTour', () => {
     expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
-  test('after it has finished it starts from the first step the next time it is shown', () => {
+  // The flash: the caller writes a flag before it hides the tour, so for a moment the tour is
+  // finished while `visible` is still true. It must not show anything — least of all its first step.
+  test('once finished it draws nothing, even while the caller has not yet hidden it', () => {
     const { list } = steps();
-    const { rerender } = render(<CoachmarkTour visible steps={list} onFinish={() => {}} />);
+    render(<CoachmarkTour visible steps={list} onFinish={() => {}} />);
     fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+
     fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
 
-    rerender(<CoachmarkTour visible={false} steps={list} onFinish={() => {}} />);
-    rerender(<CoachmarkTour visible steps={list} onFinish={() => {}} />);
-
-    expect(screen.getByText('1 of 3')).toBeTruthy();
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+    expect(screen.queryByText('1 of 3')).toBeNull();
   });
 
   test('shows nothing while hidden, and nothing for an empty list', () => {

@@ -7,8 +7,8 @@
 // That frame is exported (`iconButtonFrame`) for ActionMenu, whose trigger is a native menu rather
 // than a Pressable and so can't be an IconButton, but has to be the same circle beside one.
 
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import type { ReactNode, Ref } from 'react';
+import { Pressable, StyleSheet, type StyleProp, type View, type ViewStyle } from 'react-native';
 import { COLORS, OPACITY, SIZES } from '../tokens';
 import { circle, tapTargetSlop } from '../shapes';
 
@@ -20,6 +20,8 @@ export type IconButtonProps = {
   children: ReactNode;
   variant?: IconButtonVariant;
   disabled?: boolean;
+  /** What a caller measures to point at the button — a coachmark's ring (08.11). */
+  buttonRef?: Ref<View>;
 };
 
 export function IconButton({
@@ -28,9 +30,11 @@ export function IconButton({
   children,
   variant = 'neutral',
   disabled = false,
+  buttonRef,
 }: IconButtonProps) {
   return (
     <Pressable
+      ref={buttonRef}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}

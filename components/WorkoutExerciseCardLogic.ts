@@ -5,6 +5,7 @@ import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
+import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
@@ -170,6 +171,30 @@ export function carryWeightForward(
 /** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
 export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow | undefined {
   return rows.find((row) => row.isFirstUnlogged);
+}
+
+/**
+ * Which of the card's tappable explainers it carries: the `N RIR` badge, the ⓘ beside `Weight, kg`
+ * and the one beside `Reps`. The card draws them by this, and the first-workout coachmarks (GT-42)
+ * pick their steps by it — so a step can never point at a button that isn't there.
+ */
+export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
+
+export function cardInfoTargets(
+  exercise: Pick<WorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'status'>,
+  mode: WorkoutMode,
+  isDeload: boolean,
+): CardInfoTargets {
+  const view = exerciseCardView(mode, exercise);
+  return {
+    rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
+    // Both ⓘ sit in the column header, which is only there with the set rows.
+    weight: view.showSets && showsFirstWeightInfo(mode, isDeload, exercise.equipment),
+    reps:
+      view.showSets &&
+      mode === 'live' &&
+      weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir) !== undefined,
+  };
 }
 
 /**

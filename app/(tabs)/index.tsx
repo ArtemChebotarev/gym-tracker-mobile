@@ -60,6 +60,7 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
 import { useMesoCreationMethodSheet } from '@components/useMesoCreationMethodSheet';
@@ -137,6 +138,15 @@ export default function TodayScreen() {
   // that waits a frame.
   const onboarding = useOnboardingFlags();
   const markOnboardingSeen = useMarkOnboardingSeen();
+  // The first-workout tour (GT-42, 08.11) — once, after the Welcome dialog, on a live non-deload
+  // session. `Got it` and `Skip` both end it, and the flag is written when it ends, not when it
+  // opens, so an app killed halfway shows it again.
+  const showCoachmarks = shouldShowWorkoutCoachmarks(
+    onboarding.data,
+    query.data?.kind === 'session'
+      ? { mode: query.data.model.mode, isDeload: query.data.model.header.isDeload }
+      : undefined,
+  );
   const model = query.data?.kind === 'session' ? query.data.model : undefined;
   // The block the `Training cycle complete` EmptyState would finish — there's no session model to read it
   // from, since the tab has no session left to show.
@@ -362,6 +372,10 @@ export default function TodayScreen() {
         model={model}
         isPending={query.isPending}
         loadError={loadErrorOf(query)}
+        coachmarks={{
+          visible: showCoachmarks,
+          onFinish: () => markOnboardingSeen.mutate('coachmarksSeen'),
+        }}
         onOpenGrid={() => setIsGridOpen(true)}
         menuActions={{
           addExercise: () => setIsAddExerciseOpen(true),

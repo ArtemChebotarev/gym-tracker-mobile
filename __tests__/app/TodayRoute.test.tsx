@@ -462,3 +462,73 @@ describe('Welcome dialog', () => {
     expect(screen.queryByText('Got it')).toBeNull();
   });
 });
+
+// GT-42 · the first-workout coachmark tour (08.11) — once, after the Welcome dialog, on the first
+// live workout.
+describe('First-workout coachmarks', () => {
+  async function welcomeClosed() {
+    await markOnboardingSeen('welcomeSeen', { settingsRepo: repositories().settingsRepo });
+  }
+
+  test('DoD: the first live workout shows the tour, and Skip ends it for good', async () => {
+    await welcomeClosed();
+    const first = renderToday();
+
+    expect(await screen.findByText(/^1 of \d$/)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
+
+    // At once, not after the flag has been written: the tour must not fall back to its first step
+    // for the moment the write takes (it flashed, on the device, before it vanished).
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+    expect(screen.queryByText(/^1 of \d$/)).toBeNull();
+    await waitFor(async () =>
+      expect(await repositories().settingsRepo.read()).toMatchObject({
+        onboarding: { coachmarksSeen: true },
+      }),
+    );
+
+    // The next launch — a fresh render over the same store — has no tour.
+    first.unmount();
+    queryClient().clear();
+    renderToday();
+    expect(await screen.findByText(/Bench/i)).toBeTruthy();
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+  });
+
+  test('DoD: Next walks to the last step, and Got it ends it the same way', async () => {
+    await welcomeClosed();
+    renderToday();
+    await screen.findByText(/^1 of \d$/);
+
+    // Press Next until the button turns into Got it; the step count is the workout's own.
+    while (screen.queryByRole('button', { name: 'Got it' }) === null) {
+      fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+    }
+    fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
+
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+    await waitFor(async () =>
+      expect(await repositories().settingsRepo.read()).toMatchObject({
+        onboarding: { coachmarksSeen: true },
+      }),
+    );
+  });
+
+  test('not while the Welcome dialog is still up — it comes first, the tour after', async () => {
+    renderToday();
+
+    expect(await screen.findByText('Got it')).toBeTruthy();
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+  });
+
+  test('not again once it has been seen', async () => {
+    await welcomeClosed();
+    await markOnboardingSeen('coachmarksSeen', { settingsRepo: repositories().settingsRepo });
+
+    renderToday();
+
+    expect(await screen.findByText(/Bench/i)).toBeTruthy();
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+  });
+});

@@ -4,8 +4,14 @@
 // where the layout actually put it — not on a position written down beforehand.
 //
 // `Next` moves on, `Got it` on the last step and `Skip` anywhere end the whole walk: both call
-// `onFinish`, once, and the tour is back at its first step the next time it is shown. Deciding
-// that the tour has been seen — and remembering it — is the caller's: it is what `onFinish` is for.
+// `onFinish`, once. Deciding that the tour has been seen — and remembering it — is the caller's: it
+// is what `onFinish` is for.
+//
+// A tour is shown once per mount. Finishing hides it at once, without waiting for the caller to say
+// `visible={false}`: the caller usually writes a flag first, and for the few milliseconds that
+// takes the tour would otherwise still be on screen. Nothing is reset when it goes away — it fades
+// out rather than vanishing, and what it draws during the fade must stay the step it was on, where
+// it was. A caller that wants to run it again mounts a fresh one (a new `key`).
 
 import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
@@ -33,6 +39,8 @@ export type CoachmarkTourProps = {
 export function CoachmarkTour({ visible, steps, onFinish }: CoachmarkTourProps) {
   const [index, setIndex] = useState(0);
   const [anchor, setAnchor] = useState<AnchorRect | null>(null);
+  // Finished — and stays hidden, whatever `visible` says.
+  const [finished, setFinished] = useState(false);
   const step = steps[index];
 
   // Measured whenever a step comes up. The previous anchor is kept until the new one arrives, so
@@ -46,8 +54,7 @@ export function CoachmarkTour({ visible, steps, onFinish }: CoachmarkTourProps) 
   }, [visible, index, target]);
 
   function finish() {
-    setIndex(0);
-    setAnchor(null);
+    setFinished(true);
     onFinish();
   }
 
@@ -65,7 +72,7 @@ export function CoachmarkTour({ visible, steps, onFinish }: CoachmarkTourProps) 
 
   return (
     <Coachmark
-      visible={visible}
+      visible={visible && !finished}
       anchor={anchor}
       {...(step.ringRadius !== undefined ? { ringRadius: step.ringRadius } : {})}
       step={index + 1}
