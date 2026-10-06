@@ -33,6 +33,7 @@ import {
   TYPOGRAPHY,
 } from '../tokens';
 import { AnchoredPlate } from './AnchoredPlate';
+import { PlateText, type PlateTextPart } from './PlateText';
 
 export type CoachmarkProps = {
   visible: boolean;
@@ -45,7 +46,7 @@ export type CoachmarkProps = {
   total: number;
   title: string;
   /** The text, as paragraphs. Replaced by `content` when a step has something better than words. */
-  paragraphs?: readonly string[];
+  paragraphs?: readonly (string | readonly PlateTextPart[])[];
   /**
    * What goes under the title instead of paragraphs — a picture and a few short rows (08.11). It
    * brings its own space above it, as a `RangeTrack` does.
@@ -109,12 +110,11 @@ export function Coachmark({
           <Text style={styles.title}>{title}</Text>
           {content}
           {paragraphs.map((paragraph, index) => (
-            <Text
-              key={paragraph}
+            <PlateText
+              key={index}
+              parts={typeof paragraph === 'string' ? [paragraph] : paragraph}
               style={[styles.paragraph, index === 0 && styles.firstParagraph]}
-            >
-              {paragraph}
-            </Text>
+            />
           ))}
           <View style={styles.footer}>
             {isLast ? (
@@ -171,12 +171,9 @@ const styles = StyleSheet.create({
   firstParagraph: {
     marginTop: SPACING['space/gap'],
   },
+  // The paragraph's own type is `PlateText`'s; only the gap above it is the bubble's.
   paragraph: {
     marginTop: SPACING['space/gap-tight'],
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    lineHeight: LINE_HEIGHTS['line-height/text'],
-    color: COLORS['text/secondary'],
   },
   footer: {
     marginTop: SPACING['space/row'],

@@ -19,12 +19,13 @@ import type { View } from 'react-native';
 
 import type { AnchorRect } from '../popoverLayout';
 import { Coachmark } from './Coachmark';
+import type { PlateTextPart } from './PlateText';
 
 export type CoachmarkStep = {
   /** The element the step points at. Measured when the step is shown. */
   targetRef: RefObject<View | null>;
   title: string;
-  paragraphs?: readonly string[];
+  paragraphs?: readonly (string | readonly PlateTextPart[])[];
   /** Shown under the title instead of the paragraphs — a picture and a few rows. */
   content?: ReactNode;
   /** The corner radius of the ring and the hole — a `RADII` token. Defaults to a control's. */

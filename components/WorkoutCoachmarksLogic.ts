@@ -5,25 +5,36 @@
 // What a step is — the words, and the ref of the element it rings — is built here, from the first
 // card and the header; drawing the tour and measuring the refs is `CoachmarkTour`.
 
+import type { PlateTextPart } from '@design/components/PlateText';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import { cardInfoTargets } from './WorkoutExerciseCardLogic';
 import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 
+// The ⓘ in the text is the real icon, not the character: the character is a thin outline that
+// cannot be made heavier and is hard to find in a line of text (Artem, 06.10.2026). The key words
+// are strong.
 export const WEIGHT_STEP = {
   title: 'Not sure what weight to use?',
-  paragraphs: ['Tap ⓘ for a quick way to find your first weight.'],
+  paragraphs: [
+    ['Tap ', { icon: InfoIcon }, ' for a quick way to find ', { strong: 'your first weight' }, '.'],
+  ] as PlateTextPart[][],
 };
 
 export const REPS_STEP = {
   title: 'Want to change the weight?',
-  paragraphs: ['Tap ⓘ to see how many reps to aim for at another weight.'],
+  paragraphs: [
+    ['Tap ', { icon: InfoIcon }, ' to see ', { strong: 'how many reps to aim for' }, ' at another weight.'],
+  ] as PlateTextPart[][],
 };
 
 export const GRID_STEP = {
   title: 'Cycle overview',
-  paragraphs: ['See which days are done and jump to any workout.'],
+  paragraphs: [
+    ['See ', { strong: 'which days are done' }, ' and jump to any workout.'],
+  ] as PlateTextPart[][],
 };
 
 /** What a step points at: the first card's RIR chip, either ⓘ disc, or the header's grid button. */
@@ -33,7 +44,7 @@ export type CoachmarkTargetId = 'rir' | 'weight' | 'reps' | 'grid';
 export type WorkoutCoachmark = {
   target: CoachmarkTargetId;
   title: string;
-  paragraphs?: readonly string[];
+  paragraphs?: readonly (string | readonly PlateTextPart[])[];
   /** The RIR step explains with a picture and rows rather than paragraphs. */
   explanation?: RirExplanation;
 };

@@ -4,8 +4,8 @@ import type { PlateTextPart } from '@design/components/PlateRow';
 /** A row's text with its strong words kept apart, so a test reads both what it says and what it stresses. */
 function readRow(text: readonly PlateTextPart[]): { said: string; strong: string[] } {
   return {
-    said: text.map((part) => (typeof part === 'string' ? part : part.strong)).join(''),
-    strong: text.flatMap((part) => (typeof part === 'string' ? [] : [part.strong])),
+    said: text.map((part) => (typeof part === 'string' ? part : 'strong' in part ? part.strong : '')).join(''),
+    strong: text.flatMap((part) => (typeof part !== 'string' && 'strong' in part ? [part.strong] : [])),
   };
 }
 

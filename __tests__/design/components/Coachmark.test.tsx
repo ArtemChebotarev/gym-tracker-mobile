@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { Coachmark, type CoachmarkProps } from '@design/components/Coachmark';
+import { InfoIcon } from '@design/icons/InfoIcon';
 
 const ANCHOR = { x: 180, y: 200, width: 60, height: 28 };
 
@@ -27,6 +28,20 @@ describe('Coachmark', () => {
     expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
     expect(screen.getByText('Stop a set when you could do about 3 more.')).toBeTruthy();
     expect(screen.getByText('Week 1 has no rep target.')).toBeTruthy();
+  });
+
+  test('a paragraph can mark its strong words and carry an icon, and still reads as a sentence', () => {
+    render(
+      <Coachmark
+        {...props({
+          paragraphs: [['Tap ', { icon: InfoIcon }, ' to find ', { strong: 'your first weight' }, '.']],
+        })}
+      />,
+    );
+
+    expect(screen.getByText('Tap  to find your first weight.')).toBeTruthy();
+    expect(screen.getByText('your first weight')).toBeTruthy();
+    expect(screen.getByTestId('plate-text-icon')).toBeTruthy();
   });
 
   test('DoD: a measured element gets a ring and the bubble points at it', () => {

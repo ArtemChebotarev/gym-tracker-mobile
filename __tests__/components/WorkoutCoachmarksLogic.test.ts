@@ -1,4 +1,5 @@
 import { GRID_STEP, REPS_STEP, WEIGHT_STEP, workoutCoachmarks } from '@components/WorkoutCoachmarksLogic';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 const NO_ACTIONS: WorkoutExercise['actions'] = {
@@ -70,6 +71,16 @@ describe('workoutCoachmarks', () => {
     expect(steps[1]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
     expect(REPS_STEP.title).toBe('Want to change the weight?');
+  });
+
+  // The ⓘ character is a thin outline that cannot be made heavier: the line carries the real icon.
+  test('the Weight and Reps steps point at the button by its own icon, not by the ⓘ character', () => {
+    for (const step of [WEIGHT_STEP, REPS_STEP]) {
+      const parts = step.paragraphs[0] as readonly (string | { strong: string } | { icon: unknown })[];
+
+      expect(parts).toContainEqual({ icon: InfoIcon });
+      expect(parts.filter((part) => typeof part === 'string').join('')).not.toContain('ⓘ');
+    }
   });
 
   test('a pure bodyweight first card has no Weight ⓘ step — nothing to find', () => {

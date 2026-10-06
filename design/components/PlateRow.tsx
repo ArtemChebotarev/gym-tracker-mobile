@@ -3,17 +3,17 @@
 // The explanations of 08.11 are a few of these under a picture, not a paragraph — a wall of text
 // carries the information and gets skipped (Artem, 06.10.2026).
 //
-// The text is parts, not a string, so a screen can mark the words that matter without this
-// component knowing what they are: `['Stop a set when ', { strong: 'about 3 reps are left' }]`.
+// The text is parts, not a string (`PlateText`), so a screen can mark the words that matter without
+// this component knowing what they are: `['Stop a set when ', { strong: 'about 3 reps are left' }]`.
 
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { IconComponent } from '../icons/IconFrame';
 import { circle } from '../shapes';
-import { BORDER_WIDTHS, COLORS, ICON_SIZES, LINE_HEIGHTS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, ICON_SIZES, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { PlateText, type PlateTextPart } from './PlateText';
 
-/** A piece of a row's text: plain, or one of its few strong words. */
-export type PlateTextPart = string | { strong: string };
+export type { PlateTextPart };
 
 export type PlateRowLeading = { icon: IconComponent } | { number: number };
 
@@ -32,17 +32,7 @@ export function PlateRow({ leading, text }: PlateRowProps) {
           <Text style={styles.number}>{leading.number}</Text>
         )}
       </View>
-      <Text style={styles.text}>
-        {text.map((part, index) =>
-          typeof part === 'string' ? (
-            part
-          ) : (
-            <Text key={index} style={styles.strong}>
-              {part.strong}
-            </Text>
-          ),
-        )}
-      </Text>
+      <PlateText parts={text} style={styles.text} />
     </View>
   );
 }
@@ -68,13 +58,5 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    lineHeight: LINE_HEIGHTS['line-height/text'],
-    color: COLORS['text/secondary'],
-  },
-  strong: {
-    fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
-    color: COLORS['text/primary'],
   },
 });
