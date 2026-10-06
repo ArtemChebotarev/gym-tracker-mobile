@@ -19,9 +19,12 @@ export function usePopoverAnchor() {
     setVisible(true);
   }
 
+  // The anchor stays where it was. A Popover fades out rather than vanishing, and for that fade it
+  // is still drawn: with the anchor cleared it was drawn without one — centred, no arrow — so the
+  // plate visibly jumped to the middle of the screen before it was gone. The next `open` measures
+  // the button again and overwrites it.
   function close() {
     setVisible(false);
-    setAnchor(null);
   }
 
   return { ref, visible, anchor, open, close };
