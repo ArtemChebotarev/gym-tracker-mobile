@@ -146,6 +146,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                   "backgroundColor": "#1A1C1F",
                   "borderColor": "#2A2D31",
                 },
+                false,
               ]
             }
           >
@@ -415,7 +416,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         }
       }
     >
-      <Text
+      <View
         style={
           [
             {
@@ -423,16 +424,167 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "textAlign": "center",
             },
             {
-              "color": "#8A9099",
-              "fontSize": 13,
-              "fontWeight": "400",
-              "letterSpacing": 0.5,
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "gap": 6,
+              "justifyContent": "center",
             },
           ]
         }
       >
-        Weight, kg
-      </Text>
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 13,
+              "fontWeight": "400",
+              "letterSpacing": 0.5,
+            }
+          }
+        >
+          Weight, kg
+        </Text>
+        <View
+          accessibilityLabel="Finding your weight"
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": false,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "justifyContent": "center",
+                  "width": 24,
+                },
+                false,
+              ]
+            }
+          >
+            <RNSVGSvgView
+              align="xMidYMid"
+              bbHeight={16}
+              bbWidth={16}
+              focusable={false}
+              height={16}
+              meetOrSlice={0}
+              minX={0}
+              minY={0}
+              style={
+                [
+                  {
+                    "backgroundColor": "transparent",
+                    "borderWidth": 0,
+                  },
+                  {
+                    "flex": 0,
+                    "height": 16,
+                    "width": 16,
+                  },
+                ]
+              }
+              vbHeight={24}
+              vbWidth={24}
+              width={16}
+            >
+              <RNSVGGroup
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              >
+                <RNSVGGroup
+                  fill={null}
+                  propList={
+                    [
+                      "fill",
+                      "stroke",
+                      "strokeWidth",
+                    ]
+                  }
+                  stroke={
+                    {
+                      "payload": 4287271065,
+                      "type": 0,
+                    }
+                  }
+                  strokeWidth={1.8}
+                >
+                  <RNSVGCircle
+                    cx={12}
+                    cy={12}
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                    r={8.5}
+                  />
+                  <RNSVGPath
+                    d="M12 11v5M12 8h.01"
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                    propList={
+                      [
+                        "strokeLinecap",
+                        "strokeLinejoin",
+                      ]
+                    }
+                    strokeLinecap={1}
+                    strokeLinejoin={1}
+                  />
+                </RNSVGGroup>
+              </RNSVGGroup>
+            </RNSVGSvgView>
+          </View>
+        </View>
+      </View>
       <View
         style={
           [
@@ -1550,6 +1702,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
                   "backgroundColor": "#1A1C1F",
                   "borderColor": "#2A2D31",
                 },
+                false,
               ]
             }
           >
@@ -1739,7 +1892,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         }
       }
     >
-      <Text
+      <View
         style={
           [
             {
@@ -1747,16 +1900,28 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
               "textAlign": "center",
             },
             {
-              "color": "#8A9099",
-              "fontSize": 13,
-              "fontWeight": "400",
-              "letterSpacing": 0.5,
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "gap": 6,
+              "justifyContent": "center",
             },
           ]
         }
       >
-        Weight, kg
-      </Text>
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 13,
+              "fontWeight": "400",
+              "letterSpacing": 0.5,
+            }
+          }
+        >
+          Weight, kg
+        </Text>
+      </View>
       <View
         style={
           [
@@ -2530,6 +2695,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
                   "backgroundColor": "#1A1C1F",
                   "borderColor": "#2A2D31",
                 },
+                false,
               ]
             }
           >
@@ -2872,6 +3038,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                   "backgroundColor": "#1A1C1F",
                   "borderColor": "#2A2D31",
                 },
+                false,
               ]
             }
           >
@@ -3141,7 +3308,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         }
       }
     >
-      <Text
+      <View
         style={
           [
             {
@@ -3149,16 +3316,167 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
               "textAlign": "center",
             },
             {
-              "color": "#8A9099",
-              "fontSize": 13,
-              "fontWeight": "400",
-              "letterSpacing": 0.5,
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "gap": 6,
+              "justifyContent": "center",
             },
           ]
         }
       >
-        Weight, kg
-      </Text>
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 13,
+              "fontWeight": "400",
+              "letterSpacing": 0.5,
+            }
+          }
+        >
+          Weight, kg
+        </Text>
+        <View
+          accessibilityLabel="Finding your weight"
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": false,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "height": 44,
+              "justifyContent": "center",
+              "width": 44,
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "justifyContent": "center",
+                  "width": 24,
+                },
+                false,
+              ]
+            }
+          >
+            <RNSVGSvgView
+              align="xMidYMid"
+              bbHeight={16}
+              bbWidth={16}
+              focusable={false}
+              height={16}
+              meetOrSlice={0}
+              minX={0}
+              minY={0}
+              style={
+                [
+                  {
+                    "backgroundColor": "transparent",
+                    "borderWidth": 0,
+                  },
+                  {
+                    "flex": 0,
+                    "height": 16,
+                    "width": 16,
+                  },
+                ]
+              }
+              vbHeight={24}
+              vbWidth={24}
+              width={16}
+            >
+              <RNSVGGroup
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+              >
+                <RNSVGGroup
+                  fill={null}
+                  propList={
+                    [
+                      "fill",
+                      "stroke",
+                      "strokeWidth",
+                    ]
+                  }
+                  stroke={
+                    {
+                      "payload": 4287271065,
+                      "type": 0,
+                    }
+                  }
+                  strokeWidth={1.8}
+                >
+                  <RNSVGCircle
+                    cx={12}
+                    cy={12}
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                    r={8.5}
+                  />
+                  <RNSVGPath
+                    d="M12 11v5M12 8h.01"
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                    propList={
+                      [
+                        "strokeLinecap",
+                        "strokeLinejoin",
+                      ]
+                    }
+                    strokeLinecap={1}
+                    strokeLinejoin={1}
+                  />
+                </RNSVGGroup>
+              </RNSVGGroup>
+            </RNSVGSvgView>
+          </View>
+        </View>
+      </View>
       <View
         style={
           [

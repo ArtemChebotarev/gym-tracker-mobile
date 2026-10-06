@@ -33,6 +33,11 @@ type StaticChipProps = {
    * for a chip sitting in a row next to a selectable one.
    */
   compact?: boolean;
+  /**
+   * A fixed width, label centered — so a column of chips with different labels reads as a column
+   * (the first-weight ladder's `12 reps` / `8 reps` / `4 reps`, 08.11). A `SIZES` token.
+   */
+  width?: number;
 };
 
 type CounterChipProps = {
@@ -66,7 +71,14 @@ export function Chip(props: ChipProps) {
 
   if (props.variant === 'static') {
     return (
-      <View style={[styles.container, props.compact && styles.compact, styles.unselected]}>
+      <View
+        style={[
+          styles.container,
+          props.compact && styles.compact,
+          styles.unselected,
+          props.width !== undefined && { width: props.width, justifyContent: 'center' },
+        ]}
+      >
         {props.dotColor !== undefined && (
           <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
         )}

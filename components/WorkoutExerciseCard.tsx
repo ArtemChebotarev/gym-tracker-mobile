@@ -25,12 +25,13 @@
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
-import { useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
+import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
 import { InlineNote } from '@design/components/InlineNote';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
@@ -61,14 +62,19 @@ import {
   weightFieldText,
   weightSwapPopover,
 } from './WorkoutExerciseCardLogic';
+import { FirstWeightPopover } from './FirstWeightPopover';
+import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { styles } from './WorkoutExerciseCardStyles';
+import { usePopoverAnchor } from './usePopoverAnchor';
 import { parseWeight } from './WorkoutSetRowLogic';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
 export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
   mode: WorkoutMode;
+  /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
+  isDeload?: boolean;
   /** The group chip above the card — see `showsGroupChip`. */
   showGroupChip: boolean;
   /** Opens "История упражнения" (06). */
@@ -100,6 +106,7 @@ export type WorkoutExerciseCardProps = {
 export function WorkoutExerciseCard({
   exercise,
   mode,
+  isDeload = false,
   showGroupChip,
   onOpenHistory,
   menuItems,
@@ -115,21 +122,10 @@ export function WorkoutExerciseCard({
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
   const popover = weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir);
-  const infoRef = useRef<View>(null);
-  const [infoOpen, setInfoOpen] = useState(false);
-  const [anchor, setAnchor] = useState<AnchorRect | null>(null);
-
-  function openPopover() {
-    // The plate points at the button, so it measures it — and opens either way: a platform that
-    // answers nothing gets a centred plate rather than a tap that did nothing (see Popover).
-    infoRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
-    setInfoOpen(true);
-  }
-
-  function closePopover() {
-    setInfoOpen(false);
-    setAnchor(null);
-  }
+  // Two ⓘ buttons, each with its own plate: Weight's static how-to (08.11) and Reps' ranges (08.7.1).
+  const weightInfo = usePopoverAnchor();
+  const repsInfo = usePopoverAnchor();
+  const showWeightInfo = showsFirstWeightInfo(mode, isDeload, exercise.equipment);
 
   return (
     <View style={styles.root}>
@@ -190,27 +186,28 @@ export function WorkoutExerciseCard({
 
         {view.showSets && (
           <View style={styles.headerRow}>
-            <Text style={[styles.valueColumn, styles.columnLabel]}>
-              {usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg'}
-            </Text>
-            <View style={[styles.valueColumn, styles.repsHeader]}>
+            <View style={[styles.valueColumn, styles.infoHeader]}>
+              <Text style={styles.columnLabel}>
+                {usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg'}
+              </Text>
+              {showWeightInfo && (
+                <InfoGlyphButton
+                  buttonRef={weightInfo.ref}
+                  accessibilityLabel="Finding your weight"
+                  open={weightInfo.visible}
+                  onPress={weightInfo.open}
+                />
+              )}
+            </View>
+            <View style={[styles.valueColumn, styles.infoHeader]}>
               <Text style={styles.columnLabel}>Reps</Text>
               {mode === 'live' && popover !== undefined && (
-                <Pressable
-                  ref={infoRef}
-                  accessibilityRole="button"
+                <InfoGlyphButton
+                  buttonRef={repsInfo.ref}
                   accessibilityLabel="Weight recommendations"
-                  accessibilityState={{ expanded: infoOpen }}
-                  onPress={openPopover}
-                  style={styles.infoButton}
-                >
-                  <View style={[styles.infoDisc, infoOpen && styles.infoDiscOpen]}>
-                    <InfoIcon
-                      size={ICON_SIZES['icon/glyph']}
-                      color={infoOpen ? COLORS['text/primary'] : COLORS['text/muted']}
-                    />
-                  </View>
-                </Pressable>
+                  open={repsInfo.visible}
+                  onPress={repsInfo.open}
+                />
               )}
             </View>
             <View style={styles.indicatorColumn} />
@@ -239,9 +236,17 @@ export function WorkoutExerciseCard({
       {popover !== undefined && (
         <WeightSwapPopoverPlate
           popover={popover}
-          visible={infoOpen}
-          anchor={anchor}
-          onClose={closePopover}
+          visible={repsInfo.visible}
+          anchor={repsInfo.anchor}
+          onClose={repsInfo.close}
+        />
+      )}
+      {showWeightInfo && (
+        <FirstWeightPopover
+          visible={weightInfo.visible}
+          anchor={weightInfo.anchor}
+          onClose={weightInfo.close}
+          targetRir={exercise.targetRir}
         />
       )}
     </View>
