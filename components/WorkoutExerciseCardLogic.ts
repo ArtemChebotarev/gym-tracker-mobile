@@ -172,6 +172,15 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
   return rows.find((row) => row.isFirstUnlogged);
 }
 
+/**
+ * Whether the set next to do has target reps to aim for. It doesn't in week 1 and for an exercise
+ * with no history — and a card with no set left to do is not missing one, so it answers `true`.
+ */
+export function hasRepTarget(rows: readonly WorkoutSetRow[]): boolean {
+  const next = firstUnloggedRow(rows);
+  return next === undefined || next.targetReps !== undefined;
+}
+
 /** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
 function formatSwapWeight(weight: number, added: boolean): string {
   return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
