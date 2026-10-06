@@ -416,9 +416,11 @@ describe('Today tab — the pinned day is released', () => {
 
 // GT-37 · the Welcome dialog (08.11) — once on the first launch, closed only by `Got it`, and not
 // again after the flag has been written to the store.
-// The whole suite runs in parallel and a write plus a re-read is slower than waitFor's 1 s default
-// under that load, so these waits say how long they are willing to take.
-const SLOW = { timeout: 5000 };
+// The whole suite runs in parallel, and on CI's two cores this file alone takes half a minute, so a
+// write plus a re-read is slower than waitFor's 1 s default and a test's own 5 s. These waits say
+// how long they are willing to take, and the tests are given room for the waits to add up.
+const SLOW = { timeout: 10_000 };
+const SLOW_TEST = 30_000;
 
 describe('Welcome dialog', () => {
   test('DoD: a clean install shows it, and Got it closes it and leaves Today', async () => {
@@ -431,7 +433,7 @@ describe('Welcome dialog', () => {
     await expect(repositories().settingsRepo.read()).resolves.toMatchObject({
       onboarding: { welcomeSeen: true },
     });
-  });
+  }, SLOW_TEST);
 
   test('DoD: after Got it a relaunch — a fresh render over the same store — does not show it', async () => {
     const first = renderToday();
@@ -445,7 +447,7 @@ describe('Welcome dialog', () => {
     // Today itself is there, so the absence of the dialog is not just an unfinished load.
     expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
     expect(screen.queryByText('Got it')).toBeNull();
-  });
+  }, SLOW_TEST);
 
   test('is not shown over a store that has already recorded it', async () => {
     await markOnboardingSeen('welcomeSeen', { settingsRepo: repositories().settingsRepo });
@@ -454,5 +456,5 @@ describe('Welcome dialog', () => {
 
     expect(await screen.findByText(/Bench/i, {}, SLOW)).toBeTruthy();
     expect(screen.queryByText('Got it')).toBeNull();
-  });
+  }, SLOW_TEST);
 });
