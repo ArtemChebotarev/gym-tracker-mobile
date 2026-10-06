@@ -1,6 +1,7 @@
 import {
   type WeightEdits,
   carryWeightForward,
+  cardInfoTargets,
   editWeightText,
   exerciseCardView,
   firstUnloggedRow,
@@ -291,6 +292,44 @@ describe('the weight swap popover and note', () => {
 
     test('nothing once every set is logged', () => {
       expect(firstUnloggedRow([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBeUndefined();
+    });
+  });
+
+  describe('cardInfoTargets', () => {
+    const base = {
+      status: 'planned' as const,
+      targetRir: 3,
+      equipment: 'barbell' as const,
+      rows: [{ setNumber: 1, isFirstUnlogged: true }] as WorkoutSetRow[],
+    };
+
+    test('a live card has the RIR badge and the Weight ⓘ; the Reps ⓘ needs a weight swap', () => {
+      expect(cardInfoTargets(base, 'live', false)).toEqual({ rir: true, weight: true, reps: false });
+    });
+
+    test('a weight swap on the next set adds the Reps ⓘ', () => {
+      const withSwap = {
+        ...base,
+        rows: [{ setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } }] as WorkoutSetRow[],
+      };
+
+      expect(cardInfoTargets(withSwap, 'live', false).reps).toBe(true);
+    });
+
+    test('a deload card keeps only the badge', () => {
+      expect(cardInfoTargets(base, 'live', true)).toEqual({ rir: true, weight: false, reps: false });
+    });
+
+    test('a read-only card has the badge and no ⓘ at all', () => {
+      expect(cardInfoTargets(base, 'readonly', false)).toEqual({
+        rir: true,
+        weight: false,
+        reps: false,
+      });
+    });
+
+    test('a card with no RIR has no badge', () => {
+      expect(cardInfoTargets({ ...base, targetRir: undefined }, 'live', false).rir).toBe(false);
     });
   });
 

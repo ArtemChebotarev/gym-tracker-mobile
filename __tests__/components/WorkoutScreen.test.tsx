@@ -526,3 +526,44 @@ describe('WorkoutScreen Copy current meso', () => {
     expect(screen.queryByRole('button', { name: 'Finish cycle' })).toBeNull();
   });
 });
+
+// GT-42 · the first-workout coachmark tour (08.11) is the caller's to switch on; the screen builds
+// its steps from its own header and first card.
+describe('WorkoutScreen coachmark tour', () => {
+  test('is not there unless the caller asks for it', () => {
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ model: LIVE })} />);
+
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+  });
+
+  test('DoD: when the caller shows it, it starts at step 1 and ends in the grid button', () => {
+    const onFinish = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: LIVE, coachmarks: { visible: true, onFinish } })} />,
+    );
+
+    expect(screen.getByText(/^1 of \d$/)).toBeTruthy();
+    expect(screen.getByTestId('coachmark')).toBeTruthy();
+  });
+
+  test('Skip tells the caller the tour is over', () => {
+    const onFinish = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: LIVE, coachmarks: { visible: true, onFinish } })} />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  test('while the caller keeps it hidden, nothing is drawn', () => {
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({ model: LIVE, coachmarks: { visible: false, onFinish: jest.fn() } })}
+      />,
+    );
+
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+  });
+});

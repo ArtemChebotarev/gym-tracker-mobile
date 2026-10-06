@@ -6,6 +6,8 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import type { WorkoutMode } from '@domain/workoutView';
+import type { OnboardingFlags } from '@repositories/settings';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -79,3 +81,24 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
  */
 export const FINISH_MESOCYCLE_CONFIRMATION =
   "Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.";
+
+/**
+ * Whether the first-workout coachmark tour shows over the Today tab (08.11, GT-42): once, on the
+ * first live workout, and not while the Welcome dialog is still up — two modals at once don't
+ * present reliably, and Welcome comes first. A deload session is left to its own popup (GT-43),
+ * and the flags must have been read: a tour that flashed and went would be worse than one that
+ * waits a frame.
+ */
+export function shouldShowWorkoutCoachmarks(
+  flags: OnboardingFlags | undefined,
+  session: { mode: WorkoutMode; isDeload: boolean } | undefined,
+): boolean {
+  return (
+    flags !== undefined &&
+    flags.welcomeSeen &&
+    !flags.coachmarksSeen &&
+    session !== undefined &&
+    session.mode === 'live' &&
+    !session.isDeload
+  );
+}

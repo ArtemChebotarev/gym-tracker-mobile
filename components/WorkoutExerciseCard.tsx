@@ -25,7 +25,7 @@
 // JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { Text, View } from 'react-native';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
@@ -52,6 +52,7 @@ import {
   type WeightEdits,
   type WeightSwapPopover,
   carryWeightForward,
+  cardInfoTargets,
   editWeightText,
   estimateNote,
   exerciseCardView,
@@ -63,7 +64,6 @@ import {
   weightSwapPopover,
 } from './WorkoutExerciseCardLogic';
 import { FirstWeightPopover } from './FirstWeightPopover';
-import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { RirBadge } from './RirBadge';
 import { rirExplanation } from './RirExplanationLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
@@ -72,11 +72,22 @@ import { usePopoverAnchor } from './usePopoverAnchor';
 import { parseWeight } from './WorkoutSetRowLogic';
 import { WorkoutSetRow } from './WorkoutSetRow';
 
+export type CardCoachmarkTargets = {
+  rir: Ref<View>;
+  weight: Ref<View>;
+  reps: Ref<View>;
+};
+
 export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
   mode: WorkoutMode;
   /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
   isDeload?: boolean;
+  /**
+   * The visible parts the first-workout coachmarks point at (GT-42): the RIR chip and the two ⓘ
+   * discs. Only the first card gets them; the rest of the tour is the screen's.
+   */
+  coachmarkTargets?: CardCoachmarkTargets;
   /** The group chip above the card — see `showsGroupChip`. */
   showGroupChip: boolean;
   /** Opens "История упражнения" (06). */
@@ -109,6 +120,7 @@ export function WorkoutExerciseCard({
   exercise,
   mode,
   isDeload = false,
+  coachmarkTargets,
   showGroupChip,
   onOpenHistory,
   menuItems,
@@ -127,7 +139,8 @@ export function WorkoutExerciseCard({
   // Two ⓘ buttons, each with its own plate: Weight's static how-to (08.11) and Reps' ranges (08.7.1).
   const weightInfo = usePopoverAnchor();
   const repsInfo = usePopoverAnchor();
-  const showWeightInfo = showsFirstWeightInfo(mode, isDeload, exercise.equipment);
+  const infoTargets = cardInfoTargets(exercise, mode, isDeload);
+  const showWeightInfo = infoTargets.weight;
 
   return (
     <View style={styles.root}>
@@ -144,9 +157,10 @@ export function WorkoutExerciseCard({
             )}
           </View>
           <View style={styles.titleActions}>
-            {view.rirLabel !== undefined && exercise.targetRir !== undefined && (
+            {infoTargets.rir && view.rirLabel !== undefined && exercise.targetRir !== undefined && (
               <RirBadge
                 label={view.rirLabel}
+                {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
                 explanation={rirExplanation({
                   targetRir: exercise.targetRir,
                   isDeload,
@@ -200,6 +214,7 @@ export function WorkoutExerciseCard({
               {showWeightInfo && (
                 <InfoGlyphButton
                   buttonRef={weightInfo.ref}
+                  {...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.weight } : {})}
                   accessibilityLabel="Finding your weight"
                   open={weightInfo.visible}
                   onPress={weightInfo.open}
@@ -208,9 +223,10 @@ export function WorkoutExerciseCard({
             </View>
             <View style={[styles.valueColumn, styles.infoHeader]}>
               <Text style={styles.columnLabel}>Reps</Text>
-              {mode === 'live' && popover !== undefined && (
+              {infoTargets.reps && (
                 <InfoGlyphButton
                   buttonRef={repsInfo.ref}
+                  {...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.reps } : {})}
                   accessibilityLabel="Weight recommendations"
                   open={repsInfo.visible}
                   onPress={repsInfo.open}

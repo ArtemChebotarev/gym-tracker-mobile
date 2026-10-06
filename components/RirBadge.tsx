@@ -4,7 +4,8 @@
 // The chip is the same static chip the card always had; the button is only the touch area around
 // it, 44pt tall through `hitSlop` — the chip is drawn smaller — and the anchor the popover points at.
 
-import { Pressable, Text } from 'react-native';
+import type { Ref } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { Popover } from '@design/components/Popover';
@@ -19,9 +20,11 @@ export type RirBadgeProps = {
   /** `2 RIR` */
   label: string;
   explanation: RirExplanation;
+  /** The chip itself, without the touch area around it — what a coachmark's ring hugs (08.11). */
+  chipRef?: Ref<View>;
 };
 
-export function RirBadge({ label, explanation }: RirBadgeProps) {
+export function RirBadge({ label, explanation, chipRef }: RirBadgeProps) {
   const { ref, visible, anchor, open, close } = usePopoverAnchor();
 
   return (
@@ -36,7 +39,9 @@ export function RirBadge({ label, explanation }: RirBadgeProps) {
         hitSlop={tapTargetSlop(SIZES['size/icon-button'])}
         style={styles.button}
       >
-        <Chip variant="static" label={label} compact />
+        <View ref={chipRef}>
+          <Chip variant="static" label={label} compact />
+        </View>
       </Pressable>
       <Popover
         visible={visible}

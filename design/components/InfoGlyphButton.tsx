@@ -16,6 +16,11 @@ export type InfoGlyphButtonProps = {
   onPress: () => void;
   /** What the caller measures to point its Popover at the button. */
   buttonRef?: Ref<View>;
+  /**
+   * The visible disc, without the touch area around it — what a coachmark's ring should hug (08.11):
+   * measured through `buttonRef` the ring would wrap the whole 44pt target instead.
+   */
+  discRef?: Ref<View>;
 };
 
 export function InfoGlyphButton({
@@ -23,6 +28,7 @@ export function InfoGlyphButton({
   open,
   onPress,
   buttonRef,
+  discRef,
 }: InfoGlyphButtonProps) {
   return (
     <Pressable
@@ -33,7 +39,7 @@ export function InfoGlyphButton({
       onPress={onPress}
       style={styles.button}
     >
-      <View style={[styles.disc, open && styles.discOpen]}>
+      <View ref={discRef} style={[styles.disc, open && styles.discOpen]}>
         <InfoIcon
           size={ICON_SIZES['icon/glyph']}
           color={open ? COLORS['text/primary'] : COLORS['text/muted']}

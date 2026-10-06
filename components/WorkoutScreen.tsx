@@ -38,11 +38,13 @@
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
+import { useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { ActionMenu } from '@design/components/ActionMenu';
 import { Badge } from '@design/components/Badge';
 import { Button } from '@design/components/Button';
+import { CoachmarkTour } from '@design/components/CoachmarkTour';
 import { EmptyState } from '@design/components/EmptyState';
 import { IconButton } from '@design/components/IconButton';
 import { ProgressBar } from '@design/components/ProgressBar';
@@ -50,13 +52,14 @@ import { RootScreen } from '@design/components/RootScreen';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
 import {
   formatWorkoutMenuTitle,
@@ -126,6 +129,12 @@ export type WorkoutScreenProps = {
   /** Set when reading the session failed — shown instead of `fallback`, which would claim there is none. */
   loadError?: LoadError;
   /**
+   * The first-workout coachmark tour (08.11, GT-42): whether it is up, and what happens when it ends
+   * (`Got it` or `Skip`). The caller decides *whether* — it holds the onboarding flags — and this
+   * screen builds the steps from its own header and first card.
+   */
+  coachmarks?: { visible: boolean; onFinish: () => void };
+  /**
    * Pushed as a page (`session/[id]`, 08.9, task 130) rather than shown as the Today tab: a back
    * button above the title, in every state, loading and the fallback included.
    */
@@ -152,9 +161,16 @@ export function WorkoutScreen({
   isFinishingMesocycle,
   fallback,
   loadError,
+  coachmarks,
   onBack,
 }: WorkoutScreenProps) {
   const tabBarClearance = useTabBarClearance();
+  // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
+  const tourRir = useRef<View>(null);
+  const tourWeight = useRef<View>(null);
+  const tourReps = useRef<View>(null);
+  const tourGrid = useRef<View>(null);
+  const tourRefs = { rir: tourRir, weight: tourWeight, reps: tourReps, grid: tourGrid };
   if (isPending) {
     return (
       <View style={styles.root}>
@@ -214,7 +230,11 @@ export function WorkoutScreen({
         trailing={
           showsHeaderActions(model.mode) ? (
             <View style={styles.actions}>
-              <IconButton accessibilityLabel="Cycle overview" onPress={onOpenGrid}>
+              <IconButton
+                accessibilityLabel="Cycle overview"
+                onPress={onOpenGrid}
+                buttonRef={tourGrid}
+              >
                 <GridIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
               </IconButton>
               <ActionMenu
@@ -242,6 +262,9 @@ export function WorkoutScreen({
               exercise={exercise}
               mode={model.mode}
               isDeload={model.header.isDeload}
+              {...(index === 0
+                ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
+                : {})}
               showGroupChip={showsGroupChip(model.exercises, index)}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
@@ -288,6 +311,24 @@ export function WorkoutScreen({
           )}
         </ScrollView>
       </RootScreen>
+      {coachmarks !== undefined && (
+        <CoachmarkTour
+          visible={coachmarks.visible}
+          onFinish={coachmarks.onFinish}
+          steps={workoutCoachmarks({
+            exercise: model.exercises[0],
+            mode: model.mode,
+            isDeload: model.header.isDeload,
+          }).map((step) => ({
+            // A capsule ring for all four: a chip, a round disc and a round button each want round
+            // corners, and the ring clamps it to what the element can take.
+            ringRadius: RADII['radius/capsule'],
+            title: step.title,
+            paragraphs: step.paragraphs,
+            targetRef: tourRefs[step.target],
+          }))}
+        />
+      )}
     </View>
   );
 }
