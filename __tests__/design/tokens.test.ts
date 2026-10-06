@@ -29,6 +29,7 @@ const EXPECTED_COLOR_TOKENS = [
   'border/default',
   'border/divider',
   'border/divider-subtle',
+  'brand/orange',
   'border/cell-quiet',
   'text/primary',
   'text/secondary',
@@ -92,6 +93,8 @@ const EXPECTED_SPACING_TOKENS = [
   'space/button',
   'space/pill-x',
   'space/xl',
+  'space/dialog',
+  'space/dialog-y',
   'space/empty-lift',
 ];
 
