@@ -32,6 +32,7 @@ import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
 import { InlineNote } from '@design/components/InlineNote';
+import { PlateRow } from '@design/components/PlateRow';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
@@ -291,7 +292,11 @@ function WeightSwapPopoverPlate({
   if (popover.kind === 'no-history') {
     return (
       <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
-        <Text style={styles.popoverText}>{popover.text}</Text>
+        <View style={styles.popoverSteps}>
+          {popover.steps.map((step, index) => (
+            <PlateRow key={index} leading={{ number: index + 1 }} text={step} />
+          ))}
+        </View>
       </Popover>
     );
   }

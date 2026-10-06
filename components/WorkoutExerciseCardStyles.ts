@@ -105,12 +105,11 @@ export const styles = StyleSheet.create({
     letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
     color: COLORS['text/muted'],
   },
-  // The ⓘ popover's own content (08.7.1): the legend under the range track, and the plain
-  // paragraph shown instead of it when there is no history to read a range from.
-  popoverText: {
-    marginTop: SPACING['space/dots'],
-    fontSize: META_FONT_SIZE,
-    color: COLORS['text/secondary'],
+  // The ⓘ popover's own content (08.7.1): the legend under the range track.
+  // The steps of the plate shown when there is no history to read a range from.
+  popoverSteps: {
+    marginTop: SPACING['space/md'],
+    gap: SPACING['space/gap'],
   },
   legend: {
     marginTop: SPACING['space/xl'],

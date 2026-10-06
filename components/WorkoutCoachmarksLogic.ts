@@ -9,7 +9,7 @@ import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import { cardInfoTargets, hasRepTarget } from './WorkoutExerciseCardLogic';
-import { rirExplanation } from './RirExplanationLogic';
+import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 
 export const WEIGHT_STEP = {
   title: 'Not sure what weight to use?',
@@ -33,7 +33,9 @@ export type CoachmarkTargetId = 'rir' | 'weight' | 'reps' | 'grid';
 export type WorkoutCoachmark = {
   target: CoachmarkTargetId;
   title: string;
-  paragraphs: readonly string[];
+  paragraphs?: readonly string[];
+  /** The RIR step explains with a picture and rows rather than paragraphs. */
+  explanation?: RirExplanation;
 };
 
 export type WorkoutCoachmarkInput = {
@@ -67,7 +69,7 @@ export function workoutCoachmarks({
         isDeload,
         hasRepTarget: hasRepTarget(exercise.rows),
       });
-      steps.push({ target: 'rir', title: explanation.title, paragraphs: explanation.paragraphs });
+      steps.push({ target: 'rir', title: explanation.title, explanation });
     }
     if (targets.weight) {
       steps.push({ target: 'weight', ...WEIGHT_STEP });

@@ -424,7 +424,11 @@ describe('the weight swap popover and note', () => {
       ).toEqual({
         kind: 'no-history',
         title: 'Not enough history yet',
-        text: "Pick a weight that leaves you about 3 reps in reserve (RIR). After this workout you'll get rep targets.",
+        steps: [
+          ['Pick a weight that leaves you ', { strong: 'about 3 reps in reserve' }, '.'],
+          ['Log this workout.'],
+          ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
+        ],
       });
     });
 

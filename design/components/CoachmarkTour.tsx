@@ -14,7 +14,7 @@
 // it was. A caller that wants to run it again mounts a fresh one (a new `key`).
 
 import { useEffect, useState } from 'react';
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { View } from 'react-native';
 
 import type { AnchorRect } from '../popoverLayout';
@@ -24,7 +24,9 @@ export type CoachmarkStep = {
   /** The element the step points at. Measured when the step is shown. */
   targetRef: RefObject<View | null>;
   title: string;
-  paragraphs: readonly string[];
+  paragraphs?: readonly string[];
+  /** Shown under the title instead of the paragraphs — a picture and a few rows. */
+  content?: ReactNode;
   /** The corner radius of the ring and the hole — a `RADII` token. Defaults to a control's. */
   ringRadius?: number;
 };
@@ -78,7 +80,8 @@ export function CoachmarkTour({ visible, steps, onFinish }: CoachmarkTourProps) 
       step={index + 1}
       total={steps.length}
       title={step.title}
-      paragraphs={step.paragraphs}
+      {...(step.paragraphs !== undefined ? { paragraphs: step.paragraphs } : {})}
+      {...(step.content !== undefined ? { content: step.content } : {})}
       onNext={next}
       onSkip={finish}
     />

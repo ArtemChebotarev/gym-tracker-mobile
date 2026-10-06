@@ -16,6 +16,7 @@
 // a larger touch area around it, or the ring would hug the touch area instead. With no anchor — not
 // measured yet, or a platform that can't — there is no hole and no ring, and the bubble is centred.
 
+import type { ReactNode } from 'react';
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -43,7 +44,13 @@ export type CoachmarkProps = {
   step: number;
   total: number;
   title: string;
-  paragraphs: readonly string[];
+  /** The text, as paragraphs. Replaced by `content` when a step has something better than words. */
+  paragraphs?: readonly string[];
+  /**
+   * What goes under the title instead of paragraphs — a picture and a few short rows (08.11). It
+   * brings its own space above it, as a `RangeTrack` does.
+   */
+  content?: ReactNode;
   /** `Next` — and `Got it` on the last step, which only the caller knows how to finish. */
   onNext: () => void;
   onSkip: () => void;
@@ -56,7 +63,8 @@ export function Coachmark({
   step,
   total,
   title,
-  paragraphs,
+  paragraphs = [],
+  content,
   onNext,
   onSkip,
 }: CoachmarkProps) {
@@ -99,6 +107,7 @@ export function Coachmark({
         >
           <Text style={styles.counter}>{`${step} of ${total}`}</Text>
           <Text style={styles.title}>{title}</Text>
+          {content}
           {paragraphs.map((paragraph, index) => (
             <Text
               key={paragraph}

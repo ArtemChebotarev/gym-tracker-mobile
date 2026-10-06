@@ -59,6 +59,7 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import { RirExplanationContent } from './RirExplanationContent';
 import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
 import {
@@ -324,7 +325,10 @@ export function WorkoutScreen({
             // corners, and the ring clamps it to what the element can take.
             ringRadius: RADII['radius/capsule'],
             title: step.title,
-            paragraphs: step.paragraphs,
+            ...(step.paragraphs !== undefined ? { paragraphs: step.paragraphs } : {}),
+            ...(step.explanation !== undefined
+              ? { content: <RirExplanationContent explanation={step.explanation} /> }
+              : {}),
             targetRef: tourRefs[step.target],
           }))}
         />

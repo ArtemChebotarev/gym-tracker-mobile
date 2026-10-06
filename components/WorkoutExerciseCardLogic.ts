@@ -4,6 +4,7 @@ import type { Equipment } from '@domain/catalog';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
+import type { PlateTextPart } from '@design/components/PlateRow';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatRir } from '@design/formatRir';
@@ -292,7 +293,7 @@ export type WeightSwapPopover =
       labels: { value: number; text: string }[];
       legend: WeightSwapLegendRow[];
     }
-  | { kind: 'no-history'; title: string; text: string };
+  | { kind: 'no-history'; title: string; steps: PlateTextPart[][] };
 
 export function weightSwapPopover(
   row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
@@ -304,10 +305,16 @@ export function weightSwapPopover(
   const swap = row.weightSwap;
   if ('unavailable' in swap) {
     const effort = targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`;
+    // Three steps rather than a paragraph (08.11, Artem's wording of the last): what to do now,
+    // what to do with it, and what the app does for you next time.
     return {
       kind: 'no-history',
       title: 'Not enough history yet',
-      text: `Pick a weight that leaves you ${effort} in reserve (RIR). After this workout you'll get rep targets.`,
+      steps: [
+        ['Pick a weight that leaves you ', { strong: `${effort} in reserve` }, '.'],
+        ['Log this workout.'],
+        ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
+      ],
     };
   }
   const added = swap.bodyWeight !== undefined;

@@ -766,9 +766,11 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     openInfo();
 
     expect(screen.getByText('Not enough history yet')).toBeTruthy();
-    expect(
-      screen.getByText(/Pick a weight that leaves you about 3 reps in reserve \(RIR\)/),
-    ).toBeTruthy();
+    // Three numbered steps, not a paragraph (08.11).
+    expect(screen.getByText('Pick a weight that leaves you about 3 reps in reserve.')).toBeTruthy();
+    expect(screen.getByText('Log this workout.')).toBeTruthy();
+    expect(screen.getByText('Next time: reps will be calculated for you.')).toBeTruthy();
+    expect(screen.getAllByTestId('plate-row-mark')).toHaveLength(3);
   });
 });
 
@@ -866,9 +868,7 @@ describe('RIR badge popover', () => {
 
     expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
     expect(
-      screen.getByText(
-        'There is no rep target yet. Do as many reps as it takes to reach 3 RIR and enter them.',
-      ),
+      screen.getByText('No rep target yet. Do as many reps as it takes to reach 3 RIR and enter them.'),
     ).toBeTruthy();
   });
 

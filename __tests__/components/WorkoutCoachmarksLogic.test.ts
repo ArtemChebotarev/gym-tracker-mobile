@@ -64,8 +64,10 @@ describe('workoutCoachmarks', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
     expect(steps[0]).toMatchObject({ title: '3 RIR means 3 reps in reserve' });
-    // Week 1: the set next to do has no target reps, so the how-to-find-them line is there too.
-    expect(steps[0]?.paragraphs).toHaveLength(2);
+    // The RIR step explains with the track and its theses; the others with a paragraph.
+    // Week 1: the set next to do has no target reps, so the how-to-find-them thesis is there too.
+    expect(steps[0]?.explanation?.rows).toHaveLength(3);
+    expect(steps[0]?.paragraphs).toBeUndefined();
     expect(steps[1]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
     expect(REPS_STEP.title).toBe('Want to change the weight?');
