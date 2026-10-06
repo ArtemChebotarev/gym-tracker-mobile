@@ -37,8 +37,19 @@ export type RangeTrackProps = {
   accessibilityLabel: string;
 };
 
-// Enough dashes to cross any phone — the track clips whatever doesn't fit.
-const DASH_COUNT = 60;
+// A swatch is a short piece of the track (`size/legend-swatch`); this many dashes cross it, and it
+// clips the rest.
+const SWATCH_DASH_COUNT = 12;
+
+/**
+ * How many dashes it takes to run across a track `width` wide: one dash and its gap at a time, and
+ * one over, since the track clips the last. A fixed count ("enough to cross any phone") ran out at
+ * 360pt, and on a wider phone the dashes stopped short of the track's right end while the accent
+ * bar, placed by percentage, did not — so the track looked lopsided.
+ */
+function dashesAcross(width: number): number {
+  return Math.ceil(width / (SIZES['size/progress'] + SPACING['space/xxs'])) + 1;
+}
 
 function toPercent(share: number): `${number}%` {
   return `${share * 100}%`;
@@ -79,7 +90,7 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
       >
         <View style={styles.bars}>
           <View style={styles.dashes}>
-            {Array.from({ length: DASH_COUNT }, (_, index) => (
+            {Array.from({ length: dashesAcross(width) }, (_, index) => (
               <View key={index} style={styles.dash} />
             ))}
           </View>
@@ -139,7 +150,7 @@ export function RangeTrackSwatch({ span }: { span: 'outer' | 'inner' }) {
         <View style={[StyleSheet.absoluteFill, styles.innerSwatch]} />
       ) : (
         <View style={styles.dashes}>
-          {Array.from({ length: DASH_COUNT }, (_, index) => (
+          {Array.from({ length: SWATCH_DASH_COUNT }, (_, index) => (
             <View key={index} style={styles.dash} />
           ))}
         </View>

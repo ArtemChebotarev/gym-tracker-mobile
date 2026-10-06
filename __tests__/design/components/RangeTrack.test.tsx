@@ -171,3 +171,32 @@ describe('RangeTrack without a marker', () => {
     expect(screen.queryByTestId('range-track-marker')).toBeNull();
   });
 });
+
+// A fixed count of dashes ran out at 360pt, so on a wider phone the dashes stopped short of the
+// track's right end and the accent bar, placed by percentage, did not: the track looked lopsided.
+describe('RangeTrack dashes', () => {
+  function dashCountAt(width: number): number {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        labels={[]}
+        accessibilityLabel="track"
+      />,
+    );
+    fireEvent(screen.getByTestId('range-track'), 'layout', {
+      nativeEvent: { layout: { width, height: 10, x: 0, y: 0 } },
+    });
+    const dashes = screen.getByTestId('range-track').findAll(
+      (node) => StyleSheet.flatten(node.props.style)?.backgroundColor === COLORS['text/faint'],
+    );
+    return dashes.length;
+  }
+
+  test('there are dashes enough to reach the end of any track, 4pt each with a 2pt gap', () => {
+    for (const width of [300, 376, 408, 700]) {
+      // 6pt per dash and gap: the dashes must cover the width.
+      expect(dashCountAt(width) * 6).toBeGreaterThanOrEqual(width);
+    }
+  });
+});

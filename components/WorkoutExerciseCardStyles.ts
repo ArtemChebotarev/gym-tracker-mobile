@@ -106,13 +106,6 @@ export const styles = StyleSheet.create({
     color: COLORS['text/muted'],
   },
   // The ⓘ popover's own content (08.7.1): the legend under the range track.
-  // What the corridor track under the title measures, in a line of its own beneath it.
-  corridorCaption: {
-    marginTop: SPACING['space/dots'],
-    fontSize: TYPOGRAPHY['type/caption'].fontSize,
-    fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
-    color: COLORS['text/secondary'],
-  },
   // The steps of the plate shown when there is no history to read a range from.
   popoverSteps: {
     marginTop: SPACING['space/md'],

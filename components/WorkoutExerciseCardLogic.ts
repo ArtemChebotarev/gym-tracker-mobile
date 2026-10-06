@@ -294,7 +294,8 @@ export type WeightSwapPopover =
         outer: RangeTrackRange;
         inner: RangeTrackRange;
         labels: RangeTrackLabel[];
-        caption: string;
+        /** Said by assistive technology; nothing is written under the track. */
+        accessibilityLabel: string;
       };
       steps: PlateTextPart[][];
     };
@@ -334,7 +335,7 @@ export function weightSwapPopover(
           { value: minReps, text: `${minReps}` },
           { value: maxReps, text: `${maxReps}` },
         ],
-        caption: 'Reps per set',
+        accessibilityLabel: `Reps per set: ${minReps} to ${maxReps}`,
       },
       steps: [
         ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],

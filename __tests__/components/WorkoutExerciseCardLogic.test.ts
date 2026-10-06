@@ -405,7 +405,7 @@ describe('the weight swap popover and note', () => {
             { value: 5, text: '5' },
             { value: 30, text: '30' },
           ],
-          caption: 'Reps per set',
+          accessibilityLabel: 'Reps per set: 5 to 30',
         },
         steps: [
           ['Pick a weight you can lift for ', { strong: '5–30 reps' }, '.'],
