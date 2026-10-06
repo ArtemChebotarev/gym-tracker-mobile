@@ -5,6 +5,7 @@ import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { PlateTextPart } from '@design/components/PlateRow';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatRir } from '@design/formatRir';
@@ -198,15 +199,6 @@ export function cardInfoTargets(
   };
 }
 
-/**
- * Whether the set next to do has target reps to aim for. It doesn't in week 1 and for an exercise
- * with no history — and a card with no set left to do is not missing one, so it answers `true`.
- */
-export function hasRepTarget(rows: readonly WorkoutSetRow[]): boolean {
-  const next = firstUnloggedRow(rows);
-  return next === undefined || next.targetReps !== undefined;
-}
-
 /** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
 function formatSwapWeight(weight: number, added: boolean): string {
   return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
@@ -305,13 +297,16 @@ export function weightSwapPopover(
   const swap = row.weightSwap;
   if ('unavailable' in swap) {
     const effort = targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`;
-    // Three steps rather than a paragraph (08.11, Artem's wording of the last): what to do now,
-    // what to do with it, and what the app does for you next time.
+    // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
+    // and the corridor a set has to land in — the engine builds its rep targets and weight ranges
+    // on it (03) — how hard to take it, then what the app does for you next time.
+    const { minReps, maxReps } = defaultProgressionSettings;
     return {
       kind: 'no-history',
       title: 'Not enough history yet',
       steps: [
-        ['Pick a weight that leaves you ', { strong: `${effort} in reserve` }, '.'],
+        ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],
+        ['Stop each set with ', { strong: `${effort} in reserve` }, '.'],
         ['Log this workout.'],
         ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
       ],

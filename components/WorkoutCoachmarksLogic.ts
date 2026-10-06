@@ -8,7 +8,7 @@
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { cardInfoTargets, hasRepTarget } from './WorkoutExerciseCardLogic';
+import { cardInfoTargets } from './WorkoutExerciseCardLogic';
 import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 
 export const WEIGHT_STEP = {
@@ -64,11 +64,7 @@ export function workoutCoachmarks({
   if (exercise !== undefined) {
     const targets = cardInfoTargets(exercise, mode, isDeload);
     if (targets.rir && exercise.targetRir !== undefined) {
-      const explanation = rirExplanation({
-        targetRir: exercise.targetRir,
-        isDeload,
-        hasRepTarget: hasRepTarget(exercise.rows),
-      });
+      const explanation = rirExplanation({ targetRir: exercise.targetRir, isDeload });
       steps.push({ target: 'rir', title: explanation.title, explanation });
     }
     if (targets.weight) {

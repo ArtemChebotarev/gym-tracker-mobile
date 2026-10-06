@@ -6,7 +6,6 @@ import {
   exerciseCardView,
   firstUnloggedRow,
   formatWeightHint,
-  hasRepTarget,
   holdLoggedWeight,
   showsGroupChip,
   weightFieldText,
@@ -333,33 +332,6 @@ describe('the weight swap popover and note', () => {
     });
   });
 
-  describe('hasRepTarget', () => {
-    test('the set next to do has target reps', () => {
-      const rows = [{ setNumber: 1, targetReps: 10, isFirstUnlogged: true }] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(true);
-    });
-
-    test('week 1: the set next to do has none', () => {
-      const rows = [{ setNumber: 1, isFirstUnlogged: true }] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(false);
-    });
-
-    test('only the set next to do counts, not a later one', () => {
-      const rows = [
-        { setNumber: 1, targetReps: 10, isFirstUnlogged: true },
-        { setNumber: 2, isFirstUnlogged: false },
-      ] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(true);
-    });
-
-    test('a card with no set left to do is not missing a target', () => {
-      expect(hasRepTarget([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBe(true);
-    });
-  });
-
   describe('weightSwapPopover', () => {
     test('an estimate is titled as one (task 134.1)', () => {
       const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' }, 2);
@@ -425,7 +397,8 @@ describe('the weight swap popover and note', () => {
         kind: 'no-history',
         title: 'Not enough history yet',
         steps: [
-          ['Pick a weight that leaves you ', { strong: 'about 3 reps in reserve' }, '.'],
+          ['Pick a weight you can lift for ', { strong: '5–30 reps' }, '.'],
+          ['Stop each set with ', { strong: 'about 3 reps in reserve' }, '.'],
           ['Log this workout.'],
           ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
         ],

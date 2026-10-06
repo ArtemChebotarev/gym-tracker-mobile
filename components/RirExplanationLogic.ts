@@ -10,7 +10,6 @@ import type { PlateTextPart } from '@design/components/PlateRow';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
-import { InfoIcon } from '@design/icons/InfoIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 
 /** The track: the set you do (solid), what is left in the tank (dashes), and where you stop. */
@@ -30,12 +29,13 @@ export type RirExplanation = {
   rows: RirRow[];
 };
 
-// How long the set you do is drawn, in the track's own units — arbitrary, since reps are not what
-// the picture measures; only that there is a stretch of work and then a stretch of reserve.
-const SET_UNITS = 6;
-// A reserve is drawn this much longer than its reps, so 1 and 2 RIR still leave room for the two
-// labels under the track; the order (more RIR, more reserve) is kept, the proportion is not.
-const RESERVE_PADDING = 2;
+// How long the set you do is drawn, in the track's own units — arbitrary, but the reserve is drawn
+// to the same scale, so the picture is honest: 3 RIR leaves a bit under a quarter of the track in
+// the tank, 2 RIR less, 1 RIR a sliver, and the set is the rest. A bigger reserve once looked like a
+// half-hearted set (a reserve padded to fit its labels read as "work to 55%"); the labels are
+// placed to fit the real proportion instead, 'Stop here' ending at its point so it never meets
+// 'Failure' under the end.
+const SET_UNITS = 10;
 
 /** The track for a reserve of `reserve` reps: failure at the end, the stop where the reserve begins. */
 export function rirTrack(reserve: number): RirTrack {
@@ -49,13 +49,13 @@ export function rirTrack(reserve: number): RirTrack {
       accessibilityLabel: 'No reps in reserve: you stop at failure',
     };
   }
-  const end = SET_UNITS + reserve + RESERVE_PADDING;
+  const end = SET_UNITS + reserve;
   return {
     outer: { min: 0, max: end },
     inner: { min: 0, max: SET_UNITS },
     marker: SET_UNITS,
     labels: [
-      { value: SET_UNITS, text: 'Stop here' },
+      { value: SET_UNITS, text: 'Stop here', align: 'end' },
       { value: end, text: 'Failure' },
     ],
     accessibilityLabel: `${reserve} ${reserve === 1 ? 'rep' : 'reps'} in reserve: you stop before failure`,
@@ -67,18 +67,9 @@ export type RirExplanationInput = {
   targetRir: number;
   /** A deload session: lighter on purpose, so the text says not to push rather than what RIR is. */
   isDeload: boolean;
-  /**
-   * Whether the set next to do has target reps. Without them (week 1, or an exercise with no
-   * history) the user is told how to find the reps themselves.
-   */
-  hasRepTarget: boolean;
 };
 
-export function rirExplanation({
-  targetRir,
-  isDeload,
-  hasRepTarget,
-}: RirExplanationInput): RirExplanation {
+export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
 
   if (isDeload) {
@@ -94,6 +85,8 @@ export function rirExplanation({
     };
   }
 
+  // Two theses, and no more: this explains the fact of RIR, not the engine around it — how rep
+  // targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
   const rows: RirRow[] =
     targetRir === 0
       ? [
@@ -110,17 +103,6 @@ export function rirExplanation({
             text: ['It drops each week; the last one is ', { strong: 'failure' }, '.'],
           },
         ];
-  if (!hasRepTarget) {
-    rows.push({
-      icon: InfoIcon,
-      text: [
-        'No rep target yet. Do as many reps as it takes to reach ',
-        { strong: `${targetRir} RIR` },
-        ' and enter them.',
-      ],
-    });
-  }
-
   return {
     title:
       targetRir === 0

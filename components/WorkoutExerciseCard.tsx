@@ -58,7 +58,6 @@ import {
   estimateNote,
   exerciseCardView,
   firstUnloggedRow,
-  hasRepTarget,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -162,13 +161,7 @@ export function WorkoutExerciseCard({
               <RirBadge
                 label={view.rirLabel}
                 {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
-                explanation={rirExplanation({
-                  targetRir: exercise.targetRir,
-                  isDeload,
-                  // Read off the set next to do, as the Reps ⓘ does. A card with no set left to do
-                  // (all logged) has nothing to find, so it counts as having a target.
-                  hasRepTarget: hasRepTarget(exercise.rows),
-                })}
+                explanation={rirExplanation({ targetRir: exercise.targetRir, isDeload })}
               />
             )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>

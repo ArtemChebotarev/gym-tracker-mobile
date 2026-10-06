@@ -17,8 +17,12 @@ import { type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { centerOffset, roundedBar } from '../shapes';
 import { COLORS, LINE_HEIGHTS, OPACITY, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
-/** A tick under the track: the value it sits over, and what it reads. */
-export type RangeTrackLabel = { value: number; text: string };
+/**
+ * A tick under the track: the value it sits over, and what it reads. It is centred on the value by
+ * default; `align: 'end'` puts its right edge there instead, so a label can sit to the left of its
+ * point and leave room for another beside it when the two points are close (08.11, the RIR track).
+ */
+export type RangeTrackLabel = { value: number; text: string; align?: 'center' | 'end' };
 
 export type RangeTrackRange = { min: number; max: number };
 
@@ -104,7 +108,12 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
               style={[
                 styles.label,
                 placed
-                  ? { left: insetStart + share(label.value) * width + centerOffset(labelWidth) }
+                  ? {
+                      left:
+                        insetStart +
+                        share(label.value) * width +
+                        (label.align === 'end' ? -labelWidth : centerOffset(labelWidth)),
+                    }
                   : styles.unplaced,
               ]}
             >

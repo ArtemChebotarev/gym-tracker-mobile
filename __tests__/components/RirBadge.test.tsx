@@ -5,7 +5,7 @@ import { RirBadge } from '@components/RirBadge';
 import { rirExplanation } from '@components/RirExplanationLogic';
 import { SIZES } from '@design/tokens';
 
-const EXPLANATION = rirExplanation({ targetRir: 3, isDeload: false, hasRepTarget: true });
+const EXPLANATION = rirExplanation({ targetRir: 3, isDeload: false });
 
 describe('RirBadge', () => {
   test('shows the chip as a button, and the plate only after a tap', () => {

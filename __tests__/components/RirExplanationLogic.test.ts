@@ -29,12 +29,30 @@ describe('rirTrack', () => {
     expect(lengthOf(3)).toBeLessThan(lengthOf(8));
   });
 
-  test('1 and 2 RIR still leave room for both labels — the reserve is a stretch, not a point', () => {
-    for (const reserve of [1, 2]) {
+  // The picture must not say "work to 55%" for 3 RIR (it once did, with the reserve padded to fit
+  // its labels): the reserve is drawn to the same scale as the set, so 3 RIR is under a quarter.
+  test('the reserve is drawn to scale: 3 RIR is under a quarter of the track, 1 RIR a sliver', () => {
+    const shareOf = (reserve: number) => {
       const track = rirTrack(reserve);
-      const share = (track.outer.max - track.marker) / track.outer.max;
-      // Two labels, each ~60pt wide, centred 3-4 units apart on a ~300pt track: at least ~25%.
-      expect(share).toBeGreaterThanOrEqual(0.25);
+      return (track.outer.max - track.marker) / track.outer.max;
+    };
+
+    expect(shareOf(3)).toBeLessThan(0.25);
+    expect(shareOf(3)).toBeGreaterThan(shareOf(2));
+    expect(shareOf(2)).toBeGreaterThan(shareOf(1));
+    expect(shareOf(1)).toBeGreaterThan(0);
+    expect(shareOf(0)).toBe(0);
+  });
+
+  // And the labels must not run into each other: 'Stop here' ends at its point instead of being
+  // centred on it, so with the reserve small there is room for 'Failure' under the end.
+  test('"Stop here" ends at its point, so it never meets "Failure" under the end', () => {
+    for (const reserve of [1, 2, 3, 8]) {
+      const [stop, failure] = rirTrack(reserve).labels;
+
+      expect(stop).toMatchObject({ text: 'Stop here', align: 'end' });
+      expect(failure).toMatchObject({ text: 'Failure' });
+      expect(failure?.align).toBeUndefined();
     }
   });
 
@@ -54,7 +72,7 @@ describe('rirTrack', () => {
 
 describe('rirExplanation', () => {
   test('says what N RIR means, with the exercise’s own number, in two theses', () => {
-    const text = rirExplanation({ targetRir: 3, isDeload: false, hasRepTarget: true });
+    const text = rirExplanation({ targetRir: 3, isDeload: false });
 
     expect(text.title).toBe('3 RIR means 3 reps in reserve');
     expect(text.rows.map((row) => readRow(row.text))).toEqual([
@@ -64,31 +82,32 @@ describe('rirExplanation', () => {
     expect(text.track.marker).toBe(rirTrack(3).marker);
   });
 
-  test('with no rep target yet, adds a third thesis on how to find the reps — with the same number', () => {
-    const text = rirExplanation({ targetRir: 3, isDeload: false, hasRepTarget: false });
+  // It explains the fact of RIR; how rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
+  test('never mentions rep targets, whatever week it is', () => {
+    for (const targetRir of [3, 2, 1, 0]) {
+      const text = rirExplanation({ targetRir, isDeload: false });
+      const said = text.rows.map((row) => readRow(row.text).said).join(' ');
 
-    expect(text.rows).toHaveLength(3);
-    expect(readRow(text.rows[2]!.text)).toEqual({
-      said: 'No rep target yet. Do as many reps as it takes to reach 3 RIR and enter them.',
-      strong: ['3 RIR'],
-    });
+      expect(text.rows.length).toBeLessThanOrEqual(2);
+      expect(said).not.toMatch(/target/i);
+    }
   });
 
   test('the number follows the week: 2 RIR, 1 RIR in the singular, 0 RIR at the last', () => {
-    expect(rirExplanation({ targetRir: 2, isDeload: false, hasRepTarget: true }).title).toBe(
+    expect(rirExplanation({ targetRir: 2, isDeload: false }).title).toBe(
       '2 RIR means 2 reps in reserve',
     );
-    expect(rirExplanation({ targetRir: 1, isDeload: false, hasRepTarget: true }).title).toBe(
+    expect(rirExplanation({ targetRir: 1, isDeload: false }).title).toBe(
       '1 RIR means 1 rep in reserve',
     );
-    const last = rirExplanation({ targetRir: 0, isDeload: false, hasRepTarget: true });
+    const last = rirExplanation({ targetRir: 0, isDeload: false });
     expect(last.title).toBe('0 RIR means no reps in reserve');
     expect(readRow(last.rows[0]!.text).said).toContain("can't do another rep");
     expect(last.track.labels).toHaveLength(1);
   });
 
   test('DoD: a deload week gets its own, shorter text with its own RIR, on the same track', () => {
-    const text = rirExplanation({ targetRir: 8, isDeload: true, hasRepTarget: true });
+    const text = rirExplanation({ targetRir: 8, isDeload: true });
 
     expect(text.title).toBe('Deload week');
     expect(text.rows.map((row) => readRow(row.text))).toEqual([
@@ -97,6 +116,7 @@ describe('rirExplanation', () => {
         strong: ['about 8 reps left'],
       },
     ]);
+    // A deload's long reserve is drawn long.
     expect(text.track.outer.max).toBeGreaterThan(rirTrack(3).outer.max);
   });
 });
