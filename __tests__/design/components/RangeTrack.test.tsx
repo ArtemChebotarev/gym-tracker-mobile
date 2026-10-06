@@ -156,6 +156,22 @@ describe('RangeTrack label alignment', () => {
   });
 });
 
+describe('RangeTrack with several markers', () => {
+  test('puts a dot on each value it is given — the two ends of a span', () => {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        marker={[5, 30]}
+        labels={[]}
+        accessibilityLabel="Reps per set: 5 to 30"
+      />,
+    );
+
+    expect(screen.getAllByTestId('range-track-marker')).toHaveLength(2);
+  });
+});
+
 describe('RangeTrack without a marker', () => {
   test('draws the span and no dot — a stretch to read, not a value to point at', () => {
     render(

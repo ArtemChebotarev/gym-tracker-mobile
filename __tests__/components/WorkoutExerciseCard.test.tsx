@@ -767,9 +767,9 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
 
     expect(screen.getByText('Not enough history yet')).toBeTruthy();
     // The 5–30 corridor as a track — the existing one, accent bar over the part to aim for — with
-    // its two ends named and no dot, since it marks a span and not a value.
+    // a dot and a number on each end.
     expect(screen.getByTestId('range-track')).toBeTruthy();
-    expect(screen.queryByTestId('range-track-marker')).toBeNull();
+    expect(screen.getAllByTestId('range-track-marker')).toHaveLength(2);
     // Nothing is written under it — it is described to assistive technology instead.
     expect(screen.queryByText('Reps per set')).toBeNull();
     expect(screen.getByLabelText('Reps per set: 5 to 30')).toBeTruthy();

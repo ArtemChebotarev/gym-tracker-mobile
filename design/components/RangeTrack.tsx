@@ -31,8 +31,11 @@ export type RangeTrackProps = {
   outer: RangeTrackRange;
   /** The span drawn solid inside it. */
   inner: RangeTrackRange;
-  /** The value the dot marks. Without one there is no dot — a span to read, not a value to point at. */
-  marker?: number;
+  /**
+   * The value the dot marks — or several, one dot each, to mark the two ends of a span (08.11's
+   * 5–30 rep corridor). Without any there is no dot: a span to read, not a value to point at.
+   */
+  marker?: number | readonly number[];
   labels: readonly RangeTrackLabel[];
   accessibilityLabel: string;
 };
@@ -56,6 +59,7 @@ function toPercent(share: number): `${number}%` {
 }
 
 export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }: RangeTrackProps) {
+  const markers = marker === undefined ? [] : typeof marker === 'number' ? [marker] : marker;
   const [width, setWidth] = useState(0);
   const [labelWidths, setLabelWidths] = useState<ReadonlyMap<number, number>>(new Map());
 
@@ -102,12 +106,13 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
             ]}
           />
         </View>
-        {marker !== undefined && (
+        {markers.map((value) => (
           <View
+            key={value}
             testID="range-track-marker"
-            style={[styles.marker, { left: toPercent(share(marker)) }]}
+            style={[styles.marker, { left: toPercent(share(value)) }]}
           />
-        )}
+        ))}
       </View>
       <View style={styles.labels}>
         {labels.map((label) => {

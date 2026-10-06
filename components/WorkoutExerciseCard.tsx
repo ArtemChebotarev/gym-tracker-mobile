@@ -288,6 +288,7 @@ function WeightSwapPopoverPlate({
         <RangeTrack
           outer={popover.corridor.outer}
           inner={popover.corridor.inner}
+          marker={popover.corridor.markers}
           labels={popover.corridor.labels}
           accessibilityLabel={popover.corridor.accessibilityLabel}
         />

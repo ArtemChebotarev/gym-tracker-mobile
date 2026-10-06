@@ -293,6 +293,8 @@ export type WeightSwapPopover =
       corridor: {
         outer: RangeTrackRange;
         inner: RangeTrackRange;
+        /** A dot on each end of the accent bar, as the other tracks have one on the value they point at. */
+        markers: number[];
         labels: RangeTrackLabel[];
         /** Said by assistive technology; nothing is written under the track. */
         accessibilityLabel: string;
@@ -331,6 +333,7 @@ export function weightSwapPopover(
       corridor: {
         outer: { min: 0, max: minReps + maxReps },
         inner: { min: minReps, max: maxReps },
+        markers: [minReps, maxReps],
         labels: [
           { value: minReps, text: `${minReps}` },
           { value: maxReps, text: `${maxReps}` },
