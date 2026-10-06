@@ -7,7 +7,7 @@
 import { StyleSheet } from 'react-native';
 
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
-import { circle, square } from '@design/shapes';
+import { circle } from '@design/shapes';
 
 // The small secondary text of the workout screen — same as the set rows (WorkoutSetRowStyles.ts).
 const META_FONT_SIZE = TYPOGRAPHY['type/meta'].fontSize;
@@ -81,29 +81,15 @@ export const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  // The Reps header carries the weight-swap ⓘ beside its label (08.7.1). It stretches to the
-  // row's full height so the button inside it is a whole 44pt tall to the touch.
-  repsHeader: {
+  // A header that carries an ⓘ beside its label — Weight's first-weight how-to (08.11) and Reps'
+  // weight-swap ranges (08.7.1). It stretches to the row's full height so the button inside it is a
+  // whole 44pt tall to the touch.
+  infoHeader: {
     flexDirection: 'row',
     alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING['space/dots'],
-  },
-  /** The ⓘ's touch area — the iOS minimum, around a disc a third of its size. */
-  infoButton: {
-    ...square(SIZES['size/tap-target']),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoDisc: {
-    ...circle(SIZES['size/glyph-button']),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  /** While its popover is open, the glyph sits on a lit disc — 08.7.1, "подсветка". */
-  infoDiscOpen: {
-    backgroundColor: COLORS['surface/control-active'],
   },
   indicatorColumn: {
     width: SIZES['size/indicator-column'],

@@ -771,3 +771,70 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     ).toBeTruthy();
   });
 });
+
+// GT-39 · the ⓘ beside `Weight, kg` and its "Finding your first weight" popover (08.11).
+describe('Weight ⓘ — finding your weight', () => {
+  const info = () => screen.queryByRole('button', { name: 'Finding your weight' });
+
+  test('DoD: every live card has it, whether or not a weight swap exists for its next set', () => {
+    // LIVE_EXERCISE has no weightSwap, so it has no Reps ⓘ — the Weight one does not depend on it.
+    render(<WorkoutExerciseCard {...makeProps()} />);
+
+    expect(info()).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Weight recommendations' })).toBeNull();
+  });
+
+  test('a deload session has none', () => {
+    render(<WorkoutExerciseCard {...makeProps({ isDeload: true })} />);
+
+    expect(info()).toBeNull();
+  });
+
+  test('a pure bodyweight exercise has none — its Weight field is the body weight', () => {
+    render(
+      <WorkoutExerciseCard {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight' }) })} />,
+    );
+
+    expect(info()).toBeNull();
+  });
+
+  test('a weighted bodyweight exercise keeps it — its `Added, kg` is a load to find', () => {
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight-weighted' }) })}
+      />,
+    );
+
+    expect(info()).toBeTruthy();
+  });
+
+  test('a read-only card has none', () => {
+    render(
+      <WorkoutExerciseCard {...makeProps({ mode: 'readonly', exercise: COMPLETED_EXERCISE })} />,
+    );
+
+    expect(info()).toBeNull();
+  });
+
+  test('DoD: it opens the plate with the ladder, the working set and the note — and a tap outside closes it', () => {
+    render(<WorkoutExerciseCard {...makeProps()} />);
+    expect(screen.queryByText('Finding your weight')).toBeNull();
+
+    fireEvent.press(info()!);
+
+    expect(screen.getByText('Finding your weight')).toBeTruthy();
+    expect(screen.getByText('12 reps')).toBeTruthy();
+    expect(screen.getByText('Light weight')).toBeTruthy();
+    expect(screen.getByText('8 reps')).toBeTruthy();
+    expect(screen.getByText('Heavier')).toBeTruthy();
+    expect(screen.getByText('4 reps')).toBeTruthy();
+    expect(screen.getByText('Close to your working weight')).toBeTruthy();
+    // The card's own target RIR, not a fixed number.
+    expect(screen.getByText('Then do a working set and stop at 2 RIR.')).toBeTruthy();
+    expect(screen.getByText("Warm-up sets aren't logged here.")).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+
+    expect(screen.queryByText('Finding your weight')).toBeNull();
+  });
+});

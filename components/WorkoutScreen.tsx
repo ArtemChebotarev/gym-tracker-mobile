@@ -241,6 +241,7 @@ export function WorkoutScreen({
               key={exercise.sessionExerciseId}
               exercise={exercise}
               mode={model.mode}
+              isDeload={model.header.isDeload}
               showGroupChip={showsGroupChip(model.exercises, index)}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
