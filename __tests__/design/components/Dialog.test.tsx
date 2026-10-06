@@ -25,7 +25,7 @@ describe('Dialog', () => {
     expect(screen.queryByText('Deload week')).toBeNull();
   });
 
-  test('has no way out of its own — no close control, and the scrim does not respond', () => {
+  test('without onClose it has no way out of its own — no close control, and the scrim does not respond', () => {
     render(
       <Dialog visible>
         <Text>Deload week</Text>
@@ -37,5 +37,18 @@ describe('Dialog', () => {
     // Nothing to tap on the scrim: pressing the card changes nothing and the content stays.
     fireEvent.press(screen.getByTestId('dialog'));
     expect(screen.getByText('Deload week')).toBeTruthy();
+  });
+
+  test('with onClose a cross appears and closes it', () => {
+    const onClose = jest.fn();
+    render(
+      <Dialog visible onClose={onClose}>
+        <Text>Deload week</Text>
+      </Dialog>,
+    );
+
+    fireEvent.press(screen.getByLabelText('Close'));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

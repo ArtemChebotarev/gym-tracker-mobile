@@ -12,8 +12,9 @@ describe('WelcomeDialog', () => {
     expect(screen.getByText('Pick your days and exercises.')).toBeTruthy();
     expect(screen.getByText('Find your weight')).toBeTruthy();
     expect(screen.getByText('We handle progression')).toBeTruthy();
-    // The only control: no cross, and nothing that leads on to creating a cycle (08.11).
-    expect(screen.getAllByRole('button')).toHaveLength(1);
+    // Two controls, both of them closing it, and nothing that leads on to creating a cycle (08.11).
+    expect(screen.getAllByRole('button')).toHaveLength(2);
+    expect(screen.getByLabelText('Close')).toBeTruthy();
     expect(screen.getByText('Got it')).toBeTruthy();
   });
 
@@ -22,6 +23,15 @@ describe('WelcomeDialog', () => {
     render(<WelcomeDialog visible onDismiss={onDismiss} />);
 
     fireEvent.press(screen.getByText('Got it'));
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  test('the cross in the corner dismisses it exactly as Got it does', () => {
+    const onDismiss = jest.fn();
+    render(<WelcomeDialog visible onDismiss={onDismiss} />);
+
+    fireEvent.press(screen.getByLabelText('Close'));
 
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
