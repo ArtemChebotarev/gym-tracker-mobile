@@ -285,6 +285,13 @@ function WeightSwapPopoverPlate({
   if (popover.kind === 'no-history') {
     return (
       <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
+        <RangeTrack
+          outer={popover.corridor.outer}
+          inner={popover.corridor.inner}
+          labels={popover.corridor.labels}
+          accessibilityLabel={`${popover.corridor.caption}: ${popover.corridor.inner.min} to ${popover.corridor.inner.max}`}
+        />
+        <Text style={styles.corridorCaption}>{popover.corridor.caption}</Text>
         <View style={styles.popoverSteps}>
           {popover.steps.map((step, index) => (
             <PlateRow key={index} leading={{ number: index + 1 }} text={step} />

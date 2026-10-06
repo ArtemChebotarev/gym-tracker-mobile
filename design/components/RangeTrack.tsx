@@ -31,8 +31,8 @@ export type RangeTrackProps = {
   outer: RangeTrackRange;
   /** The span drawn solid inside it. */
   inner: RangeTrackRange;
-  /** The value the dot marks. */
-  marker: number;
+  /** The value the dot marks. Without one there is no dot — a span to read, not a value to point at. */
+  marker?: number;
   labels: readonly RangeTrackLabel[];
   accessibilityLabel: string;
 };
@@ -91,10 +91,12 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
             ]}
           />
         </View>
-        <View
-          testID="range-track-marker"
-          style={[styles.marker, { left: toPercent(share(marker)) }]}
-        />
+        {marker !== undefined && (
+          <View
+            testID="range-track-marker"
+            style={[styles.marker, { left: toPercent(share(marker)) }]}
+          />
+        )}
       </View>
       <View style={styles.labels}>
         {labels.map((label) => {

@@ -5,6 +5,7 @@ import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 import type { PlateTextPart } from '@design/components/PlateRow';
+import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
@@ -285,7 +286,18 @@ export type WeightSwapPopover =
       labels: { value: number; text: string }[];
       legend: WeightSwapLegendRow[];
     }
-  | { kind: 'no-history'; title: string; steps: PlateTextPart[][] };
+  | {
+      kind: 'no-history';
+      title: string;
+      /** The corridor a set has to land in, drawn as the Reps plate always draws a span: dashes with the accent bar over the part to aim for. */
+      corridor: {
+        outer: RangeTrackRange;
+        inner: RangeTrackRange;
+        labels: RangeTrackLabel[];
+        caption: string;
+      };
+      steps: PlateTextPart[][];
+    };
 
 export function weightSwapPopover(
   row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
@@ -296,7 +308,16 @@ export function weightSwapPopover(
   }
   const swap = row.weightSwap;
   if ('unavailable' in swap) {
-    const effort = targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`;
+    // How hard to take the set: the reserve the week asks for, and at the last week's 0 RIR there
+    // is none to name — it is failure.
+    const effortStep: PlateTextPart[] =
+      targetRir === 0
+        ? ['Take each set ', { strong: 'to failure' }, '.']
+        : [
+            'Stop each set with ',
+            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`} in reserve` },
+            '.',
+          ];
     // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
     // and the corridor a set has to land in — the engine builds its rep targets and weight ranges
     // on it (03) — how hard to take it, then what the app does for you next time.
@@ -304,9 +325,20 @@ export function weightSwapPopover(
     return {
       kind: 'no-history',
       title: 'Not enough history yet',
+      // Dashes a corridor-width of margin either side, so the accent bar reads as a stretch inside
+      // a longer scale and its two ends have room for their numbers.
+      corridor: {
+        outer: { min: 0, max: minReps + maxReps },
+        inner: { min: minReps, max: maxReps },
+        labels: [
+          { value: minReps, text: `${minReps}` },
+          { value: maxReps, text: `${maxReps}` },
+        ],
+        caption: 'Reps per set',
+      },
       steps: [
         ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],
-        ['Stop each set with ', { strong: `${effort} in reserve` }, '.'],
+        effortStep,
         ['Log this workout.'],
         ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
       ],

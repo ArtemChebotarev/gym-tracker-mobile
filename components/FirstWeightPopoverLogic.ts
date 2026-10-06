@@ -24,12 +24,17 @@ export const WARM_UP_STEPS: readonly WarmUpStep[] = [
 export const WARM_UP_NOTE = "Warm-up sets aren't logged here.";
 
 /**
- * The bold lead of the summary — the RIR is the exercise's own target, so it's right on any week.
- * A session exercise may have none recorded; the sentence then says it without a number.
+ * The bold lead of the summary — the RIR is the exercise's own target, so it's right on any week. A
+ * session exercise may have none recorded; the sentence then says it without a number. And at the
+ * last week's 0 RIR the target is failure, said as that: "stop at 0 RIR" reads as a typo (Artem,
+ * 06.10.2026).
  */
 export function firstWeightLead(targetRir: number | undefined): string {
-  return targetRir === undefined
-    ? 'Then do a working set and stop a few reps short of failure.'
+  if (targetRir === undefined) {
+    return 'Then do a working set and stop a few reps short of failure.';
+  }
+  return targetRir === 0
+    ? 'Then do a working set and go to failure.'
     : `Then do a working set and stop at ${targetRir} RIR.`;
 }
 

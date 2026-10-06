@@ -766,6 +766,11 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     openInfo();
 
     expect(screen.getByText('Not enough history yet')).toBeTruthy();
+    // The 5–30 corridor as a track — the existing one, accent bar over the part to aim for — with
+    // its two ends named and no dot, since it marks a span and not a value.
+    expect(screen.getByTestId('range-track')).toBeTruthy();
+    expect(screen.queryByTestId('range-track-marker')).toBeNull();
+    expect(screen.getByText('Reps per set')).toBeTruthy();
     // Four numbered steps, not a paragraph (08.11) — the 5–30 rep corridor the engine builds on first.
     expect(screen.getByText('Pick a weight you can lift for 5–30 reps.')).toBeTruthy();
     expect(screen.getByText('Stop each set with about 3 reps in reserve.')).toBeTruthy();

@@ -155,3 +155,19 @@ describe('RangeTrack label alignment', () => {
     expect(placedLeft('end') - placedLeft('center')).toBeCloseTo(-20);
   });
 });
+
+describe('RangeTrack without a marker', () => {
+  test('draws the span and no dot — a stretch to read, not a value to point at', () => {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        labels={[{ value: 5, text: '5' }, { value: 30, text: '30' }]}
+        accessibilityLabel="Reps per set: 5 to 30"
+      />,
+    );
+
+    expect(screen.getByTestId('range-track-inner')).toBeTruthy();
+    expect(screen.queryByTestId('range-track-marker')).toBeNull();
+  });
+});

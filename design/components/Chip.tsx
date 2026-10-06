@@ -38,6 +38,12 @@ type StaticChipProps = {
    * (the first-weight ladder's `12 reps` / `8 reps` / `4 reps`, 08.11). A `SIZES` token.
    */
   width?: number;
+  /**
+   * The accent tint — dark green fill, green outline and text — for a chip that carries the point of
+   * the plate it sits on, like the first-weight ladder's rep counts (08.11). The same pair the
+   * accent has everywhere it is a wash rather than a fill.
+   */
+  accent?: boolean;
 };
 
 type CounterChipProps = {
@@ -75,14 +81,16 @@ export function Chip(props: ChipProps) {
         style={[
           styles.container,
           props.compact && styles.compact,
-          styles.unselected,
+          props.accent ? styles.accentTint : styles.unselected,
           props.width !== undefined && { width: props.width, justifyContent: 'center' },
         ]}
       >
         {props.dotColor !== undefined && (
           <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
         )}
-        <Text style={[styles.label, styles.unselectedLabel]}>{props.label}</Text>
+        <Text style={[styles.label, props.accent ? styles.accentLabel : styles.unselectedLabel]}>
+          {props.label}
+        </Text>
       </View>
     );
   }
@@ -123,6 +131,13 @@ const styles = StyleSheet.create({
   unselected: {
     backgroundColor: COLORS['surface/card'],
     borderColor: COLORS['border/default'],
+  },
+  accentTint: {
+    backgroundColor: COLORS['accent/bg'],
+    borderColor: COLORS['accent/border'],
+  },
+  accentLabel: {
+    color: COLORS.accent,
   },
   label: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

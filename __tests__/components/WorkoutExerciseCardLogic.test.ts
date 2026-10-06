@@ -396,6 +396,17 @@ describe('the weight swap popover and note', () => {
       ).toEqual({
         kind: 'no-history',
         title: 'Not enough history yet',
+        // The 5–30 corridor as the Reps plate draws every span: dashes, the accent bar over the
+        // part to aim for, the two ends named.
+        corridor: {
+          outer: { min: 0, max: 35 },
+          inner: { min: 5, max: 30 },
+          labels: [
+            { value: 5, text: '5' },
+            { value: 30, text: '30' },
+          ],
+          caption: 'Reps per set',
+        },
         steps: [
           ['Pick a weight you can lift for ', { strong: '5–30 reps' }, '.'],
           ['Stop each set with ', { strong: 'about 3 reps in reserve' }, '.'],
@@ -403,6 +414,33 @@ describe('the weight swap popover and note', () => {
           ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
         ],
       });
+    });
+
+    test('with no history at the last week’s 0 RIR it says failure, not "about 0 reps in reserve"', () => {
+      const popover = weightSwapPopover(
+        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
+        0,
+      );
+
+      expect(popover).toMatchObject({ kind: 'no-history' });
+      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
+        'Take each set ',
+        { strong: 'to failure' },
+        '.',
+      ]);
+    });
+
+    test('with no history and no recorded RIR it says how hard without a number', () => {
+      const popover = weightSwapPopover(
+        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
+        undefined,
+      );
+
+      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
+        'Stop each set with ',
+        { strong: 'a few reps in reserve' },
+        '.',
+      ]);
     });
 
     test('no swap, no popover — a deload set or a pure bodyweight one', () => {
