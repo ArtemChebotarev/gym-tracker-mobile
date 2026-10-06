@@ -45,6 +45,12 @@ export function popoverLayout(
   window: WindowSize,
   margin: number,
   arrowSize: number,
+  /**
+   * How far the plate's edge is from the anchor's. Defaults to the arrow's overlap, which puts the
+   * arrow's tip on the anchor — right for a Popover, whose anchor is the thing it explains. A
+   * coachmark's anchor has a ring round it, and wants the arrow to stop short of that.
+   */
+  distance: number = arrowSize / 2,
 ): PopoverLayout {
   const overlap = arrowSize / 2;
   const plateWidth = window.width - margin * 2;
@@ -57,6 +63,6 @@ export function popoverLayout(
   );
   const base = { left: margin, right: margin, arrowLeft };
   return anchor.y + anchor.height < window.height / 2
-    ? { ...base, placement: 'below', top: anchor.y + anchor.height + overlap }
-    : { ...base, placement: 'above', bottom: window.height - anchor.y + overlap };
+    ? { ...base, placement: 'below', top: anchor.y + anchor.height + distance }
+    : { ...base, placement: 'above', bottom: window.height - anchor.y + distance };
 }

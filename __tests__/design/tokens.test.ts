@@ -74,6 +74,7 @@ const EXPECTED_RADIUS_TOKENS = [
   'radius/segment-inner',
   'radius/small',
   'radius/progress',
+  'radius/arrow',
 ];
 
 const EXPECTED_SPACING_TOKENS = [
@@ -93,6 +94,7 @@ const EXPECTED_SPACING_TOKENS = [
   'space/button',
   'space/pill-x',
   'space/xl',
+  'space/coachmark-button',
   'space/dialog',
   'space/dialog-y',
   'space/empty-lift',
