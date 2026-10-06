@@ -20,11 +20,11 @@
 // worse than a plate that doesn't point anywhere.
 
 import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text } from 'react-native';
 
-import { arrowOffset, popoverLayout } from '../popoverLayout';
 import type { AnchorRect } from '../popoverLayout';
-import { COLORS, RADII, SHADOWS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { AnchoredPlate } from './AnchoredPlate';
 
 export type PopoverProps = {
   visible: boolean;
@@ -45,12 +45,6 @@ export function Popover({
   subtitle,
   children,
 }: PopoverProps) {
-  const window = useWindowDimensions();
-  const layout =
-    anchor === null
-      ? null
-      : popoverLayout(anchor, window, SPACING['space/screen'], SIZES['size/popover-arrow']);
-
   const body = (
     <>
       <Text style={styles.title}>{title}</Text>
@@ -67,73 +61,17 @@ export function Popover({
         style={styles.backdrop}
         onPress={onClose}
       />
-      {layout === null ? (
-        <View style={styles.centered} pointerEvents="box-none">
-          <View testID="popover" style={[styles.plate, styles.floating]}>
-            {body}
-          </View>
-        </View>
-      ) : (
-        <View
-          testID="popover"
-          style={[
-            styles.plate,
-            styles.anchored,
-            layout.placement === 'below'
-              ? { left: layout.left, right: layout.right, top: layout.top }
-              : { left: layout.left, right: layout.right, bottom: layout.bottom },
-          ]}
-        >
-          <View
-            testID="popover-arrow"
-            style={[
-              styles.arrow,
-              layout.placement === 'below' ? styles.arrowUp : styles.arrowDown,
-              { left: layout.arrowLeft },
-            ]}
-          />
-          {body}
-        </View>
-      )}
+      <AnchoredPlate testID="popover" anchor={anchor}>
+        {body}
+      </AnchoredPlate>
     </Modal>
   );
 }
-
-const ARROW_OFFSET = arrowOffset(SIZES['size/popover-arrow']);
 
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFill,
     backgroundColor: COLORS['overlay/scrim'],
-  },
-  centered: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-  },
-  anchored: {
-    position: 'absolute',
-  },
-  floating: {
-    marginHorizontal: SPACING['space/screen'],
-  },
-  plate: {
-    backgroundColor: COLORS['surface/popover'],
-    borderRadius: RADII['radius/control'],
-    padding: SPACING['space/screen'],
-    ...SHADOWS['shadow/overlay'],
-  },
-  arrow: {
-    position: 'absolute',
-    width: SIZES['size/popover-arrow'],
-    height: SIZES['size/popover-arrow'],
-    backgroundColor: COLORS['surface/popover'],
-    transform: [{ rotate: '45deg' }],
-  },
-  arrowUp: {
-    top: ARROW_OFFSET,
-  },
-  arrowDown: {
-    bottom: ARROW_OFFSET,
   },
   title: {
     fontSize: TYPOGRAPHY['type/row-title'].fontSize,
