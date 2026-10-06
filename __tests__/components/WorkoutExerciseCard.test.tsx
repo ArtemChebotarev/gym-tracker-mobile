@@ -838,3 +838,60 @@ describe('Weight ⓘ — finding your weight', () => {
     expect(screen.queryByText('Finding your weight')).toBeNull();
   });
 });
+
+// GT-40 · the `N RIR` badge is a button that says what RIR is (08.11).
+describe('RIR badge popover', () => {
+  const badge = () => screen.getByTestId('exercise-rir');
+
+  test('DoD: a tap opens the explanation with the card’s own RIR', () => {
+    render(<WorkoutExerciseCard {...makeProps()} />);
+
+    fireEvent.press(badge());
+
+    // LIVE_EXERCISE: targetRir 2, and its next set has target reps.
+    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+    expect(screen.queryByText(/no rep target yet/)).toBeNull();
+  });
+
+  test('a set with no target reps — week 1 — also tells how to find them', () => {
+    const noTargets = makeExercise({
+      targetRir: 3,
+      rows: [{ setNumber: 1, isFirstUnlogged: true }, { setNumber: 2, isFirstUnlogged: false }],
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: noTargets })} />);
+
+    fireEvent.press(badge());
+
+    expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'There is no rep target yet. Do as many reps as it takes to reach 3 RIR and enter them.',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('DoD: it works on a deload week too, with the deload text', () => {
+    const deload = makeExercise({ targetRir: 8 });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: deload, isDeload: true })} />);
+
+    fireEvent.press(badge());
+
+    expect(screen.getByText('Deload week')).toBeTruthy();
+    expect(
+      screen.getByText("Don't push: aim to finish each set with about 8 reps left."),
+    ).toBeTruthy();
+  });
+
+  test('a read-only card still explains its badge, and never claims a missing rep target', () => {
+    render(
+      <WorkoutExerciseCard {...makeProps({ mode: 'readonly', exercise: COMPLETED_EXERCISE })} />,
+    );
+
+    fireEvent.press(badge());
+
+    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+    expect(screen.queryByText(/no rep target yet/)).toBeNull();
+  });
+});

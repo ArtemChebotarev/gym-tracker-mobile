@@ -5,6 +5,7 @@ import {
   exerciseCardView,
   firstUnloggedRow,
   formatWeightHint,
+  hasRepTarget,
   holdLoggedWeight,
   showsGroupChip,
   weightFieldText,
@@ -290,6 +291,33 @@ describe('the weight swap popover and note', () => {
 
     test('nothing once every set is logged', () => {
       expect(firstUnloggedRow([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBeUndefined();
+    });
+  });
+
+  describe('hasRepTarget', () => {
+    test('the set next to do has target reps', () => {
+      const rows = [{ setNumber: 1, targetReps: 10, isFirstUnlogged: true }] as WorkoutSetRow[];
+
+      expect(hasRepTarget(rows)).toBe(true);
+    });
+
+    test('week 1: the set next to do has none', () => {
+      const rows = [{ setNumber: 1, isFirstUnlogged: true }] as WorkoutSetRow[];
+
+      expect(hasRepTarget(rows)).toBe(false);
+    });
+
+    test('only the set next to do counts, not a later one', () => {
+      const rows = [
+        { setNumber: 1, targetReps: 10, isFirstUnlogged: true },
+        { setNumber: 2, isFirstUnlogged: false },
+      ] as WorkoutSetRow[];
+
+      expect(hasRepTarget(rows)).toBe(true);
+    });
+
+    test('a card with no set left to do is not missing a target', () => {
+      expect(hasRepTarget([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBe(true);
     });
   });
 

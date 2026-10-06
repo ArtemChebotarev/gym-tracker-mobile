@@ -17,7 +17,7 @@
 // exercise's later unlogged sets (task 106, `carryWeightForward`). Reps stay in the row — they
 // don't carry.
 //
-// The RIR is a static `Chip`, not the neutral `Badge` 08.7 names: `Badge` neutral fills with
+// The RIR is a static `Chip` (inside `RirBadge`, a button that explains it — GT-40), not the neutral `Badge` 08.7 names: `Badge` neutral fills with
 // `surface/card`, the card's own background, so on the card it read as bare text. The chip's
 // `border/default` outline keeps it visibly a chip (Artem's review).
 //
@@ -28,7 +28,6 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import { Chip } from '@design/components/Chip';
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
@@ -57,6 +56,7 @@ import {
   estimateNote,
   exerciseCardView,
   firstUnloggedRow,
+  hasRepTarget,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -64,6 +64,8 @@ import {
 } from './WorkoutExerciseCardLogic';
 import { FirstWeightPopover } from './FirstWeightPopover';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
+import { RirBadge } from './RirBadge';
+import { rirExplanation } from './RirExplanationLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { styles } from './WorkoutExerciseCardStyles';
 import { usePopoverAnchor } from './usePopoverAnchor';
@@ -142,12 +144,17 @@ export function WorkoutExerciseCard({
             )}
           </View>
           <View style={styles.titleActions}>
-            {view.rirLabel !== undefined && (
-              // Chip's own `alignSelf: flex-start` would pin it to the top of the row; the wrapper
-              // is what gets centered against the buttons.
-              <View testID="exercise-rir">
-                <Chip variant="static" label={view.rirLabel} compact />
-              </View>
+            {view.rirLabel !== undefined && exercise.targetRir !== undefined && (
+              <RirBadge
+                label={view.rirLabel}
+                explanation={rirExplanation({
+                  targetRir: exercise.targetRir,
+                  isDeload,
+                  // Read off the set next to do, as the Reps ⓘ does. A card with no set left to do
+                  // (all logged) has nothing to find, so it counts as having a target.
+                  hasRepTarget: hasRepTarget(exercise.rows),
+                })}
+              />
             )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>
               <HistoryIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
