@@ -35,7 +35,7 @@ export function rirExplanation({
     targetRir === 0
       ? ["Stop a set when you can't do another rep. The number drops each week, and this is the last."]
       : [
-          `Stop a set when you could do about ${targetRir} more. The number drops each week, and in the last one you go to 0.`,
+          `Stop a set when you could do about ${targetRir} more. The number drops each week, and in the last one you go to failure.`,
         ];
   if (!hasRepTarget) {
     paragraphs.push(

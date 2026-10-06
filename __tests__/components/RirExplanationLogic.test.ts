@@ -6,7 +6,7 @@ describe('rirExplanation', () => {
 
     expect(text.title).toBe('3 RIR means 3 reps in reserve');
     expect(text.paragraphs).toEqual([
-      'Stop a set when you could do about 3 more. The number drops each week, and in the last one you go to 0.',
+      'Stop a set when you could do about 3 more. The number drops each week, and in the last one you go to failure.',
     ]);
   });
 
