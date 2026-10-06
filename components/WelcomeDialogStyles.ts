@@ -5,7 +5,7 @@ import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
 export const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
-    gap: SPACING['space/section'],
+    gap: SPACING['space/dialog'],
   },
   title: {
     maxWidth: SIZES['size/dialog-title'],
@@ -15,8 +15,8 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   steps: {
-    marginVertical: SPACING['space/section'],
-    gap: SPACING['space/md'],
+    marginVertical: SPACING['space/dialog'],
+    gap: SPACING['space/sheet'],
   },
   step: {
     flexDirection: 'row',

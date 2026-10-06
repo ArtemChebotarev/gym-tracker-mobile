@@ -47,7 +47,8 @@ const styles = StyleSheet.create({
   card: {
     width: SIZES['size/dialog'],
     flexShrink: 1,
-    padding: SPACING['space/sheet'],
+    paddingHorizontal: SPACING['space/dialog'],
+    paddingVertical: SPACING['space/dialog-y'],
     borderRadius: RADII['radius/sheet'],
     backgroundColor: COLORS['surface/sheet'],
     ...SHADOWS['shadow/overlay'],

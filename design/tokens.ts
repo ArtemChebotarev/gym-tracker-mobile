@@ -162,6 +162,10 @@ export const SPACING = {
   'space/button': 15,
   'space/pill-x': 18,
   'space/xl': 24,
+  /** Inside a Dialog's card, all round: the card is the room around its message, so it is given more of it than a sheet (08.11). */
+  'space/dialog': 32,
+  /** Above and below a Dialog's content: a little more than at its sides, so the card reads as taller than it is wide-padded (08.11). */
+  'space/dialog-y': 40,
   /**
    * How far above the geometric centre an EmptyState sits: the eye reads the middle of a screen
    * higher than the middle of the room it is measured in, and a tall icon over light text pulls
@@ -298,8 +302,11 @@ export const SIZES = {
    * Reps column header (08.7.1). Drawn at 24, 44pt to the touch through `tapTargetSlop`.
    */
   'size/glyph-button': 24,
-  /** A Dialog's card (08.11): wider than a Popover, narrower than a phone, so it floats clear of both edges. */
-  'size/dialog': 342,
+  /**
+   * A Dialog's card (08.11): wide enough for 316 of content inside `space/dialog` padding, and
+   * still clear of both edges of a phone — a narrower one squeezes it (the card shrinks).
+   */
+  'size/dialog': 380,
   /** How wide a Dialog's title may run, so a long one wraps to two lines instead of touching the edges (08.11). */
   'size/dialog-title': 260,
   /** The Hybro wordmark's drawn width in the Welcome dialog (08.11); its height follows the artwork. */
