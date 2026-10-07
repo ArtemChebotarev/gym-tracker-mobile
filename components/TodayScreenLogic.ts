@@ -102,3 +102,22 @@ export function shouldShowWorkoutCoachmarks(
     !session.isDeload
   );
 }
+
+/**
+ * Whether the first-deload popup shows over the Today tab (08.11, GT-43): once, on the first live
+ * deload session the app opens, after the Welcome dialog. The flag is set when it is closed, so an
+ * app killed with it open shows it again; and the flags must have been read.
+ */
+export function shouldShowDeloadIntro(
+  flags: OnboardingFlags | undefined,
+  session: { mode: WorkoutMode; isDeload: boolean } | undefined,
+): boolean {
+  return (
+    flags !== undefined &&
+    flags.welcomeSeen &&
+    !flags.deloadIntroSeen &&
+    session !== undefined &&
+    session.mode === 'live' &&
+    session.isDeload
+  );
+}

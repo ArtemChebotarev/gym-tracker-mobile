@@ -56,10 +56,12 @@ import { BodyWeightSheet } from '@components/BodyWeightSheet';
 import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
 import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
+import { DeloadIntroDialog } from '@components/DeloadIntroDialog';
 import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
@@ -142,6 +144,14 @@ export default function TodayScreen() {
   // session. `Got it` and `Skip` both end it, and the flag is written when it ends, not when it
   // opens, so an app killed halfway shows it again.
   const showCoachmarks = shouldShowWorkoutCoachmarks(
+    onboarding.data,
+    query.data?.kind === 'session'
+      ? { mode: query.data.model.mode, isDeload: query.data.model.header.isDeload }
+      : undefined,
+  );
+  // The first-deload popup (GT-43, 08.11): the deload session is left out of the tour above, and
+  // gets this instead — once, written when `Got it` is tapped, like the others.
+  const showDeloadIntro = shouldShowDeloadIntro(
     onboarding.data,
     query.data?.kind === 'session'
       ? { mode: query.data.model.mode, isDeload: query.data.model.header.isDeload }
@@ -367,6 +377,10 @@ export default function TodayScreen() {
       <WelcomeDialog
         visible={onboarding.data !== undefined && !onboarding.data.welcomeSeen}
         onDismiss={() => markOnboardingSeen.mutate('welcomeSeen')}
+      />
+      <DeloadIntroDialog
+        visible={showDeloadIntro}
+        onDismiss={() => markOnboardingSeen.mutate('deloadIntroSeen')}
       />
       <WorkoutScreen
         model={model}

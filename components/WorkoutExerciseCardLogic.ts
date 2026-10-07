@@ -293,8 +293,6 @@ export type WeightSwapPopover =
       corridor: {
         outer: RangeTrackRange;
         inner: RangeTrackRange;
-        /** A dot on each end of the accent bar, as the other tracks have one on the value they point at. */
-        markers: number[];
         labels: RangeTrackLabel[];
         /** Said by assistive technology; nothing is written under the track. */
         accessibilityLabel: string;
@@ -318,7 +316,7 @@ export function weightSwapPopover(
         ? ['Take each set ', { strong: 'to failure' }, '.']
         : [
             'Stop each set with ',
-            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`} in reserve` },
+            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'}`} in reserve` },
             '.',
           ];
     // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
@@ -333,7 +331,6 @@ export function weightSwapPopover(
       corridor: {
         outer: { min: 0, max: minReps + maxReps },
         inner: { min: minReps, max: maxReps },
-        markers: [minReps, maxReps],
         labels: [
           { value: minReps, text: `${minReps}` },
           { value: maxReps, text: `${maxReps}` },

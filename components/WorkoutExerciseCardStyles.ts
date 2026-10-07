@@ -107,9 +107,16 @@ export const styles = StyleSheet.create({
   },
   // The ⓘ popover's own content (08.7.1): the legend under the range track.
   // The steps of the plate shown when there is no history to read a range from.
+  // Spaced like the recommended-weight plate's legend: `space/xl` above the block, `space/dots`
+  // between its rows.
   popoverSteps: {
+    marginTop: SPACING['space/xl'],
+    gap: SPACING['space/dots'],
+  },
+  // The track's labels hang under it, so the full gap below them reads as more than the same gap
+  // above the track — pulled in so the track sits evenly between the two blocks.
+  popoverStepsAfterTrack: {
     marginTop: SPACING['space/md'],
-    gap: SPACING['space/gap'],
   },
   legend: {
     marginTop: SPACING['space/xl'],

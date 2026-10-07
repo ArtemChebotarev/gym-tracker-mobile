@@ -401,7 +401,6 @@ describe('the weight swap popover and note', () => {
         corridor: {
           outer: { min: 0, max: 35 },
           inner: { min: 5, max: 30 },
-          markers: [5, 30],
           labels: [
             { value: 5, text: '5' },
             { value: 30, text: '30' },
@@ -414,6 +413,19 @@ describe('the weight swap popover and note', () => {
           ['Log this workout.'],
           ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
         ],
+      });
+    });
+
+    test('with no history at 1 RIR it says "1 rep", not "1 reps"', () => {
+      const popover = weightSwapPopover(
+        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
+        1,
+      );
+
+      expect(popover).toMatchObject({
+        steps: expect.arrayContaining([
+          ['Stop each set with ', { strong: 'about 1 rep in reserve' }, '.'],
+        ]),
       });
     });
 

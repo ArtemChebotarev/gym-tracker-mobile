@@ -1,6 +1,7 @@
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import {
   formatInProgressConflict,
+  shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
@@ -61,5 +62,30 @@ describe('shouldShowWorkoutCoachmarks', () => {
     expect(shouldShowWorkoutCoachmarks(unseen, { mode: 'readonly', isDeload: false })).toBe(false);
     expect(shouldShowWorkoutCoachmarks(unseen, { mode: 'preview', isDeload: false })).toBe(false);
     expect(shouldShowWorkoutCoachmarks(unseen, { mode: 'live', isDeload: true })).toBe(false);
+  });
+});
+
+describe('shouldShowDeloadIntro', () => {
+  const unseen = { welcomeSeen: true, coachmarksSeen: true, deloadIntroSeen: false };
+  const deload = { mode: 'live' as const, isDeload: true };
+
+  test('DoD: on a live deload session whose popup has not been seen', () => {
+    expect(shouldShowDeloadIntro(unseen, deload)).toBe(true);
+  });
+
+  test('DoD: never again after it has been seen', () => {
+    expect(shouldShowDeloadIntro({ ...unseen, deloadIntroSeen: true }, deload)).toBe(false);
+  });
+
+  test('not while the Welcome dialog is still up, nor before the flags have been read', () => {
+    expect(shouldShowDeloadIntro({ ...unseen, welcomeSeen: false }, deload)).toBe(false);
+    expect(shouldShowDeloadIntro(undefined, deload)).toBe(false);
+  });
+
+  test('not without a session, and not on a regular or a merely read or previewed one', () => {
+    expect(shouldShowDeloadIntro(unseen, undefined)).toBe(false);
+    expect(shouldShowDeloadIntro(unseen, { mode: 'live', isDeload: false })).toBe(false);
+    expect(shouldShowDeloadIntro(unseen, { mode: 'readonly', isDeload: true })).toBe(false);
+    expect(shouldShowDeloadIntro(unseen, { mode: 'preview', isDeload: true })).toBe(false);
   });
 });

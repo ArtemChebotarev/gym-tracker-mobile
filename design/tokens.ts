@@ -254,6 +254,8 @@ export const SIZES = {
   'size/checkbox': 24,
   /** A small round mark: the workout's completed check, the editor's add-exercise "+". */
   'size/badge': 28,
+  /** The step number's circle in a compact PlateRow: as tall as a line of its text, so the rows pitch like a legend's (08.11). */
+  'size/badge-compact': 20,
   /** Stepper's inline round buttons; the editor's drag handle. */
   'size/control-inline': 32,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
@@ -323,6 +325,8 @@ export const SIZES = {
   'size/wordmark': 190,
   /** The reps chip of the first-weight ladder: one width for `12 reps`, `8 reps` and `4 reps` (08.11). */
   'size/ladder-chip': 72,
+  /** The fact chip of the deload popup: one width for `Half weight`, `Fewer sets` and `8 RIR` (08.11). */
+  'size/fact-chip': 96,
   /** The circle behind an EmptyState's icon (08.0.1). */
   'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */
