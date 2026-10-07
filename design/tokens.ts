@@ -323,6 +323,8 @@ export const SIZES = {
   'size/wordmark': 190,
   /** The reps chip of the first-weight ladder: one width for `12 reps`, `8 reps` and `4 reps` (08.11). */
   'size/ladder-chip': 72,
+  /** The fact chip of the deload popup: one width for `½ weight`, `Fewer sets` and `8 RIR` (08.11). */
+  'size/fact-chip': 96,
   /** The circle behind an EmptyState's icon (08.0.1). */
   'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */

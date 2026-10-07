@@ -3,12 +3,17 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { DeloadIntroDialog } from '@components/DeloadIntroDialog';
 
 describe('DeloadIntroDialog', () => {
-  test('DoD: the title, the explanation and a Got it, with no wordmark', () => {
+  test('DoD: the title, a lead, three facts and a Got it, with no wordmark', () => {
     render(<DeloadIntroDialog visible onDismiss={() => {}} />);
 
     expect(screen.getByText('Deload week')).toBeTruthy();
-    expect(screen.getByText(/This is the last week of your cycle/)).toBeTruthy();
-    expect(screen.getByText(/aim to finish each set with/)).toBeTruthy();
+    expect(screen.getByText('The last week of your cycle.')).toBeTruthy();
+    // Three facts, each a chip and one line — not a paragraph.
+    expect(screen.getByText('½ weight')).toBeTruthy();
+    expect(screen.getByText('Fewer sets')).toBeTruthy();
+    expect(screen.getByText('8 RIR')).toBeTruthy();
+    expect(screen.getByText(/finish each set with about 8 reps left/)).toBeTruthy();
+    expect(screen.getByText(/what you did last week/)).toBeTruthy();
     expect(screen.queryByLabelText('Hybro')).toBeNull();
     expect(screen.getByText('Got it')).toBeTruthy();
   });
