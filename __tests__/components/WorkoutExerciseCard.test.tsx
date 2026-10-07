@@ -833,14 +833,15 @@ describe('Weight ⓘ — finding your weight', () => {
     fireEvent.press(info()!);
 
     expect(screen.getByText('Finding your weight')).toBeTruthy();
+    // A warm-up before the first set, numbered 1-3, then the one set that is logged, number 4.
+    expect(screen.getByText('Warm up before your first set')).toBeTruthy();
     expect(screen.getByText('12 reps')).toBeTruthy();
-    expect(screen.getByText('Light weight')).toBeTruthy();
     expect(screen.getByText('8 reps')).toBeTruthy();
-    expect(screen.getByText('Heavier')).toBeTruthy();
     expect(screen.getByText('4 reps')).toBeTruthy();
-    expect(screen.getByText('Close to your working weight')).toBeTruthy();
+    expect(screen.getByText('Then your working set')).toBeTruthy();
     // The card's own target RIR, not a fixed number.
-    expect(screen.getByText('Then do a working set and stop at 2 RIR.')).toBeTruthy();
+    expect(screen.getByText('stop at 2 RIR')).toBeTruthy();
+    expect(screen.getByText('log it')).toBeTruthy();
     expect(screen.getByText("Warm-up sets aren't logged here.")).toBeTruthy();
 
     fireEvent.press(screen.getByRole('button', { name: 'Close' }));
