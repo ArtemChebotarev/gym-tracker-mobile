@@ -959,7 +959,10 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
             >
               Planned
             </Text>
-            <View>
+            <View
+              onLayout={[Function]}
+              testID="planned-rows"
+            >
               <View
                 style={
                   {
@@ -1638,7 +1641,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
             >
               Planned
             </Text>
-            <View>
+            <View
+              onLayout={[Function]}
+              testID="planned-rows"
+            >
               <View
                 style={
                   {

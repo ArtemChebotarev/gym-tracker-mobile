@@ -41,7 +41,7 @@
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
@@ -77,6 +77,9 @@ import {
   START_CYCLE_STEP,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
+
+/** How long the tab is left alone before the `Start` hint comes up over it. */
+const START_HINT_DELAY_MS = 1000;
 
 export type MesocyclesScreenProps = {
   mesocycles: Mesocycle[] | undefined;
@@ -132,6 +135,19 @@ export function MesocyclesScreen({
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
   const methodSheet = useMesoCreationMethodSheet();
   const startRef = useRef<View>(null);
+  // The hint rings a measured pill, so it waits until the Planned rows have been laid out: measured
+  // on the commit that mounts them, it landed where the row was before layout.
+  const [plannedLaidOut, setPlannedLaidOut] = useState(false);
+  // And a beat after that, so the screen is seen before something lands on it: a hint that is
+  // already there when the tab opens reads as the screen's own dim, not as a hint.
+  const [startHintDue, setStartHintDue] = useState(false);
+  useEffect(() => {
+    if (!plannedLaidOut) {
+      return;
+    }
+    const timer = setTimeout(() => setStartHintDue(true), START_HINT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [plannedLaidOut]);
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
@@ -231,7 +247,7 @@ export function MesocyclesScreen({
             {groups.planned.length > 0 && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Planned</Text>
-                <View>
+                <View testID="planned-rows" onLayout={() => setPlannedLaidOut(true)}>
                   {groups.planned.map((mesocycle, index) => (
                     <ListRow
                       key={mesocycle.id}
@@ -291,7 +307,7 @@ export function MesocyclesScreen({
 
       {onStartCoachmarkClose !== undefined && !isPending && (
         <CoachmarkTour
-          visible={showStartCoachmark(groups, startCycleSeen)}
+          visible={startHintDue && showStartCoachmark(groups, startCycleSeen)}
           steps={[
             { targetRef: startRef, ...START_CYCLE_STEP, ringRadius: RADII['radius/capsule'] },
           ]}

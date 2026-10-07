@@ -197,7 +197,12 @@ describe('MesocyclesRoute — first Start (GT-50)', () => {
   test('DoD: the first Planned cycle gets the Start hint, once; closing it is remembered', async () => {
     await renderWithPlannedCycle({ hintSeen: false });
 
-    expect(await screen.findByText('Your cycle is ready')).toBeTruthy();
+    // Jest has no layout pass: the Planned rows report theirs by hand, and the hint then waits a beat.
+    fireEvent(screen.getByTestId('planned-rows'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 402, height: 80 } },
+    });
+    expect(screen.queryByText('Your cycle is ready')).toBeNull();
+    expect(await screen.findByText('Your cycle is ready', {}, { timeout: 3000 })).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
 
     await waitFor(async () =>
