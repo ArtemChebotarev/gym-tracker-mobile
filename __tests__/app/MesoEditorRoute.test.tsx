@@ -194,7 +194,8 @@ describe('MesoEditorRoute — closing', () => {
     const subscribe = jest.spyOn(BackHandler, 'addEventListener');
     renderEditor();
 
-    const handler = subscribe.mock.calls.find(([event]) => event === 'hardwareBackPress')?.[1];
+    const handler = subscribe.mock.calls.find(([event]) => event === 'hardwareBackPress')?.[1] as
+      (() => boolean) | undefined;
     expect(handler).toBeDefined();
     expect(handler?.()).toBe(true);
 
