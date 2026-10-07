@@ -25,16 +25,18 @@ export type PlateRowProps = {
    * legend. Numbers only — an icon does not fit in it.
    */
   compact?: boolean;
+  /** The accent tint on the mark — the one row of a plate the rest of it leads up to (08.11). */
+  accent?: boolean;
 };
 
-export function PlateRow({ leading, text, compact = false }: PlateRowProps) {
+export function PlateRow({ leading, text, compact = false, accent = false }: PlateRowProps) {
   return (
     <View style={styles.row}>
-      <View testID="plate-row-mark" style={[styles.mark, compact && styles.markCompact]}>
+      <View testID="plate-row-mark" style={[styles.mark, compact && styles.markCompact, accent && styles.markAccent]}>
         {'icon' in leading ? (
           <leading.icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
         ) : (
-          <Text style={styles.number}>{leading.number}</Text>
+          <Text style={[styles.number, accent && styles.numberAccent]}>{leading.number}</Text>
         )}
       </View>
       <PlateText parts={text} style={styles.text} />
@@ -58,6 +60,13 @@ const styles = StyleSheet.create({
   },
   markCompact: {
     ...circle(SIZES['size/badge-compact']),
+  },
+  markAccent: {
+    backgroundColor: COLORS['accent/bg'],
+    borderColor: COLORS['accent/border'],
+  },
+  numberAccent: {
+    color: COLORS.accent,
   },
   number: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

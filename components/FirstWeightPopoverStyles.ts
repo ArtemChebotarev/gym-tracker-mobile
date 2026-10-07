@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
   // `type/label` is the SDK's one capitalized section header (08.0).
@@ -12,30 +12,15 @@ export const styles = StyleSheet.create({
     textTransform: TYPOGRAPHY['type/label'].textTransform,
     color: COLORS['text/muted'],
   },
-  ladder: {
+  // The one block that is logged, in the accent the plate keeps for what its meaning rests on.
+  workingLabel: {
     marginTop: SPACING['space/gap-tight'],
-    gap: SPACING['space/gap-tight'],
+    color: COLORS.accent,
   },
-  step: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING['space/gap'],
-  },
-  stepText: {
-    flex: 1,
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS['text/secondary'],
-  },
-  summary: {
-    marginTop: SPACING['space/md'],
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
-    color: COLORS['text/secondary'],
-  },
-  summaryLead: {
-    fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
-    color: COLORS['text/primary'],
+  // Rows are spaced like every plate's on the workout screen: `space/dots` between them.
+  rows: {
+    marginTop: SPACING['space/gap-tight'],
+    gap: SPACING['space/dots'],
   },
   // As big as the lines above it, only quieter: at caption size the note read as fine print next to
   // the ladder it qualifies (Artem, 06.10.2026).
@@ -44,5 +29,10 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
+  },
+  separator: {
+    marginTop: SPACING['space/gap'],
+    height: BORDER_WIDTHS['border/default'],
+    backgroundColor: COLORS['border/default'],
   },
 });
