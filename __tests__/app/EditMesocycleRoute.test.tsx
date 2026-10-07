@@ -91,6 +91,16 @@ describe('EditMesocycleRoute', () => {
     expect(screen.getByDisplayValue('Edit Route Block')).toBeTruthy();
   });
 
+  test('DoD (GT-52): closing an edit never asks — the planned cycle is already saved', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await openEditorOn(makePlanned('edit-route-close'));
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
   test('Save mesocycle writes the edited draft over the same mesocycle and closes', async () => {
     const planned = makePlanned('edit-route-save');
     await openEditorOn(planned);

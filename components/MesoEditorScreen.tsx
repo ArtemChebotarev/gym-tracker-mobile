@@ -20,8 +20,8 @@
 // words: "Я хочу это видеть как виджет, внутри которого меняется контент при передвижении вперёд
 // назад, но выравнивание и т.д. остаются на месте." One mounted component, step-driven content,
 // is the only way to actually get that — see design/components/WizardScreen.tsx.
-import { useMemo, useState, type ReactNode } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Alert, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { toExerciseId, type ExerciseId } from '@domain/catalog';
@@ -41,6 +41,13 @@ import {
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
 import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
+import {
+  DISCARD_DRAFT_MESSAGE,
+  DISCARD_DRAFT_TITLE,
+  DISCARD_LABEL,
+  hasUnsavedDraft,
+  KEEP_EDITING_LABEL,
+} from '@components/MesoEditorScreenLogic';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
@@ -104,9 +111,19 @@ export type MesoEditorScreenProps = {
   };
   /** Flows B and C only. Absent in Flow A and when editing a planned mesocycle. */
   leadStep?: MesoEditorLeadStep;
+  /**
+   * Editing a planned mesocycle: closing never asks, because what is being edited is already saved
+   * (GT-52). A new cycle's draft exists nowhere else, so closing it with something entered asks.
+   */
+  isEditing?: boolean;
 };
 
-export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorScreenProps) {
+export function MesoEditorScreen({
+  title,
+  saveMutation,
+  leadStep,
+  isEditing = false,
+}: MesoEditorScreenProps) {
   const router = useRouter();
   const draft = useDraftStore((state) => state.mesoBuilder);
   const setDraft = useDraftStore((state) => state.setMesoBuilder);
@@ -185,9 +202,38 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
   }, [draft.exercisesByDay]);
   const exercisesQuery = useExercisesByIds(exerciseIds);
 
-  function handleClose() {
+  const discardDraft = useCallback(() => {
     resetDraft();
     router.back();
+  }, [resetDraft, router]);
+
+  // GT-52: ✕ asks before throwing away a new cycle's draft, if there is anything in it. Android's
+  // back button leaves the wizard the same way, so it asks the same question.
+  const asksBeforeClosing = !isEditing && hasUnsavedDraft(draft);
+  const confirmDiscard = useCallback(() => {
+    Alert.alert(DISCARD_DRAFT_TITLE, DISCARD_DRAFT_MESSAGE, [
+      { text: KEEP_EDITING_LABEL, style: 'cancel' },
+      { text: DISCARD_LABEL, style: 'destructive', onPress: discardDraft },
+    ]);
+  }, [discardDraft]);
+
+  useEffect(() => {
+    if (!asksBeforeClosing) {
+      return;
+    }
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      confirmDiscard();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [asksBeforeClosing, confirmDiscard]);
+
+  function handleClose() {
+    if (asksBeforeClosing) {
+      confirmDiscard();
+    } else {
+      discardDraft();
+    }
   }
 
   // Step 3's chevron: back to step 2 with that day's tab active. The draft lives in the zustand

@@ -13,5 +13,7 @@ export default function EditMesocycleRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const editMesocycleDraft = useEditPlannedMesocycleDraft(id);
 
-  return <MesoEditorScreen title="Edit training cycle" saveMutation={editMesocycleDraft} />;
+  return (
+    <MesoEditorScreen title="Edit training cycle" saveMutation={editMesocycleDraft} isEditing />
+  );
 }
