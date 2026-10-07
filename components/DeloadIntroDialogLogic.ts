@@ -19,7 +19,7 @@ export const DELOAD_INTRO_LEAD: readonly PlateTextPart[] = [
 export type DeloadFact = { chip: string; text: string };
 
 export const DELOAD_INTRO_FACTS: readonly DeloadFact[] = [
-  { chip: '½ weight', text: 'Loads drop to about half' },
+  { chip: 'Half weight', text: 'About half of your usual load' },
   { chip: 'Fewer sets', text: 'Less work to recover from' },
   { chip: '8 RIR', text: "Don't push: finish each set with about 8 reps left" },
 ];
