@@ -283,18 +283,24 @@ function WeightSwapPopoverPlate({
   onClose: () => void;
 }) {
   if (popover.kind === 'no-history') {
+    const [first, ...rest] = popover.steps;
     return (
       <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
+        {/* The weight to pick comes first, the corridor it is measured in right under it, then the
+            rest — the order Artem asked for (07.10.2026). Gaps are the recommended-weight plate's:
+            `space/xl` between blocks, `space/dots` between rows. */}
+        <View style={styles.popoverSteps}>
+          {first !== undefined && <PlateRow compact leading={{ number: 1 }} text={first} />}
+        </View>
         <RangeTrack
           outer={popover.corridor.outer}
           inner={popover.corridor.inner}
-          marker={popover.corridor.markers}
           labels={popover.corridor.labels}
           accessibilityLabel={popover.corridor.accessibilityLabel}
         />
-        <View style={styles.popoverSteps}>
-          {popover.steps.map((step, index) => (
-            <PlateRow key={index} leading={{ number: index + 1 }} text={step} />
+        <View style={[styles.popoverSteps, styles.popoverStepsAfterTrack]}>
+          {rest.map((step, index) => (
+            <PlateRow compact key={index} leading={{ number: index + 2 }} text={step} />
           ))}
         </View>
       </Popover>

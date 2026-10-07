@@ -20,12 +20,17 @@ export type PlateRowLeading = { icon: IconComponent } | { number: number };
 export type PlateRowProps = {
   leading: PlateRowLeading;
   text: readonly PlateTextPart[];
+  /**
+   * A smaller mark, as tall as the line beside it: rows of steps then pitch like the rows of a
+   * legend. Numbers only — an icon does not fit in it.
+   */
+  compact?: boolean;
 };
 
-export function PlateRow({ leading, text }: PlateRowProps) {
+export function PlateRow({ leading, text, compact = false }: PlateRowProps) {
   return (
     <View style={styles.row}>
-      <View testID="plate-row-mark" style={styles.mark}>
+      <View testID="plate-row-mark" style={[styles.mark, compact && styles.markCompact]}>
         {'icon' in leading ? (
           <leading.icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
         ) : (
@@ -50,6 +55,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS['surface/card'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
+  },
+  markCompact: {
+    ...circle(SIZES['size/badge-compact']),
   },
   number: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

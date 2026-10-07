@@ -254,6 +254,8 @@ export const SIZES = {
   'size/checkbox': 24,
   /** A small round mark: the workout's completed check, the editor's add-exercise "+". */
   'size/badge': 28,
+  /** The step number's circle in a compact PlateRow: as tall as a line of its text, so the rows pitch like a legend's (08.11). */
+  'size/badge-compact': 20,
   /** Stepper's inline round buttons; the editor's drag handle. */
   'size/control-inline': 32,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
