@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, BackHandler, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesoEditorRoute from '@app/meso-editor/new';
@@ -127,5 +127,88 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     await flushQueryNotifications();
     expect(mockBack).not.toHaveBeenCalled();
     expect(useDraftStore.getState().mesoBuilder).toEqual(FILLED_DRAFT);
+  });
+});
+
+// GT-52: ✕ and Android's back ask before throwing away a draft that has something in it.
+describe('MesoEditorRoute — closing', () => {
+  function renderEditor() {
+    renderWithRepositories(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <MesoEditorRoute />
+      </SafeAreaProvider>,
+    );
+  }
+
+  /** The buttons of the most recent Alert.alert call, pressed by label. */
+  function pressAlertButton(alertSpy: jest.SpyInstance, text: string) {
+    const buttons = alertSpy.mock.calls.at(-1)?.[2] as AlertButton[] | undefined;
+    const button = buttons?.find((candidate) => candidate.text === text);
+    if (!button) {
+      throw new Error(`No "${text}" button in the last alert`);
+    }
+    act(() => button.onPress?.());
+  }
+
+  test('DoD: closing with something entered asks, and Keep editing leaves everything as it was', () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    renderEditor();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Discard training cycle?',
+      "What you've entered won't be saved.",
+      expect.any(Array),
+    );
+    expect(mockBack).not.toHaveBeenCalled();
+    pressAlertButton(alertSpy, 'Keep editing');
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(useDraftStore.getState().mesoBuilder).toEqual(FILLED_DRAFT);
+  });
+
+  test('Discard drops the draft and closes', () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    renderEditor();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    pressAlertButton(alertSpy, 'Discard');
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(useDraftStore.getState().mesoBuilder).toEqual(DEFAULT_MESO_BUILDER_DRAFT);
+  });
+
+  test('DoD: an empty wizard closes at once, without a question', () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
+    renderEditor();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("Android's back asks the same question instead of leaving, when there is something to lose", () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const subscribe = jest.spyOn(BackHandler, 'addEventListener');
+    renderEditor();
+
+    const handler = subscribe.mock.calls.find(([event]) => event === 'hardwareBackPress')?.[1];
+    expect(handler).toBeDefined();
+    expect(handler?.()).toBe(true);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(mockBack).not.toHaveBeenCalled();
+    subscribe.mockRestore();
+  });
+
+  test("Android's back is left alone while the wizard is empty", () => {
+    const subscribe = jest.spyOn(BackHandler, 'addEventListener');
+    useDraftStore.setState({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT });
+    renderEditor();
+
+    expect(subscribe.mock.calls.some(([event]) => event === 'hardwareBackPress')).toBe(false);
+    subscribe.mockRestore();
   });
 });
