@@ -73,7 +73,11 @@ import {
   showsHeaderActions,
 } from './WorkoutScreenLogic';
 import { styles } from './WorkoutScreenStyles';
+import { useDelayedFlag } from './useDelayedFlag';
 import { useTabBarClearance } from './useTabBarClearance';
+
+/** How long the first-workout tour waits after the workout is up. */
+const TOUR_DELAY_MS = 1000;
 
 export type WorkoutScreenProps = {
   model: WorkoutSessionModel | undefined;
@@ -166,6 +170,9 @@ export function WorkoutScreen({
   onBack,
 }: WorkoutScreenProps) {
   const tabBarClearance = useTabBarClearance();
+  // The tour comes up a beat after the workout does: right after Start the tab is still arriving,
+  // and a tour already over it reads as the screen's dim, not as a hint.
+  const tourDue = useDelayedFlag(coachmarks?.visible === true, TOUR_DELAY_MS);
   // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
   const tourRir = useRef<View>(null);
   const tourWeight = useRef<View>(null);
@@ -314,7 +321,7 @@ export function WorkoutScreen({
       </RootScreen>
       {coachmarks !== undefined && (
         <CoachmarkTour
-          visible={coachmarks.visible}
+          visible={tourDue}
           onFinish={coachmarks.onFinish}
           steps={workoutCoachmarks({
             exercise: model.exercises[0],

@@ -474,7 +474,7 @@ describe('First-workout coachmarks', () => {
     await welcomeClosed();
     const first = renderToday();
 
-    expect(await screen.findByText(/^1 of \d$/)).toBeTruthy();
+    expect(await screen.findByText(/^1 of \d$/, {}, { timeout: 3000 })).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Next' }));
     fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
 
@@ -499,7 +499,7 @@ describe('First-workout coachmarks', () => {
   test('DoD: Next walks to the last step, and Got it ends it the same way', async () => {
     await welcomeClosed();
     renderToday();
-    await screen.findByText(/^1 of \d$/);
+    await screen.findByText(/^1 of \d$/, {}, { timeout: 3000 });
 
     // Press Next until the button turns into Got it; the step count is the workout's own.
     while (screen.queryByRole('button', { name: 'Got it' }) === null) {

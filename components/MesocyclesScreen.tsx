@@ -41,7 +41,7 @@
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
@@ -58,6 +58,7 @@ import type { LoadError } from '@state/loadError';
 import { LoadErrorState } from './LoadErrorState';
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
+import { useDelayedFlag } from './useDelayedFlag';
 import { useTabBarClearance } from './useTabBarClearance';
 
 import {
@@ -138,16 +139,8 @@ export function MesocyclesScreen({
   // The hint rings a measured pill, so it waits until the Planned rows have been laid out: measured
   // on the commit that mounts them, it landed where the row was before layout.
   const [plannedLaidOut, setPlannedLaidOut] = useState(false);
-  // And a beat after that, so the screen is seen before something lands on it: a hint that is
-  // already there when the tab opens reads as the screen's own dim, not as a hint.
-  const [startHintDue, setStartHintDue] = useState(false);
-  useEffect(() => {
-    if (!plannedLaidOut) {
-      return;
-    }
-    const timer = setTimeout(() => setStartHintDue(true), START_HINT_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [plannedLaidOut]);
+  // And a beat after that, so the screen is seen before something lands on it.
+  const startHintDue = useDelayedFlag(plannedLaidOut, START_HINT_DELAY_MS);
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
