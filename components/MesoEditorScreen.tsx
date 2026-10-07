@@ -274,6 +274,7 @@ export function MesoEditorScreen({ title, saveMutation, leadStep }: MesoEditorSc
           onChangeName={(name) => setDraft({ ...draft, name })}
           onChangeLengthWeeks={(lengthWeeks) => setDraft({ ...draft, lengthWeeks })}
           onChangeDaysPerWeek={(daysPerWeek) => setDraft({ ...draft, daysPerWeek })}
+          exercisesPrefilled={leadStep !== undefined}
         />
       </WizardScreen>
     );

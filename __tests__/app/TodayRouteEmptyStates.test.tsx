@@ -97,6 +97,29 @@ describe('Today tab — no session to show', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
+  test('GT-51: with no cycle ever, the title says first; once there has been one, next', async () => {
+    mockToday = { kind: 'noActiveMesocycle' };
+    const first = renderWithRepositories(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <TodayScreen />
+      </SafeAreaProvider>,
+    );
+    expect(await screen.findByText('Start your first training cycle')).toBeTruthy();
+    first.unmount();
+
+    await seedWorkoutFixture(repositories());
+    const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
+    await repositories().mesocycleRepo.update({
+      ...mesocycle!,
+      status: 'completed',
+      completedAt: '2026-09-20T00:00:00.000Z',
+    });
+    renderToday();
+
+    expect(await screen.findByText('Start your next training cycle')).toBeTruthy();
+    expect(screen.queryByText('Start your first training cycle')).toBeNull();
+  });
+
   test('DoD: with a cycle planned, Today opens Cycles instead of offering to create another (GT-38)', async () => {
     mockToday = { kind: 'cyclePlanned' };
     renderToday();

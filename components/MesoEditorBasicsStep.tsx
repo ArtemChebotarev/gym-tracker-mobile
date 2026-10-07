@@ -11,8 +11,9 @@
 // caller wants it to read as one persistent widget whose content swaps, not a stack of pages).
 //
 // Both steppers reuse the Stepper component from 073 (task 075: "Оба степпера — компонент из
-// 073") — its `formatValue`/`caption` props render the mockup's "6 weeks" / "Includes a deload
-// week" value+caption directly inside the stepper-row card.
+// 073") — its `formatValue`/`caption` props render the mockup's "6 weeks" / "The last week is
+// lighter" value+caption directly inside the stepper-row card. The word "deload" is kept out of
+// here on purpose: a newcomer meets it on their first deload week, in its popup (08.11, GT-51).
 //
 // JSX/rendering only — styles live in MesoEditorBasicsStepStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsStepLogic.ts, per the code-style skill.
@@ -38,6 +39,11 @@ export type MesoEditorBasicsStepProps = {
   onChangeName: (name: string) => void;
   onChangeLengthWeeks: (lengthWeeks: number) => void;
   onChangeDaysPerWeek: (daysPerWeek: number) => void;
+  /**
+   * The days already hold exercises — from a template or a copied week (Flows B and C) — so the
+   * note that exercises are picked next would be wrong (GT-51).
+   */
+  exercisesPrefilled?: boolean;
 };
 
 export function MesoEditorBasicsStep({
@@ -47,6 +53,7 @@ export function MesoEditorBasicsStep({
   onChangeName,
   onChangeLengthWeeks,
   onChangeDaysPerWeek,
+  exercisesPrefilled = false,
 }: MesoEditorBasicsStepProps) {
   return (
     <View style={styles.content}>
@@ -67,7 +74,7 @@ export function MesoEditorBasicsStep({
           min={MIN_LENGTH_WEEKS}
           max={MAX_LENGTH_WEEKS}
           formatValue={formatMesocycleLengthValue}
-          caption="Includes a deload week"
+          caption="The last week is lighter"
         />
       </View>
 
@@ -79,7 +86,7 @@ export function MesoEditorBasicsStep({
           min={MIN_DAYS_PER_WEEK}
           max={MAX_DAYS_PER_WEEK}
           formatValue={formatDaysPerWeekValue}
-          caption="Next, you'll pick exercises for each day."
+          {...(exercisesPrefilled ? {} : { caption: "Next, you'll pick exercises for each day." })}
         />
       </View>
     </View>
