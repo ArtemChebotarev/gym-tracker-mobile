@@ -574,8 +574,8 @@ describe('Flow B — template to started mesocycle', () => {
       [['squat-barbell', 5]],
     ]);
     const exercises = week1.flat();
-    // 6 weeks (Flow A's default length): startRir = min(3, 5 − 1) = 3.
-    expect(exercises.every((exercise) => exercise.targetRir === 3)).toBe(true);
+    // 4 weeks (the editor's default length, GT-45): startRir = min(3, 3 − 1) = 2.
+    expect(exercises.every((exercise) => exercise.targetRir === 2)).toBe(true);
     expect(
       exercises.flatMap((exercise) => exercise.setTargets).every(
         (target) => target.targetReps === undefined && target.suggestedWeight === undefined,

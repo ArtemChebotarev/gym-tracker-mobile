@@ -3,8 +3,9 @@
 //
 // - `multi` — "Меню шапки" → Add exercise (096): checkboxes and a confirm button; the caller adds
 //   the picked exercises, in the order they were checked, to the end of the session (048).
-// - `single` — "Меню упражнения" → Replace exercise (097): a tap picks the exercise and closes the
-//   sheet; the caller swaps the exercise to it (047).
+// - `single` — "Меню упражнения" → Replace exercise (097): a tap checks the exercise (one at a time),
+//   and a `Replace` button applies it and closes the sheet; the caller swaps the exercise to it
+//   (047). A swap can't be taken back, so a tap alone doesn't make it.
 //
 // Unlike step 2a's MesoEditorAddExerciseSheet, this one owns the picker's state — search text,
 // applied and draft filters, the selection — and its library queries: nothing else on the workout
@@ -19,6 +20,7 @@ import { useState } from 'react';
 import type { ExerciseId } from '@domain/catalog';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 
+import { useTabBarClearance } from './useTabBarClearance';
 import { ExerciseFiltersSheet } from './ExerciseFiltersSheet';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { countEntries } from './ExerciseLibraryScreenLogic';
@@ -40,6 +42,8 @@ export type WorkoutExercisePickerSheetProps = {
 
 export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProps) {
   const { visible, title, caption, onClose } = props;
+  // The sheet is drawn over the floating tab bar, which would cover the list's last row (GT-47).
+  const tabBarClearance = useTabBarClearance();
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<ExerciseId[]>([]);
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
@@ -67,6 +71,7 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
     title,
     caption,
     presentation: 'overlay' as const,
+    bottomClearance: tabBarClearance,
     groups: query.data,
     isPending: query.isPending,
     search,
@@ -98,9 +103,15 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
         <ExercisePickerSheet
           {...shared}
           mode="single"
-          onSelect={(exerciseId) => {
+          selectedId={selectedIds[0]}
+          onChangeSelectedId={(exerciseId) => setSelectedIds([exerciseId])}
+          onConfirm={() => {
+            const [picked] = selectedIds;
+            if (picked === undefined) {
+              return;
+            }
             handleClose();
-            props.onSelect(exerciseId);
+            props.onSelect(picked);
           }}
         />
       )}

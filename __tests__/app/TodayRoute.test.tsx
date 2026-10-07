@@ -17,7 +17,11 @@ import {
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
 import { markOnboardingSeen } from '@usecases/onboarding';
-import { queryClient, renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+import {
+  queryClient,
+  renderWithRepositories,
+  withRepositories,
+} from '../fixtures/renderWithRepositories';
 // Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
 import {
   pressTodayTab,
@@ -274,7 +278,12 @@ describe('Today tab — Finish workout', () => {
     await logRecommended('bench-press-barbell', 3);
     await logRecommended('barbell-row-barbell', 1);
     await logRecommended('barbell-row-barbell', 2);
-    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+    // Not available yet, but in view (GT-48): inactive until the last set is logged.
+    expect(
+      screen.getByRole('button', { name: 'Finish workout' }).props.accessibilityState,
+    ).toMatchObject({
+      disabled: true,
+    });
 
     await logRecommended('barbell-row-barbell', 3);
     fireEvent.press(await screen.findByRole('button', { name: 'Finish workout' }));
@@ -346,7 +355,6 @@ describe('Today tab — Finish workout', () => {
     expect(await screen.findByText('Week 3 Day 1')).toBeTruthy();
   });
 });
-
 
 // The pin `Finish workout` leaves behind (see `unpinDay` in app/(tabs)/index.tsx). It used to
 // outlive everything that gave it meaning: the tab went on showing that one workout through tab

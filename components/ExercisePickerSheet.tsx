@@ -6,9 +6,10 @@
 //
 // - `multi` (task 077's "Add exercise" sheet, 08.5 "Шаг 2a"): checkboxes accumulate a selection,
 //   confirmed via a footer button captioned with the running count.
-// - `single` (the future "Replace exercise" sheet, 05 · Workout Execution & Logging, "Заменить
-//   упражнение"; 047): tapping a row applies that exercise immediately and closes the sheet —
-//   there is exactly one exercise to pick, so there is nothing to confirm and no footer.
+// - `single` ("Replace exercise", 05 · Workout Execution & Logging, "Заменить упражнение"; 047):
+//   the same checkboxes, but a tap moves the one check to that row, like a radio button. A swap
+//   is not undone by a second tap, so a mis-tap must cost nothing: it is confirmed by a `Replace`
+//   button in the footer, disabled until a row is checked.
 //
 // Renders each group as a plain View + .map() rather than a SectionList — BottomSheet already
 // wraps its children in a ScrollView, and nesting a virtualized list inside a plain ScrollView
@@ -48,7 +49,12 @@ import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerShe
 import { styles } from './ExercisePickerSheetStyles';
 
 type ExercisePickerSelection =
-  | { mode: 'single'; onSelect: (id: ExerciseId) => void }
+  | {
+      mode: 'single';
+      selectedId: ExerciseId | undefined;
+      onChangeSelectedId: (id: ExerciseId) => void;
+      onConfirm: () => void;
+    }
   | {
       mode: 'multi';
       selectedIds: readonly ExerciseId[];
@@ -71,6 +77,7 @@ export type ExercisePickerSheetProps = {
   /** Forwarded to BottomSheet — see its own doc on these two props. */
   animated?: boolean;
   presentation?: 'modal' | 'overlay';
+  bottomClearance?: number;
 } & ExercisePickerSelection;
 
 export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
@@ -88,6 +95,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
     onClose,
     animated,
     presentation,
+    bottomClearance,
   } = props;
   const resultCount = countEntries(groups ?? []);
 
@@ -98,19 +106,26 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       title={title}
       animated={animated}
       presentation={presentation}
+      bottomClearance={bottomClearance}
       // Fixed height: live search shrinks the list on every keystroke, and a content-sized sheet
       // would jump with it (task 082) — short results leave empty space below instead.
       height="fixed"
       footer={
-        props.mode === 'multi' ? (
-          <View style={styles.footerButton}>
+        <View style={styles.footerButton}>
+          {props.mode === 'multi' ? (
             <Button
               label={confirmButtonLabel(props.selectedIds.length)}
               onPress={props.onConfirm}
               disabled={props.selectedIds.length === 0}
             />
-          </View>
-        ) : undefined
+          ) : (
+            <Button
+              label="Replace"
+              onPress={props.onConfirm}
+              disabled={props.selectedId === undefined}
+            />
+          )}
+        </View>
       }
     >
       {caption !== undefined && <Text style={styles.caption}>{caption}</Text>}
@@ -138,37 +153,28 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               count={group.entries.length}
               dotColor={sectionDotColor(group.muscleGroup)}
             />
-            {group.entries.map((entry) =>
-              props.mode === 'multi' ? (
-                <ListRow
-                  key={entry.exercise.id}
-                  title={entry.exercise.name}
-                  titleSuffix={equipmentSuffix(entry.exercise)}
-                  subtitle={formatSubtitle(entry.lastSetLog)}
-                  leading={{
-                    type: 'checkbox',
-                    checked: props.selectedIds.includes(entry.exercise.id),
-                  }}
-                  onPress={() =>
-                    props.onChangeSelectedIds(
-                      toggleExerciseSelection(props.selectedIds, entry.exercise.id),
-                    )
-                  }
-                />
-              ) : (
-                <ListRow
-                  key={entry.exercise.id}
-                  title={entry.exercise.name}
-                  titleSuffix={equipmentSuffix(entry.exercise)}
-                  subtitle={formatSubtitle(entry.lastSetLog)}
-                  trailing={{ type: 'chevron' }}
-                  onPress={() => {
-                    props.onSelect(entry.exercise.id);
-                    onClose();
-                  }}
-                />
-              ),
-            )}
+            {group.entries.map((entry) => (
+              <ListRow
+                key={entry.exercise.id}
+                title={entry.exercise.name}
+                titleSuffix={equipmentSuffix(entry.exercise)}
+                subtitle={formatSubtitle(entry.lastSetLog)}
+                leading={{
+                  type: 'checkbox',
+                  checked:
+                    props.mode === 'multi'
+                      ? props.selectedIds.includes(entry.exercise.id)
+                      : props.selectedId === entry.exercise.id,
+                }}
+                onPress={() =>
+                  props.mode === 'multi'
+                    ? props.onChangeSelectedIds(
+                        toggleExerciseSelection(props.selectedIds, entry.exercise.id),
+                      )
+                    : props.onChangeSelectedId(entry.exercise.id)
+                }
+              />
+            ))}
           </View>
         ))}
     </BottomSheet>

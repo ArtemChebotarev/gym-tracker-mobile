@@ -178,7 +178,10 @@ describe('RangeTrack without a marker', () => {
       <RangeTrack
         outer={{ min: 0, max: 35 }}
         inner={{ min: 5, max: 30 }}
-        labels={[{ value: 5, text: '5' }, { value: 30, text: '30' }]}
+        labels={[
+          { value: 5, text: '5' },
+          { value: 30, text: '30' },
+        ]}
         accessibilityLabel="Reps per set: 5 to 30"
       />,
     );
@@ -203,9 +206,11 @@ describe('RangeTrack dashes', () => {
     fireEvent(screen.getByTestId('range-track'), 'layout', {
       nativeEvent: { layout: { width, height: 10, x: 0, y: 0 } },
     });
-    const dashes = screen.getByTestId('range-track').findAll(
-      (node) => StyleSheet.flatten(node.props.style)?.backgroundColor === COLORS['text/faint'],
-    );
+    const dashes = screen
+      .getByTestId('range-track')
+      .findAll(
+        (node) => StyleSheet.flatten(node.props.style)?.backgroundColor === COLORS['text/faint'],
+      );
     return dashes.length;
   }
 
@@ -214,5 +219,43 @@ describe('RangeTrack dashes', () => {
       // 6pt per dash and gap: the dashes must cover the width.
       expect(dashCountAt(width) * 6).toBeGreaterThanOrEqual(width);
     }
+  });
+});
+
+// GT-46: two points close together must not put their labels on top of each other.
+describe('RangeTrack label collisions', () => {
+  const WIDTHS = { '10': 16, '24': 16, '24.5': 28 } as const;
+
+  function leftOf(text: string): number {
+    return StyleSheet.flatten(screen.getByText(text).props.style).left;
+  }
+
+  test('a label beside the end label is moved left to clear it, the end label keeps its place', () => {
+    render(
+      <RangeTrack
+        outer={{ min: 10, max: 24.5 }}
+        inner={{ min: 10, max: 24 }}
+        marker={24}
+        labels={[
+          { value: 10, text: '10' },
+          { value: 24, text: '24' },
+          { value: 24.5, text: '24.5' },
+        ]}
+        accessibilityLabel="track"
+      />,
+    );
+    fireEvent(screen.getByTestId('range-track'), 'layout', {
+      nativeEvent: { layout: { width: 300, height: 10 } },
+    });
+    for (const [text, width] of Object.entries(WIDTHS)) {
+      fireEvent(screen.getByText(text), 'layout', {
+        nativeEvent: { layout: { width, height: 16 } },
+      });
+    }
+
+    const endLeft = leftOf('24.5');
+    expect(leftOf('24') + WIDTHS['24']).toBeLessThan(endLeft);
+    expect(endLeft).toBe(WIDTHS['10'] / 2 + 300 - WIDTHS['24.5'] / 2);
+    expect(leftOf('10') + WIDTHS['10']).toBeLessThan(leftOf('24'));
   });
 });

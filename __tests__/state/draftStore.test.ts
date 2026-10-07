@@ -21,6 +21,10 @@ describe('draftStore', () => {
     expect(useDraftStore.getState().mesoBuilder).toEqual(DEFAULT_MESO_BUILDER_DRAFT);
   });
 
+  test('GT-45: a new draft starts at the smallest cycle — 4 weeks, 1 day a week', () => {
+    expect(DEFAULT_MESO_BUILDER_DRAFT).toMatchObject({ lengthWeeks: 4, daysPerWeek: 1 });
+  });
+
   test('setMesoBuilder replaces the draft', () => {
     useDraftStore.getState().setMesoBuilder({
       name: 'Block 6',
@@ -37,7 +41,7 @@ describe('draftStore', () => {
     });
   });
 
-  test('setMesoBuilder accepts an updater function that reads the store\'s current draft', () => {
+  test("setMesoBuilder accepts an updater function that reads the store's current draft", () => {
     useDraftStore.getState().setMesoBuilder({
       name: 'Block 6',
       lengthWeeks: 8,
@@ -55,14 +59,19 @@ describe('draftStore', () => {
     });
   });
 
-  test('the updater form reads the store\'s state at call time, not a value captured earlier', () => {
+  test("the updater form reads the store's state at call time, not a value captured earlier", () => {
     useDraftStore.getState().setMesoBuilder({ ...DEFAULT_MESO_BUILDER_DRAFT, name: 'Original' });
-    const staleUpdater = (current: typeof DEFAULT_MESO_BUILDER_DRAFT) => ({ ...current, lengthWeeks: 10 });
+    const staleUpdater = (current: typeof DEFAULT_MESO_BUILDER_DRAFT) => ({
+      ...current,
+      lengthWeeks: 10,
+    });
 
     // A second, unrelated change happens after `staleUpdater` was defined but before it runs —
     // the scenario this form exists for (MesoEditorDaysStep.tsx's cached drag responder calling
     // back after other draft edits have already landed).
-    useDraftStore.getState().setMesoBuilder((current) => ({ ...current, name: 'Changed in between' }));
+    useDraftStore
+      .getState()
+      .setMesoBuilder((current) => ({ ...current, name: 'Changed in between' }));
     useDraftStore.getState().setMesoBuilder(staleUpdater);
 
     expect(useDraftStore.getState().mesoBuilder).toEqual({
@@ -154,7 +163,7 @@ describe('toMesoBuilderDraft', () => {
     createdAt: '2026-09-01T12:00:00.000Z',
   };
 
-  test('loads name, length, days, and each day\'s exercises keyed by dayNumber', () => {
+  test("loads name, length, days, and each day's exercises keyed by dayNumber", () => {
     expect(toMesoBuilderDraft(planned)).toEqual({
       name: 'Push/Pull',
       lengthWeeks: 5,

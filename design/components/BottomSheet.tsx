@@ -32,7 +32,8 @@
 // that padding pushes the whole sheet up rather than squashing it. Android's default window-resize
 // behavior already handles this, so no `behavior` is set there.
 // `keyboardShouldPersistTaps="handled"` on the content ScrollView lets a tap on another field or
-// a Dropdown option register in the same gesture instead of only dismissing the keyboard first.
+// a Dropdown option register in the same gesture instead of only dismissing the keyboard first;
+// a tap on the sheet's header or a drag of the content closes it (GT-21).
 
 import type { ReactNode } from 'react';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -40,6 +41,7 @@ import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import {
   Animated,
   Dimensions,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -89,6 +91,13 @@ export type BottomSheetProps = {
    * ScrollView takes the remaining space, so a footer stays pinned to the sheet's bottom.
    */
   height?: 'content' | 'fixed';
+  /**
+   * How much of the sheet's bottom edge something else covers — the floating tab bar, for an
+   * 'overlay' sheet opened from a tab screen, which the bar is drawn over (GT-47). The sheet pads
+   * its bottom by it, so the last row and the footer sit clear of the bar. Never less than the
+   * home-indicator inset the sheet already respects.
+   */
+  bottomClearance?: number;
 };
 
 export function BottomSheet({
@@ -102,6 +111,7 @@ export function BottomSheet({
   animated = true,
   presentation = 'modal',
   height = 'content',
+  bottomClearance = 0,
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
   const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
@@ -129,16 +139,17 @@ export function BottomSheet({
       >
         <View style={styles.grabber} />
       </View>
-      <View style={styles.header}>
+      <Pressable accessible={false} style={styles.header} onPress={Keyboard.dismiss}>
         <View style={styles.titleBlock}>
           <Text style={styles.title}>{title}</Text>
           {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
         {action}
-      </View>
+      </Pressable>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
       >
         {children}
@@ -150,7 +161,7 @@ export function BottomSheet({
   const sheetStyle = [
     styles.sheet,
     height === 'fixed' && styles.sheetFixed,
-    { paddingBottom: SPACING['space/sheet'] + bottomInset },
+    { paddingBottom: SPACING['space/sheet'] + Math.max(bottomInset, bottomClearance) },
   ];
 
   if (presentation === 'overlay') {

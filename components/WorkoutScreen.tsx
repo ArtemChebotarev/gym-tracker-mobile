@@ -18,9 +18,10 @@
 // offers — and what each one reads as — is `workoutMenuActions` (096).
 //
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
-// (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — only when
-// the model's `showFinish` says every exercise is `completed` or `skipped`; before that it isn't
-// there at all (not disabled). Finishing needs no confirmation: the screen stays put and re-reads
+// (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — active when
+// the model's `showFinish` says every exercise is `completed` or `skipped`; before that it is there
+// inactive, with a line on what to do first (`showFinishLocked`, GT-48), so a newcomer sees that
+// finishing exists. The moment it turns active the list scrolls down to it. Finishing needs no confirmation: the screen stays put and re-reads
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
 // A read-only session shows a secondary `Next workout` button in the same place when the model has
@@ -38,7 +39,7 @@
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { ActionMenu } from '@design/components/ActionMenu';
@@ -172,6 +173,20 @@ export function WorkoutScreen({
   const tabBarClearance = useTabBarClearance();
   // The tour comes up a beat after the workout does: right after Start the tab is still arriving,
   // and a tour already over it reads as the screen's dim, not as a hint.
+  const scrollRef = useRef<ScrollView>(null);
+  // The list scrolls to `Finish workout` when the last set gets logged (GT-48) — not when the
+  // screen merely opens on a session that was already complete.
+  const finishReady = model?.showFinish === true;
+  const finishWasReady = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (model === undefined) {
+      return;
+    }
+    if (finishWasReady.current === false && finishReady) {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+    finishWasReady.current = finishReady;
+  }, [finishReady, model]);
   const tourDue = useDelayedFlag(coachmarks?.visible === true, TOUR_DELAY_MS);
   // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
   const tourRir = useRef<View>(null);
@@ -257,11 +272,13 @@ export function WorkoutScreen({
       >
         <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
           // A tap on Log while the keyboard is up logs the set rather than only closing the
           // keyboard; the inset keeps the focused row above the keyboard.
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets
         >
           {model.exercises.map((exercise, index) => (
@@ -289,6 +306,12 @@ export function WorkoutScreen({
           {model.showFinish && (
             <View style={styles.finish}>
               <Button label="Finish workout" onPress={onFinish} disabled={isFinishing} />
+            </View>
+          )}
+          {model.showFinishLocked && (
+            <View style={styles.finish}>
+              <Button label="Finish workout" onPress={onFinish} disabled />
+              <Text style={styles.finishHint}>Log all sets first to finish the workout.</Text>
             </View>
           )}
           {nextSessionId !== undefined && (

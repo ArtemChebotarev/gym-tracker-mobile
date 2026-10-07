@@ -63,7 +63,9 @@ const BASE_SINGLE_PROPS: ExercisePickerSheetProps = {
   filters: {},
   onRequestFilters: jest.fn(),
   onResetFilters: jest.fn(),
-  onSelect: jest.fn(),
+  selectedId: undefined,
+  onChangeSelectedId: jest.fn(),
+  onConfirm: jest.fn(),
   onClose: jest.fn(),
 };
 
@@ -234,29 +236,51 @@ describe('ExercisePickerSheet', () => {
     });
   });
 
-  describe('single mode (the future Replace exercise sheet)', () => {
-    test('rows show no checkboxes', () => {
-      renderSheet(BASE_SINGLE_PROPS);
+  describe('single mode (Replace exercise)', () => {
+    test('rows show checkboxes, with only the selected one checked', () => {
+      renderSheet({ ...BASE_SINGLE_PROPS, selectedId: SQUAT.id });
 
-      expect(screen.queryByRole('checkbox', { name: 'Bench Press' })).toBeNull();
-      expect(screen.queryByRole('checkbox', { name: 'Squat' })).toBeNull();
+      expect(screen.getByRole('checkbox', { name: 'Squat' }).props.accessibilityState.checked).toBe(
+        true,
+      );
+      expect(
+        screen.getByRole('checkbox', { name: 'Bench Press' }).props.accessibilityState.checked,
+      ).toBe(false);
     });
 
-    test('has no footer — there is nothing to confirm when picking exactly one exercise', () => {
-      renderSheet(BASE_SINGLE_PROPS);
-
-      expect(screen.queryByRole('button', { name: /^Add \d/ })).toBeNull();
-    });
-
-    test('tapping a row applies the selection and closes the sheet immediately', () => {
-      const onSelect = jest.fn();
+    test('tapping a row only selects it: nothing is applied and the sheet stays open', () => {
+      const onChangeSelectedId = jest.fn();
+      const onConfirm = jest.fn();
       const onClose = jest.fn();
-      renderSheet({ ...BASE_SINGLE_PROPS, onSelect, onClose });
+      renderSheet({ ...BASE_SINGLE_PROPS, onChangeSelectedId, onConfirm, onClose });
 
-      fireEvent.press(screen.getByRole('button', { name: 'Bench Press' }));
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
 
-      expect(onSelect).toHaveBeenCalledWith(BENCH_PRESS.id);
-      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(onChangeSelectedId).toHaveBeenCalledWith(BENCH_PRESS.id);
+      expect(onConfirm).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    test('Replace is disabled until a row is selected, then confirms', () => {
+      const onConfirm = jest.fn();
+      const { rerender } = render(
+        <ExercisePickerSheet {...BASE_SINGLE_PROPS} onConfirm={onConfirm} />,
+      );
+
+      const disabled = screen.getByRole('button', { name: 'Replace' });
+      expect(disabled.props.accessibilityState.disabled).toBe(true);
+      fireEvent.press(disabled);
+      expect(onConfirm).not.toHaveBeenCalled();
+
+      rerender(
+        <ExercisePickerSheet
+          {...BASE_SINGLE_PROPS}
+          selectedId={BENCH_PRESS.id}
+          onConfirm={onConfirm}
+        />,
+      );
+      fireEvent.press(screen.getByRole('button', { name: 'Replace' }));
+      expect(onConfirm).toHaveBeenCalledTimes(1);
     });
   });
 });

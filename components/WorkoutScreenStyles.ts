@@ -34,6 +34,12 @@ export const styles = StyleSheet.create({
   finish: {
     paddingTop: SPACING['space/gap'],
   },
+  finishHint: {
+    paddingTop: SPACING['space/gap'],
+    textAlign: 'center',
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/muted'],
+  },
   unlocksCaption: {
     paddingTop: SPACING['space/gap'],
     textAlign: 'center',

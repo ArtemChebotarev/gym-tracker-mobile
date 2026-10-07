@@ -388,12 +388,13 @@ describe('getWorkoutSession — live', () => {
 });
 
 describe('getWorkoutSession — Finish', () => {
-  test('DoD: Finish stays hidden while an exercise is still to do', async () => {
+  test('DoD: Finish is not available (shown locked, GT-48) while an exercise is still to do', async () => {
     const { deps } = await setUp({ exercises: [{ ...bench, status: 'completed' }, row] });
 
     const model = await getWorkoutSession('w2d1', deps);
 
     expect(model.showFinish).toBe(false);
+    expect(model.showFinishLocked).toBe(true);
     expect(model.actions.canSkipWorkout).toBe(true);
   });
 
@@ -408,6 +409,7 @@ describe('getWorkoutSession — Finish', () => {
     const model = await getWorkoutSession('w2d1', deps);
 
     expect(model.showFinish).toBe(true);
+    expect(model.showFinishLocked).toBe(false);
     // Nothing left to skip: Skip workout gives way to Finish.
     expect(model.actions.canSkipWorkout).toBe(false);
   });
@@ -415,7 +417,9 @@ describe('getWorkoutSession — Finish', () => {
   test('DoD: Finish never shows outside live mode', async () => {
     const { deps } = await setUp();
 
-    expect((await getWorkoutSession('w1d1', deps)).showFinish).toBe(false);
+    const model = await getWorkoutSession('w1d1', deps);
+    expect(model.showFinish).toBe(false);
+    expect(model.showFinishLocked).toBe(false);
   });
 });
 
@@ -596,6 +600,7 @@ describe('getWorkoutSession — history', () => {
     const model = await getWorkoutSession('w1d1', await closedBlock('abandoned'));
 
     expect(model.showFinish).toBe(false);
+    expect(model.showFinishLocked).toBe(false);
     expect(model.showFinishMesocycle).toBe(false);
     expect(model.actions).toEqual({
       canAddExercise: false,

@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import { MesoEditorBasicsStep, type MesoEditorBasicsStepProps } from '@components/MesoEditorBasicsStep';
+import {
+  MesoEditorBasicsStep,
+  type MesoEditorBasicsStepProps,
+} from '@components/MesoEditorBasicsStep';
 
 const BASE_PROPS: MesoEditorBasicsStepProps = {
   name: 'Upper/Lower — Block 6',
@@ -48,7 +51,25 @@ describe('MesoEditorBasicsStep', () => {
   });
 
   describe('stepper boundaries', () => {
-    test('Cycle length decrement is disabled at the minimum (3)', () => {
+    test('GT-45: Cycle length decrement is disabled at 4 weeks, the least a new cycle can have', () => {
+      render(<MesoEditorBasicsStep {...BASE_PROPS} lengthWeeks={4} />);
+
+      expect(
+        screen.getByRole('button', { name: 'Decrease Cycle length' }).props.accessibilityState
+          .disabled,
+      ).toBe(true);
+    });
+
+    test('a cycle that is already three weeks keeps its length and can not go lower', () => {
+      render(<MesoEditorBasicsStep {...BASE_PROPS} lengthWeeks={3} />);
+
+      expect(
+        screen.getByRole('button', { name: 'Decrease Cycle length' }).props.accessibilityState
+          .disabled,
+      ).toBe(true);
+    });
+
+    test('Cycle length decrement is still disabled at 3', () => {
       render(<MesoEditorBasicsStep {...BASE_PROPS} lengthWeeks={3} />);
 
       expect(

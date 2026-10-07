@@ -24,7 +24,7 @@ import {
   MAX_DAYS_PER_WEEK,
   MAX_LENGTH_WEEKS,
   MIN_DAYS_PER_WEEK,
-  MIN_LENGTH_WEEKS,
+  MIN_EDITOR_LENGTH_WEEKS,
 } from '@domain/mesocycleValidators';
 import { Stepper } from '@design/components/Stepper';
 import { TextField } from '@design/components/TextField';
@@ -71,7 +71,8 @@ export function MesoEditorBasicsStep({
           label="Cycle length"
           value={lengthWeeks}
           onChange={onChangeLengthWeeks}
-          min={MIN_LENGTH_WEEKS}
+          // An existing three-week planned cycle keeps its length; it just can't go lower than it is.
+          min={Math.min(MIN_EDITOR_LENGTH_WEEKS, lengthWeeks)}
           max={MAX_LENGTH_WEEKS}
           formatValue={formatMesocycleLengthValue}
           caption="The last week is lighter"
