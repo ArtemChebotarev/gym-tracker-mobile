@@ -106,7 +106,7 @@ export function Coachmark({
           arrowRadius={RADII['radius/arrow']}
           distance={SPACING['space/screen']}
         >
-          <Text style={styles.counter}>{`${step} of ${total}`}</Text>
+          {total > 1 && <Text style={styles.counter}>{`${step} of ${total}`}</Text>}
           <Text style={styles.title}>{title}</Text>
           {content}
           {paragraphs.map((paragraph, index) => (

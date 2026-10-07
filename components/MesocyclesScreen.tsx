@@ -41,21 +41,24 @@
 // JSX/rendering only — styles live in MesocyclesScreenStyles.ts and pure helpers in
 // MesocyclesScreenLogic.ts, per the code-style skill.
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { Mesocycle } from '@domain/mesocycle';
 import { Badge } from '@design/components/Badge';
+import { CoachmarkTour } from '@design/components/CoachmarkTour';
 import { EmptyState } from '@design/components/EmptyState';
 import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
+import { RADII } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
 import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
+import { useDelayedFlag } from './useDelayedFlag';
 import { useTabBarClearance } from './useTabBarClearance';
 
 import {
@@ -71,8 +74,13 @@ import {
   isEmptyGroups,
   mesocycleStoppedBadge,
   plannedMenuItems,
+  showStartCoachmark,
+  START_CYCLE_STEP,
 } from './MesocyclesScreenLogic';
 import { styles } from './MesocyclesScreenStyles';
+
+/** How long the tab is left alone before the `Start` hint comes up over it. */
+const START_HINT_DELAY_MS = 1000;
 
 export type MesocyclesScreenProps = {
   mesocycles: Mesocycle[] | undefined;
@@ -98,6 +106,12 @@ export type MesocyclesScreenProps = {
   onOpenHistory: (mesocycle: Mesocycle) => void;
   /** Called from the confirmation's button, never straight off the menu. */
   onArchive: (mesocycle: Mesocycle) => void;
+  /**
+   * Whether the `Start` hint was closed before (08.11, GT-50); `undefined` while the flags load.
+   * The screen decides where it points; the caller owns remembering it.
+   */
+  startCycleSeen?: boolean;
+  onStartCoachmarkClose?: () => void;
 };
 
 export function MesocyclesScreen({
@@ -115,10 +129,18 @@ export function MesocyclesScreen({
   onCopy,
   onOpenHistory,
   onArchive,
+  startCycleSeen,
+  onStartCoachmarkClose,
 }: MesocyclesScreenProps) {
   const tabBarClearance = useTabBarClearance();
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
   const methodSheet = useMesoCreationMethodSheet();
+  const startRef = useRef<View>(null);
+  // The hint rings a measured pill, so it waits until the Planned rows have been laid out: measured
+  // on the commit that mounts them, it landed where the row was before layout.
+  const [plannedLaidOut, setPlannedLaidOut] = useState(false);
+  // And a beat after that, so the screen is seen before something lands on it.
+  const startHintDue = useDelayedFlag(plannedLaidOut, START_HINT_DELAY_MS);
 
   function handleStart(mesocycle: Mesocycle) {
     if (groups.active !== null) {
@@ -218,8 +240,8 @@ export function MesocyclesScreen({
             {groups.planned.length > 0 && (
               <View style={styles.group}>
                 <Text style={styles.groupLabel}>Planned</Text>
-                <View>
-                  {groups.planned.map((mesocycle) => (
+                <View testID="planned-rows" onLayout={() => setPlannedLaidOut(true)}>
+                  {groups.planned.map((mesocycle, index) => (
                     <ListRow
                       key={mesocycle.id}
                       title={mesocycle.name}
@@ -231,6 +253,9 @@ export function MesocyclesScreen({
                           label: 'Start',
                           variant: 'primary',
                           onPress: () => handleStart(mesocycle),
+                          ...(index === 0
+                            ? { onViewRef: (view: View | null) => (startRef.current = view) }
+                            : {}),
                         },
                         menu: {
                           testID: `mesocycle-menu-${mesocycle.id}`,
@@ -272,6 +297,16 @@ export function MesocyclesScreen({
           </ScrollView>
         )}
       </RootScreen>
+
+      {onStartCoachmarkClose !== undefined && !isPending && (
+        <CoachmarkTour
+          visible={startHintDue && showStartCoachmark(groups, startCycleSeen)}
+          steps={[
+            { targetRef: startRef, ...START_CYCLE_STEP, ringRadius: RADII['radius/capsule'] },
+          ]}
+          onFinish={onStartCoachmarkClose}
+        />
+      )}
 
       <MesoCreationMethodSheet
         visible={methodSheet.visible}

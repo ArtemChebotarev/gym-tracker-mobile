@@ -536,23 +536,24 @@ describe('WorkoutScreen coachmark tour', () => {
     expect(screen.queryByTestId('coachmark')).toBeNull();
   });
 
-  test('DoD: when the caller shows it, it starts at step 1 and ends in the grid button', () => {
+  test('DoD: when the caller shows it, it starts at step 1 — after a beat, not at once', async () => {
     const onFinish = jest.fn();
     renderWithSafeArea(
       <WorkoutScreen {...makeProps({ model: LIVE, coachmarks: { visible: true, onFinish } })} />,
     );
 
-    expect(screen.getByText(/^1 of \d$/)).toBeTruthy();
+    expect(screen.queryByTestId('coachmark')).toBeNull();
+    expect(await screen.findByText(/^1 of \d$/, {}, { timeout: 3000 })).toBeTruthy();
     expect(screen.getByTestId('coachmark')).toBeTruthy();
   });
 
-  test('Skip tells the caller the tour is over', () => {
+  test('Skip tells the caller the tour is over', async () => {
     const onFinish = jest.fn();
     renderWithSafeArea(
       <WorkoutScreen {...makeProps({ model: LIVE, coachmarks: { visible: true, onFinish } })} />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Skip' }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Skip' }, { timeout: 3000 }));
 
     expect(onFinish).toHaveBeenCalledTimes(1);
   });

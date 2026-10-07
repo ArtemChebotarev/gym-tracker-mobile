@@ -1,7 +1,7 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
 
 /**
- * Which of the three first-run windows of 08.11 · Onboarding the user has already closed. Each flag
+ * Which of the four first-run windows of 08.11 · Onboarding the user has already closed. Each flag
  * is set when its own window is closed (`Got it`, or `Skip` for the coachmarks), not when it is
  * shown, so an app killed with a window open shows it again.
  */
@@ -12,6 +12,8 @@ export type OnboardingFlags = {
   coachmarksSeen: boolean;
   /** The popup on the first deload session. */
   deloadIntroSeen: boolean;
+  /** The one-step coachmark on `Start` of the first Planned cycle (GT-50). */
+  startCycleSeen: boolean;
 };
 
 /** One of the {@link OnboardingFlags}. */

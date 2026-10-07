@@ -1,5 +1,5 @@
 // The first-workout coachmark tour — 08.11 · Onboarding, "3. Коучмарки на первой тренировке" (GT-42):
-// four steps (the RIR badge, the ⓘ beside Weight, the ⓘ beside Reps, the grid button), shown once.
+// four steps (the ⓘ beside Weight, the ⓘ beside Reps, the RIR badge, the grid button), shown once.
 // Working text, reworded after the TestFlight feedback; it lives here so that touches this file.
 //
 // What a step is — the words, and the ref of the element it rings — is built here, from the first
@@ -37,7 +37,7 @@ export const GRID_STEP = {
   ] as PlateTextPart[][],
 };
 
-/** What a step points at: the first card's RIR chip, either ⓘ disc, or the header's grid button. */
+/** What a step points at: either ⓘ disc, the first card's RIR chip, or the header's grid button. */
 export type CoachmarkTargetId = 'rir' | 'weight' | 'reps' | 'grid';
 
 /** A step without its element: which one it rings, and what it says. The screen holds the refs. */
@@ -74,15 +74,15 @@ export function workoutCoachmarks({
 
   if (exercise !== undefined) {
     const targets = cardInfoTargets(exercise, mode, isDeload);
-    if (targets.rir && exercise.targetRir !== undefined) {
-      const explanation = rirExplanation({ targetRir: exercise.targetRir, isDeload });
-      steps.push({ target: 'rir', title: explanation.title, explanation });
-    }
     if (targets.weight) {
       steps.push({ target: 'weight', ...WEIGHT_STEP });
     }
     if (targets.reps) {
       steps.push({ target: 'reps', ...REPS_STEP });
+    }
+    if (targets.rir && exercise.targetRir !== undefined) {
+      const explanation = rirExplanation({ targetRir: exercise.targetRir, isDeload });
+      steps.push({ target: 'rir', title: explanation.title, explanation });
     }
   }
   steps.push({ target: 'grid', ...GRID_STEP });

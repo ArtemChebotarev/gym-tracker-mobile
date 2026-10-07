@@ -14,6 +14,7 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   welcomeSeen: false,
   coachmarksSeen: false,
   deloadIntroSeen: false,
+  startCycleSeen: false,
 };
 
 export function describeSettingsContract(harness: RepositoryHarness): void {
@@ -33,7 +34,12 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       const written: Settings = {
         defaultProgressionSettings: { ...defaultProgressionSettings, minReps: 6 },
         weightUnit: 'lb',
-        onboarding: { welcomeSeen: true, coachmarksSeen: false, deloadIntroSeen: true },
+        onboarding: {
+          welcomeSeen: true,
+          coachmarksSeen: false,
+          deloadIntroSeen: true,
+          startCycleSeen: false,
+        },
       };
 
       await settingsRepo.write(written);
@@ -90,7 +96,12 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       });
 
       await expect(settingsRepo.read()).resolves.toMatchObject({
-        onboarding: { welcomeSeen: true, coachmarksSeen: false, deloadIntroSeen: false },
+        onboarding: {
+          welcomeSeen: true,
+          coachmarksSeen: false,
+          deloadIntroSeen: false,
+          startCycleSeen: false,
+        },
       });
     });
   });

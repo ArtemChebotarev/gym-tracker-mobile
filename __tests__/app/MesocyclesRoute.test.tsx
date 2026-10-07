@@ -10,12 +10,19 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import MesocyclesRoute from '@app/(tabs)/mesocycles';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import { seedExerciseCatalog, seedMockMesocycles } from '../fixtures/appStorage';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockPush = jest.fn();
+const mockNavigate = jest.fn();
+
+jest.mock('expo-crypto', () => {
+  let counter = 0;
+  return { randomUUID: () => `generated-id-${(counter += 1)}` };
+});
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, navigate: mockNavigate, back: jest.fn() }),
 }));
 
 const TEST_SAFE_AREA_METRICS: Metrics = {
@@ -40,6 +47,7 @@ beforeEach(async () => {
     completedAt: '2026-08-20T00:00:00.000Z',
   });
   mockPush.mockClear();
+  mockNavigate.mockClear();
   alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
 });
 
@@ -163,5 +171,57 @@ describe('MesocyclesRoute — Archive', () => {
 
     expect(await screen.findByText('Upper/Lower')).toBeTruthy();
     read.mockRestore();
+  });
+});
+
+describe('MesocyclesRoute — first Start (GT-50)', () => {
+  // The seeded planned cycle is Upper/Lower, with a real plan, so Start can run.
+  async function renderWithPlannedCycle({ hintSeen }: { hintSeen: boolean }) {
+    await seedExerciseCatalog(repositories());
+    await seedMockMesocycles(repositories());
+    if (hintSeen) {
+      const settings = await repositories().settingsRepo.read();
+      await repositories().settingsRepo.write({
+        ...settings,
+        onboarding: { ...settings.onboarding, startCycleSeen: true },
+      });
+    }
+    renderWithRepositories(
+      <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+        <MesocyclesRoute />
+      </SafeAreaProvider>,
+    );
+    await screen.findByRole('button', { name: 'Start Upper/Lower' });
+  }
+
+  test('DoD: the first Planned cycle gets the Start hint, once; closing it is remembered', async () => {
+    await renderWithPlannedCycle({ hintSeen: false });
+
+    // Jest has no layout pass: the Planned rows report theirs by hand, and the hint then waits a beat.
+    fireEvent(screen.getByTestId('planned-rows'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 402, height: 80 } },
+    });
+    expect(screen.queryByText('Your cycle is ready')).toBeNull();
+    expect(await screen.findByText('Your cycle is ready', {}, { timeout: 3000 })).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
+
+    await waitFor(async () =>
+      expect((await repositories().settingsRepo.read()).onboarding.startCycleSeen).toBe(true),
+    );
+  });
+
+  test('no hint once it was closed before', async () => {
+    await renderWithPlannedCycle({ hintSeen: true });
+
+    expect(screen.queryByText('Your cycle is ready')).toBeNull();
+  });
+
+  test('DoD: Start leads on to Today', async () => {
+    await renderWithPlannedCycle({ hintSeen: true });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Start Upper/Lower' }));
+    pressAlertButton('Start');
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
   });
 });

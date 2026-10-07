@@ -38,7 +38,12 @@ describe('todayEmptyCopy', () => {
 });
 
 describe('shouldShowWorkoutCoachmarks', () => {
-  const unseen = { welcomeSeen: true, coachmarksSeen: false, deloadIntroSeen: false };
+  const unseen = {
+    welcomeSeen: true,
+    coachmarksSeen: false,
+    deloadIntroSeen: false,
+    startCycleSeen: false,
+  };
   const live = { mode: 'live' as const, isDeload: false };
 
   test('DoD: once the Welcome dialog is closed, on a live workout whose tour has not been seen', () => {
@@ -66,7 +71,12 @@ describe('shouldShowWorkoutCoachmarks', () => {
 });
 
 describe('shouldShowDeloadIntro', () => {
-  const unseen = { welcomeSeen: true, coachmarksSeen: true, deloadIntroSeen: false };
+  const unseen = {
+    welcomeSeen: true,
+    coachmarksSeen: true,
+    deloadIntroSeen: false,
+    startCycleSeen: false,
+  };
   const deload = { mode: 'live' as const, isDeload: true };
 
   test('DoD: on a live deload session whose popup has not been seen', () => {

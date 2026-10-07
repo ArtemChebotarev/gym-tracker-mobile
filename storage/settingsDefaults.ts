@@ -6,6 +6,7 @@ export const DEFAULT_ONBOARDING: OnboardingFlags = {
   welcomeSeen: false,
   coachmarksSeen: false,
   deloadIntroSeen: false,
+  startCycleSeen: false,
 };
 
 /**
