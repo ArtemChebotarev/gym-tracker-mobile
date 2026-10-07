@@ -30,11 +30,15 @@ export type TodayEmptyReason = 'noActiveMesocycle' | 'cyclePlanned' | 'allDone' 
 /**
  * The EmptyState for `reason` — an invitation, not an apology (08.0.1, "Empty states"). Without an
  * active cycle it invites planning one (08, "Сегодня") — through the same creation-method sheet
- * the `+` on 08.3 raises, since finished cycles may well exist to copy even when none is running;
+ * the `+` on 08.3 raises, since finished cycles may well exist to copy even when none is running
+ * (`hasHadCycles`: with none ever, the title says `first` rather than `next`);
  * with the cycle done it closes it (052 — the same Finish the last workout offers, so leaving that
  * screen isn't a dead end); otherwise it leads to the cycles.
  */
-export function todayEmptyCopy(reason: TodayEmptyReason): {
+export function todayEmptyCopy(
+  reason: TodayEmptyReason,
+  hasHadCycles = true,
+): {
   icon: IconComponent;
   title: string;
   description: string;
@@ -44,7 +48,9 @@ export function todayEmptyCopy(reason: TodayEmptyReason): {
     case 'noActiveMesocycle':
       return {
         icon: TabTodayIcon,
-        title: 'Start your next training cycle',
+        // `next` says nothing to someone who has never had one (08.0.1, GT-51); until it is known
+        // that they haven't, the old wording stands — it is wrong for fewer people than "first".
+        title: hasHadCycles ? 'Start your next training cycle' : 'Start your first training cycle',
         description: 'Plan one and its workouts will show up here.',
         actionLabel: PLAN_MESOCYCLE_LABEL,
       };

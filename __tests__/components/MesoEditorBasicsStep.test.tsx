@@ -24,10 +24,18 @@ describe('MesoEditorBasicsStep', () => {
     expect(screen.getByText('Name')).toBeTruthy();
     expect(screen.getByText('Cycle length')).toBeTruthy();
     expect(screen.getByText('6 weeks')).toBeTruthy();
-    expect(screen.getByText('Includes a deload week')).toBeTruthy();
+    expect(screen.getByText('The last week is lighter')).toBeTruthy();
+    expect(screen.queryByText(/deload/i)).toBeNull();
     expect(screen.getByText('Days per week')).toBeTruthy();
     expect(screen.getByText('4 days')).toBeTruthy();
     expect(screen.getByText("Next, you'll pick exercises for each day.")).toBeTruthy();
+  });
+
+  test('with the days already filled (a template or a copied week) it does not promise to pick exercises next (GT-51)', () => {
+    render(<MesoEditorBasicsStep {...BASE_PROPS} exercisesPrefilled />);
+
+    expect(screen.getByText('4 days')).toBeTruthy();
+    expect(screen.queryByText("Next, you'll pick exercises for each day.")).toBeNull();
   });
 
   test('typing a name calls onChangeName', () => {

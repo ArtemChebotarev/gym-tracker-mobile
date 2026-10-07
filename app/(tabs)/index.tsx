@@ -132,7 +132,8 @@ export default function TodayScreen() {
   const finishMesocycle = useFinishMesocycle();
   const stopMesocycle = useStopMesocycle();
   const renameMesocycle = useRenameMesocycle();
-  // Only for the creation-method sheet's second row: whether there is anything to copy at all.
+  // For the creation-method sheet's second row — whether there is anything to copy at all — and for
+  // the empty Today's wording: `first` rather than `next` cycle when there has never been one.
   const mesocycles = useMesocycles();
   const methodSheet = useMesoCreationMethodSheet();
   // The Welcome dialog (GT-37, 08.11): up until `Got it` has been written, not merely tapped, and
@@ -484,7 +485,10 @@ export default function TodayScreen() {
         }}
         isFinishingMesocycle={finishMesocycle.isPending}
         fallback={{
-          ...todayEmptyCopy(emptyReason),
+          ...todayEmptyCopy(
+            emptyReason,
+            mesocycles.data === undefined || mesocycles.data.length > 0,
+          ),
           onAction: () => {
             if (emptyReason === 'noActiveMesocycle') {
               // The same sheet the `+` on 08.3 raises, not Flow A directly: no block is *running*

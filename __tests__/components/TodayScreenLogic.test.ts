@@ -15,6 +15,12 @@ describe('formatInProgressConflict', () => {
 });
 
 describe('todayEmptyCopy', () => {
+  test('GT-51: someone who has never had a cycle is invited to start their first, not their next', () => {
+    expect(todayEmptyCopy('noActiveMesocycle', false).title).toBe('Start your first training cycle');
+    expect(todayEmptyCopy('noActiveMesocycle', true).title).toBe('Start your next training cycle');
+    expect(todayEmptyCopy('noActiveMesocycle').title).toBe('Start your next training cycle');
+  });
+
   test('invites creating a mesocycle when none is active', () => {
     expect(todayEmptyCopy('noActiveMesocycle').actionLabel).toBe(PLAN_MESOCYCLE_LABEL);
   });

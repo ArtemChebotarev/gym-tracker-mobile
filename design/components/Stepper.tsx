@@ -36,7 +36,7 @@ export type StepperProps = {
   step?: number;
   /** Formats the displayed value, e.g. `(v) => \`${v} weeks\``. Defaults to the bare number. */
   formatValue?: (value: number) => string;
-  /** Optional second line under the value, e.g. "Includes a deload week" / "sets". */
+  /** Optional second line under the value, e.g. "The last week is lighter" / "sets". */
   caption?: string;
   /** `field` (default): bordered card row with a label above. `inline`: centered, no card chrome. */
   variant?: StepperVariant;
