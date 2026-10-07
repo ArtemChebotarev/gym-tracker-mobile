@@ -40,7 +40,7 @@ describe('workoutCoachmarks', () => {
   test('the first card’s RIR badge and Weight ⓘ, and the grid button, in that order', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
-    expect(targets(steps)).toEqual(['rir', 'weight', 'grid']);
+    expect(targets(steps)).toEqual(['weight', 'rir', 'grid']);
   });
 
   test('with a Reps ⓘ too — its set has a weight swap — all four steps', () => {
@@ -58,17 +58,17 @@ describe('workoutCoachmarks', () => {
 
     const steps = workoutCoachmarks({ exercise, mode: 'live', isDeload: false });
 
-    expect(targets(steps)).toEqual(['rir', 'weight', 'reps', 'grid']);
+    expect(targets(steps)).toEqual(['weight', 'reps', 'rir', 'grid']);
   });
 
   test('the words are the spec’s, and the RIR step’s are the badge popover’s', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
-    expect(steps[0]).toMatchObject({ title: '3 RIR means 3 reps in reserve' });
+    expect(steps[1]).toMatchObject({ title: '3 RIR means 3 reps in reserve' });
     // The RIR step explains with the track and two theses; the others with a paragraph.
-    expect(steps[0]?.explanation?.rows).toHaveLength(2);
-    expect(steps[0]?.paragraphs).toBeUndefined();
-    expect(steps[1]).toMatchObject(WEIGHT_STEP);
+    expect(steps[1]?.explanation?.rows).toHaveLength(2);
+    expect(steps[1]?.paragraphs).toBeUndefined();
+    expect(steps[0]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
     expect(REPS_STEP.title).toBe('Want to change the weight?');
   });
