@@ -206,10 +206,15 @@ describe('Today tab — exercise menu', () => {
       'The 2 sets logged for Bench Press will be deleted.',
       expect.any(Array),
     );
-    expect(screen.queryByRole('button', { name: 'Squat' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: 'Squat' })).toBeNull();
     pressAlertButton('Replace');
 
-    fireEvent.press(await screen.findByRole('button', { name: 'Squat' }));
+    // A tap only checks the row; nothing is swapped until Replace is pressed.
+    fireEvent.press(await screen.findByRole('checkbox', { name: 'Squat' }));
+    expect((await sessionExercises()).find((e) => e.id === BENCH)?.exerciseId).not.toBe(
+      'squat-barbell',
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Replace' }));
     expect(alertSpy).toHaveBeenCalledTimes(1);
 
     await waitFor(async () =>
