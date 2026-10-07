@@ -6,7 +6,6 @@ import {
   exerciseCardView,
   firstUnloggedRow,
   formatWeightHint,
-  hasRepTarget,
   holdLoggedWeight,
   showsGroupChip,
   weightFieldText,
@@ -333,33 +332,6 @@ describe('the weight swap popover and note', () => {
     });
   });
 
-  describe('hasRepTarget', () => {
-    test('the set next to do has target reps', () => {
-      const rows = [{ setNumber: 1, targetReps: 10, isFirstUnlogged: true }] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(true);
-    });
-
-    test('week 1: the set next to do has none', () => {
-      const rows = [{ setNumber: 1, isFirstUnlogged: true }] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(false);
-    });
-
-    test('only the set next to do counts, not a later one', () => {
-      const rows = [
-        { setNumber: 1, targetReps: 10, isFirstUnlogged: true },
-        { setNumber: 2, isFirstUnlogged: false },
-      ] as WorkoutSetRow[];
-
-      expect(hasRepTarget(rows)).toBe(true);
-    });
-
-    test('a card with no set left to do is not missing a target', () => {
-      expect(hasRepTarget([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBe(true);
-    });
-  });
-
   describe('weightSwapPopover', () => {
     test('an estimate is titled as one (task 134.1)', () => {
       const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' }, 2);
@@ -424,8 +396,52 @@ describe('the weight swap popover and note', () => {
       ).toEqual({
         kind: 'no-history',
         title: 'Not enough history yet',
-        text: "Pick a weight that leaves you about 3 reps in reserve (RIR). After this workout you'll get rep targets.",
+        // The 5–30 corridor as the Reps plate draws every span: dashes, the accent bar over the
+        // part to aim for, the two ends named.
+        corridor: {
+          outer: { min: 0, max: 35 },
+          inner: { min: 5, max: 30 },
+          markers: [5, 30],
+          labels: [
+            { value: 5, text: '5' },
+            { value: 30, text: '30' },
+          ],
+          accessibilityLabel: 'Reps per set: 5 to 30',
+        },
+        steps: [
+          ['Pick a weight you can lift for ', { strong: '5–30 reps' }, '.'],
+          ['Stop each set with ', { strong: 'about 3 reps in reserve' }, '.'],
+          ['Log this workout.'],
+          ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
+        ],
       });
+    });
+
+    test('with no history at the last week’s 0 RIR it says failure, not "about 0 reps in reserve"', () => {
+      const popover = weightSwapPopover(
+        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
+        0,
+      );
+
+      expect(popover).toMatchObject({ kind: 'no-history' });
+      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
+        'Take each set ',
+        { strong: 'to failure' },
+        '.',
+      ]);
+    });
+
+    test('with no history and no recorded RIR it says how hard without a number', () => {
+      const popover = weightSwapPopover(
+        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
+        undefined,
+      );
+
+      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
+        'Stop each set with ',
+        { strong: 'a few reps in reserve' },
+        '.',
+      ]);
     });
 
     test('no swap, no popover — a deload set or a pure bodyweight one', () => {

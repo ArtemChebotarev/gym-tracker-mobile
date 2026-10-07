@@ -35,7 +35,7 @@ export function FirstWeightPopover({ visible, anchor, onClose, targetRir }: Firs
       <View style={styles.ladder}>
         {WARM_UP_STEPS.map((step) => (
           <View key={step.reps} style={styles.step}>
-            <Chip variant="static" label={step.reps} compact width={SIZES['size/ladder-chip']} />
+            <Chip variant="static" label={step.reps} compact accent width={SIZES['size/ladder-chip']} />
             <Text style={styles.stepText}>{step.text}</Text>
           </View>
         ))}

@@ -1,4 +1,5 @@
 import { GRID_STEP, REPS_STEP, WEIGHT_STEP, workoutCoachmarks } from '@components/WorkoutCoachmarksLogic';
+import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 const NO_ACTIONS: WorkoutExercise['actions'] = {
@@ -64,11 +65,22 @@ describe('workoutCoachmarks', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
     expect(steps[0]).toMatchObject({ title: '3 RIR means 3 reps in reserve' });
-    // Week 1: the set next to do has no target reps, so the how-to-find-them line is there too.
-    expect(steps[0]?.paragraphs).toHaveLength(2);
+    // The RIR step explains with the track and two theses; the others with a paragraph.
+    expect(steps[0]?.explanation?.rows).toHaveLength(2);
+    expect(steps[0]?.paragraphs).toBeUndefined();
     expect(steps[1]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
     expect(REPS_STEP.title).toBe('Want to change the weight?');
+  });
+
+  // The ⓘ character is a thin outline that cannot be made heavier: the line carries the real icon.
+  test('the Weight and Reps steps point at the button by its own icon, not by the ⓘ character', () => {
+    for (const step of [WEIGHT_STEP, REPS_STEP]) {
+      const parts = step.paragraphs[0] as readonly (string | { strong: string } | { icon: unknown })[];
+
+      expect(parts).toContainEqual({ icon: InfoIcon });
+      expect(parts.filter((part) => typeof part === 'string').join('')).not.toContain('ⓘ');
+    }
   });
 
   test('a pure bodyweight first card has no Weight ⓘ step — nothing to find', () => {

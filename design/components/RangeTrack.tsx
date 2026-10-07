@@ -17,8 +17,12 @@ import { type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { centerOffset, roundedBar } from '../shapes';
 import { COLORS, LINE_HEIGHTS, OPACITY, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 
-/** A tick under the track: the value it sits over, and what it reads. */
-export type RangeTrackLabel = { value: number; text: string };
+/**
+ * A tick under the track: the value it sits over, and what it reads. It is centred on the value by
+ * default; `align: 'end'` puts its right edge there instead, so a label can sit to the left of its
+ * point and leave room for another beside it when the two points are close (08.11, the RIR track).
+ */
+export type RangeTrackLabel = { value: number; text: string; align?: 'center' | 'end' };
 
 export type RangeTrackRange = { min: number; max: number };
 
@@ -27,20 +31,35 @@ export type RangeTrackProps = {
   outer: RangeTrackRange;
   /** The span drawn solid inside it. */
   inner: RangeTrackRange;
-  /** The value the dot marks. */
-  marker: number;
+  /**
+   * The value the dot marks — or several, one dot each, to mark the two ends of a span (08.11's
+   * 5–30 rep corridor). Without any there is no dot: a span to read, not a value to point at.
+   */
+  marker?: number | readonly number[];
   labels: readonly RangeTrackLabel[];
   accessibilityLabel: string;
 };
 
-// Enough dashes to cross any phone — the track clips whatever doesn't fit.
-const DASH_COUNT = 60;
+// A swatch is a short piece of the track (`size/legend-swatch`); this many dashes cross it, and it
+// clips the rest.
+const SWATCH_DASH_COUNT = 12;
+
+/**
+ * How many dashes it takes to run across a track `width` wide: one dash and its gap at a time, and
+ * one over, since the track clips the last. A fixed count ("enough to cross any phone") ran out at
+ * 360pt, and on a wider phone the dashes stopped short of the track's right end while the accent
+ * bar, placed by percentage, did not — so the track looked lopsided.
+ */
+function dashesAcross(width: number): number {
+  return Math.ceil(width / (SIZES['size/progress'] + SPACING['space/xxs'])) + 1;
+}
 
 function toPercent(share: number): `${number}%` {
   return `${share * 100}%`;
 }
 
 export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }: RangeTrackProps) {
+  const markers = marker === undefined ? [] : typeof marker === 'number' ? [marker] : marker;
   const [width, setWidth] = useState(0);
   const [labelWidths, setLabelWidths] = useState<ReadonlyMap<number, number>>(new Map());
 
@@ -75,7 +94,7 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
       >
         <View style={styles.bars}>
           <View style={styles.dashes}>
-            {Array.from({ length: DASH_COUNT }, (_, index) => (
+            {Array.from({ length: dashesAcross(width) }, (_, index) => (
               <View key={index} style={styles.dash} />
             ))}
           </View>
@@ -87,10 +106,13 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
             ]}
           />
         </View>
-        <View
-          testID="range-track-marker"
-          style={[styles.marker, { left: toPercent(share(marker)) }]}
-        />
+        {markers.map((value) => (
+          <View
+            key={value}
+            testID="range-track-marker"
+            style={[styles.marker, { left: toPercent(share(value)) }]}
+          />
+        ))}
       </View>
       <View style={styles.labels}>
         {labels.map((label) => {
@@ -104,7 +126,12 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
               style={[
                 styles.label,
                 placed
-                  ? { left: insetStart + share(label.value) * width + centerOffset(labelWidth) }
+                  ? {
+                      left:
+                        insetStart +
+                        share(label.value) * width +
+                        (label.align === 'end' ? -labelWidth : centerOffset(labelWidth)),
+                    }
                   : styles.unplaced,
               ]}
             >
@@ -128,7 +155,7 @@ export function RangeTrackSwatch({ span }: { span: 'outer' | 'inner' }) {
         <View style={[StyleSheet.absoluteFill, styles.innerSwatch]} />
       ) : (
         <View style={styles.dashes}>
-          {Array.from({ length: DASH_COUNT }, (_, index) => (
+          {Array.from({ length: SWATCH_DASH_COUNT }, (_, index) => (
             <View key={index} style={styles.dash} />
           ))}
         </View>

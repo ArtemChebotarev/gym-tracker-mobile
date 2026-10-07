@@ -118,3 +118,101 @@ describe('RangeTrack', () => {
     expect(styleOf('range-track-marker')).toMatchObject({ left: '0%' });
   });
 });
+
+// 08.11: a label can end at its point, to leave room for a neighbour beside it.
+describe('RangeTrack label alignment', () => {
+  function placedLeft(align: 'center' | 'end' | undefined): number {
+    const { getByText } = render(
+      <RangeTrack
+        outer={{ min: 0, max: 10 }}
+        inner={{ min: 0, max: 5 }}
+        marker={5}
+        labels={[
+          { value: 0, text: 'Start' },
+          { value: 5, text: 'Stop here', ...(align !== undefined ? { align } : {}) },
+          { value: 10, text: 'End' },
+        ]}
+        accessibilityLabel="track"
+      />,
+    );
+    const track = screen.getByTestId('range-track');
+    fireEvent(track, 'layout', { nativeEvent: { layout: { width: 200, height: 10, x: 0, y: 0 } } });
+    for (const text of ['Start', 'Stop here', 'End']) {
+      fireEvent(getByText(text), 'layout', {
+        nativeEvent: { layout: { width: 40, height: 16, x: 0, y: 0 } },
+      });
+    }
+    return StyleSheet.flatten(getByText('Stop here').props.style).left as number;
+  }
+
+  test('a label is centred on its value by default', () => {
+    // The track is pulled in by half the 40 label at its start (20); its middle is 100 further on,
+    // and the label's own left edge half its width before that.
+    expect(placedLeft(undefined)).toBeCloseTo(20 + 100 - 20);
+  });
+
+  test('`end` puts the label’s right edge on its value instead', () => {
+    expect(placedLeft('end') - placedLeft('center')).toBeCloseTo(-20);
+  });
+});
+
+describe('RangeTrack with several markers', () => {
+  test('puts a dot on each value it is given — the two ends of a span', () => {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        marker={[5, 30]}
+        labels={[]}
+        accessibilityLabel="Reps per set: 5 to 30"
+      />,
+    );
+
+    expect(screen.getAllByTestId('range-track-marker')).toHaveLength(2);
+  });
+});
+
+describe('RangeTrack without a marker', () => {
+  test('draws the span and no dot — a stretch to read, not a value to point at', () => {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        labels={[{ value: 5, text: '5' }, { value: 30, text: '30' }]}
+        accessibilityLabel="Reps per set: 5 to 30"
+      />,
+    );
+
+    expect(screen.getByTestId('range-track-inner')).toBeTruthy();
+    expect(screen.queryByTestId('range-track-marker')).toBeNull();
+  });
+});
+
+// A fixed count of dashes ran out at 360pt, so on a wider phone the dashes stopped short of the
+// track's right end and the accent bar, placed by percentage, did not: the track looked lopsided.
+describe('RangeTrack dashes', () => {
+  function dashCountAt(width: number): number {
+    render(
+      <RangeTrack
+        outer={{ min: 0, max: 35 }}
+        inner={{ min: 5, max: 30 }}
+        labels={[]}
+        accessibilityLabel="track"
+      />,
+    );
+    fireEvent(screen.getByTestId('range-track'), 'layout', {
+      nativeEvent: { layout: { width, height: 10, x: 0, y: 0 } },
+    });
+    const dashes = screen.getByTestId('range-track').findAll(
+      (node) => StyleSheet.flatten(node.props.style)?.backgroundColor === COLORS['text/faint'],
+    );
+    return dashes.length;
+  }
+
+  test('there are dashes enough to reach the end of any track, 4pt each with a 2pt gap', () => {
+    for (const width of [300, 376, 408, 700]) {
+      // 6pt per dash and gap: the dashes must cover the width.
+      expect(dashCountAt(width) * 6).toBeGreaterThanOrEqual(width);
+    }
+  });
+});

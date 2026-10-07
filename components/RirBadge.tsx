@@ -5,13 +5,14 @@
 // it, 44pt tall through `hitSlop` — the chip is drawn smaller — and the anchor the popover points at.
 
 import type { Ref } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { Popover } from '@design/components/Popover';
 import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
+import { RirExplanationContent } from './RirExplanationContent';
 import { type RirExplanation } from './RirExplanationLogic';
 import { styles } from './RirBadgeStyles';
 import { usePopoverAnchor } from './usePopoverAnchor';
@@ -49,11 +50,7 @@ export function RirBadge({ label, explanation, chipRef }: RirBadgeProps) {
         anchor={anchor}
         title={explanation.title}
       >
-        {explanation.paragraphs.map((paragraph) => (
-          <Text key={paragraph} style={styles.paragraph}>
-            {paragraph}
-          </Text>
-        ))}
+        <RirExplanationContent explanation={explanation} />
       </Popover>
     </>
   );

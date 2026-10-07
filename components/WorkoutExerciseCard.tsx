@@ -32,6 +32,7 @@ import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
 import { InlineNote } from '@design/components/InlineNote';
+import { PlateRow } from '@design/components/PlateRow';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
@@ -57,7 +58,6 @@ import {
   estimateNote,
   exerciseCardView,
   firstUnloggedRow,
-  hasRepTarget,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -161,13 +161,7 @@ export function WorkoutExerciseCard({
               <RirBadge
                 label={view.rirLabel}
                 {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
-                explanation={rirExplanation({
-                  targetRir: exercise.targetRir,
-                  isDeload,
-                  // Read off the set next to do, as the Reps ⓘ does. A card with no set left to do
-                  // (all logged) has nothing to find, so it counts as having a target.
-                  hasRepTarget: hasRepTarget(exercise.rows),
-                })}
+                explanation={rirExplanation({ targetRir: exercise.targetRir, isDeload })}
               />
             )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>
@@ -291,7 +285,18 @@ function WeightSwapPopoverPlate({
   if (popover.kind === 'no-history') {
     return (
       <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
-        <Text style={styles.popoverText}>{popover.text}</Text>
+        <RangeTrack
+          outer={popover.corridor.outer}
+          inner={popover.corridor.inner}
+          marker={popover.corridor.markers}
+          labels={popover.corridor.labels}
+          accessibilityLabel={popover.corridor.accessibilityLabel}
+        />
+        <View style={styles.popoverSteps}>
+          {popover.steps.map((step, index) => (
+            <PlateRow key={index} leading={{ number: index + 1 }} text={step} />
+          ))}
+        </View>
       </Popover>
     );
   }

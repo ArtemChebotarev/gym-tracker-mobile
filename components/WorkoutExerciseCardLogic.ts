@@ -4,6 +4,9 @@ import type { Equipment } from '@domain/catalog';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
+import type { PlateTextPart } from '@design/components/PlateRow';
+import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatRir } from '@design/formatRir';
@@ -197,15 +200,6 @@ export function cardInfoTargets(
   };
 }
 
-/**
- * Whether the set next to do has target reps to aim for. It doesn't in week 1 and for an exercise
- * with no history — and a card with no set left to do is not missing one, so it answers `true`.
- */
-export function hasRepTarget(rows: readonly WorkoutSetRow[]): boolean {
-  const next = firstUnloggedRow(rows);
-  return next === undefined || next.targetReps !== undefined;
-}
-
 /** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
 function formatSwapWeight(weight: number, added: boolean): string {
   return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
@@ -292,7 +286,21 @@ export type WeightSwapPopover =
       labels: { value: number; text: string }[];
       legend: WeightSwapLegendRow[];
     }
-  | { kind: 'no-history'; title: string; text: string };
+  | {
+      kind: 'no-history';
+      title: string;
+      /** The corridor a set has to land in, drawn as the Reps plate always draws a span: dashes with the accent bar over the part to aim for. */
+      corridor: {
+        outer: RangeTrackRange;
+        inner: RangeTrackRange;
+        /** A dot on each end of the accent bar, as the other tracks have one on the value they point at. */
+        markers: number[];
+        labels: RangeTrackLabel[];
+        /** Said by assistive technology; nothing is written under the track. */
+        accessibilityLabel: string;
+      };
+      steps: PlateTextPart[][];
+    };
 
 export function weightSwapPopover(
   row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
@@ -303,11 +311,41 @@ export function weightSwapPopover(
   }
   const swap = row.weightSwap;
   if ('unavailable' in swap) {
-    const effort = targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`;
+    // How hard to take the set: the reserve the week asks for, and at the last week's 0 RIR there
+    // is none to name — it is failure.
+    const effortStep: PlateTextPart[] =
+      targetRir === 0
+        ? ['Take each set ', { strong: 'to failure' }, '.']
+        : [
+            'Stop each set with ',
+            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} reps`} in reserve` },
+            '.',
+          ];
+    // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
+    // and the corridor a set has to land in — the engine builds its rep targets and weight ranges
+    // on it (03) — how hard to take it, then what the app does for you next time.
+    const { minReps, maxReps } = defaultProgressionSettings;
     return {
       kind: 'no-history',
       title: 'Not enough history yet',
-      text: `Pick a weight that leaves you ${effort} in reserve (RIR). After this workout you'll get rep targets.`,
+      // Dashes a corridor-width of margin either side, so the accent bar reads as a stretch inside
+      // a longer scale and its two ends have room for their numbers.
+      corridor: {
+        outer: { min: 0, max: minReps + maxReps },
+        inner: { min: minReps, max: maxReps },
+        markers: [minReps, maxReps],
+        labels: [
+          { value: minReps, text: `${minReps}` },
+          { value: maxReps, text: `${maxReps}` },
+        ],
+        accessibilityLabel: `Reps per set: ${minReps} to ${maxReps}`,
+      },
+      steps: [
+        ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],
+        effortStep,
+        ['Log this workout.'],
+        ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
+      ],
     };
   }
   const added = swap.bodyWeight !== undefined;

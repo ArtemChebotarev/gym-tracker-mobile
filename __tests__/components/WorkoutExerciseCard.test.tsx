@@ -766,9 +766,19 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     openInfo();
 
     expect(screen.getByText('Not enough history yet')).toBeTruthy();
-    expect(
-      screen.getByText(/Pick a weight that leaves you about 3 reps in reserve \(RIR\)/),
-    ).toBeTruthy();
+    // The 5–30 corridor as a track — the existing one, accent bar over the part to aim for — with
+    // a dot and a number on each end.
+    expect(screen.getByTestId('range-track')).toBeTruthy();
+    expect(screen.getAllByTestId('range-track-marker')).toHaveLength(2);
+    // Nothing is written under it — it is described to assistive technology instead.
+    expect(screen.queryByText('Reps per set')).toBeNull();
+    expect(screen.getByLabelText('Reps per set: 5 to 30')).toBeTruthy();
+    // Four numbered steps, not a paragraph (08.11) — the 5–30 rep corridor the engine builds on first.
+    expect(screen.getByText('Pick a weight you can lift for 5–30 reps.')).toBeTruthy();
+    expect(screen.getByText('Stop each set with about 3 reps in reserve.')).toBeTruthy();
+    expect(screen.getByText('Log this workout.')).toBeTruthy();
+    expect(screen.getByText('Next time: reps will be calculated for you.')).toBeTruthy();
+    expect(screen.getAllByTestId('plate-row-mark')).toHaveLength(4);
   });
 });
 
@@ -850,26 +860,6 @@ describe('RIR badge popover', () => {
 
     // LIVE_EXERCISE: targetRir 2, and its next set has target reps.
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
-    expect(screen.queryByText(/no rep target yet/)).toBeNull();
-  });
-
-  test('a set with no target reps — week 1 — also tells how to find them', () => {
-    const noTargets = makeExercise({
-      targetRir: 3,
-      rows: [{ setNumber: 1, isFirstUnlogged: true }, { setNumber: 2, isFirstUnlogged: false }],
-      loggedSetCount: 0,
-      hasLoggedSets: false,
-    });
-    render(<WorkoutExerciseCard {...makeProps({ exercise: noTargets })} />);
-
-    fireEvent.press(badge());
-
-    expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
-    expect(
-      screen.getByText(
-        'There is no rep target yet. Do as many reps as it takes to reach 3 RIR and enter them.',
-      ),
-    ).toBeTruthy();
   });
 
   test('DoD: it works on a deload week too, with the deload text', () => {
@@ -884,7 +874,7 @@ describe('RIR badge popover', () => {
     ).toBeTruthy();
   });
 
-  test('a read-only card still explains its badge, and never claims a missing rep target', () => {
+  test('a read-only card still explains its badge', () => {
     render(
       <WorkoutExerciseCard {...makeProps({ mode: 'readonly', exercise: COMPLETED_EXERCISE })} />,
     );
@@ -892,6 +882,5 @@ describe('RIR badge popover', () => {
     fireEvent.press(badge());
 
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
-    expect(screen.queryByText(/no rep target yet/)).toBeNull();
   });
 });
