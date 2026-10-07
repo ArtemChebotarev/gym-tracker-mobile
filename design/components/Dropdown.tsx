@@ -68,6 +68,7 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
           style={styles.panel}
           nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           {options.map((option) => {

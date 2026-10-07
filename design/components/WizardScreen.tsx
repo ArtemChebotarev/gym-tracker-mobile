@@ -23,7 +23,7 @@
 // into one screen (each old per-step screen had its own local provider too).
 
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { BORDER_WIDTHS, COLORS, SPACING } from '../tokens';
@@ -74,7 +74,11 @@ export function WizardScreen({
           />
         )}
 
-        <View style={styles.body}>{children}</View>
+        {/* A tap on the empty part of a step closes the keyboard (GT-21); a field or button in it
+            still takes its own tap first. */}
+        <Pressable accessible={false} style={styles.body} onPress={Keyboard.dismiss}>
+          {children}
+        </Pressable>
 
         {footer !== undefined && footer !== null && <View style={styles.footer}>{footer}</View>}
       </SafeAreaView>

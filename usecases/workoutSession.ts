@@ -190,6 +190,12 @@ export type WorkoutSessionModel = {
   /** The `Finish workout` button: live, and every exercise `completed` or `skipped`. */
   showFinish: boolean;
   /**
+   * The `Finish workout` button shown inactive (GT-48): live, but something is still `planned`.
+   * It stays in view with a line on what is missing, so a newcomer sees the function exists
+   * before it is available. Never true together with `showFinish`.
+   */
+  showFinishLocked: boolean;
+  /**
    * The `Finish mesocycle` button (052): the block is `active` and every session of it is final —
    * this is the last workout, already done. It closes the block by hand; nothing closes it on its
    * own (Artem's review of 052).
@@ -433,6 +439,7 @@ function fromTree(
       canStopMesocycle: mesocycle.status === 'active',
     },
     showFinish: live && canFinishSession(sessionExercises),
+    showFinishLocked: live && !canFinishSession(sessionExercises),
     showFinishMesocycle: mesoSessions !== null && canFinishMesocycle(mesocycle, mesoSessions),
     showCopyMesocycle: mesocycle.status === 'completed',
   };
@@ -498,6 +505,7 @@ async function previewOf(
       canStopMesocycle: tree.mesocycle.status === 'active',
     },
     showFinish: false,
+    showFinishLocked: false,
     // A preview is a day still to come, so the block always has it left to train.
     showFinishMesocycle: false,
     // A preview is a day that hasn't been programmed yet, which only exists inside a running

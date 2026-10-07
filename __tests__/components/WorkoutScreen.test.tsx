@@ -64,6 +64,7 @@ const LIVE: WorkoutSessionModel = {
   exercises: [makeExercise()],
   actions: { canAddExercise: true, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
+  showFinishLocked: false,
   showFinishMesocycle: false,
   showCopyMesocycle: false,
 };
@@ -98,6 +99,7 @@ const PREVIEW: WorkoutSessionModel = {
   exercises: [makeExercise({ targetRir: undefined })],
   actions: { canAddExercise: false, canSkipWorkout: false, canStopMesocycle: true },
   showFinish: false,
+  showFinishLocked: false,
   showFinishMesocycle: false,
   showCopyMesocycle: false,
   unlocksAfter: { weekNumber: 6, dayNumber: 3 },
@@ -324,10 +326,23 @@ describe('WorkoutScreen Finish workout', () => {
     showFinish: true,
   };
 
-  test('DoD: there is no button, not even a disabled one, while an exercise is planned', () => {
+  test('GT-48: while an exercise is planned the button is there but inactive, with a line on why', () => {
+    const onFinish = jest.fn();
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: { ...LIVE, showFinishLocked: true }, onFinish })} />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finish workout' }));
+
+    expect(onFinish).not.toHaveBeenCalled();
+    expect(screen.getByText('Log all sets first to finish the workout.')).toBeTruthy();
+  });
+
+  test('without a live session (or with the button active) there is no locked hint', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps()} />);
 
     expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+    expect(screen.queryByText(/Log all sets first/)).toBeNull();
   });
 
   test('shows the button once every exercise is completed or skipped, and finishes on press', () => {
@@ -517,9 +532,7 @@ describe('WorkoutScreen Copy current meso', () => {
 
   test('takes the place of Finish mesocycle rather than sitting beside it', () => {
     renderWithSafeArea(
-      <WorkoutScreen
-        {...makeProps({ model: { ...COMPLETED, showCopyMesocycle: true } })}
-      />,
+      <WorkoutScreen {...makeProps({ model: { ...COMPLETED, showCopyMesocycle: true } })} />,
     );
 
     expect(screen.getByRole('button', { name: 'Copy current cycle' })).toBeTruthy();

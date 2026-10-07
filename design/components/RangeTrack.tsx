@@ -7,6 +7,10 @@
 // its own measured width and each label's. The two end labels set the track's ends: it is pulled in
 // from each side by half the label that sits there, so that label's outer edge lines up with the
 // edge of the text around it (task 137). Until everything is measured the labels stay invisible.
+//
+// Two points close together would put their labels on top of each other (24 and 24.5 read as
+// "244.5", GT-46). Once placed, a label that would touch the one to its right is shifted left to
+// end a gap before it, working from the right end inwards, so the end label keeps its place.
 
 // Values come in as numbers with text the caller has already formatted — the track never learns
 // whether it is showing kilos, reps or anything else.
@@ -54,6 +58,27 @@ function dashesAcross(width: number): number {
   return Math.ceil(width / (SIZES['size/progress'] + SPACING['space/xxs'])) + 1;
 }
 
+/**
+ * Where each label's left edge goes: `lefts` are the wanted ones, `widths` the measured widths,
+ * both in label order. Labels are walked from the rightmost one inwards; each is moved left just
+ * far enough to clear the label on its right by `gap`.
+ */
+function separateLabels(
+  lefts: readonly number[],
+  widths: readonly number[],
+  gap: number,
+): number[] {
+  const result = [...lefts];
+  const order = lefts.map((_, index) => index).sort((a, b) => lefts[b]! - lefts[a]!);
+  for (let rank = 1; rank < order.length; rank += 1) {
+    const index = order[rank]!;
+    const rightNeighbour = order[rank - 1]!;
+    const latestLeft = result[rightNeighbour]! - gap - widths[index]!;
+    result[index] = Math.min(result[index]!, latestLeft);
+  }
+  return result;
+}
+
 function toPercent(share: number): `${number}%` {
   return `${share * 100}%`;
 }
@@ -85,6 +110,22 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
   const insetStart = endInset(outer.min);
   const insetEnd = endInset(outer.max);
 
+  const measured = width > 0 && labels.every((label) => labelWidths.has(label.value));
+  const separatedLefts = measured
+    ? separateLabels(
+        labels.map((label) => {
+          const labelWidth = labelWidths.get(label.value)!;
+          return (
+            insetStart +
+            share(label.value) * width +
+            (label.align === 'end' ? -labelWidth : centerOffset(labelWidth))
+          );
+        }),
+        labels.map((label) => labelWidths.get(label.value)!),
+        SPACING['space/xs'],
+      )
+    : [];
+
   return (
     <View accessible accessibilityLabel={accessibilityLabel} style={styles.root}>
       <View
@@ -115,9 +156,8 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
         ))}
       </View>
       <View style={styles.labels}>
-        {labels.map((label) => {
-          const labelWidth = labelWidths.get(label.value);
-          const placed = width > 0 && labelWidth !== undefined;
+        {labels.map((label, index) => {
+          const placed = measured;
           return (
             <Text
               key={label.value}
@@ -127,10 +167,7 @@ export function RangeTrack({ outer, inner, marker, labels, accessibilityLabel }:
                 styles.label,
                 placed
                   ? {
-                      left:
-                        insetStart +
-                        share(label.value) * width +
-                        (label.align === 'end' ? -labelWidth : centerOffset(labelWidth)),
+                      left: separatedLefts[index],
                     }
                   : styles.unplaced,
               ]}

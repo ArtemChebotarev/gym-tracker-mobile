@@ -72,6 +72,7 @@ export function TemplateList({
         <SectionList
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           stickySectionHeadersEnabled
           sections={sections}
           keyExtractor={(template) => template.id}

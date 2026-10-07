@@ -19,6 +19,7 @@ import { useState } from 'react';
 import type { ExerciseId } from '@domain/catalog';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 
+import { useTabBarClearance } from './useTabBarClearance';
 import { ExerciseFiltersSheet } from './ExerciseFiltersSheet';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { countEntries } from './ExerciseLibraryScreenLogic';
@@ -40,6 +41,8 @@ export type WorkoutExercisePickerSheetProps = {
 
 export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProps) {
   const { visible, title, caption, onClose } = props;
+  // The sheet is drawn over the floating tab bar, which would cover the list's last row (GT-47).
+  const tabBarClearance = useTabBarClearance();
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<ExerciseId[]>([]);
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
@@ -67,6 +70,7 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
     title,
     caption,
     presentation: 'overlay' as const,
+    bottomClearance: tabBarClearance,
     groups: query.data,
     isPending: query.isPending,
     search,

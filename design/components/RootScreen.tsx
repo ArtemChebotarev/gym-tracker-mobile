@@ -21,7 +21,7 @@
 // title, where 08.9's mockup puts it. A tab root never passes it, and then nothing changes.
 
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackIcon } from '../icons/BackIcon';
@@ -77,7 +77,7 @@ export function RootScreen({
           </IconButton>
         </View>
       )}
-      <View style={styles.header}>
+      <Pressable accessible={false} style={styles.header} onPress={Keyboard.dismiss}>
         <View style={styles.heading}>
           {/* A plain View unless someone is listening: a Pressable, even a disabled one, adds
               press handling and an accessibility state to a title that is only ever text. */}
@@ -91,7 +91,7 @@ export function RootScreen({
           {subtitle !== undefined && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
         {trailing}
-      </View>
+      </Pressable>
       {children}
     </SafeAreaView>
   );

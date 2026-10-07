@@ -13,6 +13,10 @@ import { isDeloadWeek } from '@domain/mesocycleWeeks';
 // see 08.5 · Редактор мезоцикла — Flow A, "Шаг 1 — Basics") reuse them instead of hand-copying
 // the numbers.
 export const MIN_LENGTH_WEEKS = 3;
+// What the editor offers for a *new* cycle (GT-45): four weeks, the last one lighter. Not the
+// stored invariant above — a three-week cycle that already exists still has to open, start and
+// compute its RIR, so the domain keeps accepting it.
+export const MIN_EDITOR_LENGTH_WEEKS = 4;
 export const MAX_LENGTH_WEEKS = 8;
 export const MIN_DAYS_PER_WEEK = 1;
 export const MAX_DAYS_PER_WEEK = 7;

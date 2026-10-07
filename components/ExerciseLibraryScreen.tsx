@@ -143,6 +143,8 @@ export function ExerciseLibraryScreen({
       {showList && (
         <SectionList<ExerciseListEntry, ExerciseSection>
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           contentContainerStyle={{ paddingBottom: tabBarClearance }}
           sections={sections}
           keyExtractor={(item) => item.exercise.id}

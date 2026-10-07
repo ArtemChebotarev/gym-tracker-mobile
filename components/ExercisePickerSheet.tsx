@@ -71,6 +71,7 @@ export type ExercisePickerSheetProps = {
   /** Forwarded to BottomSheet — see its own doc on these two props. */
   animated?: boolean;
   presentation?: 'modal' | 'overlay';
+  bottomClearance?: number;
 } & ExercisePickerSelection;
 
 export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
@@ -88,6 +89,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
     onClose,
     animated,
     presentation,
+    bottomClearance,
   } = props;
   const resultCount = countEntries(groups ?? []);
 
@@ -98,6 +100,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       title={title}
       animated={animated}
       presentation={presentation}
+      bottomClearance={bottomClearance}
       // Fixed height: live search shrinks the list on every keystroke, and a content-sized sheet
       // would jump with it (task 082) — short results leave empty space below instead.
       height="fixed"

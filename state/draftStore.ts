@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import type { Mesocycle } from '@domain/mesocycle';
+import { MIN_DAYS_PER_WEEK, MIN_EDITOR_LENGTH_WEEKS } from '@domain/mesocycleValidators';
 import type {
   ScratchMesocycleDraftInput,
   TemplateMesocycleDraftInput,
@@ -41,8 +42,8 @@ export type MesoBuilderDraft = {
 
 export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
   name: '',
-  lengthWeeks: 6,
-  daysPerWeek: 4,
+  lengthWeeks: MIN_EDITOR_LENGTH_WEEKS,
+  daysPerWeek: MIN_DAYS_PER_WEEK,
   exercisesByDay: {},
 };
 
@@ -190,13 +191,17 @@ type DraftState = {
   // overwrite a newer draft — e.g. a Stepper edit made after the responder was cached, silently
   // reverted by a reorder that follows it. The updater form reads the store's own state at call
   // time instead, so it's correct no matter how stale the closure that invoked it is.
-  setMesoBuilder: (draft: MesoBuilderDraft | ((current: MesoBuilderDraft) => MesoBuilderDraft)) => void;
+  setMesoBuilder: (
+    draft: MesoBuilderDraft | ((current: MesoBuilderDraft) => MesoBuilderDraft),
+  ) => void;
   resetMesoBuilder: () => void;
 };
 
 export const useDraftStore = create<DraftState>((set) => ({
   mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT,
   setMesoBuilder: (draft) =>
-    set((state) => ({ mesoBuilder: typeof draft === 'function' ? draft(state.mesoBuilder) : draft })),
+    set((state) => ({
+      mesoBuilder: typeof draft === 'function' ? draft(state.mesoBuilder) : draft,
+    })),
   resetMesoBuilder: () => set({ mesoBuilder: DEFAULT_MESO_BUILDER_DRAFT }),
 }));
