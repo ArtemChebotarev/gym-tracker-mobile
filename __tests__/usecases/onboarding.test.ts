@@ -18,6 +18,7 @@ describe('onboarding flags', () => {
       welcomeSeen: false,
       coachmarksSeen: false,
       deloadIntroSeen: false,
+      startCycleSeen: false,
     });
   });
 
@@ -32,6 +33,7 @@ describe('onboarding flags', () => {
       welcomeSeen: true,
       coachmarksSeen: false,
       deloadIntroSeen: false,
+      startCycleSeen: false,
     });
   });
 
@@ -42,7 +44,12 @@ describe('onboarding flags', () => {
     await markOnboardingSeen('coachmarksSeen', deps);
     const flags = await markOnboardingSeen('deloadIntroSeen', deps);
 
-    expect(flags).toEqual({ welcomeSeen: false, coachmarksSeen: true, deloadIntroSeen: true });
+    expect(flags).toEqual({
+      welcomeSeen: false,
+      coachmarksSeen: true,
+      deloadIntroSeen: true,
+      startCycleSeen: false,
+    });
     expect((await settingsRepo.read()).weightUnit).toBe('lb');
   });
 

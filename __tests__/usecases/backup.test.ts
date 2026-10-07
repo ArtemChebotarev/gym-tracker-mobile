@@ -66,7 +66,12 @@ async function fill(deps: BackupDeps): Promise<void> {
   await settingsRepo.write({
     defaultProgressionSettings: (await settingsRepo.read()).defaultProgressionSettings,
     weightUnit: 'lb',
-    onboarding: { welcomeSeen: true, coachmarksSeen: true, deloadIntroSeen: false },
+    onboarding: {
+      welcomeSeen: true,
+      coachmarksSeen: true,
+      deloadIntroSeen: false,
+      startCycleSeen: false,
+    },
   });
 }
 

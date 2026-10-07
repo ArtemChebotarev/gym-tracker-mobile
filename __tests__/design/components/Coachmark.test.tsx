@@ -34,7 +34,9 @@ describe('Coachmark', () => {
     render(
       <Coachmark
         {...props({
-          paragraphs: [['Tap ', { icon: InfoIcon }, ' to find ', { strong: 'your first weight' }, '.']],
+          paragraphs: [
+            ['Tap ', { icon: InfoIcon }, ' to find ', { strong: 'your first weight' }, '.'],
+          ],
         })}
       />,
     );
@@ -107,6 +109,14 @@ describe('Coachmark', () => {
     expect(screen.getByRole('button', { name: 'Got it' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Skip' })).toBeNull();
+  });
+
+  test('a single step has no counter and no Skip, just Got it (GT-50)', () => {
+    render(<Coachmark {...props({ step: 1, total: 1 })} />);
+
+    expect(screen.queryByText('1 of 1')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Skip' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Got it' })).toBeTruthy();
   });
 
   test('reports Next, Got it and Skip', () => {

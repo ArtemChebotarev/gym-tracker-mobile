@@ -2,6 +2,7 @@
 // 08.3 · Мезоциклы — список (task 074).
 
 import type { ActionMenuItem } from '@design/components/ActionMenu';
+import type { PlateTextPart } from '@design/components/PlateText';
 import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { CopyIcon } from '@design/icons/CopyIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
@@ -18,6 +19,24 @@ import { formatAbsoluteDate } from '@design/formatDate';
  * the Cycles tab's own empty state names its two flows instead (08.10, GT-6).
  */
 export const PLAN_MESOCYCLE_LABEL = 'Plan cycle';
+
+// The one-step coachmark on the first Planned cycle's `Start` (08.11 · Onboarding, GT-50). Working text.
+export const START_CYCLE_STEP = {
+  title: 'Your cycle is ready',
+  paragraphs: [['Tap ', { strong: 'Start' }, ' to begin your first workout.']] as PlateTextPart[][],
+};
+
+/**
+ * Whether `Start` gets its coachmark: a Planned cycle to point at, nothing active (an active one
+ * makes `Start` refuse), and the hint not closed before. Waits for the flags — `undefined` — so a
+ * returning user never sees it flash.
+ */
+export function showStartCoachmark(
+  groups: MesocycleGroups,
+  startCycleSeen: boolean | undefined,
+): boolean {
+  return startCycleSeen === false && groups.active === null && groups.planned.length > 0;
+}
 
 export type MesocycleGroups = {
   active: Mesocycle | null;

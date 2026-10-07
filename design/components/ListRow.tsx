@@ -49,6 +49,8 @@ export type ListRowAction = {
   label: string;
   variant: ListRowActionVariant;
   onPress: () => void;
+  /** Hands the pill's view to a caller that points something at it — a coachmark's ring. */
+  onViewRef?: (view: View | null) => void;
 };
 
 /** The row's `⋯` — an ActionMenu built from these items. */
@@ -120,8 +122,7 @@ export function ListRow({
   const accessibility = {
     accessibilityRole: leading?.type === 'checkbox' ? ('checkbox' as const) : ('button' as const),
     accessibilityLabel: title,
-    accessibilityState:
-      leading?.type === 'checkbox' ? { checked: leading.checked } : undefined,
+    accessibilityState: leading?.type === 'checkbox' ? { checked: leading.checked } : undefined,
   };
 
   // An actions row keeps its accessories out of the tap target — see the note at the top.
@@ -200,8 +201,11 @@ function Trailing({ title, trailing }: { title: string; trailing: ListRowTrailin
 
 function ActionPill({ title, action }: { title: string; action: ListRowAction }) {
   const isPrimary = action.variant === 'primary';
+  const { onViewRef } = action;
   return (
     <Pressable
+      ref={onViewRef}
+      collapsable={false}
       accessibilityRole="button"
       accessibilityLabel={`${action.label} ${title}`}
       onPress={action.onPress}

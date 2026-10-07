@@ -10,6 +10,7 @@ import {
   isEmptyGroups,
   mesocycleStoppedBadge,
   plannedMenuItems,
+  showStartCoachmark,
 } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -160,5 +161,24 @@ describe('completedMenuItems', () => {
 
     expect(items.every((item) => item.destructive === undefined)).toBe(true);
     expect(items.map((item) => item.key)).not.toContain('delete');
+  });
+});
+
+describe('showStartCoachmark (GT-50)', () => {
+  const planned = makeMesocycle({ id: 'p', status: 'planned' });
+  const active = makeMesocycle({ id: 'a', status: 'active' });
+
+  test('a Planned cycle, nothing active, the hint not yet closed', () => {
+    expect(showStartCoachmark(groupMesocycles([planned]), false)).toBe(true);
+  });
+
+  test('never once closed, and not before the flags are read', () => {
+    expect(showStartCoachmark(groupMesocycles([planned]), true)).toBe(false);
+    expect(showStartCoachmark(groupMesocycles([planned]), undefined)).toBe(false);
+  });
+
+  test('not without a Planned cycle, nor while one is active (Start would refuse)', () => {
+    expect(showStartCoachmark(groupMesocycles([]), false)).toBe(false);
+    expect(showStartCoachmark(groupMesocycles([active, planned]), false)).toBe(false);
   });
 });
