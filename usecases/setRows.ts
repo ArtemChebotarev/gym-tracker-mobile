@@ -27,8 +27,9 @@ async function saveWithStatus(
 }
 
 /**
- * Appends a set row to the exercise `ref` points at, copying the last row's `targetReps` and
- * `suggestedWeight`. A `completed` exercise goes back to `planned` — the new row isn't logged.
+ * Appends a set row to the exercise `ref` points at, copying the last row's `suggestedWeight`
+ * only — no `targetReps`, the row has no history to aim at. A `completed` exercise goes back to
+ * `planned` — the new row isn't logged.
  *
  * Rejects with `NotFoundError` / `ConflictError` as `openSessionExercise` does (missing, or the
  * session is final or `awaiting_source`).

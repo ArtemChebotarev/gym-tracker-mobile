@@ -82,14 +82,14 @@ async function rejectionOf(promise: Promise<unknown>): Promise<unknown> {
 }
 
 describe('addSet', () => {
-  test('DoD: the new row copies the last row’s targetReps and suggestedWeight', async () => {
+  test('DoD: the new row copies the last row’s suggestedWeight, with no targetReps', async () => {
     const workout = await workoutWith();
 
     const updated = await addSet(ref, workout);
 
     expect(updated.setTargets).toEqual([
       ...benchPress.setTargets,
-      { setNumber: 3, targetReps: 10, suggestedWeight: 62.5 },
+      { setNumber: 3, suggestedWeight: 62.5 },
     ]);
     await expect(stored(workout)).resolves.toEqual(updated);
   });

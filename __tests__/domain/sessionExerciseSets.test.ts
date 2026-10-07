@@ -8,10 +8,10 @@ const rows: SetTarget[] = [
 ];
 
 describe('withAddedSet', () => {
-  test('appends the next row with the last row’s targetReps and suggestedWeight, without its hint', () => {
+  test('appends the next row with the last row’s suggestedWeight only — no targetReps, no hint', () => {
     expect(withAddedSet(rows)).toEqual([
       ...rows,
-      { setNumber: 3, targetReps: 10, suggestedWeight: 62.5 },
+      { setNumber: 3, suggestedWeight: 62.5 },
     ]);
   });
 

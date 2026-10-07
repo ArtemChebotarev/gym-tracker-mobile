@@ -6,16 +6,13 @@ import { ConflictError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
 
 /**
- * `setTargets` with one row appended: the next `setNumber`, and `targetReps` and
- * `suggestedWeight` copied from the current last row. The weight hint isn't copied — it comes from
- * a source set's fact (03, rule 3), and the new row has none.
+ * `setTargets` with one row appended: the next `setNumber` and the `suggestedWeight` copied from
+ * the current last row. No `targetReps` and no weight hint: the row has no history, so there is no
+ * rep goal to miss (a shortfall must not read as `−N`) — only a weight to start from (03, rule 3).
  */
 export function withAddedSet(setTargets: readonly SetTarget[]): SetTarget[] {
   const last = setTargets[setTargets.length - 1];
   const added: SetTarget = { setNumber: (last?.setNumber ?? 0) + 1 };
-  if (last?.targetReps !== undefined) {
-    added.targetReps = last.targetReps;
-  }
   if (last?.suggestedWeight !== undefined) {
     added.suggestedWeight = last.suggestedWeight;
   }
