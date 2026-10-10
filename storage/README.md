@@ -63,6 +63,28 @@ applied it will not apply it again. `0000_initial_schema.sql` was edited by hand
 111, to drop a `catalog_version` column nobody read — the last moment that was safe, since no
 build had yet run on a device and so no database had ever applied it.
 
+### JSON columns the code fills in itself
+
+A column holding a document the code defaults on read — `settings.onboarding` is the one — has
+two defaults that must not be confused. The **DDL default** exists only because SQLite refuses
+`ADD COLUMN ... NOT NULL` without one; it is frozen into the migration that added the column and
+nothing at runtime reads it, since the repository writes the whole document and fills in missing
+keys from a constant (`DEFAULT_ONBOARDING`) on read. The **constant** is the source of truth, and
+it is what grows.
+
+So `schema.ts` declares the column's default as the literal the migration shipped, never as a
+reference to the constant. Pointing it at the constant made the schema drift from the snapshot the
+moment a flag was added (`startCycleSeen`, GT-50), and the next `npm run migration` planned to
+recreate `settings` — a rewrite of the user's data for a default nothing reads. Changing a column
+default in SQLite *is* a table recreation, so this cannot be undone cheaply later.
+
+- Adding a key to such a document is a code change only: the type, the constant, the screen. No
+  migration, no snapshot change.
+- For a new column of this kind, prefer `'{}'` or nullable over a populated default — there is
+  then nothing to keep in step with the constant.
+- `__tests__/storage/settingsDefaults.test.ts` fails when the constant loses a key the shipped
+  DDL default names, or when the schema's default stops matching the migration.
+
 ## The exercise catalog (task 067(2))
 
 The catalog ships as a migration too, not as a step at startup: `drizzle/0001_seed_catalog.sql`
