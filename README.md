@@ -70,9 +70,12 @@ The variant is `APP_VARIANT=hybrid`, read by `app.config.ts` on top of `app.json
 **A generated `ios/` keeps the bundle ID it was created with.** `expo run:ios` generates `ios/` only when it is missing and never re-reads the config, so setting `APP_VARIANT` against an existing `ios/` silently builds the real bundle ID. Two apps therefore need two checkouts, each with its own `ios/`:
 
 ```
-git worktree add .claude/worktrees/hybrid hybrid   # once
-cd .claude/worktrees/hybrid && npm ci               # once
-npm run ios:device:hybrid                           # generates ios/ for the hybrid ID, then builds
+git worktree add .claude/worktrees/hybrid hybrid                       # once
+cd .claude/worktrees/hybrid
+cmp package-lock.json ../../../package-lock.json && cp -cR ../../../node_modules node_modules   # once
+npm run ios:device:hybrid                                              # generates ios/ for the hybrid ID, then builds
 ```
+
+Clone the modules instead of running `npm ci`: in a fresh checkout `npm ci` took 15+ minutes for about 2.3 GB, while `cp -cR` is an APFS clone and finishes in about ten seconds. It is only valid while the two `package-lock.json` files are identical (that is what the `cmp` checks); if the epic changed dependencies, run `npm ci` there. Epic tasks are branched and built in this worktree, never in the real checkout (AGENTS.md, "Epic Hybrid training").
 
 Every native build runs `npm run native:check` first (`scripts/assertNativeVariant.ts`): if the generated `ios/` or `android/` carries another ID than the one the variant asks for, the build stops with the reason — in both directions, so hybrid code cannot be installed over the real app by accident. Do not delete or regenerate the real checkout's `ios/`: it carries the signing setup.
