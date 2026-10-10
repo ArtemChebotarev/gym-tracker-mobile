@@ -2,9 +2,9 @@ name: Verify
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, hybrid]
   push:
-    branches: [main]
+    branches: [main, hybrid]
   workflow_dispatch: {}
 
 concurrency:
