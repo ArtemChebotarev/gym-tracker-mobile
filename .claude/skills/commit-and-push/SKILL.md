@@ -11,11 +11,13 @@ Invoking this skill IS the user's confirmation to commit and push — don't ask 
 
 `main` is protected on GitHub (PR required, status checks required) — never commit or push directly to `main`. All work happens on a task/feature branch merged via PR.
 
+**Base branch.** Tasks of the epic Hybrid training (GT-53) are based on `hybrid`, not `main`: sync with `origin/hybrid`, open the PR with `--base hybrid`, and never commit or push directly to `hybrid` either (same protection as `main`). Everything else keeps `main`. In the steps below, "the base branch" is whichever of the two applies. See "Epic Hybrid training" in AGENTS.md.
+
 ## Steps
 
-1. `git fetch origin`, then sync with `origin/main` before doing anything else — `main` is protected and moves between sessions, so a stale local base causes avoidable conflicts later. If the current branch is `main`, fast-forward it (`git pull`) before branching off. If already on a task/feature branch, merge or rebase `origin/main` into it now, not right before pushing.
-2. Check the current branch (`git branch --show-current`). If it's `main`, create and switch to a new branch first (e.g. `task/<NNN>-<short-name>` or `chore/<short-name>`) — do not commit on `main`.
+1. `git fetch origin`, then sync with `origin/<base branch>` before doing anything else — the base is protected and moves between sessions, so a stale local base causes avoidable conflicts later. If the current branch is the base branch, fast-forward it (`git pull`) before branching off. If already on a task/feature branch, merge or rebase `origin/<base branch>` into it now, not right before pushing.
+2. Check the current branch (`git branch --show-current`). If it's `main` or `hybrid`, create and switch to a new branch first (e.g. `task/<NNN>-<short-name>` or `chore/<short-name>`) — do not commit on `main`.
 3. Run `npm run verify` (lint + typecheck + `test`) from the project root. Fix any failures before continuing — do not commit code that fails verify.
 4. Review the changes (`git status`, `git diff`) and stage only the files relevant to the task.
 5. Commit with a message describing the *why*, not just the *what*.
-6. Push the branch straight away — no separate confirmation needed. If no PR exists yet for this branch, open one against `main` (`gh pr create`).
+6. Push the branch straight away — no separate confirmation needed. If no PR exists yet for this branch, open one against the base branch (`gh pr create`, with `--base hybrid` for the Hybrid epic).
