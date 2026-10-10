@@ -39,7 +39,7 @@ database that ran the first one re-runs the same DDL and fails to open. `npm run
 refuses to run without a name for exactly that reason; don't call `drizzle-kit generate` directly.
 Details in [storage/README.md](storage/README.md).
 
-`verify` runs automatically before every command in the table above (`start`, `start:clean`, `ios`, `ios:device`, `ios:device:release`, `android`, `web`) via npm's `pre*` script hooks — a lint, type, or test error stops the run before Metro/Xcode/Gradle even starts, the same way a failed `dotnet build` blocks `dotnet run`.
+`verify` runs automatically before every command in the table above (`start`, `start:clean`, `ios`, `ios:device`, `ios:device:release`, `ios:hybrid`, `ios:device:hybrid`, `ios:device:hybrid:release`, `android`, `web`) via npm's `pre*` script hooks — a lint, type, or test error stops the run before Metro/Xcode/Gradle even starts, the same way a failed `dotnet build` blocks `dotnet run`.
 
 ### Running on a physical iPhone
 
@@ -54,3 +54,25 @@ LANG=en_US.UTF-8 npm run ios:device:release
 `LANG` is there because CocoaPods needs a UTF-8 locale to install. A Release build embeds the JS bundle, so nothing has to be running for the app to open. It also has no dev menu, which means no shake menu and no expo-sqlite inspector (Shift+M) — to read the database from a Release build, use **Xcode → Window → Devices and Simulators → Devices → the app → Download Container**.
 
 Signing is the same either way. With a free Apple ID the provisioning profile expires seven days after it is issued, and the app stops launching until it is rebuilt with the phone connected; a paid Apple Developer account makes that a year. Rebuild before it expires rather than after, and do not delete the app — the database lives in its container and an install over the top keeps it.
+
+### The hybrid app next to the real one
+
+The `hybrid` branch (AGENTS.md, "Epic Hybrid training") changes the stored data model, so its builds must never meet the real app's database — a database migrated by it is refused by `main`'s build. The hybrid app is therefore a **separate app**: another bundle ID (`…gym-tracker-mobile.hybrid`), the name **Hybro Beta**, its own sandbox and an empty database. It installs next to the real app and does not touch it.
+
+| Command | What it does |
+| --- | --- |
+| `npm run ios:hybrid` | The hybrid app in the iOS simulator |
+| `npm run ios:device:hybrid` | The hybrid app on a connected iPhone (Debug, needs the dev server) |
+| `npm run ios:device:hybrid:release` | Same as Release, runs without the dev server |
+
+The variant is `APP_VARIANT=hybrid`, read by `app.config.ts` on top of `app.json`; without it the config is `app.json` untouched.
+
+**A generated `ios/` keeps the bundle ID it was created with.** `expo run:ios` generates `ios/` only when it is missing and never re-reads the config, so setting `APP_VARIANT` against an existing `ios/` silently builds the real bundle ID. Two apps therefore need two checkouts, each with its own `ios/`:
+
+```
+git worktree add .claude/worktrees/hybrid hybrid   # once
+cd .claude/worktrees/hybrid && npm ci               # once
+npm run ios:device:hybrid                           # generates ios/ for the hybrid ID, then builds
+```
+
+Every native build runs `npm run native:check` first (`scripts/assertNativeVariant.ts`): if the generated `ios/` or `android/` carries another ID than the one the variant asks for, the build stops with the reason — in both directions, so hybrid code cannot be installed over the real app by accident. Do not delete or regenerate the real checkout's `ios/`: it carries the signing setup.
