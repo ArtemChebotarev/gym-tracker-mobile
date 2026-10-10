@@ -166,6 +166,7 @@ describe('the app’s own migrations', () => {
       'exercise',
       'meso_template',
       'mesocycle',
+      'round_log',
       'session',
       'session_exercise',
       'set_log',
@@ -207,6 +208,7 @@ describe('the app’s own migrations', () => {
       '0001_seed_catalog': 1789938887567,
       '0002_mesocycle_archived_at': 1790351056868,
       '0003_onboarding_flags': 1791215245344,
+      '0004_hybrid_exercise_types': 1791663431095,
     });
   });
 
@@ -310,6 +312,59 @@ describe('the app’s own migrations', () => {
         weightUnit: 'lb',
         onboarding: DEFAULT_ONBOARDING,
       });
+    } finally {
+      close();
+    }
+  });
+
+  // GT-69: the hybrid exercise types arrive as columns with defaults and one new table. What the
+  // phone already holds must come through as it was — every exercise a strength one, the settings
+  // row with the rest timer on at 2:00, no mesocycle given parameters it never had.
+  test('give what the previous build holds the strength type and the default rest timer', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, full.journal.entries.length - 1));
+      const before = await db.values<[string, string, string]>(
+        sql`SELECT id, name, muscle_group FROM exercise ORDER BY id`,
+      );
+      await db.run(sql`
+        INSERT INTO settings (id, default_progression_settings, weight_unit)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg')
+      `);
+      await db.run(sql`
+        INSERT INTO mesocycle
+          (id, name, length_weeks, days_per_week, status, origin, progression_settings,
+           created_at, updated_at)
+        VALUES
+          ('meso-a', 'Upper Lower', 4, 4, 'planned', '{"type":"scratch"}',
+           ${JSON.stringify(defaultProgressionSettings)},
+           '2026-01-05T10:00:00.000Z', '2026-01-05T10:00:00.000Z')
+      `);
+
+      await migrateToLatest(db, full);
+
+      // The catalog is the whole `exercise` table here; no row lost, none changed but the new two.
+      expect(
+        await db.values<[string, string, string]>(
+          sql`SELECT id, name, muscle_group FROM exercise ORDER BY id`,
+        ),
+      ).toEqual(before);
+      expect(before.length).toBeGreaterThan(0);
+      expect(
+        await db.values<[number]>(
+          sql`SELECT COUNT(*) FROM exercise WHERE type <> 'strength' OR config IS NOT NULL`,
+        ),
+      ).toEqual([[0]]);
+      expect(
+        await db.values<[number, number]>(
+          sql`SELECT strength_rest_timer_enabled, strength_rest_timer_seconds FROM settings`,
+        ),
+      ).toEqual([[1, 120]]);
+      expect(
+        await db.values<[string | null]>(sql`SELECT exercise_settings FROM mesocycle`),
+      ).toEqual([[null]]);
+      expect(await db.values<[number]>(sql`SELECT COUNT(*) FROM round_log`)).toEqual([[0]]);
     } finally {
       close();
     }
