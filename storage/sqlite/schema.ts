@@ -6,8 +6,6 @@ import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/me
 import type { MesoTemplate, WeekPlan } from '@domain/plan';
 import type { Settings } from '@repositories/settings';
 
-import { DEFAULT_ONBOARDING } from '../settingsDefaults';
-
 // The relational shape of 02 · Domain Model, one table per stored entity. What the domain calls a
 // value object — `WeekPlan`, `origin`, `progressionSettings`, `setTargets` — stays inside its
 // owner as JSON: 02 says WeekPlan is deliberately not a table, and the others are snapshots read
@@ -170,12 +168,19 @@ export const settings = sqliteTable('settings', {
     .notNull()
     .$type<ProgressionSettings>(),
   weightUnit: text('weight_unit').notNull().$type<Settings['weightUnit']>(),
-  // The column's own default is what the row that already exists on a device gets when the
-  // migration adds it (task GT-36) — every flag false, i.e. `DEFAULT_ONBOARDING`.
+  // The column's own default is what the row that already exists on a device got when migration
+  // 0003 added it (task GT-36) — every flag false. It is the DDL as it shipped, deliberately not
+  // `DEFAULT_ONBOARDING`: a flag added to that constant later (`startCycleSeen`, GT-50) is read
+  // back as unset by the repository, and changing a column's default in SQLite means recreating
+  // the table, which is a rewrite of the user's settings for a value nothing reads.
   onboarding: text('onboarding', { mode: 'json' })
     .notNull()
     .$type<Settings['onboarding']>()
-    .default(DEFAULT_ONBOARDING),
+    .default({
+      welcomeSeen: false,
+      coachmarksSeen: false,
+      deloadIntroSeen: false,
+    } as Settings['onboarding']),
 });
 
 /** The single settings row's id — see `settings`. */
