@@ -41,7 +41,7 @@ if (problems.length > 0) {
       'identity, i.e. on top of its database.',
       '',
       'The hybrid app and the real app each need their own checkout, and so their own ios/:',
-      '  git worktree add .claude/worktrees/hybrid hybrid   # once, then npm ci inside it',
+      '  git worktree add .claude/worktrees/hybrid hybrid   # once; modules: see README',
       '  npm run ios:device:hybrid                          # there; generates ios/ for hybrid',
       'Do not delete or regenerate this checkout’s ios/ — it carries the signing setup.',
     ].join('\n'),
