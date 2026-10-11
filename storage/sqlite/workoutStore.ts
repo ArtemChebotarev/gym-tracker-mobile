@@ -1,6 +1,7 @@
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 
 import type { SqliteDatabase } from './db';
+import { SqliteRoundLogRepository } from './roundLogRepository';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSetLogRepository } from './setLogRepository';
@@ -15,6 +16,7 @@ export function workoutRepositoriesOver(db: SqliteDatabase): WorkoutRepositories
     sessionRepo: new SqliteSessionRepository(db),
     sessionExerciseRepo: new SqliteSessionExerciseRepository(db),
     setLogRepo: new SqliteSetLogRepository(db),
+    roundLogRepo: new SqliteRoundLogRepository(db),
   };
 }
 

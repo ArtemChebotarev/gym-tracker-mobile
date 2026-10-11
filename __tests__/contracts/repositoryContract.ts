@@ -2,6 +2,7 @@ import { describeCatalogContract } from './catalogContract';
 import { describeExerciseHistoryContract } from './exerciseHistoryContract';
 import type { RepositoryHarness } from './harness';
 import { describeMesocycleContract } from './mesocycleContract';
+import { describeRoundLogContract } from './roundLogContract';
 import { describeSessionContract } from './sessionContract';
 import { describeSessionExerciseContract } from './sessionExerciseContract';
 import { describeSessionTreeContract } from './sessionTreeContract';
@@ -37,6 +38,7 @@ export function describeRepositoryContract(
     describeSessionContract(harness);
     describeSessionExerciseContract(harness);
     describeSetLogContract(harness);
+    describeRoundLogContract(harness);
     describeSettingsContract(harness);
     describeTemplateContract(harness);
     describeExerciseHistoryContract(harness);

@@ -1,8 +1,11 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import { isConflictError, isNotFoundError } from '@domain/errors';
+import type { IntervalConfig } from '@domain/exerciseConfig';
+import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteRoundLogRepository } from '@storage/sqlite/roundLogRepository';
 import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
 import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
@@ -55,6 +58,7 @@ function makeDeps() {
   return {
     exerciseRepo: new SqliteExerciseRepository(store),
     setLogRepo: new SqliteSetLogRepository(store),
+    roundLogRepo: new SqliteRoundLogRepository(store),
   };
 }
 
@@ -327,5 +331,136 @@ describe('listExercisesByIds', () => {
 
     expect(found).toEqual(expect.arrayContaining([benchPress, legPress]));
     expect(found).toHaveLength(2);
+  });
+});
+
+describe('hybrid exercise types', () => {
+  test('create a power exercise with its type, a fullBody group and the default config', async () => {
+    const deps = makeDeps();
+
+    const created = await createCustomExercise(
+      { name: 'Medball Slam', muscleGroup: 'fullBody', type: 'power' },
+      deps,
+    );
+
+    const stored = await deps.exerciseRepo.getById(created.id);
+    expect(stored).toMatchObject({
+      type: 'power',
+      muscleGroup: 'fullBody',
+      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+    });
+  });
+
+  test('keep a strength exercise exactly as before — no type and no config on it', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise({ name: 'Garage Press', muscleGroup: 'chest' }, deps);
+
+    const stored = await deps.exerciseRepo.getById(created.id);
+
+    expect(stored).not.toHaveProperty('type');
+    expect(stored).not.toHaveProperty('config');
+  });
+
+  test('refuse a strength exercise filed under fullBody', async () => {
+    await expect(
+      createCustomExercise({ name: 'Press', muscleGroup: 'fullBody' }, makeDeps()),
+    ).rejects.toThrow('needs a muscle group');
+  });
+
+  test('refuse a config that belongs to another type', async () => {
+    await expect(
+      createCustomExercise(
+        {
+          name: 'Heavy Bag',
+          muscleGroup: 'fullBody',
+          type: 'interval',
+          config: { type: 'mobility', durationSec: 600 },
+        },
+        makeDeps(),
+      ),
+    ).rejects.toThrow('cannot carry a mobility config');
+  });
+
+  test('change the type of an exercise nothing has been logged for, taking the new defaults', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise({ name: 'Heavy Bag', muscleGroup: 'back' }, deps);
+
+    await updateCustomExercise(
+      { id: created.id, name: 'Heavy Bag', muscleGroup: 'fullBody', type: 'interval' },
+      deps,
+    );
+
+    expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
+      type: 'interval',
+      muscleGroup: 'fullBody',
+      config: { type: 'interval', rounds: 3, lever: 'rest' },
+    });
+  });
+
+  test('refuse to change the type of an exercise that has a logged set', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise({ name: 'Slam', muscleGroup: 'back' }, deps);
+    await seedLogHost();
+    await deps.setLogRepo.create(makeSetLog({ exerciseId: created.id }));
+
+    await expectRejectsWithKind(
+      updateCustomExercise(
+        { id: created.id, name: 'Slam', muscleGroup: 'fullBody', type: 'power' },
+        deps,
+      ),
+      isConflictError,
+    );
+  });
+
+  test('refuse to change the type of an interval exercise that has a logged round', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise(
+      { name: 'Heavy Bag', muscleGroup: 'fullBody', type: 'interval' },
+      deps,
+    );
+    await seedLogHost();
+    await deps.roundLogRepo.create({
+      id: 'round-1',
+      sessionExerciseId: 'session-exercise-1',
+      exerciseId: created.id,
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-08-26T08:00:00.000Z',
+    });
+
+    await expectRejectsWithKind(
+      updateCustomExercise(
+        { id: created.id, name: 'Heavy Bag', muscleGroup: 'fullBody', type: 'mobility' },
+        deps,
+      ),
+      isConflictError,
+    );
+  });
+
+  test('keep the config of an exercise whose type is not changing, even with history', async () => {
+    const deps = makeDeps();
+    const created = await createCustomExercise(
+      {
+        name: 'Rope',
+        muscleGroup: 'fullBody',
+        type: 'interval',
+        config: { ...(defaultExerciseConfig('interval') as IntervalConfig), rounds: 6 },
+      },
+      deps,
+    );
+
+    await updateCustomExercise(
+      { id: created.id, name: 'Jump Rope', muscleGroup: 'fullBody' },
+      deps,
+    );
+
+    expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
+      name: 'Jump Rope',
+      type: 'interval',
+      config: { rounds: 6 },
+    });
   });
 });

@@ -6,6 +6,7 @@ import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { MesocycleStartStore } from '@repositories/mesocycleStart';
 import type { SessionRepository } from '@repositories/session';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SessionTreeRepository } from '@repositories/sessionTree';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 import type { SettingsRepository } from '@repositories/settings';
@@ -30,6 +31,7 @@ export type RepositorySet = {
   sessionRepo: SessionRepository;
   sessionExerciseRepo: SessionExerciseRepository;
   setLogRepo: SetLogRepository;
+  roundLogRepo: RoundLogRepository;
   settingsRepo: SettingsRepository;
   templateRepo: TemplateRepository;
   exerciseHistoryRepo: ExerciseHistoryRepository;
