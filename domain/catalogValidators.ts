@@ -2,7 +2,7 @@
 // Kept separate from `domain/catalog.ts` (types only) per the single-responsibility rule in
 // AGENTS.md.
 
-import { EQUIPMENT_OPTIONS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from './catalog';
+import { EQUIPMENT_OPTIONS, isCatalogMuscleGroup, type Equipment, type MuscleGroup } from './catalog';
 import { normalizeRequiredName } from './names';
 
 /**
@@ -21,7 +21,7 @@ export function normalizeExerciseName(name: string): string {
  * whatever already constrains the UI's Dropdown.
  */
 export function validateExerciseMuscleGroup(muscleGroup: MuscleGroup): void {
-  if (!MUSCLE_GROUPS.includes(muscleGroup)) {
+  if (!isCatalogMuscleGroup(muscleGroup)) {
     throw new Error(`Unknown muscle group: "${muscleGroup}".`);
   }
 }

@@ -1,5 +1,5 @@
 import type { Exercise, MuscleGroup } from '@domain/catalog';
-import { toExerciseId } from '@domain/catalog';
+import { isCatalogMuscleGroup, MUSCLE_GROUPS, toExerciseId } from '@domain/catalog';
 import { STAMPS } from '../fixtures/stamps';
 
 const catalogExerciseFixture: Exercise = {
@@ -35,5 +35,15 @@ describe('catalog domain types', () => {
   test('muscle group is one of the fixed set of literals', () => {
     const group: MuscleGroup = 'quads';
     expect(catalogExerciseFixture.muscleGroup).not.toBe(group);
+  });
+});
+
+describe('isCatalogMuscleGroup', () => {
+  test('accept the twelve groups and refuse fullBody, which is not one of them', () => {
+    for (const group of MUSCLE_GROUPS) {
+      expect(isCatalogMuscleGroup(group)).toBe(true);
+    }
+    expect(isCatalogMuscleGroup('fullBody')).toBe(false);
+    expect(isCatalogMuscleGroup('neck')).toBe(false);
   });
 });

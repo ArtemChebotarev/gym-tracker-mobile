@@ -2,7 +2,13 @@
 // See 08.6 · Библиотека упражнений ("Exercises — список"). Kept separate from `domain/catalog.ts`
 // (types only) per the single-responsibility rule in AGENTS.md.
 
-import { MUSCLE_GROUPS, type Exercise, type ExerciseSource, type MuscleGroup } from './catalog';
+import {
+  FULL_BODY,
+  MUSCLE_GROUPS,
+  type Exercise,
+  type ExerciseSource,
+  type MuscleGroup,
+} from './catalog';
 import type { SetLog } from './execution';
 import { nameMatchesSearch } from './names';
 
@@ -76,7 +82,10 @@ export function buildExerciseListGroups(
     }
   }
 
-  return MUSCLE_GROUPS.filter((muscleGroup) => entriesByGroup.has(muscleGroup)).map(
+  // The twelve groups in their fixed order, then `fullBody` — the exercises of the other types
+  // that have no one group — so none of them silently drops out of the list.
+  const order: readonly MuscleGroup[] = [...MUSCLE_GROUPS, FULL_BODY];
+  return order.filter((muscleGroup) => entriesByGroup.has(muscleGroup)).map(
     (muscleGroup) => ({
       muscleGroup,
       entries: [...(entriesByGroup.get(muscleGroup) ?? [])].sort((a, b) =>

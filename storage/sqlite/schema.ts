@@ -2,6 +2,7 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-or
 
 import type { Exercise } from '@domain/catalog';
 import type { Session, SessionExercise, SetTarget } from '@domain/execution';
+import type { ExerciseConfig } from '@domain/exerciseConfig';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import type { MesoTemplate, WeekPlan } from '@domain/plan';
 import type { Settings } from '@repositories/settings';
@@ -40,12 +41,12 @@ export const exercises = sqliteTable(
     isHidden: integer('is_hidden', { mode: 'boolean' }).notNull(),
     // `strength` | `power` | `interval` | `mobility` (10 · Hybrid Exercises). The column's own
     // default is what every exercise already on a device becomes when the migration adds it —
-    // they were all strength. Typed from the domain's union once `Exercise.type` lands there.
-    type: text('type').notNull().default('strength'),
+    // they were all strength.
+    type: text('type').notNull().default('strength').$type<NonNullable<Exercise['type']>>(),
     // Defaults that belong to the exercise's type — power load kind and rest, interval rounds /
     // work / rest / get-ready and lever, the "no heavier" flag, mobility length. Null for
     // strength, which has none. A value object read and written whole, so JSON like `weekPlan`.
-    config: text('config', { mode: 'json' }),
+    config: text('config', { mode: 'json' }).$type<ExerciseConfig>(),
     ...timestamps,
   },
   (table) => [index('exercise_muscle_group').on(table.muscleGroup)],
@@ -82,7 +83,9 @@ export const mesocycles = sqliteTable(
     archivedAt: text('archived_at'),
     // Per-exercise plan parameters of this cycle — interval rounds / work / rest / get-ready,
     // progression lever and step (10.1, FR-9). Null while the cycle has only strength exercises.
-    exerciseSettings: text('exercise_settings', { mode: 'json' }),
+    exerciseSettings: text('exercise_settings', { mode: 'json' }).$type<
+      Record<string, ExerciseConfig>
+    >(),
     ...timestamps,
   },
   (table) => [index('mesocycle_status').on(table.status)],
