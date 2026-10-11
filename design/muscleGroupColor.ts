@@ -17,7 +17,9 @@ export const MUSCLE_GROUP_COLOR_CATEGORIES = [
 ] as const;
 export type MuscleGroupColorCategory = (typeof MUSCLE_GROUP_COLOR_CATEGORIES)[number];
 
-const CATEGORY_BY_MUSCLE_GROUP: Record<MuscleGroup, MuscleGroupColorCategory> = {
+// `fullBody` has no entry on purpose: it spans every category, so it gets none and reads as
+// "no color" like any group without one (`getMuscleGroupCategory` answers `undefined`).
+const CATEGORY_BY_MUSCLE_GROUP: Partial<Record<MuscleGroup, MuscleGroupColorCategory>> = {
   chest: 'chest',
   back: 'back',
   traps: 'back',

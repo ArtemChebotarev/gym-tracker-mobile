@@ -31,6 +31,20 @@ function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 describe('buildExerciseListGroups', () => {
+  test('list the exercises of no one group last, under fullBody, rather than dropping them', () => {
+    const chest = makeExercise({ id: toExerciseId('e-chest'), name: 'Bench Press' });
+    const slam = makeExercise({
+      id: toExerciseId('e-slam'),
+      name: 'Medball Slam',
+      muscleGroup: 'fullBody',
+      type: 'power',
+    });
+
+    const groups = buildExerciseListGroups([slam, chest], new Map());
+
+    expect(groups.map((group) => group.muscleGroup)).toEqual(['chest', 'fullBody']);
+  });
+
   test('groups exercises by muscle group, ordered by the fixed catalog order', () => {
     const quads = makeExercise({ id: toExerciseId('e-quads'), name: 'Squat', muscleGroup: 'quads' });
     const chest = makeExercise({ id: toExerciseId('e-chest'), name: 'Bench Press', muscleGroup: 'chest' });

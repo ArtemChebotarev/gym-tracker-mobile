@@ -54,6 +54,14 @@ export type SetTarget = {
    * rule 2 doesn't carry it into the next week. Absent on an ordinary target.
    */
   estimate?: Extract<EstimateReason, 'other_slot'>;
+  /**
+   * Planned work time, seconds — on an `interval` exercise the round's, on a `mobility` one its
+   * length (10 · Hybrid Exercises). `setNumber` is then the round number. Absent on a strength or
+   * power target, which are reps and a load.
+   */
+  targetWorkSec?: number;
+  /** Planned rest after the round, seconds. Interval only. */
+  targetRestSec?: number;
 };
 
 export type SessionExercise = Timestamps & {
@@ -85,6 +93,35 @@ export type SetLog = Timestamps & {
   bodyWeight?: number;
   reps: number;
   rir?: number;
+  completedAt: string;
+};
+
+/**
+ * One logged round of an `interval` exercise, or the one cooldown of a `mobility` one (10 ·
+ * Hybrid Exercises, 10.1 FR-7). A record of its own rather than a `SetLog` with its weight and
+ * reps made optional: a round's numbers are seconds, and keeping them apart leaves every strength
+ * query as it was. Stored in `round_log`.
+ */
+export type RoundLog = Timestamps & {
+  id: string;
+  sessionExerciseId: string;
+  exerciseId: string;
+  /** The round's place in the exercise, from 1. A cooldown is round 1. */
+  roundNumber: number;
+  /** Actual work time, seconds. */
+  workSec: number;
+  /** Actual rest taken after the round, seconds. Absent where there was none to take. */
+  restSec?: number;
+  /**
+   * The rest was skipped on the spot. A one-off: it is written to the fact and never moves the
+   * plan or the lever (10.1, FR-8).
+   */
+  restSkipped: boolean;
+  /**
+   * False for a round cut short with "End early": logged with the time it ran and counted as not
+   * done, so the plan repeats (10.1, FR-6).
+   */
+  completed: boolean;
   completedAt: string;
 };
 

@@ -25,6 +25,10 @@ const EXPECTED_CATEGORY_BY_GROUP = {
 } as const;
 
 describe('getMuscleGroupCategory', () => {
+  test('give fullBody no category, so it reads as a group without a color', () => {
+    expect(getMuscleGroupCategory('fullBody')).toBeUndefined();
+  });
+
   test('maps every one of the twelve muscle groups to a color category', () => {
     for (const group of MUSCLE_GROUPS) {
       expect(getMuscleGroupCategory(group)).toBe(EXPECTED_CATEGORY_BY_GROUP[group]);
