@@ -13,10 +13,12 @@ export function importConfirmMessage(fileName: string): string {
 
 /** Task 124 gives each refusal its own words; until then every failure reads the same. */
 export function importErrorMessage(): string {
-  return "Couldn't restore this backup. Your data was not changed.";
+  return 'Your data was not changed.';
 }
 
-export const IMPORT_SUCCESS_MESSAGE = 'Backup restored.';
+export const IMPORT_SUCCESS_TITLE = 'Backup restored';
+export const IMPORT_SUCCESS_MESSAGE = 'Your data is back in this app.';
+export const IMPORT_ERROR_TITLE = "Couldn't restore this backup";
 
 export function exportErrorMessage(error: Error, what: 'data' | 'log'): string {
   if (error instanceof SharingUnavailableError) {

@@ -22,10 +22,6 @@ export type DebugScreenProps = {
   /** Opens the file picker; the route confirms before it restores. */
   onImport: () => void;
   isImporting: boolean;
-  /** Set when the last import failed — what happened, in plain words. */
-  importError?: string;
-  /** Set when the last import succeeded. */
-  importDone?: string;
   onExportLogs: () => void;
   isExportingLogs: boolean;
   /** Set when the last log export failed. */
@@ -39,8 +35,6 @@ export function DebugScreen({
   error,
   onImport,
   isImporting,
-  importError,
-  importDone,
   onExportLogs,
   isExportingLogs,
   logsError,
@@ -72,8 +66,6 @@ export function DebugScreen({
           onPress={onImport}
           disabled={isImporting}
         />
-        {importError !== undefined && <Text style={styles.error}>{importError}</Text>}
-        {importDone !== undefined && <Text style={styles.description}>{importDone}</Text>}
         <Text style={styles.description}>
           A record of what went wrong in the app — failures and expected business conflicts, ids
           only, nothing you typed. Kept in a file, so it is there even when the data would not open.

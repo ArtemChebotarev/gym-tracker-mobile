@@ -70,12 +70,6 @@ describe('DebugScreen', () => {
     expect(onImport).not.toHaveBeenCalled();
   });
 
-  test('shows the outcome of an import, success or failure', () => {
-    renderScreen({ importDone: 'Backup restored.', importError: 'Nope.' });
-
-    expect(screen.getByText('Backup restored.')).toBeTruthy();
-    expect(screen.getByText('Nope.')).toBeTruthy();
-  });
 });
 
 describe('DebugScreen log export', () => {
