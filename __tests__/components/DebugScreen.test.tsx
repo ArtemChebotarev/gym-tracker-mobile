@@ -11,6 +11,8 @@ const TEST_SAFE_AREA_METRICS: Metrics = {
 const BASE_PROPS: DebugScreenProps = {
   onExport: jest.fn(),
   isExporting: false,
+  onImport: jest.fn(),
+  isImporting: false,
   onExportLogs: jest.fn(),
   isExportingLogs: false,
   onBack: jest.fn(),
@@ -50,12 +52,24 @@ describe('DebugScreen', () => {
     expect(screen.getByText('Sharing is not available on this device.')).toBeTruthy();
   });
 
-  test('offers no import — restoring replaces everything and needs a screen that can ask first', () => {
-    renderScreen();
+  test('opens the import on press', () => {
+    const onImport = jest.fn();
+    renderScreen({ onImport });
 
-    expect(screen.queryByText(/import/i)).toBeNull();
-    expect(screen.queryByText(/restore/i)).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Import backup' }));
+
+    expect(onImport).toHaveBeenCalledTimes(1);
   });
+
+  test('says so and takes no second press while a restore is running', () => {
+    const onImport = jest.fn();
+    renderScreen({ onImport, isImporting: true });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Restoring…' }));
+
+    expect(onImport).not.toHaveBeenCalled();
+  });
+
 });
 
 describe('DebugScreen log export', () => {
