@@ -32,11 +32,7 @@
           "image": "./assets/hybro-splash-1024.png",
           "imageWidth": 240,
           "resizeMode": "contain",
-          "backgroundColor": "#0E0F11",
-          "dark": {
-            "image": "./assets/hybro-splash-1024.png",
-            "backgroundColor": "#0E0F11"
-          }
+          "backgroundColor": "#0E0F11"
         }
       ],
       "expo-sharing"
