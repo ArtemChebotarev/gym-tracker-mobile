@@ -19,6 +19,27 @@ import { ConflictError } from './errors';
  */
 export const BACKUP_KIND = 'gymtracker-backup' as const;
 
+/** Why a file was turned away — what a screen needs to word the refusal, without reading `message`. */
+export type BackupRefusal =
+  | 'not-json'
+  | 'not-a-backup'
+  | 'different-version'
+  | 'no-data'
+  | 'has-user-data';
+
+/**
+ * A backup that was refused before anything was written (task 124). Still a `ConflictError` —
+ * the store is as it was and the caller may be told so — but it carries which rule said no.
+ */
+export class BackupRefusedError extends ConflictError {
+  readonly reason: BackupRefusal;
+
+  constructor(reason: BackupRefusal, message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.reason = reason;
+  }
+}
+
 /**
  * Everything one store holds, by collection. Muscle groups are absent on purpose: they are a
  * fixed enum in the domain (02 · Domain Model), not stored, so there is nothing to carry.
@@ -68,14 +89,15 @@ export type BackupFile = {
 export function assertRestorable(value: unknown, schemaVersion: number): asserts value is BackupFile {
   const file = value as Partial<BackupFile> | null;
   if (file === null || typeof file !== 'object' || file.kind !== BACKUP_KIND) {
-    throw new ConflictError('This file is not a Hybro backup.');
+    throw new BackupRefusedError('not-a-backup', 'This file is not a Hybro backup.');
   }
   if (file.schemaVersion !== schemaVersion) {
-    throw new ConflictError(
+    throw new BackupRefusedError(
+      'different-version',
       `This backup was written by a different version of the app (${String(file.schemaVersion)}; this build reads ${schemaVersion}) and cannot be restored here.`,
     );
   }
   if (typeof file.data !== 'object' || file.data === null) {
-    throw new ConflictError('This backup carries no data.');
+    throw new BackupRefusedError('no-data', 'This backup carries no data.');
   }
 }
