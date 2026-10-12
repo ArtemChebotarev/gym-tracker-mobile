@@ -23,7 +23,8 @@ export default function DebugRoute() {
   const exportLogs = useExportLogs();
   const importBackup = useImportBackup();
 
-  const showImportFailure = () => Alert.alert(IMPORT_ERROR_TITLE, importErrorMessage());
+  const showImportFailure = (error: Error) =>
+    Alert.alert(IMPORT_ERROR_TITLE, importErrorMessage(error));
 
   // Pick, then ask, then write: nothing is changed until the user confirms the file they chose.
   // The outcome is an Alert, like the other action results in the app — a line of text under the
