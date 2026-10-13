@@ -54,3 +54,24 @@ LANG=en_US.UTF-8 npm run ios:device:release
 `LANG` is there because CocoaPods needs a UTF-8 locale to install. A Release build embeds the JS bundle, so nothing has to be running for the app to open. It also has no dev menu, which means no shake menu and no expo-sqlite inspector (Shift+M) — to read the database from a Release build, use **Xcode → Window → Devices and Simulators → Devices → the app → Download Container**.
 
 Signing is the same either way. With a free Apple ID the provisioning profile expires seven days after it is issued, and the app stops launching until it is rebuilt with the phone connected; a paid Apple Developer account makes that a year. Rebuild before it expires rather than after, and do not delete the app — the database lives in its container and an install over the top keeps it.
+
+## Releasing to TestFlight
+
+A release is a git tag. Pushing `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml): `npm run verify` → EAS build (`production` profile) → upload to TestFlight. The iOS build number is kept by EAS (remote, auto-incremented); the version comes from `app.json`.
+
+1. Bump `expo.version` in `app.json` through a normal PR into `main` and merge it.
+2. Tag the merged commit and push the tag:
+
+   ```
+   git fetch origin
+   git tag v0.9.1 origin/main
+   git push origin v0.9.1
+   ```
+
+3. Watch **GitHub → Actions → Release**. The job fails fast if the tag is not on `main` or does not match `app.json`. The build itself is on [expo.dev](https://expo.dev/accounts/artemchebotarov/projects/gym-tracker-mobile/builds); after Apple processes it (a few minutes) it shows up in **App Store Connect → TestFlight**.
+
+No tag is needed for a rebuild or a quick fix: **GitHub → Actions → Release → Run workflow** on `main` builds the current `main` with the version already in `app.json` (EAS still assigns a new build number). It refuses to run on any other branch.
+
+Only tag forward: the app refuses to open a database written by a newer build, so an older tag installed over a newer one will not start.
+
+One-time setup: the `EXPO_TOKEN` repository secret (expo.dev → Access tokens), and an App Store Connect API key stored in EAS credentials, so that `eas submit` needs no Apple ID password or 2FA.
