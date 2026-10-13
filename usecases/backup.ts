@@ -31,9 +31,19 @@ export type BackupDeps = {
  * adding one just for the backup would widen the contract for a single caller. A session that
  * belonged to no mesocycle could not exist: the foreign key forbids it.
  */
-export async function exportBackup(deps: BackupDeps, now: string = nowAsUtcIso()): Promise<BackupFile> {
-  const { exerciseRepo, templateRepo, mesocycleRepo, sessionRepo, sessionExerciseRepo, setLogRepo, settingsRepo } =
-    deps.store.repos;
+export async function exportBackup(
+  deps: BackupDeps,
+  now: string = nowAsUtcIso(),
+): Promise<BackupFile> {
+  const {
+    exerciseRepo,
+    templateRepo,
+    mesocycleRepo,
+    sessionRepo,
+    sessionExerciseRepo,
+    setLogRepo,
+    settingsRepo,
+  } = deps.store.repos;
 
   const mesocycles = await mesocycleRepo.getAll();
   const sessions = (
@@ -106,8 +116,9 @@ export async function importBackupJson(json: string, deps: BackupDeps): Promise<
 }
 
 /**
- * The catalog is deliberately not counted: it is shipped content, identical in every install, and
- * a store that has it is still a store the user has put nothing into.
+ * The catalog — exercises and templates alike — is deliberately not counted: it is shipped
+ * content, identical in every install, and a store that has it is still a store the user has put
+ * nothing into.
  */
 async function assertNothingOfTheUsers(repos: BackupRepositories): Promise<void> {
   const [exercises, templates, mesocycles] = await Promise.all([
@@ -116,7 +127,8 @@ async function assertNothingOfTheUsers(repos: BackupRepositories): Promise<void>
     repos.mesocycleRepo.getAll(),
   ]);
   const custom = exercises.filter((exercise) => exercise.source === 'custom');
-  if (custom.length > 0 || templates.length > 0 || mesocycles.length > 0) {
+  const customTemplates = templates.filter((template) => template.source === 'custom');
+  if (custom.length > 0 || customTemplates.length > 0 || mesocycles.length > 0) {
     throw new BackupRefusedError(
       'has-user-data',
       'A backup can only be restored into a store with no data of your own. Reinstall the app first, then restore.',
@@ -126,9 +138,7 @@ async function assertNothingOfTheUsers(repos: BackupRepositories): Promise<void>
 
 async function restore(data: BackupData, repos: BackupRepositories): Promise<void> {
   await restoreExercises(data.exercises, repos);
-  for (const template of data.templates) {
-    await repos.templateRepo.create(template);
-  }
+  await restoreTemplates(data.templates, repos);
   for (const mesocycle of data.mesocycles) {
     await repos.mesocycleRepo.create(mesocycle);
   }
@@ -152,6 +162,30 @@ async function restore(data: BackupData, repos: BackupRepositories): Promise<voi
  * — the repository has no catalog write — so it is called exactly where the stored value differs
  * from the file's.
  */
+/**
+ * Templates come back the way exercises do: a custom one is the user's and is written under its
+ * id; a catalog one is already there, put by the migration, so the only thing it carries back is
+ * `isHidden` — hiding it is the user's decision. A catalog template the store does not have (a
+ * file from a build that shipped one this build no longer does) is written as it was.
+ */
+async function restoreTemplates(
+  templates: readonly BackupData['templates'][number][],
+  repos: BackupRepositories,
+): Promise<void> {
+  for (const template of templates) {
+    if (template.source === 'custom') {
+      await repos.templateRepo.create(template);
+      continue;
+    }
+    const stored = await repos.templateRepo.getById(template.id);
+    if (stored === null) {
+      await repos.templateRepo.create(template);
+    } else if (stored.isHidden !== template.isHidden) {
+      await repos.templateRepo.update({ ...stored, isHidden: template.isHidden });
+    }
+  }
+}
+
 async function restoreExercises(
   exercises: readonly BackupData['exercises'][number][],
   repos: BackupRepositories,

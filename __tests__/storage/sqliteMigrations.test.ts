@@ -11,11 +11,7 @@ import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
 
 import { defaultProgressionSettings } from '@domain/mesocycle';
 
-import {
-  makeSession,
-  makeSessionExercise,
-  makeSetLog,
-} from '../contracts/fixtures';
+import { makeSession, makeSessionExercise, makeSetLog } from '../contracts/fixtures';
 import { openTestDatabase, readMigrationBundle } from '../fixtures/sqliteDatabase';
 
 /** `bundle` as the build that shipped with its first `count` migrations carried it. */
@@ -208,6 +204,7 @@ describe('the app’s own migrations', () => {
       '0002_mesocycle_archived_at': 1790351056868,
       '0003_onboarding_flags': 1791215245344,
       '0004_template_description': 1791899270911,
+      '0005_seed_catalog_templates': 1791909901083,
     });
   });
 
