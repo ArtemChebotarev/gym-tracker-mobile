@@ -563,7 +563,7 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
 
   {
     id: toExerciseId('lunge-bodyweight'),
-    name: 'Lunge Bodyweight',
+    name: 'Lunge',
     muscleGroup: 'quads',
     source: 'catalog',
     equipment: 'bodyweight',
@@ -571,7 +571,7 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
   },
   {
     id: toExerciseId('squat-bodyweight'),
-    name: 'Squat Bodyweight',
+    name: 'Squat',
     muscleGroup: 'quads',
     source: 'catalog',
     equipment: 'bodyweight',
@@ -691,6 +691,22 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     muscleGroup: 'glutes',
     source: 'catalog',
     equipment: 'machine',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('reverse-lunge-bodyweight'),
+    name: 'Reverse Lunge',
+    muscleGroup: 'glutes',
+    source: 'catalog',
+    equipment: 'bodyweight',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('reverse-lunge-dumbbell'),
+    name: 'Reverse Lunge',
+    muscleGroup: 'glutes',
+    source: 'catalog',
+    equipment: 'dumbbell',
     isHidden: false,
   },
   // Calves

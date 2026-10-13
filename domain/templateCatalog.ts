@@ -82,7 +82,6 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
   {
     id: 'push-pull-legs',
     name: 'Push / Pull / Legs',
-    description: 'Push and pull twice a week, one leg day',
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -165,7 +164,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
             { exerciseId: 'bicep-curl-dumbbell', order: 4, sets: 2 },
             { exerciseId: 'triceps-pushdown-cable', order: 5, sets: 2 },
             { exerciseId: 'squat-bodyweight', order: 6, sets: 2 },
-            { exerciseId: 'lunge-bodyweight', order: 7, sets: 2 },
+            { exerciseId: 'reverse-lunge-bodyweight', order: 7, sets: 2 },
           ],
         },
         {
@@ -173,7 +172,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
           name: 'Day 2',
           exercises: [
             { exerciseId: 'goblet-squat-dumbbell', order: 1, sets: 3 },
-            { exerciseId: 'lunge-bodyweight', order: 2, sets: 3 },
+            { exerciseId: 'reverse-lunge-bodyweight', order: 2, sets: 3 },
             { exerciseId: 'calf-raise-bodyweight', order: 3, sets: 3 },
             { exerciseId: 'push-up-bodyweight', order: 4, sets: 2 },
             { exerciseId: 'lat-pulldown-parallel-grip-cable', order: 5, sets: 2 },
@@ -187,7 +186,6 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
   {
     id: 'full-body-lower-focus',
     name: 'Full Body Lower Focus',
-    description: 'Two full-body days with an emphasis on the lower body',
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -198,7 +196,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
           exercises: [
             { exerciseId: 'stiff-legged-deadlift-dumbbell', order: 1, sets: 3 },
             { exerciseId: 'goblet-squat-dumbbell', order: 2, sets: 3 },
-            { exerciseId: 'lunge-dumbbell', order: 3, sets: 3 },
+            { exerciseId: 'reverse-lunge-dumbbell', order: 3, sets: 3 },
             { exerciseId: 'seated-row-cable', order: 4, sets: 2 },
             { exerciseId: 'shoulder-press-machine', order: 5, sets: 2 },
             { exerciseId: 'lateral-raise-dumbbell', order: 6, sets: 2 },
