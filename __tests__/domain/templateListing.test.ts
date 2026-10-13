@@ -20,7 +20,6 @@ function template(
     id: name,
     name,
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: { days: days(dayCount) },
     ...overrides,

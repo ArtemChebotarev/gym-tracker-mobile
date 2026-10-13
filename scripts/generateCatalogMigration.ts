@@ -3,8 +3,9 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
 import { EXERCISE_CATALOG } from '../domain/exerciseCatalog';
+import { TEMPLATE_CATALOG } from '../domain/templateCatalog';
 import { nowAsUtcIso } from '../domain/time';
-import { catalogUpsertSql } from './catalogMigration';
+import { catalogMigrationSql } from './catalogMigration';
 
 // `npm run catalog:migration [name]` — see scripts/catalogMigration.ts for what this writes and
 // why the catalog ships as a migration at all.
@@ -31,5 +32,7 @@ if (!latest) {
 }
 
 const file = join(MIGRATIONS_DIR, `${latest.tag}.sql`);
-writeFileSync(file, catalogUpsertSql(EXERCISE_CATALOG, nowAsUtcIso()));
-console.log(`Wrote ${EXERCISE_CATALOG.length} catalog exercises into ${file}`);
+writeFileSync(file, catalogMigrationSql(EXERCISE_CATALOG, TEMPLATE_CATALOG, nowAsUtcIso()));
+console.log(
+  `Wrote ${EXERCISE_CATALOG.length} catalog exercises and ${TEMPLATE_CATALOG.length} templates into ${file}`,
+);

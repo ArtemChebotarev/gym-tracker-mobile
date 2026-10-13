@@ -49,8 +49,11 @@ export type MesoTemplate = Timestamps & {
   id: string;
   name: string;
   source: MesoTemplateSource;
-  /** 3..8, inclusive of the deload week. */
-  defaultLengthWeeks: number;
+  /**
+   * One line shown under the name in the template list (08.10, "Step T"). Absent for a template
+   * that has none — the list then falls back to the summary of its week.
+   */
+  description?: string;
   weekPlan: WeekPlan;
   isHidden: boolean;
 };

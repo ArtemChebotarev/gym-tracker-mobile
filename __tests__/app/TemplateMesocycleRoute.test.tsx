@@ -44,7 +44,6 @@ function template(
     id,
     name,
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: {
       days: days.map((exercises, index) => ({

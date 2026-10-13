@@ -15,7 +15,6 @@ function template(
     id,
     name,
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: {
       days: Array.from({ length: dayCount }, (_, index) => ({

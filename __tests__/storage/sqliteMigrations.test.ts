@@ -207,6 +207,7 @@ describe('the app’s own migrations', () => {
       '0001_seed_catalog': 1789938887567,
       '0002_mesocycle_archived_at': 1790351056868,
       '0003_onboarding_flags': 1791215245344,
+      '0004_template_description': 1791899270911,
     });
   });
 
