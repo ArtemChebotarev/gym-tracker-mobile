@@ -29,6 +29,20 @@
       "when": 1791215245344,
       "tag": "0003_onboarding_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791899270911,
+      "tag": "0004_template_description",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791909901083,
+      "tag": "0005_seed_catalog_templates",
+      "breakpoints": true
     }
   ]
 }

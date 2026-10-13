@@ -91,7 +91,6 @@ export function makeTemplate(overrides: Partial<Unsaved<MesoTemplate>> = {}): Un
     id: 'template-ppl',
     name: 'Push Pull Legs',
     source: 'custom',
-    defaultLengthWeeks: 6,
     weekPlan: { days: [] },
     isHidden: false,
     ...overrides,
