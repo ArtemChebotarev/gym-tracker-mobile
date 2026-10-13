@@ -571,7 +571,7 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
   },
   {
     id: toExerciseId('squat-bodyweight'),
-    name: 'Squat',
+    name: 'Bodyweight Squat',
     muscleGroup: 'quads',
     source: 'catalog',
     equipment: 'bodyweight',
