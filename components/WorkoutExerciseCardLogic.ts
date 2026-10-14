@@ -1,6 +1,7 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
 import type { Equipment } from '@domain/catalog';
+import { isResistanceBand } from '@domain/bodyWeightLoad';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
@@ -83,7 +84,10 @@ export function showsGroupChip(
 }
 
 /** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */
-export function formatWeightHint(hint: ExerciseWeightHint): string {
+export function formatWeightHint(hint: ExerciseWeightHint, equipment?: Equipment): string {
+  if (hint.direction === 'increase' && isResistanceBand(equipment)) {
+    return `Tighter band or slower tempo — ${hint.reps}+ reps last week`;
+  }
   return hint.direction === 'increase'
     ? `Go heavier — ${hint.reps}+ reps last week`
     : `Go lighter — under ${hint.reps} reps last week`;

@@ -28,6 +28,11 @@ export function isPureBodyWeight(equipment: Equipment | undefined): boolean {
   return equipment === 'bodyweight' || equipment === 'resistance-band';
 }
 
+/** A band exercise: loads like pure bodyweight, but has its own advice at the top of the corridor. */
+export function isResistanceBand(equipment: Equipment | undefined): boolean {
+  return equipment === 'resistance-band';
+}
+
 /** `weight` means added weight, on top of the body weight. */
 export function usesAddedWeight(equipment: Equipment | undefined): boolean {
   return equipment === 'bodyweight-weighted';

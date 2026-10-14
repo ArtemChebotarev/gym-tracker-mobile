@@ -6,7 +6,7 @@ import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
-import { weightHintForReps } from '@domain/progressionWeightHint';
+import { hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
@@ -52,7 +52,8 @@ export function startTargetReps(
  *
  * A pure `bodyweight` exercise takes the reps half of that and nothing else (task 105): its load
  * is the body weight, which the block already knows and the screen fills in, so a weight target
- * would only restate it and a hint would point at a weight there's no way to change.
+ * would only restate it and a hint would point at a weight there's no way to change. A
+ * resistance band is the one bodyweight exercise that keeps a hint, at the top of the corridor.
  */
 export function nextSetTarget(
   source: SetTarget,
@@ -79,10 +80,10 @@ export function nextSetTarget(
   };
   if (carriesWeight) {
     target.suggestedWeight = log.weight;
-    const hint = weightHintForReps(log.reps, settings);
-    if (hint !== undefined) {
-      target.weightHint = hint;
-    }
+  }
+  const hint = hintForReps(log.reps, settings, equipment);
+  if (hint !== undefined) {
+    target.weightHint = hint;
   }
   return target;
 }
