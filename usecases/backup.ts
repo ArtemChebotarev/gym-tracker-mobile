@@ -8,10 +8,10 @@
 import {
   assertRestorable,
   BACKUP_KIND,
+  BackupRefusedError,
   type BackupData,
   type BackupFile,
 } from '@domain/backup';
-import { ConflictError } from '@domain/errors';
 import { nowAsUtcIso } from '@domain/time';
 import type { BackupRepositories, BackupStore } from '@repositories/backup';
 
@@ -100,7 +100,7 @@ export async function importBackupJson(json: string, deps: BackupDeps): Promise<
   try {
     parsed = JSON.parse(json);
   } catch (error) {
-    throw new ConflictError('This file is not valid JSON.', { cause: error });
+    throw new BackupRefusedError('not-json', 'This file is not valid JSON.', { cause: error });
   }
   return importBackup(parsed, deps);
 }
@@ -117,7 +117,8 @@ async function assertNothingOfTheUsers(repos: BackupRepositories): Promise<void>
   ]);
   const custom = exercises.filter((exercise) => exercise.source === 'custom');
   if (custom.length > 0 || templates.length > 0 || mesocycles.length > 0) {
-    throw new ConflictError(
+    throw new BackupRefusedError(
+      'has-user-data',
       'A backup can only be restored into a store with no data of your own. Reinstall the app first, then restore.',
     );
   }

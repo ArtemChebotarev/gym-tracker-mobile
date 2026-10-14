@@ -3,10 +3,9 @@
 // exists so a backup can be taken today rather than after Settings is drawn. When it is, export
 // moves there and this goes.
 //
-// Export only. Import is deliberately absent: restoring replaces everything, and a button that
-// does that has no business sitting one tap away from a button that doesn't, on a screen with no
-// confirmation flow. The use case exists and is tested; it gets a caller when it gets a screen
-// that can ask "are you sure" properly.
+// Import (task 123) sits next to export, so a backup taken on one build can be put into the next
+// (dev build → TestFlight). It does not restore on press: the route asks which file and then
+// "are you sure" before anything is written.
 
 import { Text, View } from 'react-native';
 
@@ -20,6 +19,9 @@ export type DebugScreenProps = {
   isExporting: boolean;
   /** Set when the last export failed — what to do about it, in plain words. */
   error?: string;
+  /** Opens the file picker; the route confirms before it restores. */
+  onImport: () => void;
+  isImporting: boolean;
   onExportLogs: () => void;
   isExportingLogs: boolean;
   /** Set when the last log export failed. */
@@ -31,6 +33,8 @@ export function DebugScreen({
   onExport,
   isExporting,
   error,
+  onImport,
+  isImporting,
   onExportLogs,
   isExportingLogs,
   logsError,
@@ -52,6 +56,16 @@ export function DebugScreen({
           disabled={isExporting}
         />
         {error !== undefined && <Text style={styles.error}>{error}</Text>}
+        <Text style={styles.description}>
+          Puts a backup file back into this app. Only works in an app with no data of its own —
+          restoring never merges with what is already here.
+        </Text>
+        <Button
+          label={isImporting ? 'Restoring…' : 'Import backup'}
+          variant="secondary"
+          onPress={onImport}
+          disabled={isImporting}
+        />
         <Text style={styles.description}>
           A record of what went wrong in the app — failures and expected business conflicts, ids
           only, nothing you typed. Kept in a file, so it is there even when the data would not open.

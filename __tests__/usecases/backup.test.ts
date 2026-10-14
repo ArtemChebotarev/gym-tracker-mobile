@@ -1,4 +1,4 @@
-import { BACKUP_KIND } from '@domain/backup';
+import { BACKUP_KIND, BackupRefusedError } from '@domain/backup';
 import { isConflictError } from '@domain/errors';
 import type { SqliteDatabase } from '@storage/sqlite/db';
 import { createSqliteBackupStore } from '@storage/sqlite/backupStore';
@@ -164,21 +164,31 @@ describe('importBackup refuses what it cannot restore', () => {
     const error: unknown = await importBackup(older, makeDeps(sourceDb)).catch((reason: unknown) => reason);
 
     expect(isConflictError(error)).toBe(true);
+    expect((error as BackupRefusedError).reason).toBe('different-version');
     expect((error as Error).message).toMatch(
       /different version of the app \(1; this build reads 1789938887567\)/,
     );
   });
 
   test('a JSON that is not a backup at all', async () => {
-    await expect(importBackup({ hello: 'world' }, makeDeps(sourceDb))).rejects.toThrow(
-      'This file is not a Hybro backup.',
-    );
+    await expect(importBackup({ hello: 'world' }, makeDeps(sourceDb))).rejects.toMatchObject({
+      reason: 'not-a-backup',
+      message: 'This file is not a Hybro backup.',
+    });
   });
 
   test('text that is not JSON', async () => {
-    await expect(importBackupJson('not json', makeDeps(sourceDb))).rejects.toThrow(
-      'This file is not valid JSON.',
-    );
+    await expect(importBackupJson('not json', makeDeps(sourceDb))).rejects.toMatchObject({
+      reason: 'not-json',
+      message: 'This file is not valid JSON.',
+    });
+  });
+
+  test('a backup with no data in it', async () => {
+    const exported = await exportBackup(makeDeps(sourceDb));
+    const hollow = { ...exported, data: null };
+
+    await expect(importBackup(hollow, makeDeps(sourceDb))).rejects.toMatchObject({ reason: 'no-data' });
   });
 
   test('a store that already holds data of the user’s', async () => {
@@ -186,7 +196,10 @@ describe('importBackup refuses what it cannot restore', () => {
     await fill(source);
     const exported = await exportBackup(source);
 
-    await expect(importBackup(exported, source)).rejects.toThrow(/no data of your own/);
+    const error: unknown = await importBackup(exported, source).catch((reason: unknown) => reason);
+
+    expect(error).toBeInstanceOf(BackupRefusedError);
+    expect((error as BackupRefusedError).reason).toBe('has-user-data');
   });
 
   test('a store that only holds the shipped catalog is fine', async () => {
