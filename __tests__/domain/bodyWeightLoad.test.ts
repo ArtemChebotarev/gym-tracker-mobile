@@ -1,8 +1,6 @@
 import {
-  hasNoWeightTarget,
   isBodyWeightExercise,
   isPureBodyWeight,
-  isResistanceBand,
   usesAddedWeight,
 } from '@domain/bodyWeightLoad';
 
@@ -30,18 +28,9 @@ describe('telling the bodyweight exercises apart', () => {
     expect(usesAddedWeight('machine')).toBe(false);
   });
 
-  test('a band is not a bodyweight exercise: no block weight applies, and no weight of its own', () => {
-    expect(isResistanceBand('resistance-band')).toBe(true);
-    expect(isResistanceBand('bodyweight')).toBe(false);
-    expect(isBodyWeightExercise('resistance-band')).toBe(false);
+  test('a resistance band is a pure bodyweight exercise: the block weight shows, nothing to progress', () => {
+    expect(isBodyWeightExercise('resistance-band')).toBe(true);
+    expect(isPureBodyWeight('resistance-band')).toBe(true);
     expect(usesAddedWeight('resistance-band')).toBe(false);
-  });
-
-  test('a pure bodyweight exercise and a band have no weight target; the rest do', () => {
-    expect(hasNoWeightTarget('bodyweight')).toBe(true);
-    expect(hasNoWeightTarget('resistance-band')).toBe(true);
-    expect(hasNoWeightTarget('bodyweight-weighted')).toBe(false);
-    expect(hasNoWeightTarget('cable')).toBe(false);
-    expect(hasNoWeightTarget(undefined)).toBe(false);
   });
 });

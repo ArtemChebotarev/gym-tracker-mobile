@@ -3,7 +3,7 @@
 // (08.11, "Открытые вопросы"); it lives here so that touches this file, not the layout.
 
 import type { PlateTextPart } from '@design/components/PlateText';
-import { hasNoWeightTarget } from '@domain/bodyWeightLoad';
+import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 
@@ -55,5 +55,5 @@ export function showsFirstWeightInfo(
   isDeload: boolean,
   equipment: Equipment | undefined,
 ): boolean {
-  return mode === 'live' && !isDeload && !hasNoWeightTarget(equipment);
+  return mode === 'live' && !isDeload && !isPureBodyWeight(equipment);
 }

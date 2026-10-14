@@ -168,7 +168,7 @@ describe('deload and the bodyweight exercises (task 105)', () => {
     expect(prescription?.targetRir).toBe(defaultProgressionSettings.deloadRir);
   });
 
-  test('a resistance band exercise gets no deload weight either: a band has no weight', () => {
+  test('a resistance band exercise gets no deload weight either: it loads like bodyweight', () => {
     const bandRow: SourceExercise = {
       ...sourceExercise('band-row', 0, 'back', [
         { setNumber: 1, targetReps: 20, suggestedWeight: 10 },

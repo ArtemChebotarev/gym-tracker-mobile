@@ -63,8 +63,7 @@ export const EQUIPMENT_OPTIONS = [
   // New exercise sheet pick it up for free.
   'bodyweight-weighted',
   // 10.1 FR-14: a band is equipment of a `strength` exercise, not a new type. It has no weight and
-  // no levels, so — like a pure `bodyweight` one — it has no weight to progress (see
-  // `domain/bodyWeightLoad.ts`); only its reps do.
+  // no levels, so it loads like a pure `bodyweight` one (see `domain/bodyWeightLoad.ts`).
   'resistance-band',
   'other',
 ] as const;

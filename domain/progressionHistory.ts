@@ -5,7 +5,7 @@
 // case layer's job; which of them to build on is the reference resolver's
 // (`domain/progressionReference.ts`, task 134.1); this turns its answer into set targets.
 
-import { hasNoWeightTarget } from '@domain/bodyWeightLoad';
+import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
@@ -82,7 +82,7 @@ export function prescribeFromHistory(
   settings: RepCorridor,
   equipment?: Equipment,
 ): SetTarget[] {
-  const carriesWeight = !hasNoWeightTarget(equipment);
+  const carriesWeight = !isPureBodyWeight(equipment);
   return Array.from({ length: rowCount }, (_, index): SetTarget => {
     const setNumber = index + 1;
     const reference =

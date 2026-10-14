@@ -6,7 +6,7 @@
 // next week's plan: rules 1–6 need history and will move to a backend one day, while this one is
 // a reading of a target already in hand and stays on the client (03, "Где считается").
 
-import { hasNoWeightTarget, usesAddedWeight } from '@domain/bodyWeightLoad';
+import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
@@ -112,7 +112,7 @@ export function buildWeightSwap({
   equipment,
   bodyWeight,
 }: WeightSwapInput): WeightSwap | undefined {
-  if (isDeload || hasNoWeightTarget(equipment)) {
+  if (isDeload || isPureBodyWeight(equipment)) {
     return undefined;
   }
   const addedWeight = usesAddedWeight(equipment);
