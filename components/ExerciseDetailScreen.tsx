@@ -58,6 +58,7 @@ import {
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
+import { ExerciseDetailEmpty } from './ExerciseDetailEmpty';
 import { ExerciseHistoryTab } from './ExerciseHistoryTab';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
 
@@ -158,12 +159,10 @@ export function ExerciseDetailScreen({
         // has nothing to report yet, and the line below reads as a note rather than the page.
         <>
           {tab === 'overview' && <WatchHowToCard onPress={onWatchHowTo} />}
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>No sets logged yet</Text>
-            <Text style={styles.emptyDescription}>
-              Your first workout with this exercise fills this in.
-            </Text>
-          </View>
+          <ExerciseDetailEmpty
+            title="No sets logged yet"
+            description="Your first workout with this exercise fills this in."
+          />
         </>
       ) : tab === 'history' ? (
         <ExerciseHistoryTab
