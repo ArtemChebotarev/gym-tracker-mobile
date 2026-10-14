@@ -3,7 +3,7 @@
 // the corridors and steps the progression engine uses are its own and arrive with it.
 
 import type { Exercise, ExerciseType } from './catalog';
-import type { ExerciseConfig } from './exerciseConfig';
+import type { ExerciseConfig, IntervalConfig } from './exerciseConfig';
 
 /**
  * The type of `exercise`, `strength` where it says nothing. The one place that default is
@@ -11,6 +11,23 @@ import type { ExerciseConfig } from './exerciseConfig';
  */
 export function exerciseTypeOf(exercise: Pick<Exercise, 'type'>): ExerciseType {
   return exercise.type ?? 'strength';
+}
+
+/**
+ * The "Hold" preset of an `interval` exercise (10.1 FR-10, "Timed work"): a plank or a hang as
+ * 3 x 0:30 with a minute's rest, progressing on `workTime` in 5 s steps. The `interval` key stays;
+ * "Timed work" is only its label in the UI. Fresh object each call, like the defaults.
+ */
+export function holdIntervalConfig(): IntervalConfig {
+  return {
+    type: 'interval',
+    rounds: 3,
+    workSec: 30,
+    restSec: 60,
+    getReadySec: 5,
+    lever: 'workTime',
+    stepSec: 5,
+  };
 }
 
 /**

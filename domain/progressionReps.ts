@@ -2,7 +2,7 @@
 // повторы". Pure functions: set N of the next week is computed from set N of the source
 // session, each set on its own.
 
-import { isPureBodyWeight } from '@domain/bodyWeightLoad';
+import { hasNoWeightTarget } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
@@ -60,7 +60,7 @@ export function nextSetTarget(
   settings: RepCorridor,
   equipment?: Equipment,
 ): SetTarget {
-  const carriesWeight = !isPureBodyWeight(equipment);
+  const carriesWeight = !hasNoWeightTarget(equipment);
   if (log === undefined) {
     if (source.estimate !== undefined) {
       // An estimate isn't a target to carry (03, "Оценка"): with nothing logged, the row has

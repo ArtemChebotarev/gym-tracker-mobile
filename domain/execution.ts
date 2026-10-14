@@ -97,7 +97,7 @@ export type SetLog = Timestamps & {
 };
 
 /**
- * One logged round of an `interval` exercise, or the one cooldown of a `mobility` one (10 ·
+ * One logged round of an `interval` exercise, or the one logged block of a `mobility` one (10 ·
  * Hybrid Exercises, 10.1 FR-7). A record of its own rather than a `SetLog` with its weight and
  * reps made optional: a round's numbers are seconds, and keeping them apart leaves every strength
  * query as it was. Stored in `round_log`.
@@ -106,7 +106,7 @@ export type RoundLog = Timestamps & {
   id: string;
   sessionExerciseId: string;
   exerciseId: string;
-  /** The round's place in the exercise, from 1. A cooldown is round 1. */
+  /** The round's place in the exercise, from 1. A mobility block is round 1. */
   roundNumber: number;
   /** Actual work time, seconds. */
   workSec: number;

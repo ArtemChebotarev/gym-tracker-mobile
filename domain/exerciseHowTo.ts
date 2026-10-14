@@ -31,6 +31,7 @@ const EQUIPMENT_QUERY_WORD: Record<Equipment, string | undefined> = {
   cable: 'cable',
   bodyweight: undefined,
   'bodyweight-weighted': 'weighted',
+  'resistance-band': 'resistance band',
   other: undefined,
 };
 

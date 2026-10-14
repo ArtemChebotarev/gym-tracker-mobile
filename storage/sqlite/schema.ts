@@ -172,7 +172,7 @@ export const setLogs = sqliteTable(
 );
 
 /**
- * One logged interval round, or one cooldown (10 · Hybrid Exercises). Not a nullable-`weight` /
+ * One logged interval round, or one mobility block (10 · Hybrid Exercises). Not a nullable-`weight` /
  * `reps` variant of `set_log`: a round's metrics are other fields entirely, and keeping them apart
  * leaves every strength query and constraint as it was.
  */
@@ -188,7 +188,7 @@ export const roundLogs = sqliteTable(
       .notNull()
       .references(() => exercises.id),
     roundNumber: integer('round_number').notNull(),
-    // Actual work time, seconds. For a cooldown, the time it took.
+    // Actual work time, seconds. For a mobility block, the time it took.
     workSec: integer('work_sec').notNull(),
     // Actual rest taken after the round, seconds; null where there was none to take.
     restSec: integer('rest_sec'),

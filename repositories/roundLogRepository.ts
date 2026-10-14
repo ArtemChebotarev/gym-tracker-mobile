@@ -2,7 +2,7 @@ import type { RoundLog } from '@domain/execution';
 import type { Incoming } from '@domain/timestamps';
 
 // RoundLogRepository — the slice of the execution repositories for interval rounds and the
-// cooldown (10 · Hybrid Exercises, 10.1 FR-7). It is `SetLogRepository`'s counterpart for the
+// mobility block (10 · Hybrid Exercises, 10.1 FR-7). It is `SetLogRepository`'s counterpart for the
 // exercises whose fact is time rather than weight and reps, and it follows the same hard rules
 // (07 · Persistence Layer Contract): every operation is async, no business logic, the domain
 // generates the id before `create`, and an adapter normalizes its own errors into the domain's.

@@ -32,6 +32,7 @@ describe('validateExerciseEquipment', () => {
   test('accepts every fixed catalog equipment value', () => {
     expect(() => validateExerciseEquipment('barbell')).not.toThrow();
     expect(() => validateExerciseEquipment('other')).not.toThrow();
+    expect(() => validateExerciseEquipment('resistance-band')).not.toThrow();
   });
 
   test('accepts undefined — equipment is optional', () => {

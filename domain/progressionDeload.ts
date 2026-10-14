@@ -2,7 +2,7 @@
 // deload". The last week of a block follows its own rules instead of the general
 // progression: fewer sets, a fraction of the weight, a fixed RIR, and no target reps.
 
-import { isPureBodyWeight } from '@domain/bodyWeightLoad';
+import { hasNoWeightTarget } from '@domain/bodyWeightLoad';
 import type { MuscleGroup } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
@@ -68,7 +68,7 @@ export function prescribeDeloadDay(
       const setCount = deloadSetCount(exercisesPerGroup.get(muscleGroup) ?? 1);
       // A pure bodyweight exercise deloads on reps and RIR alone (task 105): half a body weight
       // is not a weight anyone can load, and the body weight itself hasn't changed.
-      const suggestedWeight = isPureBodyWeight(equipment)
+      const suggestedWeight = hasNoWeightTarget(equipment)
         ? undefined
         : deloadWeight(sessionExercise, logs, settings);
       return {

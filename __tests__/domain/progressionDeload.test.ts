@@ -168,6 +168,19 @@ describe('deload and the bodyweight exercises (task 105)', () => {
     expect(prescription?.targetRir).toBe(defaultProgressionSettings.deloadRir);
   });
 
+  test('a resistance band exercise gets no deload weight either: a band has no weight', () => {
+    const bandRow: SourceExercise = {
+      ...sourceExercise('band-row', 0, 'back', [
+        { setNumber: 1, targetReps: 20, suggestedWeight: 10 },
+      ]),
+      equipment: 'resistance-band',
+    };
+
+    const [prescription] = prescribeDeloadDay([bandRow], [], defaultProgressionSettings);
+
+    expect(prescription?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+  });
+
   test('DoD: a weighted bodyweight exercise halves its added weight like any other', () => {
     const weighted: SourceExercise = {
       ...sourceExercise('pull-up-weighted', 0, 'back', [
