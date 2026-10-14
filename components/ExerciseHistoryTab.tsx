@@ -19,11 +19,11 @@
 // JSX/rendering only — styles live in ExerciseHistoryTabStyles.ts and pure helpers in
 // ExerciseHistoryTabLogic.ts, per the code-style skill.
 
-import { SectionList, Text, View } from 'react-native';
+import { SectionList, Text } from 'react-native';
 
 import type { Equipment } from '@domain/catalog';
 import type { ExerciseHistoryMesocycle, ExerciseHistorySession } from '@domain/exerciseHistory';
-import { SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 
 import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard';
 import { formatSetLabel, formatSetRirTail, formatSetValue } from './ExerciseDetailScreenLogic';
@@ -34,6 +34,8 @@ import {
   type ExerciseHistorySection,
 } from './ExerciseHistoryTabLogic';
 import { styles } from './ExerciseHistoryTabStyles';
+
+const BLEED = listBleed();
 
 export type ExerciseHistoryTabProps = {
   /** `undefined` while it loads. */
@@ -50,16 +52,14 @@ export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHis
 
   return (
     <SectionList<ExerciseHistorySession, ExerciseHistorySection>
-      style={styles.list}
-      contentContainerStyle={styles.content}
+      style={[styles.list, BLEED.style]}
+      contentContainerStyle={[styles.content, BLEED.content]}
       showsVerticalScrollIndicator={false}
       sections={buildHistorySections(groups)}
       keyExtractor={(session) => session.id}
       stickySectionHeadersEnabled
       renderSectionHeader={({ section }) => (
-        <View style={styles.headerBleed}>
-          <SectionHeader title={section.title} count={section.data.length} />
-        </View>
+        <SectionHeader title={section.title} count={section.data.length} />
       )}
       renderItem={({ item }) => (
         <ExerciseDetailCard

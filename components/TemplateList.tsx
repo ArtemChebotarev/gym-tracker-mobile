@@ -23,13 +23,15 @@ import { SectionList } from 'react-native';
 import { EmptyState } from '@design/components/EmptyState';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
-import { SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
 import { groupTemplatesByDayCount, listTemplates } from '@domain/templateListing';
 
 import { formatTemplateSubtitle, templateSectionTitle } from './templateLabels';
 import { templateBadge } from './TemplateListLogic';
+
+const BLEED = listBleed();
 
 export type TemplateListProps = {
   templates: readonly MesoTemplate[];
@@ -70,6 +72,8 @@ export function TemplateList({
         />
       ) : (
         <SectionList
+          style={BLEED.style}
+          contentContainerStyle={BLEED.content}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"

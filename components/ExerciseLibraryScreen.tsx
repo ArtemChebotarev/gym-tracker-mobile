@@ -28,7 +28,7 @@ import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
-import { SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
@@ -45,6 +45,8 @@ import {
 import { styles } from './ExerciseLibraryScreenStyles';
 import { useSecretTaps } from './useSecretTaps';
 import { useTabBarClearance } from './useTabBarClearance';
+
+const LIST_BLEED = listBleed();
 
 export type ExerciseLibraryFilters = Omit<ExerciseListQuery, 'search'>;
 
@@ -145,7 +147,8 @@ export function ExerciseLibraryScreen({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          contentContainerStyle={{ paddingBottom: tabBarClearance }}
+          style={LIST_BLEED.style}
+          contentContainerStyle={[LIST_BLEED.content, { paddingBottom: tabBarClearance }]}
           sections={sections}
           keyExtractor={(item) => item.exercise.id}
           stickySectionHeadersEnabled
