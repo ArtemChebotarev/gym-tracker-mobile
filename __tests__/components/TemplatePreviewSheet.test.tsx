@@ -36,7 +36,6 @@ function template(id: string, name: string): MesoTemplate {
     id,
     name,
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: {
       days: [

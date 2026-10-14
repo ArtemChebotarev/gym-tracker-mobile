@@ -56,7 +56,7 @@ export const templates = sqliteTable('meso_template', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   source: text('source').notNull().$type<MesoTemplate['source']>(),
-  defaultLengthWeeks: integer('default_length_weeks').notNull(),
+  description: text('description'),
   weekPlan: text('week_plan', { mode: 'json' }).notNull().$type<WeekPlan>(),
   isHidden: integer('is_hidden', { mode: 'boolean' }).notNull(),
   ...timestamps,

@@ -1,4 +1,5 @@
 import type { Exercise } from '../domain/catalog';
+import type { MesoTemplate } from '../domain/plan';
 import type { Unsaved } from '../domain/timestamps';
 
 // Task 067(2) · turning the shipped exercise catalog into a migration.
@@ -76,7 +77,8 @@ export function catalogUpsertSql(
   );
 
   return [
-    '-- Generated from domain/exerciseCatalog.ts by `npm run catalog:migration`.',
+    '-- Generated from domain/exerciseCatalog.ts and domain/templateCatalog.ts by',
+    '-- `npm run catalog:migration`.',
     '-- Do not edit by hand: change the catalog and generate a new migration instead — this one',
     '-- may already have been applied on someone’s phone.',
     `INSERT INTO \`exercise\` (${columns}) VALUES`,
@@ -85,4 +87,80 @@ export function catalogUpsertSql(
     `${updates};`,
     '',
   ].join('\n');
+}
+
+const TEMPLATE_COLUMNS = [
+  'id',
+  'name',
+  'source',
+  'description',
+  'week_plan',
+  'is_hidden',
+  'created_at',
+  'updated_at',
+] as const;
+
+/**
+ * What a re-seed may overwrite on a template that already exists — the same rule as
+ * {@link OVERWRITTEN}: `is_hidden` is the user's and survives every release, `created_at` is when
+ * the row first arrived, `id` and `source` identify it. The name, the line under it and the plan
+ * itself are the catalog's to correct.
+ */
+const TEMPLATE_OVERWRITTEN = ['name', 'description', 'week_plan', 'updated_at'] as const;
+
+function templateValuesOf(template: Unsaved<MesoTemplate>, stampedAt: string): string {
+  return [
+    quote(template.id),
+    quote(template.name),
+    quote(template.source),
+    template.description === undefined ? 'NULL' : quote(template.description),
+    quote(JSON.stringify(template.weekPlan)),
+    template.isHidden ? '1' : '0',
+    quote(stampedAt),
+    quote(stampedAt),
+  ].join(', ');
+}
+
+/**
+ * The statement that brings a database's catalog templates up to `templates`: one upsert carrying
+ * all of them, for the reasons {@link catalogUpsertSql} gives. Empty when there are none, so a
+ * release that ships no templates writes nothing for them.
+ */
+export function templateUpsertSql(
+  templates: readonly Unsaved<MesoTemplate>[],
+  stampedAt: string,
+): string {
+  if (templates.length === 0) {
+    return '';
+  }
+  const columns = TEMPLATE_COLUMNS.map((column) => `\`${column}\``).join(', ');
+  const rows = templates
+    .map((template) => `\t(${templateValuesOf(template, stampedAt)})`)
+    .join(',\n');
+  const updates = TEMPLATE_OVERWRITTEN.map(
+    (column) => `\t\`${column}\` = excluded.\`${column}\``,
+  ).join(',\n');
+
+  return [
+    `INSERT INTO \`meso_template\` (${columns}) VALUES`,
+    rows,
+    'ON CONFLICT(`id`) DO UPDATE SET',
+    `${updates};`,
+    '',
+  ].join('\n');
+}
+
+/**
+ * The whole body of a catalog migration: the exercises, then the templates that refer to them,
+ * as one file — a release's catalog arrives together or not at all.
+ */
+export function catalogMigrationSql(
+  exercises: readonly Unsaved<Exercise>[],
+  templates: readonly Unsaved<MesoTemplate>[],
+  stampedAt: string,
+): string {
+  const templateSql = templateUpsertSql(templates, stampedAt);
+  return templateSql === ''
+    ? catalogUpsertSql(exercises, stampedAt)
+    : `${catalogUpsertSql(exercises, stampedAt)}--> statement-breakpoint\n${templateSql}`;
 }

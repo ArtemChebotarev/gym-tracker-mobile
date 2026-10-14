@@ -143,6 +143,23 @@ describe('export → import round trip', () => {
     expect(squat!.isHidden).toBe(true);
   });
 
+  test('a hidden catalog template comes back hidden, and the shipped one is not written twice', async () => {
+    const source = makeDeps(sourceDb);
+    await fill(source);
+    const shipped = makeTemplate({ id: 'shipped-template', source: 'catalog' });
+    await source.store.repos.templateRepo.create({ ...shipped, isHidden: true });
+    const exported = await exportBackup(source);
+
+    // A fresh install already holds the shipped template, visible, put there by the migration.
+    const restored = makeDeps(restoredDb);
+    await restored.store.repos.templateRepo.create(shipped);
+
+    await importBackup(exported, restored);
+
+    const stored = await restored.store.repos.templateRepo.getById('shipped-template');
+    expect(stored!.isHidden).toBe(true);
+  });
+
   test('survives the trip through text', async () => {
     const source = makeDeps(sourceDb);
     await fill(source);
@@ -161,7 +178,9 @@ describe('importBackup refuses what it cannot restore', () => {
     const older = { ...exported, schemaVersion: 1 };
 
     // A domain error, so a screen can tell "wrong file" from "storage is broken" (rule 5).
-    const error: unknown = await importBackup(older, makeDeps(sourceDb)).catch((reason: unknown) => reason);
+    const error: unknown = await importBackup(older, makeDeps(sourceDb)).catch(
+      (reason: unknown) => reason,
+    );
 
     expect(isConflictError(error)).toBe(true);
     expect((error as BackupRefusedError).reason).toBe('different-version');
@@ -188,7 +207,9 @@ describe('importBackup refuses what it cannot restore', () => {
     const exported = await exportBackup(makeDeps(sourceDb));
     const hollow = { ...exported, data: null };
 
-    await expect(importBackup(hollow, makeDeps(sourceDb))).rejects.toMatchObject({ reason: 'no-data' });
+    await expect(importBackup(hollow, makeDeps(sourceDb))).rejects.toMatchObject({
+      reason: 'no-data',
+    });
   });
 
   test('a store that already holds data of the user’s', async () => {

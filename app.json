@@ -2,14 +2,17 @@
   "expo": {
     "name": "Hybro",
     "slug": "gym-tracker-mobile",
-    "version": "1.0.0",
+    "version": "0.9.0",
     "scheme": "gymtracker",
     "orientation": "portrait",
     "icon": "./assets/hybro-icon-1024.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.gym-tracker-mobile"
+      "bundleIdentifier": "com.artemchebotarov.hybro",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +21,7 @@
         "monochromeImage": "./assets/hybro-android-monochrome-1024.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.gymtrackermobile"
+      "package": "com.artemchebotarov.hybro"
     },
     "web": {
       "favicon": "./assets/hybro-icon-1024.png"
@@ -32,17 +35,20 @@
           "image": "./assets/hybro-splash-1024.png",
           "imageWidth": 240,
           "resizeMode": "contain",
-          "backgroundColor": "#0E0F11",
-          "dark": {
-            "image": "./assets/hybro-splash-1024.png",
-            "backgroundColor": "#0E0F11"
-          }
+          "backgroundColor": "#0E0F11"
         }
       ],
       "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4b58efc2-57fe-4f18-b047-5a87e9b8fe8c"
+      }
+    },
+    "owner": "artemchebotarov"
   }
 }

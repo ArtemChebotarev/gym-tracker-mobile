@@ -152,6 +152,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               title={getMuscleGroupLabel(group.muscleGroup)}
               count={group.entries.length}
               dotColor={sectionDotColor(group.muscleGroup)}
+              edge="sheet"
             />
             {group.entries.map((entry) => (
               <ListRow

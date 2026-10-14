@@ -44,7 +44,6 @@ function template(
     id,
     name,
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: {
       days: days.map((exercises, index) => ({
@@ -72,6 +71,11 @@ const repositories = withRepositories();
 beforeEach(async () => {
   const repos = repositories();
   await seedExerciseCatalog(repos);
+  // A migrated store already holds the shipped templates; this suite is about its own two, and
+  // one of them shares its id and name with a shipped one.
+  for (const shipped of await repos.templateRepo.getAll()) {
+    await repos.templateRepo.deleteById(shipped.id);
+  }
   await repos.templateRepo.create(UPPER_LOWER);
   await repos.templateRepo.create(FULL_BODY);
 

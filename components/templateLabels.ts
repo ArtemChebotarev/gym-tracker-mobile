@@ -25,11 +25,17 @@ export function templateSectionTitle(dayCount: number): string {
 }
 
 /**
- * The row's subtitle, and the line under the preview sheet's title. Every row has one, so rows keep the mockup's two-line height (08.10, "Строка").
- * It will be the template's own description once GT-5 adds `MesoTemplate.description`, with this
- * summary of the week — `20 exercises · 68 sets a week` — as the fallback for a template that has none.
+ * The row's subtitle, and the line under the preview sheet's title. Every row has one, so rows
+ * keep the mockup's two-line height (08.10, "Строка"). It is the template's own `description`; a
+ * template that has none gets the summary of its week — `20 exercises · 68 sets a week` — instead.
  */
-export function formatTemplateSubtitle(template: Pick<MesoTemplate, 'weekPlan'>): string {
+export function formatTemplateSubtitle(
+  template: Pick<MesoTemplate, 'weekPlan' | 'description'>,
+): string {
+  const description = template.description?.trim();
+  if (description) {
+    return description;
+  }
   const exercises = template.weekPlan.days.flatMap((day) => day.exercises);
   const sets = exercises.reduce((total, exercise) => total + exercise.sets, 0);
   return `${plural(exercises.length, 'exercise')} · ${plural(sets, 'set')} a week`;

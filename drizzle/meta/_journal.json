@@ -33,8 +33,22 @@
     {
       "idx": 4,
       "version": "6",
-      "when": 1791663431095,
-      "tag": "0004_hybrid_exercise_types",
+      "when": 1791899270911,
+      "tag": "0004_template_description",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791909901083,
+      "tag": "0005_seed_catalog_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791988803753,
+      "tag": "0006_hybrid_exercise_types",
       "breakpoints": true
     }
   ]

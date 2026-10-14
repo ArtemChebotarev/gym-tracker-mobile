@@ -250,7 +250,13 @@ export function MesoEditorDaysStep({
         contentContainerStyle={styles.dayTabsContent}
       />
 
-      <ScrollView style={styles.content} bounces={false} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         {activeDayExercises.length > 0 && (
           <View style={styles.columnHeader}>
             <View style={styles.columnHeaderHandleSpacer} />
