@@ -123,9 +123,10 @@ describe('ExerciseHistoryTab', () => {
     expect(screen.getByText('Loading…')).toBeTruthy();
   });
 
-  test('renders nothing but the list when a mesocycle has no sessions left to show', () => {
+  test('says no workout is finished yet instead of staying blank', () => {
     renderTab({ groups: [] });
 
-    expect(screen.queryByText('Upper/Lower')).toBeNull();
+    expect(screen.getByText('No finished workouts yet')).toBeTruthy();
+    expect(screen.getByText('A workout appears here once you finish it.')).toBeTruthy();
   });
 });

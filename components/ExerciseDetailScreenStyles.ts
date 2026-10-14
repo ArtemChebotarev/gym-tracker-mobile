@@ -173,25 +173,6 @@ export const styles = StyleSheet.create({
   linkPressed: {
     opacity: OPACITY['opacity/pressed'],
   },
-  // 08.6's empty state is a line plus a caption, with nothing to press — not the Design SDK's
-  // EmptyState, which always renders an action ("EmptyState всегда рендерит действие") and would
-  // have to invent one here.
-  empty: {
-    gap: SPACING['space/gap-tight'],
-    paddingVertical: SPACING['space/section'],
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: TYPOGRAPHY['type/card-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
-    color: COLORS['text/secondary'],
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    color: COLORS['text/muted'],
-    textAlign: 'center',
-  },
   status: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/secondary'],

@@ -18,11 +18,14 @@ export const styles = StyleSheet.create({
     gap: SPACING['space/gap-tight'],
   },
   /** `LAST SESSION` on the left, `Week 3 · Day 1 · 10 Aug` on the right. */
+  // Inset by the card's own padding: the label and its date start and end where the text inside
+  // the card does, not at the card's edge.
   labelRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: SPACING['space/gap'],
+    paddingHorizontal: SPACING['space/row'],
   },
   label: {
     fontSize: TYPOGRAPHY['type/label'].fontSize,
