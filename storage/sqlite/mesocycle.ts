@@ -9,7 +9,7 @@ import { stampCreated, stampUpdated } from '../timestamps';
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 import { mesocycleToRow, rowToMesocycle } from './mappers';
-import { mesocycles, sessionExercises, sessions, setLogs } from './schema';
+import { mesocycles, roundLogs, sessionExercises, sessions, setLogs } from './schema';
 import { runInTransaction } from './transaction';
 
 export class SqliteMesocycleRepository implements MesocycleRepository {
@@ -94,6 +94,12 @@ export class SqliteMesocycleRepository implements MesocycleRepository {
             this.db
               .delete(setLogs)
               .where(inArray(setLogs.sessionExerciseId, sessionExerciseIds))
+              .run(),
+          );
+          await runQuery(() =>
+            this.db
+              .delete(roundLogs)
+              .where(inArray(roundLogs.sessionExerciseId, sessionExerciseIds))
               .run(),
           );
           await runQuery(() =>

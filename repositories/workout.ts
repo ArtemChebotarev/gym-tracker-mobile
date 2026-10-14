@@ -1,16 +1,18 @@
 import type { SessionRepository } from '@repositories/session';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 import type { TransactionalStore } from '@repositories/transaction';
 
 /**
  * The repositories a workout-screen scenario (05 · Workout Execution & Logging) reads and writes
- * through: the session, its exercises, and their set logs.
+ * through: the session, its exercises, and their set logs and interval rounds.
  */
 export type WorkoutRepositories = {
   sessionRepo: SessionRepository;
   sessionExerciseRepo: SessionExerciseRepository;
   setLogRepo: SetLogRepository;
+  roundLogRepo: RoundLogRepository;
 };
 
 /**

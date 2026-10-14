@@ -63,6 +63,7 @@ function performance(setLogs: SetLog[], targetRir: number) {
     targetRir,
     performedAt: '2026-09-10T08:00:00.000Z',
     setLogs,
+    roundLogs: [],
   };
 }
 

@@ -1,4 +1,11 @@
-import { makeSession, makeSessionExercise, makeSetLog, seedParents } from './fixtures';
+import {
+  makeCatalogExercise,
+  makeRoundLog,
+  makeSession,
+  makeSessionExercise,
+  makeSetLog,
+  seedParents,
+} from './fixtures';
 import { type RepositoryHarness, type RepositorySet, useRepositories } from './harness';
 
 // SetLogRepository — see 07 · Persistence Layer Contract, "SetLogRepository", and
@@ -229,9 +236,10 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         });
 
         expect(
-          performances.map(({ setLogs, ...rest }) => ({
+          performances.map(({ setLogs, roundLogs, ...rest }) => ({
             ...rest,
             setLogIds: setLogs.map((setLog) => setLog.id),
+            roundLogIds: roundLogs.map((round) => round.id),
           })),
         ).toEqual([
           {
@@ -242,6 +250,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             targetRir: 2,
             performedAt: '2026-09-15T08:00:00.000Z',
             setLogIds: ['se-deload-set-1'],
+            roundLogIds: [],
           },
           {
             mesoId: PAST_MESO,
@@ -251,7 +260,54 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             targetRir: 1,
             performedAt: '2026-09-01T08:00:00.000Z',
             setLogIds: ['se-older-set-1', 'se-older-set-2'],
+            roundLogIds: [],
           },
+        ]);
+      });
+
+      test('an interval exercise is a performance of rounds, with no sets', async () => {
+        const { exerciseRepo, sessionRepo, sessionExerciseRepo, roundLogRepo, setLogRepo } =
+          repositories();
+        await exerciseRepo.seedCatalog([
+          makeCatalogExercise('exercise-heavy-bag', { muscleGroup: 'fullBody', type: 'interval' }),
+        ]);
+        await sessionRepo.create(
+          makeSession({ id: 'session-bag', dayNumber: 1, status: 'completed' }),
+        );
+        await sessionExerciseRepo.create(
+          makeSessionExercise({
+            id: 'se-bag',
+            sessionId: 'session-bag',
+            exerciseId: 'exercise-heavy-bag',
+            status: 'completed',
+          }),
+        );
+        for (const roundNumber of [2, 1]) {
+          await roundLogRepo.create(
+            makeRoundLog({
+              id: `bag-round-${roundNumber}`,
+              sessionExerciseId: 'se-bag',
+              roundNumber,
+              completedAt: `2026-09-10T08:0${roundNumber}:00.000Z`,
+            }),
+          );
+        }
+
+        const performances = await setLogRepo.listPerformances({
+          exerciseId: 'exercise-heavy-bag',
+          since: SINCE,
+        });
+
+        expect(performances).toHaveLength(1);
+        expect(performances[0]).toMatchObject({
+          weekNumber: 1,
+          dayNumber: 1,
+          performedAt: '2026-09-10T08:02:00.000Z',
+          setLogs: [],
+        });
+        expect(performances[0]!.roundLogs.map((round) => round.id)).toEqual([
+          'bag-round-1',
+          'bag-round-2',
         ]);
       });
 

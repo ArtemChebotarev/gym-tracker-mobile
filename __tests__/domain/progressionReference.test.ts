@@ -41,6 +41,7 @@ function performance(
     targetRir: 2,
     performedAt,
     setLogs,
+    roundLogs: [],
     ...overrides,
   };
 }

@@ -187,3 +187,27 @@ describe('removeExercise', () => {
     ]);
   });
 });
+
+describe('removeExercise with interval rounds', () => {
+  test('takes the rounds logged for the exercise with it, so the foreign key stays satisfied', async () => {
+    const workout = await workoutWith();
+    for (const roundNumber of [1, 2]) {
+      await workout.repos.roundLogRepo.create({
+        id: `round-${roundNumber}`,
+        sessionExerciseId: row.id,
+        exerciseId: row.exerciseId,
+        roundNumber,
+        workSec: 120,
+        restSec: 60,
+        restSkipped: false,
+        completed: true,
+        completedAt: '2026-09-18T09:40:00.000Z',
+      });
+    }
+
+    await removeExercise(refTo(row), workout);
+
+    await expect(workout.repos.roundLogRepo.listBySessionExerciseId(row.id)).resolves.toEqual([]);
+    expect(await storedWeekTwo(workout)).toHaveLength(2);
+  });
+});

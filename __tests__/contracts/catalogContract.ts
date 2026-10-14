@@ -88,6 +88,49 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
       });
     });
 
+    test('round-trips the hybrid type and config, and a strength exercise stays as it was', async () => {
+      const { exerciseRepo } = repositories();
+      const slam = makeCustomExercise('exercise-custom-slam', {
+        muscleGroup: 'fullBody',
+        type: 'power',
+        config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: true },
+      });
+
+      await exerciseRepo.createCustom(slam);
+      await exerciseRepo.createCustom(customCurl);
+
+      expect(withoutStamps((await exerciseRepo.getById(slam.id))!)).toEqual(slam);
+      const curl = (await exerciseRepo.getById(customCurl.id))!;
+      expect(curl).not.toHaveProperty('type');
+      expect(curl).not.toHaveProperty('config');
+    });
+
+    test('updateCustom replaces the type and config, and drops them when the exercise has none', async () => {
+      const { exerciseRepo } = repositories();
+      const stored = await exerciseRepo.createCustom(
+        makeCustomExercise('exercise-custom-rope', {
+          muscleGroup: 'fullBody',
+          type: 'interval',
+          config: {
+            type: 'interval',
+            rounds: 3,
+            workSec: 120,
+            restSec: 60,
+            getReadySec: 5,
+            lever: 'rest',
+            stepSec: 15,
+          },
+        }),
+      );
+
+      const { type: _type, config: _config, ...asStrength } = stored;
+      const updated = await exerciseRepo.updateCustom({ ...asStrength, muscleGroup: 'back' });
+
+      expect(updated).not.toHaveProperty('type');
+      expect(await exerciseRepo.getById(stored.id)).toEqual(updated);
+      expect(await exerciseRepo.getById(stored.id)).not.toHaveProperty('config');
+    });
+
     test('updateCustom replaces a custom exercise', async () => {
       const { exerciseRepo } = repositories();
       const stored = await exerciseRepo.createCustom(customCurl);

@@ -2,7 +2,7 @@
 // Engine. Types only; the rules live in `domain/progression<Rule>.ts`.
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
-import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
+import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
 
 /**
  * One exercise of the source session, plus the facts about it that the session itself doesn't
@@ -46,6 +46,13 @@ export type ExercisePerformance = {
   performedAt: string;
   /** Sorted by `setNumber`. A performance with none logged isn't one — see the resolver. */
   setLogs: SetLog[];
+  /**
+   * The rounds logged in it, sorted by `roundNumber` — empty for a strength or power exercise, and
+   * the only fact of an interval or mobility one, whose `setLogs` are then empty (10 · Hybrid
+   * Exercises). The strength rules read `setLogs` alone, so a performance of rounds is never a
+   * reference for them.
+   */
+  roundLogs: RoundLog[];
 };
 
 /** A training week: a (mesocycle, week number) pair, not a calendar week. */

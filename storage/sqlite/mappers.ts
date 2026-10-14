@@ -1,11 +1,12 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { MesoTemplate } from '@domain/plan';
 
 import type {
   exercises,
   mesocycles,
+  roundLogs,
   sessionExercises,
   sessions,
   setLogs,
@@ -42,6 +43,10 @@ export function rowToExercise(row: Row<typeof exercises>): Exercise {
     source: row.source,
     ...optional('equipment', row.equipment),
     isHidden: row.isHidden,
+    // `strength` is what an exercise says when it says nothing (domain/catalog.ts), so it is read
+    // back as the key being absent — what the domain and every test of a strength exercise sees.
+    ...(row.type === 'strength' ? {} : { type: row.type }),
+    ...optional('config', row.config),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -72,6 +77,7 @@ export function rowToMesocycle(row: Row<typeof mesocycles>): Mesocycle {
     progressionSettings: row.progressionSettings,
     ...optional('bodyWeight', row.bodyWeight),
     ...optional('weekPlan', row.weekPlan),
+    ...optional('exerciseSettings', row.exerciseSettings),
     ...optional('completedAt', row.completedAt),
     ...optional('archivedAt', row.archivedAt),
     createdAt: row.createdAt,
@@ -128,6 +134,22 @@ export function rowToSetLog(row: Row<typeof setLogs>): SetLog {
   };
 }
 
+export function rowToRoundLog(row: Row<typeof roundLogs>): RoundLog {
+  return {
+    id: row.id,
+    sessionExerciseId: row.sessionExerciseId,
+    exerciseId: row.exerciseId,
+    roundNumber: row.roundNumber,
+    workSec: row.workSec,
+    ...optional('restSec', row.restSec),
+    restSkipped: row.restSkipped,
+    completed: row.completed,
+    completedAt: row.completedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 export function exerciseToRow(exercise: Exercise): Insert<typeof exercises> {
   return {
     id: exercise.id,
@@ -136,6 +158,8 @@ export function exerciseToRow(exercise: Exercise): Insert<typeof exercises> {
     source: exercise.source,
     equipment: nullable(exercise.equipment),
     isHidden: exercise.isHidden,
+    type: exercise.type ?? 'strength',
+    config: nullable(exercise.config),
     createdAt: exercise.createdAt,
     updatedAt: exercise.updatedAt,
   };
@@ -166,6 +190,7 @@ export function mesocycleToRow(mesocycle: Mesocycle): Insert<typeof mesocycles> 
     progressionSettings: mesocycle.progressionSettings,
     bodyWeight: nullable(mesocycle.bodyWeight),
     weekPlan: nullable(mesocycle.weekPlan),
+    exerciseSettings: nullable(mesocycle.exerciseSettings),
     completedAt: nullable(mesocycle.completedAt),
     archivedAt: nullable(mesocycle.archivedAt),
     createdAt: mesocycle.createdAt,
@@ -221,5 +246,21 @@ export function setLogToRow(setLog: SetLog): Insert<typeof setLogs> {
     completedAt: setLog.completedAt,
     createdAt: setLog.createdAt,
     updatedAt: setLog.updatedAt,
+  };
+}
+
+export function roundLogToRow(roundLog: RoundLog): Insert<typeof roundLogs> {
+  return {
+    id: roundLog.id,
+    sessionExerciseId: roundLog.sessionExerciseId,
+    exerciseId: roundLog.exerciseId,
+    roundNumber: roundLog.roundNumber,
+    workSec: roundLog.workSec,
+    restSec: nullable(roundLog.restSec),
+    restSkipped: roundLog.restSkipped,
+    completed: roundLog.completed,
+    completedAt: roundLog.completedAt,
+    createdAt: roundLog.createdAt,
+    updatedAt: roundLog.updatedAt,
   };
 }

@@ -8,6 +8,7 @@ import { SqliteExerciseRepository } from './exerciseRepository';
 import { SqliteMesocycleRepository } from './mesocycle';
 import { createSqliteMesocycleClosingStore } from './mesocycleClosingStore';
 import { createSqliteMesocycleStartStore } from './mesocycleStartStore';
+import { SqliteRoundLogRepository } from './roundLogRepository';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSessionTreeRepository } from './sessionTree';
@@ -38,6 +39,7 @@ export function createSqliteRepositories(db: SqliteDatabase): RepositorySet {
     sessionRepo: new SqliteSessionRepository(db),
     sessionExerciseRepo: new SqliteSessionExerciseRepository(db),
     setLogRepo: new SqliteSetLogRepository(db),
+    roundLogRepo: new SqliteRoundLogRepository(db),
     settingsRepo: new SqliteSettingsRepository(db),
     templateRepo: new SqliteTemplateRepository(db),
     exerciseHistoryRepo: new SqliteExerciseHistoryRepository(db),
