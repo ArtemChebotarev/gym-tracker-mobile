@@ -93,6 +93,22 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('smith-incline-bench-press-machine'),
+    name: 'Smith Machine Incline Bench Press',
+    muscleGroup: 'chest',
+    source: 'catalog',
+    equipment: 'machine',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('smith-bench-press-machine'),
+    name: 'Smith Machine Bench Press',
+    muscleGroup: 'chest',
+    source: 'catalog',
+    equipment: 'machine',
+    isHidden: false,
+  },
   // Shoulders
   {
     id: toExerciseId('shoulder-press-barbell'),
@@ -167,6 +183,14 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('rear-delt-fly-machine'),
+    name: 'Rear Delt Fly',
+    muscleGroup: 'shoulders',
+    source: 'catalog',
+    equipment: 'machine',
+    isHidden: false,
+  },
   // Triceps
   {
     id: toExerciseId('triceps-pushdown-cable'),
@@ -241,6 +265,14 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('triceps-pushdown-single-arm-cable'),
+    name: 'Triceps Pushdown Single Arm',
+    muscleGroup: 'triceps',
+    source: 'catalog',
+    equipment: 'cable',
+    isHidden: false,
+  },
   // Back
   {
     id: toExerciseId('pull-up-bodyweight'),
@@ -331,6 +363,14 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('lat-pulldown-single-arm-cable'),
+    name: 'Lat Pulldown Single Arm',
+    muscleGroup: 'back',
+    source: 'catalog',
+    equipment: 'cable',
+    isHidden: false,
+  },
   // Biceps
   {
     id: toExerciseId('bicep-curl-barbell'),
@@ -521,10 +561,34 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('lunge-bodyweight'),
+    name: 'Lunge',
+    muscleGroup: 'quads',
+    source: 'catalog',
+    equipment: 'bodyweight',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('squat-bodyweight'),
+    name: 'Bodyweight Squat',
+    muscleGroup: 'quads',
+    source: 'catalog',
+    equipment: 'bodyweight',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('smith-squat-machine'),
+    name: 'Smith Machine Squat',
+    muscleGroup: 'quads',
+    source: 'catalog',
+    equipment: 'machine',
+    isHidden: false,
+  },
   // Hamstrings
   {
     id: toExerciseId('stiff-legged-deadlift-barbell'),
-    name: 'Stiff-Legged Deadlift',
+    name: 'Romanian Deadlift (RDL)',
     muscleGroup: 'hamstrings',
     source: 'catalog',
     equipment: 'barbell',
@@ -532,7 +596,7 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
   },
   {
     id: toExerciseId('stiff-legged-deadlift-dumbbell'),
-    name: 'Stiff-Legged Deadlift',
+    name: 'Romanian Deadlift (RDL)',
     muscleGroup: 'hamstrings',
     source: 'catalog',
     equipment: 'dumbbell',
@@ -563,6 +627,14 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('single-leg-rdl-dumbbell'),
+    name: 'Single Leg Romanian Deadlift (RDL)',
+    muscleGroup: 'hamstrings',
+    source: 'catalog',
+    equipment: 'dumbbell',
+    isHidden: false,
+  },
   // Glutes
   {
     id: toExerciseId('hip-thrust-barbell'),
@@ -613,6 +685,30 @@ export const EXERCISE_CATALOG: readonly Unsaved<Exercise>[] = [
     isHidden: false,
   },
 
+  {
+    id: toExerciseId('hip-adduction-machine'),
+    name: 'Hip Adduction',
+    muscleGroup: 'glutes',
+    source: 'catalog',
+    equipment: 'machine',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('reverse-lunge-bodyweight'),
+    name: 'Reverse Lunge',
+    muscleGroup: 'glutes',
+    source: 'catalog',
+    equipment: 'bodyweight',
+    isHidden: false,
+  },
+  {
+    id: toExerciseId('reverse-lunge-dumbbell'),
+    name: 'Reverse Lunge',
+    muscleGroup: 'glutes',
+    source: 'catalog',
+    equipment: 'dumbbell',
+    isHidden: false,
+  },
   // Calves
   {
     id: toExerciseId('standing-calf-raise-machine'),

@@ -45,6 +45,18 @@ describe('formatTemplateSubtitle', () => {
   test('is never empty, even for a week with no exercises', () => {
     expect(formatTemplateSubtitle(week([], []))).toBe('0 exercises · 0 sets a week');
   });
+
+  test("is the template's own description when it has one", () => {
+    expect(
+      formatTemplateSubtitle({ ...week([4, 3], [5]), description: 'Two easy full-body days' }),
+    ).toBe('Two easy full-body days');
+  });
+
+  test('falls back to the summary for a blank description', () => {
+    expect(formatTemplateSubtitle({ ...week([4, 3], [5]), description: '   ' })).toBe(
+      '3 exercises · 12 sets a week',
+    );
+  });
 });
 
 describe('templateSectionTitle', () => {

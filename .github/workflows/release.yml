@@ -1,0 +1,67 @@
+name: Release
+
+# Push of a tag vX.Y.Z → verify → EAS build (production profile) → upload to TestFlight.
+# The "Run workflow" button does the same for the current main, with the version from app.json
+# (a rebuild after a failed run, or a hotfix without a version bump).
+# Secrets live in GitHub (EXPO_TOKEN); the App Store Connect API key lives on EAS, not here.
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch: {}
+
+# Two releases must not build side by side; a running one is never cancelled.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  testflight:
+    name: build and submit to TestFlight
+    runs-on: ubuntu-latest
+    # The EAS queue on the free plan can take a while; the job only waits for it.
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # A tag on a task branch would ship unreviewed code, and `hybrid` must never
+      # reach the real bundle ID. For the button, the same rule is: run it on main.
+      - name: Release commit must be on main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is not on main"
+            exit 1
+          fi
+
+      - name: Tag must match the version in app.json
+        if: github.ref_type == 'tag'
+        run: |
+          app_version="$(node -p "require('./app.json').expo.version")"
+          if [ "v$app_version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag is $GITHUB_REF_NAME but app.json version is $app_version — bump it through a PR first"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Includes the migration stamps and catalog tests: a broken migration never reaches the phone.
+      - run: npm run verify
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build on EAS and submit to TestFlight
+        run: eas build --platform ios --profile production --non-interactive --auto-submit

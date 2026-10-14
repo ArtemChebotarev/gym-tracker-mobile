@@ -446,7 +446,6 @@ describe('Flow B — template to started mesocycle', () => {
     id: 'template-upper-lower',
     name: 'Upper/Lower',
     source: 'catalog',
-    defaultLengthWeeks: 5,
     isHidden: false,
     weekPlan: {
       days: [

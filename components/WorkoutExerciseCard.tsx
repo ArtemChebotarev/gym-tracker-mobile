@@ -90,6 +90,13 @@ export type WorkoutExerciseCardProps = {
   coachmarkTargets?: CardCoachmarkTargets;
   /** The group chip above the card — see `showsGroupChip`. */
   showGroupChip: boolean;
+  /**
+   * The card's place in the list. Only the native `⋯` menu reads it, as its `key`: a card keeps
+   * its identity when Move up/down reorders the list, and the SwiftUI host inside it then glides
+   * from the old position to the new one with its own spring while the card itself jumps (GT-142).
+   * A new key mounts the menu where the card now is.
+   */
+  position?: number;
   /** Opens "История упражнения" (06). */
   onOpenHistory: () => void;
   /**
@@ -122,6 +129,7 @@ export function WorkoutExerciseCard({
   isDeload = false,
   coachmarkTargets,
   showGroupChip,
+  position = 0,
   onOpenHistory,
   menuItems,
   bodyWeight,
@@ -169,6 +177,7 @@ export function WorkoutExerciseCard({
             </IconButton>
             {view.showMenu && (
               <ActionMenu
+                key={`menu-${position}`}
                 testID={`exercise-menu-${exercise.sessionExerciseId}`}
                 accessibilityLabel={`${exercise.name} menu`}
                 title={exercise.name}

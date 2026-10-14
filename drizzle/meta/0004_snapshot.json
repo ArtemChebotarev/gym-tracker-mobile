@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3be73c66-a0b6-4cc0-a3e6-5ba17ea7efd5",
+  "id": "b479807b-018b-41f2-bbac-7957871b644b",
   "prevId": "53cc5593-0602-4b40-baea-0c8070c9a0dd",
   "tables": {
     "exercise": {
@@ -47,21 +47,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'strength'"
-        },
-        "config": {
-          "name": "config",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -180,13 +165,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "exercise_settings": {
-          "name": "exercise_settings",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "text",
@@ -212,138 +190,6 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "round_log": {
-      "name": "round_log",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "session_exercise_id": {
-          "name": "session_exercise_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "exercise_id": {
-          "name": "exercise_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "round_number": {
-          "name": "round_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "work_sec": {
-          "name": "work_sec",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "rest_sec": {
-          "name": "rest_sec",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "rest_skipped": {
-          "name": "rest_skipped",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "completed": {
-          "name": "completed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "round_log_exercise_completed": {
-          "name": "round_log_exercise_completed",
-          "columns": [
-            "exercise_id",
-            "completed_at"
-          ],
-          "isUnique": false
-        },
-        "round_log_session_exercise": {
-          "name": "round_log_session_exercise",
-          "columns": [
-            "session_exercise_id",
-            "round_number"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "round_log_session_exercise_id_session_exercise_id_fk": {
-          "name": "round_log_session_exercise_id_session_exercise_id_fk",
-          "tableFrom": "round_log",
-          "tableTo": "session_exercise",
-          "columnsFrom": [
-            "session_exercise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "round_log_exercise_id_exercise_id_fk": {
-          "name": "round_log_exercise_id_exercise_id_fk",
-          "tableFrom": "round_log",
-          "tableTo": "exercise",
-          "columnsFrom": [
-            "exercise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -768,22 +614,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'{\"welcomeSeen\":false,\"coachmarksSeen\":false,\"deloadIntroSeen\":false}'"
-        },
-        "strength_rest_timer_enabled": {
-          "name": "strength_rest_timer_enabled",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
-        "strength_rest_timer_seconds": {
-          "name": "strength_rest_timer_seconds",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 120
         }
       },
       "indexes": {},
@@ -816,11 +646,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "default_length_weeks": {
-          "name": "default_length_weeks",
-          "type": "integer",
+        "description": {
+          "name": "description",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "week_plan": {

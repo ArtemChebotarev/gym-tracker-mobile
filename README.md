@@ -79,3 +79,24 @@ npm run ios:device:hybrid                                              # generat
 Clone the modules instead of running `npm ci`: in a fresh checkout `npm ci` took 15+ minutes for about 2.3 GB, while `cp -cR` is an APFS clone and finishes in about ten seconds. It is only valid while the two `package-lock.json` files are identical (that is what the `cmp` checks); if the epic changed dependencies, run `npm ci` there. Epic tasks are branched and built in this worktree, never in the real checkout (AGENTS.md, "Epic Hybrid training").
 
 Every native build runs `npm run native:check` first (`scripts/assertNativeVariant.ts`): if the generated `ios/` or `android/` carries another ID than the one the variant asks for, the build stops with the reason — in both directions, so hybrid code cannot be installed over the real app by accident. Do not delete or regenerate the real checkout's `ios/`: it carries the signing setup.
+
+## Releasing to TestFlight
+
+A release is a git tag. Pushing `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml): `npm run verify` → EAS build (`production` profile) → upload to TestFlight. The iOS build number is kept by EAS (remote, auto-incremented); the version comes from `app.json`.
+
+1. Bump `expo.version` in `app.json` through a normal PR into `main` and merge it.
+2. Tag the merged commit and push the tag:
+
+   ```
+   git fetch origin
+   git tag v0.9.1 origin/main
+   git push origin v0.9.1
+   ```
+
+3. Watch **GitHub → Actions → Release**. The job fails fast if the tag is not on `main` or does not match `app.json`. The build itself is on [expo.dev](https://expo.dev/accounts/artemchebotarov/projects/gym-tracker-mobile/builds); after Apple processes it (a few minutes) it shows up in **App Store Connect → TestFlight**.
+
+No tag is needed for a rebuild or a quick fix: **GitHub → Actions → Release → Run workflow** on `main` builds the current `main` with the version already in `app.json` (EAS still assigns a new build number). It refuses to run on any other branch.
+
+Only tag forward: the app refuses to open a database written by a newer build, so an older tag installed over a newer one will not start.
+
+One-time setup: the `EXPO_TOKEN` repository secret (expo.dev → Access tokens), and an App Store Connect API key stored in EAS credentials, so that `eas submit` needs no Apple ID password or 2FA.

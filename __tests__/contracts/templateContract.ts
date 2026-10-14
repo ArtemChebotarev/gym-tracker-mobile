@@ -14,7 +14,8 @@ export function describeTemplateContract(harness: RepositoryHarness): void {
       const template = await templateRepo.create(makeTemplate());
 
       await expect(templateRepo.getById(template.id)).resolves.toEqual(template);
-      await expect(templateRepo.getAll()).resolves.toEqual([template]);
+      // Relative, not exact: a migrated store already holds the catalog templates.
+      await expect(templateRepo.getAll()).resolves.toContainEqual(template);
       await expect(templateRepo.getById('missing')).resolves.toBeNull();
     });
 
@@ -38,7 +39,8 @@ export function describeTemplateContract(harness: RepositoryHarness): void {
       await templateRepo.deleteById('template-ppl');
 
       await expect(templateRepo.getById('template-ppl')).resolves.toBeNull();
-      await expect(templateRepo.getAll()).resolves.toEqual([]);
+      const remaining = await templateRepo.getAll();
+      expect(remaining.map((entry) => entry.id)).not.toContain('template-ppl');
     });
   });
 }

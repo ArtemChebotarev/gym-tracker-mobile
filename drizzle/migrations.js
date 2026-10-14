@@ -5,7 +5,9 @@ import m0000 from './0000_initial_schema.sql';
 import m0001 from './0001_seed_catalog.sql';
 import m0002 from './0002_mesocycle_archived_at.sql';
 import m0003 from './0003_onboarding_flags.sql';
-import m0004 from './0004_hybrid_exercise_types.sql';
+import m0004 from './0004_template_description.sql';
+import m0005 from './0005_seed_catalog_templates.sql';
+import m0006 from './0006_hybrid_exercise_types.sql';
 
   export default {
     journal,
@@ -14,7 +16,9 @@ import m0004 from './0004_hybrid_exercise_types.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005,
+m0006
     }
   }
   
