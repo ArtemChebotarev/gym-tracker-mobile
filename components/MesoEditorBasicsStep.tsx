@@ -18,7 +18,7 @@
 // JSX/rendering only — styles live in MesoEditorBasicsStepStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsStepLogic.ts, per the code-style skill.
 
-import { View } from 'react-native';
+import { Keyboard, Pressable, View } from 'react-native';
 
 import {
   MAX_DAYS_PER_WEEK,
@@ -56,7 +56,9 @@ export function MesoEditorBasicsStep({
   exercisesPrefilled = false,
 }: MesoEditorBasicsStepProps) {
   return (
-    <View style={styles.content}>
+    // A tap on the empty part of the step closes the keyboard (GT-21). The step does not scroll,
+    // so a Pressable is safe here — unlike around a list (GT-144), see WizardScreen.
+    <Pressable accessible={false} style={styles.content} onPress={Keyboard.dismiss}>
       <View style={styles.section}>
         <TextField
           label="Name"
@@ -90,6 +92,6 @@ export function MesoEditorBasicsStep({
           {...(exercisesPrefilled ? {} : { caption: "Next, you'll pick exercises for each day." })}
         />
       </View>
-    </View>
+    </Pressable>
   );
 }

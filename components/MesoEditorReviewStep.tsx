@@ -46,6 +46,8 @@ export function MesoEditorReviewStep({
       contentContainerStyle={styles.content}
       bounces={false}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
     >
       <View style={styles.card}>
         <Text style={styles.summaryName}>{name}</Text>
