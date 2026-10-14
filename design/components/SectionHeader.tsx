@@ -17,12 +17,21 @@ import { circle } from '../shapes';
 /** The padding of the container the header sits in: a screen's, or a bottom sheet's. */
 export type SectionHeaderEdge = 'screen' | 'sheet';
 
+/**
+ * `card`: the text sits a card's inner padding in from the content edge, so it lines up with the
+ * text *inside* the cards under the header rather than with the cards' own edge (the exercise
+ * History tab).
+ */
+export type SectionHeaderInset = 'none' | 'card';
+
 export type SectionHeaderProps = {
   title: string;
   count: number;
   dotColor?: string;
   /** Defaults to `screen`. */
   edge?: SectionHeaderEdge;
+  /** Defaults to `none` — the text on the content's own edge, where a row's text starts. */
+  inset?: SectionHeaderInset;
 };
 
 const EDGE_SPACING = { screen: SPACING['space/screen'], sheet: SPACING['space/sheet'] } as const;
@@ -40,10 +49,17 @@ export function listBleed(edge: SectionHeaderEdge = 'screen') {
   } as const;
 }
 
-export function SectionHeader({ title, count, dotColor, edge = 'screen' }: SectionHeaderProps) {
+export function SectionHeader({
+  title,
+  count,
+  dotColor,
+  edge = 'screen',
+  inset = 'none',
+}: SectionHeaderProps) {
   const spacing = EDGE_SPACING[edge];
+  const textInset = spacing + (inset === 'card' ? SPACING['space/row'] : 0);
   return (
-    <View style={[styles.container, { marginHorizontal: -spacing, paddingHorizontal: spacing }]}>
+    <View style={[styles.container, { marginHorizontal: -spacing, paddingHorizontal: textInset }]}>
       <View style={styles.leading}>
         {dotColor !== undefined && (
           <View testID="section-header-dot" style={[styles.dot, { backgroundColor: dotColor }]} />

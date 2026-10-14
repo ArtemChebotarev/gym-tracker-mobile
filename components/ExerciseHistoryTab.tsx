@@ -59,7 +59,7 @@ export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHis
       keyExtractor={(session) => session.id}
       stickySectionHeadersEnabled
       renderSectionHeader={({ section }) => (
-        <SectionHeader title={section.title} count={section.data.length} />
+        <SectionHeader title={section.title} count={section.data.length} inset="card" />
       )}
       renderItem={({ item }) => (
         <ExerciseDetailCard
