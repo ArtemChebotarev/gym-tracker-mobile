@@ -23,7 +23,7 @@
 // into one screen (each old per-step screen had its own local provider too).
 
 import type { ReactNode } from 'react';
-import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { BORDER_WIDTHS, COLORS, SPACING } from '../tokens';
@@ -74,11 +74,13 @@ export function WizardScreen({
           />
         )}
 
-        {/* A tap on the empty part of a step closes the keyboard (GT-21); a field or button in it
-            still takes its own tap first. */}
-        <Pressable accessible={false} style={styles.body} onPress={Keyboard.dismiss}>
-          {children}
-        </Pressable>
+        {/* Deliberately a plain View. It used to be a Pressable closing the keyboard on a tap
+            (GT-21); a Pressable ancestor takes the touch before the step's own ScrollView/SectionList
+            sees it, so on a device the list scrolled only when dragged by the header (GT-144). A
+            step closes the keyboard itself: a scrollable one through its list's
+            `keyboardShouldPersistTaps="handled"` + `keyboardDismissMode="on-drag"`, a static one
+            (Basics) through its own root Pressable. */}
+        <View style={styles.body}>{children}</View>
 
         {footer !== undefined && footer !== null && <View style={styles.footer}>{footer}</View>}
       </SafeAreaView>

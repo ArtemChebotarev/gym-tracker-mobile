@@ -160,6 +160,8 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
   </RCTScrollView>,
   <RCTScrollView
     bounces={false}
+    keyboardDismissMode="on-drag"
+    keyboardShouldPersistTaps="handled"
     showsVerticalScrollIndicator={false}
     style={
       {
