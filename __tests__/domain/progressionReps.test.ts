@@ -118,8 +118,8 @@ describe('nextSetTarget on a resistance band (10.1, FR-14)', () => {
       'resistance-band',
     );
 
-  test('at the top of the corridor it hints `increase` and carries no weight', () => {
-    expect(band(30)).toEqual<SetTarget>({ setNumber: 1, targetReps: 30, weightHint: 'increase' });
+  test('at the top of the corridor it hints `increase` and sets no rep target: the hint is advice, not a number to hit', () => {
+    expect(band(30)).toEqual<SetTarget>({ setNumber: 1, weightHint: 'increase' });
   });
 
   test('inside the corridor it hints nothing', () => {

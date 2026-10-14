@@ -6,7 +6,7 @@ import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
-import { hintForReps } from '@domain/progressionWeightHint';
+import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
@@ -74,14 +74,14 @@ export function nextSetTarget(
     }
     return target;
   }
-  const target: SetTarget = {
-    setNumber: source.setNumber,
-    targetReps: nextTargetReps(log.reps, settings),
-  };
+  const hint = hintForReps(log.reps, settings, equipment);
+  const target: SetTarget = { setNumber: source.setNumber };
+  if (!bandAtCeiling(hint, equipment)) {
+    target.targetReps = nextTargetReps(log.reps, settings);
+  }
   if (carriesWeight) {
     target.suggestedWeight = log.weight;
   }
-  const hint = hintForReps(log.reps, settings, equipment);
   if (hint !== undefined) {
     target.weightHint = hint;
   }

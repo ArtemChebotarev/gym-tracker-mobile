@@ -11,7 +11,7 @@ import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
 import { nextTargetReps, startTargetReps } from '@domain/progressionReps';
-import { hintForReps } from '@domain/progressionWeightHint';
+import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
@@ -103,14 +103,14 @@ export function prescribeFromHistory(
       estimate.estimate = resolution.reason;
       return estimate;
     }
-    const target: SetTarget = {
-      setNumber,
-      targetReps: nextTargetReps(reference.reps, settings),
-    };
+    const hint = hintForReps(reference.reps, settings, equipment);
+    const target: SetTarget = { setNumber };
+    if (!bandAtCeiling(hint, equipment)) {
+      target.targetReps = nextTargetReps(reference.reps, settings);
+    }
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;
     }
-    const hint = hintForReps(reference.reps, settings, equipment);
     if (hint !== undefined) {
       target.weightHint = hint;
     }
