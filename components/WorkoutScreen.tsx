@@ -291,6 +291,7 @@ export function WorkoutScreen({
                 ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
                 : {})}
               showGroupChip={showsGroupChip(model.exercises, index)}
+              position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
                 onExerciseMenuAction(exercise, item),
