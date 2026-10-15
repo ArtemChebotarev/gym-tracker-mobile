@@ -90,6 +90,13 @@ describe('New exercise page', () => {
     expect(screen.getByText('Power')).toBeTruthy();
   });
 
+  test('a non-strength exercise starts on Full body, the label that value has everywhere', () => {
+    mockParams = { type: 'power' };
+    renderRoute();
+
+    expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent(/Full body/);
+  });
+
   test('power: only a name is needed; stored as fullBody with its defaults, rest steppable', async () => {
     mockParams = { type: 'power' };
     renderRoute();
