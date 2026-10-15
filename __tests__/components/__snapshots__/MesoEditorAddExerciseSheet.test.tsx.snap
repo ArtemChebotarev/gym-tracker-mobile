@@ -179,6 +179,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
         </View>
       </View>
       <RCTScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={
           {
             "paddingHorizontal": 20,

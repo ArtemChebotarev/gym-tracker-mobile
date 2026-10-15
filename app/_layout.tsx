@@ -51,6 +51,12 @@ export default function RootLayout() {
                 name="meso-editor/edit/[id]"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
+              {/* New exercise, after the type sheet (10.1 FR-11) — a full-screen modal like the
+              mesocycle editor's steps. */}
+              <Stack.Screen
+                name="exercise/new"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
               {/* The Exercise screen (08.6, task 065) — pushed from the library and from a workout's
               exercise card, with its own back button in the header. */}
               <Stack.Screen name="exercise/[id]/index" options={{ headerShown: false }} />

@@ -1,9 +1,8 @@
 // What the Library tab does when storage fails under it (task 141.2; 08.0.2 · Error handling):
 // a failed read must not look like an empty library, and a failed save must say so and keep the
-// form open with what was typed. The happy paths live in ExerciseLibraryScreen.test.tsx.
+// form open with what was typed (see ExerciseCreateRoute.test.tsx). The happy paths live in ExerciseLibraryScreen.test.tsx.
 
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import LibraryRoute from '@app/(tabs)/library';
@@ -12,8 +11,9 @@ import { createCustomExercise } from '@usecases/exerciseLibrary';
 
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 jest.mock('expo-crypto', () => {
@@ -56,27 +56,17 @@ describe('Library route under storage failures', () => {
     expect(screen.queryByText("Couldn't load this screen")).toBeNull();
   });
 
-  test('a failed save says so and keeps the form open with what was typed', async () => {
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  test('Add exercise opens the type sheet, and Next opens the New exercise page for the chosen type', async () => {
     renderRoute();
     await screen.findByText('Seed Row');
-    const create = jest
-      .spyOn(repositories().exerciseRepo, 'createCustom')
-      .mockRejectedValueOnce(new Error('storage down'));
 
     fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
-    fireEvent.press(await screen.findByRole('button', { name: 'Next' }));
-    fireEvent.changeText(await screen.findByPlaceholderText('e.g. Chest supported row'), 'My Row');
-    fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
-    fireEvent.press(await screen.findByText('Quads'));
-    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
+    fireEvent.press(await screen.findByRole('radio', { name: 'Power' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
-    await waitFor(() =>
-      expect(alert).toHaveBeenCalledWith("Couldn't save the exercise", 'Try again.'),
-    );
-    expect(screen.getByDisplayValue('My Row')).toBeTruthy();
-
-    create.mockRestore();
-    alert.mockRestore();
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/exercise/new',
+      params: { type: 'power', name: '' },
+    });
   });
 });

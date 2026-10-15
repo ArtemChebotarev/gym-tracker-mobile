@@ -1,63 +1,32 @@
-// New/Edit exercise sheet — see 08.6 · Библиотека упражнений, "New exercise — лист", and its
-// mockup 03-new-exercise.html.
+// Edit exercise sheet — see 08.6 · Библиотека упражнений and its mockup 03-new-exercise.html.
+// Creating an exercise is not here: it is the type sheet followed by the full-screen
+// ExerciseCreateScreen (10.1 FR-11), which share the fields in ExerciseFormFields.
 //
 // Fully controlled, the same way ExerciseFiltersSheet.tsx is: the caller owns the in-progress
-// field values (seeding them when the sheet opens, e.g. from a prefilled search or from the
-// exercise being edited — see app/(tabs)/library.tsx) and submission (calling the
-// createCustomExercise / updateCustomExercise usecase and closing the sheet). `exercise` selects
-// the mode — omitted means "New exercise", given means "Edit exercise" and gates the catalog
-// guard below — but does not itself seed `values`; that stays the caller's job, the same way
-// ExerciseFiltersSheet's caller seeds `filters` into `draftFilters` before opening.
-//
-// Equipment is a field on the domain model (domain/catalog.ts's `Exercise.equipment`) that 08.6
-// documents as UI-deferred everywhere else (the catalog seed data has it, but neither this sheet
-// nor the Filters sheet exposed it). This sheet is the one place that now fills it in — see the
-// Product Spec's "New exercise — лист" section for the decision. Unlike Name and Muscle group,
-// it's optional and never gates the Create/Save button (08.6 only requires "два обязательных
-// поля — название и группа мышц").
+// field values (seeding them from the exercise being edited — see app/exercise/[id]/index.tsx)
+// and submission (calling the updateCustomExercise usecase and closing the sheet). A catalog
+// exercise cannot be opened here (08.6).
 //
 // JSX/rendering only — styles live in ExerciseFormSheetStyles.ts and pure helpers in
 // ExerciseFormSheetLogic.ts, per the code-style skill.
 
-import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
-import {
-  EQUIPMENT_OPTIONS,
-  EXERCISE_TYPES,
-  FULL_BODY,
-  MUSCLE_GROUPS,
-  type Equipment,
-  type Exercise,
-  type ExerciseType,
-  type MuscleGroup,
-} from '@domain/catalog';
+import type { Equipment, Exercise, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
-import { Dropdown } from '@design/components/Dropdown';
-import { OptionCard } from '@design/components/OptionCard';
-import { TextField } from '@design/components/TextField';
-import { getEquipmentLabel } from '@design/equipmentLabel';
-import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
-import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
-import { COLORS, ICON_SIZES } from '@design/tokens';
-import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
-import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 
-import { ExerciseConfigFields } from './ExerciseConfigFields';
-import {
-  canSubmitExerciseForm,
-  isExerciseEditableInSheet,
-  valuesForType,
-} from './ExerciseFormSheetLogic';
+import { ExerciseFormFields } from './ExerciseFormFields';
+import { canSubmitExerciseForm, isExerciseEditableInSheet } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
 export type ExerciseFormValues = {
   name: string;
   muscleGroup: MuscleGroup | undefined;
   equipment: Equipment | undefined;
-  /** What the exercise is (10.1 FR-1). Picked in the sheet's first step when creating. */
+  /** What the exercise is (10.1 FR-1). Picked on the type sheet when creating. */
   type: ExerciseType;
   /** The type's defaults (FR-9); `undefined` exactly when `type` is `strength`. */
   config: ExerciseConfig | undefined;
@@ -81,34 +50,13 @@ export type ExerciseFormSubmitInput = {
 
 export type ExerciseFormSheetProps = {
   visible: boolean;
-  /** Omitted for "New exercise"; a custom exercise to edit for "Edit exercise". */
-  exercise?: Exercise;
+  /** The custom exercise being edited. */
+  exercise: Exercise;
   values: ExerciseFormValues;
   onChangeValues: (values: ExerciseFormValues) => void;
   onSubmit: (input: ExerciseFormSubmitInput) => void;
   onClose: () => void;
 };
-
-// Carries each muscle group's family dot color (03-new-exercise.html: a colored dot per option,
-// the same family colors ExerciseFiltersSheet's muscle-group chips already use), unlike Equipment
-// below which has no color semantics.
-const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((muscleGroup) => {
-  const category = getMuscleGroupCategory(muscleGroup);
-  return {
-    value: muscleGroup,
-    label: getMuscleGroupLabel(muscleGroup),
-    dotColor: category !== undefined ? getCategoryColor(category) : undefined,
-  };
-});
-
-// A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, shown as "None".
-const NO_GROUP_OPTION = { value: FULL_BODY, label: 'None', dotColor: undefined };
-const NON_STRENGTH_MUSCLE_GROUP_OPTIONS = [NO_GROUP_OPTION, ...MUSCLE_GROUP_OPTIONS];
-
-const EQUIPMENT_DROPDOWN_OPTIONS = EQUIPMENT_OPTIONS.map((equipment) => ({
-  value: equipment,
-  label: getEquipmentLabel(equipment),
-}));
 
 export function ExerciseFormSheet({
   visible,
@@ -118,23 +66,7 @@ export function ExerciseFormSheet({
   onSubmit,
   onClose,
 }: ExerciseFormSheetProps) {
-  const isEditMode = exercise !== undefined;
-  const canOpen = exercise === undefined || isExerciseEditableInSheet(exercise);
-  // Creating starts by choosing the type (10.1 FR-11: "Выбор типа — первый шаг шторки"); editing
-  // goes straight to the fields, the type being what the exercise already is.
-  const [isPickingType, setIsPickingType] = useState(!isEditMode);
-
-  // Each opening starts over from the first step. Adjusting state during render on a change of
-  // `visible`, rather than in an effect, so the sheet never paints one frame of the old step.
-  const [wasVisible, setWasVisible] = useState(visible);
-  if (visible !== wasVisible) {
-    setWasVisible(visible);
-    if (visible) {
-      setIsPickingType(!isEditMode);
-    }
-  }
-
-  if (!canOpen) {
+  if (!isExerciseEditableInSheet(exercise)) {
     return null;
   }
 
@@ -151,69 +83,20 @@ export function ExerciseFormSheet({
     });
   }
 
-  if (isPickingType) {
-    return (
-      <BottomSheet
-        visible={visible}
-        onClose={onClose}
-        title="New exercise"
-        subtitle="What kind of work is it? You can't change this after the first logged set."
-        footer={
-          <View style={styles.buttonRow}>
-            <View style={styles.cancelButton}>
-              <Button label="Cancel" variant="secondary" onPress={onClose} />
-            </View>
-            <View style={styles.confirmButton}>
-              <Button label="Next" onPress={() => setIsPickingType(false)} />
-            </View>
-          </View>
-        }
-      >
-        <View style={styles.typeOptions} accessibilityRole="radiogroup">
-          {EXERCISE_TYPES.map((type) => {
-            const Icon = getExerciseTypeIcon(type);
-            const selected = values.type === type;
-            return (
-              <OptionCard
-                key={type}
-                title={getExerciseTypeLabel(type)}
-                description={getExerciseTypeDescription(type)}
-                selected={selected}
-                onPress={() => onChangeValues(valuesForType(values, type))}
-                icon={
-                  <Icon
-                    size={ICON_SIZES['icon/button']}
-                    color={selected ? COLORS.accent : COLORS['text/secondary']}
-                  />
-                }
-              />
-            );
-          })}
-        </View>
-      </BottomSheet>
-    );
-  }
-
-  const isStrength = values.type === 'strength';
-
   return (
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title={isEditMode ? 'Edit exercise' : 'New exercise'}
+      title="Edit exercise"
       subtitle={getExerciseTypeLabel(values.type)}
       footer={
         <View style={styles.buttonRow}>
           <View style={styles.cancelButton}>
-            {isEditMode ? (
-              <Button label="Cancel" variant="secondary" onPress={onClose} />
-            ) : (
-              <Button label="Back" variant="secondary" onPress={() => setIsPickingType(true)} />
-            )}
+            <Button label="Cancel" variant="secondary" onPress={onClose} />
           </View>
           <View style={styles.confirmButton}>
             <Button
-              label={isEditMode ? 'Save' : 'Create exercise'}
+              label="Save"
               onPress={handleSubmit}
               disabled={!canSubmitExerciseForm(values.name, values.muscleGroup, values.type)}
             />
@@ -221,47 +104,7 @@ export function ExerciseFormSheet({
         </View>
       }
     >
-      <View style={styles.fields}>
-        <View style={styles.field}>
-          <TextField
-            label="Name"
-            value={values.name}
-            onChangeText={(name) => onChangeValues({ ...values, name })}
-            placeholder="e.g. Chest supported row"
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Dropdown
-            label="Equipment"
-            options={EQUIPMENT_DROPDOWN_OPTIONS}
-            value={values.equipment}
-            onChange={(equipment) => onChangeValues({ ...values, equipment: equipment as Equipment })}
-            placeholder="Choose equipment"
-          />
-        </View>
-        <View style={styles.field}>
-          <Dropdown
-            label="Muscle group"
-            options={isStrength ? MUSCLE_GROUP_OPTIONS : NON_STRENGTH_MUSCLE_GROUP_OPTIONS}
-            value={values.muscleGroup}
-            onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
-            placeholder="Choose muscle group"
-          />
-          {!isStrength && (
-            <Text style={styles.hint}>
-              Optional. Without one, it sits under {getExerciseTypeLabel(values.type)} in the library.
-            </Text>
-          )}
-        </View>
-
-        {values.config !== undefined && (
-          <ExerciseConfigFields
-            config={values.config}
-            onChange={(config) => onChangeValues({ ...values, config })}
-          />
-        )}
-      </View>
+      <ExerciseFormFields values={values} onChangeValues={onChangeValues} />
     </BottomSheet>
   );
 }

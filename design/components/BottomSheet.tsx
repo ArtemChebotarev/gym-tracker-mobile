@@ -151,6 +151,9 @@ export function BottomSheet({
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
+        // iOS lets a ScrollView be dragged and spring back even when everything fits; in a sheet
+        // that reads as loose, draggable rows. Bounce only when there is something to scroll.
+        alwaysBounceVertical={false}
       >
         {children}
       </ScrollView>

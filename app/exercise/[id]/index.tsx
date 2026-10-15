@@ -132,14 +132,16 @@ export default function ExerciseDetailRoute() {
         }}
         onWatchHowTo={handleWatchHowTo}
       />
-      <ExerciseFormSheet
-        visible={isFormSheetOpen}
-        exercise={exercise}
-        values={formValues}
-        onChangeValues={setFormValues}
-        onSubmit={handleSubmitForm}
-        onClose={() => setIsFormSheetOpen(false)}
-      />
+      {exercise !== undefined && (
+        <ExerciseFormSheet
+          visible={isFormSheetOpen}
+          exercise={exercise}
+          values={formValues}
+          onChangeValues={setFormValues}
+          onSubmit={handleSubmitForm}
+          onClose={() => setIsFormSheetOpen(false)}
+        />
+      )}
     </>
   );
 }
