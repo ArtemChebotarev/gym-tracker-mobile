@@ -109,6 +109,39 @@ describe('nextSetTargets', () => {
   });
 });
 
+describe('nextSetTarget on a resistance band (10.1, FR-14)', () => {
+  const band = (reps: number) =>
+    nextSetTarget(
+      { setNumber: 1, targetReps: 25 },
+      log(1, reps, 83),
+      defaultProgressionSettings,
+      'resistance-band',
+    );
+
+  test('at the top of the corridor it hints `increase` and sets no rep target: the hint is advice, not a number to hit', () => {
+    expect(band(30)).toEqual<SetTarget>({ setNumber: 1, weightHint: 'increase' });
+  });
+
+  test('inside the corridor it hints nothing', () => {
+    expect(band(20)).toEqual<SetTarget>({ setNumber: 1, targetReps: 21 });
+  });
+
+  test('under the corridor it never says to go lighter: there is no lighter band to point at', () => {
+    expect(band(3)).toEqual<SetTarget>({ setNumber: 1, targetReps: 5 });
+  });
+
+  test('pure bodyweight still gets no hint at all', () => {
+    expect(
+      nextSetTarget(
+        { setNumber: 1, targetReps: 25 },
+        log(1, 30, 83),
+        defaultProgressionSettings,
+        'bodyweight',
+      ),
+    ).toEqual<SetTarget>({ setNumber: 1, targetReps: 30 });
+  });
+});
+
 describe('nextSetTarget', () => {
   test('an unlogged row drops its previous weight hint — there is no new fact to judge', () => {
     expect(

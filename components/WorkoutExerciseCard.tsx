@@ -196,7 +196,7 @@ export function WorkoutExerciseCard({
           return (
             <View key={hint.direction} testID="exercise-weight-hint" style={styles.weightHint}>
               <Icon size={ICON_SIZES['icon/inline']} color={COLORS['text/secondary']} />
-              <Text style={styles.weightHintText}>{formatWeightHint(hint)}</Text>
+              <Text style={styles.weightHintText}>{formatWeightHint(hint, exercise.equipment)}</Text>
             </View>
           );
         })}

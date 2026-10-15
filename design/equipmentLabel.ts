@@ -13,6 +13,7 @@ const LABEL_BY_EQUIPMENT: Record<Equipment, string> = {
   cable: 'Cable',
   bodyweight: 'Bodyweight',
   'bodyweight-weighted': 'Bodyweight (weighted)',
+  'resistance-band': 'Resistance band, bodyweight',
   other: 'Other',
 };
 

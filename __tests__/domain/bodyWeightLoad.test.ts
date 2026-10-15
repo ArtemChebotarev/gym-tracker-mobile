@@ -27,4 +27,10 @@ describe('telling the bodyweight exercises apart', () => {
     expect(usesAddedWeight('bodyweight')).toBe(false);
     expect(usesAddedWeight('machine')).toBe(false);
   });
+
+  test('a resistance band is a pure bodyweight exercise: the block weight shows, nothing to progress', () => {
+    expect(isBodyWeightExercise('resistance-band')).toBe(true);
+    expect(isPureBodyWeight('resistance-band')).toBe(true);
+    expect(usesAddedWeight('resistance-band')).toBe(false);
+  });
 });

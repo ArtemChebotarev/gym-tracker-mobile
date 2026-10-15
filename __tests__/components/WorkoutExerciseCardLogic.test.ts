@@ -134,6 +134,14 @@ describe('showsGroupChip', () => {
   });
 });
 
+describe('formatWeightHint on a resistance band', () => {
+  test('says tighter band or slower tempo instead of going heavier', () => {
+    expect(formatWeightHint({ direction: 'increase', reps: 30 }, 'resistance-band')).toBe(
+      'Try tighter band or slow down tempo',
+    );
+  });
+});
+
 describe('formatWeightHint', () => {
   test('go heavier names the upper bound reached', () => {
     expect(formatWeightHint({ direction: 'increase', reps: 30 })).toBe(
