@@ -69,7 +69,7 @@ describe('Library route under storage failures', () => {
     fireEvent.changeText(await screen.findByPlaceholderText('e.g. Chest supported row'), 'My Row');
     fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
     fireEvent.press(await screen.findByText('Quads'));
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     await waitFor(() =>
       expect(alert).toHaveBeenCalledWith("Couldn't save the exercise", 'Try again.'),

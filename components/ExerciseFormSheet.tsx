@@ -20,7 +20,7 @@
 // ExerciseFormSheetLogic.ts, per the code-style skill.
 
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import {
   EQUIPMENT_OPTIONS,
@@ -155,6 +155,7 @@ export function ExerciseFormSheet({
         visible={visible}
         onClose={onClose}
         title="New exercise"
+        subtitle="What kind of work is it? You can't change this after the first logged set."
         footer={
           <View style={styles.buttonRow}>
             <Button label="Cancel" variant="secondary" onPress={onClose} />
@@ -185,15 +186,20 @@ export function ExerciseFormSheet({
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title={isEditMode ? 'Edit exercise' : `New ${getExerciseTypeLabel(values.type).toLowerCase()}`}
+      title={isEditMode ? 'Edit exercise' : 'New exercise'}
+      subtitle={getExerciseTypeLabel(values.type)}
       footer={
         <View style={styles.buttonRow}>
           <View style={styles.cancelButton}>
-            <Button label="Cancel" variant="secondary" onPress={onClose} />
+            {isEditMode ? (
+              <Button label="Cancel" variant="secondary" onPress={onClose} />
+            ) : (
+              <Button label="Back" variant="secondary" onPress={() => setIsPickingType(true)} />
+            )}
           </View>
           <View style={styles.confirmButton}>
             <Button
-              label={isEditMode ? 'Save' : 'Create'}
+              label={isEditMode ? 'Save' : 'Create exercise'}
               onPress={handleSubmit}
               disabled={!canSubmitExerciseForm(values.name, values.muscleGroup, values.type)}
             />
@@ -213,22 +219,26 @@ export function ExerciseFormSheet({
 
         <View style={styles.field}>
           <Dropdown
-            label="Muscle group"
-            options={isStrength ? MUSCLE_GROUP_OPTIONS : NON_STRENGTH_MUSCLE_GROUP_OPTIONS}
-            value={values.muscleGroup}
-            onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
-            placeholder="Choose muscle group"
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Dropdown
             label="Equipment"
             options={EQUIPMENT_DROPDOWN_OPTIONS}
             value={values.equipment}
             onChange={(equipment) => onChangeValues({ ...values, equipment: equipment as Equipment })}
             placeholder="Choose equipment"
           />
+        </View>
+        <View style={styles.field}>
+          <Dropdown
+            label="Muscle group"
+            options={isStrength ? MUSCLE_GROUP_OPTIONS : NON_STRENGTH_MUSCLE_GROUP_OPTIONS}
+            value={values.muscleGroup}
+            onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
+            placeholder="Choose muscle group"
+          />
+          {!isStrength && (
+            <Text style={styles.hint}>
+              Optional. Without one, it sits under {getExerciseTypeLabel(values.type)} in the library.
+            </Text>
+          )}
         </View>
 
         {values.config !== undefined && (

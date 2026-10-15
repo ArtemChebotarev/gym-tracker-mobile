@@ -98,9 +98,9 @@ describe('ExerciseFormSheet — create mode', () => {
     renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
     chooseType('Strength');
 
-    expect(screen.getByText('New strength')).toBeTruthy();
+    expect(screen.getByText('New exercise')).toBeTruthy();
     expect(screen.getByLabelText('Name').props.value).toBe('');
-    expect(screen.getByRole('button', { name: 'Create' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create exercise' })).toBeTruthy();
   });
 
   test('reflects a prefilled name — e.g. seeded from the search-empty-state "Create" action', () => {
@@ -114,13 +114,13 @@ describe('ExerciseFormSheet — create mode', () => {
     renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
     chooseType('Strength');
 
-    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Create exercise' }).props.accessibilityState.disabled).toBe(true);
 
     fireEvent.changeText(screen.getByLabelText('Name'), 'Zercher Squat');
-    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Create exercise' }).props.accessibilityState.disabled).toBe(true);
 
     chooseMuscleGroup('Quads');
-    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(false);
+    expect(screen.getByRole('button', { name: 'Create exercise' }).props.accessibilityState.disabled).toBe(false);
   });
 
   test('a name of only whitespace does not enable Create', () => {
@@ -130,7 +130,7 @@ describe('ExerciseFormSheet — create mode', () => {
     fireEvent.changeText(screen.getByLabelText('Name'), '   ');
     chooseMuscleGroup('Chest');
 
-    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Create exercise' }).props.accessibilityState.disabled).toBe(true);
   });
 
   test('trims leading/trailing whitespace from the name on submit', () => {
@@ -138,7 +138,7 @@ describe('ExerciseFormSheet — create mode', () => {
     chooseType('Strength');
 
     chooseMuscleGroup('Quads');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: undefined, type: 'strength', config: undefined });
   });
@@ -148,7 +148,7 @@ describe('ExerciseFormSheet — create mode', () => {
     chooseType('Strength');
 
     chooseMuscleGroup('Chest');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith({ name: 'Bench Press', muscleGroup: 'chest', equipment: undefined, type: 'strength', config: undefined });
   });
@@ -159,7 +159,7 @@ describe('ExerciseFormSheet — create mode', () => {
 
     chooseMuscleGroup('Quads');
     chooseEquipment('Barbell');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: 'barbell', type: 'strength', config: undefined });
   });
@@ -182,7 +182,7 @@ describe('ExerciseFormSheet — hybrid types', () => {
     chooseType('Power');
 
     fireEvent.changeText(screen.getByLabelText('Name'), 'Medball slam');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith({
       name: 'Medball slam',
@@ -211,7 +211,7 @@ describe('ExerciseFormSheet — hybrid types', () => {
     expect(screen.getByRole('button', { name: 'Progress by' })).toHaveTextContent(/Less rest/);
 
     fireEvent.changeText(screen.getByLabelText('Name'), 'Heavy bag');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -238,7 +238,7 @@ describe('ExerciseFormSheet — hybrid types', () => {
     expect(screen.queryByRole('button', { name: 'Progress by' })).toBeNull();
 
     fireEvent.changeText(screen.getByLabelText('Name'), 'Cooldown');
-    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -254,7 +254,7 @@ describe('ExerciseFormSheet — hybrid types', () => {
 
     fireEvent.changeText(screen.getByLabelText('Name'), 'Zercher Squat');
 
-    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Create exercise' }).props.accessibilityState.disabled).toBe(true);
   });
 });
 
