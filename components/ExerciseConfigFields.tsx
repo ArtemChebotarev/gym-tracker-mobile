@@ -87,7 +87,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
           />
           <StepperRow
             label="Rest"
-            labelSuffix="between sets"
+            labelSuffix="between rounds"
             value={config.restSec}
             onChange={(restSec) => onChange({ ...config, restSec })}
             min={0}
