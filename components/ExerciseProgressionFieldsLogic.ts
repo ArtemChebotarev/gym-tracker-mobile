@@ -15,6 +15,13 @@ export function leverMovesTime(lever: IntervalLever): boolean {
   return lever === 'rest' || lever === 'workTime';
 }
 
+/** What the step is, under its control: how much the lever's time moves each week. */
+export function describeStep(lever: IntervalLever): string {
+  return lever === 'workTime'
+    ? 'How much longer the work gets each week.'
+    : 'How much shorter the rest gets each week.';
+}
+
 /** What a lever does, in the words of the plan — with the step where there is one. */
 export function describeLever(lever: IntervalLever, stepSec: IntervalStepSec): string {
   switch (lever) {

@@ -24,6 +24,12 @@ export const styles = StyleSheet.create({
     color: COLORS['text/muted'],
     marginBottom: SPACING['space/row'],
   },
+  // The line under the step control (canvas 4.3): what the step is.
+  stepHint: {
+    ...TYPOGRAPHY['type/meta'],
+    color: COLORS['text/muted'],
+    marginTop: SPACING['space/gap-tight'],
+  },
   progressionStep: {
     marginTop: SPACING['space/section'],
   },

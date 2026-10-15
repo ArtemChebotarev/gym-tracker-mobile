@@ -16,7 +16,12 @@ import { SegmentedControl } from '@design/components/SegmentedControl';
 import { fieldStyles } from '@design/components/fieldStyles';
 
 import { styles } from './ExerciseFormSheetStyles';
-import { describeLever, LEVER_LABEL, leverMovesTime } from './ExerciseProgressionFieldsLogic';
+import {
+  describeLever,
+  describeStep,
+  LEVER_LABEL,
+  leverMovesTime,
+} from './ExerciseProgressionFieldsLogic';
 
 const STEP_OPTIONS = INTERVAL_STEPS_SEC.map((sec) => ({ value: String(sec), label: `${sec} s` }));
 
@@ -28,6 +33,7 @@ export type ExerciseProgressionFieldsProps = {
 export function ExerciseProgressionFields({ config, onChange }: ExerciseProgressionFieldsProps) {
   return (
     <View>
+      <Text style={fieldStyles.label}>Progression</Text>
       <Text style={styles.hint}>Miss a round and the plan repeats.</Text>
       <View style={styles.typeOptions} accessibilityRole="radiogroup">
         {INTERVAL_LEVERS.map((lever: IntervalLever) => (
@@ -51,6 +57,7 @@ export function ExerciseProgressionFields({ config, onChange }: ExerciseProgress
               onChange({ ...config, stepSec: Number(stepSec) as IntervalConfig['stepSec'] })
             }
           />
+          <Text style={styles.stepHint}>{describeStep(config.lever)}</Text>
         </View>
       )}
     </View>

@@ -1,4 +1,4 @@
-import { describeLever, leverMovesTime } from '@components/ExerciseProgressionFieldsLogic';
+import { describeLever, describeStep, leverMovesTime } from '@components/ExerciseProgressionFieldsLogic';
 
 describe('leverMovesTime', () => {
   test('rest and work move a time, so they have a step', () => {
@@ -21,5 +21,12 @@ describe('describeLever', () => {
   test('says one round for rounds and no change for none', () => {
     expect(describeLever('rounds', 15)).toContain('one more round');
     expect(describeLever('none', 15)).toContain('stays the same');
+  });
+});
+
+describe('describeStep', () => {
+  test('says what the step moves for the lever it belongs to', () => {
+    expect(describeStep('rest')).toContain('rest gets');
+    expect(describeStep('workTime')).toContain('work gets');
   });
 });
