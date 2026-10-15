@@ -86,7 +86,7 @@ export function showsGroupChip(
 /** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */
 export function formatWeightHint(hint: ExerciseWeightHint, equipment?: Equipment): string {
   if (hint.direction === 'increase' && isResistanceBand(equipment)) {
-    return `Tighter band or slower tempo — ${hint.reps}+ reps last week`;
+    return 'Try tighter band or slow down tempo';
   }
   return hint.direction === 'increase'
     ? `Go heavier — ${hint.reps}+ reps last week`
