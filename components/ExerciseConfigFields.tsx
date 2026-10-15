@@ -16,8 +16,8 @@ import { Stepper } from '@design/components/Stepper';
 import { formatClock } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
+// Every time field steps by the same 5 s, power's rest included.
 const SECONDS_STEP = 5;
-const REST_STEP = 15;
 const MINUTE = 60;
 
 // What each lever is called where the user picks it (canvas 4.x, CreateInterval; FR-8).
@@ -47,7 +47,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
             onChange={(restSec) => onChange({ ...config, restSec })}
             min={0}
             max={10 * MINUTE}
-            step={REST_STEP}
+            step={SECONDS_STEP}
             formatValue={formatClock}
             caption="Starts after you log a set"
           />

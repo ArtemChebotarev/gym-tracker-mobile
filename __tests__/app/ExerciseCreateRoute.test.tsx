@@ -96,7 +96,7 @@ describe('New exercise page', () => {
 
     expect(screen.getByText('1:00')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
-    expect(screen.getByText('1:15')).toBeTruthy();
+    expect(screen.getByText('1:05')).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText('Name'), 'Medball slam');
     fireEvent.press(createButton());
 
@@ -105,7 +105,7 @@ describe('New exercise page', () => {
       name: 'Medball slam',
       muscleGroup: 'fullBody',
       type: 'power',
-      config: { type: 'power', load: 'weight', restSec: 75, noHeavierAvailable: false },
+      config: { type: 'power', load: 'weight', restSec: 65, noHeavierAvailable: false },
     });
   });
 
