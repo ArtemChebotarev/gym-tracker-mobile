@@ -86,6 +86,8 @@ export function ExerciseCreateScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        // The page is a form, not a feed: it stops at its edges instead of springing past them.
+        bounces={false}
       >
         <ExerciseFormFields values={values} onChangeValues={setValues} />
       </ScrollView>

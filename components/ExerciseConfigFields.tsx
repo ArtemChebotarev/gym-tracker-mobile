@@ -97,7 +97,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
           />
           <StepperRow
             label="Get ready"
-            caption="Countdown before a round you start with a tap"
+            caption="Countdown before a round"
             value={config.getReadySec}
             onChange={(getReadySec) => onChange({ ...config, getReadySec })}
             min={0}

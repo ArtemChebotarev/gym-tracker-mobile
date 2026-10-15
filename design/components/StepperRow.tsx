@@ -9,7 +9,7 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BORDER_WIDTHS, COLORS, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { Stepper, type StepperProps } from './Stepper';
 
 export type StepperRowProps = Pick<
@@ -27,7 +27,12 @@ export function StepperRow({ label, caption, ...stepper }: StepperRowProps) {
         <Text style={styles.label}>{label}</Text>
         {caption !== undefined && <Text style={styles.caption}>{caption}</Text>}
       </View>
-      <Stepper variant="inline" label={label} {...stepper} />
+      <Stepper
+        variant="inline"
+        label={label}
+        valueWidth={SIZES['size/stepper-value']}
+        {...stepper}
+      />
     </View>
   );
 }
@@ -38,6 +43,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACING['space/row'],
+    minHeight: SIZES['size/stepper-row'],
     paddingVertical: SPACING['space/row'],
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],

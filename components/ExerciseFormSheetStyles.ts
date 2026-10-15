@@ -21,9 +21,10 @@ export const styles = StyleSheet.create({
   typeOptions: {
     gap: SPACING['space/gap-tight'],
   },
-  // "Default plan" and the progression under it start a new group of the form (canvas 4.3).
+  // "Default plan" starts a new group of the form (canvas 4.3), under the field above it, which
+  // already carries the gap — no further margin of its own.
   sectionLabel: {
-    marginTop: SPACING['space/section'],
+    marginTop: 0,
   },
   progression: {
     marginTop: SPACING['space/section'],
