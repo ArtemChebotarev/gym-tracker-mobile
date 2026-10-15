@@ -187,6 +187,7 @@ exports[`MesoOverviewSheet DoD: matches the snapshot of a grid with every cell s
           </View>
         </View>
         <RCTScrollView
+          alwaysBounceVertical={false}
           contentContainerStyle={
             {
               "paddingHorizontal": 20,

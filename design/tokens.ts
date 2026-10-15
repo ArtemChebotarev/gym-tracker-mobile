@@ -264,6 +264,11 @@ export const SIZES = {
   'size/pill': 32,
   /** Round IconButton and Stepper buttons (08.0: "Размер 36", tap area 44). */
   'size/icon-button': 36,
+  /** OptionCard: the round icon well on its left (canvas 4.1, "New exercise · pick type"). */
+  'size/option-icon': 36,
+  /** OptionCard: the radio ring on its right, and the dot inside it when selected. */
+  'size/radio': 22,
+  'size/radio-dot': 12,
   /** Set row: the target indicator column. */
   'size/indicator-column': 24,
   /** Template preview row: the slot's number column (08.10, `1 • Chest`). */

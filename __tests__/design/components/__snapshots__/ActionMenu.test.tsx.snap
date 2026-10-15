@@ -441,6 +441,7 @@ exports[`ActionMenu — without SwiftUI DoD: the \`⋯\` button opens a titled s
           </View>
         </View>
         <RCTScrollView
+          alwaysBounceVertical={false}
           contentContainerStyle={
             {
               "paddingHorizontal": 20,
