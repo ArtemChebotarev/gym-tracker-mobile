@@ -31,8 +31,13 @@ const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((muscleGroup) => {
   };
 });
 
-// A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, shown as "None".
-const NO_GROUP_OPTION = { value: FULL_BODY, label: 'None', dotColor: undefined };
+// A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, and called by its
+// own label ("Full body") here as everywhere else, not given a second name for the same value.
+const NO_GROUP_OPTION = {
+  value: FULL_BODY,
+  label: getMuscleGroupLabel(FULL_BODY),
+  dotColor: undefined,
+};
 const NON_STRENGTH_MUSCLE_GROUP_OPTIONS = [NO_GROUP_OPTION, ...MUSCLE_GROUP_OPTIONS];
 
 const EQUIPMENT_DROPDOWN_OPTIONS = EQUIPMENT_OPTIONS.map((equipment) => ({
