@@ -83,6 +83,13 @@ describe('New exercise page', () => {
     expect(screen.getByText('Strength')).toBeTruthy();
   });
 
+  test('the chosen type stays visible in the header', () => {
+    mockParams = { type: 'power' };
+    renderRoute();
+
+    expect(screen.getByText('Power')).toBeTruthy();
+  });
+
   test('power: only a name is needed; stored as fullBody with its defaults, rest steppable', async () => {
     mockParams = { type: 'power' };
     renderRoute();

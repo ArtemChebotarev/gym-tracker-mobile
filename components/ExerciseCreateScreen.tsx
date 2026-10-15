@@ -6,12 +6,15 @@
 // JSX/rendering only — logic in ExerciseCreateScreenLogic.ts and ExerciseFormSheetLogic.ts.
 
 import { useState } from 'react';
-import { Alert, ScrollView, Text } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Button } from '@design/components/Button';
+import { Chip } from '@design/components/Chip';
 import { WizardScreen } from '@design/components/WizardScreen';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import { useCreateCustomExercise } from '@state/useCreateCustomExercise';
 
 import { exerciseTypeFromParam } from './ExerciseCreateScreenLogic';
@@ -55,6 +58,16 @@ export function ExerciseCreateScreen() {
   return (
     <WizardScreen
       title="New exercise"
+      titleAccessory={
+        <Chip
+          variant="static"
+          label={getExerciseTypeLabel(values.type)}
+          icon={getExerciseTypeIcon(values.type)({
+            size: ICON_SIZES['icon/glyph'],
+            color: COLORS['text/secondary'],
+          })}
+        />
+      }
       currentStep={1}
       totalSteps={1}
       onClose={() => router.back()}
@@ -74,7 +87,6 @@ export function ExerciseCreateScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Text style={styles.type}>{getExerciseTypeLabel(values.type)}</Text>
         <ExerciseFormFields values={values} onChangeValues={setValues} />
       </ScrollView>
     </WizardScreen>
