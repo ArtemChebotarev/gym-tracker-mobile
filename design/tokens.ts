@@ -263,8 +263,8 @@ export const SIZES = {
    * `0:05` stand in two straight columns instead of following the width of the text.
    */
   'size/stepper-value': 56,
-  /** A StepperRow's least height — the same with a caption under the label as without one. */
-  'size/stepper-row': 68,
+  /** A StepperRow's height — the same with a caption under the label as without one. */
+  'size/stepper-row': 54,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
   'size/chip': 36,
   /** ListRow's action pill (Start, Copy) — drawn smaller, 44pt to the touch. */

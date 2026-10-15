@@ -218,7 +218,10 @@ const styles = StyleSheet.create({
     ...circle(SIZES['size/control-inline']),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS['surface/control-active'],
+    // No fill, an outline: the inline stepper sits in a list row, among text, and a filled disc
+    // weighs more than the value between its buttons.
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
   },
   glyphInline: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

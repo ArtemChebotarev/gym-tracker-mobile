@@ -3,7 +3,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { SIZES, SPACING } from '@design/tokens';
 
 // Matches 03-new-exercise.html's .btn.p{flex:1.4} beside a flex:1 Cancel — the confirming
 // button reads wider than Cancel. A flex ratio isn't a size or a color, so it stays a local
@@ -31,12 +31,6 @@ export const styles = StyleSheet.create({
   },
   field: {
     marginBottom: SPACING['space/section'],
-  },
-  // The one line under a field that says what leaving it empty means (canvas 4.2, 4.3).
-  hint: {
-    ...TYPOGRAPHY['type/meta'],
-    color: COLORS['text/muted'],
-    marginTop: SPACING['space/gap'],
   },
   // `flex: 1` here (not just on the two buttons inside) is what actually stretches this row to
   // the footer's full width — BottomSheet's footer is a row with `justifyContent: 'flex-end'`,

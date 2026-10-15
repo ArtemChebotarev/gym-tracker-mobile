@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACING['space/row'],
-    minHeight: SIZES['size/stepper-row'],
-    paddingVertical: SPACING['space/row'],
+    // A fixed height, content centred in it, so a row with a caption and one without are alike.
+    height: SIZES['size/stepper-row'],
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
   },
