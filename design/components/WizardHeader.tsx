@@ -10,6 +10,7 @@
 // previous step instead. The type only documents this; nothing here enforces "first step only"
 // — that's the caller's responsibility, same as every other prop-driven design component.
 
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { IconButton } from './IconButton';
@@ -35,6 +36,11 @@ export type WizardHeaderProps = {
   totalSteps: number;
   /** Defaults to `heading`. */
   titlePlacement?: WizardTitlePlacement;
+  /**
+   * Something that belongs to the title, shown at the right end of the heading line — the type
+   * chip of a New exercise page. Only with the `heading` placement; a `bar` title has no room.
+   */
+  titleAccessory?: ReactNode;
 } & ({ onClose: () => void; onBack?: never } | { onBack: () => void; onClose?: never });
 
 // Mockup (01-new-meso-basics.html / 02-new-meso-days.html): .progress div{gap:4px;height:3px;
@@ -45,6 +51,7 @@ export function WizardHeader({
   currentStep,
   totalSteps,
   titlePlacement = 'heading',
+  titleAccessory,
   onClose,
   onBack,
 }: WizardHeaderProps) {
@@ -68,20 +75,29 @@ export function WizardHeader({
             <View style={styles.barTitleSpacer} />
           </>
         ) : (
-          <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
+          // A flow of one step has nothing to count.
+          totalSteps > 1 && <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
         )}
       </View>
 
-      {!inBar && <Text style={styles.title}>{title}</Text>}
+      {!inBar && (
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{title}</Text>
+          {titleAccessory}
+        </View>
+      )}
 
-      <View style={styles.progress}>
-        {Array.from({ length: totalSteps }, (_, index) => (
-          <View
-            key={index}
-            style={[styles.progressSegment, index < currentStep && styles.progressSegmentDone]}
-          />
-        ))}
-      </View>
+      {/* A flow of one step has nothing to measure progress against — no counter, no bar. */}
+      {totalSteps > 1 && (
+        <View style={styles.progress}>
+          {Array.from({ length: totalSteps }, (_, index) => (
+            <View
+              key={index}
+              style={[styles.progressSegment, index < currentStep && styles.progressSegmentDone]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -115,13 +131,20 @@ const styles = StyleSheet.create({
   barTitleSpacer: {
     width: SIZES['size/icon-button'],
   },
-  title: {
-    fontSize: TYPOGRAPHY['type/sheet-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/sheet-title'].fontWeight,
-    color: COLORS['text/primary'],
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACING['space/row'],
     paddingHorizontal: SPACING['space/screen'],
     paddingTop: SPACING['space/gap-tight'],
     paddingBottom: SPACING['space/xs'],
+  },
+  title: {
+    flex: 1,
+    fontSize: TYPOGRAPHY['type/sheet-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/sheet-title'].fontWeight,
+    color: COLORS['text/primary'],
   },
   progress: {
     flexDirection: 'row',

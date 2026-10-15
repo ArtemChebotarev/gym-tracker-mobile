@@ -1,21 +1,17 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
-import {
-  EMPTY_EXERCISE_FORM_VALUES,
-  ExerciseFormSheet,
-  type ExerciseFormSubmitInput,
-  type ExerciseFormValues,
-} from '@components/ExerciseFormSheet';
+import { newExerciseHref } from '@components/ExerciseCreateScreenLogic';
+import { ExerciseTypeSheet } from '@components/ExerciseTypeSheet';
 import {
   ExerciseLibraryScreen,
   type ExerciseLibraryFilters,
 } from '@components/ExerciseLibraryScreen';
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
 import { exerciseDetailHref } from '@components/historyRoutes';
-import { useCreateCustomExercise } from '@state/useCreateCustomExercise';
+import type { ExerciseType } from '@domain/catalog';
+import { useHandoffSheet } from '@components/useHandoffSheet';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { loadErrorOf } from '@state/loadError';
 
@@ -25,14 +21,15 @@ export default function LibraryScreen() {
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
   const [draftFilters, setDraftFilters] = useState<ExerciseLibraryFilters>({});
   const [isFiltersSheetOpen, setIsFiltersSheetOpen] = useState(false);
-  const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
-  const [formValues, setFormValues] = useState<ExerciseFormValues>(EMPTY_EXERCISE_FORM_VALUES);
+  const typeSheet = useHandoffSheet();
+  const [newType, setNewType] = useState<ExerciseType>('strength');
+  // What was typed in the search when "Create" was tapped — the new exercise's starting name.
+  const [newName, setNewName] = useState('');
 
   const query = useExerciseLibrary({ ...filters, search });
   // Recomputed live as the sheet's draft selection changes, so its confirm button always shows
   // an up-to-date count before the draft is applied (08.6, "Filters — лист").
   const draftQuery = useExerciseLibrary({ ...draftFilters, search });
-  const createExercise = useCreateCustomExercise();
 
   function handleRequestFilters() {
     setDraftFilters(filters);
@@ -45,17 +42,13 @@ export default function LibraryScreen() {
   }
 
   function handleRequestCreate(prefillName?: string) {
-    setFormValues({ ...EMPTY_EXERCISE_FORM_VALUES, name: prefillName ?? '' });
-    setIsFormSheetOpen(true);
+    setNewType('strength');
+    setNewName(prefillName ?? '');
+    typeSheet.open();
   }
 
-  function handleSubmitForm(input: ExerciseFormSubmitInput) {
-    createExercise.mutate(input, {
-      onSuccess: () => setIsFormSheetOpen(false),
-      // The form stays open with what was typed, so Save can simply be pressed again.
-      onError: () => Alert.alert("Couldn't save the exercise", 'Try again.'),
-    });
-  }
+  // The fields are a page of their own: the sheet leaves without sliding, as on Cycles.
+  const handleTypeChosen = typeSheet.choose(() => router.push(newExerciseHref(newType, newName)));
 
   return (
     <>
@@ -81,12 +74,13 @@ export default function LibraryScreen() {
         onApply={handleApplyFilters}
         onClose={() => setIsFiltersSheetOpen(false)}
       />
-      <ExerciseFormSheet
-        visible={isFormSheetOpen}
-        values={formValues}
-        onChangeValues={setFormValues}
-        onSubmit={handleSubmitForm}
-        onClose={() => setIsFormSheetOpen(false)}
+      <ExerciseTypeSheet
+        visible={typeSheet.visible}
+        animated={typeSheet.animated}
+        type={newType}
+        onChangeType={setNewType}
+        onNext={handleTypeChosen}
+        onClose={typeSheet.close}
       />
     </>
   );

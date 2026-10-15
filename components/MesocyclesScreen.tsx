@@ -9,7 +9,7 @@
 // - `+` opens `MesoCreationMethodSheet` (123) instead of going straight to one flow: there are
 //   three ways to build a block. Whether `Copy a cycle` has anything to copy from is read off the
 //   Completed group, which already holds both ways a block ends. How the sheet opens and closes is
-//   `useMesoCreationMethodSheet`, shared with the Today tab's own empty state.
+//   `useHandoffSheet`, shared with the Today tab's own empty state.
 // - The empty state skips the sheet: `Start from a template` goes straight to Flow B's step T and
 //   `Build from scratch` to Flow A (08.10, "Вход из empty state"; GT-6). With no block at all there
 //   is nothing to copy, and a new user is best served by a template, so the screen says so with
@@ -57,7 +57,7 @@ import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
 import { MesoCreationMethodSheet } from './MesoCreationMethodSheet';
-import { useMesoCreationMethodSheet } from './useMesoCreationMethodSheet';
+import { useHandoffSheet } from './useHandoffSheet';
 import { useDelayedFlag } from './useDelayedFlag';
 import { useTabBarClearance } from './useTabBarClearance';
 
@@ -134,7 +134,7 @@ export function MesocyclesScreen({
 }: MesocyclesScreenProps) {
   const tabBarClearance = useTabBarClearance();
   const groups = useMemo(() => groupMesocycles(mesocycles ?? []), [mesocycles]);
-  const methodSheet = useMesoCreationMethodSheet();
+  const methodSheet = useHandoffSheet();
   const startRef = useRef<View>(null);
   // The hint rings a measured pill, so it waits until the Planned rows have been laid out: measured
   // on the commit that mounts them, it landed where the row was before layout.

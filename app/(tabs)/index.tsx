@@ -65,7 +65,7 @@ import {
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
-import { useMesoCreationMethodSheet } from '@components/useMesoCreationMethodSheet';
+import { useHandoffSheet } from '@components/useHandoffSheet';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
@@ -135,7 +135,7 @@ export default function TodayScreen() {
   // For the creation-method sheet's second row — whether there is anything to copy at all — and for
   // the empty Today's wording: `first` rather than `next` cycle when there has never been one.
   const mesocycles = useMesocycles();
-  const methodSheet = useMesoCreationMethodSheet();
+  const methodSheet = useHandoffSheet();
   // The Welcome dialog (GT-37, 08.11): up until `Got it` has been written, not merely tapped, and
   // never before the flags have been read — a dialog that flashed and went would be worse than one
   // that waits a frame.
