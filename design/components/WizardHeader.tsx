@@ -68,7 +68,8 @@ export function WizardHeader({
             <View style={styles.barTitleSpacer} />
           </>
         ) : (
-          <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
+          // A flow of one step has nothing to count.
+          totalSteps > 1 && <Text style={styles.stepLabel}>{`Step ${currentStep} of ${totalSteps}`}</Text>
         )}
       </View>
 

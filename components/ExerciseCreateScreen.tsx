@@ -1,6 +1,7 @@
 // New exercise, the step after choosing the type — the full-screen page of 10.1 FR-11 and canvas
 // 4.2 / 4.3, presented as a full-screen modal like the mesocycle editor. The type arrives as a
-// route param from the type sheet (ExerciseTypeSheet); Back closes the page.
+// route param from the type sheet (ExerciseTypeSheet). To the user this is the one and only step, so
+// it is a single-step wizard with a Close; the type sheet is not counted.
 //
 // JSX/rendering only — logic in ExerciseCreateScreenLogic.ts and ExerciseFormSheetLogic.ts.
 
@@ -54,9 +55,9 @@ export function ExerciseCreateScreen() {
   return (
     <WizardScreen
       title="New exercise"
-      currentStep={2}
-      totalSteps={2}
-      onBack={() => router.back()}
+      currentStep={1}
+      totalSteps={1}
+      onClose={() => router.back()}
       footer={
         <Button
           label="Create exercise"

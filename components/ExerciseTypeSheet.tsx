@@ -22,13 +22,16 @@ export type ExerciseTypeSheetProps = {
   onChangeType: (type: ExerciseType) => void;
   onNext: () => void;
   onClose: () => void;
+  /** False while closing for Next — the page opens at the same moment (see useHandoffSheet). */
+  animated?: boolean;
 };
 
-export function ExerciseTypeSheet({ visible, type, onChangeType, onNext, onClose }: ExerciseTypeSheetProps) {
+export function ExerciseTypeSheet({ visible, type, onChangeType, onNext, onClose, animated }: ExerciseTypeSheetProps) {
   return (
     <BottomSheet
       visible={visible}
       onClose={onClose}
+      animated={animated}
       title="New exercise"
       subtitle="What kind of work is it? You can't change this after the first logged set."
       footer={

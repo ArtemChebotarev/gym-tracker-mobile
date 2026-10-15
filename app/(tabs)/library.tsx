@@ -11,6 +11,7 @@ import {
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
 import { exerciseDetailHref } from '@components/historyRoutes';
 import type { ExerciseType } from '@domain/catalog';
+import { useHandoffSheet } from '@components/useHandoffSheet';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { loadErrorOf } from '@state/loadError';
 
@@ -20,7 +21,7 @@ export default function LibraryScreen() {
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
   const [draftFilters, setDraftFilters] = useState<ExerciseLibraryFilters>({});
   const [isFiltersSheetOpen, setIsFiltersSheetOpen] = useState(false);
-  const [isTypeSheetOpen, setIsTypeSheetOpen] = useState(false);
+  const typeSheet = useHandoffSheet();
   const [newType, setNewType] = useState<ExerciseType>('strength');
   // What was typed in the search when "Create" was tapped — the new exercise's starting name.
   const [newName, setNewName] = useState('');
@@ -43,15 +44,11 @@ export default function LibraryScreen() {
   function handleRequestCreate(prefillName?: string) {
     setNewType('strength');
     setNewName(prefillName ?? '');
-    setIsTypeSheetOpen(true);
+    typeSheet.open();
   }
 
-  // The fields are a page of their own, so the sheet hands off without sliding (it would
-  // otherwise still be sliding away under the page that opens).
-  function handleTypeChosen() {
-    setIsTypeSheetOpen(false);
-    router.push(newExerciseHref(newType, newName));
-  }
+  // The fields are a page of their own: the sheet leaves without sliding, as on Cycles.
+  const handleTypeChosen = typeSheet.choose(() => router.push(newExerciseHref(newType, newName)));
 
   return (
     <>
@@ -78,11 +75,12 @@ export default function LibraryScreen() {
         onClose={() => setIsFiltersSheetOpen(false)}
       />
       <ExerciseTypeSheet
-        visible={isTypeSheetOpen}
+        visible={typeSheet.visible}
+        animated={typeSheet.animated}
         type={newType}
         onChangeType={setNewType}
         onNext={handleTypeChosen}
-        onClose={() => setIsTypeSheetOpen(false)}
+        onClose={typeSheet.close}
       />
     </>
   );
