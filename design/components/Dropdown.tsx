@@ -12,8 +12,9 @@
 // The option list is capped at `size/dropdown-panel` and scrolls internally past that — a
 // 12-option list (every muscle group) shown in full would cover the screen.
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  type GestureResponderEvent,
   Modal,
   Pressable,
   ScrollView,
@@ -23,9 +24,39 @@ import {
   View,
 } from 'react-native';
 import type { AnchorRect } from '../popoverLayout';
-import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SHADOWS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { circle } from '../shapes';
 import { fieldStyles } from './fieldStyles';
+
+// Every mounted Dropdown, so that a tap that closes one on another's trigger opens that one in the
+// same gesture ("an open dropdown closes when a second opens"). The open list is a <Modal> whose
+// backdrop takes the tap, and a Modal blocks the field underneath — without this, switching from
+// one dropdown to the next would take a tap to close and another to open.
+type DropdownHandle = {
+  /** Reports the trigger's rectangle in the window, if it can be measured. */
+  measure: (done: (rect: AnchorRect) => void) => void;
+  open: () => void;
+};
+
+const mountedDropdowns = new Set<DropdownHandle>();
+
+function openDropdownAt(point: { x: number; y: number }, except: DropdownHandle) {
+  mountedDropdowns.forEach((handle) => {
+    if (handle === except) {
+      return;
+    }
+    handle.measure((rect) => {
+      const inside =
+        point.x >= rect.x &&
+        point.x <= rect.x + rect.width &&
+        point.y >= rect.y &&
+        point.y <= rect.y + rect.height;
+      if (inside) {
+        handle.open();
+      }
+    });
+  });
+}
 
 export type DropdownOption = {
   value: string;
@@ -52,20 +83,52 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
   const hasError = error !== undefined;
   const selectedOption = options.find((option) => option.value === value);
 
-  function open() {
+  // Reads only the trigger's ref and state setters, so it is the same function on every render.
+  const open = useCallback(() => {
     triggerRef.current?.measureInWindow((x, y, width, height) =>
       setAnchor({ x, y, width, height }),
     );
     setIsOpen(true);
+  }, []);
+
+  // Registered for the dropdown's whole life, so a tap that lands on another dropdown's backdrop
+  // can open this one (see `mountedDropdowns`).
+  const handleRef = useRef<DropdownHandle | null>(null);
+  useEffect(() => {
+    const handle: DropdownHandle = {
+      measure: (done) =>
+        triggerRef.current?.measureInWindow((x, y, width, height) =>
+          done({ x, y, width, height }),
+        ),
+      open,
+    };
+    handleRef.current = handle;
+    mountedDropdowns.add(handle);
+    return () => {
+      mountedDropdowns.delete(handle);
+    };
+  }, [open]);
+
+  function handleBackdropPress(event: GestureResponderEvent) {
+    setIsOpen(false);
+    if (handleRef.current !== null) {
+      openDropdownAt(
+        { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY },
+        handleRef.current,
+      );
+    }
   }
 
-  // Under the trigger unless the window has less room there than the list's own height.
-  const placement =
-    anchor === null
-      ? null
-      : window.height - (anchor.y + anchor.height) >= SIZES['size/dropdown-panel']
-        ? { left: anchor.x, width: anchor.width, top: anchor.y + anchor.height + SPACING['space/gap-tight'] }
-        : { left: anchor.x, width: anchor.width, bottom: window.height - anchor.y + SPACING['space/gap-tight'] };
+  // Under the trigger — over it when the window has less room below than above, so a field low on
+  // the screen opens upward instead of running off the bottom.
+  let placement: { left: number; width: number; top?: number; bottom?: number } | null = null;
+  if (anchor !== null) {
+    const below = window.height - (anchor.y + anchor.height);
+    const opensUp = below < SIZES['size/dropdown-panel'] && anchor.y > below;
+    placement = opensUp
+      ? { left: anchor.x, width: anchor.width, bottom: window.height - anchor.y + SPACING['space/gap-tight'] }
+      : { left: anchor.x, width: anchor.width, top: anchor.y + anchor.height + SPACING['space/gap-tight'] };
+  }
 
   return (
     <View>
@@ -95,7 +158,7 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
           accessibilityRole="button"
           accessibilityLabel="Close"
           style={styles.backdrop}
-          onPress={() => setIsOpen(false)}
+          onPress={handleBackdropPress}
         />
         <View
           pointerEvents="box-none"
@@ -187,7 +250,6 @@ const styles = StyleSheet.create({
     // screen. The half-row is deliberate: a visibly cut-off row is a stronger "there's more,
     // scroll" affordance than a clean break at a whole row boundary.
     maxHeight: SIZES['size/dropdown-panel'],
-    ...SHADOWS['shadow/lifted'],
     backgroundColor: COLORS['surface/card'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
