@@ -35,7 +35,8 @@ import { fieldStyles } from './fieldStyles';
 type DropdownHandle = {
   /** Reports the trigger's rectangle in the window, if it can be measured. */
   measure: (done: (rect: AnchorRect) => void) => void;
-  open: () => void;
+  /** `instant`: appear without the fade — the one that was open has just left without one. */
+  open: (instant: boolean) => void;
 };
 
 const mountedDropdowns = new Set<DropdownHandle>();
@@ -52,7 +53,7 @@ function openDropdownAt(point: { x: number; y: number }, except: DropdownHandle)
         point.y >= rect.y &&
         point.y <= rect.y + rect.height;
       if (inside) {
-        handle.open();
+        handle.open(true);
       }
     });
   });
@@ -77,6 +78,10 @@ export type DropdownProps = {
 
 export function Dropdown({ label, options, value, onChange, placeholder, error }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  // Whether the list appears and leaves without the fade. A fade is for opening from nothing and
+  // dismissing; choosing an option, or switching to another dropdown, is one gesture, and two
+  // fades back to back (the next Modal cannot present until the last has left) read as slow.
+  const [isInstant, setIsInstant] = useState(false);
   const [anchor, setAnchor] = useState<AnchorRect | null>(null);
   const triggerRef = useRef<View>(null);
   const window = useWindowDimensions();
@@ -84,10 +89,11 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
   const selectedOption = options.find((option) => option.value === value);
 
   // Reads only the trigger's ref and state setters, so it is the same function on every render.
-  const open = useCallback(() => {
+  const open = useCallback((instant: boolean) => {
     triggerRef.current?.measureInWindow((x, y, width, height) =>
       setAnchor({ x, y, width, height }),
     );
+    setIsInstant(instant);
     setIsOpen(true);
   }, []);
 
@@ -110,6 +116,7 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
   }, [open]);
 
   function handleBackdropPress(event: GestureResponderEvent) {
+    setIsInstant(true);
     setIsOpen(false);
     if (handleRef.current !== null) {
       openDropdownAt(
@@ -138,7 +145,7 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ expanded: isOpen }}
-        onPress={open}
+        onPress={() => open(false)}
         style={[fieldStyles.box, hasError && fieldStyles.boxError, styles.trigger]}
       >
         <View style={styles.triggerValue}>
@@ -153,7 +160,15 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
       </Pressable>
       {hasError && <Text style={fieldStyles.error}>{error}</Text>}
 
-      <Modal visible={isOpen} transparent animationType="fade" onRequestClose={() => setIsOpen(false)}>
+      <Modal
+        visible={isOpen}
+        transparent
+        animationType={isInstant ? 'none' : 'fade'}
+        onRequestClose={() => {
+          setIsInstant(false);
+          setIsOpen(false);
+        }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close"
@@ -180,6 +195,7 @@ export function Dropdown({ label, options, value, onChange, placeholder, error }
                   accessibilityState={{ selected }}
                   onPress={() => {
                     onChange(option.value);
+                    setIsInstant(true);
                     setIsOpen(false);
                   }}
                   style={({ pressed }) => [
