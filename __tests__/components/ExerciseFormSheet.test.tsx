@@ -158,6 +158,7 @@ describe('ExerciseFormSheet', () => {
       },
     });
 
+    expect(screen.getByText('Progression')).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'More work' }).props.accessibilityState.checked).toBe(true);
     expect(screen.getByRole('button', { name: '10 s' })).toBeTruthy();
   });

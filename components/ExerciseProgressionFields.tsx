@@ -6,6 +6,9 @@
 // The step (5 / 10 / 15 s) is only asked for the levers that move time (FR-8: `rounds` is always
 // one, `none` does not move).
 //
+// The heading is the caller's: the wizard's own title on the create page, a section label in the
+// edit sheet.
+//
 // Controlled: edits one `IntervalConfig`.
 
 import { Text, View } from 'react-native';
@@ -33,7 +36,6 @@ export type ExerciseProgressionFieldsProps = {
 export function ExerciseProgressionFields({ config, onChange }: ExerciseProgressionFieldsProps) {
   return (
     <View>
-      <Text style={fieldStyles.label}>Progression</Text>
       <Text style={styles.hint}>Miss a round and the plan repeats.</Text>
       <View style={styles.typeOptions} accessibilityRole="radiogroup">
         {INTERVAL_LEVERS.map((lever: IntervalLever) => (

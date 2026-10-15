@@ -67,7 +67,8 @@ export function ExerciseCreateScreen() {
   return (
     <WizardScreen
       {...navigation}
-      title="New exercise"
+      // The step names itself, as every step of the cycle editor does.
+      title={step === 2 ? 'Progression' : 'New exercise'}
       titleAccessory={
         <Chip
           variant="static"

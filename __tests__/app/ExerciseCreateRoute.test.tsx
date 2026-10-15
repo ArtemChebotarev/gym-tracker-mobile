@@ -147,6 +147,7 @@ describe('New exercise page', () => {
     }
     expect(screen.getByRole('radio', { name: 'Less rest' }).props.accessibilityState.checked).toBe(true);
     expect(screen.getByText('Progression')).toBeTruthy();
+    expect(screen.queryByText('New exercise')).toBeNull();
     expect(screen.getByText('How much shorter the rest gets each week.')).toBeTruthy();
 
     fireEvent.press(screen.getByRole('radio', { name: 'More work' }));
