@@ -68,15 +68,16 @@ describe('Dropdown', () => {
     expect(screen.getByText('Pick a group')).toBeTruthy();
   });
 
-  test('the option list expands inline, not in a separate overlay — pressing the trigger again collapses it', () => {
-    render(<Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={() => {}} />);
-    const trigger = screen.getByRole('button', { name: 'Muscle group' });
+  test('the option list floats over the screen; a tap outside it closes it without choosing', () => {
+    const onChange = jest.fn();
+    render(<Dropdown label="Muscle group" options={OPTIONS} value={undefined} onChange={onChange} />);
 
-    fireEvent.press(trigger);
+    fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
     expect(screen.getByRole('button', { name: 'Chest' })).toBeTruthy();
 
-    fireEvent.press(trigger);
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('button', { name: 'Chest' })).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   test('an option with a dotColor renders its color both on the trigger and in the option list', () => {
