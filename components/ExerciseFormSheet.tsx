@@ -36,10 +36,12 @@ import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { Dropdown } from '@design/components/Dropdown';
-import { ListRow } from '@design/components/ListRow';
+import { OptionCard } from '@design/components/OptionCard';
 import { TextField } from '@design/components/TextField';
 import { getEquipmentLabel } from '@design/equipmentLabel';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
@@ -158,23 +160,35 @@ export function ExerciseFormSheet({
         subtitle="What kind of work is it? You can't change this after the first logged set."
         footer={
           <View style={styles.buttonRow}>
-            <Button label="Cancel" variant="secondary" onPress={onClose} />
+            <View style={styles.cancelButton}>
+              <Button label="Cancel" variant="secondary" onPress={onClose} />
+            </View>
+            <View style={styles.confirmButton}>
+              <Button label="Next" onPress={() => setIsPickingType(false)} />
+            </View>
           </View>
         }
       >
-        <View>
-          {EXERCISE_TYPES.map((type) => (
-            <ListRow
-              key={type}
-              title={getExerciseTypeLabel(type)}
-              subtitle={getExerciseTypeDescription(type)}
-              trailing={{ type: 'chevron' }}
-              onPress={() => {
-                onChangeValues(valuesForType(values, type));
-                setIsPickingType(false);
-              }}
-            />
-          ))}
+        <View style={styles.typeOptions} accessibilityRole="radiogroup">
+          {EXERCISE_TYPES.map((type) => {
+            const Icon = getExerciseTypeIcon(type);
+            const selected = values.type === type;
+            return (
+              <OptionCard
+                key={type}
+                title={getExerciseTypeLabel(type)}
+                description={getExerciseTypeDescription(type)}
+                selected={selected}
+                onPress={() => onChangeValues(valuesForType(values, type))}
+                icon={
+                  <Icon
+                    size={ICON_SIZES['icon/button']}
+                    color={selected ? COLORS.accent : COLORS['text/secondary']}
+                  />
+                }
+              />
+            );
+          })}
         </View>
       </BottomSheet>
     );

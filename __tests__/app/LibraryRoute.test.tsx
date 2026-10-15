@@ -65,7 +65,7 @@ describe('Library route under storage failures', () => {
       .mockRejectedValueOnce(new Error('storage down'));
 
     fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
-    fireEvent.press(await screen.findByText('Strength'));
+    fireEvent.press(await screen.findByRole('button', { name: 'Next' }));
     fireEvent.changeText(await screen.findByPlaceholderText('e.g. Chest supported row'), 'My Row');
     fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
     fireEvent.press(await screen.findByText('Quads'));

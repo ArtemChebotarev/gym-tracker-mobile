@@ -64,7 +64,8 @@ function renderControlledSheet(initialValues: ExerciseFormValues) {
 
 // The sheet opens on its type step (10.1 FR-11); every test of the fields starts by choosing one.
 function chooseType(label: string) {
-  fireEvent.press(screen.getByText(label));
+  fireEvent.press(screen.getByRole('radio', { name: label }));
+  fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 }
 
 function chooseMuscleGroup(label: string) {

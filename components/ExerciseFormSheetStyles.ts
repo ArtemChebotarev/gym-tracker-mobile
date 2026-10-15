@@ -18,6 +18,9 @@ export const styles = StyleSheet.create({
   fields: {
     minHeight: SIZES['size/form-fields'],
   },
+  typeOptions: {
+    gap: SPACING['space/gap-tight'],
+  },
   field: {
     marginBottom: SPACING['space/section'],
   },
