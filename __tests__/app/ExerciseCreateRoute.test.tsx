@@ -142,7 +142,7 @@ describe('New exercise page', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
     expect(screen.getByText('Step 2 of 2')).toBeTruthy();
-    for (const name of ['Less rest', 'More work', 'More rounds', 'Keep plan']) {
+    for (const name of ['Less rest', 'More work', 'More rounds', 'None']) {
       expect(screen.getByRole('radio', { name })).toBeTruthy();
     }
     expect(screen.getByRole('radio', { name: 'Less rest' }).props.accessibilityState.checked).toBe(true);

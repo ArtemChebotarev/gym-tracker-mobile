@@ -40,7 +40,7 @@ describe('defaultExerciseConfig', () => {
     });
   });
 
-  test('give interval 3 x 2:00 with 1:00 rest, 5 s get ready, the rest lever and a 15 s step', () => {
+  test('give interval 3 x 2:00 with 1:00 rest, 5 s get ready, the rest lever and a 10 s step', () => {
     expect(defaultExerciseConfig('interval')).toEqual({
       type: 'interval',
       rounds: 3,
@@ -48,7 +48,7 @@ describe('defaultExerciseConfig', () => {
       restSec: 60,
       getReadySec: 5,
       lever: 'rest',
-      stepSec: 15,
+      stepSec: 10,
     });
   });
 

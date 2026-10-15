@@ -51,7 +51,7 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
         restSec: 60,
         getReadySec: 5,
         lever: 'rest',
-        stepSec: 15,
+        stepSec: 10,
       };
     case 'mobility':
       return { type: 'mobility', durationSec: 600 };

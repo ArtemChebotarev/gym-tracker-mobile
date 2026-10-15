@@ -7,7 +7,7 @@ export const LEVER_LABEL: Record<IntervalLever, string> = {
   rest: 'Less rest',
   workTime: 'More work',
   rounds: 'More rounds',
-  none: 'Keep plan',
+  none: 'None',
 };
 
 /** Whether the lever moves a time, and so has a step (FR-8: `rounds` is always one). */
