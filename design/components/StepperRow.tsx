@@ -4,6 +4,9 @@
 // card with a caption label — the form field of a mesocycle's length or days — this is a quiet row
 // among others and costs a third of the height.
 //
+// One line, always: what a setting adds to its name goes after it, in grey (`Rest · between sets`),
+// not on a second line, so rows with and without a qualifier are the same row.
+//
 // The control is `Stepper variant="inline"`, not a second implementation; this only lays it out
 // next to its label. The value is formatted by the caller, like Stepper's.
 
@@ -16,16 +19,18 @@ export type StepperRowProps = Pick<
   StepperProps,
   'label' | 'value' | 'onChange' | 'min' | 'max' | 'step' | 'formatValue'
 > & {
-  /** A line under the label — what the setting means. */
-  caption?: string;
+  /** What qualifies the label, in grey after it on the same line: `Rest` + `between sets`. */
+  labelSuffix?: string;
 };
 
-export function StepperRow({ label, caption, ...stepper }: StepperRowProps) {
+export function StepperRow({ label, labelSuffix, ...stepper }: StepperRowProps) {
   return (
     <View style={styles.row}>
       <View style={styles.text}>
-        <Text style={styles.label}>{label}</Text>
-        {caption !== undefined && <Text style={styles.caption}>{caption}</Text>}
+        <Text style={styles.label} numberOfLines={1}>
+          {label}
+          {labelSuffix !== undefined && <Text style={styles.suffix}>{` · ${labelSuffix}`}</Text>}
+        </Text>
       </View>
       <Stepper
         variant="inline"
@@ -43,7 +48,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACING['space/row'],
-    // A fixed height, content centred in it, so a row with a caption and one without are alike.
+    // A fixed height, content centred in it.
     height: SIZES['size/stepper-row'],
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
@@ -56,9 +61,7 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS['text/primary'],
   },
-  caption: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
+  suffix: {
     color: COLORS['text/muted'],
   },
 });

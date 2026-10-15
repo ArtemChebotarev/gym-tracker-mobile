@@ -42,8 +42,8 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
     case 'power':
       return (
         <StepperRow
-          label="Rest between sets"
-          caption="Starts after you log a set"
+          label="Rest"
+          labelSuffix="between sets"
           value={config.restSec}
           onChange={(restSec) => onChange({ ...config, restSec })}
           min={0}
@@ -87,7 +87,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
           />
           <StepperRow
             label="Rest"
-            caption="Same between every round"
+            labelSuffix="between sets"
             value={config.restSec}
             onChange={(restSec) => onChange({ ...config, restSec })}
             min={0}
@@ -96,8 +96,8 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
             formatValue={formatClock}
           />
           <StepperRow
-            label="Get ready"
-            caption="Countdown before a round"
+            label="Countdown"
+            labelSuffix="before round"
             value={config.getReadySec}
             onChange={(getReadySec) => onChange({ ...config, getReadySec })}
             min={0}

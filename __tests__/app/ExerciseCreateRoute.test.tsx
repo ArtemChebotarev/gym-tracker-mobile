@@ -102,7 +102,7 @@ describe('New exercise page', () => {
     renderRoute();
 
     expect(screen.getByText('1:00')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Rest' }));
     expect(screen.getByText('1:05')).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText('Name'), 'Medball slam');
     fireEvent.press(createButton());

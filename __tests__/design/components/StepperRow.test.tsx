@@ -3,11 +3,11 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StepperRow } from '@design/components/StepperRow';
 
 describe('StepperRow', () => {
-  test('shows the label, its caption and the formatted value', () => {
+  test('shows the label, its suffix on the same line and the formatted value', () => {
     render(
       <StepperRow
         label="Rest"
-        caption="Same between every round"
+        labelSuffix="between sets"
         value={60}
         onChange={() => {}}
         min={0}
@@ -17,8 +17,7 @@ describe('StepperRow', () => {
       />,
     );
 
-    expect(screen.getByText('Rest')).toBeTruthy();
-    expect(screen.getByText('Same between every round')).toBeTruthy();
+    expect(screen.getByText(/^Rest/)).toHaveTextContent('Rest · between sets');
     expect(screen.getByText('1:00')).toBeTruthy();
   });
 
