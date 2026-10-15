@@ -3,7 +3,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { SIZES, SPACING } from '@design/tokens';
+import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 // Matches 03-new-exercise.html's .btn.p{flex:1.4} beside a flex:1 Cancel — the confirming
 // button reads wider than Cancel. A flex ratio isn't a size or a color, so it stays a local
@@ -18,6 +18,15 @@ export const styles = StyleSheet.create({
   fields: {
     minHeight: SIZES['size/form-fields'],
   },
+  // The one line over a group of options that says what holds for all of them (canvas 4.3).
+  hint: {
+    ...TYPOGRAPHY['type/meta'],
+    color: COLORS['text/muted'],
+    marginBottom: SPACING['space/row'],
+  },
+  progressionStep: {
+    marginTop: SPACING['space/section'],
+  },
   typeOptions: {
     gap: SPACING['space/gap-tight'],
   },
@@ -25,9 +34,6 @@ export const styles = StyleSheet.create({
   // already carries the gap — no further margin of its own.
   sectionLabel: {
     marginTop: 0,
-  },
-  progression: {
-    marginTop: SPACING['space/section'],
   },
   field: {
     marginBottom: SPACING['space/section'],

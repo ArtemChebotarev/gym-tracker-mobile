@@ -17,8 +17,8 @@ export type OptionCardProps = {
   description: string;
   selected: boolean;
   onPress: () => void;
-  /** Rendered inside the round well; the caller colors it for the selected state. */
-  icon: ReactNode;
+  /** Rendered inside the round well; the caller colors it for the selected state. Without one, no well. */
+  icon?: ReactNode;
 };
 
 export function OptionCard({ title, description, selected, onPress, icon }: OptionCardProps) {
@@ -34,7 +34,7 @@ export function OptionCard({ title, description, selected, onPress, icon }: Opti
         pressed && styles.pressed,
       ]}
     >
-      <View style={styles.iconWell}>{icon}</View>
+      {icon !== undefined && <View style={styles.iconWell}>{icon}</View>}
       <View style={styles.text}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>

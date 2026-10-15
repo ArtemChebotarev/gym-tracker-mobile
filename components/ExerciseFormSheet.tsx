@@ -19,6 +19,7 @@ import { Button } from '@design/components/Button';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 
 import { ExerciseFormFields } from './ExerciseFormFields';
+import { ExerciseProgressionFields } from './ExerciseProgressionFields';
 import { canSubmitExerciseForm, isExerciseEditableInSheet } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
@@ -105,6 +106,14 @@ export function ExerciseFormSheet({
       }
     >
       <ExerciseFormFields values={values} onChangeValues={onChangeValues} />
+      {values.config?.type === 'interval' && (
+        <View style={styles.progressionStep}>
+          <ExerciseProgressionFields
+            config={values.config}
+            onChange={(config) => onChangeValues({ ...values, config })}
+          />
+        </View>
+      )}
     </BottomSheet>
   );
 }

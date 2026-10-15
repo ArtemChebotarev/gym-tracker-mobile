@@ -97,6 +97,14 @@ describe('New exercise page', () => {
     expect(screen.getByRole('button', { name: 'Muscle group' })).toHaveTextContent(/Full body/);
   });
 
+  test('power is a single step: no counter, Create straight away', () => {
+    mockParams = { type: 'power' };
+    renderRoute();
+
+    expect(screen.queryByText(/^Step /)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Create exercise' })).toBeTruthy();
+  });
+
   test('power: only a name is needed; stored as fullBody with its defaults, rest steppable', async () => {
     mockParams = { type: 'power' };
     renderRoute();
@@ -116,18 +124,36 @@ describe('New exercise page', () => {
     });
   });
 
-  test('timed work: rounds, work, rest, get ready and the lever, with the FR-9 defaults', async () => {
+  test('timed work: step 1 is the plan with the FR-9 defaults, and ends in Next, not Create', () => {
     mockParams = { type: 'interval' };
     renderRoute();
 
+    expect(screen.getByText('Step 1 of 2')).toBeTruthy();
     expect(screen.getByText('2:00')).toBeTruthy();
     expect(screen.getByText('0:05')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Progress by' })).toHaveTextContent(/Less rest/);
+    expect(screen.queryByRole('button', { name: 'Create exercise' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Next' }).props.accessibilityState.disabled).toBe(true);
+  });
+
+  test('timed work: step 2 offers the four levers, and Create stores the plan with the chosen one', async () => {
+    mockParams = { type: 'interval' };
+    renderRoute();
     fireEvent.changeText(screen.getByLabelText('Name'), 'Heavy bag');
-    fireEvent.press(createButton());
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+
+    expect(screen.getByText('Step 2 of 2')).toBeTruthy();
+    for (const name of ['Less rest', 'More work', 'More rounds', 'Keep plan']) {
+      expect(screen.getByRole('radio', { name })).toBeTruthy();
+    }
+    expect(screen.getByRole('radio', { name: 'Less rest' }).props.accessibilityState.checked).toBe(true);
+
+    fireEvent.press(screen.getByRole('radio', { name: 'More work' }));
+    fireEvent.press(screen.getByRole('button', { name: '5 s' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Create exercise' }));
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
     expect(await lastCreated()).toMatchObject({
+      name: 'Heavy bag',
       type: 'interval',
       config: {
         type: 'interval',
@@ -135,10 +161,31 @@ describe('New exercise page', () => {
         workSec: 120,
         restSec: 60,
         getReadySec: 5,
-        lever: 'rest',
-        stepSec: 15,
+        lever: 'workTime',
+        stepSec: 5,
       },
     });
+  });
+
+  test('the step is asked only for levers that move time', () => {
+    mockParams = { type: 'interval', name: 'Heavy bag' };
+    renderRoute();
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByText('Step')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('radio', { name: 'More rounds' }));
+    expect(screen.queryByText('Step')).toBeNull();
+  });
+
+  test('Back from step 2 returns to the plan with what was typed', () => {
+    mockParams = { type: 'interval', name: 'Heavy bag' };
+    renderRoute();
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+
+    fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+
+    expect(screen.getByText('Step 1 of 2')).toBeTruthy();
+    expect(screen.getByLabelText('Name').props.value).toBe('Heavy bag');
   });
 
   test('mobility: only the duration, 10:00 by default', async () => {

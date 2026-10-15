@@ -137,4 +137,28 @@ describe('ExerciseFormSheet', () => {
     expect(props.onClose).toHaveBeenCalledTimes(1);
     expect(props.onSubmit).not.toHaveBeenCalled();
   });
+
+  test('an interval exercise shows its levers in the sheet too', () => {
+    renderSheet({
+      exercise: makeExercise({ name: 'Heavy bag', muscleGroup: 'fullBody', type: 'interval' }),
+      values: {
+        name: 'Heavy bag',
+        muscleGroup: 'fullBody',
+        equipment: undefined,
+        type: 'interval',
+        config: {
+          type: 'interval',
+          rounds: 3,
+          workSec: 120,
+          restSec: 60,
+          getReadySec: 5,
+          lever: 'workTime',
+          stepSec: 10,
+        },
+      },
+    });
+
+    expect(screen.getByRole('radio', { name: 'More work' }).props.accessibilityState.checked).toBe(true);
+    expect(screen.getByRole('button', { name: '10 s' })).toBeTruthy();
+  });
 });
