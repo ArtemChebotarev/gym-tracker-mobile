@@ -207,6 +207,27 @@ describe('New exercise page', () => {
     });
   });
 
+  test('tapping a time opens the time picker for that field, and Done closes it', () => {
+    mockParams = { type: 'interval' };
+    renderRoute();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Set Work' }));
+
+    // The row's label and the picker's title.
+    expect(screen.getAllByText('Work')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+  });
+
+  test('Rounds is a count: no time picker for it', () => {
+    mockParams = { type: 'interval' };
+    renderRoute();
+
+    expect(screen.queryByRole('button', { name: 'Set Rounds' })).toBeNull();
+  });
+
   test('a failed save says so and keeps the page open with what was typed', async () => {
     mockParams = { type: 'power' };
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);

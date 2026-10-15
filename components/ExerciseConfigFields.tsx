@@ -2,16 +2,22 @@
 // has) and FR-9 (their system defaults, which the caller seeds). Controlled: it edits one
 // `ExerciseConfig` and hands back the whole new one.
 //
+// Every time is a StepperRow whose value is also a button: `−` / `+` for a nudge by five seconds,
+// a tap on the value for the time picker (canvas 8.2) — one instance of it, told which field it is
+// setting. Rounds is a count, not a time, and keeps `−` / `+` only.
+//
 // Not here: the power load kind (kg / level / none, FR-2) — it has its own task (GT-75) — and the
 // interval's progression (ExerciseProgressionFields), which is a step of its own.
 //
 // JSX/rendering only — formatting lives in ExerciseFormSheetLogic.ts.
 
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { StepperRow } from '@design/components/StepperRow';
+import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
 import { formatClock } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
@@ -20,39 +26,106 @@ import { styles } from './ExerciseFormSheetStyles';
 const SECONDS_STEP = 5;
 const MINUTE = 60;
 
+/** A time field of a config: what it is called, what qualifies it, and what it may hold. */
+type TimeField = {
+  key: 'restSec' | 'workSec' | 'getReadySec' | 'durationSec';
+  label: string;
+  suffix?: string;
+  minSec: number;
+  maxSec: number;
+};
+
+const REST_BETWEEN_SETS: TimeField = {
+  key: 'restSec',
+  label: 'Rest',
+  suffix: 'between sets',
+  minSec: 0,
+  maxSec: 10 * MINUTE,
+};
+const REST_BETWEEN_ROUNDS: TimeField = { ...REST_BETWEEN_SETS, suffix: 'between rounds' };
+const WORK: TimeField = { key: 'workSec', label: 'Work', minSec: SECONDS_STEP, maxSec: 60 * MINUTE };
+const COUNTDOWN: TimeField = {
+  key: 'getReadySec',
+  label: 'Countdown',
+  suffix: 'before round',
+  minSec: 0,
+  maxSec: MINUTE / 2,
+};
+const DURATION: TimeField = {
+  key: 'durationSec',
+  label: 'Duration',
+  minSec: MINUTE,
+  maxSec: 60 * MINUTE,
+};
+
 export type ExerciseConfigFieldsProps = {
   config: ExerciseConfig;
   onChange: (config: ExerciseConfig) => void;
 };
 
 export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsProps) {
+  // The time field whose picker is open, if any.
+  const [editing, setEditing] = useState<TimeField | null>(null);
+
+  function valueOf(field: TimeField): number {
+    return (config as unknown as Record<string, number>)[field.key] ?? 0;
+  }
+
+  function setValue(field: TimeField, valueSec: number) {
+    onChange({ ...config, [field.key]: valueSec } as ExerciseConfig);
+  }
+
+  function renderTimeRow(field: TimeField) {
+    return (
+      <StepperRow
+        key={field.key}
+        label={field.label}
+        labelSuffix={field.suffix}
+        value={valueOf(field)}
+        onChange={(valueSec) => setValue(field, valueSec)}
+        min={field.minSec}
+        max={field.maxSec}
+        step={SECONDS_STEP}
+        formatValue={formatClock}
+        onValuePress={() => setEditing(field)}
+      />
+    );
+  }
+
+  const picker = (
+    <TimePickerSheet
+      visible={editing !== null}
+      onClose={() => setEditing(null)}
+      title={
+        editing === null
+          ? ''
+          : editing.suffix === undefined
+            ? editing.label
+            : `${editing.label} · ${editing.suffix}`
+      }
+      value={editing === null ? 0 : valueOf(editing)}
+      onChange={(valueSec) => editing !== null && setValue(editing, valueSec)}
+      minSec={editing?.minSec}
+      maxSec={editing?.maxSec ?? MINUTE}
+    />
+  );
+
   switch (config.type) {
     case 'power':
       return (
-        <StepperRow
-          label="Rest"
-          labelSuffix="between sets"
-          value={config.restSec}
-          onChange={(restSec) => onChange({ ...config, restSec })}
-          min={0}
-          max={10 * MINUTE}
-          step={SECONDS_STEP}
-          formatValue={formatClock}
-        />
+        <View>
+          {renderTimeRow(REST_BETWEEN_SETS)}
+          {picker}
+        </View>
       );
     case 'mobility':
       return (
-        <StepperRow
-          label="Duration"
-          value={config.durationSec}
-          onChange={(durationSec) => onChange({ ...config, durationSec })}
-          min={MINUTE}
-          max={60 * MINUTE}
-          step={MINUTE}
-          formatValue={formatClock}
-        />
+        <View>
+          {renderTimeRow(DURATION)}
+          {picker}
+        </View>
       );
-    case 'interval': {
+    case 'interval':
       return (
         <View>
           <Text style={[fieldStyles.label, styles.sectionLabel]}>Default plan</Text>
@@ -63,37 +136,11 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
             min={1}
             max={30}
           />
-          <StepperRow
-            label="Work"
-            value={config.workSec}
-            onChange={(workSec) => onChange({ ...config, workSec })}
-            min={SECONDS_STEP}
-            max={60 * MINUTE}
-            step={SECONDS_STEP}
-            formatValue={formatClock}
-          />
-          <StepperRow
-            label="Rest"
-            labelSuffix="between rounds"
-            value={config.restSec}
-            onChange={(restSec) => onChange({ ...config, restSec })}
-            min={0}
-            max={10 * MINUTE}
-            step={SECONDS_STEP}
-            formatValue={formatClock}
-          />
-          <StepperRow
-            label="Countdown"
-            labelSuffix="before round"
-            value={config.getReadySec}
-            onChange={(getReadySec) => onChange({ ...config, getReadySec })}
-            min={0}
-            max={MINUTE / 2}
-            step={SECONDS_STEP}
-            formatValue={formatClock}
-          />
+          {renderTimeRow(WORK)}
+          {renderTimeRow(REST_BETWEEN_ROUNDS)}
+          {renderTimeRow(COUNTDOWN)}
+          {picker}
         </View>
       );
-    }
   }
 }
