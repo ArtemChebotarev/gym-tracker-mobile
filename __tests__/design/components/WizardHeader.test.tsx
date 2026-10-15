@@ -9,7 +9,7 @@ describe('WizardHeader', () => {
     expect(screen.getByText('Step 1 of 3')).toBeTruthy();
   });
 
-  test('a flow of one step shows no counter', () => {
+  test('a flow of one step shows no counter and no progress bar', () => {
     render(<WizardHeader title="New exercise" currentStep={1} totalSteps={1} onClose={jest.fn()} />);
 
     expect(screen.queryByText(/^Step /)).toBeNull();

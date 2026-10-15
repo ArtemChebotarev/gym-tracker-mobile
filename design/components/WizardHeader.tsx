@@ -87,14 +87,17 @@ export function WizardHeader({
         </View>
       )}
 
-      <View style={styles.progress}>
-        {Array.from({ length: totalSteps }, (_, index) => (
-          <View
-            key={index}
-            style={[styles.progressSegment, index < currentStep && styles.progressSegmentDone]}
-          />
-        ))}
-      </View>
+      {/* A flow of one step has nothing to measure progress against — no counter, no bar. */}
+      {totalSteps > 1 && (
+        <View style={styles.progress}>
+          {Array.from({ length: totalSteps }, (_, index) => (
+            <View
+              key={index}
+              style={[styles.progressSegment, index < currentStep && styles.progressSegmentDone]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
