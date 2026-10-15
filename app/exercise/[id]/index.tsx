@@ -28,6 +28,7 @@ import {
   formatHideExerciseWarning,
 } from '@components/ExerciseMenuLogic';
 import { toExerciseId } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { buildHowToUrl } from '@domain/exerciseHowTo';
 import { useExerciseHistory } from '@state/useExerciseHistory';
 import { loadErrorOf } from '@state/loadError';
@@ -60,6 +61,8 @@ export default function ExerciseDetailRoute() {
       name: exercise.name,
       muscleGroup: exercise.muscleGroup,
       equipment: exercise.equipment,
+      type: exerciseTypeOf(exercise),
+      config: exercise.config,
     });
     setIsFormSheetOpen(true);
   }

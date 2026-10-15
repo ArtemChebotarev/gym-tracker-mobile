@@ -62,6 +62,11 @@ function renderControlledSheet(initialValues: ExerciseFormValues) {
   return { onSubmit };
 }
 
+// The sheet opens on its type step (10.1 FR-11); every test of the fields starts by choosing one.
+function chooseType(label: string) {
+  fireEvent.press(screen.getByText(label));
+}
+
 function chooseMuscleGroup(label: string) {
   fireEvent.press(screen.getByRole('button', { name: 'Muscle group' }));
   fireEvent.press(screen.getByRole('button', { name: label }));
@@ -79,22 +84,35 @@ describe('ExerciseFormSheet — create mode', () => {
     expect(screen.queryByText('New exercise')).toBeNull();
   });
 
-  test('titles itself "New exercise" and reflects the given (empty) values', () => {
+  test('opens on the type step, offering the four types and no fields yet', () => {
     renderSheet();
 
     expect(screen.getByText('New exercise')).toBeTruthy();
+    for (const label of ['Strength', 'Power', 'Timed work', 'Mobility']) {
+      expect(screen.getByText(label)).toBeTruthy();
+    }
+    expect(screen.queryByLabelText('Name')).toBeNull();
+  });
+
+  test('choosing Strength shows the fields, empty, with Create', () => {
+    renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Strength');
+
+    expect(screen.getByText('New strength')).toBeTruthy();
     expect(screen.getByLabelText('Name').props.value).toBe('');
     expect(screen.getByRole('button', { name: 'Create' })).toBeTruthy();
   });
 
   test('reflects a prefilled name — e.g. seeded from the search-empty-state "Create" action', () => {
-    renderSheet({ values: { ...EMPTY_EXERCISE_FORM_VALUES, name: 'Zercher Squat' } });
+    renderControlledSheet({ ...EMPTY_EXERCISE_FORM_VALUES, name: 'Zercher Squat' });
+    chooseType('Strength');
 
     expect(screen.getByLabelText('Name').props.value).toBe('Zercher Squat');
   });
 
   test('Create is disabled until both Name and Muscle group are filled', () => {
     renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Strength');
 
     expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
 
@@ -107,6 +125,7 @@ describe('ExerciseFormSheet — create mode', () => {
 
   test('a name of only whitespace does not enable Create', () => {
     renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Strength');
 
     fireEvent.changeText(screen.getByLabelText('Name'), '   ');
     chooseMuscleGroup('Chest');
@@ -116,30 +135,33 @@ describe('ExerciseFormSheet — create mode', () => {
 
   test('trims leading/trailing whitespace from the name on submit', () => {
     const { onSubmit } = renderControlledSheet({ ...EMPTY_EXERCISE_FORM_VALUES, name: '  Zercher Squat  ' });
+    chooseType('Strength');
 
     chooseMuscleGroup('Quads');
     fireEvent.press(screen.getByRole('button', { name: 'Create' }));
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: undefined, type: 'strength', config: undefined });
   });
 
   test('a name matching an existing catalog exercise is allowed — different entities, no dedup check', () => {
     const { onSubmit } = renderControlledSheet({ ...EMPTY_EXERCISE_FORM_VALUES, name: 'Bench Press' });
+    chooseType('Strength');
 
     chooseMuscleGroup('Chest');
     fireEvent.press(screen.getByRole('button', { name: 'Create' }));
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Bench Press', muscleGroup: 'chest', equipment: undefined });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Bench Press', muscleGroup: 'chest', equipment: undefined, type: 'strength', config: undefined });
   });
 
   test('equipment is optional and submits alongside name/muscle group when chosen', () => {
     const { onSubmit } = renderControlledSheet({ ...EMPTY_EXERCISE_FORM_VALUES, name: 'Zercher Squat' });
+    chooseType('Strength');
 
     chooseMuscleGroup('Quads');
     chooseEquipment('Barbell');
     fireEvent.press(screen.getByRole('button', { name: 'Create' }));
 
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: 'barbell' });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Zercher Squat', muscleGroup: 'quads', equipment: 'barbell', type: 'strength', config: undefined });
   });
 
   test('Cancel calls onClose without submitting', () => {
@@ -154,11 +176,93 @@ describe('ExerciseFormSheet — create mode', () => {
   });
 });
 
+describe('ExerciseFormSheet — hybrid types', () => {
+  test('a power exercise needs only a name — no muscle group — and submits fullBody with its defaults', () => {
+    const { onSubmit } = renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Power');
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Medball slam');
+    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: 'Medball slam',
+      muscleGroup: 'fullBody',
+      equipment: undefined,
+      type: 'power',
+      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+    });
+  });
+
+  test('power shows its rest field at the 1:00 default and steps it', () => {
+    renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Power');
+
+    expect(screen.getByText('1:00')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
+    expect(screen.getByText('1:15')).toBeTruthy();
+  });
+
+  test('a timed-work exercise shows rounds, work, rest, get ready and the lever, with FR-9 defaults', () => {
+    const { onSubmit } = renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Timed work');
+
+    expect(screen.getByText('2:00')).toBeTruthy();
+    expect(screen.getByText('0:05')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Progress by' })).toHaveTextContent(/Less rest/);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Heavy bag');
+    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'interval',
+        muscleGroup: 'fullBody',
+        config: {
+          type: 'interval',
+          rounds: 3,
+          workSec: 120,
+          restSec: 60,
+          getReadySec: 5,
+          lever: 'rest',
+          stepSec: 15,
+        },
+      }),
+    );
+  });
+
+  test('a mobility exercise shows only its duration, 10:00 by default', () => {
+    const { onSubmit } = renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Mobility');
+
+    expect(screen.getByText('10:00')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Progress by' })).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Cooldown');
+    fireEvent.press(screen.getByRole('button', { name: 'Create' }));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'mobility',
+        config: { type: 'mobility', durationSec: 600 },
+      }),
+    );
+  });
+
+  test('a strength exercise still needs a muscle group', () => {
+    renderControlledSheet(EMPTY_EXERCISE_FORM_VALUES);
+    chooseType('Strength');
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Zercher Squat');
+
+    expect(screen.getByRole('button', { name: 'Create' }).props.accessibilityState.disabled).toBe(true);
+  });
+});
+
 describe('ExerciseFormSheet — edit mode', () => {
   test('titles itself "Edit exercise" and shows the seeded values for the given custom exercise', () => {
     renderSheet({
       exercise: makeExercise({ name: 'Garage Press', muscleGroup: 'chest', equipment: 'dumbbell' }),
-      values: { name: 'Garage Press', muscleGroup: 'chest', equipment: 'dumbbell' },
+      values: { name: 'Garage Press', muscleGroup: 'chest', equipment: 'dumbbell', type: 'strength', config: undefined },
     });
 
     expect(screen.getByText('Edit exercise')).toBeTruthy();
@@ -168,10 +272,27 @@ describe('ExerciseFormSheet — edit mode', () => {
     expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
   });
 
+  test('goes straight to the fields — the type is not picked again — with the exercise\'s own config', () => {
+    renderSheet({
+      exercise: makeExercise({ name: 'Cooldown', muscleGroup: 'fullBody', type: 'mobility' }),
+      values: {
+        name: 'Cooldown',
+        muscleGroup: 'fullBody',
+        equipment: undefined,
+        type: 'mobility',
+        config: { type: 'mobility', durationSec: 900 },
+      },
+    });
+
+    expect(screen.getByText('Edit exercise')).toBeTruthy();
+    expect(screen.getByText('15:00')).toBeTruthy();
+    expect(screen.queryByText('Timed work')).toBeNull();
+  });
+
   test('a catalog exercise cannot be opened in this sheet', () => {
     renderSheet({
       exercise: makeExercise({ source: 'catalog' }),
-      values: { name: 'Bench Press', muscleGroup: 'chest', equipment: undefined },
+      values: { name: 'Bench Press', muscleGroup: 'chest', equipment: undefined, type: 'strength', config: undefined },
     });
 
     expect(screen.queryByText('Edit exercise')).toBeNull();

@@ -19,36 +19,62 @@
 // JSX/rendering only — styles live in ExerciseFormSheetStyles.ts and pure helpers in
 // ExerciseFormSheetLogic.ts, per the code-style skill.
 
+import { useState } from 'react';
 import { View } from 'react-native';
 
-import { EQUIPMENT_OPTIONS, MUSCLE_GROUPS, type Equipment, type Exercise, type MuscleGroup } from '@domain/catalog';
+import {
+  EQUIPMENT_OPTIONS,
+  EXERCISE_TYPES,
+  FULL_BODY,
+  MUSCLE_GROUPS,
+  type Equipment,
+  type Exercise,
+  type ExerciseType,
+  type MuscleGroup,
+} from '@domain/catalog';
+import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { Dropdown } from '@design/components/Dropdown';
+import { ListRow } from '@design/components/ListRow';
 import { TextField } from '@design/components/TextField';
 import { getEquipmentLabel } from '@design/equipmentLabel';
+import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
-import { canSubmitExerciseForm, isExerciseEditableInSheet } from './ExerciseFormSheetLogic';
+import { ExerciseConfigFields } from './ExerciseConfigFields';
+import {
+  canSubmitExerciseForm,
+  isExerciseEditableInSheet,
+  valuesForType,
+} from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
 export type ExerciseFormValues = {
   name: string;
   muscleGroup: MuscleGroup | undefined;
   equipment: Equipment | undefined;
+  /** What the exercise is (10.1 FR-1). Picked in the sheet's first step when creating. */
+  type: ExerciseType;
+  /** The type's defaults (FR-9); `undefined` exactly when `type` is `strength`. */
+  config: ExerciseConfig | undefined;
 };
 
 export const EMPTY_EXERCISE_FORM_VALUES: ExerciseFormValues = {
   name: '',
   muscleGroup: undefined,
   equipment: undefined,
+  type: 'strength',
+  config: undefined,
 };
 
 export type ExerciseFormSubmitInput = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  type: ExerciseType;
+  config?: ExerciseConfig;
 };
 
 export type ExerciseFormSheetProps = {
@@ -73,6 +99,10 @@ const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((muscleGroup) => {
   };
 });
 
+// A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, shown as "None".
+const NO_GROUP_OPTION = { value: FULL_BODY, label: 'None', dotColor: undefined };
+const NON_STRENGTH_MUSCLE_GROUP_OPTIONS = [NO_GROUP_OPTION, ...MUSCLE_GROUP_OPTIONS];
+
 const EQUIPMENT_DROPDOWN_OPTIONS = EQUIPMENT_OPTIONS.map((equipment) => ({
   value: equipment,
   label: getEquipmentLabel(equipment),
@@ -88,6 +118,19 @@ export function ExerciseFormSheet({
 }: ExerciseFormSheetProps) {
   const isEditMode = exercise !== undefined;
   const canOpen = exercise === undefined || isExerciseEditableInSheet(exercise);
+  // Creating starts by choosing the type (10.1 FR-11: "Выбор типа — первый шаг шторки"); editing
+  // goes straight to the fields, the type being what the exercise already is.
+  const [isPickingType, setIsPickingType] = useState(!isEditMode);
+
+  // Each opening starts over from the first step. Adjusting state during render on a change of
+  // `visible`, rather than in an effect, so the sheet never paints one frame of the old step.
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible) {
+      setIsPickingType(!isEditMode);
+    }
+  }
 
   if (!canOpen) {
     return null;
@@ -97,14 +140,52 @@ export function ExerciseFormSheet({
     if (values.muscleGroup === undefined) {
       return;
     }
-    onSubmit({ name: values.name.trim(), muscleGroup: values.muscleGroup, equipment: values.equipment });
+    onSubmit({
+      name: values.name.trim(),
+      muscleGroup: values.muscleGroup,
+      equipment: values.equipment,
+      type: values.type,
+      config: values.config,
+    });
   }
+
+  if (isPickingType) {
+    return (
+      <BottomSheet
+        visible={visible}
+        onClose={onClose}
+        title="New exercise"
+        footer={
+          <View style={styles.buttonRow}>
+            <Button label="Cancel" variant="secondary" onPress={onClose} />
+          </View>
+        }
+      >
+        <View>
+          {EXERCISE_TYPES.map((type) => (
+            <ListRow
+              key={type}
+              title={getExerciseTypeLabel(type)}
+              subtitle={getExerciseTypeDescription(type)}
+              trailing={{ type: 'chevron' }}
+              onPress={() => {
+                onChangeValues(valuesForType(values, type));
+                setIsPickingType(false);
+              }}
+            />
+          ))}
+        </View>
+      </BottomSheet>
+    );
+  }
+
+  const isStrength = values.type === 'strength';
 
   return (
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title={isEditMode ? 'Edit exercise' : 'New exercise'}
+      title={isEditMode ? 'Edit exercise' : `New ${getExerciseTypeLabel(values.type).toLowerCase()}`}
       footer={
         <View style={styles.buttonRow}>
           <View style={styles.cancelButton}>
@@ -114,7 +195,7 @@ export function ExerciseFormSheet({
             <Button
               label={isEditMode ? 'Save' : 'Create'}
               onPress={handleSubmit}
-              disabled={!canSubmitExerciseForm(values.name, values.muscleGroup)}
+              disabled={!canSubmitExerciseForm(values.name, values.muscleGroup, values.type)}
             />
           </View>
         </View>
@@ -133,7 +214,7 @@ export function ExerciseFormSheet({
         <View style={styles.field}>
           <Dropdown
             label="Muscle group"
-            options={MUSCLE_GROUP_OPTIONS}
+            options={isStrength ? MUSCLE_GROUP_OPTIONS : NON_STRENGTH_MUSCLE_GROUP_OPTIONS}
             value={values.muscleGroup}
             onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
             placeholder="Choose muscle group"
@@ -149,6 +230,13 @@ export function ExerciseFormSheet({
             placeholder="Choose equipment"
           />
         </View>
+
+        {values.config !== undefined && (
+          <ExerciseConfigFields
+            config={values.config}
+            onChange={(config) => onChangeValues({ ...values, config })}
+          />
+        )}
       </View>
     </BottomSheet>
   );
