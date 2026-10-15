@@ -6,12 +6,13 @@
 //
 // JSX/rendering only — formatting lives in ExerciseFormSheetLogic.ts.
 
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { INTERVAL_LEVERS, INTERVAL_STEPS_SEC, type ExerciseConfig, type IntervalLever } from '@domain/exerciseConfig';
 import { Dropdown } from '@design/components/Dropdown';
 import { SegmentedControl } from '@design/components/SegmentedControl';
-import { Stepper } from '@design/components/Stepper';
+import { fieldStyles } from '@design/components/fieldStyles';
+import { StepperRow } from '@design/components/StepperRow';
 
 import { formatClock } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
@@ -40,82 +41,72 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
   switch (config.type) {
     case 'power':
       return (
-        <View style={styles.field}>
-          <Stepper
-            label="Rest between sets"
+        <StepperRow
+          label="Rest between sets"
+          caption="Starts after you log a set"
+          value={config.restSec}
+          onChange={(restSec) => onChange({ ...config, restSec })}
+          min={0}
+          max={10 * MINUTE}
+          step={SECONDS_STEP}
+          formatValue={formatClock}
+        />
+      );
+    case 'mobility':
+      return (
+        <StepperRow
+          label="Duration"
+          value={config.durationSec}
+          onChange={(durationSec) => onChange({ ...config, durationSec })}
+          min={MINUTE}
+          max={60 * MINUTE}
+          step={MINUTE}
+          formatValue={formatClock}
+        />
+      );
+    case 'interval': {
+      const stepApplies = config.lever === 'rest' || config.lever === 'workTime';
+      return (
+        <View>
+          <Text style={[fieldStyles.label, styles.sectionLabel]}>Default plan</Text>
+          <StepperRow
+            label="Rounds"
+            value={config.rounds}
+            onChange={(rounds) => onChange({ ...config, rounds })}
+            min={1}
+            max={30}
+          />
+          <StepperRow
+            label="Work"
+            value={config.workSec}
+            onChange={(workSec) => onChange({ ...config, workSec })}
+            min={SECONDS_STEP}
+            max={60 * MINUTE}
+            step={SECONDS_STEP}
+            formatValue={formatClock}
+          />
+          <StepperRow
+            label="Rest"
+            caption="Same between every round"
             value={config.restSec}
             onChange={(restSec) => onChange({ ...config, restSec })}
             min={0}
             max={10 * MINUTE}
             step={SECONDS_STEP}
             formatValue={formatClock}
-            caption="Starts after you log a set"
           />
-        </View>
-      );
-    case 'mobility':
-      return (
-        <View style={styles.field}>
-          <Stepper
-            label="Duration"
-            value={config.durationSec}
-            onChange={(durationSec) => onChange({ ...config, durationSec })}
-            min={MINUTE}
-            max={60 * MINUTE}
-            step={MINUTE}
+          <StepperRow
+            label="Get ready"
+            caption="Countdown before a round you start with a tap"
+            value={config.getReadySec}
+            onChange={(getReadySec) => onChange({ ...config, getReadySec })}
+            min={0}
+            max={MINUTE / 2}
+            step={SECONDS_STEP}
             formatValue={formatClock}
           />
-        </View>
-      );
-    case 'interval': {
-      const stepApplies = config.lever === 'rest' || config.lever === 'workTime';
-      return (
-        <View>
-          <View style={styles.field}>
-            <Stepper
-              label="Rounds"
-              value={config.rounds}
-              onChange={(rounds) => onChange({ ...config, rounds })}
-              min={1}
-              max={30}
-            />
-          </View>
-          <View style={styles.field}>
-            <Stepper
-              label="Work"
-              value={config.workSec}
-              onChange={(workSec) => onChange({ ...config, workSec })}
-              min={SECONDS_STEP}
-              max={60 * MINUTE}
-              step={SECONDS_STEP}
-              formatValue={formatClock}
-            />
-          </View>
-          <View style={styles.field}>
-            <Stepper
-              label="Rest"
-              value={config.restSec}
-              onChange={(restSec) => onChange({ ...config, restSec })}
-              min={0}
-              max={10 * MINUTE}
-              step={SECONDS_STEP}
-              formatValue={formatClock}
-              caption="Same between every round"
-            />
-          </View>
-          <View style={styles.field}>
-            <Stepper
-              label="Get ready"
-              value={config.getReadySec}
-              onChange={(getReadySec) => onChange({ ...config, getReadySec })}
-              min={0}
-              max={MINUTE / 2}
-              step={SECONDS_STEP}
-              formatValue={formatClock}
-              caption="Countdown before a round you start with a tap"
-            />
-          </View>
-          <View style={styles.field}>
+
+          <View style={[styles.field, styles.progression]}>
             <Dropdown
               label="Progress by"
               options={LEVER_OPTIONS}
