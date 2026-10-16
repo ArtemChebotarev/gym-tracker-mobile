@@ -1,6 +1,10 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
-import { defaultExerciseConfig, exerciseTypeOf, holdIntervalConfig } from '@domain/exerciseConfigBuilders';
+import {
+  defaultExerciseConfig,
+  exerciseTypeOf,
+  holdIntervalConfig,
+} from '@domain/exerciseConfigBuilders';
 import { validateExerciseConfig } from '@domain/exerciseConfigValidators';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -43,7 +47,6 @@ describe('defaultExerciseConfig', () => {
   test('give interval 3 x 2:00 with 1:00 rest, 5 s get ready, the rest lever and a 10 s step', () => {
     expect(defaultExerciseConfig('interval')).toEqual({
       type: 'interval',
-      rounds: 3,
       workSec: 120,
       restSec: 60,
       getReadySec: 5,
@@ -71,7 +74,6 @@ describe('holdIntervalConfig', () => {
   test('give Hold 3 x 0:30 with 1:00 rest, the work time lever and a 5 s step (10.1, FR-10)', () => {
     expect(holdIntervalConfig()).toEqual({
       type: 'interval',
-      rounds: 3,
       workSec: 30,
       restSec: 60,
       getReadySec: 5,

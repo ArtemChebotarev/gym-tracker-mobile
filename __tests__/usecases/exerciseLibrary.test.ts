@@ -353,7 +353,10 @@ describe('hybrid exercise types', () => {
 
   test('keep a strength exercise exactly as before — no type and no config on it', async () => {
     const deps = makeDeps();
-    const created = await createCustomExercise({ name: 'Garage Press', muscleGroup: 'chest' }, deps);
+    const created = await createCustomExercise(
+      { name: 'Garage Press', muscleGroup: 'chest' },
+      deps,
+    );
 
     const stored = await deps.exerciseRepo.getById(created.id);
 
@@ -393,7 +396,7 @@ describe('hybrid exercise types', () => {
     expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
       type: 'interval',
       muscleGroup: 'fullBody',
-      config: { type: 'interval', rounds: 3, lever: 'rest' },
+      config: { type: 'interval', workSec: 120, lever: 'rest' },
     });
   });
 
@@ -447,7 +450,7 @@ describe('hybrid exercise types', () => {
         name: 'Rope',
         muscleGroup: 'fullBody',
         type: 'interval',
-        config: { ...(defaultExerciseConfig('interval') as IntervalConfig), rounds: 6 },
+        config: { ...(defaultExerciseConfig('interval') as IntervalConfig), workSec: 90 },
       },
       deps,
     );
@@ -460,7 +463,7 @@ describe('hybrid exercise types', () => {
     expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
       name: 'Jump Rope',
       type: 'interval',
-      config: { rounds: 6 },
+      config: { workSec: 90 },
     });
   });
 });

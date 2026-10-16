@@ -34,10 +34,7 @@ export function validateExerciseType(type: ExerciseType): void {
  * under one of the twelve groups — it is counted into volume by it — while the other types may
  * also be `fullBody`, having no one group (10 · Hybrid Exercises).
  */
-export function validateExerciseMuscleGroupFor(
-  type: ExerciseType,
-  muscleGroup: MuscleGroup,
-): void {
+export function validateExerciseMuscleGroupFor(type: ExerciseType, muscleGroup: MuscleGroup): void {
   if (isCatalogMuscleGroup(muscleGroup) || (type !== 'strength' && muscleGroup === FULL_BODY)) {
     return;
   }
@@ -52,7 +49,10 @@ export function validateExerciseMuscleGroupFor(
  * Throws unless `config` is what an exercise of `type` carries: none for `strength`, and for the
  * others the config tagged with that same type and holding sensible numbers.
  */
-export function validateExerciseConfig(type: ExerciseType, config: ExerciseConfig | undefined): void {
+export function validateExerciseConfig(
+  type: ExerciseType,
+  config: ExerciseConfig | undefined,
+): void {
   if (type === 'strength') {
     if (config !== undefined) {
       throw new Error('A strength exercise has no config.');
@@ -74,7 +74,6 @@ export function validateExerciseConfig(type: ExerciseType, config: ExerciseConfi
       assertWholeSeconds(config.restSec, 'Rest', 0);
       return;
     case 'interval':
-      assertWholeSeconds(config.rounds, 'Rounds', 1);
       assertWholeSeconds(config.workSec, 'Work time', 1);
       assertWholeSeconds(config.restSec, 'Rest', 0);
       assertWholeSeconds(config.getReadySec, 'Get ready', 0);

@@ -21,14 +21,6 @@ const mobility = (overrides: Partial<MobilityConfig> = {}): MobilityConfig => ({
   ...overrides,
 });
 
-describe('a single round without rest', () => {
-  test('rounds = 1 with restSec = 0 passes: the one round has no rest after it (10.1, FR-5)', () => {
-    expect(() =>
-      validateExerciseConfig('interval', interval({ rounds: 1, restSec: 0 })),
-    ).not.toThrow();
-  });
-});
-
 describe('validateExerciseType', () => {
   test('accept the four types', () => {
     for (const type of ['strength', 'power', 'interval', 'mobility'] as const) {
@@ -104,11 +96,8 @@ describe('validateExerciseConfig', () => {
     expect(() => validateExerciseConfig('interval', interval({ restSec: 0 }))).not.toThrow();
   });
 
-  test('refuse an interval without a round or without work time', () => {
-    expect(() => validateExerciseConfig('interval', interval({ rounds: 0 }))).toThrow('Rounds');
-    expect(() => validateExerciseConfig('interval', interval({ workSec: 0 }))).toThrow(
-      'Work time',
-    );
+  test('refuse an interval without work time', () => {
+    expect(() => validateExerciseConfig('interval', interval({ workSec: 0 }))).toThrow('Work time');
   });
 
   test('refuse a lever or a step outside the ones the first version has', () => {
