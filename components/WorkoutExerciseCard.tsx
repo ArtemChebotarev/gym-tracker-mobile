@@ -36,7 +36,6 @@ import { PlateRow } from '@design/components/PlateRow';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
-import { getEquipmentLabel } from '@design/equipmentLabel';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
@@ -62,6 +61,7 @@ import {
   holdLoggedWeight,
   weightFieldText,
   weightSwapPopover,
+  workoutEquipmentLabel,
 } from './WorkoutExerciseCardLogic';
 import { FirstWeightPopover } from './FirstWeightPopover';
 import { RirBadge } from './RirBadge';
@@ -161,7 +161,7 @@ export function WorkoutExerciseCard({
           <View style={styles.titleBlock}>
             <Text style={styles.name}>{exercise.name}</Text>
             {exercise.equipment !== undefined && (
-              <Text style={styles.equipment}>{getEquipmentLabel(exercise.equipment)}</Text>
+              <Text style={styles.equipment}>{workoutEquipmentLabel(exercise.equipment)}</Text>
             )}
           </View>
           <View style={styles.titleActions}>

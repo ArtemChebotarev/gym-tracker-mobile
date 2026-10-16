@@ -10,6 +10,7 @@ import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeT
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
+import { getEquipmentLabel } from '@design/equipmentLabel';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
@@ -81,6 +82,18 @@ export function showsGroupChip(
     return false;
   }
   return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
+}
+
+/**
+ * The equipment line under the exercise name on a workout card. A band is a strength exercise
+ * with no weight, logged like bodyweight (10.1 FR-15), and the card says so — `Resistance band,
+ * bodyweight` — where the library and the pickers just call it `Resistance band`. This card is the
+ * strength one; a power exercise has its own.
+ */
+export function workoutEquipmentLabel(equipment: Equipment): string {
+  return isResistanceBand(equipment)
+    ? `${getEquipmentLabel(equipment)}, bodyweight`
+    : getEquipmentLabel(equipment);
 }
 
 /** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */
@@ -320,7 +333,9 @@ export function weightSwapPopover(
         ? ['Take each set ', { strong: 'to failure' }, '.']
         : [
             'Stop each set with ',
-            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'}`} in reserve` },
+            {
+              strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'}`} in reserve`,
+            },
             '.',
           ];
     // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
