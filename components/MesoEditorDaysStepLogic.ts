@@ -22,7 +22,10 @@ export function getDayNumbers(daysPerWeek: number): number[] {
   return Array.from({ length: daysPerWeek }, (_, index) => index + 1);
 }
 
-export function getDayExercises(exercisesByDay: ExercisesByDay, dayNumber: number): WeekPlanExercise[] {
+export function getDayExercises(
+  exercisesByDay: ExercisesByDay,
+  dayNumber: number,
+): WeekPlanExercise[] {
   return exercisesByDay[dayNumber] ?? [];
 }
 
@@ -38,7 +41,8 @@ export function addExerciseToDay(
   exerciseId: string,
 ): ExercisesByDay {
   const existing = getDayExercises(exercisesByDay, dayNumber);
-  const next: WeekPlanExercise = { exerciseId, order: existing.length, sets: DEFAULT_EXERCISE_SETS };
+  const order = existing.reduce((highest, exercise) => Math.max(highest, exercise.order), -1) + 1;
+  const next: WeekPlanExercise = { exerciseId, order, sets: DEFAULT_EXERCISE_SETS };
   return { ...exercisesByDay, [dayNumber]: [...existing, next] };
 }
 
@@ -161,7 +165,10 @@ export function canContinueFromDays(daysPerWeek: number, exercisesByDay: Exercis
   return getDayNumbers(daysPerWeek).every((day) => getDayExercises(exercisesByDay, day).length > 0);
 }
 
-export function exerciseDotColor(exercisesById: ExercisesById, exerciseId: string): string | undefined {
+export function exerciseDotColor(
+  exercisesById: ExercisesById,
+  exerciseId: string,
+): string | undefined {
   const muscleGroup = exercisesById[exerciseId]?.muscleGroup;
   if (!muscleGroup) {
     return undefined;

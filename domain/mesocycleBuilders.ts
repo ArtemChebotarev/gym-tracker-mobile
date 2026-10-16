@@ -192,16 +192,18 @@ export function renamedMesocycle(current: Mesocycle, name: string): Mesocycle {
 }
 
 /**
- * Which slot of a `WeekPlan` a set of targets belongs to: one exercise of one day, addressed the
- * way the plan itself addresses it. `order` is the plan's own numbering, before Start renumbers a
- * session's exercises from 1.
+ * Which targets of Start belong to which plan row: the day and the exercise. Never `order` —
+ * that is display order only, and a plan can hold two rows with the same one (GT-148); an
+ * exercise placed twice in a day shares one key and one reference, and each row prices its own
+ * set count from it.
  */
-export function weekPlanSlotKey(dayNumber: number, order: number): string {
-  return `${dayNumber}:${order}`;
+export function weekPlanSlotKey(dayNumber: number, exerciseId: string): string {
+  return `${dayNumber}:${exerciseId}`;
 }
 
 /**
- * Week 1's set targets, ready to be written, keyed by `weekPlanSlotKey`.
+ * Week 1's set targets, keyed by `weekPlanSlotKey`, each as a function of the row count: the row's
+ * own `sets` decides how many rows it prices.
  *
  * Only a `copyWeek` block has any: the user already trained these exercises, so week 1's reps and
  * weights are computed from each one's reference performance (04 · Meso Creation Flows, "Расчёт
@@ -211,7 +213,7 @@ export function weekPlanSlotKey(dayNumber: number, order: number): string {
  * The lookup behind it is asynchronous and belongs to the use case (`startMesocycle`, task 122),
  * the same split as rule 6 in 047/048; what arrives here is already decided.
  */
-export type WeekOneTargets = ReadonlyMap<string, SetTarget[]>;
+export type WeekOneTargets = ReadonlyMap<string, (rowCount: number) => SetTarget[]>;
 
 /** What Start writes: the launched mesocycle, and week 1 as sessions with their exercises. */
 export type MesocycleStart = {
@@ -254,8 +256,10 @@ export function buildMesocycleStart(
     session,
     exercises: renumbered(
       exercises.map((exercise) => {
-        const targets = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.order));
-        return targets === undefined ? exercise : { ...exercise, setTargets: targets };
+        const priced = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId));
+        return priced === undefined
+          ? exercise
+          : { ...exercise, setTargets: priced(exercise.setTargets.length) };
       }),
     ),
   }));
