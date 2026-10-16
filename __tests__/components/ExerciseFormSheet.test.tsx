@@ -186,7 +186,7 @@ describe('ExerciseFormSheet', () => {
     expect(screen.getByRole('button', { name: 'Level' }).props.accessibilityState.selected).toBe(
       true,
     );
-    expect(screen.getByText(/log the level/)).toBeTruthy();
+    expect(screen.getByText(/log a level/)).toBeTruthy();
 
     fireEvent.press(screen.getByRole('button', { name: 'Save' }));
     expect(onSubmit).toHaveBeenCalledWith(
