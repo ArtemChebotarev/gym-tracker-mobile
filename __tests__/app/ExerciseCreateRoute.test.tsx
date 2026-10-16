@@ -132,7 +132,9 @@ describe('New exercise page', () => {
     expect(screen.getByText('2:00')).toBeTruthy();
     expect(screen.getByText('0:05')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Create exercise' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Next' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Next' }).props.accessibilityState.disabled).toBe(
+      true,
+    );
   });
 
   test('timed work: step 2 offers the four levers, and Create stores the plan with the chosen one', async () => {
@@ -145,7 +147,9 @@ describe('New exercise page', () => {
     for (const name of ['Less rest', 'More work', 'More rounds', 'None']) {
       expect(screen.getByRole('radio', { name })).toBeTruthy();
     }
-    expect(screen.getByRole('radio', { name: 'Less rest' }).props.accessibilityState.checked).toBe(true);
+    expect(screen.getByRole('radio', { name: 'Less rest' }).props.accessibilityState.checked).toBe(
+      true,
+    );
     expect(screen.getByText('Progression')).toBeTruthy();
     expect(screen.queryByText('New exercise')).toBeNull();
     expect(screen.getByText('How much shorter the rest gets each week.')).toBeTruthy();
@@ -221,15 +225,13 @@ describe('New exercise page', () => {
     expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
   });
 
-  test('tapping Rounds opens a number picker, not the time picker', () => {
+  test('timed work asks for no rounds: how many is set in the cycle and the workout', () => {
     mockParams = { type: 'interval' };
     renderRoute();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Set Rounds' }));
-
-    expect(screen.getAllByText('Rounds')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
-    expect(screen.queryByText('min')).toBeNull();
+    expect(screen.queryByText('Rounds')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Set Rounds' })).toBeNull();
+    expect(screen.getByText('Work')).toBeTruthy();
   });
 
   test('a failed save says so and keeps the page open with what was typed', async () => {
