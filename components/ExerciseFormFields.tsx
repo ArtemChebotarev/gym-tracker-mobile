@@ -14,24 +14,27 @@ import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupCol
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseConfigFields } from './ExerciseConfigFields';
-import { equipmentDropdownOptions } from './ExerciseFormLogic';
+import { equipmentDropdownOptions, sortedByLabel } from './ExerciseFormLogic';
 import type { ExerciseFormValues } from './ExerciseFormValues';
 import { styles } from './ExerciseFormStyles';
 
 // Carries each muscle group's family dot color (03-new-exercise.html: a colored dot per option,
 // the same family colors ExerciseFiltersSheet's muscle-group chips already use), unlike Equipment
 // below which has no color semantics.
-const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((muscleGroup) => {
-  const category = getMuscleGroupCategory(muscleGroup);
-  return {
-    value: muscleGroup,
-    label: getMuscleGroupLabel(muscleGroup),
-    dotColor: category !== undefined ? getCategoryColor(category) : undefined,
-  };
-});
+const MUSCLE_GROUP_OPTIONS = sortedByLabel(
+  MUSCLE_GROUPS.map((muscleGroup) => {
+    const category = getMuscleGroupCategory(muscleGroup);
+    return {
+      value: muscleGroup,
+      label: getMuscleGroupLabel(muscleGroup),
+      dotColor: category !== undefined ? getCategoryColor(category) : undefined,
+    };
+  }),
+);
 
 // A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, and called by its
-// own label ("Full body") here as everywhere else, not given a second name for the same value.
+// own label ("Full body") here as everywhere else, not given a second name for the same value. It
+// stays first, ahead of the sorted groups: it is the default.
 const NO_GROUP_OPTION = {
   value: FULL_BODY,
   label: getMuscleGroupLabel(FULL_BODY),
