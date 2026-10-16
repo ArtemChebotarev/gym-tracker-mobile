@@ -1,6 +1,9 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import { EMPTY_EXERCISE_FORM_VALUES } from '@components/ExerciseFormSheet';
 import {
+  describePowerLoad,
+  POWER_LOAD_OPTIONS,
+  powerLoadFromValue,
   canSubmitExerciseForm,
   formatClock,
   isExerciseEditableInSheet,
@@ -53,7 +56,10 @@ describe('canSubmitExerciseForm', () => {
 
 describe('valuesForType', () => {
   test('strength carries no config and keeps a chosen group', () => {
-    const values = valuesForType({ ...EMPTY_EXERCISE_FORM_VALUES, muscleGroup: 'chest' }, 'strength');
+    const values = valuesForType(
+      { ...EMPTY_EXERCISE_FORM_VALUES, muscleGroup: 'chest' },
+      'strength',
+    );
 
     expect(values.type).toBe('strength');
     expect(values.config).toBeUndefined();
@@ -63,7 +69,12 @@ describe('valuesForType', () => {
   test('a non-strength type takes its defaults and starts without a group', () => {
     const values = valuesForType(EMPTY_EXERCISE_FORM_VALUES, 'power');
 
-    expect(values.config).toEqual({ type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false });
+    expect(values.config).toEqual({
+      type: 'power',
+      load: 'weight',
+      restSec: 60,
+      noHeavierAvailable: false,
+    });
     expect(values.muscleGroup).toBe('fullBody');
   });
 
@@ -80,5 +91,22 @@ describe('formatClock', () => {
     expect(formatClock(5)).toBe('0:05');
     expect(formatClock(600)).toBe('10:00');
     expect(formatClock(135)).toBe('2:15');
+  });
+});
+
+describe('power load', () => {
+  it('offers the three loads of FR-2 in order', () => {
+    expect(POWER_LOAD_OPTIONS.map((option) => option.value)).toEqual(['weight', 'level', 'none']);
+  });
+
+  it('reads a value back, weight for a stray one', () => {
+    expect(powerLoadFromValue('level')).toBe('level');
+    expect(powerLoadFromValue('none')).toBe('none');
+    expect(powerLoadFromValue('bogus')).toBe('weight');
+  });
+
+  it('describes each load differently', () => {
+    const lines = new Set((['weight', 'level', 'none'] as const).map(describePowerLoad));
+    expect(lines.size).toBe(3);
   });
 });

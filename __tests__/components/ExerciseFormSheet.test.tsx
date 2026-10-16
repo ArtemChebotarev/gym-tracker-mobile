@@ -110,7 +110,9 @@ describe('ExerciseFormSheet', () => {
   test('Save is disabled while the name is blank', () => {
     renderSheet({ values: { ...STRENGTH_VALUES, name: '   ' } });
 
-    expect(screen.getByRole('button', { name: 'Save' }).props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Save' }).props.accessibilityState.disabled).toBe(
+      true,
+    );
   });
 
   test('a non-strength exercise opens on its own config, without asking for the type again', () => {
@@ -159,7 +161,38 @@ describe('ExerciseFormSheet', () => {
     });
 
     expect(screen.getByText('Progression')).toBeTruthy();
-    expect(screen.getByRole('radio', { name: 'More work' }).props.accessibilityState.checked).toBe(true);
+    expect(screen.getByRole('radio', { name: 'More work' }).props.accessibilityState.checked).toBe(
+      true,
+    );
     expect(screen.getByRole('button', { name: '10 s' })).toBeTruthy();
+  });
+  test('a power exercise picks its load, and the pick is submitted', () => {
+    const onSubmit = jest.fn();
+    render(
+      <ControlledSheet
+        onSubmit={onSubmit}
+        initialValues={{
+          name: 'Box jump',
+          muscleGroup: 'fullBody',
+          equipment: undefined,
+          type: 'power',
+          config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Kg' }).props.accessibilityState.selected).toBe(true);
+    fireEvent.press(screen.getByRole('button', { name: 'Level' }));
+    expect(screen.getByRole('button', { name: 'Level' }).props.accessibilityState.selected).toBe(
+      true,
+    );
+    expect(screen.getByText(/log a level/)).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Save' }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({ type: 'power', load: 'level' }),
+      }),
+    );
   });
 });
