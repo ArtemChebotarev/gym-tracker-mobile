@@ -31,7 +31,7 @@ function makeSetLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 describe('buildExerciseListGroups', () => {
-  test('list the exercises of no one group last, under fullBody, rather than dropping them', () => {
+  test('file the exercises of no one group last, one section per type, rather than dropping them', () => {
     const chest = makeExercise({ id: toExerciseId('e-chest'), name: 'Bench Press' });
     const slam = makeExercise({
       id: toExerciseId('e-slam'),
@@ -43,6 +43,58 @@ describe('buildExerciseListGroups', () => {
     const groups = buildExerciseListGroups([slam, chest], new Map());
 
     expect(groups.map((group) => group.muscleGroup)).toEqual(['chest', 'fullBody']);
+    expect(groups.map((group) => group.type)).toEqual([undefined, 'power']);
+  });
+
+  test('order the type sections Power, Intervals, Mobility, whatever order they come in', () => {
+    const exercise = (id: string, type: 'power' | 'interval' | 'mobility') =>
+      makeExercise({ id: toExerciseId(id), name: id, muscleGroup: 'fullBody', type });
+
+    const groups = buildExerciseListGroups(
+      [exercise('cooldown', 'mobility'), exercise('bag', 'interval'), exercise('slam', 'power')],
+      new Map(),
+    );
+
+    expect(groups.map((group) => group.type)).toEqual(['power', 'interval', 'mobility']);
+  });
+
+  test('keep a hybrid exercise that has a muscle group in that muscle section', () => {
+    const jump = makeExercise({
+      id: toExerciseId('e-jump'),
+      name: 'Box Jump',
+      muscleGroup: 'quads',
+      type: 'power',
+    });
+
+    const groups = buildExerciseListGroups([jump], new Map());
+
+    expect(groups).toEqual([{ muscleGroup: 'quads', entries: [{ exercise: jump, lastSetLog: null }] }]);
+  });
+
+  test('keep only the types asked for, and every type when none is', () => {
+    const bench = makeExercise({ id: toExerciseId('e-bench'), name: 'Bench Press' });
+    const slam = makeExercise({
+      id: toExerciseId('e-slam'),
+      name: 'Medball Slam',
+      muscleGroup: 'fullBody',
+      type: 'power',
+    });
+    const bag = makeExercise({
+      id: toExerciseId('e-bag'),
+      name: 'Heavy Bag',
+      muscleGroup: 'fullBody',
+      type: 'interval',
+    });
+    const all = [bench, slam, bag];
+
+    const names = (types?: Parameters<typeof buildExerciseListGroups>[2]) =>
+      buildExerciseListGroups(all, new Map(), types)
+        .flatMap((group) => group.entries)
+        .map((entry) => entry.exercise.name);
+
+    expect(names({ types: ['power'] })).toEqual(['Medball Slam']);
+    expect(names({ types: ['strength', 'interval'] })).toEqual(['Bench Press', 'Heavy Bag']);
+    expect(names({ types: [] })).toEqual(['Bench Press', 'Medball Slam', 'Heavy Bag']);
   });
 
   test('groups exercises by muscle group, ordered by the fixed catalog order', () => {

@@ -235,4 +235,35 @@ describe('ExerciseLibraryScreen', () => {
 
     expect(onOpenExercise).toHaveBeenCalledWith(entry(benchPress));
   });
+
+  test('files exercises without a group under Power, Intervals and Mobility, and says the type in the row', () => {
+    const bench = exercise({ id: toExerciseId('bench'), name: 'Bench Press', muscleGroup: 'chest' });
+    const slam = exercise({
+      id: toExerciseId('slam'),
+      name: 'Medball Slam',
+      muscleGroup: 'fullBody',
+      type: 'power',
+    });
+    const bag = exercise({
+      id: toExerciseId('bag'),
+      name: 'Heavy Bag',
+      muscleGroup: 'fullBody',
+      type: 'interval',
+    });
+    renderScreen({
+      groups: [
+        { muscleGroup: 'chest', entries: [entry(bench)] },
+        { muscleGroup: 'fullBody', type: 'power', entries: [entry(slam)] },
+        { muscleGroup: 'fullBody', type: 'interval', entries: [entry(bag)] },
+      ],
+    });
+
+    expect(screen.getByText('Chest')).toBeTruthy();
+    expect(screen.getByText('Power')).toBeTruthy();
+    expect(screen.getByText('Intervals')).toBeTruthy();
+    expect(screen.getByText('Power · Never performed')).toBeTruthy();
+    expect(screen.getByText('Timed work · Never performed')).toBeTruthy();
+    // Strength is the default and its row says nothing of its type.
+    expect(screen.getAllByText('Never performed')).toHaveLength(1);
+  });
 });

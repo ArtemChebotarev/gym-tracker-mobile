@@ -38,6 +38,11 @@ describe('ExerciseFiltersSheet', () => {
     expect(screen.getByText('Chest')).toBeTruthy();
     expect(screen.getByText('Traps')).toBeTruthy();
 
+    expect(screen.getByText('Type')).toBeTruthy();
+    for (const type of ['Strength', 'Power', 'Timed work', 'Mobility']) {
+      expect(screen.getByRole('button', { name: type })).toBeTruthy();
+    }
+
     expect(screen.getByText('Source')).toBeTruthy();
     expect(screen.getByText('Catalog')).toBeTruthy();
     expect(screen.getByText('Custom')).toBeTruthy();
@@ -174,5 +179,18 @@ describe('ExerciseFiltersSheet', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Close' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('a type button toggles that type, and reflects a chosen one as selected', () => {
+    const props = renderSheet({ filters: { types: ['power'] } });
+
+    expect(screen.getByRole('button', { name: 'Power' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByRole('button', { name: 'Mobility' }).props.accessibilityState.selected).toBe(
+      false,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Mobility' }));
+
+    expect(props.onChangeFilters).toHaveBeenCalledWith({ types: ['power', 'mobility'] });
   });
 });

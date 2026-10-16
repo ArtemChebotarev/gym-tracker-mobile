@@ -1,7 +1,7 @@
 // Pure, non-JSX logic behind ExerciseFiltersSheet.tsx — see the code-style skill, "Screens keep
 // the same split, one level up".
 
-import type { ExerciseSource, MuscleGroup } from '@domain/catalog';
+import type { ExerciseSource, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 
 // Deselecting the last value clears the field to `undefined` rather than leaving `[]` — matches
@@ -16,6 +16,17 @@ export function toggleMuscleGroup(
     ? current.filter((value) => value !== muscleGroup)
     : [...current, muscleGroup];
   return { ...filters, muscleGroups: next.length > 0 ? next : undefined };
+}
+
+export function toggleType(
+  filters: ExerciseLibraryFilters,
+  type: ExerciseType,
+): ExerciseLibraryFilters {
+  const current = filters.types ?? [];
+  const next = current.includes(type)
+    ? current.filter((value) => value !== type)
+    : [...current, type];
+  return { ...filters, types: next.length > 0 ? next : undefined };
 }
 
 export function toggleSource(

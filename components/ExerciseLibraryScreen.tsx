@@ -37,7 +37,7 @@ import {
   buildSections,
   countEntries,
   equipmentSuffix,
-  formatSubtitle,
+  rowSubtitle,
   hasActiveFilters,
   sectionDotColor,
   type ExerciseSection,
@@ -163,7 +163,7 @@ export function ExerciseLibraryScreen({
             <ListRow
               title={item.exercise.name}
               titleSuffix={equipmentSuffix(item.exercise)}
-              subtitle={formatSubtitle(item.lastSetLog)}
+              subtitle={rowSubtitle(item)}
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}
               onPress={() => onOpenExercise(item)}
