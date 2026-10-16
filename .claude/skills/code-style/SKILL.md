@@ -34,6 +34,16 @@ No color, size, spacing, radius, border width, opacity or shadow value is writte
 
 Lint-enforced by `design/no-hardcoded-design-values` (`eslint-rules/noHardcodedDesignValues.js`) over `app/**`, `components/**`, `design/components/**` and `design/icons/**`. Never silence it with an `eslint-disable` — add the token.
 
+## Wizard steps and creation forms: use the existing building blocks
+
+A step of a wizard, or a creation form (the New exercise page, the cycle editor's steps — 08.5, 08.8, 08.10), is assembled from what `design/components/` already has. Do not draw a second stepper, option list, time input or step header. The full description is in Notion, 08.0 · Design SDK, section "Формы и шаги визарда"; the short version:
+
+- **One of a few options, each with a line of explanation** — a group of `OptionCard`s. Tapping selects; moving on is a separate `Next` in the footer.
+- **A number** — `StepperRow` (`−` / `+`). If it is easier to set directly, pass `onValuePress`, which draws the value as a pill and opens `NumberPickerSheet` (a count) or `TimePickerSheet` (a duration, minutes and seconds in steps of 5 s). Both are built on `WheelPickerSheet`; never draw wheels of your own. A qualifier of a label goes grey after it on the same line (`labelSuffix`: `Rest · between rounds`), never on a second line — every row is one height.
+- **A pick from a long list** — `Dropdown`, which opens as an overlay and closes when another opens.
+- **The frame and the header** — `WizardScreen`. Its title names the *step* and changes with it. A wizard of one step draws no `Step N of M` and no progress bar (they appear by themselves at two steps or more). What belongs to the title (a type chip) goes in `titleAccessory`.
+- **When a mockup draws any of these differently** — and the 4.x / 7.x / 8.x canvases of 10.1 and the 08.5 mockups do, in places — take the component and let the mockup be adjusted to it, not the other way round. If the component really cannot do what a step needs, extend the component (a prop, a variant) in `design/components/` and describe it in 08.0; do not fork it into the screen.
+
 ## Reuse existing models
 
 Reuse existing models, types, classes, and constants instead of recreating them. Before adding a new type or a runtime constant that represents a domain concept, check whether `domain/` (or the relevant sibling layer — `repositories/`, an existing `storage/` adapter, etc.) already defines it, and import that instead of writing a second copy — e.g. a repository that needs every value of a domain enum should reuse a constant exported from the domain module that owns that type, not hand-list the values again. A second hand-written copy of the same values silently drifts from the original the next time it changes. If you deliberately don't reuse an existing model (the shapes only look similar but represent different concepts, reusing it would violate a layer boundary, etc.), say why in the PR summary.
