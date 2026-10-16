@@ -37,4 +37,13 @@ describe('OptionCard', () => {
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  test('is one fixed height, and its explanation holds to two lines', () => {
+    renderCard(false);
+
+    expect(screen.getByText('Explosive.').props.numberOfLines).toBe(2);
+    const card = screen.getByRole('radio', { name: 'Power' });
+    const style = Object.assign({}, ...[card.props.style].flat().filter(Boolean));
+    expect(style.height).toBe(92);
+  });
 });

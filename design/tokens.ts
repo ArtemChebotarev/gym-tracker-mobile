@@ -278,6 +278,11 @@ export const SIZES = {
   'size/pill': 32,
   /** Round IconButton and Stepper buttons (08.0: "Размер 36", tap area 44). */
   'size/icon-button': 36,
+  /**
+   * OptionCard's height — one for every card, so a list of them does not change size with what
+   * each says: room for the title and two lines of explanation, which is the most a card holds.
+   */
+  'size/option-card': 92,
   /** OptionCard: the round icon well on its left (canvas 4.1, "New exercise · pick type"). */
   'size/option-icon': 36,
   /** OptionCard: the radio ring on its right, and the dot inside it when selected. */
