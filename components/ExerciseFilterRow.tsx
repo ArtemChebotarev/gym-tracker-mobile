@@ -16,6 +16,7 @@
 import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
@@ -54,6 +55,9 @@ export function ExerciseFilterRow({
           label={getMuscleGroupLabel(muscleGroup)}
           dotColor={sectionDotColor(muscleGroup)}
         />
+      ))}
+      {filters.types?.map((type) => (
+        <Chip key={`type-${type}`} variant="static" label={getExerciseTypeLabel(type)} />
       ))}
       {filters.sources?.map((source) => (
         <Chip key={`source-${source}`} variant="static" label={sourceLabel(source)} />

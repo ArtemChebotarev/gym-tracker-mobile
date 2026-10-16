@@ -20,11 +20,18 @@
 
 import { Pressable, Text, View } from 'react-native';
 
-import { MUSCLE_GROUPS, type ExerciseSource, type MuscleGroup } from '@domain/catalog';
+import {
+  EXERCISE_TYPES,
+  MUSCLE_GROUPS,
+  type ExerciseSource,
+  type ExerciseType,
+  type MuscleGroup,
+} from '@domain/catalog';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { Toggle } from '@design/components/Toggle';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { tapTargetSlop } from '@design/shapes';
@@ -32,12 +39,23 @@ import { SIZES } from '@design/tokens';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
-import { applyButtonLabel, toggleMuscleGroup, toggleSource } from './ExerciseFiltersSheetLogic';
+import {
+  applyButtonLabel,
+  toggleMuscleGroup,
+  toggleSource,
+  toggleType,
+} from './ExerciseFiltersSheetLogic';
 import { styles } from './ExerciseFiltersSheetStyles';
 
 // Source has exactly two values (domain/catalog.ts's ExerciseSource), so both buttons are just
 // spelled out rather than pulled from a MUSCLE_GROUPS-style constant array.
 const SOURCES: readonly ExerciseSource[] = ['catalog', 'custom'];
+
+// The four types, two to a row: "Timed work" beside a neighbour in a row of four would not fit.
+const TYPE_ROWS: readonly (readonly ExerciseType[])[] = [
+  EXERCISE_TYPES.slice(0, 2),
+  EXERCISE_TYPES.slice(2),
+];
 
 export type ExerciseFiltersSheetProps = {
   visible: boolean;
@@ -103,12 +121,30 @@ export function ExerciseFiltersSheet({
       </View>
 
       <View style={styles.section}>
+        <Text style={fieldStyles.label}>Type</Text>
+        <View style={styles.optionRows}>
+          {TYPE_ROWS.map((row) => (
+            <View key={row.join()} style={styles.sourceRow}>
+              {row.map((type) => (
+                <FilterOption
+                  key={type}
+                  label={getExerciseTypeLabel(type)}
+                  selected={filters.types?.includes(type) ?? false}
+                  onPress={() => onChangeFilters(toggleType(filters, type))}
+                />
+              ))}
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <Text style={fieldStyles.label}>Source</Text>
         <View style={styles.sourceRow}>
           {SOURCES.map((source) => (
-            <SourceOption
+            <FilterOption
               key={source}
-              source={source}
+              label={sourceLabel(source)}
               selected={filters.sources?.includes(source) ?? false}
               onPress={() => onChangeFilters(toggleSource(filters, source))}
             />
@@ -166,13 +202,15 @@ function MuscleGroupChip({ muscleGroup, selected, onPress }: MuscleGroupChipProp
   );
 }
 
-type SourceOptionProps = {
-  source: ExerciseSource;
+type FilterOptionProps = {
+  label: string;
   selected: boolean;
   onPress: () => void;
 };
 
-function SourceOption({ source, selected, onPress }: SourceOptionProps) {
+// Source and Type are both a few full-width options rather than pills (see the note on
+// `sourceRow` in the styles), so they are one component.
+function FilterOption({ label, selected, onPress }: FilterOptionProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -190,7 +228,7 @@ function SourceOption({ source, selected, onPress }: SourceOptionProps) {
           selected ? styles.sourceOptionLabelSelected : styles.sourceOptionLabelUnselected,
         ]}
       >
-        {sourceLabel(source)}
+        {label}
       </Text>
     </Pressable>
   );

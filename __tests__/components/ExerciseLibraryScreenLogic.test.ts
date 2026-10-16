@@ -9,6 +9,7 @@ import {
   equipmentSuffix,
   formatSubtitle,
   hasActiveFilters,
+  rowSubtitle,
   sectionDotColor,
   sourceLabel,
 } from '@components/ExerciseLibraryScreenLogic';
@@ -94,9 +95,22 @@ describe('buildSections', () => {
     ];
 
     expect(buildSections(groups)).toEqual([
-      { muscleGroup: 'back', title: 'Back', data: [] },
-      { muscleGroup: 'chest', title: 'Chest', data: [] },
+      { key: 'back', muscleGroup: 'back', title: 'Back', data: [] },
+      { key: 'chest', muscleGroup: 'chest', title: 'Chest', data: [] },
     ]);
+  });
+
+  test('names the sections of exercises without a group by type, each with its own key', () => {
+    const groups: ExerciseListGroup[] = [
+      { muscleGroup: 'fullBody', type: 'power', entries: [] },
+      { muscleGroup: 'fullBody', type: 'interval', entries: [] },
+      { muscleGroup: 'fullBody', type: 'mobility', entries: [] },
+    ];
+
+    const sections = buildSections(groups);
+
+    expect(sections.map((section) => section.title)).toEqual(['Power', 'Intervals', 'Mobility']);
+    expect(new Set(sections.map((section) => section.key)).size).toBe(3);
   });
 });
 
@@ -113,5 +127,35 @@ describe('equipmentSuffix', () => {
     expect(
       equipmentSuffix(exercise({ id: toExerciseId('my-fly'), name: 'My Fly', muscleGroup: 'chest' })),
     ).toBeUndefined();
+  });
+});
+
+describe('the type in a row\'s subtitle', () => {
+  test('is left out for Strength and said for the hybrid types', () => {
+    expect(formatSubtitle(null)).toBe('Never performed');
+    expect(formatSubtitle(null, 'strength')).toBe('Never performed');
+    expect(formatSubtitle(null, 'power')).toBe('Power · Never performed');
+    expect(formatSubtitle(null, 'interval')).toBe('Timed work · Never performed');
+    expect(formatSubtitle(null, 'mobility')).toBe('Mobility · Never performed');
+  });
+
+  test('is read from the entry: an exercise with no type is Strength', () => {
+    const plain = exercise({ id: toExerciseId('e1'), name: 'Bench Press', muscleGroup: 'chest' });
+    const slam = exercise({
+      id: toExerciseId('e2'),
+      name: 'Slam',
+      muscleGroup: 'fullBody',
+      type: 'power',
+    });
+
+    expect(rowSubtitle({ exercise: plain, lastSetLog: null })).toBe('Never performed');
+    expect(rowSubtitle({ exercise: slam, lastSetLog: null })).toBe('Power · Never performed');
+  });
+});
+
+describe('hasActiveFilters with a type', () => {
+  test('a chosen type is an active filter', () => {
+    expect(hasActiveFilters({ types: ['power'] })).toBe(true);
+    expect(hasActiveFilters({ types: undefined })).toBe(false);
   });
 });

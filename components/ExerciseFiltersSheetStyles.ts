@@ -58,6 +58,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING['space/gap'],
   },
+  // Rows of options one above the other (the types: two and two).
+  optionRows: {
+    gap: SPACING['space/gap'],
+  },
   sourceOption: {
     flex: 1,
     alignItems: 'center',
