@@ -221,11 +221,15 @@ describe('New exercise page', () => {
     expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
   });
 
-  test('Rounds is a count: no time picker for it', () => {
+  test('tapping Rounds opens a number picker, not the time picker', () => {
     mockParams = { type: 'interval' };
     renderRoute();
 
-    expect(screen.queryByRole('button', { name: 'Set Rounds' })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Set Rounds' }));
+
+    expect(screen.getAllByText('Rounds')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+    expect(screen.queryByText('min')).toBeNull();
   });
 
   test('a failed save says so and keeps the page open with what was typed', async () => {

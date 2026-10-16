@@ -2,9 +2,9 @@
 // has) and FR-9 (their system defaults, which the caller seeds). Controlled: it edits one
 // `ExerciseConfig` and hands back the whole new one.
 //
-// Every time is a StepperRow whose value is also a button: `−` / `+` for a nudge by five seconds,
-// a tap on the value for the time picker (canvas 8.2) — one instance of it, told which field it is
-// setting. Rounds is a count, not a time, and keeps `−` / `+` only.
+// Every number is a StepperRow whose value is also a button: `−` / `+` for a nudge, a tap on the
+// value for a wheel picker (canvas 8.2) — the time picker for a time, the number picker for the
+// rounds — one instance of each, told which field it is setting.
 //
 // Not here: the power load kind (kg / level / none, FR-2) — it has its own task (GT-75) — and the
 // interval's progression (ExerciseProgressionFields), which is a step of its own.
@@ -16,6 +16,7 @@ import { Text, View } from 'react-native';
 
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
+import { NumberPickerSheet } from '@design/components/NumberPickerSheet';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
@@ -25,6 +26,8 @@ import { styles } from './ExerciseFormSheetStyles';
 // Every time field steps by the same 5 s, power's rest included.
 const SECONDS_STEP = 5;
 const MINUTE = 60;
+const MIN_ROUNDS = 1;
+const MAX_ROUNDS = 30;
 
 /** A time field of a config: what it is called, what qualifies it, and what it may hold. */
 type TimeField = {
@@ -66,6 +69,7 @@ export type ExerciseConfigFieldsProps = {
 export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsProps) {
   // The time field whose picker is open, if any.
   const [editing, setEditing] = useState<TimeField | null>(null);
+  const [isEditingRounds, setIsEditingRounds] = useState(false);
 
   function valueOf(field: TimeField): number {
     return (config as unknown as Record<string, number>)[field.key] ?? 0;
@@ -133,13 +137,23 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
             label="Rounds"
             value={config.rounds}
             onChange={(rounds) => onChange({ ...config, rounds })}
-            min={1}
-            max={30}
+            min={MIN_ROUNDS}
+            max={MAX_ROUNDS}
+            onValuePress={() => setIsEditingRounds(true)}
           />
           {renderTimeRow(WORK)}
           {renderTimeRow(REST_BETWEEN_ROUNDS)}
           {renderTimeRow(COUNTDOWN)}
           {picker}
+          <NumberPickerSheet
+            visible={isEditingRounds}
+            onClose={() => setIsEditingRounds(false)}
+            title="Rounds"
+            value={config.rounds}
+            onChange={(rounds) => onChange({ ...config, rounds })}
+            min={MIN_ROUNDS}
+            max={MAX_ROUNDS}
+          />
         </View>
       );
   }
