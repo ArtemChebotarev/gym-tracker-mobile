@@ -10,15 +10,17 @@
 // JSX/rendering only — styles live in ExerciseFormSheetStyles.ts and pure helpers in
 // ExerciseFormSheetLogic.ts, per the code-style skill.
 
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import type { Equipment, Exercise, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
+import { fieldStyles } from '@design/components/fieldStyles';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 
 import { ExerciseFormFields } from './ExerciseFormFields';
+import { ExerciseProgressionFields } from './ExerciseProgressionFields';
 import { canSubmitExerciseForm, isExerciseEditableInSheet } from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
@@ -105,6 +107,15 @@ export function ExerciseFormSheet({
       }
     >
       <ExerciseFormFields values={values} onChangeValues={onChangeValues} />
+      {values.config?.type === 'interval' && (
+        <View style={styles.progressionStep}>
+          <Text style={fieldStyles.label}>Progression</Text>
+          <ExerciseProgressionFields
+            config={values.config}
+            onChange={(config) => onChangeValues({ ...values, config })}
+          />
+        </View>
+      )}
     </BottomSheet>
   );
 }

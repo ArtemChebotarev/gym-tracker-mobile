@@ -40,6 +40,11 @@ export type StepperProps = {
   caption?: string;
   /** `field` (default): bordered card row with a label above. `inline`: centered, no card chrome. */
   variant?: StepperVariant;
+  /**
+   * `inline` only: a fixed width for the value (a `SIZES` token), so the buttons of several
+   * steppers in a column line up whatever the value's own width.
+   */
+  valueWidth?: number;
 };
 
 
@@ -53,6 +58,7 @@ export function Stepper({
   formatValue,
   caption,
   variant = 'field',
+  valueWidth,
 }: StepperProps) {
   const decrementDisabled = value <= min;
   const incrementDisabled = value >= max;
@@ -84,7 +90,7 @@ export function Stepper({
     return (
       <View style={styles.inlineRow}>
         {decrementButton}
-        <View>
+        <View style={valueWidth === undefined ? undefined : { width: valueWidth }}>
           <Text style={styles.valueInline}>{displayValue}</Text>
           {caption !== undefined && <Text style={styles.captionInline}>{caption}</Text>}
         </View>
@@ -212,7 +218,10 @@ const styles = StyleSheet.create({
     ...circle(SIZES['size/control-inline']),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS['surface/control-active'],
+    // No fill, an outline: the inline stepper sits in a list row, among text, and a filled disc
+    // weighs more than the value between its buttons.
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
   },
   glyphInline: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

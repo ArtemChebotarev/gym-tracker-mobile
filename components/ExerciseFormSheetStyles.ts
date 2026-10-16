@@ -18,17 +18,31 @@ export const styles = StyleSheet.create({
   fields: {
     minHeight: SIZES['size/form-fields'],
   },
-  typeOptions: {
-    gap: SPACING['space/gap-tight'],
-  },
-  field: {
-    marginBottom: SPACING['space/section'],
-  },
-  // The one line under a field that says what leaving it empty means (canvas 4.2, 4.3).
+  // The one line over a group of options that says what holds for all of them (canvas 4.3).
   hint: {
     ...TYPOGRAPHY['type/meta'],
     color: COLORS['text/muted'],
-    marginTop: SPACING['space/gap'],
+    marginBottom: SPACING['space/row'],
+  },
+  // The line under the step control (canvas 4.3): what the step is.
+  stepHint: {
+    ...TYPOGRAPHY['type/meta'],
+    color: COLORS['text/muted'],
+    marginTop: SPACING['space/gap-tight'],
+  },
+  progressionStep: {
+    marginTop: SPACING['space/section'],
+  },
+  typeOptions: {
+    gap: SPACING['space/gap-tight'],
+  },
+  // "Default plan" starts a new group of the form (canvas 4.3), under the field above it, which
+  // already carries the gap — no further margin of its own.
+  sectionLabel: {
+    marginTop: 0,
+  },
+  field: {
+    marginBottom: SPACING['space/section'],
   },
   // `flex: 1` here (not just on the two buttons inside) is what actually stretches this row to
   // the footer's full width — BottomSheet's footer is a row with `justifyContent: 'flex-end'`,

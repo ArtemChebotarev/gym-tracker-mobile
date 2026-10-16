@@ -377,8 +377,9 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
               [
                 {
                   "alignItems": "center",
-                  "backgroundColor": "#2C3036",
+                  "borderColor": "#2A2D31",
                   "borderRadius": 16,
+                  "borderWidth": 1,
                   "height": 32,
                   "justifyContent": "center",
                   "width": 32,
@@ -454,8 +455,9 @@ exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
               [
                 {
                   "alignItems": "center",
-                  "backgroundColor": "#2C3036",
+                  "borderColor": "#2A2D31",
                   "borderRadius": 16,
+                  "borderWidth": 1,
                   "height": 32,
                   "justifyContent": "center",
                   "width": 32,

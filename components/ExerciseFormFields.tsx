@@ -5,13 +5,12 @@
 // JSX/rendering only — styles live in ExerciseFormSheetStyles.ts, helpers in
 // ExerciseFormSheetLogic.ts.
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { EQUIPMENT_OPTIONS, FULL_BODY, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@domain/catalog';
 import { Dropdown } from '@design/components/Dropdown';
 import { TextField } from '@design/components/TextField';
 import { getEquipmentLabel } from '@design/equipmentLabel';
-import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
@@ -81,11 +80,6 @@ export function ExerciseFormFields({ values, onChangeValues }: ExerciseFormField
           onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
           placeholder="Choose muscle group"
         />
-        {!isStrength && (
-          <Text style={styles.hint}>
-            Optional. Without one, it sits under {getExerciseTypeLabel(values.type)} in the library.
-          </Text>
-        )}
       </View>
 
       {values.config !== undefined && (
