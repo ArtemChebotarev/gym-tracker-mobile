@@ -32,6 +32,17 @@ const EQUIPMENT_QUERY_WORD: Record<Equipment, string | undefined> = {
   bodyweight: undefined,
   'bodyweight-weighted': 'weighted',
   'resistance-band': 'resistance band',
+  kettlebell: 'kettlebell',
+  'medicine-ball': 'medicine ball',
+  'plyo-box': undefined,
+  'slam-ball': 'slam ball',
+  sandbag: 'sandbag',
+  'heavy-bag': 'heavy bag',
+  'jump-rope': undefined,
+  'rowing-machine': undefined,
+  'battle-rope': 'battle rope',
+  'foam-roller': 'foam roller',
+  'yoga-mat': undefined,
   other: undefined,
 };
 

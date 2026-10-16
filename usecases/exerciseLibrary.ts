@@ -15,7 +15,11 @@ import {
   type ExerciseListGroup,
   type ExerciseListQuery,
 } from '@domain/catalogListing';
-import { normalizeExerciseName, validateExerciseEquipment } from '@domain/catalogValidators';
+import {
+  normalizeExerciseName,
+  validateEquipmentForType,
+  validateExerciseEquipment,
+} from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SetLog } from '@domain/execution';
 import type { ExerciseConfig } from '@domain/exerciseConfig';
@@ -79,6 +83,7 @@ export async function createCustomExercise(
   validateExerciseType(type);
   validateExerciseMuscleGroupFor(type, input.muscleGroup);
   validateExerciseEquipment(input.equipment);
+  validateEquipmentForType(type, input.equipment);
   const config = input.config ?? defaultExerciseConfig(type);
   validateExerciseConfig(type, config);
 
@@ -125,6 +130,7 @@ export async function updateCustomExercise(
   }
   validateExerciseMuscleGroupFor(type, input.muscleGroup);
   validateExerciseEquipment(input.equipment);
+  validateEquipmentForType(type, input.equipment);
   // A changed type brings its own defaults — the old config is the old type's. An unchanged one
   // keeps what it has unless the caller sends a new one.
   const config =

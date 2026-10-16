@@ -7,20 +7,14 @@
 
 import { View } from 'react-native';
 
-import {
-  EQUIPMENT_OPTIONS,
-  FULL_BODY,
-  MUSCLE_GROUPS,
-  type Equipment,
-  type MuscleGroup,
-} from '@domain/catalog';
+import { FULL_BODY, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@domain/catalog';
 import { Dropdown } from '@design/components/Dropdown';
 import { TextField } from '@design/components/TextField';
-import { getEquipmentLabel } from '@design/equipmentLabel';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseConfigFields } from './ExerciseConfigFields';
+import { equipmentDropdownOptions } from './ExerciseFormLogic';
 import type { ExerciseFormValues } from './ExerciseFormValues';
 import { styles } from './ExerciseFormStyles';
 
@@ -45,11 +39,6 @@ const NO_GROUP_OPTION = {
 };
 const NON_STRENGTH_MUSCLE_GROUP_OPTIONS = [NO_GROUP_OPTION, ...MUSCLE_GROUP_OPTIONS];
 
-const EQUIPMENT_DROPDOWN_OPTIONS = EQUIPMENT_OPTIONS.map((equipment) => ({
-  value: equipment,
-  label: getEquipmentLabel(equipment),
-}));
-
 export type ExerciseFormFieldsProps = {
   values: ExerciseFormValues;
   onChangeValues: (values: ExerciseFormValues) => void;
@@ -72,7 +61,7 @@ export function ExerciseFormFields({ values, onChangeValues }: ExerciseFormField
       <View style={styles.field}>
         <Dropdown
           label="Equipment"
-          options={EQUIPMENT_DROPDOWN_OPTIONS}
+          options={equipmentDropdownOptions(values.type)}
           value={values.equipment}
           onChange={(equipment) => onChangeValues({ ...values, equipment: equipment as Equipment })}
           placeholder="Choose equipment"

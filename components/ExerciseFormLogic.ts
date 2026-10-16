@@ -2,6 +2,8 @@
 // same split, one level up".
 
 import { FULL_BODY, type Exercise, type ExerciseType, type MuscleGroup } from '@domain/catalog';
+import { getEquipmentLabel } from '@design/equipmentLabel';
+import { equipmentOptionsFor } from '@domain/exerciseEquipment';
 import { POWER_LOADS, type PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 
@@ -82,4 +84,12 @@ export function describePowerLoad(load: PowerLoad): string {
 /** The power load a form value names; `weight` for anything else, so a stray value still shows. */
 export function powerLoadFromValue(value: string): PowerLoad {
   return POWER_LOADS.find((load) => load === value) ?? 'weight';
+}
+
+/** The equipment dropdown's options for `type`: its own list (10.1 FR-1), not every value there is. */
+export function equipmentDropdownOptions(type: ExerciseType) {
+  return equipmentOptionsFor(type).map((equipment) => ({
+    value: equipment,
+    label: getEquipmentLabel(equipment),
+  }));
 }

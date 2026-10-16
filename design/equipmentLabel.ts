@@ -14,6 +14,17 @@ const LABEL_BY_EQUIPMENT: Record<Equipment, string> = {
   bodyweight: 'Bodyweight',
   'bodyweight-weighted': 'Bodyweight (weighted)',
   'resistance-band': 'Resistance band, bodyweight',
+  kettlebell: 'Kettlebell',
+  'medicine-ball': 'Medicine ball',
+  'plyo-box': 'Plyo box',
+  'slam-ball': 'Slam ball',
+  sandbag: 'Sandbag',
+  'heavy-bag': 'Heavy bag',
+  'jump-rope': 'Jump rope',
+  'rowing-machine': 'Rowing machine',
+  'battle-rope': 'Battle rope',
+  'foam-roller': 'Foam roller',
+  'yoga-mat': 'Yoga mat',
   other: 'Other',
 };
 

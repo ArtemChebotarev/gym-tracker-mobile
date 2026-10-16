@@ -65,6 +65,20 @@ export const EQUIPMENT_OPTIONS = [
   // 10.1 FR-14: a band is equipment of a `strength` exercise, not a new type. It has no weight and
   // no levels, so it loads like a pure `bodyweight` one (see `domain/bodyWeightLoad.ts`).
   'resistance-band',
+  // The kit of the hybrid types and kettlebell strength work. Which type offers which is
+  // `domain/exerciseEquipment.ts`; the values live in this one list so a label, a how-to word or a
+  // stored string has one place to be checked against.
+  'kettlebell',
+  'medicine-ball',
+  'plyo-box',
+  'slam-ball',
+  'sandbag',
+  'heavy-bag',
+  'jump-rope',
+  'rowing-machine',
+  'battle-rope',
+  'foam-roller',
+  'yoga-mat',
   'other',
 ] as const;
 

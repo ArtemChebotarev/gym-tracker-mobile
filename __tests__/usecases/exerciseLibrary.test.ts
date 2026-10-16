@@ -156,6 +156,34 @@ describe('createCustomExercise', () => {
       ),
     ).rejects.toThrow(/Unknown equipment/);
   });
+
+  test("rejects equipment that is not on the exercise type's list", async () => {
+    const deps = makeDeps();
+
+    await expect(
+      createCustomExercise(
+        { name: 'Medball slam', muscleGroup: 'fullBody', type: 'power', equipment: 'barbell' },
+        deps,
+      ),
+    ).rejects.toThrow(/cannot have/);
+    await expect(
+      createCustomExercise(
+        { name: 'Garage Press', muscleGroup: 'chest', equipment: 'heavy-bag' },
+        deps,
+      ),
+    ).rejects.toThrow(/cannot have/);
+  });
+
+  test("stores equipment from the exercise type's own list", async () => {
+    const deps = makeDeps();
+
+    const created = await createCustomExercise(
+      { name: 'Medball slam', muscleGroup: 'fullBody', type: 'power', equipment: 'slam-ball' },
+      deps,
+    );
+
+    expect(created.equipment).toBe('slam-ball');
+  });
 });
 
 describe('updateCustomExercise', () => {
