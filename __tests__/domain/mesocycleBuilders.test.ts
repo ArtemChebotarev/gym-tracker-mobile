@@ -15,13 +15,10 @@ import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'generated-id-1' }));
 
+
 const twoDayWeekPlan: WeekPlan = {
   days: [
-    {
-      dayNumber: 1,
-      name: '',
-      exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }],
-    },
+    { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }] },
     { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 4 }] },
   ],
 };
@@ -188,9 +185,9 @@ describe('buildCopyWeekMesocycleDraft', () => {
 
   // DoD (task 041): Flow C refuses the deload week.
   test('rejects the source block’s deload week', () => {
-    expect(() => buildCopyWeekMesocycleDraft({ ...input, sourceWeekNumber: 6 }, source)).toThrow(
-      /deload week/,
-    );
+    expect(() =>
+      buildCopyWeekMesocycleDraft({ ...input, sourceWeekNumber: 6 }, source),
+    ).toThrow(/deload week/);
   });
 
   test('takes the new block’s length from the draft, not from the source', () => {
@@ -233,17 +230,9 @@ describe('applyPlannedMesocycleEdit', () => {
 
   const threeDayWeekPlan: WeekPlan = {
     days: [
-      {
-        dayNumber: 1,
-        name: 'Push',
-        exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 5 }],
-      },
+      { dayNumber: 1, name: 'Push', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 5 }] },
       { dayNumber: 2, name: 'Pull', exercises: [] },
-      {
-        dayNumber: 3,
-        name: 'Legs',
-        exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 2 }],
-      },
+      { dayNumber: 3, name: 'Legs', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 2 }] },
     ],
   };
 
@@ -370,11 +359,7 @@ describe('buildMesocycleStart', () => {
             { exerciseId: 'exercise-bench-press', order: 0, sets: 3 },
           ],
         },
-        {
-          dayNumber: 2,
-          name: '',
-          exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 4 }],
-        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 4 }] },
       ],
     },
     createdAt: '2026-09-01T12:00:00.000Z',
@@ -433,11 +418,7 @@ describe('buildMesocycleStart', () => {
       origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
       weekPlan: {
         days: [
-          {
-            dayNumber: 1,
-            name: '',
-            exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2 }],
-          },
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2 }] },
         ],
       },
     };
@@ -525,11 +506,7 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
             { exerciseId: 'exercise-row', order: 1, sets: 1 },
           ],
         },
-        {
-          dayNumber: 2,
-          name: '',
-          exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }],
-        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }] },
       ],
     },
   };

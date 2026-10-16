@@ -31,9 +31,9 @@ const FIRST_WEEK = 1;
 
 /**
  * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
- * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for that day (`resolveReference`, task
- * 134.2) among the exercise's performances inside `historyLookbackDays`, re-priced for this
- * block's starting RIR by `prescribeBlockStart`.
+ * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
+ * that day (`resolveReference`, task 134.2) among the exercise's performances inside
+ * `historyLookbackDays`, re-priced for this block's starting RIR by `prescribeBlockStart`.
  *
  * The source week gave the structure and nothing else. The numbers come from history because
  * copying rarely happens the day the block ended: between that week and this Start the user kept

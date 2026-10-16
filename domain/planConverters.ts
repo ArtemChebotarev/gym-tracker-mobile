@@ -92,11 +92,13 @@ export function extractWeekPlan(sessionsWithExercises: readonly SessionWithExerc
     name: session.name ?? '',
     exercises: [...exercises]
       .sort((a, b) => a.order - b.order)
-      .map((exercise, index): WeekPlanExercise => ({
-        exerciseId: exercise.exerciseId,
-        order: index + 1,
-        sets: exercise.setTargets.length,
-      })),
+      .map(
+        (exercise, index): WeekPlanExercise => ({
+          exerciseId: exercise.exerciseId,
+          order: index + 1,
+          sets: exercise.setTargets.length,
+        }),
+      ),
   }));
 
   return { days: days.sort((a, b) => a.dayNumber - b.dayNumber) };
