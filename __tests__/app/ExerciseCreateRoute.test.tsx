@@ -253,4 +253,26 @@ describe('New exercise page', () => {
     create.mockRestore();
     alert.mockRestore();
   });
+  test('the equipment dropdown offers the list of the type, not every value', async () => {
+    mockParams = { type: 'power' };
+    renderRoute();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Equipment' }));
+
+    expect(await screen.findByRole('button', { name: 'Medicine ball' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Plyo box' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Barbell' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Heavy bag' })).toBeNull();
+  });
+
+  test('strength keeps its gym list and gets no medicine ball', async () => {
+    mockParams = { type: 'strength' };
+    renderRoute();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Equipment' }));
+
+    expect(await screen.findByRole('button', { name: 'Barbell' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Kettlebell' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Medicine ball' })).toBeNull();
+  });
 });

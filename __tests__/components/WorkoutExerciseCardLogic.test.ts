@@ -11,6 +11,7 @@ import {
   weightFieldText,
   estimateNote,
   weightSwapPopover,
+  workoutEquipmentLabel,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -557,5 +558,16 @@ describe('the range track labels', () => {
   test('the target label steps aside when it would run into a bound', () => {
     // 10 kg × 7 reaches only 2.5–10.5 kg, so the target sits half a kilo from the heavy end.
     expect(labelsOf(7, 10)).toEqual(['2.5', '8', '10.5']);
+  });
+});
+
+describe('workoutEquipmentLabel', () => {
+  test('a band says bodyweight on the workout card, since it is logged like one', () => {
+    expect(workoutEquipmentLabel('resistance-band')).toBe('Resistance band, bodyweight');
+  });
+
+  test('any other equipment reads as it does everywhere else', () => {
+    expect(workoutEquipmentLabel('barbell')).toBe('Barbell');
+    expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight');
   });
 });

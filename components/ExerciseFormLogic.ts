@@ -2,6 +2,8 @@
 // same split, one level up".
 
 import { FULL_BODY, type Exercise, type ExerciseType, type MuscleGroup } from '@domain/catalog';
+import { getEquipmentLabel } from '@design/equipmentLabel';
+import { equipmentOptionsFor } from '@domain/exerciseEquipment';
 import { POWER_LOADS, type PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 
@@ -82,4 +84,24 @@ export function describePowerLoad(load: PowerLoad): string {
 /** The power load a form value names; `weight` for anything else, so a stray value still shows. */
 export function powerLoadFromValue(value: string): PowerLoad {
   return POWER_LOADS.find((load) => load === value) ?? 'weight';
+}
+
+/** `options` by label, A to Z, so a long list can be scanned; the caller's array is left alone. */
+export function sortedByLabel<T extends { label: string }>(options: readonly T[]): T[] {
+  return [...options].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * The equipment dropdown's options for `type`: its own list (10.1 FR-1), not every value there is,
+ * by name with `Other` last — the catch-all is the last thing to look for, not the 14th letter.
+ */
+export function equipmentDropdownOptions(type: ExerciseType) {
+  const options = equipmentOptionsFor(type)
+    .filter((equipment) => equipment !== 'other')
+    .map((equipment) => ({ value: equipment, label: getEquipmentLabel(equipment) }));
+  const hasOther = equipmentOptionsFor(type).includes('other');
+  return [
+    ...sortedByLabel(options),
+    ...(hasOther ? [{ value: 'other' as const, label: getEquipmentLabel('other') }] : []),
+  ];
 }

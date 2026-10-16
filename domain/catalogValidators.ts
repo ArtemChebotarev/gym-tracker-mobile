@@ -2,7 +2,14 @@
 // Kept separate from `domain/catalog.ts` (types only) per the single-responsibility rule in
 // AGENTS.md.
 
-import { EQUIPMENT_OPTIONS, isCatalogMuscleGroup, type Equipment, type MuscleGroup } from './catalog';
+import {
+  EQUIPMENT_OPTIONS,
+  isCatalogMuscleGroup,
+  type Equipment,
+  type ExerciseType,
+  type MuscleGroup,
+} from './catalog';
+import { equipmentOptionsFor } from './exerciseEquipment';
 import { normalizeRequiredName } from './names';
 
 /**
@@ -34,5 +41,18 @@ export function validateExerciseMuscleGroup(muscleGroup: MuscleGroup): void {
 export function validateExerciseEquipment(equipment: Equipment | undefined): void {
   if (equipment !== undefined && !EQUIPMENT_OPTIONS.includes(equipment)) {
     throw new Error(`Unknown equipment: "${equipment}".`);
+  }
+}
+
+/**
+ * Throws if `equipment` is given but is not one of those an exercise of `type` can have
+ * (`equipmentOptionsFor`). `undefined` is always valid.
+ */
+export function validateEquipmentForType(
+  type: ExerciseType,
+  equipment: Equipment | undefined,
+): void {
+  if (equipment !== undefined && !equipmentOptionsFor(type).includes(equipment)) {
+    throw new Error(`A ${type} exercise cannot have the equipment "${equipment}".`);
   }
 }

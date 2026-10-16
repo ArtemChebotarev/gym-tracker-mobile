@@ -1,6 +1,8 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import { EMPTY_EXERCISE_FORM_VALUES } from '@components/ExerciseFormValues';
 import {
+  equipmentDropdownOptions,
+  sortedByLabel,
   describePowerLoad,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
@@ -108,5 +110,42 @@ describe('power load', () => {
   it('describes each load differently', () => {
     const lines = new Set((['weight', 'level', 'none'] as const).map(describePowerLoad));
     expect(lines.size).toBe(3);
+  });
+});
+
+describe('sortedByLabel', () => {
+  test('orders by label without touching the original', () => {
+    const options = [
+      { value: 'b', label: 'Beta' },
+      { value: 'a', label: 'alpha' },
+      { value: 'c', label: 'Charlie' },
+    ];
+
+    expect(sortedByLabel(options).map((option) => option.label)).toEqual([
+      'alpha',
+      'Beta',
+      'Charlie',
+    ]);
+    expect(options.map((option) => option.label)).toEqual(['Beta', 'alpha', 'Charlie']);
+  });
+});
+
+describe('equipmentDropdownOptions', () => {
+  test("lists the type's equipment by name with Other last", () => {
+    expect(equipmentDropdownOptions('power').map((option) => option.label)).toEqual([
+      'Bodyweight',
+      'Kettlebell',
+      'Medicine ball',
+      'Plyo box',
+      'Resistance band',
+      'Sandbag',
+      'Slam ball',
+      'Other',
+    ]);
+    expect(
+      equipmentDropdownOptions('strength')
+        .map((option) => option.label)
+        .at(-1),
+    ).toBe('Other');
   });
 });

@@ -7,48 +7,40 @@
 
 import { View } from 'react-native';
 
-import {
-  EQUIPMENT_OPTIONS,
-  FULL_BODY,
-  MUSCLE_GROUPS,
-  type Equipment,
-  type MuscleGroup,
-} from '@domain/catalog';
+import { FULL_BODY, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@domain/catalog';
 import { Dropdown } from '@design/components/Dropdown';
 import { TextField } from '@design/components/TextField';
-import { getEquipmentLabel } from '@design/equipmentLabel';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseConfigFields } from './ExerciseConfigFields';
+import { equipmentDropdownOptions, sortedByLabel } from './ExerciseFormLogic';
 import type { ExerciseFormValues } from './ExerciseFormValues';
 import { styles } from './ExerciseFormStyles';
 
 // Carries each muscle group's family dot color (03-new-exercise.html: a colored dot per option,
 // the same family colors ExerciseFiltersSheet's muscle-group chips already use), unlike Equipment
 // below which has no color semantics.
-const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((muscleGroup) => {
-  const category = getMuscleGroupCategory(muscleGroup);
-  return {
-    value: muscleGroup,
-    label: getMuscleGroupLabel(muscleGroup),
-    dotColor: category !== undefined ? getCategoryColor(category) : undefined,
-  };
-});
+const MUSCLE_GROUP_OPTIONS = sortedByLabel(
+  MUSCLE_GROUPS.map((muscleGroup) => {
+    const category = getMuscleGroupCategory(muscleGroup);
+    return {
+      value: muscleGroup,
+      label: getMuscleGroupLabel(muscleGroup),
+      dotColor: category !== undefined ? getCategoryColor(category) : undefined,
+    };
+  }),
+);
 
 // A non-strength exercise may have no group (10.1 FR-1) — stored as `fullBody`, and called by its
-// own label ("Full body") here as everywhere else, not given a second name for the same value.
+// own label ("Full body") here as everywhere else, not given a second name for the same value. It
+// stays first, ahead of the sorted groups: it is the default.
 const NO_GROUP_OPTION = {
   value: FULL_BODY,
   label: getMuscleGroupLabel(FULL_BODY),
   dotColor: undefined,
 };
 const NON_STRENGTH_MUSCLE_GROUP_OPTIONS = [NO_GROUP_OPTION, ...MUSCLE_GROUP_OPTIONS];
-
-const EQUIPMENT_DROPDOWN_OPTIONS = EQUIPMENT_OPTIONS.map((equipment) => ({
-  value: equipment,
-  label: getEquipmentLabel(equipment),
-}));
 
 export type ExerciseFormFieldsProps = {
   values: ExerciseFormValues;
@@ -72,7 +64,7 @@ export function ExerciseFormFields({ values, onChangeValues }: ExerciseFormField
       <View style={styles.field}>
         <Dropdown
           label="Equipment"
-          options={EQUIPMENT_DROPDOWN_OPTIONS}
+          options={equipmentDropdownOptions(values.type)}
           value={values.equipment}
           onChange={(equipment) => onChangeValues({ ...values, equipment: equipment as Equipment })}
           placeholder="Choose equipment"
