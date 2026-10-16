@@ -3,6 +3,10 @@
 // selected card takes the accent border and fill, the same pair a selected Chip uses. Domain-
 // agnostic: the icon arrives as a node, like IconButton's.
 //
+// Every card is the same height (`size/option-card`) whatever it says, and its explanation holds
+// to two lines, so a group of them — the type, the progression — keeps its shape from one choice
+// to the next and from one screen to the next.
+//
 // Where a ListRow navigates or toggles a fact, this one *chooses*: tapping selects, and moving on
 // is a separate action in the sheet's footer.
 
@@ -37,7 +41,9 @@ export function OptionCard({ title, description, selected, onPress, icon }: Opti
       {icon !== undefined && <View style={styles.iconWell}>{icon}</View>}
       <View style={styles.text}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {description}
+        </Text>
       </View>
       <View style={[styles.radio, selected && styles.selectedRadio]}>
         {selected && <View style={styles.radioDot} />}
@@ -49,9 +55,10 @@ export function OptionCard({ title, description, selected, onPress, icon }: Opti
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: SPACING['space/row'],
-    padding: SPACING['space/md'],
+    height: SIZES['size/option-card'],
+    paddingHorizontal: SPACING['space/md'],
     backgroundColor: COLORS['surface/card'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
@@ -87,7 +94,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS['border/cell-quiet'],
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: SPACING['space/xs'],
   },
   selectedRadio: {
     borderColor: COLORS.accent,
