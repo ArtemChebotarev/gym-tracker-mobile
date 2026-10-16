@@ -6,8 +6,8 @@
 // value for a wheel picker (canvas 8.2) — the time picker for a time, the number picker for the
 // rounds — one instance of each, told which field it is setting.
 //
-// Not here: the power load kind (kg / level / none, FR-2) — it has its own task (GT-75) — and the
-// interval's progression (ExerciseProgressionFields), which is a step of its own.
+// A power exercise also picks its load (kg / level / none, FR-2). Not here: the interval's
+// progression (ExerciseProgressionFields), which is a step of its own.
 //
 // JSX/rendering only — formatting lives in ExerciseFormSheetLogic.ts.
 
@@ -17,10 +17,16 @@ import { Text, View } from 'react-native';
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { NumberPickerSheet } from '@design/components/NumberPickerSheet';
+import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
-import { formatClock } from './ExerciseFormSheetLogic';
+import {
+  describePowerLoad,
+  formatClock,
+  POWER_LOAD_OPTIONS,
+  powerLoadFromValue,
+} from './ExerciseFormSheetLogic';
 import { styles } from './ExerciseFormSheetStyles';
 
 // Every time field steps by the same 5 s, power's rest included.
@@ -46,7 +52,12 @@ const REST_BETWEEN_SETS: TimeField = {
   maxSec: 10 * MINUTE,
 };
 const REST_BETWEEN_ROUNDS: TimeField = { ...REST_BETWEEN_SETS, suffix: 'between rounds' };
-const WORK: TimeField = { key: 'workSec', label: 'Work', minSec: SECONDS_STEP, maxSec: 60 * MINUTE };
+const WORK: TimeField = {
+  key: 'workSec',
+  label: 'Work',
+  minSec: SECONDS_STEP,
+  maxSec: 60 * MINUTE,
+};
 const COUNTDOWN: TimeField = {
   key: 'getReadySec',
   label: 'Countdown',
@@ -118,6 +129,13 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
     case 'power':
       return (
         <View>
+          <Text style={fieldStyles.label}>Load</Text>
+          <SegmentedControl
+            options={POWER_LOAD_OPTIONS}
+            value={config.load}
+            onChange={(load) => onChange({ ...config, load: powerLoadFromValue(load) })}
+          />
+          <Text style={[styles.stepHint, styles.loadHint]}>{describePowerLoad(config.load)}</Text>
           {renderTimeRow(REST_BETWEEN_SETS)}
           {picker}
         </View>

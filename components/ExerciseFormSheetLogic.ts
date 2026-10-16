@@ -2,6 +2,7 @@
 // same split, one level up".
 
 import { FULL_BODY, type Exercise, type ExerciseType, type MuscleGroup } from '@domain/catalog';
+import { POWER_LOADS, type PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 
 import type { ExerciseFormValues } from './ExerciseFormSheet';
@@ -51,4 +52,34 @@ export function formatClock(totalSec: number): string {
   const minutes = Math.floor(totalSec / 60);
   const seconds = totalSec % 60;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/** What each power load is called where it is picked (10.1 FR-2). */
+export const POWER_LOAD_LABEL: Record<PowerLoad, string> = {
+  weight: 'Kg',
+  level: 'Level',
+  none: 'None',
+};
+
+/** The segments of the load control, in the order of FR-2. */
+export const POWER_LOAD_OPTIONS = POWER_LOADS.map((load) => ({
+  value: load,
+  label: POWER_LOAD_LABEL[load],
+}));
+
+/** The line under the load control: what the picked load means, with an example from FR-2. */
+export function describePowerLoad(load: PowerLoad): string {
+  switch (load) {
+    case 'weight':
+      return 'A medicine ball or a kettlebell: you log the kilograms.';
+    case 'level':
+      return 'A box with several heights: you log the level, 1, 2 or 3.';
+    case 'none':
+      return 'A broad jump or a clap push-up: the exercise is its own load.';
+  }
+}
+
+/** The power load a form value names; `weight` for anything else, so a stray value still shows. */
+export function powerLoadFromValue(value: string): PowerLoad {
+  return POWER_LOADS.find((load) => load === value) ?? 'weight';
 }

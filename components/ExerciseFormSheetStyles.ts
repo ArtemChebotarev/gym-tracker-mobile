@@ -30,6 +30,10 @@ export const styles = StyleSheet.create({
     color: COLORS['text/muted'],
     marginTop: SPACING['space/gap-tight'],
   },
+  // Room between the load hint and the Rest row under it.
+  loadHint: {
+    marginBottom: SPACING['space/section'],
+  },
   progressionStep: {
     marginTop: SPACING['space/section'],
   },
