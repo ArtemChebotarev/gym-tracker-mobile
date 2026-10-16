@@ -514,13 +514,16 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
   test('writes the targets given for a slot and leaves the rest bare', () => {
     const targets = new Map([
       [
-        weekPlanSlotKey(1, 0),
-        [
+        weekPlanSlotKey(1, 'exercise-bench-press'),
+        () => [
           { setNumber: 1, targetReps: 7, suggestedWeight: 60 },
           { setNumber: 2, targetReps: 6, suggestedWeight: 60 },
         ],
       ],
-      [weekPlanSlotKey(2, 0), [{ setNumber: 1, targetReps: 9, suggestedWeight: 100 }]],
+      [
+        weekPlanSlotKey(2, 'exercise-squat'),
+        () => [{ setNumber: 1, targetReps: 9, suggestedWeight: 100 }],
+      ],
     ]);
 
     const { week } = buildMesocycleStart(copied, null, NOW, targets);
@@ -539,18 +542,73 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
     expect(byExercise.get('exercise-row')).toEqual([{ setNumber: 1 }]);
   });
 
-  test('keys targets by the plan’s own order, not the renumbered session order', () => {
-    // Day 1's slots are numbered 0 and 1 in the plan; the session renumbers them 1 and 2.
+  test('keys targets by day and exercise, so a shared order takes nothing from a neighbour', () => {
+    // GT-148: two rows of day 1 carry the same `order`. Only the bench press has a reference.
+    const sharedOrder: Mesocycle = {
+      ...copied,
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [
+              { exerciseId: 'exercise-bench-press', order: 1, sets: 2 },
+              { exerciseId: 'exercise-row', order: 1, sets: 2 },
+            ],
+          },
+        ],
+      },
+    };
     const targets = new Map([
-      [weekPlanSlotKey(1, 1), [{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]],
+      [
+        weekPlanSlotKey(1, 'exercise-bench-press'),
+        () => [{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }],
+      ],
     ]);
 
-    const { week } = buildMesocycleStart(copied, null, NOW, targets);
-    const day1 = week.find(({ session }) => session.dayNumber === 1)!;
-    const row = day1.exercises.find((exercise) => exercise.exerciseId === 'exercise-row')!;
+    const { week } = buildMesocycleStart(sharedOrder, null, NOW, targets);
+    const [day1] = week;
+    const byExercise = new Map(day1!.exercises.map((e) => [e.exerciseId, e.setTargets]));
 
-    expect(row.order).toBe(2);
-    expect(row.setTargets).toEqual([{ setNumber: 1, targetReps: 12, suggestedWeight: 20 }]);
+    expect(byExercise.get('exercise-bench-press')).toEqual([
+      { setNumber: 1, targetReps: 12, suggestedWeight: 20 },
+    ]);
+    expect(byExercise.get('exercise-row')).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+  });
+
+  test('prices each row of an exercise placed twice in a day by its own set count', () => {
+    const twice: Mesocycle = {
+      ...copied,
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [
+              { exerciseId: 'exercise-bench-press', order: 0, sets: 2 },
+              { exerciseId: 'exercise-bench-press', order: 1, sets: 3 },
+            ],
+          },
+        ],
+      },
+    };
+    const targets = new Map([
+      [
+        weekPlanSlotKey(1, 'exercise-bench-press'),
+        (rowCount: number) =>
+          Array.from({ length: rowCount }, (_, index) => ({
+            setNumber: index + 1,
+            targetReps: 10,
+          })),
+      ],
+    ]);
+
+    const { week } = buildMesocycleStart(twice, null, NOW, targets);
+
+    expect(week[0]!.exercises.map((e) => e.setTargets.length)).toEqual([2, 3]);
+    expect(week[0]!.exercises.every((e) => e.setTargets.every((t) => t.targetReps === 10))).toBe(
+      true,
+    );
   });
 
   test('without targets every row stays bare, as Flow A and B start', () => {

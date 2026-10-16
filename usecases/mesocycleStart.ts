@@ -31,9 +31,9 @@ const FIRST_WEEK = 1;
 
 /**
  * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
- * slot of the plan, the reference the resolver finds for that day (`resolveReference`, task
- * 134.2) among the exercise's performances inside `historyLookbackDays`, re-priced for this
- * block's starting RIR by `prescribeBlockStart`.
+ * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
+ * that day (`resolveReference`, task 134.2) among the exercise's performances inside
+ * `historyLookbackDays`, re-priced for this block's starting RIR by `prescribeBlockStart`.
  *
  * The source week gave the structure and nothing else. The numbers come from history because
  * copying rarely happens the day the block ended: between that week and this Start the user kept
@@ -78,9 +78,13 @@ async function weekOneTargetsFromHistory(
   );
 
   const startRir = targetRir(mesocycle.lengthWeeks, FIRST_WEEK);
-  const targets = new Map<string, SetTarget[]>();
+  const targets = new Map<string, (rowCount: number) => SetTarget[]>();
   for (const day of plan.days) {
     for (const exercise of day.exercises) {
+      const slot = weekPlanSlotKey(day.dayNumber, exercise.exerciseId);
+      if (targets.has(slot)) {
+        continue;
+      }
       const resolution = resolveReference(performances.get(exercise.exerciseId) ?? [], {
         mesoId: mesocycle.origin.sourceMesoId,
         dayNumber: day.dayNumber,
@@ -88,15 +92,9 @@ async function weekOneTargetsFromHistory(
       if (resolution.kind === 'none') {
         continue;
       }
-      targets.set(
-        weekPlanSlotKey(day.dayNumber, exercise.order),
-        prescribeBlockStart(
-          resolution,
-          startRir,
-          exercise.sets,
-          settings,
-          equipmentById.get(exercise.exerciseId),
-        ),
+      const equipment = equipmentById.get(exercise.exerciseId);
+      targets.set(slot, (rowCount) =>
+        prescribeBlockStart(resolution, startRir, rowCount, settings, equipment),
       );
     }
   }
