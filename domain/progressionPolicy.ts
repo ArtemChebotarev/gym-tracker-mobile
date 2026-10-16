@@ -22,8 +22,9 @@ export type ProgressionPolicy = {
   /** One exercise of a working week. Rule 1 (the set count is copied) holds for every policy. */
   prescribeWorkingWeek(exercise: SourceExercise, context: ProgressionContext): ExercisePrescription;
   /**
-   * The policy's own exercises of a deload day, in any order. Whatever the policy groups them by
-   * is decided among these alone — exercises of another type don't take part.
+   * The policy's own exercises of a deload day, already in their order. One prescription per
+   * exercise, in the order given — the dispatcher matches them back by position. Whatever the
+   * policy groups them by is decided among these alone; exercises of another type don't take part.
    */
   prescribeDeload(
     exercises: readonly SourceExercise[],

@@ -10,6 +10,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 import { policyFor } from '@domain/progressionPolicies';
+import type { ProgressionContext } from '@domain/progressionPolicy';
 
 export type NextSessionInput = {
   /**
@@ -41,20 +42,40 @@ export function prescribeNextSession(input: NextSessionInput): ExercisePrescript
   assertWeekInBlock(weekNumber, lengthWeeks);
   const context = { logs, weekNumber, lengthWeeks, settings };
 
+  const ordered = [...exercises].sort((a, b) => a.sessionExercise.order - b.sessionExercise.order);
   if (isDeloadWeek(lengthWeeks, weekNumber)) {
-    const byType = new Map<ExerciseType, SourceExercise[]>();
-    for (const exercise of exercises) {
-      const type = exercise.type ?? 'strength';
-      byType.set(type, [...(byType.get(type) ?? []), exercise]);
-    }
-    return [...byType]
-      .flatMap(([type, own]) => policyFor({ type }).prescribeDeload(own, context))
-      .sort((a, b) => a.order - b.order);
+    return prescribeDeloadByType(ordered, context);
   }
+  return ordered.map((exercise) => policyFor(exercise).prescribeWorkingWeek(exercise, context));
+}
 
-  return [...exercises]
-    .sort((a, b) => a.sessionExercise.order - b.sessionExercise.order)
-    .map((exercise) => policyFor(exercise).prescribeWorkingWeek(exercise, context));
+/**
+ * Each type's policy plans its own exercises of the day; the results are put back in the
+ * exercises' order. The merge walks `ordered` and takes the next result of each exercise's type,
+ * so it never compares two `order` values: rows of different types that share one (which a
+ * mesocycle plan can produce, GT-148) keep the order they came in.
+ */
+function prescribeDeloadByType(
+  ordered: readonly SourceExercise[],
+  context: ProgressionContext,
+): ExercisePrescription[] {
+  const ownByType = new Map<ExerciseType, SourceExercise[]>();
+  for (const exercise of ordered) {
+    const type = exercise.type ?? 'strength';
+    ownByType.set(type, [...(ownByType.get(type) ?? []), exercise]);
+  }
+  const pending = new Map<ExerciseType, ExercisePrescription[]>(
+    [...ownByType].map(([type, own]) => [type, policyFor({ type }).prescribeDeload(own, context)]),
+  );
+  return ordered.map((exercise) => {
+    const prescription = pending.get(exercise.type ?? 'strength')?.shift();
+    if (prescription === undefined) {
+      throw new Error(
+        `No deload prescription for exercise "${exercise.sessionExercise.exerciseId}".`,
+      );
+    }
+    return prescription;
+  });
 }
 
 function assertWeekInBlock(weekNumber: number, lengthWeeks: number): void {

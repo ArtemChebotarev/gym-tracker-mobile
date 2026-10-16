@@ -84,4 +84,16 @@ describe('prescribeNextSession dispatch', () => {
     expect(plan[0]?.setTargets).toHaveLength(1);
     expect(plan[1]?.setTargets).toHaveLength(1);
   });
+
+  test('keeps rows of different types that share an order in the order they came in', () => {
+    const power = source(1, 'power');
+    const strength = { ...source(1, 'strength'), muscleGroup: 'back' as const };
+    const plan = prescribeNextSession({
+      ...base,
+      weekNumber: 5,
+      exercises: [power, strength],
+    });
+    expect(plan.map((p) => p.exerciseId)).toEqual(['ex-1', 'ex-1']);
+    expect(plan.map((p) => p.targetRir)).toEqual([98, defaultProgressionSettings.deloadRir]);
+  });
 });
