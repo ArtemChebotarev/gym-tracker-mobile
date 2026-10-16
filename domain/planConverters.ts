@@ -70,6 +70,10 @@ export function materializeWeekPlan(
  * ended: an exercise swapped mid-week comes back as the one performed, a reordered day
  * comes back in its final order, and a removed exercise simply isn't there.
  *
+ * Exercise `order` comes out unique and gapless within the day, 1..n, whatever the sessions
+ * held — it is display order, and a plan with two rows sharing one is what let the exercise the
+ * editor added take a copied one's targets (GT-148).
+ *
  * Only structure survives. Execution (statuses, logged sets) and prescription (target reps,
  * suggested weights, weight hints, the week's RIR) live on `Session` / `SessionExercise`
  * and are dropped — `WeekPlan` has no room for either. `sets` is the number of set rows the
@@ -89,9 +93,9 @@ export function extractWeekPlan(sessionsWithExercises: readonly SessionWithExerc
     exercises: [...exercises]
       .sort((a, b) => a.order - b.order)
       .map(
-        (exercise): WeekPlanExercise => ({
+        (exercise, index): WeekPlanExercise => ({
           exerciseId: exercise.exerciseId,
-          order: exercise.order,
+          order: index + 1,
           sets: exercise.setTargets.length,
         }),
       ),

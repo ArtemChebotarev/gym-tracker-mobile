@@ -38,7 +38,8 @@ export function addExerciseToDay(
   exerciseId: string,
 ): ExercisesByDay {
   const existing = getDayExercises(exercisesByDay, dayNumber);
-  const next: WeekPlanExercise = { exerciseId, order: existing.length, sets: DEFAULT_EXERCISE_SETS };
+  const order = existing.reduce((highest, exercise) => Math.max(highest, exercise.order), -1) + 1;
+  const next: WeekPlanExercise = { exerciseId, order, sets: DEFAULT_EXERCISE_SETS };
   return { ...exercisesByDay, [dayNumber]: [...existing, next] };
 }
 

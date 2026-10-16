@@ -158,4 +158,34 @@ describe('materializeWeekPlan / extractWeekPlan', () => {
       ],
     });
   });
+
+  // GT-148: a plan is read back with one `order` per row, whatever the sessions carried.
+  test('extracts each day’s order unique and gapless, even from sessions that repeat or skip one', () => {
+    const session: Session = {
+      ...STAMPS,
+      id: 'session-1',
+      mesoId: 'meso-1',
+      weekNumber: 1,
+      dayNumber: 1,
+      isDeload: false,
+      prescriptionStatus: 'ready',
+      status: 'completed',
+    };
+    const exercise = (id: string, order: number): SessionExercise => ({
+      ...STAMPS,
+      id,
+      sessionId: session.id,
+      exerciseId: `exercise-${id}`,
+      order,
+      setTargets: [{ setNumber: 1 }],
+      targetRir: 2,
+      status: 'completed',
+    });
+
+    const { days } = extractWeekPlan([
+      { session, exercises: [exercise('a', 1), exercise('b', 1), exercise('c', 5)] },
+    ]);
+
+    expect(days[0]?.exercises.map((e) => e.order)).toEqual([1, 2, 3]);
+  });
 });
