@@ -8,6 +8,7 @@
 import { toExerciseId } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
 import type { SourceExercise } from '@domain/progression';
 import { prescribeNextSession } from '@domain/progressionPlan';
@@ -75,7 +76,11 @@ export async function generateNextSession(
     }
     // `equipment` rides along with `muscleGroup`: the engine needs it to tell a pure bodyweight
     // exercise, which gets no weight target at all, from everything else (task 105).
-    const source: SourceExercise = { sessionExercise, muscleGroup: exercise.muscleGroup };
+    const source: SourceExercise = {
+      sessionExercise,
+      muscleGroup: exercise.muscleGroup,
+      type: exerciseTypeOf(exercise),
+    };
     if (exercise.equipment !== undefined) {
       source.equipment = exercise.equipment;
     }

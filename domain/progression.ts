@@ -1,7 +1,7 @@
 // Progression engine input/output shapes shared across its rules — see 03 · Progression
 // Engine. Types only; the rules live in `domain/progression<Rule>.ts`.
 
-import type { Equipment, MuscleGroup } from '@domain/catalog';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
 
 /**
@@ -13,6 +13,11 @@ import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execu
 export type SourceExercise = {
   sessionExercise: Pick<SessionExercise, 'id' | 'exerciseId' | 'order' | 'setTargets'>;
   muscleGroup: MuscleGroup;
+  /**
+   * Picks the progression policy that plans the exercise (`domain/progressionPolicies.ts`).
+   * Absent means `strength`, as on `Exercise.type`.
+   */
+  type?: ExerciseType;
   /**
    * Decides what the exercise's weight means, and whether it has one to progress at all — a pure
    * `bodyweight` exercise gets no weight target (task 105, `domain/bodyWeightLoad.ts`). Absent
