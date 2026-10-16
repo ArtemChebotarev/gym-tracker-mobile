@@ -64,6 +64,15 @@ describe('addExerciseToDay', () => {
     expect(result[1]).toEqual([{ exerciseId: 'bench-press', order: 0, sets: DEFAULT_EXERCISE_SETS }]);
   });
 
+  // GT-148: a copied day arrives numbered from 1, so `existing.length` would repeat its last one.
+  test('takes the order after the highest one, not the count', () => {
+    const copied: ExercisesByDay = { 1: [{ exerciseId: 'squat', order: 1, sets: 2 }] };
+
+    const result = addExerciseToDay(copied, 1, 'bench-press');
+
+    expect(result[1]?.map((e) => e.order)).toEqual([1, 2]);
+  });
+
   test('appends after existing exercises on the day with the next order', () => {
     const existing: ExercisesByDay = { 1: [{ exerciseId: 'squat', order: 0, sets: 2 }] };
 

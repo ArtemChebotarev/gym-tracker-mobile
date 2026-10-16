@@ -566,6 +566,78 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
 
 // Task 134.2 — the resolver per target day. The copied block trained bench twice a week; the new
 // one keeps both days and adds a third.
+describe('startMesocycle — copyWeek rows that share an order (GT-148)', () => {
+  const benchPerformance: Performance = {
+    sessionExerciseId: 'sx-bench',
+    exerciseId: 'bench',
+    targetRir: 0,
+    completedAt: '2026-09-10T08:00:00.000Z',
+    sets: [
+      [60, 10],
+      [60, 9],
+    ],
+  };
+
+  test('an exercise added without history takes nothing from the one that shares its order', async () => {
+    // What the editor produced before the fix: the copied exercise and the added one both `1`.
+    const store = await setUpCopied([benchPerformance], {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'bench', order: 1, sets: 2 },
+            { exerciseId: 'row', order: 1, sets: 2 },
+          ],
+        },
+      ],
+    });
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+    await expect(startedTargetsOf(store, 'row')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
+  });
+
+  test('one exercise twice in a day: both rows take the day’s reference, each by its own set count', async () => {
+    const store = await setUpCopied([benchPerformance], {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'bench', order: 0, sets: 2 },
+            { exerciseId: 'bench', order: 1, sets: 3 },
+          ],
+        },
+      ],
+    });
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    const sessions = await store.repos.sessionRepo.listByMesoId('meso-copy');
+    const rows = await store.repos.sessionExerciseRepo.listBySessionId(sessions[0]!.id);
+    const byOrder = [...rows].sort((a, b) => a.order - b.order).map((row) => row.setTargets);
+
+    expect(byOrder[0]).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+    ]);
+    // The reference has two sets; the third row has none to go by.
+    expect(byOrder[1]).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3 },
+    ]);
+  });
+});
+
 describe('startMesocycle — copyWeek targets per target day', () => {
   const threeDays: Mesocycle['weekPlan'] = {
     days: [1, 2, 3].map((dayNumber) => ({
