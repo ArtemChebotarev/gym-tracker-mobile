@@ -13,12 +13,17 @@
 
 import { Text, View } from 'react-native';
 
-import { INTERVAL_LEVERS, INTERVAL_STEPS_SEC, type IntervalConfig, type IntervalLever } from '@domain/exerciseConfig';
+import {
+  INTERVAL_LEVERS,
+  INTERVAL_STEPS_SEC,
+  type IntervalConfig,
+  type IntervalLever,
+} from '@domain/exerciseConfig';
 import { OptionCard } from '@design/components/OptionCard';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { fieldStyles } from '@design/components/fieldStyles';
 
-import { styles } from './ExerciseFormSheetStyles';
+import { styles } from './ExerciseFormStyles';
 import {
   describeLever,
   describeStep,

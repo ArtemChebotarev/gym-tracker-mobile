@@ -1,4 +1,4 @@
-// Styles for ExerciseCreateScreen.tsx — see the code-style skill.
+// Styles for ExerciseFormScreen.tsx — see the code-style skill.
 
 import { StyleSheet } from 'react-native';
 

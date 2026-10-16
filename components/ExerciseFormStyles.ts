@@ -1,4 +1,4 @@
-// Styles for ExerciseFormSheet.tsx — see the code-style skill, "Screens keep the same split, one
+// Styles for ExerciseFormScreen.tsx — see the code-style skill, "Screens keep the same split, one
 // level up".
 
 import { StyleSheet } from 'react-native';

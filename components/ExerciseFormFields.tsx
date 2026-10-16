@@ -1,13 +1,19 @@
 // The fields of an exercise form — name, equipment, muscle group and the type's own config
-// (10.1 FR-1). Shared by the full-screen New exercise page and the Edit exercise sheet, so the two
-// can never offer different fields. Controlled, like both of them.
+// (10.1 FR-1). Shared by the full-screen New exercise and Edit exercise pages, so the two
+// can never offer different fields. Controlled, like the page that holds it.
 //
-// JSX/rendering only — styles live in ExerciseFormSheetStyles.ts, helpers in
-// ExerciseFormSheetLogic.ts.
+// JSX/rendering only — styles live in ExerciseFormStyles.ts, helpers in
+// ExerciseFormLogic.ts.
 
 import { View } from 'react-native';
 
-import { EQUIPMENT_OPTIONS, FULL_BODY, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@domain/catalog';
+import {
+  EQUIPMENT_OPTIONS,
+  FULL_BODY,
+  MUSCLE_GROUPS,
+  type Equipment,
+  type MuscleGroup,
+} from '@domain/catalog';
 import { Dropdown } from '@design/components/Dropdown';
 import { TextField } from '@design/components/TextField';
 import { getEquipmentLabel } from '@design/equipmentLabel';
@@ -15,8 +21,8 @@ import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupCol
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseConfigFields } from './ExerciseConfigFields';
-import type { ExerciseFormValues } from './ExerciseFormSheet';
-import { styles } from './ExerciseFormSheetStyles';
+import type { ExerciseFormValues } from './ExerciseFormValues';
+import { styles } from './ExerciseFormStyles';
 
 // Carries each muscle group's family dot color (03-new-exercise.html: a colored dot per option,
 // the same family colors ExerciseFiltersSheet's muscle-group chips already use), unlike Equipment
@@ -77,7 +83,9 @@ export function ExerciseFormFields({ values, onChangeValues }: ExerciseFormField
           label="Muscle group"
           options={isStrength ? MUSCLE_GROUP_OPTIONS : NON_STRENGTH_MUSCLE_GROUP_OPTIONS}
           value={values.muscleGroup}
-          onChange={(muscleGroup) => onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })}
+          onChange={(muscleGroup) =>
+            onChangeValues({ ...values, muscleGroup: muscleGroup as MuscleGroup })
+          }
           placeholder="Choose muscle group"
         />
       </View>

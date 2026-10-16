@@ -43,7 +43,6 @@ export type PowerConfig = {
 
 export type IntervalConfig = {
   type: 'interval';
-  rounds: number;
   /** Work time of one round, seconds. */
   workSec: number;
   /** Rest between rounds, seconds. The same after every round. */
@@ -62,3 +61,13 @@ export type MobilityConfig = {
 };
 
 export type ExerciseConfig = PowerConfig | IntervalConfig | MobilityConfig;
+
+/**
+ * An interval exercise's config as a cycle holds it: the library's values plus how many rounds
+ * the cycle does. The count is not a property of the exercise — as sets are not for a strength
+ * one — so it exists only here, set when the cycle is created (FR-9).
+ */
+export type IntervalPlanConfig = IntervalConfig & { rounds: number };
+
+/** What a cycle keeps per hybrid exercise (`Mesocycle.exerciseSettings`). */
+export type ExerciseSettings = PowerConfig | IntervalPlanConfig | MobilityConfig;

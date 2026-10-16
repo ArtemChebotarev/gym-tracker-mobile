@@ -14,9 +14,10 @@ import { renderWithRepositories, withRepositories } from '../fixtures/renderWith
 // historyRoutes.test.ts.
 let mockParams: Record<string, string | undefined> = {};
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({ back: mockBack, push: mockPush }),
   useLocalSearchParams: () => mockParams,
 }));
 
@@ -114,6 +115,11 @@ describe('Exercise screen route', () => {
     await screen.findByText('Route Test Cable Fly');
 
     expect(screen.getByTestId('action-menu-edit')).toBeTruthy();
+    fireEvent(screen.getByTestId('action-menu-edit'), 'buttonPress');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/exercise/[id]/edit',
+      params: { id: custom.id },
+    });
 
     fireEvent(screen.getByTestId('action-menu-hide'), 'buttonPress');
     confirmAlert(alert, 'Hide');

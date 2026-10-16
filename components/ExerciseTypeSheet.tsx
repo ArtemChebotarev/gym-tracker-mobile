@@ -14,7 +14,7 @@ import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 
-import { styles } from './ExerciseFormSheetStyles';
+import { styles } from './ExerciseFormStyles';
 
 export type ExerciseTypeSheetProps = {
   visible: boolean;
@@ -26,7 +26,14 @@ export type ExerciseTypeSheetProps = {
   animated?: boolean;
 };
 
-export function ExerciseTypeSheet({ visible, type, onChangeType, onNext, onClose, animated }: ExerciseTypeSheetProps) {
+export function ExerciseTypeSheet({
+  visible,
+  type,
+  onChangeType,
+  onNext,
+  onClose,
+  animated,
+}: ExerciseTypeSheetProps) {
   return (
     <BottomSheet
       visible={visible}

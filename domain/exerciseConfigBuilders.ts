@@ -15,13 +15,12 @@ export function exerciseTypeOf(exercise: Pick<Exercise, 'type'>): ExerciseType {
 
 /**
  * The "Hold" preset of an `interval` exercise (10.1 FR-10, "Timed work"): a plank or a hang as
- * 3 x 0:30 with a minute's rest, progressing on `workTime` in 5 s steps. The `interval` key stays;
+ * 0:30 of work with a minute's rest, progressing on `workTime` in 5 s steps. The `interval` key stays;
  * "Timed work" is only its label in the UI. Fresh object each call, like the defaults.
  */
 export function holdIntervalConfig(): IntervalConfig {
   return {
     type: 'interval',
-    rounds: 3,
     workSec: 30,
     restSec: 60,
     getReadySec: 5,
@@ -46,7 +45,6 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
     case 'interval':
       return {
         type: 'interval',
-        rounds: 3,
         workSec: 120,
         restSec: 60,
         getReadySec: 5,

@@ -1,22 +1,24 @@
-// The type-specific fields of the New/Edit exercise sheet — see 10.1 FR-1 (which fields each type
+// The type-specific fields of the New/Edit exercise page — see 10.1 FR-1 (which fields each type
 // has) and FR-9 (their system defaults, which the caller seeds). Controlled: it edits one
 // `ExerciseConfig` and hands back the whole new one.
 //
 // Every number is a StepperRow whose value is also a button: `−` / `+` for a nudge, a tap on the
-// value for a wheel picker (canvas 8.2) — the time picker for a time, the number picker for the
-// rounds — one instance of each, told which field it is setting.
+// value for the time picker (canvas 8.2), one instance told which field it is setting.
+//
+// An interval exercise asks for no number of rounds here: how many rounds or sets to do is set in
+// the cycle and in the workout, as sets are for a strength exercise. `IntervalConfig.rounds` stays
+// as the count a cycle starts from.
 //
 // A power exercise also picks its load (kg / level / none, FR-2). Not here: the interval's
 // progression (ExerciseProgressionFields), which is a step of its own.
 //
-// JSX/rendering only — formatting lives in ExerciseFormSheetLogic.ts.
+// JSX/rendering only — formatting lives in ExerciseFormLogic.ts.
 
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
-import { NumberPickerSheet } from '@design/components/NumberPickerSheet';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
@@ -26,14 +28,12 @@ import {
   formatClock,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
-} from './ExerciseFormSheetLogic';
-import { styles } from './ExerciseFormSheetStyles';
+} from './ExerciseFormLogic';
+import { styles } from './ExerciseFormStyles';
 
 // Every time field steps by the same 5 s, power's rest included.
 const SECONDS_STEP = 5;
 const MINUTE = 60;
-const MIN_ROUNDS = 1;
-const MAX_ROUNDS = 30;
 
 /** A time field of a config: what it is called, what qualifies it, and what it may hold. */
 type TimeField = {
@@ -80,7 +80,6 @@ export type ExerciseConfigFieldsProps = {
 export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsProps) {
   // The time field whose picker is open, if any.
   const [editing, setEditing] = useState<TimeField | null>(null);
-  const [isEditingRounds, setIsEditingRounds] = useState(false);
 
   function valueOf(field: TimeField): number {
     return (config as unknown as Record<string, number>)[field.key] ?? 0;
@@ -151,27 +150,10 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
       return (
         <View>
           <Text style={[fieldStyles.label, styles.sectionLabel]}>Default plan</Text>
-          <StepperRow
-            label="Rounds"
-            value={config.rounds}
-            onChange={(rounds) => onChange({ ...config, rounds })}
-            min={MIN_ROUNDS}
-            max={MAX_ROUNDS}
-            onValuePress={() => setIsEditingRounds(true)}
-          />
           {renderTimeRow(WORK)}
           {renderTimeRow(REST_BETWEEN_ROUNDS)}
           {renderTimeRow(COUNTDOWN)}
           {picker}
-          <NumberPickerSheet
-            visible={isEditingRounds}
-            onClose={() => setIsEditingRounds(false)}
-            title="Rounds"
-            value={config.rounds}
-            onChange={(rounds) => onChange({ ...config, rounds })}
-            min={MIN_ROUNDS}
-            max={MAX_ROUNDS}
-          />
         </View>
       );
   }

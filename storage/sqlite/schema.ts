@@ -2,7 +2,7 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-or
 
 import type { Exercise } from '@domain/catalog';
 import type { Session, SessionExercise, SetTarget } from '@domain/execution';
-import type { ExerciseConfig } from '@domain/exerciseConfig';
+import type { ExerciseConfig, ExerciseSettings } from '@domain/exerciseConfig';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import type { MesoTemplate, WeekPlan } from '@domain/plan';
 import type { Settings } from '@repositories/settings';
@@ -43,8 +43,8 @@ export const exercises = sqliteTable(
     // default is what every exercise already on a device becomes when the migration adds it —
     // they were all strength.
     type: text('type').notNull().default('strength').$type<NonNullable<Exercise['type']>>(),
-    // Defaults that belong to the exercise's type — power load kind and rest, interval rounds /
-    // work / rest / get-ready and lever, the "no heavier" flag, mobility length. Null for
+    // Defaults that belong to the exercise's type — power load kind and rest, interval work /
+    // rest / get-ready and lever, the "no heavier" flag, mobility length. Null for
     // strength, which has none. A value object read and written whole, so JSON like `weekPlan`.
     config: text('config', { mode: 'json' }).$type<ExerciseConfig>(),
     ...timestamps,
@@ -81,10 +81,10 @@ export const mesocycles = sqliteTable(
     completedAt: text('completed_at'),
     // Set when the block is put out of sight; the row and everything under it stay (soft delete).
     archivedAt: text('archived_at'),
-    // Per-exercise plan parameters of this cycle — interval rounds / work / rest / get-ready,
+    // Per-exercise plan parameters of this cycle — interval rounds (only here) / work / rest / get-ready,
     // progression lever and step (10.1, FR-9). Null while the cycle has only strength exercises.
     exerciseSettings: text('exercise_settings', { mode: 'json' }).$type<
-      Record<string, ExerciseConfig>
+      Record<string, ExerciseSettings>
     >(),
     ...timestamps,
   },
