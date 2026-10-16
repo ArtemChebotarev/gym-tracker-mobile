@@ -17,7 +17,7 @@ import { Stepper, type StepperProps } from './Stepper';
 
 export type StepperRowProps = Pick<
   StepperProps,
-  'label' | 'value' | 'onChange' | 'min' | 'max' | 'step' | 'formatValue'
+  'label' | 'value' | 'onChange' | 'min' | 'max' | 'step' | 'formatValue' | 'onValuePress'
 > & {
   /** What qualifies the label, in grey after it on the same line: `Rest` + `between sets`. */
   labelSuffix?: string;

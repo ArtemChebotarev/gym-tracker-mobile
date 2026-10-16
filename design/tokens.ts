@@ -262,7 +262,14 @@ export const SIZES = {
    * The width a StepperRow gives its value, so the `−` / `+` buttons of rows with `3`, `2:00` and
    * `0:05` stand in two straight columns instead of following the width of the text.
    */
-  'size/stepper-value': 56,
+  'size/stepper-value': 64,
+  /** TimePickerSheet: the height of the wheels, and the width of each of the two columns. */
+  'size/time-wheel-height': 200,
+  'size/time-wheel-column': 90,
+  /** TimePickerSheet's fallback wheel: one row of a column (the native wheel sizes its own). */
+  'size/time-wheel-row': 36,
+  /** The padding above the first and below the last row, so either can reach the middle. */
+  'size/time-wheel-inset': 82,
   /** A StepperRow's height — the same with a caption under the label as without one. */
   'size/stepper-row': 58,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */

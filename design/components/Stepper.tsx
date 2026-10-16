@@ -45,6 +45,12 @@ export type StepperProps = {
    * steppers in a column line up whatever the value's own width.
    */
   valueWidth?: number;
+  /**
+   * `inline` only: makes the value a button — a tap on it is a way to set it directly (a time
+   * picker) where `−` / `+` by `step` is too many taps. The value is then drawn as a pill so that
+   * it reads as something to press; `−` / `+` stay.
+   */
+  onValuePress?: () => void;
 };
 
 
@@ -59,6 +65,7 @@ export function Stepper({
   caption,
   variant = 'field',
   valueWidth,
+  onValuePress,
 }: StepperProps) {
   const decrementDisabled = value <= min;
   const incrementDisabled = value >= max;
@@ -90,10 +97,25 @@ export function Stepper({
     return (
       <View style={styles.inlineRow}>
         {decrementButton}
-        <View style={valueWidth === undefined ? undefined : { width: valueWidth }}>
-          <Text style={styles.valueInline}>{displayValue}</Text>
-          {caption !== undefined && <Text style={styles.captionInline}>{caption}</Text>}
-        </View>
+        {onValuePress === undefined ? (
+          <View style={valueWidth === undefined ? undefined : { width: valueWidth }}>
+            <Text style={styles.valueInline}>{displayValue}</Text>
+            {caption !== undefined && <Text style={styles.captionInline}>{caption}</Text>}
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Set ${label}`}
+            onPress={onValuePress}
+            style={({ pressed }) => [
+              styles.valuePill,
+              valueWidth !== undefined && { width: valueWidth },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.valueInline}>{displayValue}</Text>
+          </Pressable>
+        )}
         {incrementButton}
       </View>
     );
@@ -207,6 +229,13 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS['text/primary'],
     textAlign: 'center',
+  },
+  valuePill: {
+    minHeight: SIZES['size/control-inline'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS['surface/card'],
+    borderRadius: RADII['radius/pill'],
   },
   captionInline: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,

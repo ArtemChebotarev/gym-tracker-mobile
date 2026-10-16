@@ -30,4 +30,32 @@ describe('StepperRow', () => {
 
     expect(screen.getByRole('button', { name: 'Decrease Rounds' }).props.accessibilityState.disabled).toBe(true);
   });
+
+  test('a value that can be tapped is a button of its own, and − / + keep working', () => {
+    const onValuePress = jest.fn();
+    const onChange = jest.fn();
+    render(
+      <StepperRow
+        label="Work"
+        value={120}
+        onChange={onChange}
+        min={0}
+        max={600}
+        step={5}
+        onValuePress={onValuePress}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Set Work' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Work' }));
+
+    expect(onValuePress).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(125);
+  });
+
+  test('without onValuePress the value is plain text', () => {
+    render(<StepperRow label="Rounds" value={3} onChange={() => {}} min={1} max={9} />);
+
+    expect(screen.queryByRole('button', { name: 'Set Rounds' })).toBeNull();
+  });
 });
