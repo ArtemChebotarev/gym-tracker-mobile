@@ -1,4 +1,4 @@
-// The type-specific fields of the New/Edit exercise sheet — see 10.1 FR-1 (which fields each type
+// The type-specific fields of the New/Edit exercise page — see 10.1 FR-1 (which fields each type
 // has) and FR-9 (their system defaults, which the caller seeds). Controlled: it edits one
 // `ExerciseConfig` and hands back the whole new one.
 //
@@ -9,7 +9,7 @@
 // A power exercise also picks its load (kg / level / none, FR-2). Not here: the interval's
 // progression (ExerciseProgressionFields), which is a step of its own.
 //
-// JSX/rendering only — formatting lives in ExerciseFormSheetLogic.ts.
+// JSX/rendering only — formatting lives in ExerciseFormLogic.ts.
 
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -26,8 +26,8 @@ import {
   formatClock,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
-} from './ExerciseFormSheetLogic';
-import { styles } from './ExerciseFormSheetStyles';
+} from './ExerciseFormLogic';
+import { styles } from './ExerciseFormStyles';
 
 // Every time field steps by the same 5 s, power's rest included.
 const SECONDS_STEP = 5;

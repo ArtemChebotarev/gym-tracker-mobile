@@ -1,14 +1,14 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import { EMPTY_EXERCISE_FORM_VALUES } from '@components/ExerciseFormSheet';
+import { EMPTY_EXERCISE_FORM_VALUES } from '@components/ExerciseFormValues';
 import {
   describePowerLoad,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
   canSubmitExerciseForm,
   formatClock,
-  isExerciseEditableInSheet,
+  isExerciseEditable,
   valuesForType,
-} from '@components/ExerciseFormSheetLogic';
+} from '@components/ExerciseFormLogic';
 import { STAMPS } from '../fixtures/stamps';
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
@@ -23,13 +23,13 @@ function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
   };
 }
 
-describe('isExerciseEditableInSheet', () => {
+describe('isExerciseEditable', () => {
   test('a custom exercise is editable', () => {
-    expect(isExerciseEditableInSheet(makeExercise({ source: 'custom' }))).toBe(true);
+    expect(isExerciseEditable(makeExercise({ source: 'custom' }))).toBe(true);
   });
 
   test('a catalog exercise is not editable', () => {
-    expect(isExerciseEditableInSheet(makeExercise({ source: 'catalog' }))).toBe(false);
+    expect(isExerciseEditable(makeExercise({ source: 'catalog' }))).toBe(false);
   });
 });
 

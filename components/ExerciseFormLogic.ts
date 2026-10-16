@@ -1,18 +1,18 @@
-// Pure, non-JSX logic behind ExerciseFormSheet.tsx — see the code-style skill, "Screens keep the
+// Pure, non-JSX logic behind ExerciseFormScreen.tsx — see the code-style skill, "Screens keep the
 // same split, one level up".
 
 import { FULL_BODY, type Exercise, type ExerciseType, type MuscleGroup } from '@domain/catalog';
 import { POWER_LOADS, type PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 
-import type { ExerciseFormValues } from './ExerciseFormSheet';
+import type { ExerciseFormValues } from './ExerciseFormValues';
 
 /**
  * A catalog exercise is immutable (02 · Domain Model: "Записи с source = catalog неизменяемы") —
- * this sheet only ever creates or edits custom exercises (08.6: "Каталожное упражнение открыть
+ * the form only ever creates or edits custom exercises (08.6: "Каталожное упражнение открыть
  * в этом листе нельзя").
  */
-export function isExerciseEditableInSheet(exercise: Exercise): boolean {
+export function isExerciseEditable(exercise: Exercise): boolean {
   return exercise.source === 'custom';
 }
 
