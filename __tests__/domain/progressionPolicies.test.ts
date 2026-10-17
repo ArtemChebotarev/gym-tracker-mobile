@@ -26,6 +26,23 @@ describe('PROGRESSION_POLICIES', () => {
 });
 
 describe('policyFor', () => {
+  test('every type has its own policy except mobility, which still runs strength (GT-106)', () => {
+    expect(PROGRESSION_POLICIES.power).not.toBe(strengthPolicy);
+    expect(PROGRESSION_POLICIES.interval).not.toBe(strengthPolicy);
+    expect(PROGRESSION_POLICIES.mobility).toBe(strengthPolicy);
+  });
+
+  test('interval delegates all four jobs to strength until GT-100', () => {
+    for (const job of [
+      'prescribeWorkingWeek',
+      'prescribeDeload',
+      'prescribeFromReference',
+      'prescribeBlockStart',
+    ] as const) {
+      expect(PROGRESSION_POLICIES.interval[job]).toBe(strengthPolicy[job]);
+    }
+  });
+
   test('an exercise with no type is strength', () => {
     expect(policyFor(source(1))).toBe(PROGRESSION_POLICIES.strength);
     expect(PROGRESSION_POLICIES.strength).toBe(strengthPolicy);
@@ -48,6 +65,8 @@ describe('prescribeNextSession dispatch', () => {
         targetRir: 98,
       })),
     ),
+    prescribeFromReference: jest.fn(() => []),
+    prescribeBlockStart: jest.fn(() => []),
   };
   const original = PROGRESSION_POLICIES.power;
 

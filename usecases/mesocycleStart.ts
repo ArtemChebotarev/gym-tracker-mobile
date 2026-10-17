@@ -17,7 +17,7 @@ import {
 import { validateMesocycleCanStart, type StartableMesocycle } from '@domain/mesocycleValidators';
 import type { ExercisePerformance } from '@domain/progression';
 import { resolveReference } from '@domain/progressionReference';
-import { prescribeBlockStart } from '@domain/progressionStartReps';
+import { policyFor } from '@domain/progressionPolicies';
 import { targetRir } from '@domain/progressionRir';
 import { daysBefore, nowAsUtcIso } from '@domain/time';
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
@@ -33,7 +33,7 @@ const FIRST_WEEK = 1;
  * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
  * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
  * that day (`resolveReference`, task 134.2) among the exercise's performances inside
- * `historyLookbackDays`, re-priced for this block's starting RIR by `prescribeBlockStart`.
+ * `historyLookbackDays`, re-priced for this block's starting RIR by the exercise type's policy (`prescribeBlockStart`).
  *
  * The source week gave the structure and nothing else. The numbers come from history because
  * copying rarely happens the day the block ended: between that week and this Start the user kept
@@ -76,6 +76,7 @@ async function weekOneTargetsFromHistory(
   const equipmentById = new Map<string, Equipment | undefined>(
     catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
   );
+  const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
 
   const startRir = targetRir(mesocycle.lengthWeeks, FIRST_WEEK);
   const targets = new Map<string, (rowCount: number) => SetTarget[]>();
@@ -93,8 +94,15 @@ async function weekOneTargetsFromHistory(
         continue;
       }
       const equipment = equipmentById.get(exercise.exerciseId);
+      const policy = policyFor({ type: typeById.get(exercise.exerciseId) });
       targets.set(slot, (rowCount) =>
-        prescribeBlockStart(resolution, startRir, rowCount, settings, equipment),
+        policy.prescribeBlockStart({
+          resolution,
+          startRir,
+          rowCount,
+          settings,
+          ...(equipment === undefined ? {} : { equipment }),
+        }),
       );
     }
   }
