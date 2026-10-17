@@ -581,7 +581,7 @@ describe('workoutEquipmentLabel', () => {
 
   test('any other equipment reads as it does everywhere else', () => {
     expect(workoutEquipmentLabel('barbell')).toBe('Barbell');
-    expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight, kg');
+    expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight');
   });
 });
 
