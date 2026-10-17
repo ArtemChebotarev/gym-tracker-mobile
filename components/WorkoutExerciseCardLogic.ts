@@ -1,7 +1,7 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
 import type { Equipment } from '@domain/catalog';
-import { isResistanceBand } from '@domain/bodyWeightLoad';
+import { isResistanceBand, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
@@ -187,6 +187,27 @@ export function carryWeightForward(
 // Weight swap — 08.7.1 · Другой вес. Everything below reads what `evaluateWeightSwap` and the
 // row's own `weightSwap` already worked out (03, rule 7; task 120) and turns it into the strings
 // and spans the ⓘ popover and the card's InlineNote show. Nothing here computes reps or ranges.
+
+/**
+ * The Weight column's header (10.1 FR-2, GT-82): `Weight, kg` for a strength exercise, `Added, kg`
+ * on a weighted bodyweight one, and for power what its load is — kilograms, a level, or the body
+ * itself.
+ */
+export function weightColumnLabel(
+  exercise: Pick<WorkoutExercise, 'type' | 'powerLoad' | 'equipment'>,
+): string {
+  if (exercise.type === 'power') {
+    switch (exercise.powerLoad ?? 'weight') {
+      case 'level':
+        return 'Level';
+      case 'none':
+        return 'Bodyweight, kg';
+      case 'weight':
+        return 'Load, kg';
+    }
+  }
+  return usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg';
+}
 
 /** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
 export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow | undefined {

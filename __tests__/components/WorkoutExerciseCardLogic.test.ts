@@ -12,6 +12,7 @@ import {
   estimateNote,
   weightSwapPopover,
   workoutEquipmentLabel,
+  weightColumnLabel,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -174,7 +175,7 @@ describe('the Weight fields of one exercise (task 106)', () => {
   }
 
   describe('weightFieldText', () => {
-    test('an untouched field shows the set\'s suggested weight', () => {
+    test("an untouched field shows the set's suggested weight", () => {
       expect(weightFieldText({}, { setNumber: 1, suggestedWeight: 62.5 })).toBe('62.5');
     });
 
@@ -213,7 +214,7 @@ describe('the Weight fields of one exercise (task 106)', () => {
       expect(texts(edits, rows)).toEqual(['20', '20', '30']);
     });
 
-    test('a carried value is not the user\'s own — a later edit replaces it', () => {
+    test("a carried value is not the user's own — a later edit replaces it", () => {
       const rows = sets();
       let edits = carryWeightForward(editWeightText({}, 1, '20'), rows, 1);
       edits = carryWeightForward(editWeightText(edits, 2, '25'), rows, 2);
@@ -299,7 +300,9 @@ describe('the weight swap popover and note', () => {
     });
 
     test('nothing once every set is logged', () => {
-      expect(firstUnloggedRow([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[])).toBeUndefined();
+      expect(
+        firstUnloggedRow([{ setNumber: 1, isFirstUnlogged: false }] as WorkoutSetRow[]),
+      ).toBeUndefined();
     });
   });
 
@@ -312,20 +315,30 @@ describe('the weight swap popover and note', () => {
     };
 
     test('a live card has the RIR badge and the Weight ⓘ; the Reps ⓘ needs a weight swap', () => {
-      expect(cardInfoTargets(base, 'live', false)).toEqual({ rir: true, weight: true, reps: false });
+      expect(cardInfoTargets(base, 'live', false)).toEqual({
+        rir: true,
+        weight: true,
+        reps: false,
+      });
     });
 
     test('a weight swap on the next set adds the Reps ⓘ', () => {
       const withSwap = {
         ...base,
-        rows: [{ setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } }] as WorkoutSetRow[],
+        rows: [
+          { setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } },
+        ] as WorkoutSetRow[],
       };
 
       expect(cardInfoTargets(withSwap, 'live', false).reps).toBe(true);
     });
 
     test('a deload card keeps only the badge', () => {
-      expect(cardInfoTargets(base, 'live', true)).toEqual({ rir: true, weight: false, reps: false });
+      expect(cardInfoTargets(base, 'live', true)).toEqual({
+        rir: true,
+        weight: false,
+        reps: false,
+      });
     });
 
     test('a read-only card has the badge and no ⓘ at all', () => {
@@ -569,5 +582,23 @@ describe('workoutEquipmentLabel', () => {
   test('any other equipment reads as it does everywhere else', () => {
     expect(workoutEquipmentLabel('barbell')).toBe('Barbell');
     expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight');
+  });
+});
+
+// GT-82, 10.1 FR-2: the Weight column says what a power exercise's load is.
+describe('weightColumnLabel', () => {
+  test('strength: Weight, or Added on a weighted bodyweight exercise', () => {
+    expect(weightColumnLabel({})).toBe('Weight, kg');
+    expect(weightColumnLabel({ equipment: 'bodyweight-weighted' })).toBe('Added, kg');
+  });
+
+  test('power: kilograms, a level, or the body', () => {
+    expect(weightColumnLabel({ type: 'power', powerLoad: 'weight' })).toBe('Load, kg');
+    expect(weightColumnLabel({ type: 'power', powerLoad: 'level' })).toBe('Level');
+    expect(weightColumnLabel({ type: 'power', powerLoad: 'none' })).toBe('Bodyweight, kg');
+  });
+
+  test('power with no stated load reads as kilograms', () => {
+    expect(weightColumnLabel({ type: 'power' })).toBe('Load, kg');
   });
 });

@@ -802,7 +802,9 @@ describe('Weight ⓘ — finding your weight', () => {
 
   test('a pure bodyweight exercise has none — its Weight field is the body weight', () => {
     render(
-      <WorkoutExerciseCard {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight' }) })} />,
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight' }) })}
+      />,
     );
 
     expect(info()).toBeNull();
@@ -883,5 +885,26 @@ describe('RIR badge popover', () => {
     fireEvent.press(badge());
 
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+  });
+
+  test('a power card says Load and Fast reps, with no RIR badge and no indicator column', () => {
+    const power = makeExercise({
+      name: 'Medball throw',
+      type: 'power',
+      isGuided: true,
+      equipment: undefined,
+      targetRir: undefined,
+      rows: [{ setNumber: 1, targetReps: 5, suggestedWeight: 4, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power })} />);
+
+    expect(screen.getByText('Load, kg')).toBeTruthy();
+    expect(screen.getByText('Fast reps')).toBeTruthy();
+    expect(screen.getByLabelText('About fast reps')).toBeTruthy();
+    expect(screen.queryByText(/RIR/)).toBeNull();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
   });
 });

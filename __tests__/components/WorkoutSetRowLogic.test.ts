@@ -12,6 +12,7 @@ import {
   parseWeight,
   repsPlaceholder,
   resolveSetEntry,
+  rowAtWeight,
   rowEvaluation,
 } from '@components/WorkoutSetRowLogic';
 
@@ -306,5 +307,31 @@ describe('the row at another weight', () => {
     };
 
     expect(repsPlaceholder(dip, 2, rowEvaluation(dip, '10'))).toBe('9');
+  });
+});
+
+// GT-82, 10.2 P10: a heavier weight than planned drops a guided row's placeholder to the floor.
+describe('rowAtWeight', () => {
+  const row = { targetReps: 6, suggestedWeight: 4 };
+
+  test('a weight above the planned one takes the floor', () => {
+    expect(rowAtWeight(row, '5', 2).targetReps).toBe(2);
+    expect(repsPlaceholder(rowAtWeight(row, '5', 2), undefined)).toBe('2');
+  });
+
+  test('the planned weight, a lighter one, or none keep the target', () => {
+    expect(rowAtWeight(row, '4', 2)).toBe(row);
+    expect(rowAtWeight(row, '3', 2)).toBe(row);
+    expect(rowAtWeight(row, '', 2)).toBe(row);
+  });
+
+  test('no floor, or no planned weight to compare with, keeps the row', () => {
+    expect(rowAtWeight(row, '5', undefined)).toBe(row);
+    const unplanned = { targetReps: 6 };
+    expect(rowAtWeight(unplanned, '5', 2)).toBe(unplanned);
+  });
+
+  test('a one-tap Log records the floor at the heavier weight', () => {
+    expect(resolveSetEntry('5', '', rowAtWeight(row, '5', 2))).toEqual({ weight: 5, reps: 2 });
   });
 });

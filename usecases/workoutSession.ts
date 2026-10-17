@@ -4,7 +4,8 @@
 // `domain/workoutViewRules.ts`. Storage is the source of truth: every workout mutation writes there
 // and the screen re-reads this model, so nothing here is cached between calls.
 
-import type { Equipment, MuscleGroup } from '@domain/catalog';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import { NotFoundError } from '@domain/errors';
 import type {
   Session,
@@ -18,7 +19,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
-import { targetIndicatorAtWeight } from '@domain/progressionTargetIndicator';
+import { targetIndicatorAtWeight, usesTargetIndicator } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
 import { buildWeightSwap } from '@domain/weightSwapRules';
 import type { WorkoutMode, WorkoutSlot } from '@domain/workoutView';
@@ -120,6 +121,15 @@ export type WorkoutExercise = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  /** Absent means `strength`, as on `Exercise.type`. */
+  type?: ExerciseType;
+  /** A power exercise's load — kilograms, a level, or none (10.1 FR-2). Absent otherwise. */
+  powerLoad?: PowerLoad;
+  /**
+   * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
+   * weight swap. Power and a resistance band; absent on every other exercise.
+   */
+  isGuided?: boolean;
   /** Not shown in preview — the day isn't programmed yet. */
   targetRir?: number;
   /** `planned` in preview. */
@@ -305,13 +315,18 @@ function toRows(
     }
     // Rule 7 asks only about this set's own target, so every row gets its own: with targets
     // 10 / 10 / 9 the same weight is worth different reps in the third set than in the first.
-    const weightSwap = buildWeightSwap({
-      target,
-      settings: context.settings,
-      isDeload: context.isDeload,
-      equipment: exercise.equipment,
-      bodyWeight: context.bodyWeight,
-    });
+    // A guided row (power, a band) has no rule 7 either: its weight is the user's choice, and the
+    // target is a placeholder (10.2 P4, P11).
+    const guided = !usesTargetIndicator(exercise.type, exercise.equipment);
+    const weightSwap = guided
+      ? undefined
+      : buildWeightSwap({
+          target,
+          settings: context.settings,
+          isDeload: context.isDeload,
+          equipment: exercise.equipment,
+          bodyWeight: context.bodyWeight,
+        });
     if (weightSwap !== undefined) {
       row.weightSwap = weightSwap;
     }
@@ -326,7 +341,7 @@ function toRows(
       if (log.bodyWeight !== undefined) {
         row.log.bodyWeight = log.bodyWeight;
       }
-      const indicator = targetIndicatorAtWeight(target, log, weightSwap);
+      const indicator = guided ? undefined : targetIndicatorAtWeight(target, log, weightSwap);
       if (indicator) {
         row.indicator = indicator;
       }
@@ -355,7 +370,6 @@ function toExercise(
     exerciseId: exercise.id,
     name: exercise.name,
     muscleGroup: exercise.muscleGroup,
-    targetRir: sessionExercise.targetRir,
     status: sessionExercise.status,
     rows: toRows(tree, mode, context),
     plannedSetCount,
@@ -377,6 +391,20 @@ function toExercise(
   };
   if (exercise.equipment !== undefined) {
     model.equipment = exercise.equipment;
+  }
+  if (exercise.type !== undefined) {
+    model.type = exercise.type;
+  }
+  if (exercise.config?.type === 'power') {
+    model.powerLoad = exercise.config.load;
+  }
+  // Power has no RIR on screen (10.2 P5): the week's RIR stays in the data for the next block's
+  // Start, but there is no badge and no `N RIR` placeholder — a row with no target is just empty.
+  if (exercise.type !== 'power') {
+    model.targetRir = sessionExercise.targetRir;
+  }
+  if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
+    model.isGuided = true;
   }
   if (mode === 'live' && !skipped) {
     const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
