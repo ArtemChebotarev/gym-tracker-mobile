@@ -50,11 +50,11 @@ const rows = (n: number): SetTarget[] =>
 const reps = (targets: SetTarget[]) => targets.map((t) => t.targetReps);
 
 describe('power progression (10.2)', () => {
-  test('the corridor is 2–6', () => {
+  test('the hint corridor is 2–6', () => {
     expect([POWER_MIN_REPS, POWER_MAX_REPS]).toEqual([2, 6]);
   });
 
-  test('medicine ball example: 4/4/3 → 5/5/4 → 6/6/5 → 6/6/6 → the ceiling holds', () => {
+  test('medicine ball: 4/4/3 → 5/5/4 → 6/6/5 → 7/7/6 — the corridor does not cap the target', () => {
     const week2 = plan(rows(3), [log(1, 4, 4), log(2, 4, 4), log(3, 4, 3)], 2);
     expect(reps(week2.setTargets)).toEqual([5, 5, 4]);
 
@@ -62,11 +62,17 @@ describe('power progression (10.2)', () => {
     expect(reps(week3.setTargets)).toEqual([6, 6, 5]);
 
     const week4 = plan(week3.setTargets, [log(1, 4, 6), log(2, 4, 6), log(3, 4, 5)], 4);
-    expect(reps(week4.setTargets)).toEqual([6, 6, 6]);
+    expect(reps(week4.setTargets)).toEqual([7, 7, 6]);
+    expect(week4.setTargets.every((t) => t.suggestedWeight === 4)).toBe(true);
+  });
 
-    const week5 = plan(week4.setTargets, [log(1, 4, 6), log(2, 4, 6), log(3, 4, 6)], 5);
-    expect(reps(week5.setTargets)).toEqual([6, 6, 6]);
-    expect(week5.setTargets.every((t) => t.suggestedWeight === 4)).toBe(true);
+  test('the corridor edges raise the hint, the sum is unchanged', () => {
+    const next = plan(rows(3), [log(1, 4, 6), log(2, 4, 1), log(3, 4, 4)], 2);
+    expect(next.setTargets).toEqual([
+      { setNumber: 1, targetReps: 7, suggestedWeight: 4, weightHint: 'increase' },
+      { setNumber: 2, targetReps: 2, suggestedWeight: 4, weightHint: 'decrease' },
+      { setNumber: 3, targetReps: 5, suggestedWeight: 4 },
+    ]);
   });
 
   test('sets with different weights each progress from their own fact', () => {
@@ -78,15 +84,14 @@ describe('power progression (10.2)', () => {
     ]);
   });
 
-  test('a drop after a heavier weight pulls the target to the minimum and never punishes', () => {
-    const next = plan(rows(3), [log(1, 5, 1), log(2, 5, 1), log(3, 5, 0)], 2);
-    expect(reps(next.setTargets)).toEqual([2, 2, 2]);
-    expect(next.setTargets.some((t) => t.weightHint !== undefined)).toBe(false);
+  test('a drop after a heavier weight is not lifted to the minimum', () => {
+    const next = plan(rows(3), [log(1, 5, 3), log(2, 5, 3), log(3, 5, 2)], 2);
+    expect(reps(next.setTargets)).toEqual([4, 4, 3]);
   });
 
-  test('gives no weight hint at the ceiling, and none below the corridor', () => {
-    const next = plan(rows(2), [log(1, 4, 6), log(2, 4, 1)], 2);
-    expect(next.setTargets.map((t) => t.weightHint)).toEqual([undefined, undefined]);
+  test('a fact of 0 reps still gives 1, and a sum of 0 or less gives no numbers', () => {
+    expect(reps(plan(rows(1), [log(1, 5, 0)], 2).setTargets)).toEqual([1]);
+    expect(plan(rows(1), [log(1, 5, -1)], 2).setTargets).toEqual([{ setNumber: 1 }]);
   });
 
   test('a set not logged carries over with no increment; the row count is copied', () => {
@@ -122,12 +127,21 @@ describe('rule 6 for power (P13)', () => {
   });
   const settings = defaultProgressionSettings;
 
-  test('prices in the 2–6 corridor with no hint', () => {
+  test('adds one with no clamp, and hints at the corridor edges', () => {
     expect(prescribeFromHistory(resolution(4), 1, 2, settings, undefined, 'power')).toEqual([
       { setNumber: 1, targetReps: 5, suggestedWeight: 4 },
     ]);
-    expect(prescribeFromHistory(resolution(6), 1, 2, settings, undefined, 'power')).toEqual([
-      { setNumber: 1, targetReps: 6, suggestedWeight: 4 },
+    expect(prescribeFromHistory(resolution(7), 1, 2, settings, undefined, 'power')).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 4, weightHint: 'increase' },
+    ]);
+    expect(prescribeFromHistory(resolution(1), 1, 2, settings, undefined, 'power')).toEqual([
+      { setNumber: 1, targetReps: 2, suggestedWeight: 4, weightHint: 'decrease' },
+    ]);
+  });
+
+  test('a sum of 0 or less leaves the row with no numbers', () => {
+    expect(prescribeFromHistory(resolution(-1), 1, 2, settings, undefined, 'power')).toEqual([
+      { setNumber: 1 },
     ]);
   });
 
