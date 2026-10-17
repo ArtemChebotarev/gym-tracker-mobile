@@ -14,6 +14,7 @@ import {
   hideExercise,
   listExerciseGroups,
   listExercisesByIds,
+  setNoHeavierAvailable,
   updateCustomExercise,
 } from '@usecases/exerciseLibrary';
 import { seedReferences } from '../fixtures/references';
@@ -275,6 +276,75 @@ describe('hideExercise', () => {
 
     await expectRejectsWithKind(
       hideExercise(toExerciseId('does-not-exist'), deps),
+      isNotFoundError,
+    );
+  });
+});
+
+describe('setNoHeavierAvailable', () => {
+  const POWER = { type: 'power' as const, load: 'weight' as const, restSec: 60 };
+
+  async function seedCustomPower(deps: ReturnType<typeof makeDeps>) {
+    return deps.exerciseRepo.createCustom({
+      id: toExerciseId('custom-medball'),
+      name: 'Medball throw',
+      muscleGroup: 'fullBody',
+      source: 'custom',
+      isHidden: false,
+      type: 'power',
+      config: { ...POWER, noHeavierAvailable: false },
+    });
+  }
+
+  test('sets the flag on a custom power exercise and changes nothing else', async () => {
+    const deps = makeDeps();
+    const created = await seedCustomPower(deps);
+
+    const updated = await setNoHeavierAvailable(created.id, true, deps);
+
+    expect(updated.config).toEqual({ ...POWER, noHeavierAvailable: true });
+    expect(updated).toMatchObject({ name: 'Medball throw', type: 'power', isHidden: false });
+    expect((await deps.exerciseRepo.getById(created.id))?.config).toEqual(updated.config);
+  });
+
+  test('clears it again', async () => {
+    const deps = makeDeps();
+    const created = await seedCustomPower(deps);
+    await setNoHeavierAvailable(created.id, true, deps);
+
+    const updated = await setNoHeavierAvailable(created.id, false, deps);
+
+    expect(updated.config).toMatchObject({ noHeavierAvailable: false });
+  });
+
+  test('rejects a catalog exercise — only hiding it can change', async () => {
+    const deps = makeDeps();
+    await deps.exerciseRepo.seedCatalog([makeExercise({ source: 'catalog' })]);
+
+    await expectRejectsWithKind(
+      setNoHeavierAvailable(toExerciseId('exercise-bench-press'), true, deps),
+      isConflictError,
+    );
+  });
+
+  test('rejects an exercise that is not power', async () => {
+    const deps = makeDeps();
+    const strength = await deps.exerciseRepo.createCustom({
+      id: toExerciseId('custom-curl'),
+      name: 'Curl',
+      muscleGroup: 'biceps',
+      source: 'custom',
+      isHidden: false,
+    });
+
+    await expectRejectsWithKind(setNoHeavierAvailable(strength.id, true, deps), isConflictError);
+  });
+
+  test('rejects an unknown exercise', async () => {
+    const deps = makeDeps();
+
+    await expectRejectsWithKind(
+      setNoHeavierAvailable(toExerciseId('does-not-exist'), true, deps),
       isNotFoundError,
     );
   });

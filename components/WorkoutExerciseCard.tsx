@@ -26,7 +26,7 @@
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
 import { useState, type Ref } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
@@ -58,6 +58,7 @@ import {
   estimateNote,
   exerciseCardView,
   firstUnloggedRow,
+  formatCeilingNote,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -82,6 +83,8 @@ export type CardCoachmarkTargets = {
 
 export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
+  /** The user said there is nothing heavier to take (power, 10.2 P9). Live mode only. */
+  onSetNoHeavierAvailable?: () => void;
   mode: WorkoutMode;
   /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
   isDeload?: boolean;
@@ -140,6 +143,7 @@ export function WorkoutExerciseCard({
   isSaving,
   onLogSet,
   onUnlogSet,
+  onSetNoHeavierAvailable,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
   const editable = mode === 'live' && !view.isNotDone;
@@ -150,6 +154,8 @@ export function WorkoutExerciseCard({
   const weightInfo = usePopoverAnchor();
   const repsInfo = usePopoverAnchor();
   const isPower = exercise.type === 'power';
+  const ceilingNote =
+    exercise.ceilingHint === undefined ? undefined : formatCeilingNote(exercise.ceilingHint);
   const infoTargets = cardInfoTargets(exercise, mode, isDeload);
   const showWeightInfo = infoTargets.weight;
 
@@ -205,6 +211,22 @@ export function WorkoutExerciseCard({
             </View>
           );
         })}
+
+        {ceilingNote !== undefined && (
+          <>
+            <InlineNote lead={ceilingNote.lead} text={ceilingNote.text} />
+            {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={ceilingNote.flagLabel}
+                onPress={onSetNoHeavierAvailable}
+                style={styles.ceilingFlag}
+              >
+                <Text style={styles.ceilingFlagText}>{ceilingNote.flagLabel}</Text>
+              </Pressable>
+            )}
+          </>
+        )}
 
         {view.showNotProgrammed && (
           <View style={styles.notProgrammed}>

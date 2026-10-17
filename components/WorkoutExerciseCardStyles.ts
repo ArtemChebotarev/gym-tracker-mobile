@@ -153,6 +153,16 @@ export const styles = StyleSheet.create({
     fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
   },
+  ceilingFlag: {
+    alignSelf: 'flex-start',
+    marginTop: SPACING['space/gap-tight'],
+    paddingVertical: SPACING['space/gap-tight'],
+  },
+  ceilingFlagText: {
+    fontSize: META_FONT_SIZE,
+    color: COLORS['text/secondary'],
+    textDecorationLine: 'underline',
+  },
   notProgrammed: {
     flexDirection: 'row',
     alignItems: 'center',

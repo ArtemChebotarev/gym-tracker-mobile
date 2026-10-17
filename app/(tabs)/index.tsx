@@ -75,10 +75,7 @@ import {
   type ExerciseMenuItem,
 } from '@components/WorkoutExerciseMenuLogic';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
-import {
-  formatWorkoutMenuTitle,
-  SKIP_WORKOUT_WARNING,
-} from '@components/WorkoutHeaderMenuLogic';
+import { formatWorkoutMenuTitle, SKIP_WORKOUT_WARNING } from '@components/WorkoutHeaderMenuLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import {
   mesoGridCellHref,
@@ -86,6 +83,7 @@ import {
   workoutPickFromParams,
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
+import { toExerciseId } from '@domain/catalog';
 import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
 import { useAddExercises } from '@state/useAddExercises';
 import {
@@ -99,6 +97,7 @@ import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
+import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
@@ -123,6 +122,7 @@ export default function TodayScreen() {
   const query = useTodayWorkout(workoutPickFromParams(params));
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
+  const setNoHeavierAvailable = useSetNoHeavierAvailable();
   const finishSession = useFinishSession();
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
@@ -231,7 +231,6 @@ export default function TodayScreen() {
       router.setParams({ sessionId: currentSessionId });
     }
   }
-
 
   /**
    * Skip workout (049), from the header menu. It can't be undone and skips every unfinished
@@ -459,6 +458,12 @@ export default function TodayScreen() {
             { onError: showSaveError },
           );
         }}
+        onSetNoHeavierAvailable={(exercise) =>
+          setNoHeavierAvailable.mutate(
+            { id: toExerciseId(exercise.exerciseId), value: true },
+            { onError: showSaveError },
+          )
+        }
         isFinishing={finishSession.isPending}
         onFinish={() => {
           if (currentSessionId === undefined) {

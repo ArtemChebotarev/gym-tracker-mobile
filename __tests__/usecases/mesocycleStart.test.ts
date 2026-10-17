@@ -1,7 +1,11 @@
+import { eq } from 'drizzle-orm';
+
+import { toExerciseId } from '@domain/catalog';
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
 import { createSqliteMesocycleStartStore } from '@storage/sqlite/mesocycleStartStore';
+import { exercises } from '@storage/sqlite/schema';
 import { startMesocycle } from '@usecases/mesocycleStart';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
@@ -381,6 +385,35 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
       { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
       { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
       { setNumber: 3, targetReps: 6, suggestedWeight: 55 },
+    ]);
+  });
+
+  // GT-81, 10.2 P14: the power policy prices the start, with no clamp to a corridor.
+  test('a power exercise is priced by the power policy: 10 kg × 1 rep gives no numbers', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [
+          [10, 1],
+          [10, 6],
+        ],
+      },
+    ]);
+    await db()
+      .update(exercises)
+      .set({ type: 'power' })
+      .where(eq(exercises.id, toExerciseId('bench')));
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // 1 + 1 − 3 = −1 is no recommendation (strength would lift it to its minReps of 5); 6 + 1 − 3 = 4.
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2, targetReps: 4, suggestedWeight: 10 },
+      { setNumber: 3 },
     ]);
   });
 

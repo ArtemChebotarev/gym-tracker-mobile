@@ -103,6 +103,8 @@ export type WorkoutScreenProps = {
   ) => void;
   /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
+  onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
   /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
   onBodyWeightChange?: (bodyWeight: number) => void;
   /** A bodyweight exercise's Weight cell was tapped while the block has no body weight yet (105). */
@@ -156,6 +158,7 @@ export function WorkoutScreen({
   onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
+  onSetNoHeavierAvailable,
   onBodyWeightChange,
   onRequestBodyWeight,
   isSaving,
@@ -302,6 +305,7 @@ export function WorkoutScreen({
               onRequestBodyWeight={onRequestBodyWeight}
               onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
+              onSetNoHeavierAvailable={() => onSetNoHeavierAvailable(exercise)}
             />
           ))}
           {model.showFinish && (
