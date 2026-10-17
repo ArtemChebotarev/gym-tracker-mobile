@@ -1,6 +1,8 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
 import type { Equipment } from '@domain/catalog';
+import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
+import { POWER_MAX_REPS } from '@domain/progressionCorridor';
 import { isResistanceBand, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
@@ -235,6 +237,38 @@ export function cardInfoTargets(
       view.showSets &&
       mode === 'live' &&
       weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir) !== undefined,
+  };
+}
+
+/** The card's line at the top of the corridor — power only (10.2 P6–P9, GT-81). */
+export type CeilingNote = { lead: string; text: string; flagLabel?: string };
+
+const CEILING_OPTION_TEXT: Record<CeilingOption, string> = {
+  heavier: 'try heavier',
+  'higher-level': 'try a higher level',
+  'harder-variation': 'try a harder variation',
+  'add-set': 'add a set',
+};
+
+/**
+ * What the note says: the point first (every set reached the top), then why it matters — past it
+ * the set trains endurance, not power — and what the user may do, with "keep going" always among
+ * them, because the target keeps rising and nobody is stopped at 6 (17.10.2026). The "No heavier
+ * available" action is offered with it while the load option is the first one.
+ */
+export function formatCeilingNote(hint: PowerCeilingHint): CeilingNote {
+  const options = hint.options.map((option) => CEILING_OPTION_TEXT[option]);
+  const [first, ...rest] = options;
+  const sentence = [
+    first === undefined ? '' : first.charAt(0).toUpperCase() + first.slice(1),
+    ...rest,
+  ]
+    .filter((part) => part !== '')
+    .join(' or ');
+  return {
+    lead: `${POWER_MAX_REPS}+ fast reps on every set.`,
+    text: `Past that you train endurance, not power. ${sentence}, or keep going.`,
+    ...(hint.canFlagNoHeavier ? { flagLabel: 'No heavier available' } : {}),
   };
 }
 

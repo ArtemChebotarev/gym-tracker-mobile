@@ -6,6 +6,7 @@
 
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
+import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
 import { NotFoundError } from '@domain/errors';
 import type {
   Session,
@@ -125,6 +126,11 @@ export type WorkoutExercise = {
   type?: ExerciseType;
   /** A power exercise's load — kilograms, a level, or none (10.1 FR-2). Absent otherwise. */
   powerLoad?: PowerLoad;
+  /**
+   * Power only, live mode: what to say once every set is at the top of the corridor (10.2 P6–P9).
+   * Absent while a set still grows, and in place of `weightHints`, which are strength's.
+   */
+  ceilingHint?: PowerCeilingHint;
   /**
    * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
    * weight swap. Power and a resistance band; absent on every other exercise.
@@ -398,6 +404,20 @@ function toExercise(
   if (exercise.config?.type === 'power') {
     model.powerLoad = exercise.config.load;
   }
+  if (mode === 'live' && !skipped && exercise.config?.type === 'power') {
+    const hint = powerCeilingHint({
+      load: exercise.config.load,
+      noHeavierAvailable: exercise.config.noHeavierAvailable,
+      setTargets: sessionExercise.setTargets,
+    });
+    if (hint !== undefined) {
+      // A catalog exercise is read-only, so the flag can't be set on it (see `setNoHeavierAvailable`).
+      model.ceilingHint = {
+        ...hint,
+        canFlagNoHeavier: hint.canFlagNoHeavier && exercise.source === 'custom',
+      };
+    }
+  }
   // Power has no RIR on screen (10.2 P5): the week's RIR stays in the data for the next block's
   // Start, but there is no badge and no `N RIR` placeholder — a row with no target is just empty.
   if (exercise.type !== 'power') {
@@ -406,7 +426,7 @@ function toExercise(
   if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
     model.isGuided = true;
   }
-  if (mode === 'live' && !skipped) {
+  if (mode === 'live' && !skipped && exercise.type !== 'power') {
     const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
     if (weightHints.length > 0) {
       model.weightHints = weightHints;

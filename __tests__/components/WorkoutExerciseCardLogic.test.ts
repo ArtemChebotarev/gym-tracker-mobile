@@ -13,6 +13,7 @@ import {
   weightSwapPopover,
   workoutEquipmentLabel,
   weightColumnLabel,
+  formatCeilingNote,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -600,5 +601,31 @@ describe('weightColumnLabel', () => {
 
   test('power with no stated load reads as kilograms', () => {
     expect(weightColumnLabel({ type: 'power' })).toBe('Load, kg');
+  });
+});
+
+// GT-81, 10.2 P6–P9: the note at the top of a power card's corridor.
+describe('formatCeilingNote', () => {
+  test('explains the top of the corridor and offers the options, with keeping going among them', () => {
+    expect(formatCeilingNote({ options: ['heavier', 'add-set'], canFlagNoHeavier: true })).toEqual({
+      lead: '6+ fast reps on every set.',
+      text: 'Past that you train endurance, not power. Try heavier or add a set, or keep going.',
+      flagLabel: 'No heavier available',
+    });
+  });
+
+  test('a level, a harder variation and a lone set read the same way', () => {
+    expect(formatCeilingNote({ options: ['higher-level'], canFlagNoHeavier: true }).text).toContain(
+      'Try a higher level, or keep going.',
+    );
+    expect(
+      formatCeilingNote({ options: ['harder-variation', 'add-set'], canFlagNoHeavier: false }),
+    ).toEqual({
+      lead: '6+ fast reps on every set.',
+      text: 'Past that you train endurance, not power. Try a harder variation or add a set, or keep going.',
+    });
+    expect(formatCeilingNote({ options: ['add-set'], canFlagNoHeavier: false }).text).toContain(
+      'Add a set, or keep going.',
+    );
   });
 });

@@ -45,7 +45,7 @@ export const powerPolicy: ProgressionPolicy = {
       if (carriesWeight) {
         target.suggestedWeight = log.weight;
       }
-      const hint = powerWeightHint(log.reps, equipment);
+      const hint = powerWeightHint(log.reps);
       if (hint !== undefined) {
         target.weightHint = hint;
       }

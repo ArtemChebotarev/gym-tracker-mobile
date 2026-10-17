@@ -907,4 +907,37 @@ describe('RIR badge popover', () => {
     expect(screen.queryByText(/RIR/)).toBeNull();
     expect(screen.queryByText('Weight, kg')).toBeNull();
   });
+
+  test('a power card at the top of its corridor says so, and the flag action is offered', () => {
+    const onSetNoHeavierAvailable = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      equipment: undefined,
+      targetRir: undefined,
+      ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
+
+    expect(screen.getByText(/6\+ fast reps on every set\./)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'No heavier available' }));
+    expect(onSetNoHeavierAvailable).toHaveBeenCalledTimes(1);
+  });
+
+  test('no flag action when the exercise cannot take it', () => {
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['add-set'], canFlagNoHeavier: false },
+    });
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: power, onSetNoHeavierAvailable: jest.fn() })}
+      />,
+    );
+
+    expect(screen.getByText(/Add a set, or keep going\./)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'No heavier available' })).toBeNull();
+  });
 });

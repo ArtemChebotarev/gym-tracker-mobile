@@ -167,6 +167,34 @@ export async function hideExercise(
 }
 
 /**
+ * Sets the power flag "No heavier available" (10.2 P9, GT-81): the user said there is nothing
+ * heavier to take, so the hint at the top of the corridor offers a harder variation instead.
+ * Only the flag changes, nothing else of the exercise. It is a custom exercise's own field; a
+ * catalog exercise is read-only (02 · Domain Model: only hiding it is the user's), so asking it
+ * is a conflict, and so is asking an exercise that is not power.
+ */
+export async function setNoHeavierAvailable(
+  id: ExerciseId,
+  value: boolean,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  const existing = await deps.exerciseRepo.getById(id);
+  if (!existing) {
+    throw new NotFoundError(`Exercise "${id}" does not exist.`);
+  }
+  if (existing.source !== 'custom') {
+    throw new ConflictError(`Exercise "${id}" is a catalog exercise; only hiding it can change.`);
+  }
+  if (existing.config?.type !== 'power') {
+    throw new ConflictError(`Exercise "${id}" is not a power exercise.`);
+  }
+  return deps.exerciseRepo.updateCustom({
+    ...existing,
+    config: { ...existing.config, noHeavierAvailable: value },
+  });
+}
+
+/**
  * Resolves a set of exercise ids to their `Exercise` records — e.g. the mesocycle editor's Days
  * & exercises step (08.5, "Шаг 2") rendering each `WeekPlanExercise.exerciseId` it holds as a
  * name/muscle-group row. Ids that don't resolve are silently omitted, same as

@@ -4,10 +4,8 @@
 // change, so everything that depends on them lives here and nowhere else. Strength has no such
 // module: its corridor is the mesocycle's `progressionSettings`.
 
-import type { Equipment } from '@domain/catalog';
 import type { WeightHint } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
-import { hintForReps } from '@domain/progressionWeightHint';
 
 export type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
@@ -31,8 +29,10 @@ export const UNBOUNDED_CORRIDOR: RepCorridor = { minReps: -Infinity, maxReps: In
 
 /**
  * Power's only weight hint: `increase` from the top of the corridor, with nothing for a drop — a
- * lighter weight must not read as a miss (10.2 P1). None for an exercise that is its own load.
+ * lighter weight must not read as a miss (10.2 P1). It is written whatever the equipment: for an
+ * exercise that is its own load it means "at the top", which the card reads as "add a set"
+ * (`domain/powerCeilingHint.ts`) rather than as more weight.
  */
-export function powerWeightHint(reps: number, equipment?: Equipment): WeightHint | undefined {
-  return hintForReps(reps, POWER_CORRIDOR, equipment) === 'increase' ? 'increase' : undefined;
+export function powerWeightHint(reps: number): WeightHint | undefined {
+  return reps >= POWER_MAX_REPS ? 'increase' : undefined;
 }

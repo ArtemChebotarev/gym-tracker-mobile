@@ -44,6 +44,7 @@ export default function HistorySessionRoute() {
       onExerciseMenuAction={inert}
       onLogSet={inert}
       onUnlogSet={inert}
+      onSetNoHeavierAvailable={inert}
       isSaving={false}
       onFinish={inert}
       isFinishing={false}

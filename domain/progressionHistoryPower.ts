@@ -55,7 +55,7 @@ export function prescribePowerFromReference(
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;
     }
-    const hint = powerWeightHint(reference.reps, equipment);
+    const hint = powerWeightHint(reference.reps);
     if (hint !== undefined) {
       target.weightHint = hint;
     }
