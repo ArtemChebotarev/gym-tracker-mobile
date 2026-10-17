@@ -33,6 +33,7 @@ import { IconButton } from '@design/components/IconButton';
 import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
 import { InlineNote } from '@design/components/InlineNote';
 import { PlateRow } from '@design/components/PlateRow';
+import { POWER_MIN_REPS } from '@domain/progressionCorridor';
 import { Popover } from '@design/components/Popover';
 import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
@@ -147,6 +148,7 @@ export function WorkoutExerciseCard({
   // Two ⓘ buttons, each with its own plate: Weight's static how-to (08.11) and Reps' ranges (08.7.1).
   const weightInfo = usePopoverAnchor();
   const repsInfo = usePopoverAnchor();
+  const isPower = exercise.type === 'power';
   const infoTargets = cardInfoTargets(exercise, mode, isDeload);
   const showWeightInfo = infoTargets.weight;
 
@@ -196,7 +198,9 @@ export function WorkoutExerciseCard({
           return (
             <View key={hint.direction} testID="exercise-weight-hint" style={styles.weightHint}>
               <Icon size={ICON_SIZES['icon/inline']} color={COLORS['text/secondary']} />
-              <Text style={styles.weightHintText}>{formatWeightHint(hint, exercise.equipment)}</Text>
+              <Text style={styles.weightHintText}>
+                {formatWeightHint(hint, exercise.equipment)}
+              </Text>
             </View>
           );
         })}
@@ -212,7 +216,11 @@ export function WorkoutExerciseCard({
           <View style={styles.headerRow}>
             <View style={[styles.valueColumn, styles.infoHeader]}>
               <Text style={styles.columnLabel}>
-                {usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg'}
+                {usesAddedWeight(exercise.equipment)
+                  ? 'Added, kg'
+                  : isPower
+                    ? 'Load, kg'
+                    : 'Weight, kg'}
               </Text>
               {showWeightInfo && (
                 <InfoGlyphButton
@@ -225,18 +233,18 @@ export function WorkoutExerciseCard({
               )}
             </View>
             <View style={[styles.valueColumn, styles.infoHeader]}>
-              <Text style={styles.columnLabel}>Reps</Text>
-              {infoTargets.reps && (
+              <Text style={styles.columnLabel}>{isPower ? 'Fast reps' : 'Reps'}</Text>
+              {(infoTargets.reps || isPower) && (
                 <InfoGlyphButton
                   buttonRef={repsInfo.ref}
                   {...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.reps } : {})}
-                  accessibilityLabel="Weight recommendations"
+                  accessibilityLabel={isPower ? 'About fast reps' : 'Weight recommendations'}
                   open={repsInfo.visible}
                   onPress={repsInfo.open}
                 />
               )}
             </View>
-            <View style={styles.indicatorColumn} />
+            {exercise.isGuided !== true && <View style={styles.indicatorColumn} />}
             <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
           </View>
         )}
@@ -265,6 +273,15 @@ export function WorkoutExerciseCard({
           visible={repsInfo.visible}
           anchor={repsInfo.anchor}
           onClose={repsInfo.close}
+        />
+      )}
+      {isPower && (
+        <Popover
+          visible={repsInfo.visible}
+          onClose={repsInfo.close}
+          anchor={repsInfo.anchor}
+          title="Fast reps only"
+          subtitle="Count only the reps done at full speed. When the speed drops, the set is over."
         />
       )}
       {showWeightInfo && (
@@ -422,6 +439,8 @@ function SetRows({
           targetRir={exercise.targetRir}
           equipment={exercise.equipment}
           bodyWeight={bodyWeight}
+          guided={exercise.isGuided === true}
+          {...(exercise.type === 'power' ? { raisedWeightReps: POWER_MIN_REPS } : {})}
           {...(asksForBodyWeight && onRequestBodyWeight !== undefined
             ? { onRequestBodyWeight }
             : {})}
@@ -430,7 +449,10 @@ function SetRows({
             setWeights((edits) => editWeightText(edits, row.setNumber, text))
           }
           onBlurWeight={() =>
-            handleWeightBlur(row.setNumber, weightFieldText(weights, row, exercise.equipment, bodyWeight))
+            handleWeightBlur(
+              row.setNumber,
+              weightFieldText(weights, row, exercise.equipment, bodyWeight),
+            )
           }
           editable={editable}
           isSaving={isSaving}

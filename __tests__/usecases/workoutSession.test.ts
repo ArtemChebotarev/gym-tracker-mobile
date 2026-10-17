@@ -51,7 +51,11 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
   ['curl', 'Leg curl', 'hamstrings', undefined],
   ['dip', 'Dip', 'chest', 'bodyweight-weighted'],
   ['pullup', 'Pull-up', 'back', 'bodyweight'],
+  ['medball', 'Medball throw', 'fullBody', 'medicine-ball'],
 ];
+
+/** The catalog ids that are power exercises — the rest are strength. */
+const POWER_IDS = new Set(['medball']);
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
@@ -150,6 +154,17 @@ async function setUp(setup: Setup = {}) {
       source: 'catalog',
       isHidden: false,
       ...(equipment ? { equipment } : {}),
+      ...(POWER_IDS.has(id)
+        ? {
+            type: 'power' as const,
+            config: {
+              type: 'power' as const,
+              load: 'weight' as const,
+              restSec: 60,
+              noHeavierAvailable: false,
+            },
+          }
+        : {}),
     });
   }
   const workout = createSqliteWorkoutStore(store);
@@ -957,5 +972,29 @@ describe('weight swap on the workout data (task 120)', () => {
 
     expect(card?.rows[0]).not.toHaveProperty('indicator');
     expect(card?.rows.map((candidate) => candidate.estimate)).toEqual(['other_slot', 'other_slot']);
+  });
+
+  // GT-82, 10.2 P11: a power exercise's rows are guided by the target, never scored against it.
+  test('a power exercise is guided: no indicator, no weight swap', async () => {
+    const medball = planned('w2d1', 'medball', 1, [6, 6]);
+    const { deps } = await setUp({
+      exercises: [medball],
+      logs: [{ ...logOf(medball, 1, 3), weight: 5 }],
+    });
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', isGuided: true });
+    expect(card).not.toHaveProperty('targetRir');
+    expect(card?.rows[0]?.log).toEqual({ weight: 5, reps: 3 });
+    expect(card?.rows[0]).not.toHaveProperty('indicator');
+    expect(card?.rows[1]).not.toHaveProperty('weightSwap');
+  });
+
+  test('a strength exercise is not guided', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard).not.toHaveProperty('isGuided');
   });
 });

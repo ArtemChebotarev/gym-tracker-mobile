@@ -185,7 +185,9 @@ describe('WorkoutSetRow — unlogged', () => {
     renderRow();
     expect(flatStyle(logButton()).borderColor).toBe(COLORS.accent);
 
-    screen.rerender(<ControlledRow {...makeProps({ row: { ...UNLOGGED, isFirstUnlogged: false } })} />);
+    screen.rerender(
+      <ControlledRow {...makeProps({ row: { ...UNLOGGED, isFirstUnlogged: false } })} />,
+    );
     expect(flatStyle(logButton()).borderColor).toBe(COLORS['border/default']);
   });
 });
@@ -254,5 +256,34 @@ describe('WorkoutSetRow — not editable', () => {
     expect(screen.getByText('10')).toBeTruthy();
     expect(screen.queryByLabelText('Set 1 weight')).toBeNull();
     expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+});
+
+describe('a guided row (power, a band)', () => {
+  test('a logged row shows no indicator, whatever the reps', () => {
+    render(
+      <WorkoutSetRow
+        {...makeProps({ row: logged(7, { indicator: undefined }), guided: true, editable: false })}
+      />,
+    );
+
+    expect(screen.queryByText('+3')).toBeNull();
+    expect(screen.getByText('7')).toBeTruthy();
+  });
+
+  test('a weight above the planned one drops the Reps placeholder to the floor', () => {
+    render(
+      <WorkoutSetRow {...makeProps({ guided: true, raisedWeightReps: 2, weightText: '65' })} />,
+    );
+
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('2');
+  });
+
+  test('at the planned weight the placeholder is the target', () => {
+    render(
+      <WorkoutSetRow {...makeProps({ guided: true, raisedWeightReps: 2, weightText: '62.5' })} />,
+    );
+
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('10');
   });
 });
