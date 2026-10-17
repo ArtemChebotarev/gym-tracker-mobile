@@ -6,10 +6,11 @@
 // (`domain/progressionReference.ts`, task 134.1); this turns its answer into set targets.
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
+import { corridorFor, givesWeightHint } from '@domain/progressionCorridor';
 import { nextTargetReps, startTargetReps } from '@domain/progressionReps';
 import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
@@ -68,7 +69,8 @@ function estimatedReps(
  * Row N takes the reference's set N and nothing else (`referenceSetAt`): a row the reference
  * has no set for gets no numbers, `N RIR`. A pure
  * `bodyweight` exercise takes the reps and skips the weight and the hint, as everywhere else
- * (task 105, `domain/bodyWeightLoad.ts`).
+ * (task 105, `domain/bodyWeightLoad.ts`). A `power` exercise is priced in its own corridor
+ * (`domain/progressionCorridor.ts`) and gets no weight hint (10.2, P13).
  *
  * Not called in the deload week: an exercise can't be added there, and one swapped in gets no
  * weight or reps at all — the week isn't for progression, so its RIR is guidance enough and no
@@ -79,9 +81,11 @@ export function prescribeFromHistory(
   resolution: ReferenceResolution,
   rowCount: number,
   weekRir: number,
-  settings: RepCorridor,
+  progressionSettings: RepCorridor,
   equipment?: Equipment,
+  type?: ExerciseType,
 ): SetTarget[] {
+  const settings = corridorFor(type, progressionSettings);
   const carriesWeight = !isPureBodyWeight(equipment);
   return Array.from({ length: rowCount }, (_, index): SetTarget => {
     const setNumber = index + 1;
@@ -103,7 +107,9 @@ export function prescribeFromHistory(
       estimate.estimate = resolution.reason;
       return estimate;
     }
-    const hint = hintForReps(reference.reps, settings, equipment);
+    const hint = givesWeightHint(type)
+      ? hintForReps(reference.reps, settings, equipment)
+      : undefined;
     const target: SetTarget = { setNumber };
     if (!bandAtCeiling(hint, equipment)) {
       target.targetReps = nextTargetReps(reference.reps, settings);

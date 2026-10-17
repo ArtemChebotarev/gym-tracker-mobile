@@ -73,6 +73,7 @@ export async function swapExercise(
         sessionExerciseId: current.id,
         settings: mesocycle.progressionSettings,
         equipment: swappedIn?.equipment,
+        type: swappedIn?.type,
         now,
       },
       repos.setLogRepo,
