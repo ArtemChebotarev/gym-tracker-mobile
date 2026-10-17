@@ -201,7 +201,7 @@ export function weightColumnLabel(
       case 'level':
         return 'Level';
       case 'none':
-        return 'Bodyweight';
+        return 'Bodyweight, kg';
       case 'weight':
         return 'Load, kg';
     }

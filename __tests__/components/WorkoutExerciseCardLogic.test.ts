@@ -581,7 +581,7 @@ describe('workoutEquipmentLabel', () => {
 
   test('any other equipment reads as it does everywhere else', () => {
     expect(workoutEquipmentLabel('barbell')).toBe('Barbell');
-    expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight');
+    expect(workoutEquipmentLabel('bodyweight')).toBe('Bodyweight, kg');
   });
 });
 
@@ -595,7 +595,7 @@ describe('weightColumnLabel', () => {
   test('power: kilograms, a level, or the body', () => {
     expect(weightColumnLabel({ type: 'power', powerLoad: 'weight' })).toBe('Load, kg');
     expect(weightColumnLabel({ type: 'power', powerLoad: 'level' })).toBe('Level');
-    expect(weightColumnLabel({ type: 'power', powerLoad: 'none' })).toBe('Bodyweight');
+    expect(weightColumnLabel({ type: 'power', powerLoad: 'none' })).toBe('Bodyweight, kg');
   });
 
   test('power with no stated load reads as kilograms', () => {
