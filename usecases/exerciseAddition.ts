@@ -63,6 +63,7 @@ export async function addExercises(
     const equipmentById = new Map<string, Equipment | undefined>(
       catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
     );
+    const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
     const added: Unsaved<SessionExercise>[] = [];
@@ -80,6 +81,7 @@ export async function addExercises(
             weekRir,
             settings: mesocycle.progressionSettings,
             equipment: equipmentById.get(exerciseId),
+            type: typeById.get(exerciseId),
             now,
           },
           repos.setLogRepo,

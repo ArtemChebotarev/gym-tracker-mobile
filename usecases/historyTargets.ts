@@ -3,7 +3,7 @@
 // history window is the use case layer's job; which performance to build on is the reference
 // resolver's (`resolveReference`, task 134.1), and the targets are `prescribeFromHistory`'s.
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { Session, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { prescribeFromHistory } from '@domain/progressionHistory';
@@ -30,6 +30,8 @@ export type HistoryTargetsQuery = {
    * reps but no weight target (task 105) — the engine decides, this only carries the fact.
    */
   equipment?: Equipment;
+  /** The exercise's type: `power` is priced in its own rep corridor (10.2). Absent is `strength`. */
+  type?: ExerciseType;
   now: string;
 };
 
@@ -47,10 +49,10 @@ export async function targetsFromHistory(
   query: HistoryTargetsQuery,
   setLogRepo: SetLogRepository,
 ): Promise<SetTarget[]> {
-  const { exerciseId, session, rowCount, weekRir, sessionExerciseId, settings, equipment, now } =
+  const { exerciseId, session, rowCount, weekRir, sessionExerciseId, settings, equipment, type, now } =
     query;
   if (session.isDeload) {
-    return prescribeFromHistory({ kind: 'none' }, rowCount, weekRir, settings, equipment);
+    return prescribeFromHistory({ kind: 'none' }, rowCount, weekRir, settings, equipment, type);
   }
   const performances = await setLogRepo.listPerformances({
     exerciseId,
@@ -62,5 +64,5 @@ export async function targetsFromHistory(
     dayNumber: session.dayNumber,
     currentWeek: { mesoId: session.mesoId, weekNumber: session.weekNumber },
   });
-  return prescribeFromHistory(resolution, rowCount, weekRir, settings, equipment);
+  return prescribeFromHistory(resolution, rowCount, weekRir, settings, equipment, type);
 }
