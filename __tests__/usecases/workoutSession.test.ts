@@ -983,7 +983,7 @@ describe('weight swap on the workout data (task 120)', () => {
     });
     const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(card).toMatchObject({ type: 'power', isGuided: true });
+    expect(card).toMatchObject({ type: 'power', isGuided: true, powerLoad: 'weight' });
     expect(card).not.toHaveProperty('targetRir');
     expect(card?.rows[0]?.log).toEqual({ weight: 5, reps: 3 });
     expect(card?.rows[0]).not.toHaveProperty('indicator');

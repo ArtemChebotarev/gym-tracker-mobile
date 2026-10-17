@@ -41,7 +41,7 @@ import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import { isBodyWeightExercise, isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
+import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
@@ -61,6 +61,7 @@ import {
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
+  weightColumnLabel,
   weightSwapPopover,
   workoutEquipmentLabel,
 } from './WorkoutExerciseCardLogic';
@@ -215,13 +216,7 @@ export function WorkoutExerciseCard({
         {view.showSets && (
           <View style={styles.headerRow}>
             <View style={[styles.valueColumn, styles.infoHeader]}>
-              <Text style={styles.columnLabel}>
-                {usesAddedWeight(exercise.equipment)
-                  ? 'Added, kg'
-                  : isPower
-                    ? 'Load, kg'
-                    : 'Weight, kg'}
-              </Text>
+              <Text style={styles.columnLabel}>{weightColumnLabel(exercise)}</Text>
               {showWeightInfo && (
                 <InfoGlyphButton
                   buttonRef={weightInfo.ref}
