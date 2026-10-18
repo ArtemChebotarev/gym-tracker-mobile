@@ -4,6 +4,7 @@
 // факта"). Orchestration only — targets come from rule 6 (`targetsFromHistory`), the week's RIR
 // from rule 4.
 
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId, type Equipment } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
@@ -61,7 +62,7 @@ export async function addExercises(
 
     const catalog = await deps.exerciseRepo.listByIds(input.exerciseIds.map(toExerciseId));
     const equipmentById = new Map<string, Equipment | undefined>(
-      catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
+      catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
     );
     const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);

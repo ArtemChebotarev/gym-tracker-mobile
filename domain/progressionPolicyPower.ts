@@ -3,15 +3,15 @@
 // is the trigger of the hint, `increase` from 6 and nothing for a drop, not a limit on the sum (P1, P3). The weight is the one logged on
 // that set (P4), sets are copied (P2), a set not logged is carried over. A sum of 0 or less gives
 // the row no numbers (`N RIR`). `targetRir` is still written: the next block's Start reads it
-// back as the reference's RIR (P14). Deload is the strength policy's until GT-83 (P15).
+// back as the reference's RIR (P14). Deload is its own (`domain/progressionDeloadPower.ts`, P15).
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { SetLog, SetTarget } from '@domain/execution';
 import { powerWeightHint, usableReps } from '@domain/progressionCorridor';
+import { prescribePowerDeloadDay } from '@domain/progressionDeloadPower';
 import { prescribePowerFromReference } from '@domain/progressionHistoryPower';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
 import { targetRir } from '@domain/progressionRir';
-import { strengthPolicy } from '@domain/progressionPolicyStrength';
 import { prescribePowerBlockStart } from '@domain/progressionStartPower';
 
 export const powerPolicy: ProgressionPolicy = {
@@ -58,7 +58,8 @@ export const powerPolicy: ProgressionPolicy = {
       targetRir: targetRir(lengthWeeks, weekNumber),
     };
   },
-  prescribeDeload: strengthPolicy.prescribeDeload,
+  prescribeDeload: (exercises, { logs, settings }) =>
+    prescribePowerDeloadDay(exercises, logs, settings),
   prescribeFromReference: ({ resolution, rowCount, weekRir, equipment }) =>
     prescribePowerFromReference(resolution, rowCount, weekRir, equipment),
   prescribeBlockStart: ({ resolution, startRir, rowCount, equipment }) =>

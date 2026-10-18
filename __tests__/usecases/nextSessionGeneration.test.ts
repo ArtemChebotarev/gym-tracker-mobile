@@ -206,6 +206,62 @@ describe('generateNextSession', () => {
     expect(planned[0]?.setTargets[0]?.suggestedWeight).toBe(40);
   });
 
+  // GT-83, 10.2 P15: a power exercise's deload day keeps its own weights and the load's meaning.
+  test('the last working week plans a power deload: two sets, kilograms halved per set', async () => {
+    const slam = makeExercise(4, 'slam', 1);
+    const trigger = makeSession(4);
+    await new SqliteExerciseRepository(db()).createCustom({
+      ...STAMPS,
+      id: toExerciseId('slam'),
+      name: 'Medball slam',
+      muscleGroup: 'fullBody',
+      source: 'custom',
+      isHidden: false,
+      type: 'power',
+      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+    });
+
+    const { workout, deps } = await setUp(
+      [trigger],
+      [slam],
+      [{ ...logsFor(slam, [6], 8)[0]! }, { ...logsFor(slam, [6, 6], 10)[1]! }],
+    );
+    const next = await generateNextSession(trigger, workout.repos, deps);
+
+    const [planned] = await exercisesOf(workout, next);
+    expect(planned?.setTargets).toEqual([
+      { setNumber: 1, suggestedWeight: 4 },
+      { setNumber: 2, suggestedWeight: 5 },
+    ]);
+    expect(planned?.targetRir).toBe(8);
+  });
+
+  // GT-83: a power exercise that is its own load is a bodyweight one for the engine: no weight target.
+  test('a power exercise whose load is none gets no weight targets', async () => {
+    const jump = makeExercise(3, 'jump', 1);
+    const trigger = makeSession(3);
+    await new SqliteExerciseRepository(db()).createCustom({
+      ...STAMPS,
+      id: toExerciseId('jump'),
+      name: 'Box jump',
+      muscleGroup: 'quads',
+      source: 'custom',
+      isHidden: false,
+      type: 'power',
+      equipment: 'plyo-box',
+      config: { type: 'power', load: 'none', restSec: 60, noHeavierAvailable: false },
+    });
+    const { workout, deps } = await setUp([trigger], [jump], logsFor(jump, [5, 5], 10));
+
+    const next = await generateNextSession(trigger, workout.repos, deps);
+
+    const [planned] = await exercisesOf(workout, next);
+    expect(planned?.setTargets).toEqual([
+      { setNumber: 1, targetReps: 6 },
+      { setNumber: 2, targetReps: 6 },
+    ]);
+  });
+
   test('a deload session generates nothing', async () => {
     const trigger = makeSession(5, { isDeload: true });
     const { workout, deps } = await setUp([trigger], [makeExercise(5, 'bench', 1)]);
