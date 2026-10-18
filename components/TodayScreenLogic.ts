@@ -130,15 +130,48 @@ export function shouldShowDeloadIntro(
   );
 }
 
+/** What a logged set does to the rest timer (10.1 FR-5, GT-86). */
+export type RestAfterLog =
+  /** The rest before the next set starts — replacing whatever rest there was. */
+  | {
+      kind: 'start';
+      rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number };
+    }
+  /** No rest follows — the exercise's last set, or one with no rest: any rest left is over. */
+  | { kind: 'stop' }
+  /** A correction, not the next set done: the rest that is running carries on untouched. */
+  | { kind: 'keep' };
+
+/** The key a set is remembered by among those already logged in this workout. */
+export function loggedSetKey(sessionExerciseId: string, setNumber: number): string {
+  return `${sessionExerciseId}:${setNumber}`;
+}
+
 /**
- * The rest to start after `setNumber` of `exercise` was logged (10.1 FR-5, GT-86), or `undefined`
- * when none starts: the exercise has no rest, or no set is left to do — n sets, n − 1 rests.
+ * What logging `setNumber` of `exercise` does to the rest timer (10.1 FR-5, GT-86; Artem,
+ * 18.10.2026). A log is a correction, and leaves the timer alone, when an exercise further down
+ * the workout has been started already — this one is being fixed or caught up on, the work is
+ * below — or when this very set was logged before in this workout and is logged again.
+ * Otherwise the rest before the next set still to do starts, and none after the last: n sets,
+ * n − 1 rests.
+ *
+ * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
+ * sets logged so far in it.
  */
 export function restAfterLog(
+  exercises: readonly WorkoutExercise[],
   exercise: WorkoutExercise,
   setNumber: number,
-): { sessionExerciseId: string; nextSetNumber: number; durationSec: number } | undefined {
-  if (exercise.restSec === undefined) return undefined;
+  alreadyLogged: ReadonlySet<string>,
+): RestAfterLog {
+  const index = exercises.findIndex(
+    (each) => each.sessionExerciseId === exercise.sessionExerciseId,
+  );
+  const startedBelow = exercises.slice(index + 1).some((each) => each.hasLoggedSets);
+  if (startedBelow || alreadyLogged.has(loggedSetKey(exercise.sessionExerciseId, setNumber))) {
+    return { kind: 'keep' };
+  }
+  if (exercise.restSec === undefined) return { kind: 'stop' };
   const nextSetNumber = nextSetAfter(
     exercise.rows.map((row) => ({
       setNumber: row.setNumber,
@@ -146,10 +179,13 @@ export function restAfterLog(
     })),
     setNumber,
   );
-  if (nextSetNumber === undefined) return undefined;
+  if (nextSetNumber === undefined) return { kind: 'stop' };
   return {
-    sessionExerciseId: exercise.sessionExerciseId,
-    nextSetNumber,
-    durationSec: exercise.restSec,
+    kind: 'start',
+    rest: {
+      sessionExerciseId: exercise.sessionExerciseId,
+      nextSetNumber,
+      durationSec: exercise.restSec,
+    },
   };
 }

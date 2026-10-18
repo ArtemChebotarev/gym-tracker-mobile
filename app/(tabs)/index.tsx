@@ -63,6 +63,7 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  loggedSetKey,
   restAfterLog,
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
@@ -131,7 +132,8 @@ export default function TodayScreen() {
   const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
   const startRest = useRestTimerStore((s) => s.start);
-  const dismissRest = useRestTimerStore((s) => s.dismiss);
+  const stopRest = useRestTimerStore((s) => s.stop);
+  const noteLogged = useRestTimerStore((s) => s.noteLogged);
   const clearRest = useRestTimerStore((s) => s.clear);
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
@@ -443,12 +445,18 @@ export default function TodayScreen() {
               onSuccess: (result) => {
                 if (result.kind === 'logged') {
                   // The rest before the next set starts by itself (GT-86); after the last set
-                  // none does, and a `Rest is over` still on screen is put away.
-                  const rest = restAfterLog(exercise, setNumber);
-                  if (rest === undefined) {
-                    dismissRest();
-                  } else {
-                    startRest(rest);
+                  // none does and any rest left is over; a correction leaves it be.
+                  const rest = restAfterLog(
+                    model?.exercises ?? [],
+                    exercise,
+                    setNumber,
+                    useRestTimerStore.getState().loggedSets,
+                  );
+                  noteLogged(loggedSetKey(exercise.sessionExerciseId, setNumber));
+                  if (rest.kind === 'start') {
+                    startRest(rest.rest);
+                  } else if (rest.kind === 'stop') {
+                    stopRest();
                   }
                 }
                 if (result.kind === 'conflict') {

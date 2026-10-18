@@ -71,4 +71,22 @@ describe('restTimerStore', () => {
     expect(useRestTimerStore.getState().timer?.nextSetNumber).toBe(3);
     expect(left()).toBe(90);
   });
+
+  test('stop ends a running rest and a finished one, and keeps the logged sets', () => {
+    const store = useRestTimerStore.getState();
+    store.noteLogged('se:1');
+    store.start(REST);
+    store.stop();
+
+    expect(useRestTimerStore.getState()).toMatchObject({ timer: null, finished: null });
+    expect(useRestTimerStore.getState().loggedSets.has('se:1')).toBe(true);
+  });
+
+  test('the logged sets are forgotten when the workout is over', () => {
+    const store = useRestTimerStore.getState();
+    store.noteLogged('se:1');
+    store.clear();
+
+    expect(useRestTimerStore.getState().loggedSets.size).toBe(0);
+  });
 });

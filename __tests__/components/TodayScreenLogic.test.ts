@@ -4,6 +4,7 @@ import {
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
+  loggedSetKey,
   restAfterLog,
 } from '@components/TodayScreenLogic';
 import type { WorkoutExercise } from '@usecases/workoutSession';
@@ -111,11 +112,11 @@ describe('shouldShowDeloadIntro', () => {
 });
 
 describe('restAfterLog', () => {
-  function card(restSec: number | undefined, logged: number[]): WorkoutExercise {
+  function card(id: string, restSec: number | undefined, logged: number[]): WorkoutExercise {
     return {
-      sessionExerciseId: 'se',
-      exerciseId: 'medball',
-      name: 'Medball throw',
+      sessionExerciseId: id,
+      exerciseId: id,
+      name: id,
       muscleGroup: 'fullBody',
       status: 'planned',
       type: 'power',
@@ -141,20 +142,41 @@ describe('restAfterLog', () => {
       ...(restSec === undefined ? {} : { restSec }),
     };
   }
+  const NONE = new Set<string>();
 
   test('starts the rest before the next set still to do', () => {
-    expect(restAfterLog(card(60, []), 1)).toEqual({
-      sessionExerciseId: 'se',
-      nextSetNumber: 2,
-      durationSec: 60,
+    const a = card('a', 60, []);
+    expect(restAfterLog([a], a, 1, NONE)).toEqual({
+      kind: 'start',
+      rest: { sessionExerciseId: 'a', nextSetNumber: 2, durationSec: 60 },
     });
   });
 
-  test('none after the last set', () => {
-    expect(restAfterLog(card(60, [1, 2]), 3)).toBeUndefined();
+  test('after the last set the rest is over', () => {
+    const a = card('a', 60, [1, 2]);
+    expect(restAfterLog([a], a, 3, NONE)).toEqual({ kind: 'stop' });
   });
 
-  test('none for an exercise without a rest', () => {
-    expect(restAfterLog(card(undefined, []), 1)).toBeUndefined();
+  test('an exercise without a rest ends any rest left', () => {
+    const a = card('a', undefined, []);
+    expect(restAfterLog([a], a, 1, NONE)).toEqual({ kind: 'stop' });
+  });
+
+  test('a log above an exercise already started is a correction: the rest carries on', () => {
+    const a = card('a', 60, [1]);
+    const b = card('b', 60, [1]);
+    expect(restAfterLog([a, b], a, 1, NONE)).toEqual({ kind: 'keep' });
+    expect(restAfterLog([a, b], a, 2, NONE)).toEqual({ kind: 'keep' });
+  });
+
+  test('an exercise below that is not started yet does not hold the rest back', () => {
+    const a = card('a', 60, []);
+    const b = card('b', 60, []);
+    expect(restAfterLog([a, b], a, 1, NONE).kind).toBe('start');
+  });
+
+  test('a set logged again in the same workout is a correction', () => {
+    const a = card('a', 60, []);
+    expect(restAfterLog([a], a, 1, new Set([loggedSetKey('a', 1)]))).toEqual({ kind: 'keep' });
   });
 });

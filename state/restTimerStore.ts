@@ -8,12 +8,22 @@ import { pauseRestTimer, resumeRestTimer, startRestTimer } from '@domain/restTim
 // nothing after the app is closed. Only one timer runs at a time (FR-6), so starting a rest
 // replaces whatever was there, finished or not.
 //
+// It also remembers which sets have been logged in this workout (`loggedSets`), so a set that is
+// un-logged and logged again — a correction — doesn't start its rest a second time (Artem,
+// 18.10.2026). In memory only: kept until the workout is finished or skipped (`clear`), so it can
+// never carry over into another day; an app that was closed in between forgets it, and a re-log
+// then starts one extra rest at worst.
+//
 // The clock is read here, at the moment of each action, and handed to the pure rules in
 // `domain/restTimerRules.ts`; tests drive it with Jest's fake timers. What the capsule shows and
 // when the rest is over is worked out by components/RestTimerDriver from `timer` and the time.
 type RestTimerStore = {
   timer: RestTimer | null;
   finished: FinishedRest | null;
+  /** Keys of the sets logged so far in this workout (`loggedSetKey`). */
+  loggedSets: ReadonlySet<string>;
+  /** Remembers a logged set. */
+  noteLogged: (key: string) => void;
   start: (rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number }) => void;
   pause: () => void;
   resume: () => void;
@@ -23,13 +33,17 @@ type RestTimerStore = {
   finish: () => void;
   /** Puts the "Rest is over" capsule away. */
   dismiss: () => void;
-  /** Drops whatever there is — the workout it belonged to is over. */
+  /** The exercise's last set is done: any rest left, running or run out, is over. */
+  stop: () => void;
+  /** Drops whatever there is, the logged sets included — the workout it belonged to is over. */
   clear: () => void;
 };
 
 export const useRestTimerStore = create<RestTimerStore>((set) => ({
   timer: null,
   finished: null,
+  loggedSets: new Set(),
+  noteLogged: (key) => set((s) => ({ loggedSets: new Set(s.loggedSets).add(key) })),
   start: (rest) => set({ timer: startRestTimer(rest, Date.now()), finished: null }),
   pause: () => set((s) => (s.timer === null ? s : { timer: pauseRestTimer(s.timer, Date.now()) })),
   resume: () =>
@@ -48,5 +62,6 @@ export const useRestTimerStore = create<RestTimerStore>((set) => ({
           },
     ),
   dismiss: () => set({ finished: null }),
-  clear: () => set({ timer: null, finished: null }),
+  stop: () => set({ timer: null, finished: null }),
+  clear: () => set({ timer: null, finished: null, loggedSets: new Set() }),
 }));
