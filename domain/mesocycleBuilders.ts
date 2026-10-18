@@ -5,7 +5,12 @@
 
 import { ConflictError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
-import type { ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
+import type { Exercise } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import {
+  exerciseSettingsFor,
+  type ExerciseSettingsById,
+} from '@domain/exerciseSettingsBuilders';
 import { generateId } from '@domain/id';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
@@ -22,6 +27,7 @@ import { materializeWeekPlan, type SessionWithExercises } from '@domain/planConv
 import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
+import { materializeSetTargets, rowsAreSets } from '@domain/weekPlanMaterializers';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -256,6 +262,13 @@ export type MesocycleStart = {
  * (05 · Workout Execution & Logging, see `renumbered`). Weeks 2+ aren't created — each day of the
  * next week is generated when the same day of this one is finished.
  *
+ * Each exercise's rows come from the materializer of its type (GT-160,
+ * `domain/weekPlanMaterializers.ts`): sets for strength and power, the cycle's rounds — work and
+ * rest — for an interval one, one block of the cycle's length for a mobility one. The type and the
+ * library's values come from `exercisesById`; the times are the cycle's own copy
+ * (`exerciseSettings`), the library's only where the cycle has none. An exercise `exercisesById`
+ * lacks is materialized as strength. Only rows that are sets are priced by `weekOneTargets`.
+ *
  * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
  * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
  * already running.
@@ -265,20 +278,38 @@ export function buildMesocycleStart(
   active: Mesocycle | null,
   now: string,
   weekOneTargets?: WeekOneTargets,
+  exercisesById: ReadonlyMap<string, Exercise> = new Map(),
 ): MesocycleStart {
   validateMesocycleCanStart(mesocycle, active);
   const { weekPlan, ...rest } = mesocycle;
+  const cycleSettings = mesocycle.exerciseSettings ?? {};
+  const typeOf = (exerciseId: string) => {
+    const exercise = exercisesById.get(exerciseId);
+    return exercise ? exerciseTypeOf(exercise) : 'strength';
+  };
 
-  const week = materializeWeekPlan(weekPlan, {
-    mesoId: mesocycle.id,
-    weekNumber: 1,
-    isDeload: false,
-    targetRir: targetRir(mesocycle.lengthWeeks, 1),
-  }).map(({ session, exercises }) => ({
+  const week = materializeWeekPlan(
+    weekPlan,
+    {
+      mesoId: mesocycle.id,
+      weekNumber: 1,
+      isDeload: false,
+      targetRir: targetRir(mesocycle.lengthWeeks, 1),
+    },
+    (entry) => {
+      const exercise = exercisesById.get(entry.exerciseId);
+      return materializeSetTargets(typeOf(entry.exerciseId), {
+        entry,
+        settings: exercise && exerciseSettingsFor(cycleSettings, exercise),
+      });
+    },
+  ).map(({ session, exercises }) => ({
     session,
     exercises: renumbered(
       exercises.map((exercise) => {
-        const priced = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId));
+        const priced = rowsAreSets(typeOf(exercise.exerciseId))
+          ? weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId))
+          : undefined;
         return priced === undefined
           ? exercise
           : { ...exercise, setTargets: priced(exercise.setTargets.length) };
