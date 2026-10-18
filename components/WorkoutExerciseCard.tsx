@@ -39,6 +39,8 @@ import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
+import { PlusIcon } from '@design/icons/PlusIcon';
+import { SwapIcon } from '@design/icons/SwapIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
@@ -59,6 +61,7 @@ import {
   exerciseCardView,
   firstUnloggedRow,
   formatCeilingNote,
+  topWeightOf,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -66,7 +69,9 @@ import {
   weightSwapPopover,
   workoutEquipmentLabel,
 } from './WorkoutExerciseCardLogic';
+import { FastRepsPopover } from './FastRepsPopover';
 import { FirstWeightPopover } from './FirstWeightPopover';
+import { firstWeightCopy } from './FirstWeightPopoverLogic';
 import { RirBadge } from './RirBadge';
 import { rirExplanation } from './RirExplanationLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
@@ -85,6 +90,8 @@ export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
   /** The user said there is nothing heavier to take (power, 10.2 P9). Live mode only. */
   onSetNoHeavierAvailable?: () => void;
+  /** Opens the replace flow — the note's second link once the load option is a harder variation. */
+  onReplaceExercise?: () => void;
   mode: WorkoutMode;
   /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
   isDeload?: boolean;
@@ -144,6 +151,7 @@ export function WorkoutExerciseCard({
   onLogSet,
   onUnlogSet,
   onSetNoHeavierAvailable,
+  onReplaceExercise,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
   const editable = mode === 'live' && !view.isNotDone;
@@ -155,7 +163,12 @@ export function WorkoutExerciseCard({
   const repsInfo = usePopoverAnchor();
   const isPower = exercise.type === 'power';
   const ceilingNote =
-    exercise.ceilingHint === undefined ? undefined : formatCeilingNote(exercise.ceilingHint);
+    exercise.ceilingHint === undefined
+      ? undefined
+      : formatCeilingNote(exercise.ceilingHint, {
+          load: exercise.powerLoad ?? 'weight',
+          ...topWeightOf(exercise.rows),
+        });
   const infoTargets = cardInfoTargets(exercise, mode, isDeload);
   const showWeightInfo = infoTargets.weight;
 
@@ -213,19 +226,18 @@ export function WorkoutExerciseCard({
         })}
 
         {ceilingNote !== undefined && (
-          <>
-            <InlineNote lead={ceilingNote.lead} text={ceilingNote.text} />
+          <InlineNote
+            icon={CEILING_ICONS[ceilingNote.icon]}
+            lead={ceilingNote.lead}
+            text={ceilingNote.text}
+          >
             {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={ceilingNote.flagLabel}
-                onPress={onSetNoHeavierAvailable}
-                style={styles.ceilingFlag}
-              >
-                <Text style={styles.ceilingFlagText}>{ceilingNote.flagLabel}</Text>
-              </Pressable>
+              <CeilingLink label={ceilingNote.flagLabel} onPress={onSetNoHeavierAvailable} />
             )}
-          </>
+            {ceilingNote.replaceLabel !== undefined && onReplaceExercise !== undefined && (
+              <CeilingLink label={ceilingNote.replaceLabel} onPress={onReplaceExercise} />
+            )}
+          </InlineNote>
         )}
 
         {view.showNotProgrammed && (
@@ -293,12 +305,10 @@ export function WorkoutExerciseCard({
         />
       )}
       {isPower && (
-        <Popover
+        <FastRepsPopover
           visible={repsInfo.visible}
-          onClose={repsInfo.close}
           anchor={repsInfo.anchor}
-          title="Fast reps only"
-          subtitle="Count only the reps done at full speed. When the speed drops, the set is over."
+          onClose={repsInfo.close}
         />
       )}
       {showWeightInfo && (
@@ -306,7 +316,7 @@ export function WorkoutExerciseCard({
           visible={weightInfo.visible}
           anchor={weightInfo.anchor}
           onClose={weightInfo.close}
-          targetRir={exercise.targetRir}
+          copy={firstWeightCopy(exercise.type, exercise.targetRir)}
         />
       )}
     </View>
@@ -374,6 +384,22 @@ function WeightSwapPopoverPlate({
         ))}
       </View>
     </Popover>
+  );
+}
+
+const CEILING_ICONS = { up: ArrowUpIcon, swap: SwapIcon, plus: PlusIcon } as const;
+
+/** A link in the ceiling note — an action the note leads to, underlined like the mockup's. */
+function CeilingLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.ceilingFlag}
+    >
+      <Text style={styles.ceilingFlagText}>{label}</Text>
+    </Pressable>
   );
 }
 

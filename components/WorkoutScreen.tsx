@@ -306,6 +306,7 @@ export function WorkoutScreen({
               onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
               onSetNoHeavierAvailable={() => onSetNoHeavierAvailable(exercise)}
+              onReplaceExercise={() => onExerciseMenuAction(exercise, 'replace')}
             />
           ))}
           {model.showFinish && (

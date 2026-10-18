@@ -4,7 +4,7 @@
 
 import type { PlateTextPart } from '@design/components/PlateText';
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 
 // "Finding your weight", not "…first weight": the ⓘ is on every week's card, and the ladder is how
@@ -56,4 +56,55 @@ export function showsFirstWeightInfo(
   equipment: Equipment | undefined,
 ): boolean {
   return mode === 'live' && !isDeload && !isPureBodyWeight(equipment);
+}
+
+/** Everything the plate says, so a power exercise can say its own in the same layout (GT-81). */
+export type FirstWeightCopy = {
+  title: string;
+  warmUpLabel: string;
+  warmUpSteps: readonly PlateTextPart[][];
+  warmUpNote: string;
+  workingLabel: string;
+  workingText: PlateTextPart[];
+};
+
+/**
+ * A power exercise's load is found for speed, not for reserve: a lifter's ladder of 12 / 8 / 4
+ * reps and a stop at so many RIR belong to a set taken near failure, and a power set isn't
+ * (10 · Hybrid Exercises). Same layout, its own words.
+ */
+const POWER_FIRST_WEIGHT_COPY: FirstWeightCopy = {
+  title: 'Finding your load',
+  warmUpLabel: WARM_UP_LABEL,
+  warmUpSteps: [
+    [{ strong: '2–3 reps' }, ', light and fast'],
+    [{ strong: '2 reps' }, ', close to your working load, still fast'],
+  ],
+  warmUpNote: WARM_UP_NOTE,
+  workingLabel: WORKING_SET_LABEL,
+  workingText: [
+    'Do one set of ',
+    { strong: 'fast reps' },
+    ', stop when the speed drops and ',
+    { strong: 'log it' },
+    ". If every rep stayed fast, that's your load.",
+  ],
+};
+
+/** The copy of the "Finding your weight" plate for an exercise of this type. */
+export function firstWeightCopy(
+  type: ExerciseType | undefined,
+  targetRir: number | undefined,
+): FirstWeightCopy {
+  if (type === 'power') {
+    return POWER_FIRST_WEIGHT_COPY;
+  }
+  return {
+    title: FIRST_WEIGHT_TITLE,
+    warmUpLabel: WARM_UP_LABEL,
+    warmUpSteps: WARM_UP_STEPS,
+    warmUpNote: WARM_UP_NOTE,
+    workingLabel: WORKING_SET_LABEL,
+    workingText: workingSetText(targetRir),
+  };
 }

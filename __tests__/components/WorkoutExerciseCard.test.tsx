@@ -919,7 +919,8 @@ describe('RIR badge popover', () => {
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
 
-    expect(screen.getByText(/6\+ fast reps on every set\./)).toBeTruthy();
+    expect(screen.getByText('Try heavier or add a set.', { exact: false })).toBeTruthy();
+    expect(screen.getByText(/You did 6\+ fast reps on every set last week/)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'No heavier available' }));
     expect(onSetNoHeavierAvailable).toHaveBeenCalledTimes(1);
   });
@@ -937,7 +938,22 @@ describe('RIR badge popover', () => {
       />,
     );
 
-    expect(screen.getByText(/Add a set, or keep going\./)).toBeTruthy();
+    expect(screen.getByText('Add a set.', { exact: false })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'No heavier available' })).toBeNull();
+  });
+
+  test('after "No heavier available" the note offers a harder variation and Replace exercise', () => {
+    const onReplaceExercise = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onReplaceExercise })} />);
+
+    expect(screen.getByText(/Try a harder variation\./)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
+    expect(onReplaceExercise).toHaveBeenCalledTimes(1);
   });
 });

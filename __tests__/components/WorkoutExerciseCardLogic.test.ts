@@ -14,6 +14,7 @@ import {
   workoutEquipmentLabel,
   weightColumnLabel,
   formatCeilingNote,
+  topWeightOf,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -604,28 +605,68 @@ describe('weightColumnLabel', () => {
   });
 });
 
-// GT-81, 10.2 P6–P9: the note at the top of a power card's corridor.
+// GT-81, 10.2 P6–P9: the note at the top of a power card's corridor — the mockup's shape.
 describe('formatCeilingNote', () => {
-  test('explains the top of the corridor and offers the options, with keeping going among them', () => {
-    expect(formatCeilingNote({ options: ['heavier', 'add-set'], canFlagNoHeavier: true })).toEqual({
-      lead: '6+ fast reps on every set.',
-      text: 'Past that you train endurance, not power. Try heavier or add a set, or keep going.',
+  const didReps =
+    "You did 6+ fast reps on every set last week. That's the top of the recommended range.";
+
+  test('kilograms: try heavier or add a set, what the user did, and the flag as a link', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['heavier', 'add-set'], canFlagNoHeavier: true },
+        { load: 'weight', topWeight: 10 },
+      ),
+    ).toEqual({
+      icon: 'up',
+      lead: 'Try heavier or add a set.',
+      text: didReps,
       flagLabel: 'No heavier available',
     });
   });
 
-  test('a level, a harder variation and a lone set read the same way', () => {
-    expect(formatCeilingNote({ options: ['higher-level'], canFlagNoHeavier: true }).text).toContain(
-      'Try a higher level, or keep going.',
-    );
+  test('a level says so, in the step and in the flag', () => {
     expect(
-      formatCeilingNote({ options: ['harder-variation', 'add-set'], canFlagNoHeavier: false }),
+      formatCeilingNote({ options: ['higher-level'], canFlagNoHeavier: true }, { load: 'level' }),
     ).toEqual({
-      lead: '6+ fast reps on every set.',
-      text: 'Past that you train endurance, not power. Try a harder variation or add a set, or keep going.',
+      icon: 'up',
+      lead: 'Try a higher level.',
+      text: didReps,
+      flagLabel: 'No higher level available',
     });
-    expect(formatCeilingNote({ options: ['add-set'], canFlagNoHeavier: false }).text).toContain(
-      'Add a set, or keep going.',
-    );
+  });
+
+  test('its own load: only a set, with a plus and no flag', () => {
+    expect(
+      formatCeilingNote({ options: ['add-set'], canFlagNoHeavier: false }, { load: 'none' }),
+    ).toEqual({ icon: 'plus', lead: 'Add a set.', text: didReps });
+  });
+
+  test('once nothing heavier is left: a harder variation, why, and Replace exercise', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['harder-variation', 'add-set'], canFlagNoHeavier: false },
+        { load: 'weight', topWeight: 10 },
+      ),
+    ).toEqual({
+      icon: 'swap',
+      lead: 'Try a harder variation or add a set.',
+      text: '10 kg is the heaviest you have. Or keep it here while your strength catches up.',
+      replaceLabel: 'Replace exercise',
+    });
+    expect(
+      formatCeilingNote(
+        { options: ['harder-variation'], canFlagNoHeavier: false },
+        { load: 'level' },
+      ).text,
+    ).toBe('This is the highest level you have. Or keep it here while your strength catches up.');
+  });
+});
+
+describe('topWeightOf', () => {
+  test('the heaviest weight of the rows, or nothing when none has one', () => {
+    expect(topWeightOf([{ suggestedWeight: 8 }, { suggestedWeight: 10 }, {}])).toEqual({
+      topWeight: 10,
+    });
+    expect(topWeightOf([{}, {}])).toEqual({});
   });
 });
