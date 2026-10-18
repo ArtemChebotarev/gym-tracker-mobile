@@ -84,6 +84,9 @@ export async function generateNextSession(
     if (exercise.equipment !== undefined) {
       source.equipment = exercise.equipment;
     }
+    if (exercise.config?.type === 'power') {
+      source.powerLoad = exercise.config.load;
+    }
     return source;
   });
 
