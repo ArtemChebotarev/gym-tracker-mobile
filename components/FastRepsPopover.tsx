@@ -10,7 +10,7 @@ import { RangeTrack } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
 
 import { fastRepsPlate } from './FastRepsPlateLogic';
-import { styles } from './WorkoutExerciseCardStyles';
+import { styles } from './SetsExerciseCardStyles';
 
 export type FastRepsPopoverProps = {
   visible: boolean;

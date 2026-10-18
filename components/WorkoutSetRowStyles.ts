@@ -3,7 +3,7 @@
 // Laid out after the 08.7 mockup's set table (08.7-workout-session.html), minus the set number
 // (Artem's review): Weight and Reps sharing the width, the indicator 22, Log 38 — everything
 // centered, with a subtle divider above each row. The card's column header
-// (WorkoutExerciseCardStyles.ts) reuses the fixed column widths to line up with the rows.
+// (ExerciseColumnHeaderStyles.ts) reuses the fixed column widths to line up with the rows.
 
 import { StyleSheet } from 'react-native';
 

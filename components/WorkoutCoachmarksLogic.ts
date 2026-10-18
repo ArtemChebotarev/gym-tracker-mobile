@@ -10,7 +10,7 @@ import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { cardInfoTargets } from './WorkoutExerciseCardLogic';
+import { cardInfoTargets, cardLoadEquipment, targetRirOf } from './WorkoutExerciseCardLogic';
 import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 
 // The ⓘ in the text is the real icon, not the character: the character is a thin outline that
@@ -73,15 +73,20 @@ export function workoutCoachmarks({
   const steps: WorkoutCoachmark[] = [];
 
   if (exercise !== undefined) {
-    const targets = cardInfoTargets(exercise, mode, isDeload);
+    const targetRir = targetRirOf(exercise);
+    const targets = cardInfoTargets(
+      { ...exercise, targetRir, loadEquipment: cardLoadEquipment(exercise) },
+      mode,
+      isDeload,
+    );
     if (targets.weight) {
       steps.push({ target: 'weight', ...WEIGHT_STEP });
     }
     if (targets.reps) {
       steps.push({ target: 'reps', ...REPS_STEP });
     }
-    if (targets.rir && exercise.targetRir !== undefined) {
-      const explanation = rirExplanation({ targetRir: exercise.targetRir, isDeload });
+    if (targets.rir && targetRir !== undefined) {
+      const explanation = rirExplanation({ targetRir, isDeload });
       steps.push({ target: 'rir', title: explanation.title, explanation });
     }
   }

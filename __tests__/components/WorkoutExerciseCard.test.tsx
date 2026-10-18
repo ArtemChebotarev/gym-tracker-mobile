@@ -1,13 +1,20 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import {
+  type CeilingActions,
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import type { SetLoggingProps } from '@components/WorkoutSetRows';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type {
+  PowerWorkoutExercise,
+  StrengthWorkoutExercise,
+  WorkoutExercise,
+  WorkoutSetRow,
+} from '@usecases/workoutSession';
 
 const NO_ACTIONS: WorkoutExercise['actions'] = {
   canReplace: false,
@@ -35,7 +42,7 @@ function unloggedRow(setNumber: number, isFirstUnlogged = false): WorkoutSetRow 
   return { setNumber, targetReps: 10, suggestedWeight: 62.5, isFirstUnlogged };
 }
 
-function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
+function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): StrengthWorkoutExercise {
   return {
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',
@@ -51,6 +58,11 @@ function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     actions: NO_ACTIONS,
     ...overrides,
   };
+}
+
+function makePowerExercise(overrides: Partial<PowerWorkoutExercise> = {}): PowerWorkoutExercise {
+  const { targetRir: _targetRir, weightHints: _weightHints, type: _type, ...base } = makeExercise();
+  return { ...base, type: 'power', powerLoad: 'weight', ...overrides };
 }
 
 const LIVE_EXERCISE = makeExercise();
@@ -86,7 +98,22 @@ const PREVIEW_EXERCISE = makeExercise({
   hasLoggedSets: false,
 });
 
-function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutExerciseCardProps {
+/** The card's props, with the set and ceiling handlers given flat and put in their groups here. */
+type CardPropsOverrides = Partial<Omit<WorkoutExerciseCardProps, 'sets' | 'ceiling'>> &
+  Partial<SetLoggingProps> &
+  CeilingActions;
+
+function makeProps({
+  bodyWeight,
+  onBodyWeightChange,
+  onRequestBodyWeight,
+  onLogSet = jest.fn(),
+  onUnlogSet = jest.fn(),
+  onSetNoHeavierAvailable,
+  onReplaceExercise,
+  onHideCeilingTip,
+  ...overrides
+}: CardPropsOverrides = {}): WorkoutExerciseCardProps {
   return {
     exercise: LIVE_EXERCISE,
     mode: 'live',
@@ -94,14 +121,14 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
     onOpenHistory: jest.fn(),
     menuItems: [],
     isSaving: false,
-    onLogSet: jest.fn(),
-    onUnlogSet: jest.fn(),
+    sets: { bodyWeight, onBodyWeightChange, onRequestBodyWeight, onLogSet, onUnlogSet },
+    ceiling: { onSetNoHeavierAvailable, onReplaceExercise, onHideCeilingTip },
     ...overrides,
   };
 }
 
 describe('WorkoutExerciseCard variants', () => {
-  test.each<[string, Partial<WorkoutExerciseCardProps>]>([
+  test.each<[string, CardPropsOverrides]>([
     ['live', { mode: 'live', exercise: LIVE_EXERCISE }],
     ['read-only', { mode: 'readonly', exercise: COMPLETED_EXERCISE }],
     ['skipped', { mode: 'readonly', exercise: SKIPPED_NOTHING_LOGGED }],
@@ -892,12 +919,10 @@ describe('RIR badge popover', () => {
   });
 
   test('a power card says Load and Fast reps, with no RIR badge and no indicator column', () => {
-    const power = makeExercise({
+    const power = makePowerExercise({
       name: 'Medball throw',
-      type: 'power',
       isGuided: true,
       equipment: undefined,
-      targetRir: undefined,
       rows: [{ setNumber: 1, targetReps: 5, suggestedWeight: 4, isFirstUnlogged: true }],
       plannedSetCount: 1,
       loggedSetCount: 0,
@@ -914,11 +939,9 @@ describe('RIR badge popover', () => {
 
   test('a power card at the top of its corridor says so, and the flag action is offered', () => {
     const onSetNoHeavierAvailable = jest.fn();
-    const power = makeExercise({
-      type: 'power',
+    const power = makePowerExercise({
       isGuided: true,
       equipment: undefined,
-      targetRir: undefined,
       ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
@@ -930,10 +953,8 @@ describe('RIR badge popover', () => {
   });
 
   test('no flag action when the exercise cannot take it', () => {
-    const power = makeExercise({
-      type: 'power',
+    const power = makePowerExercise({
       isGuided: true,
-      targetRir: undefined,
       ceilingHint: { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
     });
     render(
@@ -948,10 +969,8 @@ describe('RIR badge popover', () => {
 
   test('after "No heavier available" the note offers a harder variation and Replace exercise', () => {
     const onReplaceExercise = jest.fn();
-    const power = makeExercise({
-      type: 'power',
+    const power = makePowerExercise({
       isGuided: true,
-      targetRir: undefined,
       ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onReplaceExercise })} />);
@@ -963,10 +982,8 @@ describe('RIR badge popover', () => {
 
   test('the harder-variation note can be closed for good', () => {
     const onHideCeilingTip = jest.fn();
-    const power = makeExercise({
-      type: 'power',
+    const power = makePowerExercise({
       isGuided: true,
-      targetRir: undefined,
       ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onHideCeilingTip })} />);
@@ -989,11 +1006,9 @@ describe('RIR badge popover', () => {
   ] as const)(
     'a power card on a deload week says what changes for a %s load',
     (powerLoad, line) => {
-      const power = makeExercise({
-        type: 'power',
+      const power = makePowerExercise({
         isGuided: true,
         powerLoad,
-        targetRir: undefined,
       });
       render(<WorkoutExerciseCard {...makeProps({ exercise: power, isDeload: true })} />);
 
@@ -1005,14 +1020,12 @@ describe('RIR badge popover', () => {
   );
 
   test('a power exercise that is its own load fills the Load field with the body weight', () => {
-    const jump = makeExercise({
+    const jump = makePowerExercise({
       name: 'Box jump',
-      type: 'power',
       isGuided: true,
       powerLoad: 'none',
       equipment: 'plyo-box',
       loadEquipment: 'bodyweight',
-      targetRir: undefined,
       rows: [{ setNumber: 1, targetReps: 5, isFirstUnlogged: true }],
       plannedSetCount: 1,
       loggedSetCount: 0,

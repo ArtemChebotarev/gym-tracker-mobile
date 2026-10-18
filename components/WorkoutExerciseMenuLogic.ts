@@ -1,5 +1,5 @@
 // Pure helpers behind an exercise card's `⋯` menu (08.7, "Меню упражнения") — see the code-style
-// skill. The menu itself is `ActionMenu` (117), rendered by components/WorkoutExerciseCard.tsx;
+// skill. The menu itself is `ActionMenu` (117), rendered by components/ExerciseCardFrame.tsx;
 // this only decides which actions an exercise offers and how each one reads.
 
 import type { ActionMenuItem } from '@design/components/ActionMenu';

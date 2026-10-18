@@ -15,7 +15,11 @@ import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { formatRir } from '@design/formatRir';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type {
+  StrengthWorkoutExercise,
+  WorkoutExercise,
+  WorkoutSetRow,
+} from '@usecases/workoutSession';
 
 import {
   formatNotDone,
@@ -57,7 +61,7 @@ export type ExerciseCardView = {
 
 export function exerciseCardView(
   mode: WorkoutMode,
-  exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'>,
+  exercise: Pick<StrengthWorkoutExercise, 'status' | 'targetRir' | 'rows'>,
   isDeload = false,
 ): ExerciseCardView {
   const isPreview = mode === 'preview';
@@ -76,6 +80,24 @@ export function exerciseCardView(
     notDoneNote: notDoneWhole ? formatNotDone(notDone) : undefined,
     showNotProgrammed: isPreview,
   };
+}
+
+/**
+ * The week's target RIR as the card shows it — a strength exercise's. Power has none on screen
+ * (10.2 P5).
+ */
+export function targetRirOf(exercise: WorkoutExercise): number | undefined {
+  return exercise.type === 'power' ? undefined : exercise.targetRir;
+}
+
+/**
+ * What the exercise's weight means — the equipment printed under the name, except for a power
+ * exercise that is its own load, which weighs what you weigh (`loadEquipmentOf`).
+ */
+export function cardLoadEquipment(exercise: WorkoutExercise): Equipment | undefined {
+  return exercise.type === 'power'
+    ? (exercise.loadEquipment ?? exercise.equipment)
+    : exercise.equipment;
 }
 
 /**
@@ -222,9 +244,12 @@ export function carryWeightForward(
  * on a weighted bodyweight one, and for power what its load is — kilograms, a level, or the body
  * itself.
  */
-export function weightColumnLabel(
-  exercise: Pick<WorkoutExercise, 'type' | 'powerLoad' | 'equipment' | 'loadEquipment'>,
-): string {
+export function weightColumnLabel(exercise: {
+  type?: ExerciseType;
+  powerLoad?: PowerLoad;
+  equipment?: Equipment;
+  loadEquipment?: Equipment;
+}): string {
   if (exercise.type === 'power') {
     switch (exercise.powerLoad ?? 'weight') {
       case 'level':
@@ -251,7 +276,9 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
 export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
 
 export function cardInfoTargets(
-  exercise: Pick<WorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'loadEquipment' | 'status'>,
+  exercise: Pick<StrengthWorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'status'> & {
+    loadEquipment?: Equipment;
+  },
   mode: WorkoutMode,
   isDeload: boolean,
 ): CardInfoTargets {

@@ -19,7 +19,10 @@ import {
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type {
+  StrengthWorkoutExercise,
+  WorkoutSetRow,
+} from '@usecases/workoutSession';
 
 const ROW: WorkoutSetRow = { setNumber: 1, isFirstUnlogged: false, log: { weight: 60, reps: 10 } };
 const SKIPPED_ROW: WorkoutSetRow = { setNumber: 2, isFirstUnlogged: false, notDone: 'skipped' };
@@ -714,7 +717,7 @@ describe('topWeightOf', () => {
 });
 
 describe('exerciseCardView on a deload week', () => {
-  const exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'> = {
+  const exercise: Pick<StrengthWorkoutExercise, 'status' | 'targetRir' | 'rows'> = {
     status: 'planned',
     targetRir: 8,
     rows: [],

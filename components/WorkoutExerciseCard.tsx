@@ -1,88 +1,28 @@
-// Exercise card — 08.7 · Тренировка, "Карточка упражнения" (task 092). One unit of the workout
-// screen's list: the muscle-group chip (only when the group changed from the previous card), the
-// name, equipment, the `N RIR` chip, the history button, `⋯` in live mode only, the `Weight, kg` ·
-// `Reps` · `Log` column header, and the set rows. Which of these show is `exerciseCardView`'s call
-// (WorkoutExerciseCardLogic.ts): live, read-only, skipped (50% opacity; every row, the unlogged ones
-// as `Skipped` rows — just one `Skipped` note when nothing was logged; `Abandoned` instead for an
-// exercise Stop mesocycle closed, 136), or preview (the `Not programmed yet` plate, no RIR badge, no rows).
+// Exercise card — 08.7 · Тренировка, "Карточка упражнения" (task 092); 10.1 FR-14. One unit of the
+// workout screen's list, drawn by its type's own card: the screen gives every card the same props
+// and this picks the card, the way `policyFor` picks a progression policy
+// (`domain/progressionPolicies.ts`). The `switch` covers every type, so a new `ExerciseType` doesn't
+// compile until it is given a card.
 //
-// Under the title, one line per weight hint (03, rule 3: `↑ Go heavier — 30+ reps last week` /
-// `↓ Go lighter — under 5 reps last week`), in live mode only. 08 · Screens & Navigation leaves it
-// off in v1; Artem brought it back: without it, a target clamped at the rep corridor's bound (30
-// again at the same weight) read as a wrong suggestion.
+// What every card shares — the chip above it, the frame, the title row — is ExerciseCardFrame, and
+// the header over its rows ExerciseColumnHeader. Strength and power are still one card,
+// SetsExerciseCard, until GT-169; interval and mobility are shown as strength until their stories,
+// as they run strength's progression for now.
 //
-// The set rows are WorkoutSetRow (093); they're editable only in live mode on an exercise that isn't
-// skipped — a skipped exercise's rows are read-only until it's unskipped (05). Their Weight fields
-// are held here, in `SetRows`, rather than in each row: a weight typed in one set carries into the
-// exercise's later unlogged sets (task 106, `carryWeightForward`). Reps stay in the row — they
-// don't carry.
-//
-// The RIR is a static `Chip` (inside `RirBadge`, a button that explains it — GT-40), not the neutral `Badge` 08.7 names: `Badge` neutral fills with
-// `surface/card`, the card's own background, so on the card it read as bare text. The chip's
-// `border/default` outline keeps it visibly a chip (Artem's review).
-//
-// Presentational: the exercise, the screen mode, and the button handlers come in as props.
-// JSX/rendering only — styles live in WorkoutExerciseCardStyles.ts and pure helpers in
-// WorkoutExerciseCardLogic.ts, per the code-style skill.
+// The props come in groups: what every card needs, then what each kind of card acts with — `sets`
+// for a card of set rows, `ceiling` for power's ceiling note. A type that logs something else
+// (interval rounds, a mobility duration) adds its own group rather than a branch on the screen.
 
-import { useState, type Ref } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import type { ReactElement, Ref } from 'react';
+import type { View } from 'react-native';
 
-import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
-import { IconButton } from '@design/components/IconButton';
-import { InfoGlyphButton } from '@design/components/InfoGlyphButton';
-import { InlineNote } from '@design/components/InlineNote';
-import { PlateRow } from '@design/components/PlateRow';
-import { POWER_MIN_REPS } from '@domain/progressionCorridor';
-import { Popover } from '@design/components/Popover';
-import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
-import type { AnchorRect } from '@design/popoverLayout';
-import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
-import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
-import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
-import type { IconComponent } from '@design/icons/IconFrame';
-import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
-import { PlusIcon } from '@design/icons/PlusIcon';
-import { SwapIcon } from '@design/icons/SwapIcon';
-import { HistoryIcon } from '@design/icons/HistoryIcon';
-import { InfoIcon } from '@design/icons/InfoIcon';
-import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
-import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
-import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
-import { COLORS, ICON_SIZES } from '@design/tokens';
-import type { ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { ActionMenuItem } from '@design/components/ActionMenu';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import {
-  type WeightEdits,
-  type WeightSwapPopover,
-  carryWeightForward,
-  cardInfoTargets,
-  editWeightText,
-  estimateNote,
-  exerciseCardView,
-  type CardChip,
-  firstUnloggedRow,
-  formatCeilingNote,
-  topWeightOf,
-  formatWeightHint,
-  holdLoggedWeight,
-  weightFieldText,
-  weightColumnLabel,
-  weightSwapPopover,
-  workoutEquipmentLabel,
-} from './WorkoutExerciseCardLogic';
-import { FastRepsPopover } from './FastRepsPopover';
-import { FirstWeightPopover } from './FirstWeightPopover';
-import { firstWeightCopy } from './FirstWeightPopoverLogic';
-import { RirBadge } from './RirBadge';
-import { deloadExplanation, rirExplanation } from './RirExplanationLogic';
-import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
-import { styles } from './WorkoutExerciseCardStyles';
-import { usePopoverAnchor } from './usePopoverAnchor';
-import { parseWeight } from './WorkoutSetRowLogic';
-import { WorkoutSetRow } from './WorkoutSetRow';
+import { SetsExerciseCard } from './SetsExerciseCard';
+import type { CardChip } from './WorkoutExerciseCardLogic';
+import type { SetLoggingProps } from './WorkoutSetRows';
 
 export type CardCoachmarkTargets = {
   rir: Ref<View>;
@@ -90,16 +30,10 @@ export type CardCoachmarkTargets = {
   reps: Ref<View>;
 };
 
-export type WorkoutExerciseCardProps = {
-  exercise: WorkoutExercise;
-  /** The user said there is nothing heavier to take (power, 10.2 P9). Live mode only. */
-  onSetNoHeavierAvailable?: () => void;
-  /** Opens the replace flow — the note's second link once the load option is a harder variation. */
-  onReplaceExercise?: () => void;
-  /** Closes the ceiling note for good — its third link, with the harder variation (GT-81). */
-  onHideCeilingTip?: () => void;
+/** What every card takes, whatever its type. */
+export type ExerciseCardCommonProps = {
   mode: WorkoutMode;
-  /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
+  /** A deload session: the `Deload` chip in place of RIR, and no ⓘ on the Weight header (08.11). */
   isDeload?: boolean;
   /**
    * The visible parts the first-workout coachmarks point at (GT-42): the RIR chip and the two ⓘ
@@ -123,442 +57,48 @@ export type WorkoutExerciseCardProps = {
    * elsewhere. Live mode only; the button isn't there otherwise.
    */
   menuItems: ActionMenuItem[];
-  /** The block's body weight (task 105) — fills a pure bodyweight row and tops up a weighted one. */
-  bodyWeight?: number;
-  /**
-   * The Weight field of a pure bodyweight exercise *is* the block's body weight, so editing it
-   * sets a new one (task 105, Artem's call — there's no separate place to change it).
-   */
-  onBodyWeightChange?: (bodyWeight: number) => void;
-  /** Opens the body weight sheet — the Weight cell asks for it until the block has one (105). */
-  onRequestBodyWeight?: () => void;
   /** A log or un-log is being saved — every Log box waits for it. */
   isSaving: boolean;
-  onLogSet: (
-    setNumber: number,
-    entry: { weight: number; reps: number; bodyWeight?: number },
-  ) => void;
-  onUnlogSet: (setNumber: number) => void;
+};
+
+/** The links of power's ceiling note (10.2 P6–P9, GT-81). Live mode only. */
+export type CeilingActions = {
+  /** The user said there is nothing heavier to take (10.2 P9). */
+  onSetNoHeavierAvailable?: () => void;
+  /** Opens the replace flow — the note's second link once the load option is a harder variation. */
+  onReplaceExercise?: () => void;
+  /** Closes the ceiling note for good — its third link, with the harder variation (GT-81). */
+  onHideCeilingTip?: () => void;
+};
+
+export type WorkoutExerciseCardProps = ExerciseCardCommonProps & {
+  exercise: WorkoutExercise;
+  /** Logging the set rows — strength and power. */
+  sets: SetLoggingProps;
+  /** Power only. */
+  ceiling?: CeilingActions;
 };
 
 export function WorkoutExerciseCard({
   exercise,
-  mode,
-  isDeload = false,
-  coachmarkTargets,
-  chip,
-  position = 0,
-  onOpenHistory,
-  menuItems,
-  bodyWeight,
-  onBodyWeightChange,
-  onRequestBodyWeight,
-  isSaving,
-  onLogSet,
-  onUnlogSet,
-  onSetNoHeavierAvailable,
-  onReplaceExercise,
-  onHideCeilingTip,
-}: WorkoutExerciseCardProps) {
-  const view = exerciseCardView(mode, exercise, isDeload);
-  const editable = mode === 'live' && !view.isNotDone;
-  // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
-  // — never for whatever is in the Weight field right now (08.7.1).
-  const popover = weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir);
-  // Two ⓘ buttons, each with its own plate: Weight's static how-to (08.11) and Reps' ranges (08.7.1).
-  const weightInfo = usePopoverAnchor();
-  const repsInfo = usePopoverAnchor();
-  const isPower = exercise.type === 'power';
-  const ceilingNote =
-    exercise.ceilingHint === undefined
-      ? undefined
-      : formatCeilingNote(exercise.ceilingHint, {
-          load: exercise.powerLoad ?? 'weight',
-          ...topWeightOf(exercise.rows),
-        });
-  const infoTargets = cardInfoTargets(exercise, mode, isDeload);
-  const showWeightInfo = infoTargets.weight;
-
-  return (
-    <View style={styles.root}>
-      {chip?.kind === 'group' && <GroupChip muscleGroup={chip.muscleGroup} />}
-      {chip?.kind === 'type' && <TypeChip type={chip.type} />}
-      <View
-        testID={`exercise-card-${exercise.sessionExerciseId}`}
-        style={[styles.card, view.isNotDone && styles.skipped]}
-      >
-        <View style={styles.titleRow}>
-          <View style={styles.titleBlock}>
-            <Text style={styles.name}>{exercise.name}</Text>
-            {exercise.equipment !== undefined && (
-              <Text style={styles.equipment}>{workoutEquipmentLabel(exercise.equipment)}</Text>
-            )}
-          </View>
-          <View style={styles.titleActions}>
-            {infoTargets.rir && view.rirLabel !== undefined && exercise.targetRir !== undefined && (
-              <RirBadge
-                label={view.rirLabel}
-                {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
-                explanation={rirExplanation({ targetRir: exercise.targetRir, isDeload })}
-              />
-            )}
-            {view.deloadLabel !== undefined && (
-              <RirBadge
-                testID="exercise-deload"
-                accessibilityLabel="Deload, what changes this week?"
-                label={view.deloadLabel}
-                explanation={deloadExplanation({
-                  ...(exercise.type === undefined ? {} : { type: exercise.type }),
-                  ...(exercise.powerLoad === undefined ? {} : { powerLoad: exercise.powerLoad }),
-                  ...(exercise.targetRir === undefined ? {} : { targetRir: exercise.targetRir }),
-                })}
-              />
-            )}
-            <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>
-              <HistoryIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
-            </IconButton>
-            {view.showMenu && (
-              <ActionMenu
-                key={`menu-${position}`}
-                testID={`exercise-menu-${exercise.sessionExerciseId}`}
-                accessibilityLabel={`${exercise.name} menu`}
-                title={exercise.name}
-                subtitle={formatExerciseMenuSubtitle(
-                  exercise.plannedSetCount,
-                  exercise.loggedSetCount,
-                )}
-                items={menuItems}
-              />
-            )}
-          </View>
-        </View>
-
-        {exercise.weightHints?.map((hint) => {
-          const Icon = hint.direction === 'increase' ? ArrowUpIcon : ArrowDownIcon;
-          return (
-            <View key={hint.direction} testID="exercise-weight-hint" style={styles.weightHint}>
-              <Icon size={ICON_SIZES['icon/inline']} color={COLORS['text/secondary']} />
-              <Text style={styles.weightHintText}>
-                {formatWeightHint(hint, exercise.equipment)}
-              </Text>
-            </View>
-          );
-        })}
-
-        {ceilingNote !== undefined && (
-          <InlineNote
-            icon={CEILING_ICONS[ceilingNote.icon]}
-            lead={ceilingNote.lead}
-            text={ceilingNote.text}
-          >
-            <View style={styles.ceilingLinks}>
-              {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
-                <CeilingLink label={ceilingNote.flagLabel} onPress={onSetNoHeavierAvailable} />
-              )}
-              {ceilingNote.replaceLabel !== undefined && onReplaceExercise !== undefined && (
-                <CeilingLink label={ceilingNote.replaceLabel} onPress={onReplaceExercise} />
-              )}
-              {ceilingNote.hideLabel !== undefined && onHideCeilingTip !== undefined && (
-                <CeilingLink label={ceilingNote.hideLabel} onPress={onHideCeilingTip} />
-              )}
-            </View>
-          </InlineNote>
-        )}
-
-        {view.showNotProgrammed && (
-          <View style={styles.notProgrammed}>
-            <InfoIcon size={ICON_SIZES['icon/inline']} color={COLORS['text/muted']} />
-            <Text style={styles.notProgrammedText}>Not programmed yet</Text>
-          </View>
-        )}
-
-        {view.showSets && (
-          <View style={styles.headerRow}>
-            <View style={[styles.valueColumn, styles.infoHeader]}>
-              <Text style={styles.columnLabel}>{weightColumnLabel(exercise)}</Text>
-              {showWeightInfo && (
-                <InfoGlyphButton
-                  buttonRef={weightInfo.ref}
-                  {...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.weight } : {})}
-                  accessibilityLabel="Finding your weight"
-                  open={weightInfo.visible}
-                  onPress={weightInfo.open}
-                />
-              )}
-            </View>
-            <View style={[styles.valueColumn, styles.infoHeader]}>
-              <Text style={styles.columnLabel}>{isPower ? 'Fast reps' : 'Reps'}</Text>
-              {(infoTargets.reps || isPower) && (
-                <InfoGlyphButton
-                  buttonRef={repsInfo.ref}
-                  {...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.reps } : {})}
-                  accessibilityLabel={isPower ? 'About fast reps' : 'Weight recommendations'}
-                  open={repsInfo.visible}
-                  onPress={repsInfo.open}
-                />
-              )}
-            </View>
-            {exercise.isGuided !== true && <View style={styles.indicatorColumn} />}
-            <Text style={[styles.logColumn, styles.columnLabel]}>Log</Text>
-          </View>
-        )}
-        {view.showSets && (
-          // Keyed by the exercise: a replaced exercise's rows start fresh from its new targets and
-          // an empty set of weight edits, instead of keeping what was typed for the old one.
-          <SetRows
-            key={exercise.exerciseId}
-            exercise={exercise}
-            editable={editable}
-            bodyWeight={bodyWeight}
-            onBodyWeightChange={onBodyWeightChange}
-            onRequestBodyWeight={onRequestBodyWeight}
-            isSaving={isSaving}
-            onLogSet={onLogSet}
-            onUnlogSet={onUnlogSet}
-          />
-        )}
-        {view.notDoneNote !== undefined && (
-          <Text style={styles.skippedNote}>{view.notDoneNote}</Text>
-        )}
-      </View>
-      {popover !== undefined && (
-        <WeightSwapPopoverPlate
-          popover={popover}
-          visible={repsInfo.visible}
-          anchor={repsInfo.anchor}
-          onClose={repsInfo.close}
+  sets,
+  ceiling,
+  ...common
+}: WorkoutExerciseCardProps): ReactElement {
+  switch (exercise.type) {
+    case 'power':
+      return (
+        <SetsExerciseCard
+          exercise={exercise}
+          sets={sets}
+          {...(ceiling !== undefined ? { ceiling } : {})}
+          {...common}
         />
-      )}
-      {isPower && (
-        <FastRepsPopover
-          visible={repsInfo.visible}
-          anchor={repsInfo.anchor}
-          onClose={repsInfo.close}
-        />
-      )}
-      {showWeightInfo && (
-        <FirstWeightPopover
-          visible={weightInfo.visible}
-          anchor={weightInfo.anchor}
-          onClose={weightInfo.close}
-          copy={firstWeightCopy(exercise.type, exercise.targetRir)}
-        />
-      )}
-    </View>
-  );
-}
-
-/** The ⓘ plate — the ranges of the first unlogged set, or why there are none (08.7.1). */
-function WeightSwapPopoverPlate({
-  popover,
-  visible,
-  anchor,
-  onClose,
-}: {
-  popover: WeightSwapPopover;
-  visible: boolean;
-  anchor: AnchorRect | null;
-  onClose: () => void;
-}) {
-  if (popover.kind === 'no-history') {
-    const [first, ...rest] = popover.steps;
-    return (
-      <Popover visible={visible} onClose={onClose} anchor={anchor} title={popover.title}>
-        {/* The weight to pick comes first, the corridor it is measured in right under it, then the
-            rest — the order Artem asked for (07.10.2026). Gaps are the recommended-weight plate's:
-            `space/xl` between blocks, `space/dots` between rows. */}
-        <View style={styles.popoverSteps}>
-          {first !== undefined && <PlateRow compact leading={{ number: 1 }} text={first} />}
-        </View>
-        <RangeTrack
-          outer={popover.corridor.outer}
-          inner={popover.corridor.inner}
-          labels={popover.corridor.labels}
-          accessibilityLabel={popover.corridor.accessibilityLabel}
-        />
-        <View style={[styles.popoverSteps, styles.popoverStepsAfterTrack]}>
-          {rest.map((step, index) => (
-            <PlateRow compact key={index} leading={{ number: index + 2 }} text={step} />
-          ))}
-        </View>
-      </Popover>
-    );
+      );
+    case undefined:
+    case 'strength':
+    case 'interval':
+    case 'mobility':
+      return <SetsExerciseCard exercise={exercise} sets={sets} {...common} />;
   }
-  return (
-    <Popover
-      visible={visible}
-      onClose={onClose}
-      anchor={anchor}
-      title={popover.title}
-      subtitle={popover.subtitle}
-    >
-      <RangeTrack
-        outer={popover.outer}
-        inner={popover.inner}
-        marker={popover.marker}
-        labels={popover.labels}
-        accessibilityLabel={popover.title}
-      />
-      <View style={styles.legend}>
-        {popover.legend.map((line) => (
-          <View key={line.label} style={styles.legendRow}>
-            <RangeTrackSwatch span={line.span} />
-            <Text style={styles.legendLabel}>{line.label}</Text>
-            <Text style={styles.legendValue}>{line.value}</Text>
-          </View>
-        ))}
-      </View>
-    </Popover>
-  );
-}
-
-const CEILING_ICONS = { up: ArrowUpIcon, swap: SwapIcon, plus: PlusIcon } as const;
-
-/** A link in the ceiling note — an action the note leads to, underlined like the mockup's. */
-function CeilingLink({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={styles.ceilingFlag}
-    >
-      <Text style={styles.ceilingFlagText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-// Resolved once, outside any render: a component picked by a function call inside one is a new
-// component every time it renders.
-const TYPE_CHIP_ICONS: Record<ExerciseType, IconComponent> = {
-  strength: getExerciseTypeIcon('strength'),
-  power: getExerciseTypeIcon('power'),
-  interval: getExerciseTypeIcon('interval'),
-  mobility: getExerciseTypeIcon('mobility'),
-};
-
-/** The type chip of a power, interval or mobility card (10.1 FR-14): its mark and its name. */
-function TypeChip({ type }: { type: ExerciseType }) {
-  const Icon = TYPE_CHIP_ICONS[type];
-
-  return (
-    <View testID="exercise-type-chip" style={[styles.groupChip, styles.typeChip]}>
-      <Icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
-      <Text style={[styles.groupLabel, styles.typeLabel]}>{getExerciseTypeLabel(type)}</Text>
-    </View>
-  );
-}
-
-function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
-  const colors = getMuscleGroupChipColors(muscleGroup);
-
-  return (
-    <View
-      testID="exercise-group-chip"
-      style={[styles.groupChip, { backgroundColor: colors.tint ?? COLORS['surface/card'] }]}
-    >
-      {colors.dot !== undefined && (
-        <View style={[styles.groupDot, { backgroundColor: colors.dot }]} />
-      )}
-      <Text style={[styles.groupLabel, { color: colors.text ?? COLORS['text/secondary'] }]}>
-        {getMuscleGroupLabel(muscleGroup)}
-      </Text>
-    </View>
-  );
-}
-
-function SetRows({
-  exercise,
-  editable,
-  bodyWeight,
-  onBodyWeightChange,
-  onRequestBodyWeight,
-  isSaving,
-  onLogSet,
-  onUnlogSet,
-}: Pick<
-  WorkoutExerciseCardProps,
-  | 'exercise'
-  | 'bodyWeight'
-  | 'onBodyWeightChange'
-  | 'onRequestBodyWeight'
-  | 'isSaving'
-  | 'onLogSet'
-  | 'onUnlogSet'
-> & {
-  editable: boolean;
-}) {
-  const [weights, setWeights] = useState<WeightEdits>({});
-  const { rows } = exercise;
-  // What the weight means — not the equipment printed under the name: a power exercise that is its
-  // own load weighs what you weigh (`loadEquipmentOf`).
-  const loadEquipment = exercise.loadEquipment ?? exercise.equipment;
-  const isBodyWeightField = isPureBodyWeight(loadEquipment);
-  // Until the block has a body weight, a bodyweight exercise's Weight cell asks for one rather
-  // than taking a number: there's nothing meaningful to type there yet (task 105).
-  const asksForBodyWeight =
-    isBodyWeightExercise(loadEquipment) && bodyWeight === undefined && editable;
-
-  function handleWeightBlur(setNumber: number, text: string) {
-    setWeights((edits) => carryWeightForward(edits, rows, setNumber));
-    if (!isBodyWeightField || onBodyWeightChange === undefined) {
-      return;
-    }
-    // On a pure bodyweight exercise this field holds the body weight itself, so what was typed
-    // here is the block's new one — it reaches every bodyweight set still to be logged (task 105).
-    const entered = parseWeight(text);
-    if (entered !== null && entered > 0 && entered !== bodyWeight) {
-      onBodyWeightChange(entered);
-    }
-  }
-
-  // One note per card, for the set that is next to do and only while its numbers aren't a target
-  // to hit — its weight has taken the target out of reach (08.7.1), or they are an estimate from
-  // another day or block (134.1). The Weight fields live here, so this is where it can be read.
-  const next = firstUnloggedRow(rows);
-  const note = estimateNote(
-    next,
-    next === undefined ? '' : weightFieldText(weights, next, loadEquipment, bodyWeight),
-    exercise.targetRir,
-  );
-
-  return (
-    <>
-      {rows.map((row) => (
-        <WorkoutSetRow
-          key={row.setNumber}
-          row={row}
-          targetRir={exercise.targetRir}
-          equipment={loadEquipment}
-          bodyWeight={bodyWeight}
-          guided={exercise.isGuided === true}
-          {...(exercise.type === 'power' ? { raisedWeightReps: POWER_MIN_REPS } : {})}
-          {...(asksForBodyWeight && onRequestBodyWeight !== undefined
-            ? { onRequestBodyWeight }
-            : {})}
-          weightText={weightFieldText(weights, row, loadEquipment, bodyWeight)}
-          onChangeWeight={(text) =>
-            setWeights((edits) => editWeightText(edits, row.setNumber, text))
-          }
-          onBlurWeight={() =>
-            handleWeightBlur(
-              row.setNumber,
-              weightFieldText(weights, row, loadEquipment, bodyWeight),
-            )
-          }
-          editable={editable}
-          isSaving={isSaving}
-          onLog={(entry) => onLogSet(row.setNumber, entry)}
-          onUnlog={() => {
-            const logged = row.log;
-            if (logged !== undefined) {
-              setWeights((edits) => holdLoggedWeight(edits, row.setNumber, logged.weight));
-            }
-            onUnlogSet(row.setNumber);
-          }}
-        />
-      ))}
-      {editable && note !== undefined && <InlineNote lead={note.lead} text={note.text} />}
-    </>
-  );
 }
