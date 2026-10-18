@@ -12,14 +12,32 @@ export function clampSeconds(totalSec: number, minSec: number, maxSec: number): 
   return Math.min(maxSec, Math.max(minSec, totalSec));
 }
 
-/** The values of the minutes wheel: 0 up to the whole minutes `maxSec` holds. */
-export function minuteOptions(maxSec: number): number[] {
-  return Array.from({ length: Math.floor(maxSec / 60) + 1 }, (_, minute) => minute);
+/**
+ * The values of the minutes wheel: the minute `minSec` falls in up to the whole minutes `maxSec`
+ * holds. A minute the bounds rule out is not on the wheel at all — offered and then snapped back,
+ * it read as a value the picker took (GT-87: a 1:00 minimum that still showed `0 min`).
+ */
+export function minuteOptions(maxSec: number, minSec = 0): number[] {
+  const first = Math.floor(minSec / 60);
+  return Array.from({ length: Math.floor(maxSec / 60) - first + 1 }, (_, index) => first + index);
 }
 
-/** The values of the seconds wheel: 0, `stepSec`, 2 x `stepSec`, … below a minute. */
-export function secondOptions(stepSec: number): number[] {
-  return Array.from({ length: Math.ceil(60 / stepSec) }, (_, index) => index * stepSec);
+/**
+ * The values of the seconds wheel: 0, `stepSec`, 2 x `stepSec`, … below a minute — and, given the
+ * minute the other wheel is on and the bounds, only those that make a time within them: at a
+ * 1:00–5:00 field's 5 minutes the wheel holds `00` alone.
+ */
+export function secondOptions(
+  stepSec: number,
+  at?: { minutes: number; minSec: number; maxSec: number },
+): number[] {
+  const all = Array.from({ length: Math.ceil(60 / stepSec) }, (_, index) => index * stepSec);
+  if (at === undefined) return all;
+  const allowed = all.filter((seconds) => {
+    const total = at.minutes * 60 + seconds;
+    return total >= at.minSec && total <= at.maxSec;
+  });
+  return allowed.length > 0 ? allowed : all;
 }
 
 /**

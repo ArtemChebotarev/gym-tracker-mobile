@@ -20,6 +20,17 @@ describe('options', () => {
     expect(minuteOptions(600)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
+  test('minutes start at the minute the minimum falls in', () => {
+    expect(minuteOptions(300, 60)).toEqual([1, 2, 3, 4, 5]);
+    expect(minuteOptions(600, 5)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  });
+
+  test('at a minute, seconds are only those that keep the time within the bounds', () => {
+    expect(secondOptions(15, { minutes: 5, minSec: 60, maxSec: 300 })).toEqual([0]);
+    expect(secondOptions(15, { minutes: 0, minSec: 5, maxSec: 600 })).toEqual([15, 30, 45]);
+    expect(secondOptions(15, { minutes: 2, minSec: 60, maxSec: 300 })).toEqual([0, 15, 30, 45]);
+  });
+
   test('seconds step by the given step below a minute', () => {
     expect(secondOptions(15)).toEqual([0, 15, 30, 45]);
     expect(secondOptions(5)).toHaveLength(12);
