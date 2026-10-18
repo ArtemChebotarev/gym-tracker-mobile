@@ -3,6 +3,7 @@
 // and the week/day formatters from MesoEditorBasicsStepLogic.ts rather than copied here.
 
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import type { ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import type { WeekPlanExercise } from '@domain/plan';
 
 import { formatDaysPerWeekValue, formatMesocycleLengthValue } from './MesoEditorBasicsStepLogic';
@@ -13,9 +14,13 @@ import { exercisePlan, formatSetCount, type ExercisesById } from './MesoEditorDa
  * plan chip on one line for the others (canvas 7.1, "Review"): `3 sets · 1:00 rest`,
  * `3 × 2:00 · 1:00 rest`, and a mobility one's bare length, `10:00`.
  */
-export function formatReviewPlan(exercisesById: ExercisesById, entry: WeekPlanExercise): string {
+export function formatReviewPlan(
+  exercisesById: ExercisesById,
+  entry: WeekPlanExercise,
+  exerciseSettings: ExerciseSettingsById = {},
+): string {
   const exercise = exercisesById[entry.exerciseId];
-  const plan = exercisePlan(exercisesById, entry);
+  const plan = exercisePlan(exercisesById, entry, exerciseSettings);
   if (!exercise || !plan) {
     return formatSetCount(entry.sets);
   }

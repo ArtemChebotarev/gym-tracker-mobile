@@ -3,6 +3,7 @@
 // can tell the library's value from a default one.
 
 import { FULL_BODY, toExerciseId, type Exercise } from '@domain/catalog';
+import type { IntervalConfig } from '@domain/exerciseConfig';
 
 import { STAMPS } from './stamps';
 
@@ -17,6 +18,16 @@ export const MEDBALL_THROW: Exercise = {
   config: { type: 'power', load: 'weight', restSec: 75, noHeavierAvailable: false },
 };
 
+/** `HEAVY_BAG`'s config, typed as what it is, for a test that spreads it into an edited copy. */
+export const HEAVY_BAG_CONFIG: IntervalConfig = {
+  type: 'interval',
+  workSec: 120,
+  restSec: 45,
+  getReadySec: 5,
+  lever: 'rest',
+  stepSec: 15,
+};
+
 export const HEAVY_BAG: Exercise = {
   ...STAMPS,
   id: toExerciseId('heavy-bag'),
@@ -25,7 +36,7 @@ export const HEAVY_BAG: Exercise = {
   source: 'custom',
   isHidden: false,
   type: 'interval',
-  config: { type: 'interval', workSec: 120, restSec: 45, getReadySec: 5, lever: 'rest', stepSec: 15 },
+  config: HEAVY_BAG_CONFIG,
 };
 
 export const COOLDOWN: Exercise = {
