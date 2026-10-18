@@ -151,6 +151,15 @@ describe('MesoEditorDaysStep', () => {
       expect(screen.getByText('Mobility')).toBeTruthy();
     });
 
+    test('a hybrid row’s chip opens its plan by day and index (GT-92)', () => {
+      const onOpenPlan = jest.fn();
+      render(<MesoEditorDaysStep {...MIXED_PROPS} onOpenPlan={onOpenPlan} />);
+
+      fireEvent.press(screen.getByRole('button', { name: 'Cooldown plan: 10:00, Length' }));
+
+      expect(onOpenPlan).toHaveBeenCalledWith(1, 3);
+    });
+
     test('a hybrid row is removed by its own index', () => {
       const onRemoveExercise = jest.fn();
       render(<MesoEditorDaysStep {...MIXED_PROPS} onRemoveExercise={onRemoveExercise} />);

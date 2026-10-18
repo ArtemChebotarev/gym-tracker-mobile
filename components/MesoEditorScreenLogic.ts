@@ -1,6 +1,11 @@
 import type { Exercise, ExerciseId } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
-import { prunedExerciseSettings, withExerciseSettings } from '@domain/exerciseSettingsBuilders';
+import type { ExerciseSettings } from '@domain/exerciseConfig';
+import {
+  prunedExerciseSettings,
+  resetExerciseSettings,
+  withExerciseSettings,
+} from '@domain/exerciseSettingsBuilders';
 import type { MesoBuilderDraft } from '@state/draftStore';
 
 import { addExerciseToDay, removeExerciseFromDay } from './MesoEditorDaysStepLogic';
@@ -95,4 +100,18 @@ export function removeExerciseFromDraft(
     exercisesByDay,
     exerciseSettings: prunedExerciseSettings(draft.exerciseSettings ?? {}, remainingIds),
   };
+}
+
+/** The plan sheet's edit (GT-92): the cycle's copy for `exerciseId` becomes `settings`. */
+export function withDraftExerciseSettings(
+  draft: MesoBuilderDraft,
+  exerciseId: string,
+  settings: ExerciseSettings,
+): MesoBuilderDraft {
+  return { ...draft, exerciseSettings: { ...draft.exerciseSettings, [exerciseId]: settings } };
+}
+
+/** The plan sheet's `Reset to defaults`: the cycle's copy for `exercise` goes back to the library's. */
+export function resetDraftExerciseSettings(draft: MesoBuilderDraft, exercise: Exercise): MesoBuilderDraft {
+  return { ...draft, exerciseSettings: resetExerciseSettings(draft.exerciseSettings ?? {}, exercise) };
 }

@@ -39,6 +39,7 @@ import {
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
 import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
+import { CyclePlanSheet } from '@components/CyclePlanSheet';
 import {
   addExercisesToDraft,
   DISCARD_DRAFT_MESSAGE,
@@ -46,9 +47,12 @@ import {
   DISCARD_LABEL,
   hasUnsavedDraft,
   KEEP_EDITING_LABEL,
-  removeExerciseFromDraft,
   rememberSelectedExercises,
+  removeExerciseFromDraft,
+  resetDraftExerciseSettings,
+  withDraftExerciseSettings,
 } from '@components/MesoEditorScreenLogic';
+import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
@@ -210,6 +214,18 @@ export function MesoEditorScreen({
     return [...ids].map(toExerciseId);
   }, [draft.exercisesByDay]);
   const exercisesQuery = useExercisesByIds(exerciseIds);
+
+  // GT-92: the row whose plan sheet is open, if any — a day and a position, like the stepper's
+  // own edits. The settings it shows are the cycle's copy, the library's until there is one.
+  const [planRow, setPlanRow] = useState<{ dayNumber: number; index: number } | null>(null);
+  const planEntry =
+    planRow === null ? undefined : draft.exercisesByDay[planRow.dayNumber]?.[planRow.index];
+  const planExercise =
+    planEntry === undefined ? undefined : exercisesQuery.data?.[planEntry.exerciseId];
+  const planSettings =
+    planExercise === undefined
+      ? undefined
+      : exerciseSettingsFor(draft.exerciseSettings ?? {}, planExercise);
 
   const discardDraft = useCallback(() => {
     resetDraft();
@@ -406,8 +422,37 @@ export function MesoEditorScreen({
             }))
           }
           onAddExercise={handleRequestAddExercise}
+          onOpenPlan={(dayNumber, index) => setPlanRow({ dayNumber, index })}
         />
       </WizardScreen>
+      <CyclePlanSheet
+        visible={planRow !== null && planSettings !== undefined}
+        exerciseName={planExercise?.name ?? ''}
+        dayNumber={planRow?.dayNumber ?? activeDay}
+        settings={planSettings}
+        sets={planEntry?.sets ?? 0}
+        onChangeSettings={(settings) =>
+          planExercise &&
+          setDraft((current) => withDraftExerciseSettings(current, planExercise.id, settings))
+        }
+        onChangeSets={(sets) =>
+          planRow &&
+          setDraft((current) => ({
+            ...current,
+            exercisesByDay: updateExerciseSets(
+              current.exercisesByDay,
+              planRow.dayNumber,
+              planRow.index,
+              sets,
+            ),
+          }))
+        }
+        onReset={() =>
+          planExercise &&
+          setDraft((current) => resetDraftExerciseSettings(current, planExercise))
+        }
+        onClose={() => setPlanRow(null)}
+      />
       <MesoEditorAddExerciseSheet
         // Stays visible underneath Filters — it renders as a plain overlay
         // (`presentation="overlay"` inside MesoEditorAddExerciseSheet.tsx), not its own <Modal>,

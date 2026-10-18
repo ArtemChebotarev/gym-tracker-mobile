@@ -3,6 +3,8 @@ import {
   hasUnsavedDraft,
   rememberSelectedExercises,
   removeExerciseFromDraft,
+  resetDraftExerciseSettings,
+  withDraftExerciseSettings,
 } from '@components/MesoEditorScreenLogic';
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
@@ -121,5 +123,21 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
 
     remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [COOLDOWN.id]);
     expect(remembered).toEqual({ [COOLDOWN.id]: COOLDOWN });
+  });
+});
+
+describe('the plan sheet’s edits (GT-92)', () => {
+  test('an edit replaces the copy for that exercise only; Reset puts the library’s back', () => {
+    const start = addExercisesToDraft(DEFAULT_MESO_BUILDER_DRAFT, 1, [HEAVY_BAG.id, COOLDOWN.id], {
+      [HEAVY_BAG.id]: HEAVY_BAG,
+      [COOLDOWN.id]: COOLDOWN,
+    });
+
+    const edited = withDraftExerciseSettings(start, HEAVY_BAG.id, { ...HEAVY_BAG_CONFIG, rounds: 6 });
+    expect(edited.exerciseSettings?.[HEAVY_BAG.id]).toEqual({ ...HEAVY_BAG_CONFIG, rounds: 6 });
+    expect(edited.exerciseSettings?.[COOLDOWN.id]).toEqual(COOLDOWN.config);
+
+    const reset = resetDraftExerciseSettings(edited, HEAVY_BAG);
+    expect(reset.exerciseSettings).toEqual(start.exerciseSettings);
   });
 });

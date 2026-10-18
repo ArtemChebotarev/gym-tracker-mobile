@@ -8,7 +8,7 @@ import type { Animated } from 'react-native';
 import { FULL_BODY, type Exercise } from '@domain/catalog';
 import type { ExerciseSettings } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
-import { withExerciseSettings, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
+import { exerciseSettingsFor, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
@@ -244,10 +244,7 @@ export function exercisePlan(
   exerciseSettings: ExerciseSettingsById = {},
 ): ExercisePlan | undefined {
   const exercise = exercisesById[entry.exerciseId];
-  if (!exercise || exerciseTypeOf(exercise) === 'strength') {
-    return undefined;
-  }
-  const settings = exerciseSettings[entry.exerciseId] ?? withExerciseSettings({}, exercise)[exercise.id];
+  const settings = exercise && exerciseSettingsFor(exerciseSettings, exercise);
   return settings ? formatExercisePlan(settings, entry.sets) : undefined;
 }
 

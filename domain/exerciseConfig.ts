@@ -29,6 +29,23 @@ export const INTERVAL_STEPS_SEC = [5, 10, 15] as const;
 
 export type IntervalStepSec = (typeof INTERVAL_STEPS_SEC)[number];
 
+/** The seconds every time field of a config is set in steps of — a rest of power's included. */
+export const CONFIG_TIME_STEP_SEC = 5;
+
+/** The time fields of a config, by the key they are stored under. */
+export type ConfigTimeKey = 'restSec' | 'workSec' | 'getReadySec' | 'durationSec';
+
+/**
+ * What each time field may hold, seconds — the same range wherever it is set: the New/Edit
+ * exercise page, the cycle editor's plan sheet (GT-92).
+ */
+export const CONFIG_TIME_RANGE_SEC: Record<ConfigTimeKey, { min: number; max: number }> = {
+  restSec: { min: 0, max: 10 * 60 },
+  workSec: { min: CONFIG_TIME_STEP_SEC, max: 60 * 60 },
+  getReadySec: { min: 0, max: 30 },
+  durationSec: { min: 60, max: 60 * 60 },
+};
+
 export type PowerConfig = {
   type: 'power';
   load: PowerLoad;

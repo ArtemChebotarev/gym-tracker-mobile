@@ -1,6 +1,7 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import {
+  exerciseSettingsFor,
   prunedExerciseSettings,
   resetExerciseSettings,
   weekPlanExerciseSettings,
@@ -147,5 +148,15 @@ describe('weekPlanExerciseSettings (GT-159)', () => {
 
   test('an exercise the library has no record of gets nothing', () => {
     expect(weekPlanExerciseSettings(weekPlan, [BENCH_PRESS])).toEqual({});
+  });
+});
+
+describe('exerciseSettingsFor', () => {
+  test('the cycle’s own copy, the library’s while there is none, nothing for strength', () => {
+    const own = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 6 } };
+
+    expect(exerciseSettingsFor(own, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG, rounds: 6 });
+    expect(exerciseSettingsFor({}, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS });
+    expect(exerciseSettingsFor({}, BENCH_PRESS)).toBeUndefined();
   });
 });
