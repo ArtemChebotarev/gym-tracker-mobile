@@ -25,6 +25,7 @@ export type FirstWeightPopoverProps = {
 export function FirstWeightPopover({ visible, anchor, onClose, copy }: FirstWeightPopoverProps) {
   return (
     <Popover visible={visible} onClose={onClose} anchor={anchor} title={copy.title}>
+      {copy.intro !== undefined && <Text style={styles.intro}>{copy.intro}</Text>}
       <Text style={styles.sectionLabel}>{copy.warmUpLabel}</Text>
       <View style={styles.rows}>
         {copy.warmUpSteps.map((text, index) => (

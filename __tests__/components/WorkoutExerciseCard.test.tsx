@@ -918,7 +918,7 @@ describe('RIR badge popover', () => {
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
   });
 
-  test('a power card says Load and Fast reps, with no RIR badge and no indicator column', () => {
+  test('a power card says Load and Fast reps, with no RIR badge and no hit indicator', () => {
     const power = makePowerExercise({
       name: 'Medball throw',
       isGuided: true,
@@ -1036,5 +1036,70 @@ describe('RIR badge popover', () => {
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('83');
     expect(screen.getByText('Plyo box')).toBeTruthy();
     expect(screen.getByText('Bodyweight, kg')).toBeTruthy();
+  });
+});
+
+// Artem's review (18.10.2026): a level has no load to find, and its levels are the user's own.
+describe('WorkoutExerciseCard — power by level', () => {
+  test('the Level ⓘ opens a plate about finding a level', () => {
+    const box = makePowerExercise({
+      name: 'Box jump',
+      isGuided: true,
+      powerLoad: 'level',
+      equipment: 'plyo-box',
+      rows: [{ setNumber: 1, targetReps: 3, suggestedWeight: 1, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: box })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finding your level' }));
+
+    expect(screen.getByText('Finding your level')).toBeTruthy();
+    expect(screen.getByText(/^Levels are your own/)).toBeTruthy();
+  });
+});
+
+// 10.1 FR-15 and Artem's review (18.10.2026): a band keeps the strength card, with its own parts.
+describe('WorkoutExerciseCard — a resistance band', () => {
+  const band = makeExercise({
+    name: 'Band pull-apart',
+    equipment: 'resistance-band',
+    isGuided: true,
+    targetRir: 2,
+    rows: [{ setNumber: 1, isFirstUnlogged: true }],
+    plannedSetCount: 1,
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  test('has no RIR — neither the badge nor the Reps placeholder', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    expect(screen.queryByText(/RIR/)).toBeNull();
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('–');
+  });
+
+  test('names its equipment plainly and says Bodyweight over the column', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    expect(screen.getByText('Resistance band')).toBeTruthy();
+    expect(screen.getByText('Bodyweight, kg')).toBeTruthy();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
+  test('its Reps ⓘ explains the 5–30 corridor with a band', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    fireEvent.press(screen.getByLabelText('About reps with a band'));
+
+    expect(screen.getByText('Reps with a band')).toBeTruthy();
+  });
+
+  test('a deload week still has the Deload badge', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, isDeload: true })} />);
+
+    expect(screen.getByTestId('exercise-deload')).toBeTruthy();
   });
 });

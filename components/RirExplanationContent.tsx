@@ -23,7 +23,7 @@ export function RirExplanationContent({ explanation }: { explanation: BadgeExpla
           accessibilityLabel={track.accessibilityLabel}
         />
       )}
-      <View style={styles.rows}>
+      <View style={[styles.rows, track === undefined && styles.rowsUnderTitle]}>
         {rows.map((row, index) => (
           <PlateRow key={index} leading={{ icon: row.icon }} text={row.text} />
         ))}

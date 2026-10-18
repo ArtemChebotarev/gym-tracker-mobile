@@ -16,19 +16,24 @@ export const styles = StyleSheet.create({
     minHeight: SIZES['size/tap-target'],
     marginTop: SPACING['space/gap-tight'],
   },
+  // One value column: the label between two equal halves, stretched to the row's full height so
+  // an ⓘ inside it is a whole 44pt tall to the touch.
   valueColumn: {
     flex: 1,
-    textAlign: 'center',
-  },
-  // A header that carries an ⓘ beside its label — Weight's first-weight how-to (08.11) and Reps'
-  // weight-swap ranges (08.7.1). It stretches to the row's full height so the button inside it is a
-  // whole 44pt tall to the touch.
-  infoHeader: {
     flexDirection: 'row',
     alignSelf: 'stretch',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING['space/dots'],
+  },
+  half: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
+  // The right half holds the ⓘ, if the column has one, right after the label — Weight's
+  // first-weight how-to (08.11), Reps' weight-swap ranges (08.7.1), Fast reps' plate (GT-81).
+  infoHalf: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: SPACING['space/dots'],
   },
   indicatorColumn: {
     width: SIZES['size/indicator-column'],

@@ -57,4 +57,16 @@ describe('firstWeightCopy', () => {
     expect(copy.warmUpSteps).toHaveLength(2);
     expect(JSON.stringify(copy)).not.toMatch(/RIR|12 reps|failure/);
   });
+
+  test('power by level finds a level, and first says the levels are the user’s own', () => {
+    const copy = firstWeightCopy('power', undefined, 'level');
+
+    expect(copy.title).toBe('Finding your level');
+    expect(copy.intro).toMatch(/^Levels are your own/);
+    expect(JSON.stringify(copy)).not.toMatch(/RIR|load|kg/);
+  });
+
+  test('power by kilograms keeps the load plate', () => {
+    expect(firstWeightCopy('power', undefined, 'weight').title).toBe('Finding your load');
+  });
 });

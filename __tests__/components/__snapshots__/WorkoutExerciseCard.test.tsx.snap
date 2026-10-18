@@ -458,21 +458,22 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
     >
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -486,162 +487,185 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           Weight, kg
         </Text>
         <View
-          accessibilityLabel="Finding your weight"
-          accessibilityRole="button"
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": undefined,
-              "expanded": false,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          collapsable={false}
-          focusable={true}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
-            {
-              "alignItems": "center",
-              "height": 44,
-              "justifyContent": "center",
-              "width": 44,
-            }
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
           }
         >
           <View
+            accessibilityLabel="Finding your weight"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": false,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={
+              {
+                "left": 10,
+                "right": 10,
+              }
+            }
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
             style={
-              [
-                {
-                  "alignItems": "center",
-                  "borderRadius": 12,
-                  "height": 24,
-                  "justifyContent": "center",
-                  "width": 24,
-                },
-                false,
-              ]
+              {
+                "alignItems": "center",
+                "height": 44,
+                "justifyContent": "center",
+                "width": 24,
+              }
             }
           >
-            <RNSVGSvgView
-              align="xMidYMid"
-              bbHeight={16}
-              bbWidth={16}
-              focusable={false}
-              height={16}
-              meetOrSlice={0}
-              minX={0}
-              minY={0}
+            <View
               style={
                 [
                   {
-                    "backgroundColor": "transparent",
-                    "borderWidth": 0,
+                    "alignItems": "center",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "justifyContent": "center",
+                    "width": 24,
                   },
-                  {
-                    "flex": 0,
-                    "height": 16,
-                    "width": 16,
-                  },
+                  false,
                 ]
               }
-              vbHeight={24}
-              vbWidth={24}
-              width={16}
             >
-              <RNSVGGroup
-                fill={
-                  {
-                    "payload": 4278190080,
-                    "type": 0,
-                  }
+              <RNSVGSvgView
+                align="xMidYMid"
+                bbHeight={16}
+                bbWidth={16}
+                focusable={false}
+                height={16}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 16,
+                      "width": 16,
+                    },
+                  ]
                 }
+                vbHeight={24}
+                vbWidth={24}
+                width={16}
               >
                 <RNSVGGroup
-                  fill={null}
-                  propList={
-                    [
-                      "fill",
-                      "stroke",
-                      "strokeWidth",
-                    ]
-                  }
-                  stroke={
+                  fill={
                     {
-                      "payload": 4287271065,
+                      "payload": 4278190080,
                       "type": 0,
                     }
                   }
-                  strokeWidth={1.8}
                 >
-                  <RNSVGCircle
-                    cx={12}
-                    cy={12}
-                    fill={
-                      {
-                        "payload": 4278190080,
-                        "type": 0,
-                      }
-                    }
-                    r={8.5}
-                  />
-                  <RNSVGPath
-                    d="M12 11v5M12 8h.01"
-                    fill={
-                      {
-                        "payload": 4278190080,
-                        "type": 0,
-                      }
-                    }
+                  <RNSVGGroup
+                    fill={null}
                     propList={
                       [
-                        "strokeLinecap",
-                        "strokeLinejoin",
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
                       ]
                     }
-                    strokeLinecap={1}
-                    strokeLinejoin={1}
-                  />
+                    stroke={
+                      {
+                        "payload": 4287271065,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGCircle
+                      cx={12}
+                      cy={12}
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      r={8.5}
+                    />
+                    <RNSVGPath
+                      d="M12 11v5M12 8h.01"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
                 </RNSVGGroup>
-              </RNSVGGroup>
-            </RNSVGSvgView>
+              </RNSVGSvgView>
+            </View>
           </View>
         </View>
       </View>
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -654,6 +678,21 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
         >
           Reps
         </Text>
+        <View
+          style={
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
+          }
+        />
       </View>
       <View
         style={
@@ -1974,21 +2013,22 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
     >
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -2001,24 +2041,40 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           Weight, kg
         </Text>
+        <View
+          style={
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
+          }
+        />
       </View>
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -2031,6 +2087,21 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
         >
           Reps
         </Text>
+        <View
+          style={
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
+          }
+        />
       </View>
       <View
         style={
@@ -3470,21 +3541,22 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
     >
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -3498,162 +3570,185 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           Weight, kg
         </Text>
         <View
-          accessibilityLabel="Finding your weight"
-          accessibilityRole="button"
-          accessibilityState={
-            {
-              "busy": undefined,
-              "checked": undefined,
-              "disabled": undefined,
-              "expanded": false,
-              "selected": undefined,
-            }
-          }
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
-          }
-          accessible={true}
-          collapsable={false}
-          focusable={true}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
           style={
-            {
-              "alignItems": "center",
-              "height": 44,
-              "justifyContent": "center",
-              "width": 44,
-            }
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
           }
         >
           <View
+            accessibilityLabel="Finding your weight"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": false,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={
+              {
+                "left": 10,
+                "right": 10,
+              }
+            }
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
             style={
-              [
-                {
-                  "alignItems": "center",
-                  "borderRadius": 12,
-                  "height": 24,
-                  "justifyContent": "center",
-                  "width": 24,
-                },
-                false,
-              ]
+              {
+                "alignItems": "center",
+                "height": 44,
+                "justifyContent": "center",
+                "width": 24,
+              }
             }
           >
-            <RNSVGSvgView
-              align="xMidYMid"
-              bbHeight={16}
-              bbWidth={16}
-              focusable={false}
-              height={16}
-              meetOrSlice={0}
-              minX={0}
-              minY={0}
+            <View
               style={
                 [
                   {
-                    "backgroundColor": "transparent",
-                    "borderWidth": 0,
+                    "alignItems": "center",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "justifyContent": "center",
+                    "width": 24,
                   },
-                  {
-                    "flex": 0,
-                    "height": 16,
-                    "width": 16,
-                  },
+                  false,
                 ]
               }
-              vbHeight={24}
-              vbWidth={24}
-              width={16}
             >
-              <RNSVGGroup
-                fill={
-                  {
-                    "payload": 4278190080,
-                    "type": 0,
-                  }
+              <RNSVGSvgView
+                align="xMidYMid"
+                bbHeight={16}
+                bbWidth={16}
+                focusable={false}
+                height={16}
+                meetOrSlice={0}
+                minX={0}
+                minY={0}
+                style={
+                  [
+                    {
+                      "backgroundColor": "transparent",
+                      "borderWidth": 0,
+                    },
+                    {
+                      "flex": 0,
+                      "height": 16,
+                      "width": 16,
+                    },
+                  ]
                 }
+                vbHeight={24}
+                vbWidth={24}
+                width={16}
               >
                 <RNSVGGroup
-                  fill={null}
-                  propList={
-                    [
-                      "fill",
-                      "stroke",
-                      "strokeWidth",
-                    ]
-                  }
-                  stroke={
+                  fill={
                     {
-                      "payload": 4287271065,
+                      "payload": 4278190080,
                       "type": 0,
                     }
                   }
-                  strokeWidth={1.8}
                 >
-                  <RNSVGCircle
-                    cx={12}
-                    cy={12}
-                    fill={
-                      {
-                        "payload": 4278190080,
-                        "type": 0,
-                      }
-                    }
-                    r={8.5}
-                  />
-                  <RNSVGPath
-                    d="M12 11v5M12 8h.01"
-                    fill={
-                      {
-                        "payload": 4278190080,
-                        "type": 0,
-                      }
-                    }
+                  <RNSVGGroup
+                    fill={null}
                     propList={
                       [
-                        "strokeLinecap",
-                        "strokeLinejoin",
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
                       ]
                     }
-                    strokeLinecap={1}
-                    strokeLinejoin={1}
-                  />
+                    stroke={
+                      {
+                        "payload": 4287271065,
+                        "type": 0,
+                      }
+                    }
+                    strokeWidth={1.8}
+                  >
+                    <RNSVGCircle
+                      cx={12}
+                      cy={12}
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      r={8.5}
+                    />
+                    <RNSVGPath
+                      d="M12 11v5M12 8h.01"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                    />
+                  </RNSVGGroup>
                 </RNSVGGroup>
-              </RNSVGGroup>
-            </RNSVGSvgView>
+              </RNSVGSvgView>
+            </View>
           </View>
         </View>
       </View>
       <View
         style={
-          [
-            {
-              "flex": 1,
-              "textAlign": "center",
-            },
-            {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "flexDirection": "row",
-              "gap": 6,
-              "justifyContent": "center",
-            },
-          ]
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
         }
       >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
         <Text
           style={
             {
@@ -3666,6 +3761,21 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
         >
           Reps
         </Text>
+        <View
+          style={
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
+          }
+        />
       </View>
       <View
         style={
