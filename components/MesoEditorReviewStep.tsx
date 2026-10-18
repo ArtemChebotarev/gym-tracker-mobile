@@ -1,6 +1,7 @@
 // Step 3 of 3's own content in the mesocycle editor, Flow A — see 08.5 · Редактор мезоцикла —
 // Flow A, "Шаг 3 — Review & confirm" (task 078). A read-only summary of the draft: a summary card
-// (name, length, days per week) and a week 1 preview listing each day's exercises with `N sets`.
+// (name, length, days per week) and a week 1 preview listing each day's exercises with `N sets` — or, for a power, interval or
+// mobility one, its plan on one line (GT-157).
 // The `›` chevron in each day's header replaces the removed `Edit` button (08.5, "Убрано после
 // ревью") and hands `dayNumber` back to the caller, which returns to step 2 with that day active.
 //
@@ -13,15 +14,18 @@
 
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
+import { COLORS, ICON_SIZES } from '@design/tokens';
+
 import {
   exerciseDotColor,
   exerciseTitle,
+  exerciseTypeIcon,
   getDayExercises,
   getDayNumbers,
   type ExercisesByDay,
   type ExercisesById,
 } from './MesoEditorDaysStepLogic';
-import { formatReviewSummary, formatSetCount } from './MesoEditorReviewStepLogic';
+import { formatReviewPlan, formatReviewSummary } from './MesoEditorReviewStepLogic';
 import { styles } from './MesoEditorReviewStepStyles';
 
 export type MesoEditorReviewStepProps = {
@@ -69,15 +73,22 @@ export function MesoEditorReviewStep({
           </Pressable>
           {getDayExercises(exercisesByDay, day).map((exercise) => {
             const dotColor = exerciseDotColor(exercisesById, exercise.exerciseId);
+            const TypeIcon = exerciseTypeIcon(exercisesById, exercise.exerciseId);
             return (
               <View key={`${exercise.exerciseId}-${exercise.order}`} style={styles.exerciseRow}>
-                <View
-                  style={[styles.dot, dotColor !== undefined && { backgroundColor: dotColor }]}
-                />
+                {TypeIcon ? (
+                  <View style={styles.typeIcon}>
+                    <TypeIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/secondary']} />
+                  </View>
+                ) : (
+                  <View
+                    style={[styles.dot, dotColor !== undefined && { backgroundColor: dotColor }]}
+                  />
+                )}
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {exerciseTitle(exercisesById, exercise.exerciseId)}
                 </Text>
-                <Text style={styles.exerciseSets}>{formatSetCount(exercise.sets)}</Text>
+                <Text style={styles.exerciseSets}>{formatReviewPlan(exercisesById, exercise)}</Text>
               </View>
             );
           })}

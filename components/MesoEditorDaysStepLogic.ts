@@ -5,9 +5,19 @@
 
 import type { Animated } from 'react-native';
 
-import type { Exercise } from '@domain/catalog';
+import { FULL_BODY, type Exercise } from '@domain/catalog';
+import type { ExerciseSettings } from '@domain/exerciseConfig';
+import {
+  defaultExerciseConfig,
+  defaultExerciseSettings,
+  exerciseTypeOf,
+} from '@domain/exerciseConfigBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import { formatClock } from '@design/formatClock';
+import type { IconComponent } from '@design/icons/IconFrame';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
@@ -171,9 +181,80 @@ export function exerciseDotColor(exercisesById: ExercisesById, exerciseId: strin
   return category ? getCategoryColor(category) : undefined;
 }
 
+/**
+ * The line under the name: the muscle group, or — for an exercise without one (`fullBody`) — its
+ * type, the way the library files it (10.1 FR-1): `Power`, `Timed work`, `Mobility`.
+ */
 export function exerciseSubtitle(exercisesById: ExercisesById, exerciseId: string): string {
-  const muscleGroup = exercisesById[exerciseId]?.muscleGroup;
-  return muscleGroup ? getMuscleGroupLabel(muscleGroup) : '';
+  const exercise = exercisesById[exerciseId];
+  if (!exercise) {
+    return '';
+  }
+  return exercise.muscleGroup === FULL_BODY
+    ? getExerciseTypeLabel(exerciseTypeOf(exercise))
+    : getMuscleGroupLabel(exercise.muscleGroup);
+}
+
+/**
+ * What stands in for the group dot of an exercise that has no group colour — a `fullBody` hybrid
+ * one: the icon of its type (canvas 7.2). `undefined` wherever the dot has a colour to show.
+ */
+export function exerciseTypeIcon(exercisesById: ExercisesById, exerciseId: string): IconComponent | undefined {
+  const exercise = exercisesById[exerciseId];
+  if (!exercise || exerciseTypeOf(exercise) === 'strength' || exerciseDotColor(exercisesById, exerciseId)) {
+    return undefined;
+  }
+  return getExerciseTypeIcon(exerciseTypeOf(exercise));
+}
+
+/** 08.5, "Шаг 3", and the power chip's value: `N sets`. */
+export function formatSetCount(sets: number): string {
+  return `${sets} ${sets === 1 ? 'set' : 'sets'}`;
+}
+
+/** The two lines of a hybrid row's plan chip (10.1 FR-9). */
+export type ExercisePlan = { value: string; caption: string };
+
+/**
+ * The plan chip of a power, interval or mobility exercise, from the cycle's settings for it:
+ * `3 sets` / `1:00 rest`, `3 × 2:00` / `1:00 rest`, `10:00` / `Length` (10.1 FR-9). A power
+ * exercise's sets are the day's own (`WeekPlanExercise.sets`), as a strength one's are; an
+ * interval's rounds belong to the cycle.
+ */
+export function formatExercisePlan(settings: ExerciseSettings, sets: number): ExercisePlan {
+  switch (settings.type) {
+    case 'power':
+      return { value: formatSetCount(sets), caption: `${formatClock(settings.restSec)} rest` };
+    case 'interval':
+      return {
+        value: `${settings.rounds} × ${formatClock(settings.workSec)}`,
+        caption: `${formatClock(settings.restSec)} rest`,
+      };
+    case 'mobility':
+      return { value: formatClock(settings.durationSec), caption: 'Length' };
+  }
+}
+
+/**
+ * The plan chip of the row, or `undefined` for a strength exercise (it keeps its sets stepper)
+ * and for one not loaded yet. Until the cycle keeps its own copy of the settings, the chip shows
+ * what that copy starts from — the library's config (`defaultExerciseSettings`).
+ */
+export function exercisePlan(exercisesById: ExercisesById, entry: WeekPlanExercise): ExercisePlan | undefined {
+  const exercise = exercisesById[entry.exerciseId];
+  if (!exercise) {
+    return undefined;
+  }
+  const config = exercise.config ?? defaultExerciseConfig(exerciseTypeOf(exercise));
+  return config ? formatExercisePlan(defaultExerciseSettings(config), entry.sets) : undefined;
+}
+
+/**
+ * The header over the right-hand column: `Sets` while every row of the day is a sets stepper,
+ * `Plan` once a plan chip shares the column (canvas 7.2).
+ */
+export function planColumnLabel(exercisesById: ExercisesById, exercises: readonly WeekPlanExercise[]): string {
+  return exercises.some((entry) => exercisePlan(exercisesById, entry) !== undefined) ? 'Plan' : 'Sets';
 }
 
 export function exerciseTitle(exercisesById: ExercisesById, exerciseId: string): string {

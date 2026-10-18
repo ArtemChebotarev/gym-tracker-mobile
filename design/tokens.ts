@@ -316,6 +316,11 @@ export const SIZES = {
   'size/exercise-row': 68,
   /** Mesocycle editor: the Sets column — Stepper's inline width. */
   'size/sets-column': 104,
+  /**
+   * Mesocycle editor: the plan chip of a power, interval or mobility row (`PlanChip`, 10.1 FR-9) —
+   * two lines, the same height for every type. It sits in the Sets column, so its width is that.
+   */
+  'size/plan-chip': 52,
   /** Bottom sheet grabber. */
   'size/grabber-width': 36,
   'size/grabber-height': 5,

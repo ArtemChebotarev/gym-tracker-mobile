@@ -6,16 +6,22 @@ import {
   canContinueFromDays,
   dragTargetIndex,
   exerciseDotColor,
+  exercisePlan,
   exerciseSubtitle,
   exerciseTitle,
+  exerciseTypeIcon,
+  formatExercisePlan,
+  formatSetCount,
   getDayExercises,
   getDayNumbers,
   moveIndex,
+  planColumnLabel,
   removeExerciseFromDay,
   reorderDayExercises,
   updateExerciseSets,
   type ExercisesByDay,
 } from '@components/MesoEditorDaysStepLogic';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -240,5 +246,101 @@ describe('exercise display helpers', () => {
   test('exerciseDotColor returns the category color, undefined when unresolved', () => {
     expect(exerciseDotColor(exercisesById, BENCH_PRESS.id)).toBeDefined();
     expect(exerciseDotColor(exercisesById, 'missing')).toBeUndefined();
+  });
+});
+
+describe('hybrid rows (GT-157)', () => {
+  const exercisesById = {
+    [BENCH_PRESS.id]: BENCH_PRESS,
+    [MEDBALL_THROW.id]: MEDBALL_THROW,
+    [HEAVY_BAG.id]: HEAVY_BAG,
+    [COOLDOWN.id]: COOLDOWN,
+  };
+  const entry = (exerciseId: string, sets = 3) => ({ exerciseId, order: 0, sets });
+
+  test('formatSetCount pluralizes sets', () => {
+    expect(formatSetCount(1)).toBe('1 set');
+    expect(formatSetCount(3)).toBe('3 sets');
+  });
+
+  test('formatExercisePlan reads each type the way the chip shows it', () => {
+    expect(formatExercisePlan({ type: 'power', load: 'none', restSec: 60, noHeavierAvailable: false }, 4)).toEqual({
+      value: '4 sets',
+      caption: '1:00 rest',
+    });
+    expect(
+      formatExercisePlan(
+        { type: 'interval', workSec: 30, restSec: 60, getReadySec: 5, lever: 'rest', stepSec: 10, rounds: 6 },
+        2,
+      ),
+    ).toEqual({ value: '6 × 0:30', caption: '1:00 rest' });
+    expect(formatExercisePlan({ type: 'mobility', durationSec: 90 }, 2)).toEqual({ value: '1:30', caption: 'Length' });
+  });
+
+  test('exercisePlan: power takes the day\'s sets and the library rest', () => {
+    expect(exercisePlan(exercisesById, entry(MEDBALL_THROW.id, 3))).toEqual({ value: '3 sets', caption: '1:15 rest' });
+  });
+
+  test('exercisePlan: interval takes the default rounds and the library times, not the day\'s sets', () => {
+    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id, 2))).toEqual({ value: '3 × 2:00', caption: '0:45 rest' });
+  });
+
+  test('exercisePlan: mobility shows its length', () => {
+    expect(exercisePlan(exercisesById, entry(COOLDOWN.id))).toEqual({ value: '10:00', caption: 'Length' });
+  });
+
+  test('exercisePlan: falls back to the type defaults for a hybrid exercise without a config', () => {
+    const { config: _config, ...withoutConfig } = COOLDOWN;
+    expect(exercisePlan({ [COOLDOWN.id]: withoutConfig }, entry(COOLDOWN.id))).toEqual({
+      value: '10:00',
+      caption: 'Length',
+    });
+  });
+
+  test('exercisePlan: undefined for strength and for an exercise not loaded yet', () => {
+    expect(exercisePlan(exercisesById, entry(BENCH_PRESS.id))).toBeUndefined();
+    expect(exercisePlan(exercisesById, entry('missing'))).toBeUndefined();
+  });
+
+  test('exerciseSubtitle shows the type of an exercise without a muscle group', () => {
+    expect(exerciseSubtitle(exercisesById, MEDBALL_THROW.id)).toBe('Power');
+    expect(exerciseSubtitle(exercisesById, HEAVY_BAG.id)).toBe('Timed work');
+    expect(exerciseSubtitle(exercisesById, COOLDOWN.id)).toBe('Mobility');
+  });
+
+  test('exerciseSubtitle keeps the muscle group of a hybrid exercise that has one', () => {
+    const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
+    expect(exerciseSubtitle({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBe('Shoulders');
+  });
+
+  test('exerciseTypeIcon stands in for the dot only where there is no group colour', () => {
+    expect(exerciseTypeIcon(exercisesById, HEAVY_BAG.id)).toBeDefined();
+    expect(exerciseTypeIcon(exercisesById, BENCH_PRESS.id)).toBeUndefined();
+    const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
+    expect(exerciseTypeIcon({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBeUndefined();
+    expect(exerciseTypeIcon(exercisesById, 'missing')).toBeUndefined();
+  });
+
+  test('planColumnLabel reads Sets for an all-strength day and Plan once a chip is in it', () => {
+    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id)])).toBe('Sets');
+    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id), entry(COOLDOWN.id)])).toBe('Plan');
+  });
+
+  test('a hybrid row is added, reordered and removed like a strength one', () => {
+    let byDay: ExercisesByDay = {};
+    byDay = addExerciseToDay(byDay, 1, BENCH_PRESS.id);
+    byDay = addExerciseToDay(byDay, 1, HEAVY_BAG.id);
+    byDay = addExerciseToDay(byDay, 1, COOLDOWN.id);
+    byDay = reorderDayExercises(byDay, 1, [2, 0, 1]);
+    expect(getDayExercises(byDay, 1).map((e) => [e.exerciseId, e.order])).toEqual([
+      [COOLDOWN.id, 0],
+      [BENCH_PRESS.id, 1],
+      [HEAVY_BAG.id, 2],
+    ]);
+    byDay = removeExerciseFromDay(byDay, 1, 0);
+    expect(getDayExercises(byDay, 1).map((e) => [e.exerciseId, e.order])).toEqual([
+      [BENCH_PRESS.id, 0],
+      [HEAVY_BAG.id, 1],
+    ]);
   });
 });

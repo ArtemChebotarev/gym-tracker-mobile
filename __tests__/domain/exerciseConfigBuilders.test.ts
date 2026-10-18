@@ -1,6 +1,8 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import {
+  DEFAULT_INTERVAL_ROUNDS,
+  defaultExerciseSettings,
   defaultExerciseConfig,
   exerciseTypeOf,
   holdIntervalConfig,
@@ -88,5 +90,25 @@ describe('holdIntervalConfig', () => {
 
   test('hand out a fresh object each time', () => {
     expect(holdIntervalConfig()).not.toBe(holdIntervalConfig());
+  });
+});
+
+describe('defaultExerciseSettings', () => {
+  it('copies an interval config and adds the default round count', () => {
+    const config = defaultExerciseConfig('interval')!;
+    expect(defaultExerciseSettings(config)).toEqual({ ...config, rounds: DEFAULT_INTERVAL_ROUNDS });
+  });
+
+  it('copies a power and a mobility config as they are', () => {
+    const power = defaultExerciseConfig('power')!;
+    const mobility = defaultExerciseConfig('mobility')!;
+    expect(defaultExerciseSettings(power)).toEqual(power);
+    expect(defaultExerciseSettings(mobility)).toEqual(mobility);
+  });
+
+  it('returns a copy, so editing it leaves the library config alone', () => {
+    const config = defaultExerciseConfig('mobility')!;
+    const settings = defaultExerciseSettings(config);
+    expect(settings).not.toBe(config);
   });
 });

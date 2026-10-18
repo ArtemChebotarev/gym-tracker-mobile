@@ -54,6 +54,12 @@
 // reason: iOS's elastic overscroll made the whole content area visibly "stretch" on any
 // touch-drag inside it, including over rows with no handle at all (e.g. "Add exercise").
 //
+// A power, interval or mobility exercise (GT-157, 10.1 FR-9, canvas 7.2) has no sets stepper: its
+// row carries a plan chip in the same column instead (`3 sets / 1:00 rest`, `3 × 2:00 / 1:00 rest`,
+// `10:00 / Length`), and the column header reads `Plan` once a chip is in it. One without a muscle
+// group shows its type's icon where the group dot would be, and its type under the name. Drag,
+// remove and order are the strength row's, untouched — the chip has the row's fixed height to fit.
+//
 // JSX/rendering only — styles live in MesoEditorDaysStepStyles.ts and pure helpers in
 // MesoEditorDaysStepLogic.ts, per the code-style skill.
 
@@ -71,18 +77,22 @@ import {
 
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
+import { PlanChip } from '@design/components/PlanChip';
 import { Stepper } from '@design/components/Stepper';
 import { tapTargetSlop } from '@design/shapes';
-import { SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 
 import {
   dragTargetIndex,
   exerciseDotColor,
+  exercisePlan,
   exerciseSubtitle,
   exerciseTitle,
+  exerciseTypeIcon,
   getDayExercises,
   getDayNumbers,
   moveIndex,
+  planColumnLabel,
   resetRowShiftAnimations,
   rowShiftUnits,
   type ExercisesByDay,
@@ -262,13 +272,15 @@ export function MesoEditorDaysStep({
             <View style={styles.columnHeaderHandleSpacer} />
             <View style={styles.columnHeaderDotSpacer} />
             <Text style={styles.columnHeaderExercise}>Exercise</Text>
-            <Text style={styles.columnHeaderSets}>Sets</Text>
+            <Text style={styles.columnHeaderSets}>{planColumnLabel(exercisesById, activeDayExercises)}</Text>
             <View style={styles.columnHeaderRemoveSpacer} />
           </View>
         )}
 
         {activeDayExercises.map((exercise, index) => {
           const title = exerciseTitle(exercisesById, exercise.exerciseId);
+          const plan = exercisePlan(exercisesById, exercise);
+          const TypeIcon = exerciseTypeIcon(exercisesById, exercise.exerciseId);
           const isDragging = draggingIndex === index;
           const rowShift = rowShiftAnimations[index];
           return (
@@ -290,9 +302,15 @@ export function MesoEditorDaysStep({
               >
                 <Text style={styles.dragHandleGlyph}>≡</Text>
               </View>
-              <View
-                style={[styles.dot, { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) }]}
-              />
+              {TypeIcon ? (
+                <View style={styles.typeIcon}>
+                  <TypeIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/secondary']} />
+                </View>
+              ) : (
+                <View
+                  style={[styles.dot, { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) }]}
+                />
+              )}
               <View style={styles.exerciseMain}>
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {title}
@@ -301,14 +319,18 @@ export function MesoEditorDaysStep({
                   {exerciseSubtitle(exercisesById, exercise.exerciseId)}
                 </Text>
               </View>
-              <Stepper
-                label={`${title} sets`}
-                variant="inline"
-                value={exercise.sets}
-                onChange={(sets) => onChangeSets(activeDay, index, sets)}
-                min={MIN_EXERCISE_SETS}
-                max={MAX_EXERCISE_SETS}
-              />
+              {plan ? (
+                <PlanChip value={plan.value} caption={plan.caption} accessibilityLabel={`${title} plan`} />
+              ) : (
+                <Stepper
+                  label={`${title} sets`}
+                  variant="inline"
+                  value={exercise.sets}
+                  onChange={(sets) => onChangeSets(activeDay, index, sets)}
+                  min={MIN_EXERCISE_SETS}
+                  max={MAX_EXERCISE_SETS}
+                />
+              )}
               <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>
                 <Text style={styles.removeIcon}>✕</Text>
               </IconButton>
