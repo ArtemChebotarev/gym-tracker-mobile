@@ -10,9 +10,9 @@
 // Every change applies at once — the sheet is controlled, and Done only closes it. `Reset to
 // defaults`, a link over the full-width Done, puts the library's values back.
 //
-// One height for every type (Artem, 18.10.2026): the sheet is pinned at the sheet's full height
-// rather than sized to its content, so a mobility plan's one row opens the same sheet an
-// interval's eight do. Canvas 7.3's note under the fields ("Week 1 of this cycle…") was dropped on
+// One height for every type (Artem, 18.10.2026): the fields take at least `size/plan-sheet-fields`
+// — what an interval plan with its Step row needs — so a mobility plan's one row opens the same
+// sheet an interval's eight do, and Reset and Done sit right under the fields of the tallest one. Canvas 7.3's note under the fields ("Week 1 of this cycle…") was dropped on
 // the same review — it did not say anything the sheet's subtitle doesn't.
 //
 // Presented as an overlay rather than its own Modal, so the time picker — a real Modal — can open
@@ -167,7 +167,6 @@ export function CyclePlanSheet({
       title={exerciseName}
       subtitle={planSheetSubtitle(dayNumber)}
       presentation="overlay"
-      height="fixed"
       footer={
         <View style={styles.footer}>
           <Pressable
@@ -181,7 +180,7 @@ export function CyclePlanSheet({
         </View>
       }
     >
-      {renderFields()}
+      <View style={styles.fields}>{renderFields()}</View>
       <TimePickerSheet
         visible={editing !== null}
         onClose={() => setEditing(null)}

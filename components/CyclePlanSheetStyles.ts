@@ -5,6 +5,10 @@ import { StyleSheet } from 'react-native';
 import { COLORS, OPACITY, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  // Every type at the interval plan's height (see `size/plan-sheet-fields`).
+  fields: {
+    minHeight: SIZES['size/plan-sheet-fields'],
+  },
   section: {
     marginTop: SPACING['space/section'],
   },
