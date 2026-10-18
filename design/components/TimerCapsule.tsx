@@ -1,19 +1,15 @@
 // TimerCapsule — see 08.0 · Design SDK, "Капсула таймера" (10.1 FR-5, FR-6; canvas 3.x,
 // TimerCapsule): the floating plate over the tab bar that shows a running timer without blocking
 // the screen under it. One component for the rest between sets and for a minimised interval
-// timer — a progress ring, the time, a caption led by the phase's icon, and the actions.
-//
-// The ring is the pause control (Artem's review, 18.10.2026): running it shows pause, paused it
-// shows play, and a tap on it does what it shows — the hand goes to the ring first, so a second
-// pause button beside Skip only competed with it. The phase's icon (hourglass for rest) moved out
-// of the ring to lead the caption, small and in the caption's grey, so it still says what kind of
-// time this is without a second mark that looks tappable.
+// timer — the phase icon in a progress ring, the time, a caption, and the actions.
 //
 // It only draws: the caller passes the time already formatted, the share of the ring to fill and
 // the phase's icon, and decides which actions the phase has — `onSkip` given shows Skip, `onPause`
-// / `onResume` make the ring a toggle, `onDismiss` the cross of a finished timer. The orange of the ring
+// / `onResume` the pause toggle, `onDismiss` the cross of a finished timer. The orange of the ring
 // is the one place a running timer is orange (`brand/orange`, FR-6: "только для бегущего
 // времени"); paused, the ring and the time go grey, and a finished timer turns to the lime of done.
+// Paused, the ring keeps the phase's icon (Artem's review, 18.10.2026): two bars in it read as a
+// button, while the one control for pausing is the button on the right.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -24,7 +20,7 @@ import { CloseIcon } from '../icons/CloseIcon';
 import type { IconComponent } from '../icons/IconFrame';
 import { PauseIcon } from '../icons/PauseIcon';
 import { PlayIcon } from '../icons/PlayIcon';
-import { circle, ring, roundedBar, tapTargetSlop } from '../shapes';
+import { circle, ring, roundedBar } from '../shapes';
 import {
   BORDER_WIDTHS,
   COLORS,
@@ -41,7 +37,7 @@ export type TimerCapsuleState = 'running' | 'paused' | 'finished';
 
 export type TimerCapsuleProps = {
   state: TimerCapsuleState;
-  /** The phase's icon at the head of the caption — `HourglassIcon` for rest. Not shown once finished. */
+  /** The phase's icon in the ring — `HourglassIcon` for rest. A finished timer shows a check instead. */
   icon: IconComponent;
   /** The time left, formatted (`1:46`); for a finished timer, what is over (`Rest is over`). */
   title: string;
@@ -51,9 +47,9 @@ export type TimerCapsuleProps = {
   progress: number;
   /** Shows Skip — rest only (FR-5: "Skip и Pause"). */
   onSkip?: () => void;
-  /** Makes the ring a pause button while running. */
+  /** Shows the pause button while running. */
   onPause?: () => void;
-  /** Makes the ring a play button while paused. */
+  /** Shows the play button while paused. */
   onResume?: () => void;
   /** Shows the cross that puts a finished timer away. */
   onDismiss?: () => void;
@@ -77,16 +73,11 @@ export function TimerCapsule({
   accessibilityLabel,
 }: TimerCapsuleProps) {
   const finished = state === 'finished';
-  const PhaseIcon = icon;
   const paused = state === 'paused';
 
   const body = (
     <>
-      {finished ? (
-        <DoneMark />
-      ) : (
-        <ProgressRing paused={paused} progress={progress} onToggle={paused ? onResume : onPause} />
-      )}
+      {finished ? <DoneMark /> : <ProgressRing icon={icon} paused={paused} progress={progress} />}
       <View style={styles.text}>
         <Text
           style={[styles.title, finished && styles.finishedTitle, paused && styles.pausedTitle]}
@@ -94,12 +85,9 @@ export function TimerCapsule({
         >
           {title}
         </Text>
-        <View style={styles.captionRow}>
-          {!finished && <PhaseIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/muted']} />}
-          <Text style={styles.caption} numberOfLines={1}>
-            {caption}
-          </Text>
-        </View>
+        <Text style={styles.caption} numberOfLines={1}>
+          {caption}
+        </Text>
       </View>
     </>
   );
@@ -126,6 +114,16 @@ export function TimerCapsule({
           <Text style={styles.buttonLabel}>Skip</Text>
         </CapsuleButton>
       )}
+      {state === 'running' && onPause !== undefined && (
+        <CapsuleButton accessibilityLabel="Pause" onPress={onPause}>
+          <PauseIcon size={ICON_SIZES['icon/small']} color={COLORS['text/primary']} />
+        </CapsuleButton>
+      )}
+      {paused && onResume !== undefined && (
+        <CapsuleButton accessibilityLabel="Resume" onPress={onResume}>
+          <PlayIcon size={ICON_SIZES['icon/small']} color={COLORS['text/primary']} />
+        </CapsuleButton>
+      )}
       {finished && onDismiss !== undefined && (
         <CapsuleButton accessibilityLabel="Dismiss" onPress={onDismiss} quiet>
           <CloseIcon size={ICON_SIZES['icon/small']} color={COLORS['text/primary']} />
@@ -138,27 +136,17 @@ export function TimerCapsule({
 const RING = ring(SIZES['size/timer-ring'], BORDER_WIDTHS['border/timer-ring']);
 
 function ProgressRing({
+  icon: Icon,
   paused,
   progress,
-  onToggle,
 }: {
+  icon: IconComponent;
   paused: boolean;
   progress: number;
-  /** Pause while running, resume while paused; absent, the ring only shows progress. */
-  onToggle?: () => void;
 }) {
   const filled = Math.min(1, Math.max(0, progress)) * RING.circumference;
-  const Icon = paused ? PlayIcon : PauseIcon;
   return (
-    <Pressable
-      // Without a toggle the ring is only a picture of the time left, not a control.
-      accessibilityRole={onToggle === undefined ? undefined : 'button'}
-      accessibilityLabel={onToggle === undefined ? undefined : paused ? 'Resume' : 'Pause'}
-      disabled={onToggle === undefined}
-      onPress={onToggle}
-      hitSlop={tapTargetSlop(SIZES['size/timer-ring'])}
-      style={({ pressed }) => [styles.ring, pressed && styles.pressed]}
-    >
+    <View style={styles.ring}>
       <Svg
         width={SIZES['size/timer-ring']}
         height={SIZES['size/timer-ring']}
@@ -189,10 +177,11 @@ function ProgressRing({
           />
         )}
       </Svg>
-      {onToggle !== undefined && (
-        <Icon size={ICON_SIZES['icon/small']} color={COLORS['text/primary']} />
-      )}
-    </Pressable>
+      <Icon
+        size={ICON_SIZES['icon/small']}
+        color={paused ? COLORS['text/muted'] : COLORS['text/primary']}
+      />
+    </View>
   );
 }
 
@@ -284,13 +273,7 @@ const styles = StyleSheet.create({
   pausedTitle: {
     color: COLORS['text/muted'],
   },
-  captionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING['space/xs'],
-  },
   caption: {
-    flexShrink: 1,
     fontSize: FOOTNOTE.fontSize,
     fontWeight: FOOTNOTE.fontWeight,
     lineHeight: LINE_HEIGHTS['line-height/caption'],
@@ -299,7 +282,7 @@ const styles = StyleSheet.create({
   button: {
     ...roundedBar(SIZES['size/tap-target']),
     minWidth: SIZES['size/tap-target'],
-    paddingHorizontal: SPACING['space/gap'],
+    paddingHorizontal: SPACING['space/md'],
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS['surface/card'],

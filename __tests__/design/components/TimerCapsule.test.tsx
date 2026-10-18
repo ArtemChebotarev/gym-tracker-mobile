@@ -4,7 +4,7 @@ import { processColor, Text } from 'react-native';
 import { TimerCapsule, type TimerCapsuleProps } from '@design/components/TimerCapsule';
 import { HourglassIcon } from '@design/icons/HourglassIcon';
 import type { IconProps } from '@design/icons/IconFrame';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+import { COLORS } from '@design/tokens';
 
 // react-native-svg hands a stroke over as a processed color, not the token's string.
 function arcStroke(): unknown {
@@ -56,6 +56,15 @@ describe('TimerCapsule', () => {
     expect(arcStroke()).toBe(processColor(COLORS['text/faint']));
   });
 
+  test('paused, the ring keeps the phase icon, greyed', () => {
+    function Probe({ color }: IconProps) {
+      return <Text>{`phase ${String(color)}`}</Text>;
+    }
+    render(<TimerCapsule {...RUNNING} state="paused" icon={Probe} />);
+
+    expect(screen.getByText(`phase ${COLORS['text/muted']}`)).toBeTruthy();
+  });
+
   test('the running arc is the orange of running time', () => {
     render(<TimerCapsule {...RUNNING} />);
 
@@ -66,33 +75,6 @@ describe('TimerCapsule', () => {
     render(<TimerCapsule {...RUNNING} progress={0} />);
 
     expect(screen.queryByTestId('timer-capsule-arc')).toBeNull();
-  });
-
-  test('the ring is the pause control: pause while running, play while paused', () => {
-    const onPause = jest.fn();
-    const onResume = jest.fn();
-    const { rerender } = render(
-      <TimerCapsule {...RUNNING} onPause={onPause} onResume={onResume} />,
-    );
-
-    fireEvent.press(screen.getByRole('button', { name: 'Pause' }));
-    expect(onPause).toHaveBeenCalledTimes(1);
-
-    rerender(<TimerCapsule {...RUNNING} state="paused" onPause={onPause} onResume={onResume} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Resume' }));
-    expect(onResume).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-  });
-
-  test('the phase icon leads the caption, not the ring', () => {
-    function Probe({ size, color }: IconProps) {
-      return <Text>{`phase ${size} ${String(color)}`}</Text>;
-    }
-    render(<TimerCapsule {...RUNNING} icon={Probe} />);
-
-    expect(
-      screen.getByText(`phase ${ICON_SIZES['icon/glyph']} ${COLORS['text/muted']}`),
-    ).toBeTruthy();
   });
 
   test('finished: no Skip or Pause, a cross that dismisses', () => {
