@@ -309,6 +309,8 @@ describe('the app’s own migrations', () => {
         defaultProgressionSettings,
         weightUnit: 'lb',
         onboarding: DEFAULT_ONBOARDING,
+        // The columns of migration 0006 bring the strength rest timer as it ships (GT-87).
+        strengthRestTimer: { enabled: true, restSec: 120 },
       });
     } finally {
       close();

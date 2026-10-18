@@ -17,6 +17,9 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   startCycleSeen: false,
 };
 
+// The strength rest timer as it ships (10.1 FR-5, GT-87): on, 2:00.
+const DEFAULT_STRENGTH_REST_TIMER: Settings['strengthRestTimer'] = { enabled: true, restSec: 120 };
+
 export function describeSettingsContract(harness: RepositoryHarness): void {
   describe('SettingsRepository', () => {
     const repositories = useRepositories(harness);
@@ -27,6 +30,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       expect(settings.defaultProgressionSettings).toEqual(defaultProgressionSettings);
       expect(settings.weightUnit).toBe('kg');
       expect(settings.onboarding).toEqual(DEFAULT_ONBOARDING);
+      expect(settings.strengthRestTimer).toEqual(DEFAULT_STRENGTH_REST_TIMER);
     });
 
     test('write persists settings that a later read returns', async () => {
@@ -40,6 +44,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           deloadIntroSeen: true,
           startCycleSeen: false,
         },
+        strengthRestTimer: { enabled: false, restSec: 90 },
       };
 
       await settingsRepo.write(written);
@@ -53,17 +58,20 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
         onboarding: { ...DEFAULT_ONBOARDING },
+        strengthRestTimer: { ...DEFAULT_STRENGTH_REST_TIMER },
       };
 
       await settingsRepo.write(written);
       written.weightUnit = 'lb';
       written.onboarding.welcomeSeen = true;
       written.defaultProgressionSettings.minReps = 999;
+      written.strengthRestTimer.restSec = 5;
 
       await expect(settingsRepo.read()).resolves.toEqual({
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
         onboarding: DEFAULT_ONBOARDING,
+        strengthRestTimer: DEFAULT_STRENGTH_REST_TIMER,
       });
     });
 
@@ -77,6 +85,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           legacyProgressionSettings as Settings['defaultProgressionSettings'],
         weightUnit: 'kg',
         onboarding: DEFAULT_ONBOARDING,
+        strengthRestTimer: DEFAULT_STRENGTH_REST_TIMER,
       });
 
       const settings = await settingsRepo.read();
@@ -102,6 +111,18 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           deloadIntroSeen: false,
           startCycleSeen: false,
         },
+      });
+    });
+
+    test('settings without the strength rest timer — a backup from before it — write it as it ships', async () => {
+      const { settingsRepo } = repositories();
+      const { strengthRestTimer: _omitted, ...legacy } = await settingsRepo.read();
+
+      await settingsRepo.write({ ...legacy, weightUnit: 'lb' } as Settings);
+
+      await expect(settingsRepo.read()).resolves.toMatchObject({
+        weightUnit: 'lb',
+        strengthRestTimer: DEFAULT_STRENGTH_REST_TIMER,
       });
     });
   });

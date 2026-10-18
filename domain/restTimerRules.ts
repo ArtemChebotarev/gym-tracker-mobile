@@ -1,7 +1,7 @@
 // The rules of the rest timer between sets (10.1 FR-5, GT-86) — see `restTimer.ts` for the types.
 //
 // - It starts by itself after a set is logged, for the exercise's rest: power's from its own field
-//   (the cycle's copy first, then the library's), strength's from `STRENGTH_REST_SEC`. Interval and
+//   (the cycle's copy first, then the library's), strength's from Settings (GT-87). Interval and
 //   mobility have none — an interval runs its own timer, mobility rests not at all.
 // - Not after the last set: n sets, n − 1 rests. "Last" is whatever leaves no set still to do, so a
 //   set logged out of order still rests before the one that is left.
@@ -10,7 +10,7 @@
 import type { ExerciseType } from './catalog';
 import type { ExerciseConfig, ExerciseSettings } from './exerciseConfig';
 import { defaultExerciseConfig } from './exerciseConfigBuilders';
-import { STRENGTH_REST_SEC, type RestTimer } from './restTimer';
+import type { RestTimer, StrengthRestTimer } from './restTimer';
 
 const MS_PER_SEC = 1000;
 
@@ -20,20 +20,28 @@ function defaultPowerRestSec(): number {
   return config?.type === 'power' ? config.restSec : 0;
 }
 
+/** Strength's rest from its setting: its seconds while the timer is on, none while it is off. */
+export function strengthRestSecOf(setting: StrengthRestTimer): number | undefined {
+  return setting.enabled ? setting.restSec : undefined;
+}
+
 /**
  * Seconds of rest after a set of an exercise of `type`, or `undefined` when it has none: an
- * interval or mobility exercise, or a rest set to 0. `settings` is the cycle's copy of the
- * exercise's config (`Mesocycle.exerciseSettings`), `config` the library's.
+ * interval or mobility exercise, a strength one while its timer is off, or a rest set to 0.
+ * `settings` is the cycle's copy of the exercise's config (`Mesocycle.exerciseSettings`), `config`
+ * the library's, `strengthRestSec` strength's from Settings (`strengthRestSecOf`).
  */
 export function restSecFor(
   type: ExerciseType | undefined,
   settings: ExerciseSettings | undefined,
   config: ExerciseConfig | undefined,
+  strengthRestSec: number | undefined,
 ): number | undefined {
   let restSec: number;
   switch (type ?? 'strength') {
     case 'strength':
-      restSec = STRENGTH_REST_SEC;
+      if (strengthRestSec === undefined) return undefined;
+      restSec = strengthRestSec;
       break;
     case 'power':
       restSec =

@@ -7,15 +7,17 @@ import { useTabBarLift } from './useTabBarClearance';
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
 import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
+import { TabSettingsIcon } from '@design/icons/TabSettingsIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 
 // The tabs, in bar order, keyed by their route name in app/(tabs). The bar's labels are short
 // ("Cycles"); inside the screens the concept stays "training cycle" (08 · Screens & Navigation).
-// Settings joins this list with v1.0, once its route exists — TabBar already fits four.
+// Settings joined with the strength rest timer (GT-87) — TabBar is built for four.
 const TABS: readonly TabBarItem[] = [
   { key: 'index', label: 'Today', icon: TabTodayIcon },
   { key: 'mesocycles', label: 'Cycles', icon: TabCyclesIcon },
   { key: 'library', label: 'Library', icon: TabLibraryIcon },
+  { key: 'settings', label: 'Settings', icon: TabSettingsIcon },
 ];
 
 /**
