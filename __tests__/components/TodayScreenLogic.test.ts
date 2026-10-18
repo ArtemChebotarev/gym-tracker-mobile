@@ -4,7 +4,9 @@ import {
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
+  restAfterLog,
 } from '@components/TodayScreenLogic';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 
 describe('formatInProgressConflict', () => {
   test('names the session in progress', () => {
@@ -16,7 +18,9 @@ describe('formatInProgressConflict', () => {
 
 describe('todayEmptyCopy', () => {
   test('GT-51: someone who has never had a cycle is invited to start their first, not their next', () => {
-    expect(todayEmptyCopy('noActiveMesocycle', false).title).toBe('Start your first training cycle');
+    expect(todayEmptyCopy('noActiveMesocycle', false).title).toBe(
+      'Start your first training cycle',
+    );
     expect(todayEmptyCopy('noActiveMesocycle', true).title).toBe('Start your next training cycle');
     expect(todayEmptyCopy('noActiveMesocycle').title).toBe('Start your next training cycle');
   });
@@ -103,5 +107,54 @@ describe('shouldShowDeloadIntro', () => {
     expect(shouldShowDeloadIntro(unseen, { mode: 'live', isDeload: false })).toBe(false);
     expect(shouldShowDeloadIntro(unseen, { mode: 'readonly', isDeload: true })).toBe(false);
     expect(shouldShowDeloadIntro(unseen, { mode: 'preview', isDeload: true })).toBe(false);
+  });
+});
+
+describe('restAfterLog', () => {
+  function card(restSec: number | undefined, logged: number[]): WorkoutExercise {
+    return {
+      sessionExerciseId: 'se',
+      exerciseId: 'medball',
+      name: 'Medball throw',
+      muscleGroup: 'fullBody',
+      status: 'planned',
+      type: 'power',
+      powerLoad: 'weight',
+      rows: [1, 2, 3].map((setNumber) =>
+        logged.includes(setNumber)
+          ? { setNumber, isFirstUnlogged: false, log: { weight: 6, reps: 5 } }
+          : { setNumber, isFirstUnlogged: setNumber === logged.length + 1 },
+      ),
+      plannedSetCount: 3,
+      loggedSetCount: logged.length,
+      hasLoggedSets: logged.length > 0,
+      actions: {
+        canReplace: true,
+        canAddSet: true,
+        canRemoveLastSet: true,
+        canMoveUp: false,
+        canMoveDown: false,
+        canSkip: true,
+        canUnskip: false,
+        canDelete: true,
+      },
+      ...(restSec === undefined ? {} : { restSec }),
+    };
+  }
+
+  test('starts the rest before the next set still to do', () => {
+    expect(restAfterLog(card(60, []), 1)).toEqual({
+      sessionExerciseId: 'se',
+      nextSetNumber: 2,
+      durationSec: 60,
+    });
+  });
+
+  test('none after the last set', () => {
+    expect(restAfterLog(card(60, [1, 2]), 3)).toBeUndefined();
+  });
+
+  test('none for an exercise without a rest', () => {
+    expect(restAfterLog(card(undefined, []), 1)).toBeUndefined();
   });
 });

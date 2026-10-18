@@ -54,6 +54,14 @@ function instantAnimation(
 // Typed read-only, but plain writable properties at runtime.
 Object.assign(Animated, { timing: instantAnimation, spring: instantAnimation });
 
+// expo-audio has no JavaScript fallback for its native player, and the rest timer's signal
+// (state/restSignal.ts, GT-86) is loaded by the tab bar. A player that plays nothing stands in for
+// every test; a test about the signal itself asserts on these mocks.
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(() => ({ play: jest.fn(), seekTo: jest.fn(() => Promise.resolve()) })),
+  setAudioModeAsync: jest.fn(() => Promise.resolve()),
+}));
+
 let inTest = false;
 let duringTest: Logged[] = [];
 const afterTests: Logged[] = [];

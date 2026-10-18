@@ -6,7 +6,9 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import { nextSetAfter } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
 
 /**
@@ -86,7 +88,7 @@ export function todayEmptyCopy(
  * so the confirmation says where it goes rather than warning.
  */
 export const FINISH_MESOCYCLE_CONFIRMATION =
-  "Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.";
+  'Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.';
 
 /**
  * Whether the first-workout coachmark tour shows over the Today tab (08.11, GT-42): once, on the
@@ -126,4 +128,28 @@ export function shouldShowDeloadIntro(
     session.mode === 'live' &&
     session.isDeload
   );
+}
+
+/**
+ * The rest to start after `setNumber` of `exercise` was logged (10.1 FR-5, GT-86), or `undefined`
+ * when none starts: the exercise has no rest, or no set is left to do — n sets, n − 1 rests.
+ */
+export function restAfterLog(
+  exercise: WorkoutExercise,
+  setNumber: number,
+): { sessionExerciseId: string; nextSetNumber: number; durationSec: number } | undefined {
+  if (exercise.restSec === undefined) return undefined;
+  const nextSetNumber = nextSetAfter(
+    exercise.rows.map((row) => ({
+      setNumber: row.setNumber,
+      open: row.log === undefined && row.notDone === undefined,
+    })),
+    setNumber,
+  );
+  if (nextSetNumber === undefined) return undefined;
+  return {
+    sessionExerciseId: exercise.sessionExerciseId,
+    nextSetNumber,
+    durationSec: exercise.restSec,
+  };
 }

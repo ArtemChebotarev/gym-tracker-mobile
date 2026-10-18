@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { AppTabBarStyles as styles } from './AppTabBarStyles';
+import { RestTimerDriver } from './RestTimerDriver';
 import { TimerCapsuleHost } from './TimerCapsuleHost';
 import { useTabBarLift } from './useTabBarClearance';
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
@@ -35,7 +36,8 @@ type AppTabBarProps = {
 // The navigator's tab bar, replaced by the floating design/components/TabBar. Keeps the bar clear
 // of the home indicator and laid over the screens rather than under them, so the list scrolls
 // beneath the glass; a screen leaves room for it with `useTabBarClearance`. The floating timer
-// capsule rides just above the bar (GT-85), in the same overlay, so it stays up on every tab.
+// capsule rides just above the bar (GT-85), in the same overlay, so it stays up on every tab — and
+// so does the rest timer that fills it (GT-86).
 export function AppTabBar({ state, navigation }: AppTabBarProps) {
   const lift = useTabBarLift();
   const activeKey = state.routes[state.index]?.name ?? '';
@@ -52,6 +54,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
 
   return (
     <View pointerEvents="box-none" style={[styles.overlay, { paddingBottom: lift }]}>
+      <RestTimerDriver />
       <TimerCapsuleHost />
       <TabBar items={TABS} activeKey={activeKey} onChange={handlePress} />
     </View>

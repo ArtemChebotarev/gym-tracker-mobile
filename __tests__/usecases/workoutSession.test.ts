@@ -143,11 +143,16 @@ const row = planned('w2d1', 'row', 2, [undefined, undefined]);
 const w2Squat = planned('w2d2', 'squat', 1, [9]);
 const w2Curl = planned('w2d2', 'curl', 2, [12, 12]);
 
-type Setup = { sessions?: Session[]; exercises?: SessionExercise[]; logs?: SetLog[] };
+type Setup = {
+  sessions?: Session[];
+  exercises?: SessionExercise[];
+  logs?: SetLog[];
+  mesocycle?: Mesocycle;
+};
 
 async function setUp(setup: Setup = {}) {
   const store = db();
-  await new SqliteMesocycleRepository(store).create(mesocycle);
+  await new SqliteMesocycleRepository(store).create(setup.mesocycle ?? mesocycle);
   const catalog = new SqliteExerciseRepository(store);
   for (const [id, name, muscleGroup, equipment] of CATALOG) {
     await catalog.createCustom({
@@ -991,6 +996,34 @@ describe('weight swap on the workout data (task 120)', () => {
     expect(card?.rows[0]?.log).toEqual({ weight: 5, reps: 3 });
     expect(card?.rows[0]).not.toHaveProperty('indicator');
     expect(card?.rows[1]).not.toHaveProperty('weightSwap');
+  });
+
+  // GT-86, 10.1 FR-5: the rest the timer runs after a set is logged.
+  test('a live card carries its rest: power from the cycle, then the library; strength 2:00', async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const boxjump = planned('w2d1', 'boxjump', 3, [3, 3]);
+    const { deps } = await setUp({
+      exercises: [bench, medball, boxjump],
+      logs: [],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          medball: { type: 'power', load: 'weight', restSec: 90, noHeavierAvailable: false },
+        },
+      },
+    });
+
+    const cards = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(cards.map((card) => card.restSec)).toEqual([120, 90, 60]);
+  });
+
+  test('a session that is not live carries no rest', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const cards = (await getWorkoutSession('w1d1', deps)).exercises;
+
+    expect(cards.every((card) => card.restSec === undefined)).toBe(true);
   });
 
   test('a strength exercise is not guided', async () => {
