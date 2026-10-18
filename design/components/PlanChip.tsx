@@ -3,9 +3,8 @@
 // on top (`3 sets`, `3 × 2:00`, `10:00`), what qualifies it below (`1:00 rest`, `Length`). One
 // size for every type, so a day that mixes them still reads as one column.
 //
-// Domain-agnostic: the caller formats both lines. `onPress` makes it a button that opens the
-// plan's sheet; only then does the value carry the `›` that says so — a chip with nothing behind
-// it does not promise a tap.
+// Domain-agnostic: the caller formats both lines. The `›` at its right edge says the plan opens
+// (Artem, 18.10.2026, on-device review of GT-157); `onPress` makes it the button that does.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -22,13 +21,15 @@ export type PlanChipProps = {
 export function PlanChip({ value, caption, accessibilityLabel, onPress }: PlanChipProps) {
   const content = (
     <>
-      <Text style={styles.value} numberOfLines={1}>
-        {value}
-        {onPress && <Text style={styles.chevron}>{' ›'}</Text>}
-      </Text>
-      <Text style={styles.caption} numberOfLines={1}>
-        {caption}
-      </Text>
+      <View style={styles.lines}>
+        <Text style={styles.value} numberOfLines={1}>
+          {value}
+        </Text>
+        <Text style={styles.caption} numberOfLines={1}>
+          {caption}
+        </Text>
+      </View>
+      <Text style={styles.chevron}>›</Text>
     </>
   );
 
@@ -56,12 +57,17 @@ const styles = StyleSheet.create({
   chip: {
     width: SIZES['size/sets-column'],
     height: SIZES['size/plan-chip'],
-    justifyContent: 'center',
-    paddingHorizontal: SPACING['space/gap'],
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING['space/xs'],
+    paddingHorizontal: SPACING['space/gap-tight'],
     borderRadius: RADII['radius/segment-inner'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     backgroundColor: COLORS['surface/card'],
+  },
+  lines: {
+    flex: 1,
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],
@@ -72,7 +78,7 @@ const styles = StyleSheet.create({
     color: COLORS['text/primary'],
   },
   chevron: {
-    fontSize: ICON_SIZES['icon/glyph'],
+    fontSize: ICON_SIZES['icon/chevron'],
     color: COLORS['text/muted'],
   },
   caption: {

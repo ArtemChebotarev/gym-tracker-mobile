@@ -329,6 +329,7 @@ export function MesoEditorDaysStep({
                   onChange={(sets) => onChangeSets(activeDay, index, sets)}
                   min={MIN_EXERCISE_SETS}
                   max={MAX_EXERCISE_SETS}
+                  valueWidth={SIZES['size/sets-value']}
                 />
               )}
               <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>

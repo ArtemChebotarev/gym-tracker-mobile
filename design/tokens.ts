@@ -317,6 +317,12 @@ export const SIZES = {
   /** Mesocycle editor: the Sets column — Stepper's inline width. */
   'size/sets-column': 104,
   /**
+   * Mesocycle editor: the value of the inline sets stepper, fixed so the stepper is exactly
+   * `size/sets-column` wide (two `size/control-inline` buttons, two `space/gap-tight` gaps, this) —
+   * the same width as the plan chip beside it, whatever the digit.
+   */
+  'size/sets-value': 24,
+  /**
    * Mesocycle editor: the plan chip of a power, interval or mobility row (`PlanChip`, 10.1 FR-9) —
    * two lines, the same height for every type. It sits in the Sets column, so its width is that.
    */

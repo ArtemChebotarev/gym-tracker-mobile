@@ -11,20 +11,19 @@ describe('PlanChip', () => {
     expect(screen.getByLabelText('Heavy bag plan: 3 × 2:00, 1:00 rest')).toBeTruthy();
   });
 
-  test('without onPress it is not a button and carries no chevron', () => {
+  test('carries the chevron, and without onPress is not a button', () => {
     render(<PlanChip value="10:00" caption="Length" accessibilityLabel="Cooldown plan" />);
 
+    expect(screen.getByText('›')).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
-    expect(screen.queryByText(' ›')).toBeNull();
   });
 
-  test('with onPress it is a button with a chevron', () => {
+  test('with onPress it is a button', () => {
     const onPress = jest.fn();
     render(<PlanChip value="10:00" caption="Length" accessibilityLabel="Cooldown plan" onPress={onPress} />);
 
     fireEvent.press(screen.getByRole('button', { name: 'Cooldown plan: 10:00, Length' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(' ›')).toBeTruthy();
   });
 });
