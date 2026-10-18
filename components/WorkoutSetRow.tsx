@@ -64,7 +64,8 @@ export type WorkoutSetRowProps = {
    */
   onRequestBodyWeight?: () => void;
   /**
-   * A guided row (power, a band — 10.2 P11): no indicator column, and — with `raisedWeightReps` —
+   * A guided row (power, a band — 10.2 P11): no hit indicator — its column stays, empty, so the
+   * rows of every card line up (Artem's review, 18.10.2026) — and, with `raisedWeightReps`,
    * a weight above the planned one drops the Reps placeholder to that floor (P10).
    */
   guided?: boolean;
@@ -121,7 +122,7 @@ export function WorkoutSetRow({
         <View style={styles.skippedValues}>
           <Text style={styles.skippedLabel}>{formatNotDone(row.notDone)}</Text>
         </View>
-        {!guided && <Text style={styles.indicator} />}
+        <Text style={styles.indicator} />
         <View style={styles.logColumn} />
       </View>
     );
@@ -136,18 +137,17 @@ export function WorkoutSetRow({
         <View style={[styles.field, styles.fieldLogged]}>
           <Text style={styles.value}>{log.reps}</Text>
         </View>
-        {!guided && (
-          <Text
-            style={[
-              styles.indicator,
+        <Text
+          style={[
+            styles.indicator,
+            !guided &&
               row.indicator !== undefined &&
-                isStrongIndicator(row.indicator) &&
-                styles.indicatorStrong,
-            ]}
-          >
-            {row.indicator !== undefined ? formatIndicator(row.indicator) : ''}
-          </Text>
-        )}
+              isStrongIndicator(row.indicator) &&
+              styles.indicatorStrong,
+          ]}
+        >
+          {!guided && row.indicator !== undefined ? formatIndicator(row.indicator) : ''}
+        </Text>
         <View style={styles.logColumn}>
           {editable ? (
             <Pressable
@@ -190,7 +190,7 @@ export function WorkoutSetRow({
             {placeholder}
           </Text>
         </View>
-        {!guided && <Text style={styles.indicator} />}
+        <Text style={styles.indicator} />
         <View style={styles.logColumn}>
           <View style={styles.logBox} />
         </View>
@@ -251,7 +251,7 @@ export function WorkoutSetRow({
           focused === 'reps' && styles.fieldFocused,
         ]}
       />
-      {!guided && <Text style={styles.indicator} />}
+      <Text style={styles.indicator} />
       <View style={styles.logColumn}>
         <Pressable
           accessibilityRole="checkbox"

@@ -4,10 +4,10 @@
 // (`domain/progressionPolicies.ts`). The `switch` covers every type, so a new `ExerciseType` doesn't
 // compile until it is given a card.
 //
-// What every card shares — the chip above it, the frame, the title row — is ExerciseCardFrame, and
-// the header over its rows ExerciseColumnHeader. Strength and power are still one card,
-// SetsExerciseCard, until GT-169; interval and mobility are shown as strength until their stories,
-// as they run strength's progression for now.
+// What every card shares — the chip above it, the frame, the title row — is ExerciseCardFrame, the
+// header over its rows ExerciseColumnHeader, and the set rows of strength and power WorkoutSetRows.
+// Interval and mobility are shown as strength until their stories, as they run strength's
+// progression for now.
 //
 // The props come in groups: what every card needs, then what each kind of card acts with — `sets`
 // for a card of set rows, `ceiling` for power's ceiling note. A type that logs something else
@@ -20,7 +20,8 @@ import type { ActionMenuItem } from '@design/components/ActionMenu';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { SetsExerciseCard } from './SetsExerciseCard';
+import { PowerExerciseCard } from './PowerExerciseCard';
+import { StrengthExerciseCard } from './StrengthExerciseCard';
 import type { CardChip } from './WorkoutExerciseCardLogic';
 import type { SetLoggingProps } from './WorkoutSetRows';
 
@@ -88,7 +89,7 @@ export function WorkoutExerciseCard({
   switch (exercise.type) {
     case 'power':
       return (
-        <SetsExerciseCard
+        <PowerExerciseCard
           exercise={exercise}
           sets={sets}
           {...(ceiling !== undefined ? { ceiling } : {})}
@@ -99,6 +100,6 @@ export function WorkoutExerciseCard({
     case 'strength':
     case 'interval':
     case 'mobility':
-      return <SetsExerciseCard exercise={exercise} sets={sets} {...common} />;
+      return <StrengthExerciseCard exercise={exercise} sets={sets} {...common} />;
   }
 }

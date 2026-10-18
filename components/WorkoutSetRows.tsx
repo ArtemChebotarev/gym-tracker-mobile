@@ -14,17 +14,17 @@ import type { Equipment } from '@domain/catalog';
 import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSession';
 
+import { estimateNote } from './WeightSwapLogic';
+import { firstUnloggedRow } from './WorkoutExerciseCardLogic';
+import { WorkoutSetRow } from './WorkoutSetRow';
+import { parseWeight } from './WorkoutSetRowLogic';
 import {
   type WeightEdits,
   carryWeightForward,
   editWeightText,
-  estimateNote,
-  firstUnloggedRow,
   holdLoggedWeight,
   weightFieldText,
-} from './WorkoutExerciseCardLogic';
-import { WorkoutSetRow } from './WorkoutSetRow';
-import { parseWeight } from './WorkoutSetRowLogic';
+} from './WorkoutSetRowsLogic';
 
 /** What a card of set rows needs from the screen to log them (strength and power). */
 export type SetLoggingProps = {
