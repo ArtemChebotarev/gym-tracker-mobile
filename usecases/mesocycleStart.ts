@@ -5,6 +5,7 @@
 // stay in `domain/`; this reads the history window they are priced from, the part that needs
 // storage.
 
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId, type Equipment } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
@@ -74,7 +75,7 @@ async function weekOneTargetsFromHistory(
   );
   const catalog = await repos.exerciseRepo.listByIds(exerciseIds.map(toExerciseId));
   const equipmentById = new Map<string, Equipment | undefined>(
-    catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
+    catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
   );
   const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
 

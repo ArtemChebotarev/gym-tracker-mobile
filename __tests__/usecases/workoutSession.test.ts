@@ -52,10 +52,11 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
   ['dip', 'Dip', 'chest', 'bodyweight-weighted'],
   ['pullup', 'Pull-up', 'back', 'bodyweight'],
   ['medball', 'Medball throw', 'fullBody', 'medicine-ball'],
+  ['boxjump', 'Box jump', 'quads', 'plyo-box'],
 ];
 
 /** The catalog ids that are power exercises — the rest are strength. */
-const POWER_IDS = new Set(['medball']);
+const POWER_IDS = new Set(['medball', 'boxjump']);
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
@@ -159,7 +160,7 @@ async function setUp(setup: Setup = {}) {
             type: 'power' as const,
             config: {
               type: 'power' as const,
-              load: 'weight' as const,
+              load: id === 'boxjump' ? ('none' as const) : ('weight' as const),
               restSec: 60,
               noHeavierAvailable: false,
             },
@@ -1032,5 +1033,23 @@ describe('weight swap on the workout data (task 120)', () => {
     const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
 
     expect(card).not.toHaveProperty('ceilingHint');
+  });
+
+  // GT-83: a power exercise that is its own load reads as a bodyweight one on the card.
+  test('a power exercise whose load is none reads bodyweight, and keeps its own equipment label', async () => {
+    const jump = planned('w2d1', 'boxjump', 1, [undefined, undefined]);
+    const { deps } = await setUp({ exercises: [jump], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ equipment: 'plyo-box', loadEquipment: 'bodyweight' });
+  });
+
+  test('an exercise whose weight means what its equipment says carries no loadEquipment', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard).not.toHaveProperty('loadEquipment');
   });
 });

@@ -4,6 +4,7 @@
 // ever holds sets of one exercise. Orchestration only — the targets come from rule 6
 // (`targetsFromHistory`).
 
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
@@ -72,7 +73,7 @@ export async function swapExercise(
         weekRir: current.targetRir,
         sessionExerciseId: current.id,
         settings: mesocycle.progressionSettings,
-        equipment: swappedIn?.equipment,
+        equipment: swappedIn === null ? undefined : loadEquipmentOf(swappedIn),
         type: swappedIn?.type,
         now,
       },

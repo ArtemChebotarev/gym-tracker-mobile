@@ -979,4 +979,25 @@ describe('RIR badge popover', () => {
     expect(screen.getByTestId('exercise-type-chip')).toHaveTextContent('Power');
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
+
+  test('a power exercise that is its own load fills the Load field with the body weight', () => {
+    const jump = makeExercise({
+      name: 'Box jump',
+      type: 'power',
+      isGuided: true,
+      powerLoad: 'none',
+      equipment: 'plyo-box',
+      loadEquipment: 'bodyweight',
+      targetRir: undefined,
+      rows: [{ setNumber: 1, targetReps: 5, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: jump, bodyWeight: 83 })} />);
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('83');
+    expect(screen.getByText('Plyo box')).toBeTruthy();
+    expect(screen.getByText('Bodyweight, kg')).toBeTruthy();
+  });
 });

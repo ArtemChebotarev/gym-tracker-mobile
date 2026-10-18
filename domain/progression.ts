@@ -2,6 +2,7 @@
 // Engine. Types only; the rules live in `domain/progression<Rule>.ts`.
 
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
 
 /**
@@ -24,6 +25,12 @@ export type SourceExercise = {
    * for an exercise whose catalog entry names no equipment.
    */
   equipment?: Equipment;
+  /**
+   * A power exercise's load — kilograms, a level, or none (10.1 FR-2). The power policy reads it
+   * where kilograms behave differently from a level (the deload halves one and keeps the other).
+   * Absent for every other type, and for a power exercise whose config says nothing — kilograms.
+   */
+  powerLoad?: PowerLoad;
 };
 
 /** The engine's plan for one exercise of the next session. */

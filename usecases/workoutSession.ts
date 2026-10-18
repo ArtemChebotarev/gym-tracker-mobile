@@ -4,6 +4,7 @@
 // `domain/workoutViewRules.ts`. Storage is the source of truth: every workout mutation writes there
 // and the screen re-reads this model, so nothing here is cached between calls.
 
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
@@ -122,6 +123,12 @@ export type WorkoutExercise = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  /**
+   * What the weight means, when it isn't what `equipment` says: a power exercise that is its own
+   * load reads `bodyweight` whatever it is done on (`loadEquipmentOf`). Absent when it is the same
+   * as `equipment`; `equipment` stays what the card prints.
+   */
+  loadEquipment?: Equipment;
   /** Absent means `strength`, as on `Exercise.type`. */
   type?: ExerciseType;
   /** A power exercise's load — kilograms, a level, or none (10.1 FR-2). Absent otherwise. */
@@ -397,6 +404,10 @@ function toExercise(
   };
   if (exercise.equipment !== undefined) {
     model.equipment = exercise.equipment;
+  }
+  const loadEquipment = loadEquipmentOf(exercise);
+  if (loadEquipment !== exercise.equipment && loadEquipment !== undefined) {
+    model.loadEquipment = loadEquipment;
   }
   if (exercise.type !== undefined) {
     model.type = exercise.type;

@@ -16,7 +16,22 @@
 //   progress.
 // - Anything else — `weight` is the weight lifted, and body weight never enters.
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, Exercise } from '@domain/catalog';
+
+/**
+ * The equipment that decides what an exercise's weight means — which is not always the equipment it
+ * is done with. A power exercise whose load is `none` is its own load (10.1 FR-2): a box jump on a
+ * plyo box weighs what you weigh, so it loads like a `bodyweight` exercise whatever the box is
+ * called. Every layer that asks the questions below asks it of this, never of `equipment` alone;
+ * `equipment` itself stays what the card prints under the name.
+ */
+export function loadEquipmentOf(
+  exercise: Pick<Exercise, 'equipment' | 'config'>,
+): Equipment | undefined {
+  return exercise.config?.type === 'power' && exercise.config.load === 'none'
+    ? 'bodyweight'
+    : exercise.equipment;
+}
 
 /** Either kind of bodyweight exercise — the ones the mesocycle's body weight applies to. */
 export function isBodyWeightExercise(equipment: Equipment | undefined): boolean {
