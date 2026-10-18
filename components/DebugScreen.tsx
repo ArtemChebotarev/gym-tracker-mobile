@@ -26,6 +26,8 @@ export type DebugScreenProps = {
   isExportingLogs: boolean;
   /** Set when the last log export failed. */
   logsError?: string;
+  /** Puts a demo rest timer in the floating capsule, to see it over the tabs (GT-85). */
+  onShowTimerCapsule: () => void;
   onBack: () => void;
 };
 
@@ -38,6 +40,7 @@ export function DebugScreen({
   onExportLogs,
   isExportingLogs,
   logsError,
+  onShowTimerCapsule,
   onBack,
 }: DebugScreenProps) {
   return (
@@ -77,6 +80,10 @@ export function DebugScreen({
           disabled={isExportingLogs}
         />
         {logsError !== undefined && <Text style={styles.error}>{logsError}</Text>}
+        <Text style={styles.description}>
+          Shows the floating timer capsule with a made-up rest, until the rest timer drives it.
+        </Text>
+        <Button label="Show timer capsule" variant="secondary" onPress={onShowTimerCapsule} />
       </View>
     </RootScreen>
   );

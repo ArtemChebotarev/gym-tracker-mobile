@@ -15,6 +15,7 @@ const BASE_PROPS: DebugScreenProps = {
   isImporting: false,
   onExportLogs: jest.fn(),
   isExportingLogs: false,
+  onShowTimerCapsule: jest.fn(),
   onBack: jest.fn(),
 };
 
@@ -90,5 +91,14 @@ describe('DebugScreen log export', () => {
 
     expect(onExportLogs).not.toHaveBeenCalled();
     expect(screen.getByText('Disk is full.')).toBeTruthy();
+  });
+
+  test('shows the timer capsule demo on press', () => {
+    const onShowTimerCapsule = jest.fn();
+    renderScreen({ onShowTimerCapsule });
+
+    fireEvent.press(screen.getByRole('button', { name: 'Show timer capsule' }));
+
+    expect(onShowTimerCapsule).toHaveBeenCalledTimes(1);
   });
 });

@@ -34,3 +34,12 @@ export function centerOffset(size: number): number {
 export function tapTargetSlop(size: number) {
   return Math.max(0, (SIZES['size/tap-target'] - size) / 2);
 }
+
+/**
+ * A progress ring drawn as an SVG circle stroke inside a square of `diameter`: the circle's radius
+ * keeps the whole stroke inside the box, and the circumference is what a dash array divides.
+ */
+export function ring(diameter: number, strokeWidth: number) {
+  const radius = (diameter - strokeWidth) / 2;
+  return { center: diameter / 2, radius, circumference: 2 * Math.PI * radius };
+}

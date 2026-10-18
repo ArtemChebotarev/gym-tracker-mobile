@@ -10,9 +10,11 @@ import {
   IMPORT_SUCCESS_MESSAGE,
   IMPORT_SUCCESS_TITLE,
   importConfirmMessage,
+  demoTimerCapsule,
   importErrorMessage,
 } from '@components/DebugRouteLogic';
 import { DebugScreen } from '@components/DebugScreen';
+import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
 import { useExportBackup } from '@state/useExportBackup';
 import { useExportLogs } from '@state/useExportLogs';
 import { useImportBackup } from '@state/useImportBackup';
@@ -22,6 +24,8 @@ export default function DebugRoute() {
   const exportBackup = useExportBackup();
   const exportLogs = useExportLogs();
   const importBackup = useImportBackup();
+  const showCapsule = useTimerCapsuleStore((s) => s.show);
+  const clearCapsule = useTimerCapsuleStore((s) => s.clear);
 
   const showImportFailure = (error: Error) =>
     Alert.alert(IMPORT_ERROR_TITLE, importErrorMessage(error));
@@ -62,6 +66,10 @@ export default function DebugRoute() {
       onExportLogs={() => exportLogs.mutate()}
       isExportingLogs={exportLogs.isPending}
       logsError={exportLogs.error ? exportErrorMessage(exportLogs.error, 'log') : undefined}
+      onShowTimerCapsule={() => {
+        showCapsule(demoTimerCapsule('running', { show: showCapsule, clear: clearCapsule }));
+        router.back();
+      }}
       onBack={() => router.back()}
     />
   );

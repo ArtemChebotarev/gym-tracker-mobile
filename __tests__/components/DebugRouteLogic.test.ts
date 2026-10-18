@@ -1,4 +1,5 @@
 import {
+  demoTimerCapsule,
   exportErrorMessage,
   importConfirmMessage,
   importErrorMessage,
@@ -31,7 +32,8 @@ describe('importConfirmMessage', () => {
 });
 
 describe('importErrorMessage', () => {
-  const refused = (reason: BackupRefusal) => importErrorMessage(new BackupRefusedError(reason, 'x'));
+  const refused = (reason: BackupRefusal) =>
+    importErrorMessage(new BackupRefusedError(reason, 'x'));
 
   test('every refusal has its own words, and says the data was not touched', () => {
     const different = refused('different-version');
@@ -55,5 +57,21 @@ describe('importErrorMessage', () => {
     expect(importErrorMessage(new Error('SQLITE_IOERR'))).toBe(
       'Something went wrong while restoring. Try again. Your data was not changed.',
     );
+  });
+});
+
+describe('demoTimerCapsule', () => {
+  test('Pause and Resume swap it between running and paused, Skip puts it away', () => {
+    const show = jest.fn();
+    const clear = jest.fn();
+    const running = demoTimerCapsule('running', { show, clear });
+
+    expect(running.state).toBe('running');
+    running.onPause?.();
+    expect(show).toHaveBeenLastCalledWith(expect.objectContaining({ state: 'paused' }));
+    running.onResume?.();
+    expect(show).toHaveBeenLastCalledWith(expect.objectContaining({ state: 'running' }));
+    running.onSkip?.();
+    expect(clear).toHaveBeenCalledTimes(1);
   });
 });
