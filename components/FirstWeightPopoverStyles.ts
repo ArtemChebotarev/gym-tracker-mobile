@@ -3,6 +3,13 @@ import { StyleSheet } from 'react-native';
 import { BORDER_WIDTHS, COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  // The line under the title on a plate that has one — power by level: read before the steps, so
+  // in the steps' own size and colour rather than the note's quieter one.
+  intro: {
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
+    color: COLORS['text/secondary'],
+  },
   // `type/label` is the SDK's one capitalized section header (08.0).
   sectionLabel: {
     marginTop: SPACING['space/row'],

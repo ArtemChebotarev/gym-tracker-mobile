@@ -1039,6 +1039,28 @@ describe('RIR badge popover', () => {
   });
 });
 
+// Artem's review (18.10.2026): a level has no load to find, and its levels are the user's own.
+describe('WorkoutExerciseCard — power by level', () => {
+  test('the Level ⓘ opens a plate about finding a level', () => {
+    const box = makePowerExercise({
+      name: 'Box jump',
+      isGuided: true,
+      powerLoad: 'level',
+      equipment: 'plyo-box',
+      rows: [{ setNumber: 1, targetReps: 3, suggestedWeight: 1, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: box })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finding your level' }));
+
+    expect(screen.getByText('Finding your level')).toBeTruthy();
+    expect(screen.getByText(/^Levels are your own/)).toBeTruthy();
+  });
+});
+
 // 10.1 FR-15 and Artem's review (18.10.2026): a band keeps the strength card, with its own parts.
 describe('WorkoutExerciseCard — a resistance band', () => {
   const band = makeExercise({

@@ -61,7 +61,9 @@ export function PowerExerciseCard({
           load: exercise.powerLoad,
           ...topWeightOf(exercise.rows),
         });
-  // Two ⓘ buttons, each with its own plate: the Load how-to (GT-81) and what a fast rep is.
+  // Two ⓘ buttons, each with its own plate: the Load how-to (GT-81) — a level's its own — and what
+  // a fast rep is.
+  const loadCopy = firstWeightCopy('power', undefined, exercise.powerLoad);
   const loadAnchor = usePopoverAnchor();
   const repsAnchor = usePopoverAnchor();
 
@@ -99,7 +101,7 @@ export function PowerExerciseCard({
               visible={loadAnchor.visible}
               anchor={loadAnchor.anchor}
               onClose={loadAnchor.close}
-              copy={firstWeightCopy('power', undefined)}
+              copy={loadCopy}
             />
           )}
         </>
@@ -141,7 +143,7 @@ export function PowerExerciseCard({
                       ...(coachmarkTargets !== undefined
                         ? { discRef: coachmarkTargets.weight }
                         : {}),
-                      accessibilityLabel: 'Finding your weight',
+                      accessibilityLabel: loadCopy.title,
                       open: loadAnchor.visible,
                       onPress: loadAnchor.open,
                     },
