@@ -39,8 +39,10 @@ import {
  */
 export type ExerciseCardView = {
   showMenu: boolean;
-  /** `2 RIR`, or `undefined` when the badge isn't shown. */
+  /** `2 RIR`, or `undefined` when the badge isn't shown — and on a deload week, which has its own. */
   rirLabel: string | undefined;
+  /** `Deload` on a deload week, in the RIR badge's place, for every type of exercise. */
+  deloadLabel: string | undefined;
   /** Skipped or abandoned: the card is dimmed and nothing in it is editable. */
   isNotDone: boolean;
   /**
@@ -56,6 +58,7 @@ export type ExerciseCardView = {
 export function exerciseCardView(
   mode: WorkoutMode,
   exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'>,
+  isDeload = false,
 ): ExerciseCardView {
   const isPreview = mode === 'preview';
   const notDone = !isPreview && isNotDone(exercise.status) ? exercise.status : undefined;
@@ -64,7 +67,10 @@ export function exerciseCardView(
   return {
     showMenu: mode === 'live',
     rirLabel:
-      !isPreview && exercise.targetRir !== undefined ? formatRir(exercise.targetRir) : undefined,
+      !isPreview && !isDeload && exercise.targetRir !== undefined
+        ? formatRir(exercise.targetRir)
+        : undefined,
+    deloadLabel: !isPreview && isDeload ? 'Deload' : undefined,
     isNotDone: notDone !== undefined,
     showSets: !isPreview && !notDoneWhole && exercise.rows.length > 0,
     notDoneNote: notDoneWhole ? formatNotDone(notDone) : undefined,
@@ -249,7 +255,7 @@ export function cardInfoTargets(
   mode: WorkoutMode,
   isDeload: boolean,
 ): CardInfoTargets {
-  const view = exerciseCardView(mode, exercise);
+  const view = exerciseCardView(mode, exercise, isDeload);
   return {
     rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
     // Both ⓘ sit in the column header, which is only there with the set rows.

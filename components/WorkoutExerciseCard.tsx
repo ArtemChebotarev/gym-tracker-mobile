@@ -77,7 +77,7 @@ import { FastRepsPopover } from './FastRepsPopover';
 import { FirstWeightPopover } from './FirstWeightPopover';
 import { firstWeightCopy } from './FirstWeightPopoverLogic';
 import { RirBadge } from './RirBadge';
-import { rirExplanation } from './RirExplanationLogic';
+import { deloadExplanation, rirExplanation } from './RirExplanationLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { styles } from './WorkoutExerciseCardStyles';
 import { usePopoverAnchor } from './usePopoverAnchor';
@@ -160,7 +160,7 @@ export function WorkoutExerciseCard({
   onReplaceExercise,
   onHideCeilingTip,
 }: WorkoutExerciseCardProps) {
-  const view = exerciseCardView(mode, exercise);
+  const view = exerciseCardView(mode, exercise, isDeload);
   const editable = mode === 'live' && !view.isNotDone;
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
@@ -200,6 +200,18 @@ export function WorkoutExerciseCard({
                 label={view.rirLabel}
                 {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
                 explanation={rirExplanation({ targetRir: exercise.targetRir, isDeload })}
+              />
+            )}
+            {view.deloadLabel !== undefined && (
+              <RirBadge
+                testID="exercise-deload"
+                accessibilityLabel="Deload, what changes this week?"
+                label={view.deloadLabel}
+                explanation={deloadExplanation({
+                  ...(exercise.type === undefined ? {} : { type: exercise.type }),
+                  ...(exercise.powerLoad === undefined ? {} : { powerLoad: exercise.powerLoad }),
+                  ...(exercise.targetRir === undefined ? {} : { targetRir: exercise.targetRir }),
+                })}
               />
             )}
             <IconButton accessibilityLabel={`${exercise.name} history`} onPress={onOpenHistory}>
