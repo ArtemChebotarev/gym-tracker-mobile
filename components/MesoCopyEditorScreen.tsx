@@ -73,7 +73,14 @@ export function MesoCopyEditorScreen({ initialMesoId }: MesoCopyEditorScreenProp
     if (key === copiedKey) {
       return;
     }
-    setDraft(toCopiedMesoBuilderDraft(source, weekPlanQuery.data, weekNumber));
+    setDraft(
+      toCopiedMesoBuilderDraft(
+        source,
+        weekPlanQuery.data.weekPlan,
+        weekNumber,
+        weekPlanQuery.data.exerciseSettings,
+      ),
+    );
     setCopiedKey(key);
   }
 

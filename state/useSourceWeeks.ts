@@ -12,7 +12,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { extractSourceWeekPlan, listSourceWeeks } from '@usecases/mesocycleCreation';
+import { extractSourceWeek, listSourceWeeks } from '@usecases/mesocycleCreation';
 
 import { useSourceWeekDeps, useSourceWeekListDeps } from './mesocycleStore';
 
@@ -36,8 +36,8 @@ export function useSourceWeeks(mesoId: string | undefined) {
 }
 
 /**
- * The structure of week `weekNumber` of `mesoId`, ready for the draft to be prefilled from. Idle
- * until both are known.
+ * The structure of week `weekNumber` of `mesoId`, with the settings of its hybrid exercises
+ * (GT-159), ready for the draft to be prefilled from. Idle until both are known.
  *
  * Fetched as soon as a week is selected rather than on Continue, so pressing Continue is instant
  * and the step never has a pending button of its own — 08.8 asks for a Continue that is simply
@@ -53,7 +53,7 @@ export function useSourceWeekPlan(mesoId: string | undefined, weekNumber: number
       if (mesoId === undefined || weekNumber === undefined) {
         throw new Error('useSourceWeekPlan ran without a mesocycle id and week number.');
       }
-      return extractSourceWeekPlan({ sourceMesoId: mesoId, sourceWeekNumber: weekNumber }, deps);
+      return extractSourceWeek({ sourceMesoId: mesoId, sourceWeekNumber: weekNumber }, deps);
     },
     enabled: mesoId !== undefined && weekNumber !== undefined,
   });

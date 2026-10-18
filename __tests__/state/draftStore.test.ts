@@ -364,3 +364,49 @@ describe('exerciseSettings through the draft (GT-158)', () => {
     expect(draft.exerciseSettings).not.toBe(planned.exerciseSettings);
   });
 });
+
+describe('prefilled drafts carry their hybrid settings (GT-159)', () => {
+  const bag = {
+    type: 'interval' as const,
+    workSec: 120,
+    restSec: 30,
+    getReadySec: 5,
+    lever: 'rest' as const,
+    stepSec: 15 as const,
+    rounds: 5,
+  };
+  const weekPlan = {
+    days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'heavy-bag', order: 1, sets: 2 }] }],
+  };
+
+  test('Flow C: the copied week’s settings, as a copy', () => {
+    const settings = { 'heavy-bag': bag };
+    const draft = toCopiedMesoBuilderDraft(
+      { id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1 },
+      weekPlan,
+      2,
+      settings,
+    );
+
+    expect(draft.exerciseSettings).toEqual(settings);
+    expect(draft.exerciseSettings).not.toBe(settings);
+  });
+
+  test('Flow C without settings leaves the field absent', () => {
+    expect(
+      toCopiedMesoBuilderDraft({ id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1 }, weekPlan, 2),
+    ).not.toHaveProperty('exerciseSettings');
+  });
+
+  test('Flow B: the template draft’s settings', () => {
+    const draft = toTemplateMesoBuilderDraft({
+      name: 'Hybrid',
+      daysPerWeek: 1,
+      weekPlan,
+      templateId: 'template-1',
+      exerciseSettings: { 'heavy-bag': bag },
+    });
+
+    expect(draft.exerciseSettings).toEqual({ 'heavy-bag': bag });
+  });
+});

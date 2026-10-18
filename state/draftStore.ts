@@ -166,11 +166,15 @@ export function toMesoBuilderDraft(mesocycle: Mesocycle): MesoBuilderDraft {
  * Every number about load is absent, as it is in Flow A: week 1's reps and weights are computed
  * at Start from each exercise's history, never copied from the source week (04, "Расчёт
  * startReps"; task 122).
+ *
+ * `exerciseSettings` is what the source cycle ran its power, interval and mobility exercises with
+ * (GT-159, `extractSourceWeek`) — the plan, not the load, so it does come across.
  */
 export function toCopiedMesoBuilderDraft(
   source: Pick<Mesocycle, 'id' | 'name' | 'lengthWeeks' | 'daysPerWeek'>,
   weekPlan: WeekPlan,
   weekNumber: number,
+  exerciseSettings: ExerciseSettingsById = {},
 ): MesoBuilderDraft {
   return {
     name: `${source.name} 2`,
@@ -178,6 +182,7 @@ export function toCopiedMesoBuilderDraft(
     daysPerWeek: source.daysPerWeek,
     exercisesByDay: toExercisesByDay(weekPlan),
     source: { mesoId: source.id, weekNumber },
+    ...(Object.keys(exerciseSettings).length > 0 && { exerciseSettings: { ...exerciseSettings } }),
   };
 }
 
@@ -193,6 +198,7 @@ export function toTemplateMesoBuilderDraft(template: TemplateDraft): MesoBuilder
     daysPerWeek: template.daysPerWeek,
     exercisesByDay: toExercisesByDay(template.weekPlan),
     templateId: template.templateId,
+    ...(template.exerciseSettings && { exerciseSettings: template.exerciseSettings }),
   };
 }
 

@@ -4,6 +4,10 @@
 // sessions rather than out of a template.
 
 import type { Exercise } from '@domain/catalog';
+import {
+  weekPlanExerciseSettings,
+  type ExerciseSettingsById,
+} from '@domain/exerciseSettingsBuilders';
 import type { Mesocycle } from '@domain/mesocycle';
 import { isArchivedMesocycle } from '@domain/mesocycleLifecycle';
 import { firstFreeName } from '@domain/names';
@@ -20,6 +24,12 @@ export type TemplateDraft = {
   weekPlan: WeekPlan;
   /** Recorded on the saved mesocycle as `origin: { type: 'template', templateId }`. */
   templateId: string;
+  /**
+   * The cycle's own copy of the library config of each power, interval and mobility exercise the
+   * template puts in (GT-159): a template carries no settings, so the library's defaults are what
+   * the cycle starts from. Absent when the week is strength only.
+   */
+  exerciseSettings?: ExerciseSettingsById;
 };
 
 /**
@@ -59,8 +69,11 @@ function resolveSuggestion(exerciseId: string, exercises: readonly Exercise[]): 
  *   renumbered 1..n over what is left. A day left empty stays in the plan — the user fills it in,
  *   as in Flow A.
  *
+ * - A power, interval or mobility exercise comes with a copy of its library config
+ *   (`exerciseSettings`, GT-159), as one added by hand does.
+ *
  * `exercises` is the whole library, hidden ones included (`ExerciseRepository.getAll`): a hidden
- * suggestion's muscle group is read from it.
+ * suggestion's muscle group is read from it, and so is each hybrid exercise's config.
  */
 export function applyTemplate(
   template: MesoTemplate,
@@ -82,13 +95,16 @@ export function applyTemplate(
       ),
     }));
 
+  const weekPlan = { days };
+  const exerciseSettings = weekPlanExerciseSettings(weekPlan, exercises);
   return {
     name: firstFreeName(
       template.name,
       mesocycles.filter((mesocycle) => !isArchivedMesocycle(mesocycle)).map(({ name }) => name),
     ),
     daysPerWeek: days.length,
-    weekPlan: { days },
+    weekPlan,
     templateId: template.id,
+    ...(Object.keys(exerciseSettings).length > 0 && { exerciseSettings }),
   };
 }
