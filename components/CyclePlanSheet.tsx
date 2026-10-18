@@ -8,7 +8,12 @@
 // - mobility: Length.
 //
 // Every change applies at once — the sheet is controlled, and Done only closes it. `Reset to
-// defaults` puts the library's values back.
+// defaults`, a link over the full-width Done, puts the library's values back.
+//
+// One height for every type (Artem, 18.10.2026): the sheet is pinned at the sheet's full height
+// rather than sized to its content, so a mobility plan's one row opens the same sheet an
+// interval's eight do. Canvas 7.3's note under the fields ("Week 1 of this cycle…") was dropped on
+// the same review — it did not say anything the sheet's subtitle doesn't.
 //
 // Presented as an overlay rather than its own Modal, so the time picker — a real Modal — can open
 // on top of it (see BottomSheet's `presentation`).
@@ -24,7 +29,6 @@ import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { fieldStyles } from '@design/components/fieldStyles';
-import { InlineNote } from '@design/components/InlineNote';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
@@ -163,6 +167,7 @@ export function CyclePlanSheet({
       title={exerciseName}
       subtitle={planSheetSubtitle(dayNumber)}
       presentation="overlay"
+      height="fixed"
       footer={
         <View style={styles.footer}>
           <Pressable
@@ -172,19 +177,11 @@ export function CyclePlanSheet({
           >
             <Text style={styles.resetLabel}>Reset to defaults</Text>
           </Pressable>
-          <View style={styles.done}>
-            <Button label="Done" onPress={onClose} />
-          </View>
+          <Button label="Done" onPress={onClose} />
         </View>
       }
     >
       {renderFields()}
-      <View style={styles.note}>
-        <InlineNote
-          lead="Week 1 of this cycle."
-          text="Changes stay in this cycle and don't touch the library."
-        />
-      </View>
       <TimePickerSheet
         visible={editing !== null}
         onClose={() => setEditing(null)}

@@ -34,6 +34,9 @@ describe('CyclePlanSheet (GT-92)', () => {
     expect(screen.getByText('2:00')).toBeTruthy();
     expect(screen.getByText('0:45')).toBeTruthy();
     expect(screen.getByText('Less rest')).toBeTruthy();
+    expect(screen.getByText('None')).toBeTruthy();
+    // The note under the fields was dropped on review (18.10.2026).
+    expect(screen.queryByText(/Week 1 of this cycle/)).toBeNull();
   });
 
   test('interval: a change goes out as the whole new settings', () => {

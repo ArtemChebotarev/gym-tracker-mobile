@@ -11,28 +11,24 @@ export const styles = StyleSheet.create({
   stepRow: {
     marginTop: SPACING['space/md'],
   },
-  note: {
-    marginTop: SPACING['space/section'],
-  },
+  // Reset over Done, both the sheet's full width (Artem, 18.10.2026): the confirming action is
+  // the wide one, the way back to the defaults a link above it.
   footer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: SPACING['space/gap-tight'],
   },
   reset: {
     minHeight: SIZES['size/tap-target'],
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING['space/gap-tight'],
   },
+  // A link, the way "No heavier available" is one on the power card: secondary text, underlined.
   resetLabel: {
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/secondary'],
+    textDecorationLine: 'underline',
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],
-  },
-  done: {
-    flex: 1,
   },
 });

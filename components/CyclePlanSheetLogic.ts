@@ -12,12 +12,13 @@ import {
 /**
  * What each lever is called on the plan sheet's segmented control (10.1 FR-8, canvas 7.3): four
  * segments in one row, so the short words of FR-8 rather than the library's option cards' titles.
+ * `none` reads "None", as in the library (Artem, 18.10.2026), not 7.3's "Keep".
  */
 export const PLAN_LEVER_LABEL: Record<IntervalLever, string> = {
   rest: 'Less rest',
   workTime: 'More work',
   rounds: '+1 round',
-  none: 'Keep',
+  none: 'None',
 };
 
 export const PLAN_LEVER_OPTIONS = INTERVAL_LEVERS.map((lever) => ({

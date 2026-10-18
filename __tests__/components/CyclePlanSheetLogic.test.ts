@@ -11,8 +11,8 @@ import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 const bag = { ...HEAVY_BAG_CONFIG, rounds: 3 };
 
 describe('CyclePlanSheetLogic', () => {
-  test('offers the four levers of FR-8 under canvas 7.3’s short names', () => {
-    expect(PLAN_LEVER_OPTIONS.map((option) => option.label)).toEqual(['Less rest', 'More work', '+1 round', 'Keep']);
+  test('offers the four levers of FR-8 under the sheet’s short names', () => {
+    expect(PLAN_LEVER_OPTIONS.map((option) => option.label)).toEqual(['Less rest', 'More work', '+1 round', 'None']);
   });
 
   test('reads a lever and a step back from their segment values, and refuses others', () => {
