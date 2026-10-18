@@ -41,10 +41,13 @@ export const COLORS = {
   'accent/border': '#4A5A20',
 
   /**
-   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a UI colour: the SDK keeps one
-   * accent per screen, so this is used by the wordmark and nothing else.
+   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a general UI colour — the SDK
+   * keeps one accent per screen. Besides the wordmark it marks one thing only: time that is running
+   * — a timer's progress ring (10.1 FR-5, FR-6). Never text, icons or chips.
    */
   'brand/orange': '#FF5B23',
+  /** The unfilled part of a timer's progress ring — the TimerCapsule (10.1 FR-5, GT-85). */
+  'timer/track': '#3A3F46',
 
   danger: '#E2574C',
   'danger/border': '#5C2320',
@@ -99,6 +102,8 @@ export const TYPOGRAPHY = {
   'type/body': { fontSize: 17, fontWeight: '400' },
   'type/value': { fontSize: 20, fontWeight: '400' },
   'type/meta': { fontSize: 15, fontWeight: '400' },
+  /** A short line under a value that already carries the weight — the TimerCapsule's caption (iOS Footnote). */
+  'type/footnote': { fontSize: 13, fontWeight: '400' },
   'type/set-value': { fontSize: 20, fontWeight: '400' },
   'type/label': {
     fontSize: 13,
@@ -208,6 +213,8 @@ export const BORDER_WIDTHS = {
   'border/default': 1,
   /** The accent outline marking the open cell of the mesocycle overview grid (08.7, task 127). */
   'border/emphasis': 2,
+  /** A timer's progress ring, track and arc alike (TimerCapsule, 10.1 FR-5). */
+  'border/timer-ring': 3,
 } as const;
 
 export type BorderWidthToken = keyof typeof BORDER_WIDTHS;
@@ -244,6 +251,12 @@ export const SIZES = {
   'size/brand-mark': 52,
   /** The floating tab bar's height, padding included (08.0, "Таб-бар", task 151). */
   'size/tabbar': 64,
+  /**
+   * The floating timer capsule over the tab bar — rest between sets and a minimised interval
+   * timer (TimerCapsule, 10.1 FR-5/FR-6, GT-85): its height, and the progress ring inside it.
+   */
+  'size/timer-capsule': 60,
+  'size/timer-ring': 40,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
   'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */

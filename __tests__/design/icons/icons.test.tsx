@@ -6,10 +6,12 @@ import { CopyIcon } from '@design/icons/CopyIcon';
 import { EditIcon } from '@design/icons/EditIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
+import { HourglassIcon } from '@design/icons/HourglassIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { MinusIcon } from '@design/icons/MinusIcon';
 import { MoreIcon } from '@design/icons/MoreIcon';
+import { PauseIcon } from '@design/icons/PauseIcon';
 import { PlayIcon } from '@design/icons/PlayIcon';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
@@ -45,6 +47,8 @@ const ICONS: [string, IconComponent][] = [
   ['info', InfoIcon],
   ['arrow-up', ArrowUpIcon],
   ['arrow-down', ArrowDownIcon],
+  ['hourglass', HourglassIcon],
+  ['pause', PauseIcon],
 ];
 
 describe('design/icons', () => {

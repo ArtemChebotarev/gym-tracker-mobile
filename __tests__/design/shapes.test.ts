@@ -1,4 +1,4 @@
-import { capsule, circle, roundedBar, square, tapTargetSlop } from '@design/shapes';
+import { capsule, circle, ring, roundedBar, square, tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 describe('shapes', () => {
@@ -24,5 +24,13 @@ describe('shapes', () => {
     expect(tapTargetSlop(20)).toBe(12);
     expect(tapTargetSlop(44)).toBe(0);
     expect(tapTargetSlop(48)).toBe(0);
+  });
+
+  test('ring keeps the whole stroke inside its box', () => {
+    const { center, radius, circumference } = ring(40, 3);
+
+    expect(center).toBe(20);
+    expect(radius).toBe(18.5);
+    expect(circumference).toBeCloseTo(2 * Math.PI * 18.5);
   });
 });
