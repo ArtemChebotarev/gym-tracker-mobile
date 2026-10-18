@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import type { ExerciseConfig } from '@domain/exerciseConfig';
+import { CONFIG_TIME_STEP_SEC, type ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { formatClock } from '@design/formatClock';
 import { SegmentedControl } from '@design/components/SegmentedControl';
@@ -25,52 +25,19 @@ import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
 import {
+  COUNTDOWN,
+  DURATION,
+  REST_BETWEEN_ROUNDS,
+  REST_BETWEEN_SETS,
+  WORK,
+  type TimeField,
+} from './ExerciseConfigFieldsLogic';
+import {
   describePowerLoad,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
 } from './ExerciseFormLogic';
 import { styles } from './ExerciseFormStyles';
-
-// Every time field steps by the same 5 s, power's rest included.
-const SECONDS_STEP = 5;
-const MINUTE = 60;
-
-/** A time field of a config: what it is called, what qualifies it, and what it may hold. */
-type TimeField = {
-  key: 'restSec' | 'workSec' | 'getReadySec' | 'durationSec';
-  label: string;
-  suffix?: string;
-  minSec: number;
-  maxSec: number;
-};
-
-const REST_BETWEEN_SETS: TimeField = {
-  key: 'restSec',
-  label: 'Rest',
-  suffix: 'between sets',
-  minSec: 0,
-  maxSec: 10 * MINUTE,
-};
-const REST_BETWEEN_ROUNDS: TimeField = { ...REST_BETWEEN_SETS, suffix: 'between rounds' };
-const WORK: TimeField = {
-  key: 'workSec',
-  label: 'Work',
-  minSec: SECONDS_STEP,
-  maxSec: 60 * MINUTE,
-};
-const COUNTDOWN: TimeField = {
-  key: 'getReadySec',
-  label: 'Countdown',
-  suffix: 'before round',
-  minSec: 0,
-  maxSec: MINUTE / 2,
-};
-const DURATION: TimeField = {
-  key: 'durationSec',
-  label: 'Duration',
-  minSec: MINUTE,
-  maxSec: 60 * MINUTE,
-};
 
 export type ExerciseConfigFieldsProps = {
   config: ExerciseConfig;
@@ -99,7 +66,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
         onChange={(valueSec) => setValue(field, valueSec)}
         min={field.minSec}
         max={field.maxSec}
-        step={SECONDS_STEP}
+        step={CONFIG_TIME_STEP_SEC}
         formatValue={formatClock}
         onValuePress={() => setEditing(field)}
       />
@@ -120,7 +87,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
       value={editing === null ? 0 : valueOf(editing)}
       onChange={(valueSec) => editing !== null && setValue(editing, valueSec)}
       minSec={editing?.minSec}
-      maxSec={editing?.maxSec ?? MINUTE}
+      maxSec={editing?.maxSec ?? COUNTDOWN.maxSec}
     />
   );
 

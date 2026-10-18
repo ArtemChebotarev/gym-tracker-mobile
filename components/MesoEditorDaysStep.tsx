@@ -114,6 +114,8 @@ export type MesoEditorDaysStepProps = {
   onRemoveExercise: (dayNumber: number, index: number) => void;
   onReorderExercises: (dayNumber: number, newOrder: readonly number[]) => void;
   onAddExercise: (dayNumber: number) => void;
+  /** A hybrid row's plan chip: opens its plan sheet (GT-92). */
+  onOpenPlan?: (dayNumber: number, index: number) => void;
 };
 
 export function MesoEditorDaysStep({
@@ -127,6 +129,7 @@ export function MesoEditorDaysStep({
   onRemoveExercise,
   onReorderExercises,
   onAddExercise,
+  onOpenPlan,
 }: MesoEditorDaysStepProps) {
   const dayNumbers = getDayNumbers(daysPerWeek);
   const activeDayExercises = getDayExercises(exercisesByDay, activeDay);
@@ -324,7 +327,12 @@ export function MesoEditorDaysStep({
                 </Text>
               </View>
               {plan ? (
-                <PlanChip value={plan.value} caption={plan.caption} accessibilityLabel={`${title} plan`} />
+                <PlanChip
+                  value={plan.value}
+                  caption={plan.caption}
+                  accessibilityLabel={`${title} plan`}
+                  onPress={onOpenPlan && (() => onOpenPlan(activeDay, index))}
+                />
               ) : (
                 <Stepper
                   label={`${title} sets`}

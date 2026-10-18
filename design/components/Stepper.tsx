@@ -230,11 +230,13 @@ const styles = StyleSheet.create({
     color: COLORS['text/primary'],
     textAlign: 'center',
   },
+  // A shade lighter than the card it sits on (Artem, 18.10.2026: on `surface/card` the pill read as
+  // plain text, not as something that opens a picker), the same fill a selected segment has.
   valuePill: {
     minHeight: SIZES['size/control-inline'],
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS['surface/card'],
+    backgroundColor: COLORS['surface/control-active'],
     borderRadius: RADII['radius/pill'],
   },
   captionInline: {

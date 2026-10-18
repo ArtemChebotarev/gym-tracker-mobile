@@ -25,6 +25,20 @@ function librarySettings(exercise: Exercise): ExerciseSettings | undefined {
 }
 
 /**
+ * The cycle's settings for `exercise`: its own copy, or — for a cycle that has none yet — what the
+ * copy would start from, the library's config. `undefined` for a `strength` exercise.
+ */
+export function exerciseSettingsFor(
+  settings: ExerciseSettingsById,
+  exercise: Exercise,
+): ExerciseSettings | undefined {
+  if (exerciseTypeOf(exercise) === 'strength') {
+    return undefined;
+  }
+  return settings[exercise.id] ?? librarySettings(exercise);
+}
+
+/**
  * Adds the copy of `exercise`'s config to `settings` — the exercise has just been added to the
  * cycle (FR-9). Leaves `settings` as it is when the cycle already has a copy (the exercise is on
  * another day too, and that copy may have been edited) and for a `strength` exercise.
