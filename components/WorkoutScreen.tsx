@@ -303,14 +303,18 @@ export function WorkoutScreen({
                 onExerciseMenuAction(exercise, item),
               )}
               isSaving={isSaving}
-              bodyWeight={model.bodyWeight}
-              onBodyWeightChange={onBodyWeightChange}
-              onRequestBodyWeight={onRequestBodyWeight}
-              onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
-              onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
-              onSetNoHeavierAvailable={() => onSetNoHeavierAvailable(exercise)}
-              onReplaceExercise={() => onExerciseMenuAction(exercise, 'replace')}
-              onHideCeilingTip={() => onHideCeilingTip(exercise)}
+              sets={{
+                bodyWeight: model.bodyWeight,
+                onBodyWeightChange,
+                onRequestBodyWeight,
+                onLogSet: (setNumber, entry) => onLogSet(exercise, setNumber, entry),
+                onUnlogSet: (setNumber) => onUnlogSet(exercise, setNumber),
+              }}
+              ceiling={{
+                onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),
+                onReplaceExercise: () => onExerciseMenuAction(exercise, 'replace'),
+                onHideCeilingTip: () => onHideCeilingTip(exercise),
+              }}
             />
           ))}
           {model.showFinish && (

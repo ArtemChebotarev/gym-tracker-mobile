@@ -112,8 +112,12 @@ export type WorkoutExerciseActions = {
   canDelete: boolean;
 };
 
-/** One exercise card (08.7, "Карточка упражнения"). */
-export type WorkoutExercise = {
+/**
+ * What every exercise card has, whatever its type (08.7, "Карточка упражнения"). What a type adds
+ * on top is its own variant of `WorkoutExercise` — the same split as the progression policies
+ * (`domain/progressionPolicies.ts`): a card reads its type's fields, and no other type carries them.
+ */
+type WorkoutExerciseBase = {
   /**
    * The session exercise the card acts on. In preview it's the source session's one — use it as a
    * list key only; there's nothing to act on.
@@ -124,34 +128,12 @@ export type WorkoutExercise = {
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
   /**
-   * What the weight means, when it isn't what `equipment` says: a power exercise that is its own
-   * load reads `bodyweight` whatever it is done on (`loadEquipmentOf`). Absent when it is the same
-   * as `equipment`; `equipment` stays what the card prints.
-   */
-  loadEquipment?: Equipment;
-  /** Absent means `strength`, as on `Exercise.type`. */
-  type?: ExerciseType;
-  /** A power exercise's load — kilograms, a level, or none (10.1 FR-2). Absent otherwise. */
-  powerLoad?: PowerLoad;
-  /**
-   * Power only, live mode: what to say once every set is at the top of the corridor (10.2 P6–P9).
-   * Absent while a set still grows, and in place of `weightHints`, which are strength's.
-   */
-  ceilingHint?: PowerCeilingHint;
-  /**
    * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
    * weight swap. Power and a resistance band; absent on every other exercise.
    */
   isGuided?: boolean;
-  /** Not shown in preview — the day isn't programmed yet. */
-  targetRir?: number;
   /** `planned` in preview. */
   status: SessionExerciseStatus;
-  /**
-   * Go heavier / go lighter, from last week's reps (03, rule 3). Live mode only, and not on a
-   * skipped exercise — it's advice for doing the sets; absent when there's none.
-   */
-  weightHints?: ExerciseWeightHint[];
   /**
    * Every set row — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in
    * preview.
@@ -163,6 +145,44 @@ export type WorkoutExercise = {
   hasLoggedSets: boolean;
   actions: WorkoutExerciseActions;
 };
+
+/**
+ * A strength exercise's card — and, until their stories give them cards of their own, an interval
+ * or mobility one's too: they run strength's progression (`PROGRESSION_POLICIES`) and so are shown
+ * as strength.
+ */
+export type StrengthWorkoutExercise = WorkoutExerciseBase & {
+  /** Absent means `strength`, as on `Exercise.type`. */
+  type?: Exclude<ExerciseType, 'power'>;
+  /** Not shown in preview — the day isn't programmed yet. */
+  targetRir?: number;
+  /**
+   * Go heavier / go lighter, from last week's reps (03, rule 3). Live mode only, and not on a
+   * skipped exercise — it's advice for doing the sets; absent when there's none.
+   */
+  weightHints?: ExerciseWeightHint[];
+};
+
+/** A power exercise's card (10.2). No RIR on screen (P5) and no weight hints — `ceilingHint` instead. */
+export type PowerWorkoutExercise = WorkoutExerciseBase & {
+  type: 'power';
+  /** Kilograms, a level, or none (10.1 FR-2). */
+  powerLoad: PowerLoad;
+  /**
+   * What the weight means, when it isn't what `equipment` says: a power exercise that is its own
+   * load reads `bodyweight` whatever it is done on (`loadEquipmentOf`). Absent when it is the same
+   * as `equipment`; `equipment` stays what the card prints.
+   */
+  loadEquipment?: Equipment;
+  /**
+   * Live mode only: what to say once every set is at the top of the corridor (10.2 P6–P9). Absent
+   * while a set still grows.
+   */
+  ceilingHint?: PowerCeilingHint;
+};
+
+/** One exercise card (08.7, "Карточка упражнения"), told apart by `type`. */
+export type WorkoutExercise = StrengthWorkoutExercise | PowerWorkoutExercise;
 
 /** The header's title and subtitle (08.7, "Шапка"). */
 export type WorkoutHeader = {
@@ -378,7 +398,7 @@ function toExercise(
   ).length;
   const plannedSetCount = sessionExercise.setTargets.length;
 
-  const model: WorkoutExercise = {
+  const base: WorkoutExerciseBase = {
     sessionExerciseId: sessionExercise.id,
     exerciseId: exercise.id,
     name: exercise.name,
@@ -403,23 +423,62 @@ function toExercise(
         : NO_EXERCISE_ACTIONS,
   };
   if (exercise.equipment !== undefined) {
-    model.equipment = exercise.equipment;
+    base.equipment = exercise.equipment;
   }
+  if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
+    base.isGuided = true;
+  }
+  const advises = mode === 'live' && !skipped;
+  return exercise.type === 'power'
+    ? toPowerExercise(base, tree, advises)
+    : toStrengthExercise(base, tree, advises, context);
+}
+
+/** A strength card's own fields on top of `base` (and an interval or mobility one's, for now). */
+function toStrengthExercise(
+  base: WorkoutExerciseBase,
+  { sessionExercise, exercise }: SessionExerciseTree,
+  advises: boolean,
+  context: SessionContext,
+): StrengthWorkoutExercise {
+  const model: StrengthWorkoutExercise = { ...base, targetRir: sessionExercise.targetRir };
+  if (exercise.type !== undefined && exercise.type !== 'power') {
+    model.type = exercise.type;
+  }
+  if (advises) {
+    const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
+    if (weightHints.length > 0) {
+      model.weightHints = weightHints;
+    }
+  }
+  return model;
+}
+
+/**
+ * A power card's own fields on top of `base`. Power has no RIR on screen (10.2 P5): the week's RIR
+ * stays in the data for the next block's Start, but there is no badge and no `N RIR` placeholder —
+ * a row with no target is just empty.
+ */
+function toPowerExercise(
+  base: WorkoutExerciseBase,
+  { sessionExercise, exercise }: SessionExerciseTree,
+  advises: boolean,
+): PowerWorkoutExercise {
+  const config = exercise.config?.type === 'power' ? exercise.config : undefined;
+  const model: PowerWorkoutExercise = {
+    ...base,
+    type: 'power',
+    powerLoad: config?.load ?? 'weight',
+  };
   const loadEquipment = loadEquipmentOf(exercise);
   if (loadEquipment !== exercise.equipment && loadEquipment !== undefined) {
     model.loadEquipment = loadEquipment;
   }
-  if (exercise.type !== undefined) {
-    model.type = exercise.type;
-  }
-  if (exercise.config?.type === 'power') {
-    model.powerLoad = exercise.config.load;
-  }
-  if (mode === 'live' && !skipped && exercise.config?.type === 'power') {
+  if (advises && config !== undefined) {
     const hint = powerCeilingHint({
-      load: exercise.config.load,
-      noHeavierAvailable: exercise.config.noHeavierAvailable,
-      tipHidden: exercise.config.ceilingTipHidden === true,
+      load: config.load,
+      noHeavierAvailable: config.noHeavierAvailable,
+      tipHidden: config.ceilingTipHidden === true,
       setTargets: sessionExercise.setTargets,
     });
     if (hint !== undefined) {
@@ -429,20 +488,6 @@ function toExercise(
         canFlagNoHeavier: hint.canFlagNoHeavier && exercise.source === 'custom',
         canHideTip: hint.canHideTip && exercise.source === 'custom',
       };
-    }
-  }
-  // Power has no RIR on screen (10.2 P5): the week's RIR stays in the data for the next block's
-  // Start, but there is no badge and no `N RIR` placeholder — a row with no target is just empty.
-  if (exercise.type !== 'power') {
-    model.targetRir = sessionExercise.targetRir;
-  }
-  if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
-    model.isGuided = true;
-  }
-  if (mode === 'live' && !skipped && exercise.type !== 'power') {
-    const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
-    if (weightHints.length > 0) {
-      model.weightHints = weightHints;
     }
   }
   return model;

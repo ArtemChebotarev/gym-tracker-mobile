@@ -17,6 +17,8 @@ import { addSet } from '@usecases/setRows';
 import {
   getWorkoutSession,
   getWorkoutSlot,
+  type PowerWorkoutExercise,
+  type StrengthWorkoutExercise,
   type WorkoutSessionDeps,
 } from '@usecases/workoutSession';
 import { STAMPS } from '../fixtures/stamps';
@@ -639,7 +641,7 @@ describe('getWorkoutSession — history', () => {
     expect(model.progress).toBe(1);
     expect(model.exercises[0]?.rows).toHaveLength(2);
     expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 60, reps: 10 });
-    expect(model.exercises[0]?.targetRir).toBe(2);
+    expect((model.exercises[0] as StrengthWorkoutExercise | undefined)?.targetRir).toBe(2);
   });
 
   test('a session of a still-running block is never history, whatever its own status', async () => {
@@ -700,7 +702,7 @@ describe('getWorkoutSession — preview', () => {
       hasLoggedSets: false,
       actions: expect.objectContaining({ canSkip: false, canDelete: false }),
     });
-    expect(squat?.targetRir).toBeUndefined();
+    expect((squat as StrengthWorkoutExercise | undefined)?.targetRir).toBeUndefined();
     expect(curl?.equipment).toBeUndefined();
   });
 });
@@ -809,7 +811,7 @@ describe('getWorkoutSession — weight hints', () => {
 
     const model = await getWorkoutSession('w2d1', deps);
 
-    expect(model.exercises[0]?.weightHints).toEqual([
+    expect((model.exercises[0] as StrengthWorkoutExercise | undefined)?.weightHints).toEqual([
       { direction: 'increase', reps: defaultProgressionSettings.maxReps },
       { direction: 'decrease', reps: defaultProgressionSettings.minReps },
     ]);
@@ -1011,7 +1013,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(card?.ceilingHint).toEqual({
+    expect((card as PowerWorkoutExercise | undefined)?.ceilingHint).toEqual({
       options: ['heavier', 'add-set'],
       canFlagNoHeavier: false,
       canHideTip: false,

@@ -4,7 +4,11 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { WorkoutScreen, type WorkoutScreenProps } from '@components/WorkoutScreen';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
+import type {
+  StrengthWorkoutExercise,
+  WorkoutExercise,
+  WorkoutSessionModel,
+} from '@usecases/workoutSession';
 
 // SafeAreaView (used by RootScreen) throws without a SafeAreaProvider ancestor — same fixture
 // RootScreen.test.tsx uses.
@@ -31,7 +35,7 @@ const NO_ACTIONS: WorkoutExercise['actions'] = {
   canDelete: false,
 };
 
-function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
+function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): StrengthWorkoutExercise {
   return {
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',
