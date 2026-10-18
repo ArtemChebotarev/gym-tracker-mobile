@@ -11,6 +11,7 @@ import {
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'generated-id-1' }));
@@ -672,5 +673,83 @@ describe('exerciseSettings on the draft (GT-158)', () => {
       edited,
     );
     expect(applyPlannedMesocycleEdit(planned, input)).not.toHaveProperty('exerciseSettings');
+  });
+});
+
+describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
+  const mixed: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-hybrid',
+    name: 'Hybrid',
+    lengthWeeks: 4,
+    daysPerWeek: 1,
+    status: 'planned',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'bench', order: 0, sets: 3 },
+            { exerciseId: MEDBALL_THROW.id, order: 1, sets: 3 },
+            { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+            { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+          ],
+        },
+      ],
+    },
+    // The cycle's own interval plan; Cooldown has no copy and takes the library's length.
+    exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, workSec: 90, restSec: 30, rounds: 2 } },
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+  const exercisesById = new Map([
+    [MEDBALL_THROW.id as string, MEDBALL_THROW],
+    [HEAVY_BAG.id as string, HEAVY_BAG],
+    [COOLDOWN.id as string, COOLDOWN],
+  ]);
+
+  function rowsOf(weekOneTargets?: Parameters<typeof buildMesocycleStart>[3]) {
+    const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z', weekOneTargets, exercisesById);
+    return new Map(week[0]!.exercises.map((exercise) => [exercise.exerciseId, exercise]));
+  }
+
+  test('each type gets its own rows; every one carries the week’s RIR', () => {
+    const rows = rowsOf();
+
+    expect(rows.get('bench')?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
+    expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(3);
+    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
+      { setNumber: 2, targetWorkSec: 90 },
+    ]);
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+    const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));
+    expect(rirs.size).toBe(1);
+  });
+
+  test('a copied block’s history prices sets, never an interval’s rounds or a mobility block', () => {
+    const priced = () => [{ setNumber: 1, targetReps: 8, suggestedWeight: 40 }];
+    const rows = rowsOf(
+      new Map([
+        [weekPlanSlotKey(1, MEDBALL_THROW.id), priced],
+        [weekPlanSlotKey(1, HEAVY_BAG.id), priced],
+        [weekPlanSlotKey(1, COOLDOWN.id), priced],
+      ]),
+    );
+
+    expect(rows.get(MEDBALL_THROW.id)?.setTargets).toEqual(priced());
+    expect(rows.get(HEAVY_BAG.id)?.setTargets[0]).toEqual({ setNumber: 1, targetWorkSec: 90, targetRestSec: 30 });
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+  });
+
+  test('without exercise records every exercise is laid out as sets, as before', () => {
+    const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z');
+
+    expect(week[0]!.exercises.find((exercise) => exercise.exerciseId === HEAVY_BAG.id)?.setTargets).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
   });
 });

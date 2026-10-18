@@ -6,7 +6,7 @@
 // storage.
 
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
-import { toExerciseId, type Equipment } from '@domain/catalog';
+import { toExerciseId, type Equipment, type Exercise } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
 import type { Mesocycle, MesocycleOrigin } from '@domain/mesocycle';
@@ -16,6 +16,7 @@ import {
   type WeekOneTargets,
 } from '@domain/mesocycleBuilders';
 import { validateMesocycleCanStart, type StartableMesocycle } from '@domain/mesocycleValidators';
+import type { WeekPlan } from '@domain/plan';
 import type { ExercisePerformance } from '@domain/progression';
 import { resolveReference } from '@domain/progressionReference';
 import { policyFor } from '@domain/progressionPolicies';
@@ -29,6 +30,13 @@ export type MesocycleStartDeps = {
 
 /** Week 1 of a mesocycle is never the deload one — a block is at least 3 weeks long. */
 const FIRST_WEEK = 1;
+
+/** Each exercise of `plan` once, whichever days it is on. */
+function planExerciseIds(plan: WeekPlan): string[] {
+  return [
+    ...new Set(plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
+  ];
+}
 
 /**
  * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
@@ -55,13 +63,12 @@ const FIRST_WEEK = 1;
  */
 async function weekOneTargetsFromHistory(
   mesocycle: StartableMesocycle & { origin: Extract<MesocycleOrigin, { type: 'copyWeek' }> },
+  catalog: readonly Exercise[],
   repos: MesocycleStartRepositories,
   now: string,
 ): Promise<WeekOneTargets> {
   const plan = mesocycle.weekPlan;
-  const exerciseIds = [
-    ...new Set(plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
-  ];
+  const exerciseIds = planExerciseIds(plan);
   const settings = mesocycle.progressionSettings;
   const since = daysBefore(now, settings.historyLookbackDays);
 
@@ -73,7 +80,6 @@ async function weekOneTargetsFromHistory(
       ),
     ),
   );
-  const catalog = await repos.exerciseRepo.listByIds(exerciseIds.map(toExerciseId));
   const equipmentById = new Map<string, Equipment | undefined>(
     catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
   );
@@ -117,7 +123,9 @@ async function weekOneTargetsFromHistory(
  * it active without its sessions.
  *
  * A `copyWeek` block's week 1 gets its reps and weights here, from each exercise's own history —
- * this is the only place Start reads history, and Flow A and B don't reach it at all.
+ * this is the only place Start reads history, and Flow A and B don't reach it at all. Every flow
+ * reads the plan's exercise records, though: an interval's rounds and a mobility block are laid out
+ * by type, from the cycle's settings (GT-160).
  *
  * Whether the launch may happen at all is settled first, by `validateMesocycleCanStart`: the
  * history read that follows is one query per exercise, and a Start that was going to be refused
@@ -139,12 +147,22 @@ export async function startMesocycle(
     const active = await repos.mesocycleRepo.getActive();
     validateMesocycleCanStart(mesocycle, active);
 
+    // Every flow reads the plan's exercises: their types decide what week 1's rows are (GT-160).
+    const catalog = await repos.exerciseRepo.listByIds(
+      planExerciseIds(mesocycle.weekPlan).map(toExerciseId),
+    );
     const { origin } = mesocycle;
     const weekOneTargets =
       origin.type === 'copyWeek'
-        ? await weekOneTargetsFromHistory({ ...mesocycle, origin }, repos, now)
+        ? await weekOneTargetsFromHistory({ ...mesocycle, origin }, catalog, repos, now)
         : undefined;
-    const start = buildMesocycleStart(mesocycle, active, now, weekOneTargets);
+    const start = buildMesocycleStart(
+      mesocycle,
+      active,
+      now,
+      weekOneTargets,
+      new Map(catalog.map((exercise) => [exercise.id as string, exercise])),
+    );
 
     await repos.sessionRepo.createMany(start.week.map(({ session }) => session));
     await repos.sessionExerciseRepo.createMany(start.week.flatMap(({ exercises }) => exercises));
