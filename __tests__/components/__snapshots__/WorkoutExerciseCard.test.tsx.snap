@@ -524,6 +524,12 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             accessible={true}
             collapsable={false}
             focusable={true}
+            hitSlop={
+              {
+                "left": 10,
+                "right": 10,
+              }
+            }
             onBlur={[Function]}
             onClick={[Function]}
             onFocus={[Function]}
@@ -538,7 +544,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                 "alignItems": "center",
                 "height": 44,
                 "justifyContent": "center",
-                "width": 44,
+                "width": 24,
               }
             }
           >
@@ -3601,6 +3607,12 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             accessible={true}
             collapsable={false}
             focusable={true}
+            hitSlop={
+              {
+                "left": 10,
+                "right": 10,
+              }
+            }
             onBlur={[Function]}
             onClick={[Function]}
             onFocus={[Function]}
@@ -3615,7 +3627,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                 "alignItems": "center",
                 "height": 44,
                 "justifyContent": "center",
-                "width": 44,
+                "width": 24,
               }
             }
           >

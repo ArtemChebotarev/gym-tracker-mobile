@@ -7,7 +7,7 @@ import type { Ref } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InfoIcon } from '../icons/InfoIcon';
-import { circle, square } from '../shapes';
+import { circle, tapTargetSlop } from '../shapes';
 import { COLORS, ICON_SIZES, SIZES } from '../tokens';
 
 export type InfoGlyphButtonProps = {
@@ -37,6 +37,7 @@ export function InfoGlyphButton({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ expanded: open }}
       onPress={onPress}
+      hitSlop={{ left: SIDE_SLOP, right: SIDE_SLOP }}
       style={styles.button}
     >
       <View ref={discRef} style={[styles.disc, open && styles.discOpen]}>
@@ -49,10 +50,18 @@ export function InfoGlyphButton({
   );
 }
 
+// What the disc lacks of the minimum touch width, on each side.
+const SIDE_SLOP = tapTargetSlop(SIZES['size/glyph-button']);
+
 const styles = StyleSheet.create({
-  /** The touch area — the iOS minimum, around a disc a third of its size. */
+  /**
+   * As tall as the iOS minimum touch area, as wide as the disc: the glyph sits right after the label
+   * it explains instead of a 44pt box's worth of air away (Artem's review, 18.10.2026). The rest of
+   * the width is `hitSlop` either side.
+   */
   button: {
-    ...square(SIZES['size/tap-target']),
+    width: SIZES['size/glyph-button'],
+    height: SIZES['size/tap-target'],
     alignItems: 'center',
     justifyContent: 'center',
   },
