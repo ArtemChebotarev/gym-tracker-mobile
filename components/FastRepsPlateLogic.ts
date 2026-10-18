@@ -22,6 +22,11 @@ export function fastRepsPlate(): FastRepsPlate {
   return {
     title: 'Fast reps',
     steps: [
+      [
+        'Pick a load you can move for ',
+        { strong: `${POWER_MIN_REPS}–${POWER_MAX_REPS} fast reps` },
+        '.',
+      ],
       ['Do every rep ', { strong: 'as fast as you can' }, '.'],
       ['Stop the set when ', { strong: 'the speed drops' }, ' — count only the fast reps.'],
       [

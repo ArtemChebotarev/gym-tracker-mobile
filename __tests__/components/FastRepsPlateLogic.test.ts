@@ -5,8 +5,13 @@ describe('fastRepsPlate', () => {
     const plate = fastRepsPlate();
 
     expect(plate.title).toBe('Fast reps');
-    expect(plate.steps).toHaveLength(4);
-    expect(plate.steps[2]).toEqual([
+    expect(plate.steps).toHaveLength(5);
+    expect(plate.steps[0]).toEqual([
+      'Pick a load you can move for ',
+      { strong: '2–6 fast reps' },
+      '.',
+    ]);
+    expect(plate.steps[3]).toEqual([
       'Recommended: ',
       { strong: 'up to 6 fast reps' },
       ' per set. Past that it trains endurance more than power.',

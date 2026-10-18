@@ -77,8 +77,8 @@ const POWER_FIRST_WEIGHT_COPY: FirstWeightCopy = {
   title: 'Finding your load',
   warmUpLabel: WARM_UP_LABEL,
   warmUpSteps: [
-    [{ strong: '2–3 reps' }, ', light and fast'],
-    [{ strong: '2 reps' }, ', close to your working load, still fast'],
+    [{ strong: '8–10 reps' }, ', light and fast'],
+    [{ strong: '4–6 reps' }, ', heavier, still fast'],
   ],
   warmUpNote: WARM_UP_NOTE,
   workingLabel: WORKING_SET_LABEL,
