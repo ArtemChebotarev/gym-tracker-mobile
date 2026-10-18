@@ -25,6 +25,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/row'],
     paddingVertical: SPACING['space/chip-y'],
   },
+  typeChip: {
+    backgroundColor: COLORS['surface/card'],
+  },
+  typeLabel: {
+    color: COLORS['text/secondary'],
+  },
   groupDot: {
     ...circle(SIZES['size/dot']),
   },
@@ -152,6 +158,21 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
+  },
+  // The note's links stand in one row — Replace exercise · Hide this tip — and wrap on a narrow card.
+  ceilingLinks: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: SPACING['space/gap'],
+    marginTop: SPACING['space/gap-tight'],
+  },
+  ceilingFlag: {
+    paddingVertical: SPACING['space/gap-tight'],
+  },
+  ceilingFlagText: {
+    fontSize: META_FONT_SIZE,
+    color: COLORS['text/secondary'],
+    textDecorationLine: 'underline',
   },
   notProgrammed: {
     flexDirection: 'row',

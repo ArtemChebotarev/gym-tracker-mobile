@@ -90,7 +90,7 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
   return {
     exercise: LIVE_EXERCISE,
     mode: 'live',
-    showGroupChip: true,
+    chip: { kind: 'group', muscleGroup: 'chest' },
     onOpenHistory: jest.fn(),
     menuItems: [],
     isSaving: false,
@@ -169,11 +169,13 @@ describe('WorkoutExerciseCard', () => {
   });
 
   test('the group chip shows only when asked for', () => {
-    render(<WorkoutExerciseCard {...makeProps({ showGroupChip: true })} />);
+    render(
+      <WorkoutExerciseCard {...makeProps({ chip: { kind: 'group', muscleGroup: 'chest' } })} />,
+    );
     expect(screen.getByTestId('exercise-group-chip')).toBeTruthy();
     expect(screen.getByText('Chest')).toBeTruthy();
 
-    screen.rerender(<WorkoutExerciseCard {...makeProps({ showGroupChip: false })} />);
+    screen.rerender(<WorkoutExerciseCard {...makeProps({ chip: undefined })} />);
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 
@@ -906,5 +908,75 @@ describe('RIR badge popover', () => {
     expect(screen.getByLabelText('About fast reps')).toBeTruthy();
     expect(screen.queryByText(/RIR/)).toBeNull();
     expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
+  test('a power card at the top of its corridor says so, and the flag action is offered', () => {
+    const onSetNoHeavierAvailable = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      equipment: undefined,
+      targetRir: undefined,
+      ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
+
+    expect(screen.getByText('Try heavier or add a set.', { exact: false })).toBeTruthy();
+    expect(screen.getByText(/You did 6\+ fast reps on every set last week/)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'No heavier available' }));
+    expect(onSetNoHeavierAvailable).toHaveBeenCalledTimes(1);
+  });
+
+  test('no flag action when the exercise cannot take it', () => {
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
+    });
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: power, onSetNoHeavierAvailable: jest.fn() })}
+      />,
+    );
+
+    expect(screen.getByText('Add a set.', { exact: false })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'No heavier available' })).toBeNull();
+  });
+
+  test('after "No heavier available" the note offers a harder variation and Replace exercise', () => {
+    const onReplaceExercise = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onReplaceExercise })} />);
+
+    expect(screen.getByText(/Try a harder variation\./)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
+    expect(onReplaceExercise).toHaveBeenCalledTimes(1);
+  });
+
+  test('the harder-variation note can be closed for good', () => {
+    const onHideCeilingTip = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onHideCeilingTip })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Hide this tip' }));
+    expect(onHideCeilingTip).toHaveBeenCalledTimes(1);
+  });
+
+  test('a power card carries the Power chip, not the muscle group', () => {
+    render(<WorkoutExerciseCard {...makeProps({ chip: { kind: 'type', type: 'power' } })} />);
+
+    expect(screen.getByTestId('exercise-type-chip')).toHaveTextContent('Power');
+    expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 });

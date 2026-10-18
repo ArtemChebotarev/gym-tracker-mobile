@@ -1,17 +1,18 @@
 // Progression policy for `power` exercises — 10.2 · Power progression, as amended on 17.10.2026.
 // Set by set: set N of the next week is the fact of set N + 1, with no clamp — the 2–6 corridor
-// is the trigger of rule 3's hint, not a limit on the sum (P3). The weight is the one logged on
+// is the trigger of the hint, `increase` from 6 and nothing for a drop, not a limit on the sum (P1, P3). The weight is the one logged on
 // that set (P4), sets are copied (P2), a set not logged is carried over. A sum of 0 or less gives
 // the row no numbers (`N RIR`). `targetRir` is still written: the next block's Start reads it
 // back as the reference's RIR (P14). Deload is the strength policy's until GT-83 (P15).
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { SetLog, SetTarget } from '@domain/execution';
-import { POWER_CORRIDOR, usableReps } from '@domain/progressionCorridor';
+import { powerWeightHint, usableReps } from '@domain/progressionCorridor';
+import { prescribePowerFromReference } from '@domain/progressionHistoryPower';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
-import { hintForReps } from '@domain/progressionWeightHint';
 import { targetRir } from '@domain/progressionRir';
 import { strengthPolicy } from '@domain/progressionPolicyStrength';
+import { prescribePowerBlockStart } from '@domain/progressionStartPower';
 
 export const powerPolicy: ProgressionPolicy = {
   prescribeWorkingWeek({ sessionExercise, equipment }, { logs, weekNumber, lengthWeeks }) {
@@ -44,7 +45,7 @@ export const powerPolicy: ProgressionPolicy = {
       if (carriesWeight) {
         target.suggestedWeight = log.weight;
       }
-      const hint = hintForReps(log.reps, POWER_CORRIDOR, equipment);
+      const hint = powerWeightHint(log.reps);
       if (hint !== undefined) {
         target.weightHint = hint;
       }
@@ -58,4 +59,8 @@ export const powerPolicy: ProgressionPolicy = {
     };
   },
   prescribeDeload: strengthPolicy.prescribeDeload,
+  prescribeFromReference: ({ resolution, rowCount, weekRir, equipment }) =>
+    prescribePowerFromReference(resolution, rowCount, weekRir, equipment),
+  prescribeBlockStart: ({ resolution, startRir, rowCount, equipment }) =>
+    prescribePowerBlockStart(resolution, startRir, rowCount, equipment),
 };

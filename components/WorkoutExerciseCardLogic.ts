@@ -1,6 +1,9 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
+import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
+import { POWER_MAX_REPS } from '@domain/progressionCorridor';
 import { isResistanceBand, usesAddedWeight } from '@domain/bodyWeightLoad';
 import { isNotDone } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
@@ -70,18 +73,38 @@ export function exerciseCardView(
 }
 
 /**
- * The group chip sits above a card only when its muscle group differs from the previous card's
- * (08.7, "Список упражнений") — so the first card always gets one.
+ * The chip above a card: the muscle group for a strength exercise, the exercise's type for any
+ * other (10.1 FR-14) — a power card is told apart by "Power", not by the muscle it happens to hit,
+ * which is secondary there (Artem, 18.10.2026).
  */
-export function showsGroupChip(
-  exercises: readonly Pick<WorkoutExercise, 'muscleGroup'>[],
+export type CardChip =
+  { kind: 'group'; muscleGroup: MuscleGroup } | { kind: 'type'; type: ExerciseType };
+
+/**
+ * Which chip, if any, sits above card `index` (08.7, "Список упражнений"): only when what it names
+ * changes from the previous card, so the first card always gets one. A strength card names its
+ * muscle group, and also when it follows a card of another type — the run of strength starts over.
+ * A power, interval or mobility card names its type, once for a run of the same type.
+ */
+export function cardChip(
+  exercises: readonly Pick<WorkoutExercise, 'muscleGroup' | 'type'>[],
   index: number,
-): boolean {
+): CardChip | undefined {
   const current = exercises[index];
   if (current === undefined) {
-    return false;
+    return undefined;
   }
-  return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
+  const type = current.type ?? 'strength';
+  const previous = exercises[index - 1];
+  const previousType = previous === undefined ? undefined : (previous.type ?? 'strength');
+  if (type !== 'strength') {
+    return previousType === type ? undefined : { kind: 'type', type };
+  }
+  const changed =
+    previous === undefined ||
+    previousType !== 'strength' ||
+    previous.muscleGroup !== current.muscleGroup;
+  return changed ? { kind: 'group', muscleGroup: current.muscleGroup } : undefined;
 }
 
 /**
@@ -236,6 +259,91 @@ export function cardInfoTargets(
       mode === 'live' &&
       weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir) !== undefined,
   };
+}
+
+/** The mark the note leads with: the load going up, a variation swap, or one more set. */
+export type CeilingNoteIcon = 'up' | 'swap' | 'plus';
+
+/**
+ * The card's note at the top of the corridor — power only (10.2 P6–P9, GT-81), in the shape of the
+ * mockup: the step to take, then what happened last week, then the actions the note leads to.
+ */
+export type CeilingNote = {
+  icon: CeilingNoteIcon;
+  lead: string;
+  text: string;
+  /** "No heavier available": the user says there is no heavier load to take. */
+  flagLabel?: string;
+  /** "Replace exercise": opens the replace flow once the load option is a harder variation. */
+  replaceLabel?: string;
+  /** "Hide this tip": closes the note for good — offered with the harder variation. */
+  hideLabel?: string;
+};
+
+const CEILING_OPTION_TEXT: Record<CeilingOption, string> = {
+  heavier: 'try heavier',
+  'higher-level': 'try a higher level',
+  'harder-variation': 'try a harder variation',
+  'add-set': 'add a set',
+};
+
+/** What the note says about the load the exercise is at: the kilograms, or that it is a level. */
+export type CeilingNoteContext = {
+  load: PowerLoad;
+  /** The heaviest weight in the exercise's rows, for "10 kg is the heaviest you have". */
+  topWeight?: number;
+};
+
+/**
+ * The top of the corridor is explained once, in the Fast reps ⓘ, so the note doesn't repeat why: it
+ * says what to do ("Try heavier or add a set."), what the user did ("You did 6+ fast reps on every
+ * set last week."), and — once nothing heavier is left — that they may stay where they are. The
+ * actions are links under it.
+ */
+export function formatCeilingNote(
+  hint: PowerCeilingHint,
+  context: CeilingNoteContext,
+): CeilingNote {
+  const [first, ...rest] = hint.options;
+  const steps = hint.options.map((option) => CEILING_OPTION_TEXT[option]);
+  const sentence = steps.join(' or ');
+  const lead = `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`;
+  const didReps = `You did ${POWER_MAX_REPS}+ fast reps on every set last week. That's the top of the recommended range.`;
+  const isVariation = first === 'harder-variation';
+  const heaviest =
+    context.load === 'level'
+      ? 'This is the highest level you have.'
+      : context.topWeight === undefined
+        ? 'This is the heaviest you have.'
+        : `${context.topWeight} kg is the heaviest you have.`;
+  const icon: CeilingNoteIcon = isVariation
+    ? 'swap'
+    : first === undefined || (rest.length === 0 && first === 'add-set')
+      ? 'plus'
+      : 'up';
+  return {
+    icon,
+    lead,
+    text: isVariation ? `${heaviest} Or keep it here while your strength catches up.` : didReps,
+    ...(hint.canFlagNoHeavier
+      ? {
+          flagLabel:
+            context.load === 'level' ? 'No higher level available' : 'No heavier available',
+        }
+      : {}),
+    ...(isVariation ? { replaceLabel: 'Replace exercise' } : {}),
+    ...(hint.canHideTip ? { hideLabel: 'Hide this tip' } : {}),
+  };
+}
+
+/** The heaviest weight among the rows, as an object to spread — nothing when no row has one. */
+export function topWeightOf(rows: readonly Pick<WorkoutSetRow, 'suggestedWeight'>[]): {
+  topWeight?: number;
+} {
+  const weights = rows.flatMap((row) =>
+    row.suggestedWeight === undefined ? [] : [row.suggestedWeight],
+  );
+  return weights.length === 0 ? {} : { topWeight: Math.max(...weights) };
 }
 
 /** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */

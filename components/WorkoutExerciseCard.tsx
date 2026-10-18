@@ -26,7 +26,7 @@
 // WorkoutExerciseCardLogic.ts, per the code-style skill.
 
 import { useState, type Ref } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
@@ -39,13 +39,18 @@ import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import type { IconComponent } from '@design/icons/IconFrame';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import { PlusIcon } from '@design/icons/PlusIcon';
+import { SwapIcon } from '@design/icons/SwapIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-import type { MuscleGroup } from '@domain/catalog';
+import type { ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
@@ -57,7 +62,10 @@ import {
   editWeightText,
   estimateNote,
   exerciseCardView,
+  type CardChip,
   firstUnloggedRow,
+  formatCeilingNote,
+  topWeightOf,
   formatWeightHint,
   holdLoggedWeight,
   weightFieldText,
@@ -65,7 +73,9 @@ import {
   weightSwapPopover,
   workoutEquipmentLabel,
 } from './WorkoutExerciseCardLogic';
+import { FastRepsPopover } from './FastRepsPopover';
 import { FirstWeightPopover } from './FirstWeightPopover';
+import { firstWeightCopy } from './FirstWeightPopoverLogic';
 import { RirBadge } from './RirBadge';
 import { rirExplanation } from './RirExplanationLogic';
 import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
@@ -82,6 +92,12 @@ export type CardCoachmarkTargets = {
 
 export type WorkoutExerciseCardProps = {
   exercise: WorkoutExercise;
+  /** The user said there is nothing heavier to take (power, 10.2 P9). Live mode only. */
+  onSetNoHeavierAvailable?: () => void;
+  /** Opens the replace flow — the note's second link once the load option is a harder variation. */
+  onReplaceExercise?: () => void;
+  /** Closes the ceiling note for good — its third link, with the harder variation (GT-81). */
+  onHideCeilingTip?: () => void;
   mode: WorkoutMode;
   /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
   isDeload?: boolean;
@@ -90,8 +106,8 @@ export type WorkoutExerciseCardProps = {
    * discs. Only the first card gets them; the rest of the tour is the screen's.
    */
   coachmarkTargets?: CardCoachmarkTargets;
-  /** The group chip above the card — see `showsGroupChip`. */
-  showGroupChip: boolean;
+  /** The chip above the card — see `cardChip`. */
+  chip?: CardChip;
   /**
    * The card's place in the list. Only the native `⋯` menu reads it, as its `key`: a card keeps
    * its identity when Move up/down reorders the list, and the SwiftUI host inside it then glides
@@ -130,7 +146,7 @@ export function WorkoutExerciseCard({
   mode,
   isDeload = false,
   coachmarkTargets,
-  showGroupChip,
+  chip,
   position = 0,
   onOpenHistory,
   menuItems,
@@ -140,6 +156,9 @@ export function WorkoutExerciseCard({
   isSaving,
   onLogSet,
   onUnlogSet,
+  onSetNoHeavierAvailable,
+  onReplaceExercise,
+  onHideCeilingTip,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
   const editable = mode === 'live' && !view.isNotDone;
@@ -150,12 +169,20 @@ export function WorkoutExerciseCard({
   const weightInfo = usePopoverAnchor();
   const repsInfo = usePopoverAnchor();
   const isPower = exercise.type === 'power';
+  const ceilingNote =
+    exercise.ceilingHint === undefined
+      ? undefined
+      : formatCeilingNote(exercise.ceilingHint, {
+          load: exercise.powerLoad ?? 'weight',
+          ...topWeightOf(exercise.rows),
+        });
   const infoTargets = cardInfoTargets(exercise, mode, isDeload);
   const showWeightInfo = infoTargets.weight;
 
   return (
     <View style={styles.root}>
-      {showGroupChip && <GroupChip muscleGroup={exercise.muscleGroup} />}
+      {chip?.kind === 'group' && <GroupChip muscleGroup={chip.muscleGroup} />}
+      {chip?.kind === 'type' && <TypeChip type={chip.type} />}
       <View
         testID={`exercise-card-${exercise.sessionExerciseId}`}
         style={[styles.card, view.isNotDone && styles.skipped]}
@@ -205,6 +232,26 @@ export function WorkoutExerciseCard({
             </View>
           );
         })}
+
+        {ceilingNote !== undefined && (
+          <InlineNote
+            icon={CEILING_ICONS[ceilingNote.icon]}
+            lead={ceilingNote.lead}
+            text={ceilingNote.text}
+          >
+            <View style={styles.ceilingLinks}>
+              {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
+                <CeilingLink label={ceilingNote.flagLabel} onPress={onSetNoHeavierAvailable} />
+              )}
+              {ceilingNote.replaceLabel !== undefined && onReplaceExercise !== undefined && (
+                <CeilingLink label={ceilingNote.replaceLabel} onPress={onReplaceExercise} />
+              )}
+              {ceilingNote.hideLabel !== undefined && onHideCeilingTip !== undefined && (
+                <CeilingLink label={ceilingNote.hideLabel} onPress={onHideCeilingTip} />
+              )}
+            </View>
+          </InlineNote>
+        )}
 
         {view.showNotProgrammed && (
           <View style={styles.notProgrammed}>
@@ -271,12 +318,10 @@ export function WorkoutExerciseCard({
         />
       )}
       {isPower && (
-        <Popover
+        <FastRepsPopover
           visible={repsInfo.visible}
-          onClose={repsInfo.close}
           anchor={repsInfo.anchor}
-          title="Fast reps only"
-          subtitle="Count only the reps done at full speed. When the speed drops, the set is over."
+          onClose={repsInfo.close}
         />
       )}
       {showWeightInfo && (
@@ -284,7 +329,7 @@ export function WorkoutExerciseCard({
           visible={weightInfo.visible}
           anchor={weightInfo.anchor}
           onClose={weightInfo.close}
-          targetRir={exercise.targetRir}
+          copy={firstWeightCopy(exercise.type, exercise.targetRir)}
         />
       )}
     </View>
@@ -352,6 +397,43 @@ function WeightSwapPopoverPlate({
         ))}
       </View>
     </Popover>
+  );
+}
+
+const CEILING_ICONS = { up: ArrowUpIcon, swap: SwapIcon, plus: PlusIcon } as const;
+
+/** A link in the ceiling note — an action the note leads to, underlined like the mockup's. */
+function CeilingLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.ceilingFlag}
+    >
+      <Text style={styles.ceilingFlagText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+// Resolved once, outside any render: a component picked by a function call inside one is a new
+// component every time it renders.
+const TYPE_CHIP_ICONS: Record<ExerciseType, IconComponent> = {
+  strength: getExerciseTypeIcon('strength'),
+  power: getExerciseTypeIcon('power'),
+  interval: getExerciseTypeIcon('interval'),
+  mobility: getExerciseTypeIcon('mobility'),
+};
+
+/** The type chip of a power, interval or mobility card (10.1 FR-14): its mark and its name. */
+function TypeChip({ type }: { type: ExerciseType }) {
+  const Icon = TYPE_CHIP_ICONS[type];
+
+  return (
+    <View testID="exercise-type-chip" style={[styles.groupChip, styles.typeChip]}>
+      <Icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
+      <Text style={[styles.groupLabel, styles.typeLabel]}>{getExerciseTypeLabel(type)}</Text>
+    </View>
   );
 }
 

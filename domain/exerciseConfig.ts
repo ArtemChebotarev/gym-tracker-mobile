@@ -39,6 +39,11 @@ export type PowerConfig = {
    * at the ceiling changes from "try heavier" to "try a harder variation".
    */
   noHeavierAvailable: boolean;
+  /**
+   * The user closed the note at the top of the corridor for good (GT-81). Only the note goes: the
+   * targets and the hints on the sets stay. Absent means shown; there is no way back yet.
+   */
+  ceilingTipHidden?: boolean;
 };
 
 export type IntervalConfig = {

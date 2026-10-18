@@ -997,4 +997,40 @@ describe('weight swap on the workout data (task 120)', () => {
 
     expect(benchCard).not.toHaveProperty('isGuided');
   });
+
+  test('power at the top of the corridor carries the ceiling hint; a catalog exercise cannot take the flag', async () => {
+    const atTop: SessionExercise = {
+      ...planned('w2d1', 'medball', 1, [7, 7]),
+      setTargets: [
+        { setNumber: 1, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+        { setNumber: 2, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+      ],
+    };
+    const { deps } = await setUp({ exercises: [atTop], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card?.ceilingHint).toEqual({
+      options: ['heavier', 'add-set'],
+      canFlagNoHeavier: false,
+      canHideTip: false,
+    });
+    // Strength's "Go heavier — 30+ reps" is not for power.
+    expect(card).not.toHaveProperty('weightHints');
+  });
+
+  test('no ceiling hint while a set still grows', async () => {
+    const growing: SessionExercise = {
+      ...planned('w2d1', 'medball', 1, [7, 4]),
+      setTargets: [
+        { setNumber: 1, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+        { setNumber: 2, targetReps: 4, suggestedWeight: 5 },
+      ],
+    };
+    const { deps } = await setUp({ exercises: [growing], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).not.toHaveProperty('ceilingHint');
+  });
 });

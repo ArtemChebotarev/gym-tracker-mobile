@@ -6,11 +6,10 @@
 // (`domain/progressionReference.ts`, task 134.1); this turns its answer into set targets.
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
-import type { Equipment, ExerciseType } from '@domain/catalog';
+import type { Equipment } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
-import { clampFor, hintCorridorFor, usableReps } from '@domain/progressionCorridor';
 import { nextTargetReps, startTargetReps } from '@domain/progressionReps';
 import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
@@ -37,7 +36,7 @@ export function referenceSetAt(
  * - another block: + 1 and the RIR gap, as Flow C carries a block over (`startTargetReps`);
  * - the current week: reps as they were — a parallel performance, not a previous one.
  */
-function estimatedReps(
+export function estimatedReps(
   reference: SetLog,
   resolution: Extract<ReferenceResolution, { kind: 'estimate' }>,
   weekRir: number,
@@ -69,9 +68,7 @@ function estimatedReps(
  * Row N takes the reference's set N and nothing else (`referenceSetAt`): a row the reference
  * has no set for gets no numbers, `N RIR`. A pure
  * `bodyweight` exercise takes the reps and skips the weight and the hint, as everywhere else
- * (task 105, `domain/bodyWeightLoad.ts`). A `power` exercise is not clamped to a corridor:
- * its 2–6 only decides the hint (`domain/progressionCorridor.ts`, 10.2 P13 as amended 17.10.2026).
- * A sum of 0 or less leaves the row with no numbers, `N RIR`.
+ * (task 105, `domain/bodyWeightLoad.ts`).
  *
  * Not called in the deload week: an exercise can't be added there, and one swapped in gets no
  * weight or reps at all — the week isn't for progression, so its RIR is guidance enough and no
@@ -84,10 +81,7 @@ export function prescribeFromHistory(
   weekRir: number,
   settings: RepCorridor,
   equipment?: Equipment,
-  type?: ExerciseType,
 ): SetTarget[] {
-  const clamp = clampFor(type, settings);
-  const hintCorridor = hintCorridorFor(type, settings);
   const carriesWeight = !isPureBodyWeight(equipment);
   return Array.from({ length: rowCount }, (_, index): SetTarget => {
     const setNumber = index + 1;
@@ -99,25 +93,20 @@ export function prescribeFromHistory(
       return { setNumber };
     }
     if (resolution.kind === 'estimate') {
-      const reps = usableReps(estimatedReps(reference, resolution, weekRir, clamp));
-      if (reps === undefined) {
-        return { setNumber };
-      }
-      const estimate: SetTarget = { setNumber, targetReps: reps };
+      const estimate: SetTarget = {
+        setNumber,
+        targetReps: estimatedReps(reference, resolution, weekRir, settings),
+      };
       if (carriesWeight) {
         estimate.suggestedWeight = reference.weight;
       }
       estimate.estimate = resolution.reason;
       return estimate;
     }
-    const reps = usableReps(nextTargetReps(reference.reps, clamp));
-    if (reps === undefined) {
-      return { setNumber };
-    }
-    const hint = hintForReps(reference.reps, hintCorridor, equipment);
+    const hint = hintForReps(reference.reps, settings, equipment);
     const target: SetTarget = { setNumber };
     if (!bandAtCeiling(hint, equipment)) {
-      target.targetReps = reps;
+      target.targetReps = nextTargetReps(reference.reps, settings);
     }
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;

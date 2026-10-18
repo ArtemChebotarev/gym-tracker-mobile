@@ -11,38 +11,36 @@ import { PlateRow } from '@design/components/PlateRow';
 import { Popover } from '@design/components/Popover';
 import type { AnchorRect } from '@design/popoverLayout';
 
-import {
-  FIRST_WEIGHT_TITLE,
-  WARM_UP_LABEL,
-  WARM_UP_NOTE,
-  WARM_UP_STEPS,
-  WORKING_SET_LABEL,
-  workingSetText,
-} from './FirstWeightPopoverLogic';
+import type { FirstWeightCopy } from './FirstWeightPopoverLogic';
 import { styles } from './FirstWeightPopoverStyles';
 
 export type FirstWeightPopoverProps = {
   visible: boolean;
   anchor: AnchorRect | null;
   onClose: () => void;
-  /** The exercise's target RIR for this week, when it has one — what the working set is stopped at. */
-  targetRir: number | undefined;
+  /** What the plate says — see `firstWeightCopy`: the exercise's own target RIR, or power's own words. */
+  copy: FirstWeightCopy;
 };
 
-export function FirstWeightPopover({ visible, anchor, onClose, targetRir }: FirstWeightPopoverProps) {
+export function FirstWeightPopover({ visible, anchor, onClose, copy }: FirstWeightPopoverProps) {
   return (
-    <Popover visible={visible} onClose={onClose} anchor={anchor} title={FIRST_WEIGHT_TITLE}>
-      <Text style={styles.sectionLabel}>{WARM_UP_LABEL}</Text>
+    <Popover visible={visible} onClose={onClose} anchor={anchor} title={copy.title}>
+      <Text style={styles.sectionLabel}>{copy.warmUpLabel}</Text>
       <View style={styles.rows}>
-        {WARM_UP_STEPS.map((text, index) => (
+        {copy.warmUpSteps.map((text, index) => (
           <PlateRow key={index} compact leading={{ number: index + 1 }} text={text} />
         ))}
       </View>
-      <Text style={styles.note}>{WARM_UP_NOTE}</Text>
+      <Text style={styles.note}>{copy.warmUpNote}</Text>
       <View style={styles.separator} />
-      <Text style={[styles.sectionLabel, styles.workingLabel]}>{WORKING_SET_LABEL}</Text>
+      <Text style={[styles.sectionLabel, styles.workingLabel]}>{copy.workingLabel}</Text>
       <View style={styles.rows}>
-        <PlateRow compact accent leading={{ number: WARM_UP_STEPS.length + 1 }} text={workingSetText(targetRir)} />
+        <PlateRow
+          compact
+          accent
+          leading={{ number: copy.warmUpSteps.length + 1 }}
+          text={copy.workingText}
+        />
       </View>
     </Popover>
   );

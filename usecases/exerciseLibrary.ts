@@ -22,7 +22,7 @@ import {
 } from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SetLog } from '@domain/execution';
-import type { ExerciseConfig } from '@domain/exerciseConfig';
+import type { ExerciseConfig, PowerConfig } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import {
   assertTypeUnchanged,
@@ -164,6 +164,54 @@ export async function hideExercise(
     return existing;
   }
   return deps.exerciseRepo.toggleHidden(id);
+}
+
+/**
+ * Sets the power flag "No heavier available" (10.2 P9, GT-81): the user said there is nothing
+ * heavier to take, so the hint at the top of the corridor offers a harder variation instead.
+ * Only the flag changes, nothing else of the exercise. It is a custom exercise's own field; a
+ * catalog exercise is read-only (02 · Domain Model: only hiding it is the user's), so asking it
+ * is a conflict, and so is asking an exercise that is not power.
+ */
+export async function setNoHeavierAvailable(
+  id: ExerciseId,
+  value: boolean,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  return updatePowerConfig(id, { noHeavierAvailable: value }, deps);
+}
+
+/**
+ * Closes the note at the top of a power exercise's corridor for good (GT-81). Same rules as the
+ * flag above — a custom power exercise's own field, one part of its config changed and nothing
+ * else — and there is no way back yet.
+ */
+export async function hideCeilingTip(
+  id: ExerciseId,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  return updatePowerConfig(id, { ceilingTipHidden: true }, deps);
+}
+
+async function updatePowerConfig(
+  id: ExerciseId,
+  patch: Partial<PowerConfig>,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  const existing = await deps.exerciseRepo.getById(id);
+  if (!existing) {
+    throw new NotFoundError(`Exercise "${id}" does not exist.`);
+  }
+  if (existing.source !== 'custom') {
+    throw new ConflictError(`Exercise "${id}" is a catalog exercise; only hiding it can change.`);
+  }
+  if (existing.config?.type !== 'power') {
+    throw new ConflictError(`Exercise "${id}" is not a power exercise.`);
+  }
+  return deps.exerciseRepo.updateCustom({
+    ...existing,
+    config: { ...existing.config, ...patch },
+  });
 }
 
 /**

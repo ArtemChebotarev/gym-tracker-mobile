@@ -1,3 +1,4 @@
+import type { MuscleGroup } from '@domain/catalog';
 import {
   type WeightEdits,
   carryWeightForward,
@@ -7,12 +8,14 @@ import {
   firstUnloggedRow,
   formatWeightHint,
   holdLoggedWeight,
-  showsGroupChip,
+  cardChip,
   weightFieldText,
   estimateNote,
   weightSwapPopover,
   workoutEquipmentLabel,
   weightColumnLabel,
+  formatCeilingNote,
+  topWeightOf,
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -103,36 +106,70 @@ describe('exerciseCardView', () => {
   });
 });
 
-describe('showsGroupChip', () => {
+describe('cardChip', () => {
   const exercises = [
     { muscleGroup: 'chest' },
     { muscleGroup: 'chest' },
     { muscleGroup: 'back' },
     { muscleGroup: 'chest' },
   ] as const;
+  const group = (muscleGroup: MuscleGroup) => ({ kind: 'group', muscleGroup });
 
   test('the first card always gets the chip', () => {
-    expect(showsGroupChip(exercises, 0)).toBe(true);
+    expect(cardChip(exercises, 0)).toEqual(group('chest'));
   });
 
   test('no chip when the group is the same as the previous card', () => {
-    expect(showsGroupChip(exercises, 1)).toBe(false);
+    expect(cardChip(exercises, 1)).toBeUndefined();
   });
 
   test('a chip when the group changes from the previous card', () => {
-    expect(showsGroupChip(exercises, 2)).toBe(true);
+    expect(cardChip(exercises, 2)).toEqual(group('back'));
   });
 
   test('a group coming back after another one gets the chip again', () => {
-    expect(showsGroupChip(exercises, 3)).toBe(true);
+    expect(cardChip(exercises, 3)).toEqual(group('chest'));
   });
 
   test('groups sharing a color family still count as different (traps after back)', () => {
-    expect(showsGroupChip([{ muscleGroup: 'back' }, { muscleGroup: 'traps' }], 1)).toBe(true);
+    expect(cardChip([{ muscleGroup: 'back' }, { muscleGroup: 'traps' }], 1)).toEqual(
+      group('traps'),
+    );
   });
 
   test('an index past the list gets no chip', () => {
-    expect(showsGroupChip(exercises, 4)).toBe(false);
+    expect(cardChip(exercises, 4)).toBeUndefined();
+  });
+
+  // GT-81, 10.1 FR-14: a card that is not strength names its type, and the group is secondary.
+  describe('a card of another type', () => {
+    const mixed = [
+      { muscleGroup: 'chest' },
+      { muscleGroup: 'fullBody', type: 'power' },
+      { muscleGroup: 'quads', type: 'power' },
+      { muscleGroup: 'chest' },
+      { muscleGroup: 'back', type: 'interval' },
+    ] as const;
+
+    test('names its type instead of its muscle group', () => {
+      expect(cardChip(mixed, 1)).toEqual({ kind: 'type', type: 'power' });
+    });
+
+    test('says it once for a run of the same type', () => {
+      expect(cardChip(mixed, 2)).toBeUndefined();
+    });
+
+    test('a strength card after it starts its own run, with its group', () => {
+      expect(cardChip(mixed, 3)).toEqual(group('chest'));
+    });
+
+    test('a different type changes the chip; a type first in the list gets it too', () => {
+      expect(cardChip(mixed, 4)).toEqual({ kind: 'type', type: 'interval' });
+      expect(cardChip([{ muscleGroup: 'fullBody', type: 'mobility' }], 0)).toEqual({
+        kind: 'type',
+        type: 'mobility',
+      });
+    });
   });
 });
 
@@ -600,5 +637,78 @@ describe('weightColumnLabel', () => {
 
   test('power with no stated load reads as kilograms', () => {
     expect(weightColumnLabel({ type: 'power' })).toBe('Load, kg');
+  });
+});
+
+// GT-81, 10.2 P6–P9: the note at the top of a power card's corridor — the mockup's shape.
+describe('formatCeilingNote', () => {
+  const didReps =
+    "You did 6+ fast reps on every set last week. That's the top of the recommended range.";
+
+  test('kilograms: try heavier or add a set, what the user did, and the flag as a link', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
+        { load: 'weight', topWeight: 10 },
+      ),
+    ).toEqual({
+      icon: 'up',
+      lead: 'Try heavier or add a set.',
+      text: didReps,
+      flagLabel: 'No heavier available',
+    });
+  });
+
+  test('a level says so, in the step and in the flag', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['higher-level'], canFlagNoHeavier: true, canHideTip: false },
+        { load: 'level' },
+      ),
+    ).toEqual({
+      icon: 'up',
+      lead: 'Try a higher level.',
+      text: didReps,
+      flagLabel: 'No higher level available',
+    });
+  });
+
+  test('its own load: only a set, with a plus and no flag', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
+        { load: 'none' },
+      ),
+    ).toEqual({ icon: 'plus', lead: 'Add a set.', text: didReps });
+  });
+
+  test('once nothing heavier is left: a harder variation, why, and Replace exercise', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['harder-variation', 'add-set'], canFlagNoHeavier: false, canHideTip: true },
+        { load: 'weight', topWeight: 10 },
+      ),
+    ).toEqual({
+      icon: 'swap',
+      lead: 'Try a harder variation or add a set.',
+      text: '10 kg is the heaviest you have. Or keep it here while your strength catches up.',
+      replaceLabel: 'Replace exercise',
+      hideLabel: 'Hide this tip',
+    });
+    expect(
+      formatCeilingNote(
+        { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+        { load: 'level' },
+      ).text,
+    ).toBe('This is the highest level you have. Or keep it here while your strength catches up.');
+  });
+});
+
+describe('topWeightOf', () => {
+  test('the heaviest weight of the rows, or nothing when none has one', () => {
+    expect(topWeightOf([{ suggestedWeight: 8 }, { suggestedWeight: 10 }, {}])).toEqual({
+      topWeight: 10,
+    });
+    expect(topWeightOf([{}, {}])).toEqual({});
   });
 });

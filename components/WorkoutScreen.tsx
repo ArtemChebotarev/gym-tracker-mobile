@@ -59,7 +59,7 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
-import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import { cardChip } from './WorkoutExerciseCardLogic';
 import { RirExplanationContent } from './RirExplanationContent';
 import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
@@ -103,6 +103,10 @@ export type WorkoutScreenProps = {
   ) => void;
   /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
+  onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
+  /** The user closed a power exercise's ceiling note for good (GT-81). Live only. */
+  onHideCeilingTip: (exercise: WorkoutExercise) => void;
   /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
   onBodyWeightChange?: (bodyWeight: number) => void;
   /** A bodyweight exercise's Weight cell was tapped while the block has no body weight yet (105). */
@@ -156,6 +160,8 @@ export function WorkoutScreen({
   onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
+  onSetNoHeavierAvailable,
+  onHideCeilingTip,
   onBodyWeightChange,
   onRequestBodyWeight,
   isSaving,
@@ -290,7 +296,7 @@ export function WorkoutScreen({
               {...(index === 0
                 ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
                 : {})}
-              showGroupChip={showsGroupChip(model.exercises, index)}
+              chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
@@ -302,6 +308,9 @@ export function WorkoutScreen({
               onRequestBodyWeight={onRequestBodyWeight}
               onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
+              onSetNoHeavierAvailable={() => onSetNoHeavierAvailable(exercise)}
+              onReplaceExercise={() => onExerciseMenuAction(exercise, 'replace')}
+              onHideCeilingTip={() => onHideCeilingTip(exercise)}
             />
           ))}
           {model.showFinish && (
