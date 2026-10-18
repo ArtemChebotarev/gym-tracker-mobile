@@ -4,8 +4,6 @@
 
 import { BackupRefusedError } from '@domain/backup';
 import { SharingUnavailableError } from '@state/shareFile';
-import type { TimerCapsuleProps } from '@design/components/TimerCapsule';
-import { HourglassIcon } from '@design/icons/HourglassIcon';
 
 export const IMPORT_CONFIRM_TITLE = 'Restore this backup?';
 
@@ -46,24 +44,4 @@ export function exportErrorMessage(error: Error, what: 'data' | 'log'): string {
     return "Sharing isn't available on this device.";
   }
   return `Couldn't export your ${what}. Try again.`;
-}
-
-/**
- * A made-up rest for the floating capsule (GT-85), so it can be looked at before the rest timer
- * (GT-86) drives it: Pause and Resume swap it between running and paused, Skip puts it away.
- */
-export function demoTimerCapsule(
-  state: 'running' | 'paused',
-  actions: { show: (capsule: TimerCapsuleProps) => void; clear: () => void },
-): TimerCapsuleProps {
-  return {
-    state,
-    icon: HourglassIcon,
-    title: '1:46',
-    caption: state === 'paused' ? 'Paused · set 3 next' : 'Rest · set 3 next',
-    progress: 0.88,
-    onSkip: actions.clear,
-    onPause: () => actions.show(demoTimerCapsule('paused', actions)),
-    onResume: () => actions.show(demoTimerCapsule('running', actions)),
-  };
 }
