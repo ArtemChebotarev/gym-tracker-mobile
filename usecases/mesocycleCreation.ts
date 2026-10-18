@@ -6,7 +6,12 @@
 // of its sessions (`extractWeekPlan`) and deciding which weeks may be copied at all
 // (`buildSourceWeekOptions`) all stay in `domain/`.
 
+import { toExerciseId } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
+import {
+  weekPlanExerciseSettings,
+  type ExerciseSettingsById,
+} from '@domain/exerciseSettingsBuilders';
 import type { Mesocycle } from '@domain/mesocycle';
 import {
   buildCopyWeekMesocycleDraft,
@@ -165,6 +170,39 @@ export async function extractSourceWeekPlan(
       })),
     ),
   );
+}
+
+export type SourceWeekWithSettingsDeps = SourceWeekDeps & { exerciseRepo: ExerciseRepository };
+
+/** What Flow C's draft is prefilled from: the week's structure and its hybrid settings. */
+export type SourceWeek = {
+  weekPlan: WeekPlan;
+  /**
+   * For each power, interval and mobility exercise of `weekPlan`: the source cycle's own settings
+   * for it, or — for one the source has none for — a copy of its library config (GT-159).
+   */
+  exerciseSettings: ExerciseSettingsById;
+};
+
+/**
+ * `extractSourceWeekPlan`, plus the settings the copy starts with (GT-159, Artem 18.10.2026): what
+ * the source cycle actually ran each hybrid exercise with, the library's defaults where it has
+ * nothing. Rejects as `extractSourceWeekPlan` does.
+ */
+export async function extractSourceWeek(
+  query: { sourceMesoId: string; sourceWeekNumber: number },
+  deps: SourceWeekWithSettingsDeps,
+): Promise<SourceWeek> {
+  const weekPlan = await extractSourceWeekPlan(query, deps);
+  const source = await deps.mesocycleRepo.getById(query.sourceMesoId);
+  const exerciseIds = [
+    ...new Set(weekPlan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
+  ].map(toExerciseId);
+  const exercises = await deps.exerciseRepo.listByIds(exerciseIds);
+  return {
+    weekPlan,
+    exerciseSettings: weekPlanExerciseSettings(weekPlan, exercises, source?.exerciseSettings),
+  };
 }
 
 export type CopyWeekMesocycleConfirmInput = CopyWeekMesocycleDraftInput & {

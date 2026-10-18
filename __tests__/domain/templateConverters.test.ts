@@ -2,6 +2,8 @@ import type { Exercise, MuscleGroup } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
 import { applyTemplate } from '@domain/templateConverters';
+import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 function exercise(
@@ -186,5 +188,37 @@ describe('applyTemplate', () => {
         ['row', 2, 3],
       ]);
     });
+  });
+});
+
+describe('applyTemplate: hybrid settings (GT-159)', () => {
+  test('a template’s power, interval and mobility exercises start from the library defaults', () => {
+    const hybridTemplate: MesoTemplate = {
+      ...template,
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [
+              { exerciseId: 'bench', order: 1, sets: 3 },
+              { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+              { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+            ],
+          },
+        ],
+      },
+    };
+
+    const draft = applyTemplate(hybridTemplate, [...library, HEAVY_BAG, COOLDOWN], []);
+
+    expect(draft.exerciseSettings).toEqual({
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [COOLDOWN.id]: COOLDOWN.config,
+    });
+  });
+
+  test('a strength-only template has no exerciseSettings', () => {
+    expect(applyTemplate(template, library, [])).not.toHaveProperty('exerciseSettings');
   });
 });

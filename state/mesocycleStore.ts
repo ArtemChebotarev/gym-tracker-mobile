@@ -15,7 +15,7 @@ import { useRepositories } from '@state/repositories';
 import type { MesocycleClosingDeps } from '@usecases/mesocycleClosing';
 import type {
   MesocycleCreationDeps,
-  SourceWeekDeps,
+  SourceWeekWithSettingsDeps,
   SourceWeekListDeps,
   TemplateDraftDeps,
 } from '@usecases/mesocycleCreation';
@@ -70,10 +70,13 @@ export function useSourceWeekListDeps(): SourceWeekListDeps {
   return { mesocycleRepo, sessionRepo };
 }
 
-/** Flow C (041/124): reading the chosen week's structure back out, exercises included. */
-export function useSourceWeekDeps(): SourceWeekDeps {
-  const { mesocycleRepo, sessionRepo, sessionExerciseRepo } = useRepositories();
-  return { mesocycleRepo, sessionRepo, sessionExerciseRepo };
+/**
+ * Flow C (041/124): reading the chosen week's structure back out, exercises included — and their
+ * library records, for the hybrid settings the copy starts with (GT-159).
+ */
+export function useSourceWeekDeps(): SourceWeekWithSettingsDeps {
+  const { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo } = useRepositories();
+  return { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo };
 }
 
 /** Flow B's step T (GT-6): the templates to choose from. */

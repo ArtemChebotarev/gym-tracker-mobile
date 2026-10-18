@@ -3,8 +3,10 @@ import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import {
   prunedExerciseSettings,
   resetExerciseSettings,
+  weekPlanExerciseSettings,
   withExerciseSettings,
 } from '@domain/exerciseSettingsBuilders';
+import type { WeekPlan } from '@domain/plan';
 import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -90,5 +92,60 @@ describe('prunedExerciseSettings', () => {
       [COOLDOWN.id]: COOLDOWN.config,
     });
     expect(prunedExerciseSettings(settings, [])).toEqual({});
+  });
+});
+
+describe('weekPlanExerciseSettings (GT-159)', () => {
+  const weekPlan: WeekPlan = {
+    days: [
+      {
+        dayNumber: 1,
+        name: '',
+        exercises: [
+          { exerciseId: BENCH_PRESS.id, order: 1, sets: 3 },
+          { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+        ],
+      },
+      {
+        dayNumber: 2,
+        name: '',
+        exercises: [
+          { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 },
+          { exerciseId: COOLDOWN.id, order: 2, sets: 2 },
+        ],
+      },
+    ],
+  };
+  const library = [BENCH_PRESS, HEAVY_BAG, COOLDOWN, MEDBALL_THROW];
+
+  test('without inherited settings every hybrid exercise gets the library’s — Flow B', () => {
+    expect(weekPlanExerciseSettings(weekPlan, library)).toEqual({
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [COOLDOWN.id]: COOLDOWN.config,
+    });
+  });
+
+  test('inherited settings win; an exercise they lack falls back to the library — Flow C', () => {
+    const fromSource = {
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
+      // The source had this one, but the copied week does not: it stays behind.
+      [MEDBALL_THROW.id]: { type: 'power' as const, load: 'weight' as const, restSec: 90, noHeavierAvailable: true },
+    };
+
+    expect(weekPlanExerciseSettings(weekPlan, library, fromSource)).toEqual({
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
+      [COOLDOWN.id]: COOLDOWN.config,
+    });
+  });
+
+  test('the result is a copy: changing it leaves the inherited settings alone', () => {
+    const fromSource = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 5 } };
+    const settings = weekPlanExerciseSettings(weekPlan, library, fromSource);
+
+    expect(settings[HEAVY_BAG.id]).not.toBe(fromSource[HEAVY_BAG.id]);
+  });
+
+  test('an exercise the library has no record of gets nothing', () => {
+    expect(weekPlanExerciseSettings(weekPlan, [BENCH_PRESS])).toEqual({});
   });
 });

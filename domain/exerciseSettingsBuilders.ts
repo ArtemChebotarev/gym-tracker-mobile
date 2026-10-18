@@ -8,6 +8,7 @@
 
 import type { Exercise } from './catalog';
 import type { ExerciseSettings } from './exerciseConfig';
+import type { WeekPlan } from './plan';
 import { defaultExerciseConfig, defaultExerciseSettings, exerciseTypeOf } from './exerciseConfigBuilders';
 
 /** Settings by exercise id — `Mesocycle.exerciseSettings`'s shape. */
@@ -61,4 +62,34 @@ export function prunedExerciseSettings(
 ): ExerciseSettingsById {
   const kept = new Set(exerciseIds);
   return Object.fromEntries(Object.entries(settings).filter(([id]) => kept.has(id)));
+}
+
+/**
+ * The settings a cycle starts with for a week that arrives already filled in — Flow B's template
+ * or Flow C's copied week (GT-159). For every hybrid exercise of `weekPlan`: what `inherited` has
+ * for it, else a copy of its library config. Flow C passes the source cycle's own settings as
+ * `inherited` — what actually ran — and Flow B passes nothing, so a template gives the library's.
+ *
+ * `exercises` holds the library records of the plan's exercises; one it lacks gets no settings,
+ * and a `strength` one never has any. Settings `inherited` holds for an exercise the plan no
+ * longer has are left behind.
+ */
+export function weekPlanExerciseSettings(
+  weekPlan: WeekPlan,
+  exercises: readonly Exercise[],
+  inherited: ExerciseSettingsById = {},
+): ExerciseSettingsById {
+  const byId = new Map(exercises.map((exercise) => [exercise.id as string, exercise]));
+  let settings: ExerciseSettingsById = {};
+  for (const day of weekPlan.days) {
+    for (const { exerciseId } of day.exercises) {
+      const exercise = byId.get(exerciseId);
+      if (!exercise || exerciseTypeOf(exercise) === 'strength' || settings[exerciseId]) {
+        continue;
+      }
+      const own = inherited[exerciseId];
+      settings = own ? { ...settings, [exerciseId]: { ...own } } : withExerciseSettings(settings, exercise);
+    }
+  }
+  return settings;
 }
