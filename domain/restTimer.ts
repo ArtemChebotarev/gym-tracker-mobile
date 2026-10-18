@@ -19,8 +19,13 @@ export type StrengthRestTimer = {
   restSec: number;
 };
 
-/** What the setting may hold, seconds: at least one step, at most the longest rest a power exercise may have. */
-export const STRENGTH_REST_RANGE_SEC = { min: 5, max: 10 * 60 } as const;
+/**
+ * What the setting may hold, seconds (Artem, 18.10.2026). Under a minute the next sets lose reps at
+ * the same weight, and the volume that drives hypertrophy goes with them; past five minutes is
+ * more than even a heavy squat or deadlift asks for. The app has no supersets, so nothing needs a
+ * shorter rest.
+ */
+export const STRENGTH_REST_RANGE_SEC = { min: 60, max: 5 * 60 } as const;
 
 /** A rest that is counting down, or paused part way. Exactly one of `endsAt` / `remainingMs` is set. */
 export type RestTimer = {

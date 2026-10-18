@@ -1,9 +1,10 @@
 // The Settings tab (08 · Screens & Navigation, "Настройки"). For now it holds one section, the rest
 // timer of strength exercises (10.1 FR-5, GT-87; canvas 5.x): on or off, and the rest between sets.
-// Its look is a task of its own; this is the wiring, from SDK pieces.
+// Laid out as canvas 5.x draws it: a card of rows under the section's label, a grey note under it.
 //
 // The rest is set with `−` / `+` in 15 s steps, or straight away in the time picker by tapping the
-// value — the same pair every rest in the app is set with. While the timer is off there is nothing
+// value — the same pair every rest in the app is set with — between 1:00 and 5:00
+// (`STRENGTH_REST_RANGE_SEC`). While the timer is off there is nothing
 // to set, so the row is not shown.
 
 import { useState } from 'react';
@@ -47,26 +48,31 @@ export function SettingsScreen({
       {strengthRestTimer !== undefined && (
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Rest timer</Text>
-          <Toggle
-            label="Rest timer for strength"
-            description="Starts after you log a set"
-            value={strengthRestTimer.enabled}
-            onValueChange={(enabled) =>
-              onChangeStrengthRestTimer({ ...strengthRestTimer, enabled })
-            }
-          />
-          {strengthRestTimer.enabled && (
-            <StepperRow
-              label="Rest between sets"
-              value={strengthRestTimer.restSec}
-              onChange={(restSec) => onChangeStrengthRestTimer({ ...strengthRestTimer, restSec })}
-              min={STRENGTH_REST_RANGE_SEC.min}
-              max={STRENGTH_REST_RANGE_SEC.max}
-              step={REST_STEP_SEC}
-              formatValue={formatClock}
-              onValuePress={() => setIsPickerOpen(true)}
-            />
-          )}
+          <View style={styles.card}>
+            <View style={[styles.toggleRow, strengthRestTimer.enabled && styles.rowDivider]}>
+              <Toggle
+                label="Rest timer for strength"
+                description="Starts after you log a set"
+                value={strengthRestTimer.enabled}
+                onValueChange={(enabled) =>
+                  onChangeStrengthRestTimer({ ...strengthRestTimer, enabled })
+                }
+              />
+            </View>
+            {strengthRestTimer.enabled && (
+              <StepperRow
+                divider={false}
+                label="Rest between sets"
+                value={strengthRestTimer.restSec}
+                onChange={(restSec) => onChangeStrengthRestTimer({ ...strengthRestTimer, restSec })}
+                min={STRENGTH_REST_RANGE_SEC.min}
+                max={STRENGTH_REST_RANGE_SEC.max}
+                step={REST_STEP_SEC}
+                formatValue={formatClock}
+                onValuePress={() => setIsPickerOpen(true)}
+              />
+            )}
+          </View>
           <Text style={styles.note}>
             Power and interval exercises use the rest set on each exercise. The timer never changes
             your plan.

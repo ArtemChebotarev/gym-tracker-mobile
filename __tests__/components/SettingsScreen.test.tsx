@@ -50,6 +50,18 @@ describe('SettingsScreen', () => {
     expect(onChange).toHaveBeenCalledWith({ enabled: true, restSec: 135 });
   });
 
+  test('the rest goes no lower than 1:00', () => {
+    const atMin = renderScreen({ strengthRestTimer: { enabled: true, restSec: 60 } });
+    fireEvent.press(screen.getByRole('button', { name: 'Decrease Rest between sets' }));
+    expect(atMin).not.toHaveBeenCalled();
+  });
+
+  test('the rest goes no higher than 5:00', () => {
+    const atMax = renderScreen({ strengthRestTimer: { enabled: true, restSec: 300 } });
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
+    expect(atMax).not.toHaveBeenCalled();
+  });
+
   test('while the timer is off there is no rest to set', () => {
     renderScreen({ strengthRestTimer: { enabled: false, restSec: 120 } });
 
