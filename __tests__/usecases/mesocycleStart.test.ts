@@ -4,9 +4,14 @@ import { toExerciseId } from '@domain/catalog';
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
+import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteMesocycleStartStore } from '@storage/sqlite/mesocycleStartStore';
 import { exercises } from '@storage/sqlite/schema';
+import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { startMesocycle } from '@usecases/mesocycleStart';
+import { finishSession } from '@usecases/sessionFinish';
+import { logSet } from '@usecases/setLogging';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -824,5 +829,164 @@ describe('startMesocycle — copyWeek targets per target day', () => {
     await startMesocycle('meso-copy', { store: counted.store }, NOW);
 
     expect(counted.lookups()).toBe(1);
+  });
+});
+
+// GT-84, 10.2 P14 and P3: a block with a strength and a power exercise, copied from a past week,
+// goes through Start, a logged week 1 and its Finish, the way the app drives it. Start prices
+// each exercise by its own policy; week 2 is planned from week 1's fact, again per type.
+describe('startMesocycle — a mixed block through to week 2 (GT-84)', () => {
+  const benchPerformance: Performance = {
+    sessionExerciseId: 'sx-bench',
+    exerciseId: 'bench',
+    targetRir: 0,
+    completedAt: '2026-09-10T08:00:00.000Z',
+    sets: [
+      [60, 10],
+      [60, 9],
+      [55, 8],
+    ],
+  };
+
+  /** `row` as a power exercise loaded in kilograms, the way the library stores one. */
+  async function makePower(exerciseId: string): Promise<void> {
+    await db()
+      .update(exercises)
+      .set({
+        type: 'power',
+        config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+      })
+      .where(eq(exercises.id, toExerciseId(exerciseId)));
+  }
+
+  async function weekSession(store: MesocycleStartStore, weekNumber: number) {
+    const sessions = await store.repos.sessionRepo.listByMesoId('meso-copy');
+    const session = sessions.find((candidate) => candidate.weekNumber === weekNumber);
+    const rows = await store.repos.sessionExerciseRepo.listBySessionId(session!.id);
+    return { session: session!, rows };
+  }
+
+  test('Start, week 1 logged and finished: week 2 is planned per type from its fact', async () => {
+    const store = await setUpCopied([
+      benchPerformance,
+      {
+        sessionExerciseId: 'sx-row',
+        exerciseId: 'row',
+        // Day 1 of the copied block, like bench, on its last working week (RIR 0).
+        weekNumber: 7,
+        dayNumber: 1,
+        targetRir: 0,
+        completedAt: '2026-09-11T08:00:00.000Z',
+        sets: [
+          [16, 1],
+          [16, 6],
+        ],
+      },
+    ]);
+    await makePower('row');
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // Start: strength 10 / 9 / 8 at RIR 0 → reps + 1 − 3. Power the same sum with no clamp:
+    // 1 + 1 − 3 = −1 is no recommendation, 6 + 1 − 3 = 4.
+    const weekOne = await weekSession(store, 1);
+    const weekOneRow = (exerciseId: string) =>
+      weekOne.rows.find((row) => row.exerciseId === exerciseId)!;
+    expect(weekOneRow('bench').setTargets).toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 6, suggestedWeight: 55 },
+    ]);
+    expect(weekOneRow('row').setTargets).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2, targetReps: 4, suggestedWeight: 16 },
+    ]);
+    // The power row keeps the week's RIR: the next block's Start reads it back (P5, P14).
+    expect(weekOneRow('row').targetRir).toBe(3);
+
+    const workout = createSqliteWorkoutStore(db());
+    const week1Logs: [string, number, number, number][] = [
+      ['bench', 1, 60, 8],
+      ['bench', 2, 60, 7],
+      ['bench', 3, 55, 6],
+      // The bare row is logged like any other; the second set reaches the top of the corridor.
+      ['row', 1, 16, 3],
+      ['row', 2, 16, 6],
+    ];
+    for (const [index, [exerciseId, setNumber, weight, reps]] of week1Logs.entries()) {
+      const result = await logSet(
+        {
+          sessionId: weekOne.session.id,
+          sessionExerciseId: weekOneRow(exerciseId).id,
+          setNumber,
+        },
+        { weight, reps },
+        workout,
+        `2026-09-20T08:0${index}:00.000Z`,
+      );
+      expect(result.kind).toBe('logged');
+    }
+    const { nextSession } = await finishSession(
+      weekOne.session.id,
+      {
+        workout,
+        mesocycleRepo: new SqliteMesocycleRepository(db()),
+        exerciseRepo: new SqliteExerciseRepository(db()),
+      },
+      '2026-09-20T09:00:00.000Z',
+    );
+    expect(nextSession).toMatchObject({ weekNumber: 2, dayNumber: 1 });
+
+    const weekTwo = await weekSession(store, 2);
+    const weekTwoRow = (exerciseId: string) =>
+      weekTwo.rows.find((row) => row.exerciseId === exerciseId)!;
+    // Strength: rule 2, the fact + 1 on the logged weight.
+    expect(weekTwoRow('bench').setTargets).toEqual([
+      { setNumber: 1, targetReps: 9, suggestedWeight: 60 },
+      { setNumber: 2, targetReps: 8, suggestedWeight: 60 },
+      { setNumber: 3, targetReps: 7, suggestedWeight: 55 },
+    ]);
+    // Power, P3: set by set, the fact + 1 on its own weight. The set Start left bare grows from
+    // what was logged on it; the one at 6 goes past the corridor with the "heavier" hint.
+    expect(weekTwoRow('row').setTargets).toEqual([
+      { setNumber: 1, targetReps: 4, suggestedWeight: 16 },
+      { setNumber: 2, targetReps: 7, suggestedWeight: 16, weightHint: 'increase' },
+    ]);
+    // 8 weeks, 7 working: week 2 of 7 is ceil(3 × 5 / 6) = 3, for both types.
+    expect(weekTwoRow('bench').targetRir).toBe(3);
+    expect(weekTwoRow('row').targetRir).toBe(3);
+  });
+
+  test('a 4-week block starts power at RIR 2: 6 / 6 / 6 at RIR 0 gives 5 / 5 / 5 (P14)', async () => {
+    const store = await setUpCopied(
+      [
+        {
+          sessionExerciseId: 'sx-row',
+          exerciseId: 'row',
+          targetRir: 0,
+          completedAt: '2026-09-11T08:00:00.000Z',
+          sets: [
+            [16, 6],
+            [16, 6],
+            [16, 6],
+          ],
+        },
+      ],
+      { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'row', order: 0, sets: 3 }] }] },
+    );
+    await db().update(exercises).set({ type: 'power' }).where(eq(exercises.id, toExerciseId('row')));
+    await store.repos.mesocycleRepo.update({
+      ...(await store.repos.mesocycleRepo.getById('meso-copy'))!,
+      lengthWeeks: 4,
+    });
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // startRir = min(3, 4 − 2) = 2 → 6 + 1 − 2 = 5.
+    await expect(startedTargetsOf(store, 'row')).resolves.toEqual([
+      { setNumber: 1, targetReps: 5, suggestedWeight: 16 },
+      { setNumber: 2, targetReps: 5, suggestedWeight: 16 },
+      { setNumber: 3, targetReps: 5, suggestedWeight: 16 },
+    ]);
   });
 });
