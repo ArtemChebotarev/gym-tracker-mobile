@@ -59,7 +59,7 @@ import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSess
 
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
-import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import { cardChip } from './WorkoutExerciseCardLogic';
 import { RirExplanationContent } from './RirExplanationContent';
 import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
@@ -296,7 +296,7 @@ export function WorkoutScreen({
               {...(index === 0
                 ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
                 : {})}
-              showGroupChip={showsGroupChip(model.exercises, index)}
+              chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
               menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>

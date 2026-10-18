@@ -25,6 +25,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/row'],
     paddingVertical: SPACING['space/chip-y'],
   },
+  typeChip: {
+    backgroundColor: COLORS['surface/card'],
+  },
+  typeLabel: {
+    color: COLORS['text/secondary'],
+  },
   groupDot: {
     ...circle(SIZES['size/dot']),
   },

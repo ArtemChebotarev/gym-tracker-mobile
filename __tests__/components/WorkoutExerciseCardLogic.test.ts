@@ -1,3 +1,4 @@
+import type { MuscleGroup } from '@domain/catalog';
 import {
   type WeightEdits,
   carryWeightForward,
@@ -7,7 +8,7 @@ import {
   firstUnloggedRow,
   formatWeightHint,
   holdLoggedWeight,
-  showsGroupChip,
+  cardChip,
   weightFieldText,
   estimateNote,
   weightSwapPopover,
@@ -105,36 +106,70 @@ describe('exerciseCardView', () => {
   });
 });
 
-describe('showsGroupChip', () => {
+describe('cardChip', () => {
   const exercises = [
     { muscleGroup: 'chest' },
     { muscleGroup: 'chest' },
     { muscleGroup: 'back' },
     { muscleGroup: 'chest' },
   ] as const;
+  const group = (muscleGroup: MuscleGroup) => ({ kind: 'group', muscleGroup });
 
   test('the first card always gets the chip', () => {
-    expect(showsGroupChip(exercises, 0)).toBe(true);
+    expect(cardChip(exercises, 0)).toEqual(group('chest'));
   });
 
   test('no chip when the group is the same as the previous card', () => {
-    expect(showsGroupChip(exercises, 1)).toBe(false);
+    expect(cardChip(exercises, 1)).toBeUndefined();
   });
 
   test('a chip when the group changes from the previous card', () => {
-    expect(showsGroupChip(exercises, 2)).toBe(true);
+    expect(cardChip(exercises, 2)).toEqual(group('back'));
   });
 
   test('a group coming back after another one gets the chip again', () => {
-    expect(showsGroupChip(exercises, 3)).toBe(true);
+    expect(cardChip(exercises, 3)).toEqual(group('chest'));
   });
 
   test('groups sharing a color family still count as different (traps after back)', () => {
-    expect(showsGroupChip([{ muscleGroup: 'back' }, { muscleGroup: 'traps' }], 1)).toBe(true);
+    expect(cardChip([{ muscleGroup: 'back' }, { muscleGroup: 'traps' }], 1)).toEqual(
+      group('traps'),
+    );
   });
 
   test('an index past the list gets no chip', () => {
-    expect(showsGroupChip(exercises, 4)).toBe(false);
+    expect(cardChip(exercises, 4)).toBeUndefined();
+  });
+
+  // GT-81, 10.1 FR-14: a card that is not strength names its type, and the group is secondary.
+  describe('a card of another type', () => {
+    const mixed = [
+      { muscleGroup: 'chest' },
+      { muscleGroup: 'fullBody', type: 'power' },
+      { muscleGroup: 'quads', type: 'power' },
+      { muscleGroup: 'chest' },
+      { muscleGroup: 'back', type: 'interval' },
+    ] as const;
+
+    test('names its type instead of its muscle group', () => {
+      expect(cardChip(mixed, 1)).toEqual({ kind: 'type', type: 'power' });
+    });
+
+    test('says it once for a run of the same type', () => {
+      expect(cardChip(mixed, 2)).toBeUndefined();
+    });
+
+    test('a strength card after it starts its own run, with its group', () => {
+      expect(cardChip(mixed, 3)).toEqual(group('chest'));
+    });
+
+    test('a different type changes the chip; a type first in the list gets it too', () => {
+      expect(cardChip(mixed, 4)).toEqual({ kind: 'type', type: 'interval' });
+      expect(cardChip([{ muscleGroup: 'fullBody', type: 'mobility' }], 0)).toEqual({
+        kind: 'type',
+        type: 'mobility',
+      });
+    });
   });
 });
 

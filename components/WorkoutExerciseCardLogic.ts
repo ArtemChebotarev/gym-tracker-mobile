@@ -1,6 +1,6 @@
 // Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
 import { POWER_MAX_REPS } from '@domain/progressionCorridor';
@@ -73,18 +73,38 @@ export function exerciseCardView(
 }
 
 /**
- * The group chip sits above a card only when its muscle group differs from the previous card's
- * (08.7, "Список упражнений") — so the first card always gets one.
+ * The chip above a card: the muscle group for a strength exercise, the exercise's type for any
+ * other (10.1 FR-14) — a power card is told apart by "Power", not by the muscle it happens to hit,
+ * which is secondary there (Artem, 18.10.2026).
  */
-export function showsGroupChip(
-  exercises: readonly Pick<WorkoutExercise, 'muscleGroup'>[],
+export type CardChip =
+  { kind: 'group'; muscleGroup: MuscleGroup } | { kind: 'type'; type: ExerciseType };
+
+/**
+ * Which chip, if any, sits above card `index` (08.7, "Список упражнений"): only when what it names
+ * changes from the previous card, so the first card always gets one. A strength card names its
+ * muscle group, and also when it follows a card of another type — the run of strength starts over.
+ * A power, interval or mobility card names its type, once for a run of the same type.
+ */
+export function cardChip(
+  exercises: readonly Pick<WorkoutExercise, 'muscleGroup' | 'type'>[],
   index: number,
-): boolean {
+): CardChip | undefined {
   const current = exercises[index];
   if (current === undefined) {
-    return false;
+    return undefined;
   }
-  return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
+  const type = current.type ?? 'strength';
+  const previous = exercises[index - 1];
+  const previousType = previous === undefined ? undefined : (previous.type ?? 'strength');
+  if (type !== 'strength') {
+    return previousType === type ? undefined : { kind: 'type', type };
+  }
+  const changed =
+    previous === undefined ||
+    previousType !== 'strength' ||
+    previous.muscleGroup !== current.muscleGroup;
+  return changed ? { kind: 'group', muscleGroup: current.muscleGroup } : undefined;
 }
 
 /**

@@ -39,6 +39,9 @@ import { RangeTrack, RangeTrackSwatch } from '@design/components/RangeTrack';
 import type { AnchorRect } from '@design/popoverLayout';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import type { IconComponent } from '@design/icons/IconFrame';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
 import { HistoryIcon } from '@design/icons/HistoryIcon';
@@ -47,7 +50,7 @@ import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-import type { MuscleGroup } from '@domain/catalog';
+import type { ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
@@ -59,6 +62,7 @@ import {
   editWeightText,
   estimateNote,
   exerciseCardView,
+  type CardChip,
   firstUnloggedRow,
   formatCeilingNote,
   topWeightOf,
@@ -102,8 +106,8 @@ export type WorkoutExerciseCardProps = {
    * discs. Only the first card gets them; the rest of the tour is the screen's.
    */
   coachmarkTargets?: CardCoachmarkTargets;
-  /** The group chip above the card — see `showsGroupChip`. */
-  showGroupChip: boolean;
+  /** The chip above the card — see `cardChip`. */
+  chip?: CardChip;
   /**
    * The card's place in the list. Only the native `⋯` menu reads it, as its `key`: a card keeps
    * its identity when Move up/down reorders the list, and the SwiftUI host inside it then glides
@@ -142,7 +146,7 @@ export function WorkoutExerciseCard({
   mode,
   isDeload = false,
   coachmarkTargets,
-  showGroupChip,
+  chip,
   position = 0,
   onOpenHistory,
   menuItems,
@@ -177,7 +181,8 @@ export function WorkoutExerciseCard({
 
   return (
     <View style={styles.root}>
-      {showGroupChip && <GroupChip muscleGroup={exercise.muscleGroup} />}
+      {chip?.kind === 'group' && <GroupChip muscleGroup={chip.muscleGroup} />}
+      {chip?.kind === 'type' && <TypeChip type={chip.type} />}
       <View
         testID={`exercise-card-${exercise.sessionExerciseId}`}
         style={[styles.card, view.isNotDone && styles.skipped]}
@@ -408,6 +413,27 @@ function CeilingLink({ label, onPress }: { label: string; onPress: () => void })
     >
       <Text style={styles.ceilingFlagText}>{label}</Text>
     </Pressable>
+  );
+}
+
+// Resolved once, outside any render: a component picked by a function call inside one is a new
+// component every time it renders.
+const TYPE_CHIP_ICONS: Record<ExerciseType, IconComponent> = {
+  strength: getExerciseTypeIcon('strength'),
+  power: getExerciseTypeIcon('power'),
+  interval: getExerciseTypeIcon('interval'),
+  mobility: getExerciseTypeIcon('mobility'),
+};
+
+/** The type chip of a power, interval or mobility card (10.1 FR-14): its mark and its name. */
+function TypeChip({ type }: { type: ExerciseType }) {
+  const Icon = TYPE_CHIP_ICONS[type];
+
+  return (
+    <View testID="exercise-type-chip" style={[styles.groupChip, styles.typeChip]}>
+      <Icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
+      <Text style={[styles.groupLabel, styles.typeLabel]}>{getExerciseTypeLabel(type)}</Text>
+    </View>
   );
 }
 

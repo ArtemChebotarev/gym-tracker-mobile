@@ -90,7 +90,7 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
   return {
     exercise: LIVE_EXERCISE,
     mode: 'live',
-    showGroupChip: true,
+    chip: { kind: 'group', muscleGroup: 'chest' },
     onOpenHistory: jest.fn(),
     menuItems: [],
     isSaving: false,
@@ -169,11 +169,13 @@ describe('WorkoutExerciseCard', () => {
   });
 
   test('the group chip shows only when asked for', () => {
-    render(<WorkoutExerciseCard {...makeProps({ showGroupChip: true })} />);
+    render(
+      <WorkoutExerciseCard {...makeProps({ chip: { kind: 'group', muscleGroup: 'chest' } })} />,
+    );
     expect(screen.getByTestId('exercise-group-chip')).toBeTruthy();
     expect(screen.getByText('Chest')).toBeTruthy();
 
-    screen.rerender(<WorkoutExerciseCard {...makeProps({ showGroupChip: false })} />);
+    screen.rerender(<WorkoutExerciseCard {...makeProps({ chip: undefined })} />);
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 
@@ -969,5 +971,12 @@ describe('RIR badge popover', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Hide this tip' }));
     expect(onHideCeilingTip).toHaveBeenCalledTimes(1);
+  });
+
+  test('a power card carries the Power chip, not the muscle group', () => {
+    render(<WorkoutExerciseCard {...makeProps({ chip: { kind: 'type', type: 'power' } })} />);
+
+    expect(screen.getByTestId('exercise-type-chip')).toHaveTextContent('Power');
+    expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 });
