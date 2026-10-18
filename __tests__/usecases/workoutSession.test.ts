@@ -1010,7 +1010,11 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(card?.ceilingHint).toEqual({ options: ['heavier', 'add-set'], canFlagNoHeavier: false });
+    expect(card?.ceilingHint).toEqual({
+      options: ['heavier', 'add-set'],
+      canFlagNoHeavier: false,
+      canHideTip: false,
+    });
     // Strength's "Go heavier — 30+ reps" is not for power.
     expect(card).not.toHaveProperty('weightHints');
   });

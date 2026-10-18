@@ -14,6 +14,7 @@ import {
   hideExercise,
   listExerciseGroups,
   listExercisesByIds,
+  hideCeilingTip,
   setNoHeavierAvailable,
   updateCustomExercise,
 } from '@usecases/exerciseLibrary';
@@ -346,6 +347,41 @@ describe('setNoHeavierAvailable', () => {
     await expectRejectsWithKind(
       setNoHeavierAvailable(toExerciseId('does-not-exist'), true, deps),
       isNotFoundError,
+    );
+  });
+});
+
+describe('hideCeilingTip', () => {
+  test('closes the note on a custom power exercise and changes nothing else', async () => {
+    const deps = makeDeps();
+    const created = await deps.exerciseRepo.createCustom({
+      id: toExerciseId('custom-medball'),
+      name: 'Medball throw',
+      muscleGroup: 'fullBody',
+      source: 'custom',
+      isHidden: false,
+      type: 'power',
+      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: true },
+    });
+
+    const updated = await hideCeilingTip(created.id, deps);
+
+    expect(updated.config).toEqual({
+      type: 'power',
+      load: 'weight',
+      restSec: 60,
+      noHeavierAvailable: true,
+      ceilingTipHidden: true,
+    });
+  });
+
+  test('rejects a catalog exercise', async () => {
+    const deps = makeDeps();
+    await deps.exerciseRepo.seedCatalog([makeExercise({ source: 'catalog' })]);
+
+    await expectRejectsWithKind(
+      hideCeilingTip(toExerciseId('exercise-bench-press'), deps),
+      isConflictError,
     );
   });
 });

@@ -153,9 +153,14 @@ export const styles = StyleSheet.create({
     fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
   },
-  ceilingFlag: {
-    alignSelf: 'flex-start',
+  // The note's links stand in one row — Replace exercise · Hide this tip — and wrap on a narrow card.
+  ceilingLinks: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: SPACING['space/gap'],
     marginTop: SPACING['space/gap-tight'],
+  },
+  ceilingFlag: {
     paddingVertical: SPACING['space/gap-tight'],
   },
   ceilingFlagText: {

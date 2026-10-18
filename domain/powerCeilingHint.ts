@@ -26,12 +26,19 @@ export type PowerCeilingHint = {
    * `heavier` or `higher-level`, which is also the only time it means anything.
    */
   canFlagNoHeavier: boolean;
+  /**
+   * The note can be closed for good: once the load option is a harder variation the user has made
+   * their decision, and the card keeps asking for it every week (GT-81).
+   */
+  canHideTip: boolean;
 };
 
 export type PowerCeilingInput = {
   load: PowerLoad;
   /** The user said there is nothing heavier to take (`PowerConfig.noHeavierAvailable`). */
   noHeavierAvailable: boolean;
+  /** The user closed the note for good (`PowerConfig.ceilingTipHidden`). */
+  tipHidden?: boolean;
   setTargets: readonly Pick<SetTarget, 'weightHint'>[];
 };
 
@@ -41,8 +48,12 @@ export type PowerCeilingInput = {
  * has no load to raise — its progression has nowhere to go and that is fine.
  */
 export function powerCeilingHint(input: PowerCeilingInput): PowerCeilingHint | undefined {
-  const { load, noHeavierAvailable, setTargets } = input;
-  if (setTargets.length === 0 || !setTargets.every((target) => target.weightHint === 'increase')) {
+  const { load, noHeavierAvailable, tipHidden = false, setTargets } = input;
+  if (
+    tipHidden ||
+    setTargets.length === 0 ||
+    !setTargets.every((target) => target.weightHint === 'increase')
+  ) {
     return undefined;
   }
   const options: CeilingOption[] = [];
@@ -60,5 +71,6 @@ export function powerCeilingHint(input: PowerCeilingInput): PowerCeilingHint | u
   return {
     options,
     canFlagNoHeavier: options[0] === 'heavier' || options[0] === 'higher-level',
+    canHideTip: options[0] === 'harder-variation',
   };
 }

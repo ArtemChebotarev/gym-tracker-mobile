@@ -92,6 +92,8 @@ export type WorkoutExerciseCardProps = {
   onSetNoHeavierAvailable?: () => void;
   /** Opens the replace flow — the note's second link once the load option is a harder variation. */
   onReplaceExercise?: () => void;
+  /** Closes the ceiling note for good — its third link, with the harder variation (GT-81). */
+  onHideCeilingTip?: () => void;
   mode: WorkoutMode;
   /** A deload session: its weights are filled in, so the Weight header has no ⓘ (08.11). */
   isDeload?: boolean;
@@ -152,6 +154,7 @@ export function WorkoutExerciseCard({
   onUnlogSet,
   onSetNoHeavierAvailable,
   onReplaceExercise,
+  onHideCeilingTip,
 }: WorkoutExerciseCardProps) {
   const view = exerciseCardView(mode, exercise);
   const editable = mode === 'live' && !view.isNotDone;
@@ -231,12 +234,17 @@ export function WorkoutExerciseCard({
             lead={ceilingNote.lead}
             text={ceilingNote.text}
           >
-            {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
-              <CeilingLink label={ceilingNote.flagLabel} onPress={onSetNoHeavierAvailable} />
-            )}
-            {ceilingNote.replaceLabel !== undefined && onReplaceExercise !== undefined && (
-              <CeilingLink label={ceilingNote.replaceLabel} onPress={onReplaceExercise} />
-            )}
+            <View style={styles.ceilingLinks}>
+              {ceilingNote.flagLabel !== undefined && onSetNoHeavierAvailable !== undefined && (
+                <CeilingLink label={ceilingNote.flagLabel} onPress={onSetNoHeavierAvailable} />
+              )}
+              {ceilingNote.replaceLabel !== undefined && onReplaceExercise !== undefined && (
+                <CeilingLink label={ceilingNote.replaceLabel} onPress={onReplaceExercise} />
+              )}
+              {ceilingNote.hideLabel !== undefined && onHideCeilingTip !== undefined && (
+                <CeilingLink label={ceilingNote.hideLabel} onPress={onHideCeilingTip} />
+              )}
+            </View>
           </InlineNote>
         )}
 

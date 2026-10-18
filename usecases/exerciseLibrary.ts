@@ -22,7 +22,7 @@ import {
 } from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SetLog } from '@domain/execution';
-import type { ExerciseConfig } from '@domain/exerciseConfig';
+import type { ExerciseConfig, PowerConfig } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import {
   assertTypeUnchanged,
@@ -178,6 +178,26 @@ export async function setNoHeavierAvailable(
   value: boolean,
   deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
 ): Promise<Exercise> {
+  return updatePowerConfig(id, { noHeavierAvailable: value }, deps);
+}
+
+/**
+ * Closes the note at the top of a power exercise's corridor for good (GT-81). Same rules as the
+ * flag above — a custom power exercise's own field, one part of its config changed and nothing
+ * else — and there is no way back yet.
+ */
+export async function hideCeilingTip(
+  id: ExerciseId,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  return updatePowerConfig(id, { ceilingTipHidden: true }, deps);
+}
+
+async function updatePowerConfig(
+  id: ExerciseId,
+  patch: Partial<PowerConfig>,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
   const existing = await deps.exerciseRepo.getById(id);
   if (!existing) {
     throw new NotFoundError(`Exercise "${id}" does not exist.`);
@@ -190,7 +210,7 @@ export async function setNoHeavierAvailable(
   }
   return deps.exerciseRepo.updateCustom({
     ...existing,
-    config: { ...existing.config, noHeavierAvailable: value },
+    config: { ...existing.config, ...patch },
   });
 }
 

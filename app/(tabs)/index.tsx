@@ -97,6 +97,7 @@ import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
+import { useHideCeilingTip } from '@state/useHideCeilingTip';
 import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
@@ -123,6 +124,7 @@ export default function TodayScreen() {
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
   const setNoHeavierAvailable = useSetNoHeavierAvailable();
+  const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
@@ -463,6 +465,9 @@ export default function TodayScreen() {
             { id: toExerciseId(exercise.exerciseId), value: true },
             { onError: showSaveError },
           )
+        }
+        onHideCeilingTip={(exercise) =>
+          hideCeilingTip.mutate(toExerciseId(exercise.exerciseId), { onError: showSaveError })
         }
         isFinishing={finishSession.isPending}
         onFinish={() => {

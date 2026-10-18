@@ -27,24 +27,41 @@ describe('powerCeilingHint (10.2 P6–P9)', () => {
   });
 
   test('kilograms: heavier or one more set', () => {
-    expect(hint('weight', 3)).toEqual({ options: ['heavier', 'add-set'], canFlagNoHeavier: true });
+    expect(hint('weight', 3)).toEqual({
+      options: ['heavier', 'add-set'],
+      canFlagNoHeavier: true,
+      canHideTip: false,
+    });
   });
 
   test('a level: a higher level or one more set, the same as kilograms', () => {
     expect(hint('level', 3)).toEqual({
       options: ['higher-level', 'add-set'],
       canFlagNoHeavier: true,
+      canHideTip: false,
     });
   });
 
   test('its own load: only one more set, and no flag to set', () => {
-    expect(hint('none', 3)).toEqual({ options: ['add-set'], canFlagNoHeavier: false });
+    expect(hint('none', 3)).toEqual({
+      options: ['add-set'],
+      canFlagNoHeavier: false,
+      canHideTip: false,
+    });
   });
 
   test('at the set cap only the load is left; its own load has nothing and the progression stops', () => {
     expect(POWER_MAX_SETS).toBe(4);
-    expect(hint('weight', 4)).toEqual({ options: ['heavier'], canFlagNoHeavier: true });
-    expect(hint('level', 4)).toEqual({ options: ['higher-level'], canFlagNoHeavier: true });
+    expect(hint('weight', 4)).toEqual({
+      options: ['heavier'],
+      canFlagNoHeavier: true,
+      canHideTip: false,
+    });
+    expect(hint('level', 4)).toEqual({
+      options: ['higher-level'],
+      canFlagNoHeavier: true,
+      canHideTip: false,
+    });
     expect(hint('none', 4)).toBeUndefined();
   });
 
@@ -52,10 +69,29 @@ describe('powerCeilingHint (10.2 P6–P9)', () => {
     expect(hint('weight', 3, true)).toEqual({
       options: ['harder-variation', 'add-set'],
       canFlagNoHeavier: false,
+      canHideTip: true,
     });
     expect(hint('level', 4, true)).toEqual({
       options: ['harder-variation'],
       canFlagNoHeavier: false,
+      canHideTip: true,
     });
+  });
+
+  test('nothing once the user closed the note for good, whatever the sets say', () => {
+    expect(
+      powerCeilingHint({
+        load: 'weight',
+        noHeavierAvailable: true,
+        tipHidden: true,
+        setTargets: [top, top],
+      }),
+    ).toBeUndefined();
+  });
+
+  test('closing it is offered with the harder variation only', () => {
+    expect(hint('weight', 3)?.canHideTip).toBe(false);
+    expect(hint('weight', 3, true)?.canHideTip).toBe(true);
+    expect(hint('none', 3)?.canHideTip).toBe(false);
   });
 });

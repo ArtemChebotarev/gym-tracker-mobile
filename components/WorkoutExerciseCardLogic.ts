@@ -256,6 +256,8 @@ export type CeilingNote = {
   flagLabel?: string;
   /** "Replace exercise": opens the replace flow once the load option is a harder variation. */
   replaceLabel?: string;
+  /** "Hide this tip": closes the note for good — offered with the harder variation. */
+  hideLabel?: string;
 };
 
 const CEILING_OPTION_TEXT: Record<CeilingOption, string> = {
@@ -310,6 +312,7 @@ export function formatCeilingNote(
         }
       : {}),
     ...(isVariation ? { replaceLabel: 'Replace exercise' } : {}),
+    ...(hint.canHideTip ? { hideLabel: 'Hide this tip' } : {}),
   };
 }
 

@@ -408,6 +408,7 @@ function toExercise(
     const hint = powerCeilingHint({
       load: exercise.config.load,
       noHeavierAvailable: exercise.config.noHeavierAvailable,
+      tipHidden: exercise.config.ceilingTipHidden === true,
       setTargets: sessionExercise.setTargets,
     });
     if (hint !== undefined) {
@@ -415,6 +416,7 @@ function toExercise(
       model.ceilingHint = {
         ...hint,
         canFlagNoHeavier: hint.canFlagNoHeavier && exercise.source === 'custom',
+        canHideTip: hint.canHideTip && exercise.source === 'custom',
       };
     }
   }

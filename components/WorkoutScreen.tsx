@@ -105,6 +105,8 @@ export type WorkoutScreenProps = {
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
   /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
   onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
+  /** The user closed a power exercise's ceiling note for good (GT-81). Live only. */
+  onHideCeilingTip: (exercise: WorkoutExercise) => void;
   /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
   onBodyWeightChange?: (bodyWeight: number) => void;
   /** A bodyweight exercise's Weight cell was tapped while the block has no body weight yet (105). */
@@ -159,6 +161,7 @@ export function WorkoutScreen({
   onLogSet,
   onUnlogSet,
   onSetNoHeavierAvailable,
+  onHideCeilingTip,
   onBodyWeightChange,
   onRequestBodyWeight,
   isSaving,
@@ -307,6 +310,7 @@ export function WorkoutScreen({
               onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
               onSetNoHeavierAvailable={() => onSetNoHeavierAvailable(exercise)}
               onReplaceExercise={() => onExerciseMenuAction(exercise, 'replace')}
+              onHideCeilingTip={() => onHideCeilingTip(exercise)}
             />
           ))}
           {model.showFinish && (

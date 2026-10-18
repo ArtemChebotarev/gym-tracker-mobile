@@ -915,7 +915,7 @@ describe('RIR badge popover', () => {
       isGuided: true,
       equipment: undefined,
       targetRir: undefined,
-      ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true },
+      ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
 
@@ -930,7 +930,7 @@ describe('RIR badge popover', () => {
       type: 'power',
       isGuided: true,
       targetRir: undefined,
-      ceilingHint: { options: ['add-set'], canFlagNoHeavier: false },
+      ceilingHint: { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
     });
     render(
       <WorkoutExerciseCard
@@ -948,12 +948,26 @@ describe('RIR badge popover', () => {
       type: 'power',
       isGuided: true,
       targetRir: undefined,
-      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false },
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
     });
     render(<WorkoutExerciseCard {...makeProps({ exercise: power, onReplaceExercise })} />);
 
     expect(screen.getByText(/Try a harder variation\./)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
     expect(onReplaceExercise).toHaveBeenCalledTimes(1);
+  });
+
+  test('the harder-variation note can be closed for good', () => {
+    const onHideCeilingTip = jest.fn();
+    const power = makeExercise({
+      type: 'power',
+      isGuided: true,
+      targetRir: undefined,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onHideCeilingTip })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Hide this tip' }));
+    expect(onHideCeilingTip).toHaveBeenCalledTimes(1);
   });
 });

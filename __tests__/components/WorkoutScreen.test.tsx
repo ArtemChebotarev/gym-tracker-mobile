@@ -123,6 +123,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
     onSetNoHeavierAvailable: jest.fn(),
+    onHideCeilingTip: jest.fn(),
     isSaving: false,
     onFinish: jest.fn(),
     isFinishing: false,

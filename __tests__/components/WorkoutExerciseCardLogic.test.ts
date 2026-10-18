@@ -613,7 +613,7 @@ describe('formatCeilingNote', () => {
   test('kilograms: try heavier or add a set, what the user did, and the flag as a link', () => {
     expect(
       formatCeilingNote(
-        { options: ['heavier', 'add-set'], canFlagNoHeavier: true },
+        { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
         { load: 'weight', topWeight: 10 },
       ),
     ).toEqual({
@@ -626,7 +626,10 @@ describe('formatCeilingNote', () => {
 
   test('a level says so, in the step and in the flag', () => {
     expect(
-      formatCeilingNote({ options: ['higher-level'], canFlagNoHeavier: true }, { load: 'level' }),
+      formatCeilingNote(
+        { options: ['higher-level'], canFlagNoHeavier: true, canHideTip: false },
+        { load: 'level' },
+      ),
     ).toEqual({
       icon: 'up',
       lead: 'Try a higher level.',
@@ -637,14 +640,17 @@ describe('formatCeilingNote', () => {
 
   test('its own load: only a set, with a plus and no flag', () => {
     expect(
-      formatCeilingNote({ options: ['add-set'], canFlagNoHeavier: false }, { load: 'none' }),
+      formatCeilingNote(
+        { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
+        { load: 'none' },
+      ),
     ).toEqual({ icon: 'plus', lead: 'Add a set.', text: didReps });
   });
 
   test('once nothing heavier is left: a harder variation, why, and Replace exercise', () => {
     expect(
       formatCeilingNote(
-        { options: ['harder-variation', 'add-set'], canFlagNoHeavier: false },
+        { options: ['harder-variation', 'add-set'], canFlagNoHeavier: false, canHideTip: true },
         { load: 'weight', topWeight: 10 },
       ),
     ).toEqual({
@@ -652,10 +658,11 @@ describe('formatCeilingNote', () => {
       lead: 'Try a harder variation or add a set.',
       text: '10 kg is the heaviest you have. Or keep it here while your strength catches up.',
       replaceLabel: 'Replace exercise',
+      hideLabel: 'Hide this tip',
     });
     expect(
       formatCeilingNote(
-        { options: ['harder-variation'], canFlagNoHeavier: false },
+        { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
         { load: 'level' },
       ).text,
     ).toBe('This is the highest level you have. Or keep it here while your strength catches up.');
