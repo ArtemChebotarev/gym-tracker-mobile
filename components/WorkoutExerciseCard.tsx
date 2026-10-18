@@ -478,11 +478,14 @@ function SetRows({
 }) {
   const [weights, setWeights] = useState<WeightEdits>({});
   const { rows } = exercise;
-  const isBodyWeightField = isPureBodyWeight(exercise.equipment);
+  // What the weight means — not the equipment printed under the name: a power exercise that is its
+  // own load weighs what you weigh (`loadEquipmentOf`).
+  const loadEquipment = exercise.loadEquipment ?? exercise.equipment;
+  const isBodyWeightField = isPureBodyWeight(loadEquipment);
   // Until the block has a body weight, a bodyweight exercise's Weight cell asks for one rather
   // than taking a number: there's nothing meaningful to type there yet (task 105).
   const asksForBodyWeight =
-    isBodyWeightExercise(exercise.equipment) && bodyWeight === undefined && editable;
+    isBodyWeightExercise(loadEquipment) && bodyWeight === undefined && editable;
 
   function handleWeightBlur(setNumber: number, text: string) {
     setWeights((edits) => carryWeightForward(edits, rows, setNumber));
@@ -503,7 +506,7 @@ function SetRows({
   const next = firstUnloggedRow(rows);
   const note = estimateNote(
     next,
-    next === undefined ? '' : weightFieldText(weights, next, exercise.equipment, bodyWeight),
+    next === undefined ? '' : weightFieldText(weights, next, loadEquipment, bodyWeight),
     exercise.targetRir,
   );
 
@@ -514,21 +517,21 @@ function SetRows({
           key={row.setNumber}
           row={row}
           targetRir={exercise.targetRir}
-          equipment={exercise.equipment}
+          equipment={loadEquipment}
           bodyWeight={bodyWeight}
           guided={exercise.isGuided === true}
           {...(exercise.type === 'power' ? { raisedWeightReps: POWER_MIN_REPS } : {})}
           {...(asksForBodyWeight && onRequestBodyWeight !== undefined
             ? { onRequestBodyWeight }
             : {})}
-          weightText={weightFieldText(weights, row, exercise.equipment, bodyWeight)}
+          weightText={weightFieldText(weights, row, loadEquipment, bodyWeight)}
           onChangeWeight={(text) =>
             setWeights((edits) => editWeightText(edits, row.setNumber, text))
           }
           onBlurWeight={() =>
             handleWeightBlur(
               row.setNumber,
-              weightFieldText(weights, row, exercise.equipment, bodyWeight),
+              weightFieldText(weights, row, loadEquipment, bodyWeight),
             )
           }
           editable={editable}

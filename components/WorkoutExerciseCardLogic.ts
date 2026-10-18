@@ -217,7 +217,7 @@ export function carryWeightForward(
  * itself.
  */
 export function weightColumnLabel(
-  exercise: Pick<WorkoutExercise, 'type' | 'powerLoad' | 'equipment'>,
+  exercise: Pick<WorkoutExercise, 'type' | 'powerLoad' | 'equipment' | 'loadEquipment'>,
 ): string {
   if (exercise.type === 'power') {
     switch (exercise.powerLoad ?? 'weight') {
@@ -229,7 +229,7 @@ export function weightColumnLabel(
         return 'Load, kg';
     }
   }
-  return usesAddedWeight(exercise.equipment) ? 'Added, kg' : 'Weight, kg';
+  return usesAddedWeight(exercise.loadEquipment ?? exercise.equipment) ? 'Added, kg' : 'Weight, kg';
 }
 
 /** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
@@ -245,7 +245,7 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
 export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
 
 export function cardInfoTargets(
-  exercise: Pick<WorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'status'>,
+  exercise: Pick<WorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'loadEquipment' | 'status'>,
   mode: WorkoutMode,
   isDeload: boolean,
 ): CardInfoTargets {
@@ -253,7 +253,9 @@ export function cardInfoTargets(
   return {
     rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
     // Both ⓘ sit in the column header, which is only there with the set rows.
-    weight: view.showSets && showsFirstWeightInfo(mode, isDeload, exercise.equipment),
+    weight:
+      view.showSets &&
+      showsFirstWeightInfo(mode, isDeload, exercise.loadEquipment ?? exercise.equipment),
     reps:
       view.showSets &&
       mode === 'live' &&

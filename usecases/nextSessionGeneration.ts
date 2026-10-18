@@ -10,6 +10,7 @@ import { ConflictError, NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { SourceExercise } from '@domain/progression';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import { resolveBaseSession } from '@domain/progressionSource';
@@ -81,8 +82,9 @@ export async function generateNextSession(
       muscleGroup: exercise.muscleGroup,
       type: exerciseTypeOf(exercise),
     };
-    if (exercise.equipment !== undefined) {
-      source.equipment = exercise.equipment;
+    const loadEquipment = loadEquipmentOf(exercise);
+    if (loadEquipment !== undefined) {
+      source.equipment = loadEquipment;
     }
     if (exercise.config?.type === 'power') {
       source.powerLoad = exercise.config.load;
