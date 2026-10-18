@@ -75,6 +75,7 @@ import {
   type PanResponderGestureState,
 } from 'react-native';
 
+import type { ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
 import { PlanChip } from '@design/components/PlanChip';
@@ -107,6 +108,8 @@ export type MesoEditorDaysStepProps = {
   onChangeActiveDay: (day: number) => void;
   exercisesByDay: ExercisesByDay;
   exercisesById: ExercisesById;
+  /** The cycle's own hybrid settings (GT-158) — what each plan chip shows. */
+  exerciseSettings?: ExerciseSettingsById;
   onChangeSets: (dayNumber: number, index: number, sets: number) => void;
   onRemoveExercise: (dayNumber: number, index: number) => void;
   onReorderExercises: (dayNumber: number, newOrder: readonly number[]) => void;
@@ -119,6 +122,7 @@ export function MesoEditorDaysStep({
   onChangeActiveDay,
   exercisesByDay,
   exercisesById,
+  exerciseSettings,
   onChangeSets,
   onRemoveExercise,
   onReorderExercises,
@@ -279,7 +283,7 @@ export function MesoEditorDaysStep({
 
         {activeDayExercises.map((exercise, index) => {
           const title = exerciseTitle(exercisesById, exercise.exerciseId);
-          const plan = exercisePlan(exercisesById, exercise);
+          const plan = exercisePlan(exercisesById, exercise, exerciseSettings);
           const TypeIcon = exerciseTypeIcon(exercisesById, exercise.exerciseId);
           const isDragging = draggingIndex === index;
           const rowShift = rowShiftAnimations[index];

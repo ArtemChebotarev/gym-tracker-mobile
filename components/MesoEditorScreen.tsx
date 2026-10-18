@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { Alert, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { toExerciseId, type ExerciseId } from '@domain/catalog';
+import { toExerciseId, type Exercise, type ExerciseId } from '@domain/catalog';
 import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
 import type { ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
@@ -33,20 +33,21 @@ import { MesoEditorBasicsStep } from '@components/MesoEditorBasicsStep';
 import { canContinueFromBasics } from '@components/MesoEditorBasicsStepLogic';
 import { MesoEditorDaysStep } from '@components/MesoEditorDaysStep';
 import {
-  addExerciseToDay,
   canContinueFromDays,
-  removeExerciseFromDay,
   reorderDayExercises,
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
 import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
 import {
+  addExercisesToDraft,
   DISCARD_DRAFT_MESSAGE,
   DISCARD_DRAFT_TITLE,
   DISCARD_LABEL,
   hasUnsavedDraft,
   KEEP_EDITING_LABEL,
+  removeExerciseFromDraft,
+  rememberSelectedExercises,
 } from '@components/MesoEditorScreenLogic';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
@@ -144,6 +145,11 @@ export function MesoEditorScreen({
   const [addExerciseDay, setAddExerciseDay] = useState<number | null>(null);
   const [addExerciseSearch, setAddExerciseSearch] = useState('');
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<ExerciseId[]>([]);
+  // The selected exercises' records, configs included — what the cycle copies its settings from
+  // on confirm (GT-158). Kept apart from the list, which a new search replaces.
+  const [selectedExerciseRecords, setSelectedExerciseRecords] = useState<Record<string, Exercise>>(
+    {},
+  );
   const [addExerciseFilters, setAddExerciseFilters] = useState<ExerciseLibraryFilters>({});
   const [addExerciseDraftFilters, setAddExerciseDraftFilters] = useState<ExerciseLibraryFilters>(
     {},
@@ -161,7 +167,15 @@ export function MesoEditorScreen({
     setAddExerciseDay(dayNumber);
     setAddExerciseSearch('');
     setSelectedExerciseIds([]);
+    setSelectedExerciseRecords({});
     setAddExerciseFilters({});
+  }
+
+  function handleChangeSelectedExerciseIds(ids: ExerciseId[]) {
+    setSelectedExerciseIds(ids);
+    setSelectedExerciseRecords((current) =>
+      rememberSelectedExercises(current, addExerciseQuery.data, ids),
+    );
   }
 
   function handleRequestAddExerciseFilters() {
@@ -178,14 +192,9 @@ export function MesoEditorScreen({
     if (addExerciseDay === null) {
       return;
     }
-    setDraft({
-      ...draft,
-      exercisesByDay: selectedExerciseIds.reduce(
-        (exercisesByDay, exerciseId) =>
-          addExerciseToDay(exercisesByDay, addExerciseDay, exerciseId),
-        draft.exercisesByDay,
-      ),
-    });
+    setDraft(
+      addExercisesToDraft(draft, addExerciseDay, selectedExerciseIds, selectedExerciseRecords),
+    );
     setAddExerciseDay(null);
   }
 
@@ -347,6 +356,7 @@ export function MesoEditorScreen({
           daysPerWeek={draft.daysPerWeek}
           exercisesByDay={draft.exercisesByDay}
           exercisesById={exercisesQuery.data ?? {}}
+          exerciseSettings={draft.exerciseSettings}
           onEditDay={handleEditDay}
         />
       </WizardScreen>
@@ -374,6 +384,7 @@ export function MesoEditorScreen({
           onChangeActiveDay={setActiveDay}
           exercisesByDay={draft.exercisesByDay}
           exercisesById={exercisesQuery.data ?? {}}
+          exerciseSettings={draft.exerciseSettings}
           onChangeSets={(dayNumber, index, sets) =>
             setDraft({
               ...draft,
@@ -381,10 +392,7 @@ export function MesoEditorScreen({
             })
           }
           onRemoveExercise={(dayNumber, index) =>
-            setDraft({
-              ...draft,
-              exercisesByDay: removeExerciseFromDay(draft.exercisesByDay, dayNumber, index),
-            })
+            setDraft(removeExerciseFromDraft(draft, dayNumber, index))
           }
           // Updater form, not a plain value built from the `draft` in scope here — see
           // state/draftStore.ts's own comment: MesoEditorDaysStep.tsx caches this callback
@@ -415,7 +423,7 @@ export function MesoEditorScreen({
         onRequestFilters={handleRequestAddExerciseFilters}
         onResetFilters={() => setAddExerciseFilters({})}
         selectedIds={selectedExerciseIds}
-        onChangeSelectedIds={setSelectedExerciseIds}
+        onChangeSelectedIds={handleChangeSelectedExerciseIds}
         onConfirm={handleConfirmAddExercise}
         onClose={() => setAddExerciseDay(null)}
       />

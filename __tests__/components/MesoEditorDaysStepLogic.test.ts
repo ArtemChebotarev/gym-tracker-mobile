@@ -21,7 +21,7 @@ import {
   updateExerciseSets,
   type ExercisesByDay,
 } from '@components/MesoEditorDaysStepLogic';
-import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -283,6 +283,14 @@ describe('hybrid rows (GT-157)', () => {
 
   test('exercisePlan: interval takes the default rounds and the library times, not the day\'s sets', () => {
     expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id, 2))).toEqual({ value: '3 × 2:00', caption: '0:45 rest' });
+  });
+
+  test('exercisePlan: the cycle’s own copy wins over the library (GT-158)', () => {
+    const settings = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 6 } };
+    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id), settings)).toEqual({
+      value: '6 × 2:00',
+      caption: '0:30 rest',
+    });
   });
 
   test('exercisePlan: mobility shows its length', () => {

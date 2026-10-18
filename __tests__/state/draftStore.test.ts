@@ -307,3 +307,60 @@ describe('toTemplateMesoBuilderDraft', () => {
     );
   });
 });
+
+describe('exerciseSettings through the draft (GT-158)', () => {
+  const bagSettings = {
+    type: 'interval' as const,
+    workSec: 120,
+    restSec: 45,
+    getReadySec: 5,
+    lever: 'rest' as const,
+    stepSec: 15 as const,
+    rounds: 3,
+  };
+  const cooldownSettings = { type: 'mobility' as const, durationSec: 600 };
+
+  test('goes into the save input for the exercises the cycle is saved with', () => {
+    const input = toScratchMesocycleDraftInput({
+      ...DEFAULT_MESO_BUILDER_DRAFT,
+      daysPerWeek: 1,
+      exercisesByDay: {
+        1: [{ exerciseId: 'heavy-bag', order: 0, sets: 2 }],
+        3: [{ exerciseId: 'cooldown', order: 0, sets: 2 }],
+      },
+      exerciseSettings: { 'heavy-bag': bagSettings, cooldown: cooldownSettings },
+    });
+
+    // Day 3 is beyond daysPerWeek and is dropped, its exercise's settings with it.
+    expect(input.exerciseSettings).toEqual({ 'heavy-bag': bagSettings });
+  });
+
+  test('a draft without hybrid exercises hands over no exerciseSettings', () => {
+    const input = toScratchMesocycleDraftInput({
+      ...DEFAULT_MESO_BUILDER_DRAFT,
+      exercisesByDay: { 1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
+    });
+
+    expect(input).not.toHaveProperty('exerciseSettings');
+  });
+
+  test('editing a planned cycle loads its own settings, as a copy', () => {
+    const planned: Mesocycle = {
+      ...STAMPS,
+      id: 'meso-1',
+      name: 'Hybrid',
+      lengthWeeks: 5,
+      daysPerWeek: 1,
+      status: 'planned',
+      origin: { type: 'scratch' },
+      progressionSettings: defaultProgressionSettings,
+      weekPlan: { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'heavy-bag', order: 0, sets: 2 }] }] },
+      exerciseSettings: { 'heavy-bag': bagSettings },
+    };
+
+    const draft = toMesoBuilderDraft(planned);
+
+    expect(draft.exerciseSettings).toEqual({ 'heavy-bag': bagSettings });
+    expect(draft.exerciseSettings).not.toBe(planned.exerciseSettings);
+  });
+});

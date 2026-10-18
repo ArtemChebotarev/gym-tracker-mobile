@@ -7,11 +7,8 @@ import type { Animated } from 'react-native';
 
 import { FULL_BODY, type Exercise } from '@domain/catalog';
 import type { ExerciseSettings } from '@domain/exerciseConfig';
-import {
-  defaultExerciseConfig,
-  defaultExerciseSettings,
-  exerciseTypeOf,
-} from '@domain/exerciseConfigBuilders';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import { withExerciseSettings, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
@@ -237,16 +234,21 @@ export function formatExercisePlan(settings: ExerciseSettings, sets: number): Ex
 
 /**
  * The plan chip of the row, or `undefined` for a strength exercise (it keeps its sets stepper)
- * and for one not loaded yet. Until the cycle keeps its own copy of the settings, the chip shows
- * what that copy starts from — the library's config (`defaultExerciseSettings`).
+ * and for one not loaded yet. It shows the cycle's own copy of the settings (GT-158); a row the
+ * cycle has no copy for yet — prefilled by Flow B or C — shows what that copy would start from,
+ * the library's config.
  */
-export function exercisePlan(exercisesById: ExercisesById, entry: WeekPlanExercise): ExercisePlan | undefined {
+export function exercisePlan(
+  exercisesById: ExercisesById,
+  entry: WeekPlanExercise,
+  exerciseSettings: ExerciseSettingsById = {},
+): ExercisePlan | undefined {
   const exercise = exercisesById[entry.exerciseId];
-  if (!exercise) {
+  if (!exercise || exerciseTypeOf(exercise) === 'strength') {
     return undefined;
   }
-  const config = exercise.config ?? defaultExerciseConfig(exerciseTypeOf(exercise));
-  return config ? formatExercisePlan(defaultExerciseSettings(config), entry.sets) : undefined;
+  const settings = exerciseSettings[entry.exerciseId] ?? withExerciseSettings({}, exercise)[exercise.id];
+  return settings ? formatExercisePlan(settings, entry.sets) : undefined;
 }
 
 /**

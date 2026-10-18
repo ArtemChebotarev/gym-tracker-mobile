@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 
 import type { Mesocycle } from '@domain/mesocycle';
+import {
+  prunedExerciseSettings,
+  type ExerciseSettingsById,
+} from '@domain/exerciseSettingsBuilders';
 import { MIN_DAYS_PER_WEEK, MIN_EDITOR_LENGTH_WEEKS } from '@domain/mesocycleValidators';
 import type {
   ScratchMesocycleDraftInput,
@@ -34,6 +38,12 @@ export type MesoBuilderDraft = {
   lengthWeeks: number;
   daysPerWeek: number;
   exercisesByDay: Record<number, WeekPlanExercise[]>;
+  /**
+   * The cycle's own copy of each power, interval and mobility exercise's config (10.1 FR-9,
+   * GT-158): taken from the library when the exercise is added, edited on this cycle only, and
+   * saved with it as `Mesocycle.exerciseSettings`. Absent reads as empty.
+   */
+  exerciseSettings?: ExerciseSettingsById;
   /** Flow C only — absent in Flow A and when editing a planned mesocycle. */
   source?: { mesoId: string; weekNumber: number };
   /** Flow B only — the template the draft was filled from. */
@@ -56,17 +66,21 @@ export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
  * convention `extractWeekPlan` uses for a session with no name.
  */
 export function toScratchMesocycleDraftInput(draft: MesoBuilderDraft): ScratchMesocycleDraftInput {
+  const days = Array.from({ length: draft.daysPerWeek }, (_, index) => ({
+    dayNumber: index + 1,
+    name: '',
+    exercises: draft.exercisesByDay[index + 1] ?? [],
+  }));
+  // Settings go with the cycle only for the exercises it is saved with: one left behind on a day
+  // beyond `daysPerWeek` is dropped together with that day.
+  const exerciseIds = days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId));
+  const exerciseSettings = prunedExerciseSettings(draft.exerciseSettings ?? {}, exerciseIds);
   return {
     name: draft.name,
     lengthWeeks: draft.lengthWeeks,
     daysPerWeek: draft.daysPerWeek,
-    weekPlan: {
-      days: Array.from({ length: draft.daysPerWeek }, (_, index) => ({
-        dayNumber: index + 1,
-        name: '',
-        exercises: draft.exercisesByDay[index + 1] ?? [],
-      })),
-    },
+    weekPlan: { days },
+    ...(Object.keys(exerciseSettings).length > 0 && { exerciseSettings }),
   };
 }
 
@@ -123,7 +137,8 @@ function toExercisesByDay(weekPlan: WeekPlan | undefined): Record<number, WeekPl
 
 /**
  * The reverse of `toScratchMesocycleDraftInput`: loads a saved planned mesocycle into the editor's
- * draft shape for Edit (task 072). Days are keyed by their `dayNumber`; a mesocycle without a
+ * draft shape for Edit (task 072). Days are keyed by their `dayNumber`, and the cycle's own
+ * hybrid settings come along, so editing them goes on from what was saved; a mesocycle without a
  * `weekPlan` (never the case for `planned`, but the field is optional on the type) loads with no
  * exercises.
  */
@@ -133,6 +148,7 @@ export function toMesoBuilderDraft(mesocycle: Mesocycle): MesoBuilderDraft {
     lengthWeeks: mesocycle.lengthWeeks,
     daysPerWeek: mesocycle.daysPerWeek,
     exercisesByDay: toExercisesByDay(mesocycle.weekPlan),
+    ...(mesocycle.exerciseSettings && { exerciseSettings: { ...mesocycle.exerciseSettings } }),
   };
 }
 

@@ -622,3 +622,55 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
     ]);
   });
 });
+
+describe('exerciseSettings on the draft (GT-158)', () => {
+  const settings = {
+    'heavy-bag': {
+      type: 'interval' as const,
+      workSec: 120,
+      restSec: 45,
+      getReadySec: 5,
+      lever: 'rest' as const,
+      stepSec: 15 as const,
+      rounds: 3,
+    },
+  };
+  const input = { name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
+
+  test('every flow saves the cycle’s own copy with it', () => {
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }).exerciseSettings).toEqual(settings);
+    expect(
+      buildTemplateMesocycleDraft({ ...input, exerciseSettings: settings, templateId: 't' }).exerciseSettings,
+    ).toEqual(settings);
+    expect(
+      buildCopyWeekMesocycleDraft(
+        { ...input, exerciseSettings: settings, sourceWeekNumber: 1 },
+        { id: 'source', lengthWeeks: 6 },
+      ).exerciseSettings,
+    ).toEqual(settings);
+  });
+
+  test('a cycle with nothing to keep has no exerciseSettings at all', () => {
+    expect(buildScratchMesocycleDraft(input)).not.toHaveProperty('exerciseSettings');
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: {} })).not.toHaveProperty('exerciseSettings');
+  });
+
+  test('the saved settings are a copy of the input, not the same object', () => {
+    const draft = buildScratchMesocycleDraft({ ...input, exerciseSettings: settings });
+
+    expect(draft.exerciseSettings).not.toBe(settings);
+  });
+
+  test('an edit replaces the stored settings, and one left with none drops the field', () => {
+    const planned: Mesocycle = {
+      ...STAMPS,
+      ...buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }),
+    };
+    const edited = { 'heavy-bag': { ...settings['heavy-bag'], restSec: 30 } };
+
+    expect(applyPlannedMesocycleEdit(planned, { ...input, exerciseSettings: edited }).exerciseSettings).toEqual(
+      edited,
+    );
+    expect(applyPlannedMesocycleEdit(planned, input)).not.toHaveProperty('exerciseSettings');
+  });
+});
