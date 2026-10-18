@@ -6,7 +6,7 @@
 
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
-import type { PowerLoad } from '@domain/exerciseConfig';
+import type { ExerciseSettings, PowerLoad } from '@domain/exerciseConfig';
 import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
 import { NotFoundError } from '@domain/errors';
 import type {
@@ -20,6 +20,7 @@ import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
+import { restSecFor } from '@domain/restTimerRules';
 import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import { targetIndicatorAtWeight, usesTargetIndicator } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
@@ -134,6 +135,11 @@ type WorkoutExerciseBase = {
   isGuided?: boolean;
   /** `planned` in preview. */
   status: SessionExerciseStatus;
+  /**
+   * Seconds of rest the timer runs after a set is logged (10.1 FR-5, GT-86). Live mode only, and
+   * only where there is a rest: absent on an interval or mobility exercise and on a rest of 0.
+   */
+  restSec?: number;
   /**
    * Every set row — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in
    * preview.
@@ -296,6 +302,8 @@ type ReferenceLogs = ReadonlyMap<string, readonly SetLog[]>;
  */
 type SessionContext = {
   settings: ProgressionSettings;
+  /** The cycle's own copy of each hybrid exercise's config (GT-158), by exercise id. */
+  exerciseSettings: Record<string, ExerciseSettings>;
   isDeload: boolean;
   bodyWeight?: number;
   referenceLogs: ReferenceLogs;
@@ -428,6 +436,16 @@ function toExercise(
   if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
     base.isGuided = true;
   }
+  if (mode === 'live') {
+    const restSec = restSecFor(
+      exercise.type,
+      context.exerciseSettings[exercise.id],
+      exercise.config,
+    );
+    if (restSec !== undefined) {
+      base.restSec = restSec;
+    }
+  }
   const advises = mode === 'live' && !skipped;
   return exercise.type === 'power'
     ? toPowerExercise(base, tree, advises)
@@ -524,6 +542,7 @@ function fromTree(
   const sessionExercises = exercises.map((exercise) => exercise.sessionExercise);
   const context: SessionContext = {
     settings: mesocycle.progressionSettings,
+    exerciseSettings: mesocycle.exerciseSettings ?? {},
     isDeload: session.isDeload,
     referenceLogs: referenceLogsOf(source),
   };

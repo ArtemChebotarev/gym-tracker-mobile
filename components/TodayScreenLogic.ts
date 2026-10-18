@@ -6,7 +6,9 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import { nextSetAfter } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
 
 /**
@@ -86,7 +88,7 @@ export function todayEmptyCopy(
  * so the confirmation says where it goes rather than warning.
  */
 export const FINISH_MESOCYCLE_CONFIRMATION =
-  "Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.";
+  'Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.';
 
 /**
  * Whether the first-workout coachmark tour shows over the Today tab (08.11, GT-42): once, on the
@@ -126,4 +128,64 @@ export function shouldShowDeloadIntro(
     session.mode === 'live' &&
     session.isDeload
   );
+}
+
+/** What a logged set does to the rest timer (10.1 FR-5, GT-86). */
+export type RestAfterLog =
+  /** The rest before the next set starts — replacing whatever rest there was. */
+  | {
+      kind: 'start';
+      rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number };
+    }
+  /** No rest follows — the exercise's last set, or one with no rest: any rest left is over. */
+  | { kind: 'stop' }
+  /** A correction, not the next set done: the rest that is running carries on untouched. */
+  | { kind: 'keep' };
+
+/** The key a set is remembered by among those already logged in this workout. */
+export function loggedSetKey(sessionExerciseId: string, setNumber: number): string {
+  return `${sessionExerciseId}:${setNumber}`;
+}
+
+/**
+ * What logging `setNumber` of `exercise` does to the rest timer (10.1 FR-5, GT-86; Artem,
+ * 18.10.2026). A log is a correction, and leaves the timer alone, when an exercise further down
+ * the workout has been started already — this one is being fixed or caught up on, the work is
+ * below — or when this very set was logged before in this workout and is logged again.
+ * Otherwise the rest before the next set still to do starts, and none after the last: n sets,
+ * n − 1 rests.
+ *
+ * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
+ * sets logged so far in it.
+ */
+export function restAfterLog(
+  exercises: readonly WorkoutExercise[],
+  exercise: WorkoutExercise,
+  setNumber: number,
+  alreadyLogged: ReadonlySet<string>,
+): RestAfterLog {
+  const index = exercises.findIndex(
+    (each) => each.sessionExerciseId === exercise.sessionExerciseId,
+  );
+  const startedBelow = exercises.slice(index + 1).some((each) => each.hasLoggedSets);
+  if (startedBelow || alreadyLogged.has(loggedSetKey(exercise.sessionExerciseId, setNumber))) {
+    return { kind: 'keep' };
+  }
+  if (exercise.restSec === undefined) return { kind: 'stop' };
+  const nextSetNumber = nextSetAfter(
+    exercise.rows.map((row) => ({
+      setNumber: row.setNumber,
+      open: row.log === undefined && row.notDone === undefined,
+    })),
+    setNumber,
+  );
+  if (nextSetNumber === undefined) return { kind: 'stop' };
+  return {
+    kind: 'start',
+    rest: {
+      sessionExerciseId: exercise.sessionExerciseId,
+      nextSetNumber,
+      durationSec: exercise.restSec,
+    },
+  };
 }

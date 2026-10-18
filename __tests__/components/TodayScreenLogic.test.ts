@@ -4,7 +4,10 @@ import {
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
+  loggedSetKey,
+  restAfterLog,
 } from '@components/TodayScreenLogic';
+import type { WorkoutExercise } from '@usecases/workoutSession';
 
 describe('formatInProgressConflict', () => {
   test('names the session in progress', () => {
@@ -16,7 +19,9 @@ describe('formatInProgressConflict', () => {
 
 describe('todayEmptyCopy', () => {
   test('GT-51: someone who has never had a cycle is invited to start their first, not their next', () => {
-    expect(todayEmptyCopy('noActiveMesocycle', false).title).toBe('Start your first training cycle');
+    expect(todayEmptyCopy('noActiveMesocycle', false).title).toBe(
+      'Start your first training cycle',
+    );
     expect(todayEmptyCopy('noActiveMesocycle', true).title).toBe('Start your next training cycle');
     expect(todayEmptyCopy('noActiveMesocycle').title).toBe('Start your next training cycle');
   });
@@ -103,5 +108,75 @@ describe('shouldShowDeloadIntro', () => {
     expect(shouldShowDeloadIntro(unseen, { mode: 'live', isDeload: false })).toBe(false);
     expect(shouldShowDeloadIntro(unseen, { mode: 'readonly', isDeload: true })).toBe(false);
     expect(shouldShowDeloadIntro(unseen, { mode: 'preview', isDeload: true })).toBe(false);
+  });
+});
+
+describe('restAfterLog', () => {
+  function card(id: string, restSec: number | undefined, logged: number[]): WorkoutExercise {
+    return {
+      sessionExerciseId: id,
+      exerciseId: id,
+      name: id,
+      muscleGroup: 'fullBody',
+      status: 'planned',
+      type: 'power',
+      powerLoad: 'weight',
+      rows: [1, 2, 3].map((setNumber) =>
+        logged.includes(setNumber)
+          ? { setNumber, isFirstUnlogged: false, log: { weight: 6, reps: 5 } }
+          : { setNumber, isFirstUnlogged: setNumber === logged.length + 1 },
+      ),
+      plannedSetCount: 3,
+      loggedSetCount: logged.length,
+      hasLoggedSets: logged.length > 0,
+      actions: {
+        canReplace: true,
+        canAddSet: true,
+        canRemoveLastSet: true,
+        canMoveUp: false,
+        canMoveDown: false,
+        canSkip: true,
+        canUnskip: false,
+        canDelete: true,
+      },
+      ...(restSec === undefined ? {} : { restSec }),
+    };
+  }
+  const NONE = new Set<string>();
+
+  test('starts the rest before the next set still to do', () => {
+    const a = card('a', 60, []);
+    expect(restAfterLog([a], a, 1, NONE)).toEqual({
+      kind: 'start',
+      rest: { sessionExerciseId: 'a', nextSetNumber: 2, durationSec: 60 },
+    });
+  });
+
+  test('after the last set the rest is over', () => {
+    const a = card('a', 60, [1, 2]);
+    expect(restAfterLog([a], a, 3, NONE)).toEqual({ kind: 'stop' });
+  });
+
+  test('an exercise without a rest ends any rest left', () => {
+    const a = card('a', undefined, []);
+    expect(restAfterLog([a], a, 1, NONE)).toEqual({ kind: 'stop' });
+  });
+
+  test('a log above an exercise already started is a correction: the rest carries on', () => {
+    const a = card('a', 60, [1]);
+    const b = card('b', 60, [1]);
+    expect(restAfterLog([a, b], a, 1, NONE)).toEqual({ kind: 'keep' });
+    expect(restAfterLog([a, b], a, 2, NONE)).toEqual({ kind: 'keep' });
+  });
+
+  test('an exercise below that is not started yet does not hold the rest back', () => {
+    const a = card('a', 60, []);
+    const b = card('b', 60, []);
+    expect(restAfterLog([a, b], a, 1, NONE).kind).toBe('start');
+  });
+
+  test('a set logged again in the same workout is a correction', () => {
+    const a = card('a', 60, []);
+    expect(restAfterLog([a], a, 1, new Set([loggedSetKey('a', 1)]))).toEqual({ kind: 'keep' });
   });
 });

@@ -11,7 +11,9 @@
 // one workout until the app was restarted; see `unpinDay`.
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
-// `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
+// `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05). A logged
+// set starts the rest before the next one (10.1 FR-5, GT-86, `restAfterLog`); finishing or
+// skipping the workout drops whatever rest is left.
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
@@ -61,6 +63,8 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  loggedSetKey,
+  restAfterLog,
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
@@ -92,6 +96,7 @@ import {
   type ExerciseCommand,
 } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
+import { useRestTimerStore } from '@state/restTimerStore';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
@@ -126,6 +131,10 @@ export default function TodayScreen() {
   const setNoHeavierAvailable = useSetNoHeavierAvailable();
   const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
+  const startRest = useRestTimerStore((s) => s.start);
+  const stopRest = useRestTimerStore((s) => s.stop);
+  const noteLogged = useRestTimerStore((s) => s.noteLogged);
+  const clearRest = useRestTimerStore((s) => s.clear);
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
   const exerciseCommand = useExerciseCommand();
@@ -251,6 +260,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           skipWorkout.mutate(currentSessionId, {
+            onSuccess: clearRest,
             onError: () => Alert.alert("Couldn't skip the workout", 'Try again.'),
           });
         },
@@ -433,6 +443,22 @@ export default function TodayScreen() {
             },
             {
               onSuccess: (result) => {
+                if (result.kind === 'logged') {
+                  // The rest before the next set starts by itself (GT-86); after the last set
+                  // none does and any rest left is over; a correction leaves it be.
+                  const rest = restAfterLog(
+                    model?.exercises ?? [],
+                    exercise,
+                    setNumber,
+                    useRestTimerStore.getState().loggedSets,
+                  );
+                  noteLogged(loggedSetKey(exercise.sessionExerciseId, setNumber));
+                  if (rest.kind === 'start') {
+                    startRest(rest.rest);
+                  } else if (rest.kind === 'stop') {
+                    stopRest();
+                  }
+                }
                 if (result.kind === 'conflict') {
                   Alert.alert(formatInProgressConflict(result), undefined, [
                     { text: 'Cancel', style: 'cancel' },
@@ -476,6 +502,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           finishSession.mutate(currentSessionId, {
+            onSuccess: clearRest,
             onError: () => Alert.alert("Couldn't finish the workout", 'Try again.'),
           });
         }}
