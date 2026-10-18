@@ -50,9 +50,11 @@ export const styles = StyleSheet.create({
   skipped: {
     opacity: OPACITY['opacity/dimmed'],
   },
+  // Centered: a card with no equipment line has a one-line title, which sits level with its badge
+  // and buttons instead of at the top of them.
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: SPACING['space/gap-tight'],
   },
   titleBlock: {

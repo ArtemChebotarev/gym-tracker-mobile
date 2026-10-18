@@ -19,7 +19,7 @@ import {
 } from '@components/WorkoutExerciseCardLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
-import type { WorkoutSetRow } from '@usecases/workoutSession';
+import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 const ROW: WorkoutSetRow = { setNumber: 1, isFirstUnlogged: false, log: { weight: 60, reps: 10 } };
 const SKIPPED_ROW: WorkoutSetRow = { setNumber: 2, isFirstUnlogged: false, notDone: 'skipped' };
@@ -370,9 +370,9 @@ describe('the weight swap popover and note', () => {
       expect(cardInfoTargets(withSwap, 'live', false).reps).toBe(true);
     });
 
-    test('a deload card keeps only the badge', () => {
+    test('a deload card keeps only its badge — the Deload one, not the RIR one', () => {
       expect(cardInfoTargets(base, 'live', true)).toEqual({
-        rir: true,
+        rir: false,
         weight: false,
         reps: false,
       });
@@ -710,5 +710,38 @@ describe('topWeightOf', () => {
       topWeight: 10,
     });
     expect(topWeightOf([{}, {}])).toEqual({});
+  });
+});
+
+describe('exerciseCardView on a deload week', () => {
+  const exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'> = {
+    status: 'planned',
+    targetRir: 8,
+    rows: [],
+  };
+
+  test('the Deload badge takes the RIR badge’s place', () => {
+    expect(exerciseCardView('live', exercise, true)).toMatchObject({
+      rirLabel: undefined,
+      deloadLabel: 'Deload',
+    });
+    expect(exerciseCardView('live', exercise)).toMatchObject({
+      rirLabel: '8 RIR',
+      deloadLabel: undefined,
+    });
+  });
+
+  test('a power card has the badge although it has no RIR to show', () => {
+    expect(
+      exerciseCardView('live', { status: 'planned', targetRir: undefined, rows: [] }, true)
+        .deloadLabel,
+    ).toBe('Deload');
+  });
+
+  test('a preview shows neither', () => {
+    expect(exerciseCardView('preview', exercise, true)).toMatchObject({
+      rirLabel: undefined,
+      deloadLabel: undefined,
+    });
   });
 });

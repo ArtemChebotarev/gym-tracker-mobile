@@ -612,7 +612,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
               <View
                 style={
                   {
-                    "alignItems": "flex-start",
+                    "alignItems": "center",
                     "flexDirection": "row",
                     "gap": 8,
                   }
@@ -1244,7 +1244,7 @@ exports[`WorkoutScreen header matches the history snapshot 1`] = `
               <View
                 style={
                   {
-                    "alignItems": "flex-start",
+                    "alignItems": "center",
                     "flexDirection": "row",
                     "gap": 8,
                   }
@@ -2063,7 +2063,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
               <View
                 style={
                   {
-                    "alignItems": "flex-start",
+                    "alignItems": "center",
                     "flexDirection": "row",
                     "gap": 8,
                   }
@@ -3031,7 +3031,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
               <View
                 style={
                   {
-                    "alignItems": "flex-start",
+                    "alignItems": "center",
                     "flexDirection": "row",
                     "gap": 8,
                   }

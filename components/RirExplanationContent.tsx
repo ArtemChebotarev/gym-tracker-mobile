@@ -6,21 +6,23 @@ import { View } from 'react-native';
 
 import { PlateRow } from '@design/components/PlateRow';
 import { RangeTrack } from '@design/components/RangeTrack';
-import type { RirExplanation } from './RirExplanationLogic';
+import type { BadgeExplanation } from './RirExplanationLogic';
 import { styles } from './RirExplanationContentStyles';
 
-export function RirExplanationContent({ explanation }: { explanation: RirExplanation }) {
+export function RirExplanationContent({ explanation }: { explanation: BadgeExplanation }) {
   const { track, rows } = explanation;
 
   return (
     <View style={styles.root}>
-      <RangeTrack
-        outer={track.outer}
-        inner={track.inner}
-        marker={track.marker}
-        labels={track.labels}
-        accessibilityLabel={track.accessibilityLabel}
-      />
+      {track !== undefined && (
+        <RangeTrack
+          outer={track.outer}
+          inner={track.inner}
+          marker={track.marker}
+          labels={track.labels}
+          accessibilityLabel={track.accessibilityLabel}
+        />
+      )}
       <View style={styles.rows}>
         {rows.map((row, index) => (
           <PlateRow key={index} leading={{ icon: row.icon }} text={row.text} />

@@ -190,7 +190,7 @@ describe('WorkoutScreen header', () => {
       header: { ...COMPLETED.header, isDeload: true },
     };
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: deload })} />);
-    expect(screen.getByText('Deload')).toBeTruthy();
+    expect(screen.getByTestId('workout-deload-badge')).toHaveTextContent('Deload');
     expect(screen.getByTestId('workout-completed-check')).toBeTruthy();
 
     screen.rerender(

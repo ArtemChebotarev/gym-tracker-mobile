@@ -867,11 +867,13 @@ describe('RIR badge popover', () => {
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
   });
 
-  test('DoD: it works on a deload week too, with the deload text', () => {
+  test('on a deload week the Deload badge takes its place, with the deload text', () => {
     const deload = makeExercise({ targetRir: 8 });
     render(<WorkoutExerciseCard {...makeProps({ exercise: deload, isDeload: true })} />);
 
-    fireEvent.press(badge());
+    expect(screen.queryByTestId('exercise-rir')).toBeNull();
+    expect(screen.getByTestId('exercise-deload')).toHaveTextContent('Deload');
+    fireEvent.press(screen.getByTestId('exercise-deload'));
 
     expect(screen.getByText('Deload week')).toBeTruthy();
     expect(
@@ -979,6 +981,28 @@ describe('RIR badge popover', () => {
     expect(screen.getByTestId('exercise-type-chip')).toHaveTextContent('Power');
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
+
+  test.each([
+    ['weight', 'About half your usual load, two sets at most.'],
+    ['level', 'Same level, two sets at most.'],
+    ['none', 'Same body weight, two sets at most.'],
+  ] as const)(
+    'a power card on a deload week says what changes for a %s load',
+    (powerLoad, line) => {
+      const power = makeExercise({
+        type: 'power',
+        isGuided: true,
+        powerLoad,
+        targetRir: undefined,
+      });
+      render(<WorkoutExerciseCard {...makeProps({ exercise: power, isDeload: true })} />);
+
+      expect(screen.getByTestId('exercise-deload')).toBeTruthy();
+      fireEvent.press(screen.getByTestId('exercise-deload'));
+      expect(screen.getByText('Stop each set well before the speed drops.')).toBeTruthy();
+      expect(screen.getByText(line)).toBeTruthy();
+    },
+  );
 
   test('a power exercise that is its own load fills the Load field with the body weight', () => {
     const jump = makeExercise({
