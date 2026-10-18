@@ -7,7 +7,6 @@ import {
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
   canSubmitExerciseForm,
-  formatClock,
   isExerciseEditable,
   valuesForType,
 } from '@components/ExerciseFormLogic';
@@ -84,15 +83,6 @@ describe('valuesForType', () => {
     const power = valuesForType(EMPTY_EXERCISE_FORM_VALUES, 'power');
 
     expect(valuesForType(power, 'strength').muscleGroup).toBeUndefined();
-  });
-});
-
-describe('formatClock', () => {
-  test('formats seconds as m:ss', () => {
-    expect(formatClock(0)).toBe('0:00');
-    expect(formatClock(5)).toBe('0:05');
-    expect(formatClock(600)).toBe('10:00');
-    expect(formatClock(135)).toBe('2:15');
   });
 });
 

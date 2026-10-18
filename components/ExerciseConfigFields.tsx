@@ -19,13 +19,13 @@ import { Text, View } from 'react-native';
 
 import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
+import { formatClock } from '@design/formatClock';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
 import {
   describePowerLoad,
-  formatClock,
   POWER_LOAD_OPTIONS,
   powerLoadFromValue,
 } from './ExerciseFormLogic';

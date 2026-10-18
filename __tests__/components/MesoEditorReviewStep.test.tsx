@@ -5,6 +5,7 @@ import {
   MesoEditorReviewStep,
   type MesoEditorReviewStepProps,
 } from '@components/MesoEditorReviewStep';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -64,5 +65,33 @@ describe('MesoEditorReviewStep', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Edit Day 2' }));
 
     expect(onEditDay).toHaveBeenCalledWith(2);
+  });
+
+  test('shows the plan of each hybrid exercise instead of its sets (GT-157)', () => {
+    render(
+      <MesoEditorReviewStep
+        {...BASE_PROPS}
+        daysPerWeek={1}
+        exercisesByDay={{
+          1: [
+            { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 },
+            { exerciseId: MEDBALL_THROW.id, order: 1, sets: 3 },
+            { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+            { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+          ],
+        }}
+        exercisesById={{
+          [BENCH_PRESS.id]: BENCH_PRESS,
+          [MEDBALL_THROW.id]: MEDBALL_THROW,
+          [HEAVY_BAG.id]: HEAVY_BAG,
+          [COOLDOWN.id]: COOLDOWN,
+        }}
+      />,
+    );
+
+    expect(screen.getByText('3 sets')).toBeTruthy();
+    expect(screen.getByText('3 sets · 1:15 rest')).toBeTruthy();
+    expect(screen.getByText('3 × 2:00 · 0:45 rest')).toBeTruthy();
+    expect(screen.getByText('10:00')).toBeTruthy();
   });
 });

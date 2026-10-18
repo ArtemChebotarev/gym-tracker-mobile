@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
 import { MesoEditorDaysStep, type MesoEditorDaysStepProps } from '@components/MesoEditorDaysStep';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -105,5 +106,58 @@ describe('MesoEditorDaysStep', () => {
     render(<MesoEditorDaysStep {...BASE_PROPS} />);
 
     expect(screen.getByLabelText('Reorder Bench Press')).toBeTruthy();
+  });
+
+  describe('hybrid rows (GT-157)', () => {
+    const MIXED_PROPS: MesoEditorDaysStepProps = {
+      ...BASE_PROPS,
+      daysPerWeek: 1,
+      exercisesByDay: {
+        1: [
+          { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 },
+          { exerciseId: MEDBALL_THROW.id, order: 1, sets: 3 },
+          { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+          { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+        ],
+      },
+      exercisesById: {
+        [BENCH_PRESS.id]: BENCH_PRESS,
+        [MEDBALL_THROW.id]: MEDBALL_THROW,
+        [HEAVY_BAG.id]: HEAVY_BAG,
+        [COOLDOWN.id]: COOLDOWN,
+      },
+    };
+
+    test('matches the mixed day snapshot', () => {
+      expect(render(<MesoEditorDaysStep {...MIXED_PROPS} />).toJSON()).toMatchSnapshot();
+    });
+
+    test('a strength row keeps its stepper, a hybrid row shows its plan chip instead', () => {
+      render(<MesoEditorDaysStep {...MIXED_PROPS} />);
+
+      expect(screen.getByLabelText('Increase Bench Press sets')).toBeTruthy();
+      expect(screen.queryByLabelText('Increase Heavy bag sets')).toBeNull();
+      expect(screen.getByLabelText('Medball straight punch throw plan: 3 sets, 1:15 rest')).toBeTruthy();
+      expect(screen.getByLabelText('Heavy bag plan: 3 × 2:00, 0:45 rest')).toBeTruthy();
+      expect(screen.getByLabelText('Cooldown plan: 10:00, Length')).toBeTruthy();
+      expect(screen.getByText('Plan')).toBeTruthy();
+    });
+
+    test('an exercise without a group is captioned with its type', () => {
+      render(<MesoEditorDaysStep {...MIXED_PROPS} />);
+
+      expect(screen.getByText('Power')).toBeTruthy();
+      expect(screen.getByText('Timed work')).toBeTruthy();
+      expect(screen.getByText('Mobility')).toBeTruthy();
+    });
+
+    test('a hybrid row is removed by its own index', () => {
+      const onRemoveExercise = jest.fn();
+      render(<MesoEditorDaysStep {...MIXED_PROPS} onRemoveExercise={onRemoveExercise} />);
+
+      fireEvent.press(screen.getByLabelText('Remove Heavy bag'));
+
+      expect(onRemoveExercise).toHaveBeenCalledWith(1, 2);
+    });
   });
 });

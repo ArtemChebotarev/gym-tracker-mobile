@@ -49,13 +49,6 @@ export function valuesForType(values: ExerciseFormValues, type: ExerciseType): E
   return { ...values, type, config: defaultExerciseConfig(type), muscleGroup };
 }
 
-/** `m:ss` for a number of seconds — the shape every duration in the hybrid sheets is shown in. */
-export function formatClock(totalSec: number): string {
-  const minutes = Math.floor(totalSec / 60);
-  const seconds = totalSec % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
 /** What each power load is called where it is picked (10.1 FR-2). */
 export const POWER_LOAD_LABEL: Record<PowerLoad, string> = {
   weight: 'Kg',

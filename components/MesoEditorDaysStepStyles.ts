@@ -91,6 +91,14 @@ export const styles = StyleSheet.create({
   dot: {
     ...circle(SIZES['size/dot-large']),
   },
+  // A `fullBody` hybrid exercise's type icon in place of the dot (GT-157). It overflows the dot's
+  // column rather than widening it, so the names of every row still start at one edge.
+  typeIcon: {
+    width: SIZES['size/dot-large'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
   exerciseMain: {
     flex: 1,
   },

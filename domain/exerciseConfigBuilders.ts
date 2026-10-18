@@ -3,7 +3,7 @@
 // the corridors and steps the progression engine uses are its own and arrive with it.
 
 import type { Exercise, ExerciseType } from './catalog';
-import type { ExerciseConfig, IntervalConfig } from './exerciseConfig';
+import type { ExerciseConfig, ExerciseSettings, IntervalConfig } from './exerciseConfig';
 
 /**
  * The type of `exercise`, `strength` where it says nothing. The one place that default is
@@ -54,4 +54,22 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
     case 'mobility':
       return { type: 'mobility', durationSec: 600 };
   }
+}
+
+/**
+ * How many rounds an interval exercise does in a cycle that has not said otherwise (10.1 FR-9:
+ * "interval — 3 × 2:00"). Not part of `IntervalConfig`: a count is the cycle's, not the
+ * exercise's (see `IntervalPlanConfig`).
+ */
+export const DEFAULT_INTERVAL_ROUNDS = 3;
+
+/**
+ * What a cycle starts with for a hybrid exercise (`Mesocycle.exerciseSettings`, 10.1 FR-9): a
+ * copy of the library's `config`, plus the default round count for an interval one. Fresh object
+ * each call, so editing the cycle's copy never reaches the library's.
+ */
+export function defaultExerciseSettings(config: ExerciseConfig): ExerciseSettings {
+  return config.type === 'interval'
+    ? { ...config, rounds: DEFAULT_INTERVAL_ROUNDS }
+    : { ...config };
 }
