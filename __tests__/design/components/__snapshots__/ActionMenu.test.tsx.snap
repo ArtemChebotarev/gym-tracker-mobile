@@ -80,8 +80,10 @@ exports[`ActionMenu — iOS DoD: the trigger is the native menu, one native butt
                 },
                 {
                   "$type": "foregroundStyle",
-                  "color": "#C9CDD2",
-                  "styleType": "color",
+                  "style": {
+                    "color": "#C9CDD2",
+                    "type": "color",
+                  },
                 },
               ]
             }

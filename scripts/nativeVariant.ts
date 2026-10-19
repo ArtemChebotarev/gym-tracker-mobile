@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { VARIANT_ID_SUFFIX } from '../app.config';
+
 // What identity the *generated* native projects (`ios/`, `android/`, gitignored) carry, and
 // whether it is the one the current `APP_VARIANT` asks for. `expo run:ios` generates `ios/` only
 // when it is missing and never re-reads the config afterwards, so a project keeps the bundle ID
@@ -53,7 +55,19 @@ export function readNativeIds(root: string): NativeIds {
  * Whether a generated project's IDs are the expected one. An absent project is fine — it will be
  * generated from the current config — and so is an unreadable one (no IDs found): refusing on
  * something this check cannot see would only train people to bypass it.
+ *
+ * Besides the app itself a project carries its app extensions, each under `<app ID>.<name>` — the
+ * Live Activity's widget extension is `<app ID>.ExpoWidgetsTarget` (GT-94). Those are fine, with
+ * one exception: to the real app, the hybrid app's own ID `<app ID>.hybrid` looks just like an
+ * extension, and letting it through is the one mistake this check exists to catch. So a variant's
+ * ID, or an extension of it, never counts as an extension, and the app ID itself must be there.
  */
 export function idsMatch(found: string[] | null, expected: string): boolean {
-  return found === null || found.length === 0 || found.every((id) => id === expected);
+  if (found === null || found.length === 0) {
+    return true;
+  }
+  const variantApp = `${expected}${VARIANT_ID_SUFFIX}`;
+  const isExtension = (id: string) =>
+    id.startsWith(`${expected}.`) && id !== variantApp && !id.startsWith(`${variantApp}.`);
+  return found.includes(expected) && found.every((id) => id === expected || isExtension(id));
 }

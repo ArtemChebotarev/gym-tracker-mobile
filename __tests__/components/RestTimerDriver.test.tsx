@@ -42,11 +42,14 @@ describe('RestTimerDriver', () => {
     expect(capsule()).toMatchObject({ title: '0:45', caption: 'Rest · set 2 next' });
   });
 
-  test('when the time is up: one signal, and the capsule says the rest is over', () => {
+  test('when the time is up: one signal, and the capsule says the rest is over', async () => {
     render(<RestTimerDriver />);
     act(() => useRestTimerStore.getState().start(REST));
 
-    act(() => jest.advanceTimersByTime(60_000));
+    // The sound plays once its seek back to the start has landed — a promise later.
+    await act(async () => {
+      jest.advanceTimersByTime(60_000);
+    });
 
     expect(capsule()).toMatchObject({ state: 'finished', title: 'Rest is over' });
     expect(vibrate).toHaveBeenCalledTimes(1);

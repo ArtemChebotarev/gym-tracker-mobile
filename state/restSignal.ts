@@ -1,9 +1,11 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { Vibration } from 'react-native';
 
+import { playFrom } from './soundPlayer';
+
 // The signal at the end of a rest (10.1 FR-5, GT-86): a vibration and a soft low "bong", the sound
-// Artem picked (18.10.2026). `assets/sounds/countdown-tick.wav`, the tick an octave above it, is
-// there for the interval timer's countdown (FR-6) — the rest timer has none.
+// Artem picked (18.10.2026). The interval timer's countdown (FR-6) is built from it and
+// `assets/sounds/countdown-tick.wav`, the tick an octave above it — see state/intervalSignal.ts.
 //
 // The sound mixes with whatever is already playing rather than stopping it — at the gym that is
 // the user's music, and a rest timer that paused it every two minutes would be switched off. It
@@ -27,7 +29,5 @@ function restOverPlayer(): AudioPlayer {
 /** Tells the user the rest is over: one vibration and the sound from the start. */
 export function signalRestOver(): void {
   Vibration.vibrate();
-  const sound = restOverPlayer();
-  void sound.seekTo(0);
-  sound.play();
+  void playFrom(restOverPlayer(), 0);
 }

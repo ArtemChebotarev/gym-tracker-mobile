@@ -401,8 +401,10 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
                       },
                       {
                         "$type": "foregroundStyle",
-                        "color": "#C9CDD2",
-                        "styleType": "color",
+                        "style": {
+                          "color": "#C9CDD2",
+                          "type": "color",
+                        },
                       },
                     ]
                   }
