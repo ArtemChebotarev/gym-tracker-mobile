@@ -34,7 +34,7 @@ import {
   cardRowsOf,
   exerciseCardView,
 } from './WorkoutExerciseCardLogic';
-import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
+import { exerciseLogCounts, formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { type SetLoggingProps, WorkoutSetRows } from './WorkoutSetRows';
 
 export type PowerExerciseCardProps = ExerciseCardCommonProps & {
@@ -89,7 +89,7 @@ export function PowerExerciseCard({
       position={position}
       onOpenHistory={onOpenHistory}
       menuItems={menuItems}
-      menuSubtitle={formatExerciseMenuSubtitle(exercise.plannedSetCount, exercise.loggedSetCount)}
+      menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
       badges={
         view.deloadLabel !== undefined && (
           <RirBadge

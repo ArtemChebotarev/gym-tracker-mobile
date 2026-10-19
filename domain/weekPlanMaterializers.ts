@@ -5,8 +5,8 @@
 //
 // - strength, power: one bare row per `sets` of the day — reps and loads come later (Flow C's
 //   history at Start, the engine for the weeks after).
-// - interval: the cycle's rounds, each with the cycle's work time and the rest after it. N rounds
-//   have N−1 rests (FR-6): the last round has none.
+// - interval: the cycle's rounds, each with the cycle's work time and the rest after it — the last
+//   one's too, which is the rest before the next exercise (FR-6; Artem, 19.10.2026).
 // - mobility: one block of the cycle's length (FR-10).
 //
 // The settings are the cycle's own copy (`Mesocycle.exerciseSettings`, GT-158) — the library's
@@ -37,14 +37,11 @@ function intervalRounds(input: MaterializeInput): SetTarget[] {
   if (settings?.type !== 'interval') {
     return setRows(input);
   }
-  return Array.from({ length: settings.rounds }, (_, index) => {
-    const isLast = index === settings.rounds - 1;
-    return {
-      setNumber: index + 1,
-      targetWorkSec: settings.workSec,
-      ...(isLast ? {} : { targetRestSec: settings.restSec }),
-    };
-  });
+  return Array.from({ length: settings.rounds }, (_, index) => ({
+    setNumber: index + 1,
+    targetWorkSec: settings.workSec,
+    targetRestSec: settings.restSec,
+  }));
 }
 
 function mobilityBlock(input: MaterializeInput): SetTarget[] {

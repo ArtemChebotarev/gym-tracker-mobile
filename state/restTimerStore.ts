@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { FinishedRest, RestTimer } from '@domain/restTimer';
+import type { FinishedRest, RestNext, RestTimer } from '@domain/restTimer';
 import { pauseRestTimer, resumeRestTimer, startRestTimer } from '@domain/restTimerRules';
 
 // The rest between sets (10.1 FR-5, GT-86): the one that is running or paused, and the one that
@@ -24,7 +24,7 @@ type RestTimerStore = {
   loggedSets: ReadonlySet<string>;
   /** Remembers a logged set. */
   noteLogged: (key: string) => void;
-  start: (rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number }) => void;
+  start: (rest: { sessionExerciseId: string; next: RestNext; durationSec: number }) => void;
   pause: () => void;
   resume: () => void;
   /** Skip: the rest is dropped on the spot, and nothing is shown for it. */
@@ -33,7 +33,7 @@ type RestTimerStore = {
   finish: () => void;
   /** Puts the "Rest is over" capsule away. */
   dismiss: () => void;
-  /** The exercise's last set is done: any rest left, running or run out, is over. */
+  /** No rest follows the set just logged — the workout has nothing left: any rest left is over. */
   stop: () => void;
   /** Drops whatever there is, the logged sets included — the workout it belonged to is over. */
   clear: () => void;
@@ -57,7 +57,7 @@ export const useRestTimerStore = create<RestTimerStore>((set) => ({
             timer: null,
             finished: {
               sessionExerciseId: s.timer.sessionExerciseId,
-              nextSetNumber: s.timer.nextSetNumber,
+              next: s.timer.next,
             },
           },
     ),

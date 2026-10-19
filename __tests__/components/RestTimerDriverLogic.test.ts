@@ -3,7 +3,10 @@ import { pauseRestTimer, startRestTimer } from '@domain/restTimerRules';
 
 const T0 = 1_000_000;
 const ACTIONS = { skip: jest.fn(), pause: jest.fn(), resume: jest.fn(), dismiss: jest.fn() };
-const timer = startRestTimer({ sessionExerciseId: 'se', nextSetNumber: 3, durationSec: 120 }, T0);
+const timer = startRestTimer(
+  { sessionExerciseId: 'se', next: { kind: 'set', setNumber: 3 }, durationSec: 120 },
+  T0,
+);
 
 describe('restCapsule', () => {
   test('running: the time left over the set that comes next, with Skip and Pause', () => {
@@ -33,7 +36,10 @@ describe('restCapsule', () => {
   test('run out: Rest is over, and a cross to put it away', () => {
     expect(
       restCapsule(
-        { timer: null, finished: { sessionExerciseId: 'se', nextSetNumber: 3 } },
+        {
+          timer: null,
+          finished: { sessionExerciseId: 'se', next: { kind: 'set', setNumber: 3 } },
+        },
         T0,
         ACTIONS,
       ),
@@ -43,6 +49,26 @@ describe('restCapsule', () => {
       caption: 'Set 3 next',
       onDismiss: ACTIONS.dismiss,
     });
+  });
+
+  test('a rest before the next exercise names it', () => {
+    const toBag = startRestTimer(
+      { sessionExerciseId: 'se', next: { kind: 'exercise', name: 'Heavy bag' }, durationSec: 60 },
+      T0,
+    );
+    expect(restCapsule({ timer: toBag, finished: null }, T0, ACTIONS)).toMatchObject({
+      caption: 'Rest · Heavy bag next',
+    });
+    expect(
+      restCapsule(
+        {
+          timer: null,
+          finished: { sessionExerciseId: 'se', next: { kind: 'exercise', name: 'Heavy bag' } },
+        },
+        T0,
+        ACTIONS,
+      ),
+    ).toMatchObject({ caption: 'Heavy bag next' });
   });
 
   test('nothing to show without a rest', () => {

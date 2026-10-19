@@ -1,13 +1,15 @@
 import type { Exercise } from '@domain/catalog';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 
-/** One exercise of a session with the catalog record it refers to and its set logs. */
+/** One exercise of a session with the catalog record it refers to and its logs. */
 export type SessionExerciseTree = {
   sessionExercise: SessionExercise;
   exercise: Exercise;
   /** The set logs of this session exercise, sorted by `setNumber`. */
   setLogs: SetLog[];
+  /** The round logs of this session exercise — an interval's rounds — sorted by `roundNumber`. */
+  roundLogs: RoundLog[];
 };
 
 /** A session with its mesocycle and every exercise of it, ready for the workout screen. */
@@ -21,7 +23,7 @@ export type SessionTree = {
 /**
  * Reads a whole session as one tree — the shape the workout screen (08.7 · Тренировка) is built
  * from. Assembling Session → Mesocycle, Session → SessionExercise → Exercise and SessionExercise →
- * SetLog is this repository's job, so the use case layer only maps the result (07 · Persistence
+ * SetLog / RoundLog is this repository's job, so the use case layer only maps the result (07 · Persistence
  * Layer Contract, rules 2 and 4). No business logic lives here.
  */
 export interface SessionTreeRepository {

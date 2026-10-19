@@ -5,8 +5,8 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { WorkoutScreen, type WorkoutScreenProps } from '@components/WorkoutScreen';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import type {
+  SetExerciseActions,
   StrengthWorkoutExercise,
-  WorkoutExercise,
   WorkoutSessionModel,
 } from '@usecases/workoutSession';
 
@@ -24,7 +24,7 @@ function renderWithSafeArea(ui: ReactElement) {
 // Local noon, so the snapshot's weekday doesn't depend on the test machine's time zone.
 const STARTED_AT = new Date(2026, 8, 15, 12).toISOString();
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,

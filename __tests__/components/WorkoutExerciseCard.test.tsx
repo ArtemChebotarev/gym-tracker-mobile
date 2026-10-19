@@ -11,12 +11,12 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
 import type {
   PowerWorkoutExercise,
+  SetExerciseActions,
   StrengthWorkoutExercise,
-  WorkoutExercise,
   WorkoutSetRow,
 } from '@usecases/workoutSession';
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,

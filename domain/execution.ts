@@ -60,7 +60,10 @@ export type SetTarget = {
    * power target, which are reps and a load.
    */
   targetWorkSec?: number;
-  /** Planned rest after the round, seconds. Interval only. */
+  /**
+   * Planned rest after the round, seconds — after the last round too, as the rest before the next
+   * exercise (FR-6). Interval only.
+   */
   targetRestSec?: number;
 };
 

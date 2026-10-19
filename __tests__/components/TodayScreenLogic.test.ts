@@ -7,7 +7,7 @@ import {
   loggedSetKey,
   restAfterLog,
 } from '@components/TodayScreenLogic';
-import type { WorkoutExercise } from '@usecases/workoutSession';
+import type { PowerWorkoutExercise, WorkoutExercise } from '@usecases/workoutSession';
 
 describe('formatInProgressConflict', () => {
   test('names the session in progress', () => {
@@ -112,7 +112,7 @@ describe('shouldShowDeloadIntro', () => {
 });
 
 describe('restAfterLog', () => {
-  function card(id: string, restSec: number | undefined, logged: number[]): WorkoutExercise {
+  function card(id: string, restSec: number | undefined, logged: number[]): PowerWorkoutExercise {
     return {
       sessionExerciseId: id,
       exerciseId: id,
@@ -148,13 +148,69 @@ describe('restAfterLog', () => {
     const a = card('a', 60, []);
     expect(restAfterLog([a], a, 1, NONE)).toEqual({
       kind: 'start',
-      rest: { sessionExerciseId: 'a', nextSetNumber: 2, durationSec: 60 },
+      rest: {
+        sessionExerciseId: 'a',
+        next: { kind: 'set', setNumber: 2 },
+        durationSec: 60,
+      },
     });
   });
 
-  test('after the last set the rest is over', () => {
+  test('after the last set of the workout the rest is over', () => {
     const a = card('a', 60, [1, 2]);
     expect(restAfterLog([a], a, 3, NONE)).toEqual({ kind: 'stop' });
+  });
+
+  test('after an exercise’s last set the rest is before the next exercise (19.10.2026)', () => {
+    const a = card('a', 60, [1, 2]);
+    const b = card('b', 90, []);
+    expect(restAfterLog([a, b], a, 3, NONE)).toEqual({
+      kind: 'start',
+      rest: { sessionExerciseId: 'a', next: { kind: 'exercise', name: 'b' }, durationSec: 60 },
+    });
+  });
+
+  test('the next exercise is the first below with work left, else the first above', () => {
+    const a = card('a', 60, []);
+    const c = card('c', 60, [1, 2, 3]);
+    const b = card('b', 60, [1, 2]);
+    // b is last on the list and c, above it, is done: the work left is a, at the top.
+    expect(restAfterLog([a, c, b], b, 3, NONE)).toMatchObject({
+      kind: 'start',
+      rest: { next: { kind: 'exercise', name: 'a' } },
+    });
+  });
+
+  test('a skipped exercise has nothing left, and an interval with rounds to do has', () => {
+    const a = card('a', 60, [1, 2]);
+    const skipped: WorkoutExercise = {
+      ...card('skipped', 60, []),
+      status: 'skipped',
+      rows: [1, 2, 3].map((setNumber) => ({
+        setNumber,
+        isFirstUnlogged: false,
+        notDone: 'skipped' as const,
+      })),
+    };
+    expect(restAfterLog([a, skipped], a, 3, NONE)).toEqual({ kind: 'stop' });
+
+    const bag: WorkoutExercise = {
+      sessionExerciseId: 'bag',
+      exerciseId: 'bag',
+      name: 'Heavy bag',
+      muscleGroup: 'fullBody',
+      type: 'interval',
+      status: 'planned',
+      rounds: [{ roundNumber: 1, workSec: 120, restSec: 45, isFirstUnlogged: true }],
+      plannedRoundCount: 1,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      actions: skipped.actions,
+    };
+    expect(restAfterLog([a, skipped, bag], a, 3, NONE)).toMatchObject({
+      kind: 'start',
+      rest: { next: { kind: 'exercise', name: 'Heavy bag' } },
+    });
   });
 
   test('an exercise without a rest ends any rest left', () => {

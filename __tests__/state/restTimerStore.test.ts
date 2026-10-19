@@ -3,7 +3,11 @@ import { act } from '@testing-library/react-native';
 import { restRemainingSec } from '@domain/restTimerRules';
 import { useRestTimerStore } from '@state/restTimerStore';
 
-const REST = { sessionExerciseId: 'se', nextSetNumber: 2, durationSec: 60 };
+const REST = {
+  sessionExerciseId: 'se',
+  next: { kind: 'set' as const, setNumber: 2 },
+  durationSec: 60,
+};
 
 function left(): number | undefined {
   const { timer } = useRestTimerStore.getState();
@@ -47,7 +51,7 @@ describe('restTimerStore', () => {
 
     expect(useRestTimerStore.getState()).toMatchObject({
       timer: null,
-      finished: { sessionExerciseId: 'se', nextSetNumber: 2 },
+      finished: { sessionExerciseId: 'se', next: { kind: 'set', setNumber: 2 } },
     });
     store.dismiss();
     expect(useRestTimerStore.getState().finished).toBeNull();
@@ -65,10 +69,10 @@ describe('restTimerStore', () => {
     const store = useRestTimerStore.getState();
     store.start(REST);
     store.finish();
-    store.start({ ...REST, nextSetNumber: 3, durationSec: 90 });
+    store.start({ ...REST, next: { kind: 'set', setNumber: 3 }, durationSec: 90 });
 
     expect(useRestTimerStore.getState().finished).toBeNull();
-    expect(useRestTimerStore.getState().timer?.nextSetNumber).toBe(3);
+    expect(useRestTimerStore.getState().timer?.next).toEqual({ kind: 'set', setNumber: 3 });
     expect(left()).toBe(90);
   });
 

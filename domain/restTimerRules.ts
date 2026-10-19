@@ -3,14 +3,16 @@
 // - It starts by itself after a set is logged, for the exercise's rest: power's from its own field
 //   (the cycle's copy first, then the library's), strength's from Settings (GT-87). Interval and
 //   mobility have none — an interval runs its own timer, mobility rests not at all.
-// - Not after the last set: n sets, n − 1 rests. "Last" is whatever leaves no set still to do, so a
-//   set logged out of order still rests before the one that is left.
+// - After the last set too — the rest before the next exercise, which never starts by itself — but
+//   not once the workout has nothing left to do (Artem, 19.10.2026): n sets, n rests. "Last" is
+//   whatever leaves no set still to do, so a set logged out of order still rests before the one
+//   that is left.
 // - Skip and Pause; no ±15 s. It never feeds the progression.
 
 import type { ExerciseType } from './catalog';
 import type { ExerciseConfig, ExerciseSettings } from './exerciseConfig';
 import { defaultExerciseConfig } from './exerciseConfigBuilders';
-import type { RestTimer, StrengthRestTimer } from './restTimer';
+import type { RestNext, RestTimer, StrengthRestTimer } from './restTimer';
 
 const MS_PER_SEC = 1000;
 
@@ -60,7 +62,7 @@ export type RestSetRow = { setNumber: number; open: boolean };
 
 /**
  * The set the rest after logging `loggedSetNumber` is before — the first other row still to be
- * done — or `undefined` when none is left, and so no rest starts.
+ * done — or `undefined` when none is left, and the rest, if any, is before the next exercise.
  */
 export function nextSetAfter(
   rows: readonly RestSetRow[],
@@ -69,15 +71,15 @@ export function nextSetAfter(
   return rows.find((row) => row.open && row.setNumber !== loggedSetNumber)?.setNumber;
 }
 
-/** A rest of `durationSec` before `nextSetNumber`, running from `now`. */
+/** A rest of `durationSec` before `next`, running from `now`. */
 export function startRestTimer(
-  rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number },
+  rest: { sessionExerciseId: string; next: RestNext; durationSec: number },
   now: number,
 ): RestTimer {
   const durationMs = rest.durationSec * MS_PER_SEC;
   return {
     sessionExerciseId: rest.sessionExerciseId,
-    nextSetNumber: rest.nextSetNumber,
+    next: rest.next,
     durationMs,
     endsAt: now + durationMs,
   };

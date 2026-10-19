@@ -15,6 +15,8 @@ import {
 } from '@state/useWorkoutSession';
 import { logSet } from '@usecases/setLogging';
 
+import { rowsOf } from '../fixtures/workoutCards';
+
 jest.mock('expo-crypto', () => {
   let counter = 0;
   return { randomUUID: () => `generated-id-${(counter += 1)}` };
@@ -91,7 +93,7 @@ describe('useWorkoutSession / useWorkoutSlot', () => {
     await act(() => queryClient().invalidateQueries({ queryKey: WORKOUT_SESSION_QUERY_KEY }));
 
     await waitFor(() => expect(result.current.data?.progress).toBe(0.5));
-    expect(result.current.data?.exercises[0]?.rows[0]?.log).toEqual({ weight: 40, reps: 10 });
+    expect(rowsOf(result.current.data?.exercises[0])[0]?.log).toEqual({ weight: 40, reps: 10 });
   });
 
   test('previews a day whose session does not exist yet', async () => {

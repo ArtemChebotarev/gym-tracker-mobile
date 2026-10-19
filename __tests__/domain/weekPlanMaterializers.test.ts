@@ -21,20 +21,20 @@ describe('weekPlanMaterializers (GT-160)', () => {
     ).toEqual(setRows({ entry }));
   });
 
-  test('interval: the cycle’s rounds with work and rest — no rest after the last one', () => {
+  test('interval: the cycle’s rounds with work and rest — the last one’s rest too (19.10.2026)', () => {
     const settings = { ...HEAVY_BAG_CONFIG, rounds: 3 };
 
     expect(materializeSetTargets('interval', { entry, settings })).toEqual([
       { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
       { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
-      { setNumber: 3, targetWorkSec: 120 },
+      { setNumber: 3, targetWorkSec: 120, targetRestSec: 45 },
     ]);
   });
 
-  test('interval: one round has no rest at all (FR-6)', () => {
+  test('interval: one round has its rest too — the rest before the next exercise (FR-6)', () => {
     expect(
       materializeSetTargets('interval', { entry, settings: { ...HEAVY_BAG_CONFIG, rounds: 1 } }),
-    ).toEqual([{ setNumber: 1, targetWorkSec: 120 }]);
+    ).toEqual([{ setNumber: 1, targetWorkSec: 120, targetRestSec: 45 }]);
   });
 
   test('interval: rounds come from the settings, not from the day’s sets', () => {

@@ -12,8 +12,8 @@
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05). A logged
-// set starts the rest before the next one (10.1 FR-5, GT-86, `restAfterLog`); finishing or
-// skipping the workout drops whatever rest is left.
+// set starts the rest before the next one — after an exercise's last set, before the next exercise
+// (10.1 FR-5, GT-86, `restAfterLog`); finishing or skipping the workout drops whatever rest is left.
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
@@ -73,6 +73,7 @@ import { useHandoffSheet } from '@components/useHandoffSheet';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
+  exerciseLogCounts,
   formatDeleteExerciseWarning,
   formatReplaceExerciseWarning,
   formatSkipExerciseWarning,
@@ -339,20 +340,20 @@ export default function TodayScreen() {
         }
         confirm(
           'Replace exercise?',
-          formatReplaceExerciseWarning(exercise.name, exercise.loggedSetCount),
+          formatReplaceExerciseWarning(exercise.name, exerciseLogCounts(exercise)),
           { text: 'Replace', destructive: true, onPress: openPicker },
         );
         return;
       }
       case 'skip':
-        confirm(
-          'Skip exercise?',
-          formatSkipExerciseWarning(exercise.plannedSetCount, exercise.loggedSetCount),
-          { text: 'Skip', destructive: false, onPress: () => runCommand('skip') },
-        );
+        confirm('Skip exercise?', formatSkipExerciseWarning(exerciseLogCounts(exercise)), {
+          text: 'Skip',
+          destructive: false,
+          onPress: () => runCommand('skip'),
+        });
         return;
       case 'delete':
-        confirm('Delete exercise?', formatDeleteExerciseWarning(exercise.loggedSetCount), {
+        confirm('Delete exercise?', formatDeleteExerciseWarning(exerciseLogCounts(exercise)), {
           text: 'Delete',
           destructive: true,
           onPress: () => runCommand('delete'),
@@ -444,8 +445,9 @@ export default function TodayScreen() {
             {
               onSuccess: (result) => {
                 if (result.kind === 'logged') {
-                  // The rest before the next set starts by itself (GT-86); after the last set
-                  // none does and any rest left is over; a correction leaves it be.
+                  // The rest before the next set starts by itself (GT-86) — after the last set,
+                  // before the next exercise; once the workout has nothing left none does and any
+                  // rest left is over; a correction leaves it be.
                   const rest = restAfterLog(
                     model?.exercises ?? [],
                     exercise,
