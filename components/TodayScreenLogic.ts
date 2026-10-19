@@ -167,12 +167,18 @@ function hasWorkLeft(exercise: WorkoutExercise): boolean {
 
 /**
  * The rest after row `rowNumber` of `exercise`: the exercise's own rest for a set (Settings for
- * strength, its field for power), the round's own rest for an interval round (FR-6).
+ * strength, its field for power), the round's own rest for an interval round (FR-6) — the one it
+ * was logged with when given (`loggedRestSec`), since its Rest field may hold a time picked in the
+ * workout that the model's plan doesn't have yet (GT-90).
  */
-function restSecAfter(exercise: WorkoutExercise, rowNumber: number): number | undefined {
+function restSecAfter(
+  exercise: WorkoutExercise,
+  rowNumber: number,
+  loggedRestSec: number | undefined,
+): number | undefined {
   const restSec =
     exercise.type === 'interval'
-      ? exercise.rounds.find((round) => round.roundNumber === rowNumber)?.restSec
+      ? (loggedRestSec ?? exercise.rounds.find((round) => round.roundNumber === rowNumber)?.restSec)
       : exercise.restSec;
   return restSec !== undefined && restSec > 0 ? restSec : undefined;
 }
@@ -201,13 +207,14 @@ function nextExerciseWithWorkLeft(
  * very end.
  *
  * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
- * rows logged so far in it.
+ * rows logged so far in it; `loggedRestSec` the rest a round was just logged with.
  */
 export function restAfterLog(
   exercises: readonly WorkoutExercise[],
   exercise: WorkoutExercise,
   setNumber: number,
   alreadyLogged: ReadonlySet<string>,
+  loggedRestSec?: number,
 ): RestAfterLog {
   const index = exercises.findIndex(
     (each) => each.sessionExerciseId === exercise.sessionExerciseId,
@@ -216,7 +223,7 @@ export function restAfterLog(
   if (startedBelow || alreadyLogged.has(loggedSetKey(exercise.sessionExerciseId, setNumber))) {
     return { kind: 'keep' };
   }
-  const durationSec = restSecAfter(exercise, setNumber);
+  const durationSec = restSecAfter(exercise, setNumber, loggedRestSec);
   if (durationSec === undefined) return { kind: 'stop' };
   const nextRowNumber = nextSetAfter(restRowsOf(exercise), setNumber);
   let next: RestNext;

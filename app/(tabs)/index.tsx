@@ -306,11 +306,13 @@ export default function TodayScreen() {
     result: LogSetResult | LogRoundResult,
   ) {
     if (result.kind === 'logged') {
+      // A round rests for the rest it was logged with — its field may hold a picked time (GT-90).
       const rest = restAfterLog(
         model?.exercises ?? [],
         exercise,
         rowNumber,
         useRestTimerStore.getState().loggedSets,
+        'roundLog' in result ? result.roundLog.restSec : undefined,
       );
       noteLogged(loggedSetKey(exercise.sessionExerciseId, rowNumber));
       if (rest.kind === 'start') {
