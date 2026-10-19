@@ -1,12 +1,13 @@
 import { type Exercise, type MuscleGroup, toExerciseId } from '@domain/catalog';
 import { isConflictError } from '@domain/errors';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { WorkoutStore } from '@repositories/workout';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
+import { HEAVY_BAG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -259,6 +260,57 @@ describe('generateNextSession', () => {
     expect(planned?.setTargets).toEqual([
       { setNumber: 1, targetReps: 6 },
       { setNumber: 2, targetReps: 6 },
+    ]);
+  });
+
+  // GT-93: an interval's rounds are inherited from the fact — how many, and the times each was
+  // done with (03, "Структура наследуется от факта").
+  test('an interval plans next week’s rounds from the fact: rounds added stay, logged times carry', async () => {
+    await new SqliteExerciseRepository(db()).createCustom(HEAVY_BAG);
+    const trigger = makeSession(1);
+    // Planned as 3 × 2:00 / 0:45; a 4th round was added in the workout.
+    const bag: SessionExercise = {
+      ...makeExercise(1, HEAVY_BAG.id, 1),
+      setTargets: [
+        { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 3, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 4, targetWorkSec: 120, targetRestSec: 45 },
+      ],
+    };
+    const round = (roundNumber: number, overrides: Partial<RoundLog> = {}): RoundLog => ({
+      ...STAMPS,
+      id: `round-${roundNumber}`,
+      sessionExerciseId: bag.id,
+      exerciseId: bag.exerciseId,
+      roundNumber,
+      workSec: 135,
+      restSec: 30,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-01T09:30:00.000Z',
+      ...overrides,
+    });
+    const { workout, deps } = await setUp([trigger], [bag]);
+    for (const log of [
+      round(1),
+      round(2, { restSec: 5, restSkipped: true }),
+      round(3, { workSec: 40, completed: false }),
+    ]) {
+      await workout.repos.roundLogRepo.create(log);
+    }
+
+    const next = await generateNextSession(trigger, workout.repos, deps);
+
+    const [planned] = await exercisesOf(workout, next);
+    expect(planned?.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 135, targetRestSec: 30 },
+      // A skipped rest is a one-off: the planned rest stays.
+      { setNumber: 2, targetWorkSec: 135, targetRestSec: 45 },
+      // A round ended early is too: the planned work stays.
+      { setNumber: 3, targetWorkSec: 120, targetRestSec: 30 },
+      // Not logged: as it was planned.
+      { setNumber: 4, targetWorkSec: 120, targetRestSec: 45 },
     ]);
   });
 

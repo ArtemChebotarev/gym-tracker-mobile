@@ -100,6 +100,7 @@ export async function generateNextSession(
     prescriptions: prescribeNextSession({
       exercises,
       logs: await repos.setLogRepo.listBySessionId(base.id),
+      roundLogs: await repos.roundLogRepo.listBySessionId(base.id),
       weekNumber,
       lengthWeeks: mesocycle.lengthWeeks,
       settings: mesocycle.progressionSettings,

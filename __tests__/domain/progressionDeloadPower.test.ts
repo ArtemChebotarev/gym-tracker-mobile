@@ -163,6 +163,7 @@ test('the power policy plans its deload day this way, not strength’s', () => {
     [medball(planned([10, 10, 10]), 'weight')],
     {
       logs: [log(1, 10), log(2, 10), log(3, 10)],
+      roundLogs: [],
       weekNumber: 5,
       lengthWeeks: 5,
       settings,

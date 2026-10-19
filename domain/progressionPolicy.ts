@@ -7,7 +7,7 @@
 // `domain/progressionPolicies.ts`.
 
 import type { Equipment } from '@domain/catalog';
-import type { SetLog, SetTarget } from '@domain/execution';
+import type { RoundLog, SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type {
   ExercisePrescription,
@@ -19,6 +19,8 @@ import type {
 export type ProgressionContext = {
   /** The source session's `SetLog`s; logs of other session exercises are ignored. */
   logs: readonly SetLog[];
+  /** The source session's `RoundLog`s — an interval's fact; logs of other exercises are ignored. */
+  roundLogs: readonly RoundLog[];
   /** Week number of the session being planned (the source's week + 1). */
   weekNumber: number;
   lengthWeeks: number;
