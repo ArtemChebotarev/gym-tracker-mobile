@@ -24,11 +24,13 @@ function phaseAt(index: number): Phase {
   return PHASES[index] as Phase;
 }
 
-type Run = { index: number; phaseStartMs: number; pausedAtMs?: number; lastBeepSec?: number };
+type Run = { index: number; phaseStartMs: number; pausedAtMs?: number };
 
 const SILENCE = require('../assets/sounds/silence.wav');
-const TICK = require('../assets/sounds/countdown-tick.wav');
-const BONG = require('../assets/sounds/rest-over.wav');
+// One clip for the whole countdown: ticks at 0, 1 and 2 s, the start signal at 3 s. Started once,
+// 3 s before the phase ends, so the gaps between the ticks come from the file, not from JS timing.
+const COUNTDOWN = require('../assets/sounds/spike-countdown.wav');
+const COUNTDOWN_MS = 3000;
 
 function log(...args: unknown[]) {
   console.log(
@@ -40,10 +42,12 @@ function log(...args: unknown[]) {
 export function TimerSpikeScreen() {
   const run = useRef<Run | null>(null);
   const activity = useRef<LiveActivity<TimerSpikeProps> | null>(null);
-  const players = useRef<{ silence: AudioPlayer; tick: AudioPlayer; bong: AudioPlayer } | null>(
-    null,
-  );
+  const players = useRef<{ silence: AudioPlayer; countdown: AudioPlayer } | null>(null);
+  const countdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** When the clip was asked to start, and when it should have: for the latency measurement. */
+  const pending = useRef<{ targetMs: number; calledMs: number; offsetSec: number } | null>(null);
   const [label, setLabel] = useState('idle');
+  const [timing, setTiming] = useState('no countdown yet');
 
   function props(r: Run): TimerSpikeProps {
     const phase = phaseAt(r.index);
@@ -61,16 +65,40 @@ export function TimerSpikeScreen() {
     void activity.current?.update(props(r));
   }
 
-  function play(p: AudioPlayer) {
-    void p.seekTo(0);
-    p.play();
+  function phaseEndMs(r: Run): number {
+    return r.phaseStartMs + phaseAt(r.index).durSec * 1000;
+  }
+
+  function cancelCountdown() {
+    if (countdownTimeout.current !== null) clearTimeout(countdownTimeout.current);
+    countdownTimeout.current = null;
+    players.current?.countdown.pause();
+  }
+
+  /** Plays the clip so its start signal lands on `endMs`, from the middle when less than 3 s are left. */
+  async function playCountdown(endMs: number) {
+    const clip = players.current?.countdown;
+    if (clip === undefined) return;
+    const targetMs = endMs - COUNTDOWN_MS;
+    const offsetSec = Math.max(0, (Date.now() - targetMs) / 1000);
+    // The seek has to finish before play(): played at the clip's end, the sound "finishes" at once.
+    await clip.seekTo(offsetSec);
+    pending.current = { targetMs: targetMs + offsetSec * 1000, calledMs: Date.now(), offsetSec };
+    clip.play();
+  }
+
+  /** Schedules the countdown of the running phase from the clock — not from the 250 ms poll. */
+  function scheduleCountdown(r: Run) {
+    cancelCountdown();
+    const endMs = phaseEndMs(r);
+    const delay = endMs - COUNTDOWN_MS - Date.now();
+    countdownTimeout.current = setTimeout(() => void playCountdown(endMs), Math.max(0, delay));
   }
 
   function enterPhase(index: number, now: number) {
     if (index >= PHASES.length) {
       log('done');
       Vibration.vibrate();
-      if (players.current) play(players.current.bong);
       players.current?.silence.pause();
       void activity.current?.end('default');
       activity.current = null;
@@ -81,8 +109,8 @@ export function TimerSpikeScreen() {
     run.current = { index, phaseStartMs: now };
     log('phase', phaseAt(index).name, phaseAt(index).round);
     Vibration.vibrate();
-    if (players.current) play(players.current.bong);
     publish(run.current);
+    scheduleCountdown(run.current);
   }
 
   function togglePause() {
@@ -100,12 +128,18 @@ export function TimerSpikeScreen() {
     }
     log('pause toggled', run.current.pausedAtMs !== undefined);
     publish(run.current);
+    if (run.current.pausedAtMs === undefined) {
+      scheduleCountdown(run.current);
+    } else {
+      cancelCountdown();
+    }
   }
 
   function skipRest() {
     const r = run.current;
     if (r === null || phaseAt(r.index).name !== 'Rest') return;
     log('skip rest');
+    cancelCountdown();
     enterPhase(r.index + 1, Date.now());
   }
 
@@ -126,11 +160,6 @@ export function TimerSpikeScreen() {
         return;
       }
       const leftSec = Math.ceil(leftMs / 1000);
-      if (leftSec <= 3 && r.lastBeepSec !== leftSec) {
-        run.current = { ...r, lastBeepSec: leftSec };
-        if (players.current) play(players.current.tick);
-        log('beep', leftSec);
-      }
       setLabel(`${phase.name} ${phase.round} — ${leftSec}s`);
     }, 250);
     const heartbeat = setInterval(() => log('alive'), 5000);
@@ -152,11 +181,25 @@ export function TimerSpikeScreen() {
     if (players.current === null) {
       const silence = createAudioPlayer(SILENCE);
       silence.loop = true;
-      players.current = { silence, tick: createAudioPlayer(TICK), bong: createAudioPlayer(BONG) };
+      const countdown = createAudioPlayer(COUNTDOWN, { updateInterval: 50 });
+      // The moment the clip really starts playing, against the moment it should have.
+      countdown.addListener('playbackStatusUpdate', (status) => {
+        const p = pending.current;
+        if (p === null || !status.playing) return;
+        pending.current = null;
+        // Where the clip really started: now, minus what it has already played since the seek.
+        const playedMs = (status.currentTime - p.offsetSec) * 1000;
+        const startedMs = Date.now() - playedMs;
+        const text = `late by ${Math.round(startedMs - p.targetMs)} ms (call ${p.calledMs - p.targetMs} ms)`;
+        log('countdown', text);
+        setTiming(text);
+      });
+      players.current = { silence, countdown };
     }
     players.current.silence.play();
     const now = Date.now();
     run.current = { index: 0, phaseStartMs: now };
+    scheduleCountdown(run.current);
     activity.current = TimerSpikeActivity.start(
       props(run.current),
       'gymtracker-hybrid://timer-spike',
@@ -167,6 +210,7 @@ export function TimerSpikeScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 }}>
       <Text style={{ color: 'white', fontSize: 24 }}>{label}</Text>
+      <Text style={{ color: 'white', fontSize: 14 }}>{timing}</Text>
       <Button title="Start" onPress={() => void start()} />
       <Button title="Pause / resume" onPress={togglePause} />
       <Button title="Skip rest" onPress={skipRest} />
