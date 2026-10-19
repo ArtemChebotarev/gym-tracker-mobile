@@ -5,12 +5,14 @@ import {
   formatExerciseMenuSubtitle,
   formatReplaceExerciseWarning,
   formatSkipExerciseWarning,
+  setMenuRows,
+  typeMenuRows,
   workoutExerciseMenuActions,
 } from '@components/WorkoutExerciseMenuLogic';
-import type { WorkoutExerciseActions } from '@usecases/workoutSession';
+import type { SetExerciseActions } from '@usecases/workoutSession';
 
 // A live, planned exercise in the middle of the list with several rows: everything available.
-const ALL: WorkoutExerciseActions = {
+const ALL: SetExerciseActions = {
   canReplace: true,
   canAddSet: true,
   canRemoveLastSet: true,
@@ -23,7 +25,7 @@ const ALL: WorkoutExerciseActions = {
 
 describe('exerciseMenuRows', () => {
   test('lists every action in the 08.7 order, all available', () => {
-    expect(exerciseMenuRows(ALL)).toEqual([
+    expect(exerciseMenuRows(ALL, setMenuRows(ALL))).toEqual([
       { item: 'replace' },
       { item: 'addSet' },
       { item: 'removeLastSet' },
@@ -35,12 +37,8 @@ describe('exerciseMenuRows', () => {
   });
 
   test('keeps what is not available listed, disabled with the reason', () => {
-    const rows = exerciseMenuRows({
-      ...ALL,
-      canRemoveLastSet: false,
-      canMoveUp: false,
-      canMoveDown: false,
-    });
+    const actions = { ...ALL, canRemoveLastSet: false, canMoveUp: false, canMoveDown: false };
+    const rows = exerciseMenuRows(actions, setMenuRows(actions));
 
     expect(rows.filter((row) => row.disabledReason !== undefined)).toEqual([
       { item: 'removeLastSet', disabledReason: 'Only one set' },
@@ -50,13 +48,28 @@ describe('exerciseMenuRows', () => {
   });
 
   test('a skipped exercise gets Unskip in place of Skip', () => {
-    const items = exerciseMenuRows({ ...ALL, canSkip: false, canUnskip: true }).map(
-      (row) => row.item,
-    );
+    const actions = { ...ALL, canSkip: false, canUnskip: true };
+    const items = exerciseMenuRows(actions, setMenuRows(actions)).map((row) => row.item);
 
     expect(items).toContain('unskip');
     expect(items).not.toContain('skip');
     expect(items.indexOf('unskip')).toBe(5);
+  });
+
+  test('the type’s own rows go right after Replace', () => {
+    expect(exerciseMenuRows(ALL, []).map((row) => row.item)).toEqual([
+      'replace',
+      'moveUp',
+      'moveDown',
+      'skip',
+      'delete',
+    ]);
+  });
+});
+
+describe('typeMenuRows', () => {
+  test('a card of set rows offers Add set and Remove last set', () => {
+    expect(typeMenuRows({ actions: ALL })).toEqual(setMenuRows(ALL));
   });
 });
 
@@ -80,7 +93,7 @@ describe('workoutExerciseMenuActions', () => {
   test('keeps an unavailable action listed, disabled with its reason', () => {
     const onAction = jest.fn();
     const items = workoutExerciseMenuActions(
-      { ...ALL, canMoveUp: false, canRemoveLastSet: false },
+      { actions: { ...ALL, canMoveUp: false, canRemoveLastSet: false } },
       onAction,
     );
 
@@ -93,7 +106,7 @@ describe('workoutExerciseMenuActions', () => {
 
   test('each item calls back with its own action', () => {
     const onAction = jest.fn();
-    const items = workoutExerciseMenuActions(ALL, onAction);
+    const items = workoutExerciseMenuActions({ actions: ALL }, onAction);
 
     items.find((item) => item.key === 'delete')?.onPress();
 

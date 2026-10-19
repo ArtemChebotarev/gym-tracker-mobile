@@ -2,8 +2,10 @@ import type { MuscleGroup } from '@domain/catalog';
 import {
   cardChip,
   cardInfoTargets,
+  cardRowsOf,
   exerciseCardView,
   firstUnloggedRow,
+  setRowsOf,
   targetRirOf,
 } from '@components/WorkoutExerciseCardLogic';
 import type {
@@ -17,11 +19,13 @@ const SKIPPED_ROW: WorkoutSetRow = { setNumber: 2, isFirstUnlogged: false, notDo
 
 describe('exerciseCardView', () => {
   test('live: the menu and the RIR badge, set rows, no plate', () => {
-    expect(exerciseCardView('live', { status: 'planned', targetRir: 2, rows: [ROW] })).toEqual({
+    expect(
+      exerciseCardView('live', { status: 'planned', targetRir: 2 }, cardRowsOf([ROW])),
+    ).toEqual({
       showMenu: true,
       rirLabel: '2 RIR',
       isNotDone: false,
-      showSets: true,
+      showRows: true,
       notDoneNote: undefined,
       showNotProgrammed: false,
     });
@@ -29,12 +33,12 @@ describe('exerciseCardView', () => {
 
   test('read-only: no menu, everything else like live', () => {
     expect(
-      exerciseCardView('readonly', { status: 'completed', targetRir: 2, rows: [ROW] }),
+      exerciseCardView('readonly', { status: 'completed', targetRir: 2 }, cardRowsOf([ROW])),
     ).toEqual({
       showMenu: false,
       rirLabel: '2 RIR',
       isNotDone: false,
-      showSets: true,
+      showRows: true,
       notDoneNote: undefined,
       showNotProgrammed: false,
     });
@@ -42,58 +46,70 @@ describe('exerciseCardView', () => {
 
   test('a skipped exercise with sets logged is dimmed but keeps its rows, menu in live only', () => {
     expect(
-      exerciseCardView('live', { status: 'skipped', targetRir: 2, rows: [ROW, SKIPPED_ROW] }),
+      exerciseCardView('live', { status: 'skipped', targetRir: 2 }, cardRowsOf([ROW, SKIPPED_ROW])),
     ).toMatchObject({
       showMenu: true,
       isNotDone: true,
-      showSets: true,
+      showRows: true,
     });
     expect(
-      exerciseCardView('readonly', { status: 'skipped', targetRir: 2, rows: [ROW, SKIPPED_ROW] }),
+      exerciseCardView(
+        'readonly',
+        { status: 'skipped', targetRir: 2 },
+        cardRowsOf([ROW, SKIPPED_ROW]),
+      ),
     ).toMatchObject({
       showMenu: false,
       isNotDone: true,
-      showSets: true,
+      showRows: true,
     });
   });
 
   test('a skipped exercise with nothing logged collapses its rows into one Skipped note', () => {
     expect(
-      exerciseCardView('readonly', {
-        status: 'skipped',
-        targetRir: 2,
-        rows: [{ ...SKIPPED_ROW, setNumber: 1 }, SKIPPED_ROW],
-      }),
-    ).toMatchObject({ isNotDone: true, showSets: false, notDoneNote: 'Skipped' });
+      exerciseCardView(
+        'readonly',
+        { status: 'skipped', targetRir: 2 },
+        cardRowsOf([{ ...SKIPPED_ROW, setNumber: 1 }, SKIPPED_ROW]),
+      ),
+    ).toMatchObject({ isNotDone: true, showRows: false, notDoneNote: 'Skipped' });
   });
 
   test('an abandoned exercise reads the same, under its own word (136)', () => {
     const abandonedRow: WorkoutSetRow = { ...SKIPPED_ROW, notDone: 'abandoned' };
     expect(
-      exerciseCardView('history', {
-        status: 'abandoned',
-        targetRir: 2,
-        rows: [{ ...abandonedRow, setNumber: 1 }, abandonedRow],
-      }),
-    ).toMatchObject({ isNotDone: true, showSets: false, notDoneNote: 'Abandoned' });
+      exerciseCardView(
+        'history',
+        { status: 'abandoned', targetRir: 2 },
+        cardRowsOf([{ ...abandonedRow, setNumber: 1 }, abandonedRow]),
+      ),
+    ).toMatchObject({ isNotDone: true, showRows: false, notDoneNote: 'Abandoned' });
     expect(
-      exerciseCardView('history', { status: 'abandoned', targetRir: 2, rows: [ROW, abandonedRow] }),
-    ).toMatchObject({ isNotDone: true, showSets: true, notDoneNote: undefined });
+      exerciseCardView(
+        'history',
+        { status: 'abandoned', targetRir: 2 },
+        cardRowsOf([ROW, abandonedRow]),
+      ),
+    ).toMatchObject({ isNotDone: true, showRows: true, notDoneNote: undefined });
   });
 
   test('preview: the plate only — no menu, no RIR badge, no set rows', () => {
-    expect(exerciseCardView('preview', { status: 'planned', targetRir: 2, rows: [ROW] })).toEqual({
+    expect(
+      exerciseCardView('preview', { status: 'planned', targetRir: 2 }, cardRowsOf([ROW])),
+    ).toEqual({
       showMenu: false,
       rirLabel: undefined,
       isNotDone: false,
-      showSets: false,
+      showRows: false,
       notDoneNote: undefined,
       showNotProgrammed: true,
     });
   });
 
   test('no RIR badge without a target RIR', () => {
-    expect(exerciseCardView('live', { status: 'planned', rows: [ROW] }).rirLabel).toBeUndefined();
+    expect(
+      exerciseCardView('live', { status: 'planned' }, cardRowsOf([ROW])).rirLabel,
+    ).toBeUndefined();
   });
 });
 
@@ -186,11 +202,11 @@ describe('cardInfoTargets', () => {
     status: 'planned' as const,
     targetRir: 3,
     equipment: 'barbell' as const,
-    rows: [{ setNumber: 1, isFirstUnlogged: true }] as WorkoutSetRow[],
   };
+  const rows: WorkoutSetRow[] = [{ setNumber: 1, isFirstUnlogged: true }];
 
   test('a live card has the RIR badge and the Weight ⓘ; the Reps ⓘ needs a weight swap', () => {
-    expect(cardInfoTargets(base, 'live', false)).toEqual({
+    expect(cardInfoTargets(base, rows, 'live', false)).toEqual({
       rir: true,
       weight: true,
       reps: false,
@@ -198,18 +214,15 @@ describe('cardInfoTargets', () => {
   });
 
   test('a weight swap on the next set adds the Reps ⓘ', () => {
-    const withSwap = {
-      ...base,
-      rows: [
-        { setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } },
-      ] as WorkoutSetRow[],
-    };
+    const withSwap: WorkoutSetRow[] = [
+      { setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } },
+    ];
 
-    expect(cardInfoTargets(withSwap, 'live', false).reps).toBe(true);
+    expect(cardInfoTargets(base, withSwap, 'live', false).reps).toBe(true);
   });
 
   test('a deload card keeps only its badge — the Deload one, not the RIR one', () => {
-    expect(cardInfoTargets(base, 'live', true)).toEqual({
+    expect(cardInfoTargets(base, rows, 'live', true)).toEqual({
       rir: false,
       weight: false,
       reps: false,
@@ -217,7 +230,7 @@ describe('cardInfoTargets', () => {
   });
 
   test('a read-only card has the badge and no ⓘ at all', () => {
-    expect(cardInfoTargets(base, 'readonly', false)).toEqual({
+    expect(cardInfoTargets(base, rows, 'readonly', false)).toEqual({
       rir: true,
       weight: false,
       reps: false,
@@ -225,7 +238,15 @@ describe('cardInfoTargets', () => {
   });
 
   test('a card with no RIR has no badge', () => {
-    expect(cardInfoTargets({ ...base, targetRir: undefined }, 'live', false).rir).toBe(false);
+    expect(cardInfoTargets({ ...base, targetRir: undefined }, rows, 'live', false).rir).toBe(false);
+  });
+
+  test('a card without set rows has no ⓘ, only its badge', () => {
+    expect(cardInfoTargets(base, undefined, 'live', false)).toEqual({
+      rir: true,
+      weight: false,
+      reps: false,
+    });
   });
 });
 
@@ -269,19 +290,51 @@ describe('targetRirOf', () => {
   });
 });
 
+describe('cardRowsOf', () => {
+  test('counts the rows and tells whether every one is closed unlogged', () => {
+    expect(cardRowsOf([])).toEqual({ count: 0, allNotDone: true });
+    expect(cardRowsOf([ROW, SKIPPED_ROW])).toEqual({ count: 2, allNotDone: false });
+    expect(cardRowsOf([SKIPPED_ROW])).toEqual({ count: 1, allNotDone: true });
+  });
+});
+
+describe('setRowsOf', () => {
+  test('a strength or power card hands over its set rows', () => {
+    const exercise: StrengthWorkoutExercise = {
+      sessionExerciseId: 'se-1',
+      exerciseId: 'exercise-1',
+      name: 'Exercise',
+      muscleGroup: 'chest',
+      status: 'planned',
+      rows: [ROW],
+      plannedSetCount: 1,
+      loggedSetCount: 1,
+      hasLoggedSets: true,
+      actions: {
+        canReplace: false,
+        canAddSet: false,
+        canRemoveLastSet: false,
+        canMoveUp: false,
+        canMoveDown: false,
+        canSkip: false,
+        canUnskip: false,
+        canDelete: false,
+      },
+    };
+    expect(setRowsOf(exercise)).toEqual([ROW]);
+  });
+});
+
 describe('exerciseCardView on a deload week', () => {
-  const exercise: Pick<StrengthWorkoutExercise, 'status' | 'targetRir' | 'rows'> = {
-    status: 'planned',
-    targetRir: 8,
-    rows: [],
-  };
+  const exercise = { status: 'planned' as const, targetRir: 8 };
+  const noRows = cardRowsOf([]);
 
   test('the Deload badge takes the RIR badge’s place', () => {
-    expect(exerciseCardView('live', exercise, true)).toMatchObject({
+    expect(exerciseCardView('live', exercise, noRows, true)).toMatchObject({
       rirLabel: undefined,
       deloadLabel: 'Deload',
     });
-    expect(exerciseCardView('live', exercise)).toMatchObject({
+    expect(exerciseCardView('live', exercise, noRows)).toMatchObject({
       rirLabel: '8 RIR',
       deloadLabel: undefined,
     });
@@ -289,13 +342,13 @@ describe('exerciseCardView on a deload week', () => {
 
   test('a power card has the badge although it has no RIR to show', () => {
     expect(
-      exerciseCardView('live', { status: 'planned', targetRir: undefined, rows: [] }, true)
+      exerciseCardView('live', { status: 'planned', targetRir: undefined }, noRows, true)
         .deloadLabel,
     ).toBe('Deload');
   });
 
   test('a preview shows neither', () => {
-    expect(exerciseCardView('preview', exercise, true)).toMatchObject({
+    expect(exerciseCardView('preview', exercise, noRows, true)).toMatchObject({
       rirLabel: undefined,
       deloadLabel: undefined,
     });

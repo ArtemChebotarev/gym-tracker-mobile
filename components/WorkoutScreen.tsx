@@ -299,7 +299,7 @@ export function WorkoutScreen({
               chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
-              menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
+              menuItems={workoutExerciseMenuActions(exercise, (item) =>
                 onExerciseMenuAction(exercise, item),
               )}
               isSaving={isSaving}

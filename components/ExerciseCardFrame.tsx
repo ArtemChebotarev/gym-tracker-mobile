@@ -27,13 +27,9 @@ import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import { styles } from './ExerciseCardFrameStyles';
 import type { CardChip, ExerciseCardView } from './WorkoutExerciseCardLogic';
-import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 
 export type ExerciseCardFrameProps = {
-  exercise: Pick<
-    WorkoutExercise,
-    'sessionExerciseId' | 'name' | 'plannedSetCount' | 'loggedSetCount'
-  >;
+  exercise: Pick<WorkoutExercise, 'sessionExerciseId' | 'name'>;
   view: Pick<ExerciseCardView, 'showMenu' | 'isNotDone' | 'showNotProgrammed' | 'notDoneNote'>;
   /** The line under the name — each type words its equipment its own way. */
   equipmentLabel?: string;
@@ -45,6 +41,8 @@ export type ExerciseCardFrameProps = {
   badges?: ReactNode;
   onOpenHistory: () => void;
   menuItems: ActionMenuItem[];
+  /** The `⋯` sheet's subtitle — each type counts its own rows (`2 sets planned · 1 logged`). */
+  menuSubtitle: string;
   /** The type's own content, under the title row. */
   children?: ReactNode;
   /** Drawn after the card, outside it — the popovers its ⓘ buttons open. */
@@ -60,6 +58,7 @@ export function ExerciseCardFrame({
   badges,
   onOpenHistory,
   menuItems,
+  menuSubtitle,
   children,
   overlays,
 }: ExerciseCardFrameProps) {
@@ -89,10 +88,7 @@ export function ExerciseCardFrame({
                 testID={`exercise-menu-${exercise.sessionExerciseId}`}
                 accessibilityLabel={`${exercise.name} menu`}
                 title={exercise.name}
-                subtitle={formatExerciseMenuSubtitle(
-                  exercise.plannedSetCount,
-                  exercise.loggedSetCount,
-                )}
+                subtitle={menuSubtitle}
                 items={menuItems}
               />
             )}
