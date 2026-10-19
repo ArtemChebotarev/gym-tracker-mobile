@@ -64,7 +64,7 @@ test('a mixed cycle goes through Confirm → Start and week 1 has every type’s
     { setNumber: 1, targetWorkSec: 120, targetRestSec: 30 },
     { setNumber: 2, targetWorkSec: 120, targetRestSec: 30 },
     { setNumber: 3, targetWorkSec: 120, targetRestSec: 30 },
-    { setNumber: 4, targetWorkSec: 120 },
+    { setNumber: 4, targetWorkSec: 120, targetRestSec: 30 },
   ]);
   expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
   const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));

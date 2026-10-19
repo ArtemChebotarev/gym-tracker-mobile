@@ -2,10 +2,12 @@
 // skill; they live here because every file under app/ is a route.
 
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
+import { setRowsOf } from '@components/WorkoutExerciseCardLogic';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import type { RestNext } from '@domain/restTimer';
 import { nextSetAfter } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
@@ -135,9 +137,9 @@ export type RestAfterLog =
   /** The rest before the next set starts — replacing whatever rest there was. */
   | {
       kind: 'start';
-      rest: { sessionExerciseId: string; nextSetNumber: number; durationSec: number };
+      rest: { sessionExerciseId: string; next: RestNext; durationSec: number };
     }
-  /** No rest follows — the exercise's last set, or one with no rest: any rest left is over. */
+  /** No rest follows — the workout has nothing left, or the exercise has no rest: any rest left is over. */
   | { kind: 'stop' }
   /** A correction, not the next set done: the rest that is running carries on untouched. */
   | { kind: 'keep' };
@@ -147,13 +149,34 @@ export function loggedSetKey(sessionExerciseId: string, setNumber: number): stri
   return `${sessionExerciseId}:${setNumber}`;
 }
 
+/** Whether `exercise` still has a set or a round to do — logged neither nor closed as not done. */
+function hasWorkLeft(exercise: WorkoutExercise): boolean {
+  const rows: readonly { log?: unknown; notDone?: unknown }[] =
+    exercise.type === 'interval' ? exercise.rounds : exercise.rows;
+  return rows.some((row) => row.log === undefined && row.notDone === undefined);
+}
+
+/**
+ * The exercise the rest after the last set of card `index` is before: the first one below it with
+ * work left, else the first one above — the workout may be done out of order. `undefined` when the
+ * workout has nothing left to do.
+ */
+function nextExerciseWithWorkLeft(
+  exercises: readonly WorkoutExercise[],
+  index: number,
+): WorkoutExercise | undefined {
+  const others = [...exercises.slice(index + 1), ...exercises.slice(0, index)];
+  return others.find(hasWorkLeft);
+}
+
 /**
  * What logging `setNumber` of `exercise` does to the rest timer (10.1 FR-5, GT-86; Artem,
  * 18.10.2026). A log is a correction, and leaves the timer alone, when an exercise further down
  * the workout has been started already — this one is being fixed or caught up on, the work is
  * below — or when this very set was logged before in this workout and is logged again.
- * Otherwise the rest before the next set still to do starts, and none after the last: n sets,
- * n − 1 rests.
+ * Otherwise the rest before the next set still to do starts — and after the exercise's last set,
+ * the rest before the next exercise with work left, unless the workout has none (Artem,
+ * 19.10.2026): n sets, n rests, but none at the very end.
  *
  * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
  * sets logged so far in it.
@@ -172,20 +195,26 @@ export function restAfterLog(
     return { kind: 'keep' };
   }
   if (exercise.restSec === undefined) return { kind: 'stop' };
+  // Only a card of set rows rests between sets; an interval runs its own timer.
+  const rows = setRowsOf(exercise);
+  if (rows === undefined) return { kind: 'stop' };
   const nextSetNumber = nextSetAfter(
-    exercise.rows.map((row) => ({
+    rows.map((row) => ({
       setNumber: row.setNumber,
       open: row.log === undefined && row.notDone === undefined,
     })),
     setNumber,
   );
-  if (nextSetNumber === undefined) return { kind: 'stop' };
+  let next: RestNext;
+  if (nextSetNumber !== undefined) {
+    next = { kind: 'set', setNumber: nextSetNumber };
+  } else {
+    const nextExercise = nextExerciseWithWorkLeft(exercises, index);
+    if (nextExercise === undefined) return { kind: 'stop' };
+    next = { kind: 'exercise', name: nextExercise.name };
+  }
   return {
     kind: 'start',
-    rest: {
-      sessionExerciseId: exercise.sessionExerciseId,
-      nextSetNumber,
-      durationSec: exercise.restSec,
-    },
+    rest: { sessionExerciseId: exercise.sessionExerciseId, next, durationSec: exercise.restSec },
   };
 }

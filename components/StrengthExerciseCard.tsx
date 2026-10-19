@@ -53,7 +53,7 @@ import {
   firstUnloggedRow,
   targetRirOf,
 } from './WorkoutExerciseCardLogic';
-import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
+import { exerciseLogCounts, formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { type SetLoggingProps, WorkoutSetRows } from './WorkoutSetRows';
 
 export type StrengthExerciseCardProps = ExerciseCardCommonProps & {
@@ -103,7 +103,7 @@ export function StrengthExerciseCard({
       position={position}
       onOpenHistory={onOpenHistory}
       menuItems={menuItems}
-      menuSubtitle={formatExerciseMenuSubtitle(exercise.plannedSetCount, exercise.loggedSetCount)}
+      menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
       badges={
         <>
           {infoTargets.rir && view.rirLabel !== undefined && targetRir !== undefined && (

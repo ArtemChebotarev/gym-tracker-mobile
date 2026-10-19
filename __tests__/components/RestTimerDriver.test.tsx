@@ -6,7 +6,11 @@ import { RestTimerDriver } from '@components/RestTimerDriver';
 import { useRestTimerStore } from '@state/restTimerStore';
 import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
 
-const REST = { sessionExerciseId: 'se', nextSetNumber: 2, durationSec: 60 };
+const REST = {
+  sessionExerciseId: 'se',
+  next: { kind: 'set' as const, setNumber: 2 },
+  durationSec: 60,
+};
 
 function capsule() {
   return useTimerCapsuleStore.getState().capsule;

@@ -17,7 +17,11 @@ const POWER_90 = { type: 'power', load: 'weight', restSec: 90, noHeavierAvailabl
 const POWER_45 = { ...POWER_90, restSec: 45 };
 
 const T0 = 1_000_000;
-const REST = { sessionExerciseId: 'se', nextSetNumber: 2, durationSec: 60 };
+const REST = {
+  sessionExerciseId: 'se',
+  next: { kind: 'set' as const, setNumber: 2 },
+  durationSec: 60,
+};
 
 describe('restSecFor', () => {
   test('strength rests 2:00, whether its type is spelled out or not', () => {

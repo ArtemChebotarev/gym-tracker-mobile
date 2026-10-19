@@ -1,12 +1,12 @@
 import { GRID_STEP, REPS_STEP, WEIGHT_STEP, workoutCoachmarks } from '@components/WorkoutCoachmarksLogic';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import type {
+  SetExerciseActions,
   StrengthWorkoutExercise,
-  WorkoutExercise,
   WorkoutSetRow,
 } from '@usecases/workoutSession';
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,

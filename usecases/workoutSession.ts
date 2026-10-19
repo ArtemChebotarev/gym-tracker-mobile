@@ -6,10 +6,17 @@
 
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
-import type { ExerciseSettings, PowerLoad } from '@domain/exerciseConfig';
+import type {
+  ExerciseSettings,
+  IntervalPlanConfig,
+  IntervalStepSec,
+  PowerLoad,
+} from '@domain/exerciseConfig';
+import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
 import { NotFoundError } from '@domain/errors';
 import type {
+  RoundLog,
   Session,
   SessionExerciseStatus,
   SetLog,
@@ -94,6 +101,28 @@ export type WorkoutSetRow = {
 };
 
 /**
+ * One round row of an interval card (10.1 FR-14): the round's work and the rest after it. The
+ * rounds are the plan — there is no separate plan block on the card.
+ */
+export type WorkoutRoundRow = {
+  roundNumber: number;
+  /** Planned work, seconds — what the Work field holds until the round is logged. */
+  workSec: number;
+  /**
+   * Planned rest after the round, seconds — the last round's too: it is the rest before the next
+   * exercise (FR-6; Artem, 19.10.2026). Absent only when neither the target nor the cycle has one,
+   * and the cell reads `–`.
+   */
+  restSec?: number;
+  /** What was logged, if the round is: the actual work and rest, by hand or by the timer (FR-7). */
+  log?: Pick<RoundLog, 'workSec' | 'restSec' | 'restSkipped' | 'completed'>;
+  /** The exercise's first unlogged round, whose Log box gets the accent outline. Live mode only. */
+  isFirstUnlogged: boolean;
+  /** An unlogged round of an exercise closed without being done — as on a set row. */
+  notDone?: NotDoneStatus;
+};
+
+/**
  * What the exercise's `⋯` menu allows (08.7, "Меню упражнения"). Every flag is `false` outside live
  * mode, where the menu isn't shown.
  */
@@ -173,13 +202,12 @@ type SetRowsWorkoutExercise = WorkoutExerciseBase & {
 };
 
 /**
- * A strength exercise's card — and, until their stories give them cards of their own, an interval
- * or mobility one's too: they run strength's progression (`PROGRESSION_POLICIES`) and so are shown
- * as strength.
+ * A strength exercise's card — and, until its story gives it a card of its own, a mobility one's
+ * too: it runs strength's progression (`PROGRESSION_POLICIES`) and so is shown as strength.
  */
 export type StrengthWorkoutExercise = SetRowsWorkoutExercise & {
   /** Absent means `strength`, as on `Exercise.type`. */
-  type?: Exclude<ExerciseType, 'power'>;
+  type?: Exclude<ExerciseType, 'power' | 'interval'>;
   /** Not shown in preview — the day isn't programmed yet. */
   targetRir?: number;
   /**
@@ -207,8 +235,27 @@ export type PowerWorkoutExercise = SetRowsWorkoutExercise & {
   ceilingHint?: PowerCeilingHint;
 };
 
+/**
+ * The column of an interval card that moves week to week (FR-8): its header carries the ⓘ that
+ * says how. `rest` gets shorter by `stepSec`, `work` longer; `rounds` and `none` move no column.
+ */
+export type IntervalProgression = { column: 'rest' | 'work'; stepSec: IntervalStepSec };
+
+/** An interval exercise's card (10.1 FR-14): Round · Work · Rest · Log, and Start timer under it. */
+export type IntervalWorkoutExercise = WorkoutExerciseBase & {
+  type: 'interval';
+  /** Every round — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in preview. */
+  rounds: WorkoutRoundRow[];
+  /** Rounds planned, for the menu subtitle `3 rounds planned · 1 logged`. */
+  plannedRoundCount: number;
+  loggedRoundCount: number;
+  /** Absent with the `rounds` or `none` lever. */
+  progression?: IntervalProgression;
+};
+
 /** One exercise card (08.7, "Карточка упражнения"), told apart by `type`. */
-export type WorkoutExercise = StrengthWorkoutExercise | PowerWorkoutExercise;
+export type WorkoutExercise =
+  StrengthWorkoutExercise | PowerWorkoutExercise | IntervalWorkoutExercise;
 
 /** The header's title and subtitle (08.7, "Шапка"). */
 export type WorkoutHeader = {
@@ -457,6 +504,9 @@ function toExercise(
       base.restSec = restSec;
     }
   }
+  if (exercise.type === 'interval') {
+    return toIntervalExercise(base, tree, mode, context);
+  }
   const sets = toSetRowsExercise(base, tree, mode, context);
   const advises = mode === 'live' && !skipped;
   return exercise.type === 'power'
@@ -494,7 +544,94 @@ function toSetRowsExercise(
   return model;
 }
 
-/** A strength card's own fields on top of `base` (and an interval or mobility one's, for now). */
+/** The cycle's plan for an interval exercise — its own copy, else the library's (FR-9). */
+function intervalPlanOf(
+  { exercise }: SessionExerciseTree,
+  context: SessionContext,
+): IntervalPlanConfig | undefined {
+  const settings = exerciseSettingsFor(context.exerciseSettings, exercise);
+  return settings?.type === 'interval' ? settings : undefined;
+}
+
+function toRounds(
+  tree: SessionExerciseTree,
+  mode: WorkoutMode,
+  plan: IntervalPlanConfig | undefined,
+): WorkoutRoundRow[] {
+  const { sessionExercise, roundLogs } = tree;
+  const targets = sessionExercise.setTargets;
+  const notDone = isNotDone(sessionExercise.status) ? sessionExercise.status : undefined;
+  const logOf = (roundNumber: number) => roundLogs.find((log) => log.roundNumber === roundNumber);
+  const firstUnlogged =
+    mode === 'live' && notDone === undefined
+      ? targets.find((target) => logOf(target.setNumber) === undefined)
+      : undefined;
+
+  return targets.map((target) => {
+    // A round's times are its target's; a target without them (a week planned before its times were
+    // carried over) falls back on the cycle's plan, so a round never reads empty.
+    const row: WorkoutRoundRow = {
+      roundNumber: target.setNumber,
+      workSec: target.targetWorkSec ?? plan?.workSec ?? 0,
+      isFirstUnlogged: target === firstUnlogged,
+    };
+    const restSec = target.targetRestSec ?? plan?.restSec;
+    if (restSec !== undefined) {
+      row.restSec = restSec;
+    }
+    const log = logOf(target.setNumber);
+    if (log) {
+      row.log = { workSec: log.workSec, restSkipped: log.restSkipped, completed: log.completed };
+      if (log.restSec !== undefined) {
+        row.log.restSec = log.restSec;
+      }
+    } else if (notDone !== undefined) {
+      row.notDone = notDone;
+    }
+    return row;
+  });
+}
+
+/** The column the lever moves (FR-8), if it moves one. */
+function intervalProgressionOf(
+  plan: IntervalPlanConfig | undefined,
+): IntervalProgression | undefined {
+  switch (plan?.lever) {
+    case 'rest':
+      return { column: 'rest', stepSec: plan.stepSec };
+    case 'workTime':
+      return { column: 'work', stepSec: plan.stepSec };
+    default:
+      return undefined;
+  }
+}
+
+/** An interval card: its rounds on top of `base`. */
+function toIntervalExercise(
+  base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
+  tree: SessionExerciseTree,
+  mode: WorkoutMode,
+  context: SessionContext,
+): IntervalWorkoutExercise {
+  const plan = intervalPlanOf(tree, context);
+  const rounds = toRounds(tree, mode, plan);
+  const loggedRoundCount = rounds.filter((round) => round.log !== undefined).length;
+  const model: IntervalWorkoutExercise = {
+    ...base,
+    type: 'interval',
+    rounds,
+    plannedRoundCount: rounds.length,
+    loggedRoundCount,
+    hasLoggedSets: loggedRoundCount > 0,
+  };
+  const progression = intervalProgressionOf(plan);
+  if (progression !== undefined) {
+    model.progression = progression;
+  }
+  return model;
+}
+
+/** A strength card's own fields on top of `base` (and a mobility one's, for now). */
 function toStrengthExercise(
   base: SetRowsWorkoutExercise,
   { sessionExercise, exercise }: SessionExerciseTree,
@@ -502,7 +639,7 @@ function toStrengthExercise(
   context: SessionContext,
 ): StrengthWorkoutExercise {
   const model: StrengthWorkoutExercise = { ...base, targetRir: sessionExercise.targetRir };
-  if (exercise.type !== undefined && exercise.type !== 'power') {
+  if (exercise.type !== undefined && exercise.type !== 'power' && exercise.type !== 'interval') {
     model.type = exercise.type;
   }
   if (advises) {
@@ -651,21 +788,30 @@ async function previewOf(
     },
     progress: 0,
     exercises: tree.exercises.map(({ sessionExercise, exercise }) => {
-      const preview: WorkoutExercise = {
+      const base: WorkoutExerciseBase = {
         sessionExerciseId: sessionExercise.id,
         exerciseId: exercise.id,
         name: exercise.name,
         muscleGroup: exercise.muscleGroup,
         status: 'planned',
-        rows: [],
-        plannedSetCount: 0,
-        loggedSetCount: 0,
         hasLoggedSets: false,
         actions: NO_EXERCISE_ACTIONS,
       };
       if (exercise.equipment !== undefined) {
-        preview.equipment = exercise.equipment;
+        base.equipment = exercise.equipment;
       }
+      // An interval keeps its type, so its chip reads `Timed work` here too; the rest have no
+      // card of their own to keep yet.
+      const preview: WorkoutExercise =
+        exercise.type === 'interval'
+          ? { ...base, type: 'interval', rounds: [], plannedRoundCount: 0, loggedRoundCount: 0 }
+          : {
+              ...base,
+              rows: [],
+              plannedSetCount: 0,
+              loggedSetCount: 0,
+              actions: NO_EXERCISE_ACTIONS,
+            };
       return preview;
     }),
     actions: {

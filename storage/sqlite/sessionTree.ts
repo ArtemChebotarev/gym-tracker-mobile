@@ -7,14 +7,15 @@ import { runQuery } from './errors';
 import {
   rowToExercise,
   rowToMesocycle,
+  rowToRoundLog,
   rowToSession,
   rowToSessionExercise,
   rowToSetLog,
 } from './mappers';
-import { exercises, mesocycles, sessionExercises, sessions, setLogs } from './schema';
+import { exercises, mesocycles, roundLogs, sessionExercises, sessions, setLogs } from './schema';
 
 // A whole session in one shape (07 · Persistence Layer Contract, rule 4): Session → Mesocycle,
-// Session → SessionExercise → Exercise and SessionExercise → SetLog, joined here so the use case
+// Session → SessionExercise → Exercise and SessionExercise → SetLog / RoundLog, joined here so the use case
 // layer only maps the result.
 export class SqliteSessionTreeRepository implements SessionTreeRepository {
   constructor(private readonly db: SqliteDatabase) {}
@@ -61,6 +62,17 @@ export class SqliteSessionTreeRepository implements SessionTreeRepository {
               .orderBy(asc(setLogs.setNumber))
               .all(),
           );
+    const rounds =
+      sessionExerciseIds.length === 0
+        ? []
+        : await runQuery(() =>
+            this.db
+              .select()
+              .from(roundLogs)
+              .where(inArray(roundLogs.sessionExerciseId, sessionExerciseIds))
+              .orderBy(asc(roundLogs.roundNumber))
+              .all(),
+          );
 
     return {
       session: rowToSession(row.session),
@@ -71,6 +83,9 @@ export class SqliteSessionTreeRepository implements SessionTreeRepository {
         setLogs: logs
           .filter((log) => log.sessionExerciseId === sessionExercise.id)
           .map(rowToSetLog),
+        roundLogs: rounds
+          .filter((log) => log.sessionExerciseId === sessionExercise.id)
+          .map(rowToRoundLog),
       })),
     };
   }

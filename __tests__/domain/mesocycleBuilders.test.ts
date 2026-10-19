@@ -722,7 +722,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
     expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(3);
     expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([
       { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
-      { setNumber: 2, targetWorkSec: 90 },
+      { setNumber: 2, targetWorkSec: 90, targetRestSec: 30 },
     ]);
     expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
     const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));
