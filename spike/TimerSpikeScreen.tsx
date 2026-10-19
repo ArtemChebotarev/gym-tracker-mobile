@@ -32,6 +32,12 @@ const SILENCE = require('../assets/sounds/silence.wav');
 const COUNTDOWN = require('../assets/sounds/spike-countdown.wav');
 const COUNTDOWN_MS = 3000;
 
+/** "0:13" for what is left — rounded up, as the live timer shows it. */
+function clockLabel(leftMs: number): string {
+  const total = Math.max(0, Math.ceil(leftMs / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 function log(...args: unknown[]) {
   console.log(
     `[spike ${new Date().toISOString().slice(11, 19)}] [${AppState.currentState}]`,
@@ -56,7 +62,8 @@ export function TimerSpikeScreen() {
       round: `Round ${phase.round} of 3`,
       startedAtMs: r.phaseStartMs,
       endsAtMs: r.phaseStartMs + phase.durSec * 1000,
-      pausedAtMs: r.pausedAtMs,
+      pausedLabel:
+        r.pausedAtMs === undefined ? undefined : clockLabel(phaseEndMs(r) - r.pausedAtMs),
       canSkipRest: phase.name === 'Rest',
     };
   }
@@ -198,6 +205,8 @@ export function TimerSpikeScreen() {
     }
     players.current.silence.play();
     const now = Date.now();
+    // A Start while an earlier run is still on the lock screen replaces it, never stacks a second one.
+    await Promise.all(TimerSpikeActivity.getInstances().map((old) => old.end('immediate')));
     run.current = { index: 0, phaseStartMs: now };
     scheduleCountdown(run.current);
     activity.current = TimerSpikeActivity.start(

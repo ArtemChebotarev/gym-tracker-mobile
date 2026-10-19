@@ -8,8 +8,12 @@ export type TimerSpikeProps = {
   round: string;
   startedAtMs: number;
   endsAtMs: number;
-  /** Set while paused: the moment the timer froze. */
-  pausedAtMs?: number;
+  /**
+   * Set while paused: what is left, as plain text ("0:13"). A paused timer is drawn as text, not
+   * as a live timer with a pause time — on the phone that one kept running for seconds after the
+   * pause (GT-94, 19.10.2026).
+   */
+  pausedLabel?: string;
   canSkipRest: boolean;
 };
 
@@ -17,14 +21,13 @@ const TimerSpikeActivity = (props: TimerSpikeProps, environment: LiveActivityEnv
   'widget';
   const orange = environment.isLuminanceReduced ? '#FFFFFF' : '#FF5B23';
   const interval = { lower: new Date(props.startedAtMs), upper: new Date(props.endsAtMs) };
-  const pauseTime = props.pausedAtMs === undefined ? undefined : new Date(props.pausedAtMs);
-  const clock = (size: number) => (
-    <Text
-      timerInterval={interval}
-      pauseTime={pauseTime}
-      modifiers={[font({ weight: 'bold', size }), foregroundStyle(orange)]}
-    />
-  );
+  const style = (size: number) => [font({ weight: 'bold', size }), foregroundStyle(orange)];
+  const clock = (size: number) =>
+    props.pausedLabel === undefined ? (
+      <Text timerInterval={interval} modifiers={style(size)} />
+    ) : (
+      <Text modifiers={style(size)}>{props.pausedLabel}</Text>
+    );
   return {
     banner: (
       <HStack modifiers={[padding({ all: 14 })]}>
@@ -35,7 +38,7 @@ const TimerSpikeActivity = (props: TimerSpikeProps, environment: LiveActivityEnv
         </VStack>
         <VStack>
           <Button
-            label={props.pausedAtMs === undefined ? 'Pause' : 'Resume'}
+            label={props.pausedLabel === undefined ? 'Pause' : 'Resume'}
             target="pause"
             onPress={() => props}
           />
