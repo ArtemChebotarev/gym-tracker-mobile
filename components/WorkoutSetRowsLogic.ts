@@ -4,6 +4,7 @@
 import type { Equipment } from '@domain/catalog';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
+import { carryForward, type CarriedField } from './RowCarryLogic';
 import { formatRowWeight, initialWeightText } from './WorkoutSetRowLogic';
 
 /**
@@ -12,10 +13,7 @@ import { formatRowWeight, initialWeightText } from './WorkoutSetRowLogic';
  * brings the logged weight back. Carry-over leaves those alone and only replaces what it or
  * `suggestedWeight` had supplied.
  */
-export type WeightField = {
-  text: string;
-  isManual: boolean;
-};
+export type WeightField = CarriedField & { text: string };
 
 /**
  * What the exercise's Weight fields hold, keyed by set number. A set with no entry hasn't been
@@ -58,27 +56,19 @@ export function holdLoggedWeight(
 /**
  * The weight entered in one set carries into the rest of the exercise (task 106): when the cursor
  * leaves a Weight field the user typed in, its text fills every **later** set that is still
- * unlogged and still holds what `suggestedWeight` or an earlier carry-over put there. Logged sets
- * never change ("История неизменяема"), and neither does a field the user typed in themselves —
- * correcting set 2 leaves a set 3 you already set by hand alone.
- *
- * Leaving a field nobody typed in changes nothing, so tabbing through the rows carries nothing.
+ * unlogged and still holds what `suggestedWeight` or an earlier carry-over put there — the rule is
+ * `carryForward`'s. Leaving a field nobody typed in changes nothing, so tabbing through the rows
+ * carries nothing.
  */
 export function carryWeightForward(
   edits: WeightEdits,
   rows: readonly Pick<WorkoutSetRow, 'setNumber' | 'suggestedWeight' | 'log'>[],
   setNumber: number,
 ): WeightEdits {
-  const index = rows.findIndex((row) => row.setNumber === setNumber);
-  if (index === -1 || edits[setNumber]?.isManual !== true) {
-    return edits;
-  }
-  const { text } = edits[setNumber];
-  const carried: Record<number, WeightField> = {};
-  for (const row of rows.slice(index + 1)) {
-    if (row.log === undefined && edits[row.setNumber]?.isManual !== true) {
-      carried[row.setNumber] = { text, isManual: false };
-    }
-  }
-  return { ...edits, ...carried };
+  return carryForward(
+    edits,
+    rows.map((row) => ({ number: row.setNumber, logged: row.log !== undefined })),
+    setNumber,
+    (field) => ({ text: field.text, isManual: false }),
+  );
 }

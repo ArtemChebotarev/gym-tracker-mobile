@@ -1,5 +1,5 @@
-// Styles behind components/IntervalExerciseCard.tsx — see the code-style skill. A round row stands
-// on the set rows' grid (WorkoutSetRowStyles.ts), whose field, value and Log box it reuses, so the
+// Styles behind components/IntervalRoundRows.tsx — see the code-style skill. A round row stands on
+// the set rows' grid (WorkoutSetRowStyles.ts), whose field, value and Log box it reuses, so the
 // columns of every card on the screen line up; only what is the round's own lives here.
 
 import { StyleSheet } from 'react-native';

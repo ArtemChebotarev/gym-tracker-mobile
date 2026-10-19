@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import {
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import { TimePickerSheet } from '@design/components/TimePickerSheet';
 import type { IntervalWorkoutExercise, WorkoutRoundRow } from '@usecases/workoutSession';
 
 const NO_ACTIONS: IntervalWorkoutExercise['actions'] = {
@@ -199,6 +200,46 @@ describe('Interval card (GT-88)', () => {
 
     expect(onLogRound).toHaveBeenCalledWith(2, { workSec: 120, restSec: 45 });
     expect(onUnlogRound).toHaveBeenCalledWith(1);
+  });
+
+  test('DoD: a time is picked on the wheels and the rounds below follow; Log takes it', () => {
+    const onLogRound = jest.fn();
+    render(<WorkoutExerciseCard {...makeProps({ rounds: { onLogRound } })} />);
+
+    fireEvent.press(screen.getByLabelText('Rest, round 1, 0:45'));
+    expect(screen.getByText('Rest · round 1')).toBeTruthy();
+    expect(screen.getByText('Rounds below follow until you log them')).toBeTruthy();
+    act(() => {
+      screen.UNSAFE_getByType(TimePickerSheet).props.onChange(30);
+    });
+    fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+
+    expect(within(screen.getByTestId('round-row-2')).getByText('0:30')).toBeTruthy();
+    expect(within(screen.getByTestId('round-row-3')).getByText('0:30')).toBeTruthy();
+    expect(screen.getByText('Start timer · 7:00')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Log round 1'));
+    expect(onLogRound).toHaveBeenCalledWith(1, { workSec: 120, restSec: 30 });
+  });
+
+  test('a logged round and a read-only card have no picker to open', () => {
+    const exercise = makeInterval({
+      rounds: [
+        {
+          ...ROUNDS[0]!,
+          isFirstUnlogged: false,
+          log: { workSec: 120, restSec: 45, restSkipped: false, completed: true },
+        },
+        { ...ROUNDS[1]!, isFirstUnlogged: true },
+        ROUNDS[2]!,
+      ],
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise })} />);
+    fireEvent.press(screen.getByLabelText('Work, round 1, 2:00'));
+    expect(screen.queryByText('Work · round 1')).toBeNull();
+
+    render(<WorkoutExerciseCard {...makeProps({ mode: 'readonly' })} />);
+    fireEvent.press(screen.getAllByLabelText('Work, round 2, 2:00').at(-1)!);
+    expect(screen.queryByText('Work · round 2')).toBeNull();
   });
 
   test('read-only rounds have nothing to press, and a save in flight holds Log', () => {
