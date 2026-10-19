@@ -771,6 +771,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Work, round 1, 2:00"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -785,6 +816,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >
@@ -800,6 +832,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Rest, round 1, 0:45"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -814,6 +877,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >
@@ -935,6 +999,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Work, round 2, 2:00"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -949,6 +1044,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >
@@ -964,6 +1060,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Rest, round 2, 0:45"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -978,6 +1105,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >
@@ -1097,6 +1225,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Work, round 3, 2:00"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -1111,6 +1270,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >
@@ -1126,6 +1286,37 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         </Text>
       </View>
       <View
+        accessibilityLabel="Rest, round 3, 0:45"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": false,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
         style={
           [
             {
@@ -1140,6 +1331,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             {
               "backgroundColor": "#141619",
             },
+            false,
           ]
         }
       >

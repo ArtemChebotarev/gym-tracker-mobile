@@ -274,6 +274,11 @@ describe('restAfterLog', () => {
         durationSec: 30,
       },
     });
+    // A rest picked in the workout is the one it rests for, not the plan's (GT-90).
+    expect(restAfterLog([bag, after], bag, 1, NONE, 60)).toMatchObject({
+      kind: 'start',
+      rest: { durationSec: 60 },
+    });
     // A round with no rest ends any rest left.
     const noRest: WorkoutExercise = {
       ...bag,
