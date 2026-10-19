@@ -205,7 +205,7 @@ describe('restAfterLog', () => {
       plannedRoundCount: 1,
       loggedRoundCount: 0,
       hasLoggedSets: false,
-      actions: skipped.actions,
+      actions: { ...skipped.actions, canAddRound: true, canRemoveLastRound: false },
     };
     expect(restAfterLog([a, skipped, bag], a, 3, NONE)).toMatchObject({
       kind: 'start',
@@ -246,7 +246,7 @@ describe('restAfterLog', () => {
       plannedRoundCount: 2,
       loggedRoundCount: 0,
       hasLoggedSets: false,
-      actions: card('x', 60, []).actions,
+      actions: { ...card('x', 60, []).actions, canAddRound: true, canRemoveLastRound: true },
     };
     const after = card('after', 60, []);
 

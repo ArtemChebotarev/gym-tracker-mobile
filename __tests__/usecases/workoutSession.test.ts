@@ -1184,6 +1184,25 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     expect(card).not.toHaveProperty('rows');
   });
 
+  test('live: the menu adds a round and removes the last one (GT-91)', async () => {
+    const { deps } = await setUp({ exercises: [bag], logs: [] });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.actions).toMatchObject({ canAddRound: true, canRemoveLastRound: true });
+    // An interval has no set rows to add or remove.
+    expect(card?.actions).not.toHaveProperty('canAddSet');
+  });
+
+  test('live: a single round can’t be removed', async () => {
+    const single = { ...bag, setTargets: [{ setNumber: 1, targetWorkSec: 120 }] };
+    const { deps } = await setUp({ exercises: [single], logs: [] });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.actions).toMatchObject({ canAddRound: true, canRemoveLastRound: false });
+  });
+
   test('a logged round shows what was done; the next one takes the accent', async () => {
     const { deps } = await setUp({
       exercises: [bench, bag],

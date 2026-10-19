@@ -128,7 +128,8 @@ export type WorkoutRoundRow = {
  */
 /**
  * What the `⋯` menu allows for any exercise, whatever its type (08.7, "Меню упражнения"). What a
- * type adds — Add set / Remove last set for the set rows — is its own (`SetExerciseActions`).
+ * type adds is its own — Add set / Remove last set for the set rows (`SetExerciseActions`), Add
+ * round / Remove last round for an interval (`RoundExerciseActions`).
  */
 export type WorkoutExerciseActions = {
   canReplace: boolean;
@@ -151,6 +152,13 @@ export type SetExerciseActions = WorkoutExerciseActions & {
   canAddSet: boolean;
   /** `false` with a single row — "Only one set". */
   canRemoveLastSet: boolean;
+};
+
+/** The menu's round actions, on top of the common ones — an interval exercise's (GT-91). */
+export type RoundExerciseActions = WorkoutExerciseActions & {
+  canAddRound: boolean;
+  /** `false` with a single round — "Only one round". */
+  canRemoveLastRound: boolean;
 };
 
 /**
@@ -251,6 +259,7 @@ export type IntervalWorkoutExercise = WorkoutExerciseBase & {
   loggedRoundCount: number;
   /** Absent with the `rounds` or `none` lever. */
   progression?: IntervalProgression;
+  actions: RoundExerciseActions;
 };
 
 /** One exercise card (08.7, "Карточка упражнения"), told apart by `type`. */
@@ -346,15 +355,25 @@ export type WorkoutSessionModel = {
   unlocksAfter?: { weekNumber: number; dayNumber: number };
 };
 
-const NO_EXERCISE_ACTIONS: SetExerciseActions = {
+const NO_EXERCISE_ACTIONS: WorkoutExerciseActions = {
   canReplace: false,
-  canAddSet: false,
-  canRemoveLastSet: false,
   canMoveUp: false,
   canMoveDown: false,
   canSkip: false,
   canUnskip: false,
   canDelete: false,
+};
+
+const NO_SET_ACTIONS: SetExerciseActions = {
+  ...NO_EXERCISE_ACTIONS,
+  canAddSet: false,
+  canRemoveLastSet: false,
+};
+
+const NO_ROUND_ACTIONS: RoundExerciseActions = {
+  ...NO_EXERCISE_ACTIONS,
+  canAddRound: false,
+  canRemoveLastRound: false,
 };
 
 /**
@@ -623,6 +642,11 @@ function toIntervalExercise(
     plannedRoundCount: rounds.length,
     loggedRoundCount,
     hasLoggedSets: loggedRoundCount > 0,
+    actions: {
+      ...base.actions,
+      canAddRound: mode === 'live',
+      canRemoveLastRound: mode === 'live' && rounds.length > 1,
+    },
   };
   const progression = intervalProgressionOf(plan);
   if (progression !== undefined) {
@@ -804,13 +828,20 @@ async function previewOf(
       // card of their own to keep yet.
       const preview: WorkoutExercise =
         exercise.type === 'interval'
-          ? { ...base, type: 'interval', rounds: [], plannedRoundCount: 0, loggedRoundCount: 0 }
+          ? {
+              ...base,
+              type: 'interval',
+              rounds: [],
+              plannedRoundCount: 0,
+              loggedRoundCount: 0,
+              actions: NO_ROUND_ACTIONS,
+            }
           : {
               ...base,
               rows: [],
               plannedSetCount: 0,
               loggedSetCount: 0,
-              actions: NO_EXERCISE_ACTIONS,
+              actions: NO_SET_ACTIONS,
             };
       return preview;
     }),

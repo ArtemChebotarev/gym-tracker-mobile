@@ -1,12 +1,24 @@
 // Add set / Remove last set — task 046 (05 · Workout Execution & Logging, "Добавить подход",
 // "Удалить последний подход"). The fact may differ from the plan both ways. Adding a set changes
 // only this session's plan; removing one also lowers the set count of later weeks, since they
-// copy the row count at Finish (03, rule 1). Orchestration only — the row edits live in
-// `domain/sessionExerciseSets.ts`, the status rule in `domain/sessionExerciseStatus.ts`.
+// copy the row count at Finish (03, rule 1). An interval's rounds are set rows too, and Add round /
+// Remove last round (GT-91; 10.1, "Меню ⋯ — как у силовых") follow the same rules. Orchestration
+// only — the row edits live in `domain/sessionExerciseSets.ts`, the status rule in
+// `domain/sessionExerciseStatus.ts`.
 
-import type { SessionExercise, SetLog } from '@domain/execution';
-import { withAddedSet, withoutLastSet } from '@domain/sessionExerciseSets';
-import { isNotDone, statusFromLogs } from '@domain/sessionExerciseStatus';
+import type { SessionExercise } from '@domain/execution';
+import {
+  withAddedRound,
+  withAddedSet,
+  withoutLastRound,
+  withoutLastSet,
+} from '@domain/sessionExerciseSets';
+import {
+  isNotDone,
+  roundRowLogs,
+  type RowLog,
+  statusFromLogs,
+} from '@domain/sessionExerciseStatus';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 
@@ -17,7 +29,7 @@ import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSess
  */
 async function saveWithStatus(
   sessionExercise: SessionExercise,
-  logs: readonly SetLog[],
+  logs: readonly RowLog[],
   repos: WorkoutRepositories,
 ): Promise<SessionExercise> {
   const status = isNotDone(sessionExercise.status)
@@ -72,6 +84,55 @@ export async function removeLastSet(
     return saveWithStatus(
       { ...sessionExercise, setTargets },
       logs.filter((log) => log !== removedLog),
+      repos,
+    );
+  });
+}
+
+/**
+ * Appends a round to the interval exercise `ref` points at, with the last round's work and rest. A
+ * `completed` exercise goes back to `planned` — the new round isn't logged.
+ *
+ * Rejects as `openSessionExercise` does.
+ */
+export async function addRound(
+  ref: SessionExerciseRef,
+  store: WorkoutStore,
+): Promise<SessionExercise> {
+  return store.transaction(async (repos) => {
+    const { sessionExercise } = await openSessionExercise(ref, repos);
+    const logs = await repos.roundLogRepo.listBySessionExerciseId(sessionExercise.id);
+    return saveWithStatus(
+      { ...sessionExercise, setTargets: withAddedRound(sessionExercise.setTargets) },
+      roundRowLogs(logs),
+      repos,
+    );
+  });
+}
+
+/**
+ * Removes the last round of the interval exercise `ref` points at, along with its round log if it
+ * was logged. If every remaining round is logged, the exercise becomes `completed`.
+ *
+ * Rejects with `ConflictError` when the exercise has a single round, and as `openSessionExercise`
+ * does otherwise.
+ */
+export async function removeLastRound(
+  ref: SessionExerciseRef,
+  store: WorkoutStore,
+): Promise<SessionExercise> {
+  return store.transaction(async (repos) => {
+    const { sessionExercise } = await openSessionExercise(ref, repos);
+    const { setTargets, removed } = withoutLastRound(sessionExercise.setTargets);
+
+    const logs = await repos.roundLogRepo.listBySessionExerciseId(sessionExercise.id);
+    const removedLog = logs.find((log) => log.roundNumber === removed.setNumber);
+    if (removedLog) {
+      await repos.roundLogRepo.deleteById(removedLog.id);
+    }
+    return saveWithStatus(
+      { ...sessionExercise, setTargets },
+      roundRowLogs(logs.filter((log) => log !== removedLog)),
       repos,
     );
   });

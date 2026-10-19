@@ -14,6 +14,8 @@ const NO_ACTIONS: IntervalWorkoutExercise['actions'] = {
   canSkip: false,
   canUnskip: false,
   canDelete: false,
+  canAddRound: false,
+  canRemoveLastRound: false,
 };
 
 const ROUNDS: WorkoutRoundRow[] = [
