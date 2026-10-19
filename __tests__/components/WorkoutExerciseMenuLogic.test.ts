@@ -11,6 +11,7 @@ import {
   workoutExerciseMenuActions,
 } from '@components/WorkoutExerciseMenuLogic';
 import type {
+  RoundExerciseActions,
   IntervalWorkoutExercise,
   SetExerciseActions,
   StrengthWorkoutExercise,
@@ -21,6 +22,18 @@ const ALL: SetExerciseActions = {
   canReplace: true,
   canAddSet: true,
   canRemoveLastSet: true,
+  canMoveUp: true,
+  canMoveDown: true,
+  canSkip: true,
+  canUnskip: false,
+  canDelete: true,
+};
+
+// The same for an interval with several rounds.
+const ALL_ROUNDS: RoundExerciseActions = {
+  canReplace: true,
+  canAddRound: true,
+  canRemoveLastRound: true,
   canMoveUp: true,
   canMoveDown: true,
   canSkip: true,
@@ -43,7 +56,7 @@ function strengthCard(actions: SetExerciseActions = ALL): StrengthWorkoutExercis
   };
 }
 
-function intervalCard(): IntervalWorkoutExercise {
+function intervalCard(actions: RoundExerciseActions = ALL_ROUNDS): IntervalWorkoutExercise {
   return {
     sessionExerciseId: 'se-2',
     exerciseId: 'heavy-bag',
@@ -55,7 +68,7 @@ function intervalCard(): IntervalWorkoutExercise {
     plannedRoundCount: 3,
     loggedRoundCount: 1,
     hasLoggedSets: true,
-    actions: ALL,
+    actions,
   };
 }
 
@@ -108,8 +121,18 @@ describe('typeMenuRows', () => {
     expect(typeMenuRows(strengthCard())).toEqual(setMenuRows(ALL));
   });
 
-  test('an interval card has none of its own yet — its round rows come with GT-91', () => {
-    expect(typeMenuRows(intervalCard())).toEqual([]);
+  test('an interval card offers Add round and Remove last round', () => {
+    expect(typeMenuRows(intervalCard())).toEqual([
+      { item: 'addRound' },
+      { item: 'removeLastRound' },
+    ]);
+  });
+
+  test('an interval with a single round keeps Remove last round listed, disabled', () => {
+    expect(typeMenuRows(intervalCard({ ...ALL_ROUNDS, canRemoveLastRound: false }))).toEqual([
+      { item: 'addRound' },
+      { item: 'removeLastRound', disabledReason: 'Only one round' },
+    ]);
   });
 });
 

@@ -14,6 +14,8 @@ const NO_ACTIONS: IntervalWorkoutExercise['actions'] = {
   canSkip: false,
   canUnskip: false,
   canDelete: false,
+  canAddRound: false,
+  canRemoveLastRound: false,
 };
 
 const ROUNDS: WorkoutRoundRow[] = [
@@ -219,6 +221,21 @@ describe('Interval card (GT-88)', () => {
     expect(screen.getByText('Start timer · 7:00')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Log round 1'));
     expect(onLogRound).toHaveBeenCalledWith(1, { workSec: 120, restSec: 30 });
+  });
+
+  test('a round added from the menu follows the time picked above it (GT-91)', () => {
+    const { rerender } = render(<WorkoutExerciseCard {...makeProps()} />);
+
+    fireEvent.press(screen.getByLabelText('Work, round 1, 2:00'));
+    act(() => {
+      screen.UNSAFE_getByType(TimePickerSheet).props.onChange(135);
+    });
+    fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    // The stored round 4 is planned like round 3: 2:00 of work.
+    const added = [...ROUNDS, { roundNumber: 4, workSec: 120, restSec: 45, isFirstUnlogged: false }];
+    rerender(<WorkoutExerciseCard {...makeProps({ exercise: makeInterval({ rounds: added }) })} />);
+
+    expect(within(screen.getByTestId('round-row-4')).getByText('2:15')).toBeTruthy();
   });
 
   test('a logged round and a read-only card have no picker to open', () => {

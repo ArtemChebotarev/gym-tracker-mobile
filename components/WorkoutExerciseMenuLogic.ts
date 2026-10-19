@@ -14,6 +14,7 @@ import { TrashIcon } from '@design/icons/TrashIcon';
 import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ExerciseCommand } from '@state/useExerciseCommand';
 import type {
+  RoundExerciseActions,
   SetExerciseActions,
   WorkoutExercise,
   WorkoutExerciseActions,
@@ -37,6 +38,8 @@ export const EXERCISE_MENU_ACTIONS: Record<
   },
   addSet: { label: 'Add set', icon: PlusIcon, systemImage: 'plus' },
   removeLastSet: { label: 'Remove last set', icon: MinusIcon, systemImage: 'minus' },
+  addRound: { label: 'Add round', icon: PlusIcon, systemImage: 'plus' },
+  removeLastRound: { label: 'Remove last round', icon: MinusIcon, systemImage: 'minus' },
   moveUp: { label: 'Move up', icon: ArrowUpIcon, systemImage: 'arrow.up' },
   moveDown: { label: 'Move down', icon: ArrowDownIcon, systemImage: 'arrow.down' },
   skip: { label: 'Skip exercise', icon: SkipIcon, systemImage: 'forward.end' },
@@ -84,11 +87,25 @@ export function setMenuRows(actions: SetExerciseActions): ExerciseMenuRow[] {
 }
 
 /**
- * The rows a card's type puts into its menu: a card of set rows Add set and Remove last set. An
- * interval card gets Add round / Remove last round with GT-91; until then it has none of its own.
+ * An interval card's own menu rows (GT-91; 10.1, "Меню ⋯ — как у силовых"): Add round, always
+ * available, and Remove last round, which stays listed with a single round, disabled with
+ * `Only one round`.
+ */
+export function roundMenuRows(actions: RoundExerciseActions): ExerciseMenuRow[] {
+  return [
+    { item: 'addRound' },
+    menuRow('removeLastRound', actions.canRemoveLastRound, 'Only one round'),
+  ];
+}
+
+/**
+ * The rows a card's type puts into its menu: a card of set rows Add set and Remove last set, an
+ * interval card Add round and Remove last round.
  */
 export function typeMenuRows(exercise: WorkoutExercise): ExerciseMenuRow[] {
-  return exercise.type === 'interval' ? [] : setMenuRows(exercise.actions);
+  return exercise.type === 'interval'
+    ? roundMenuRows(exercise.actions)
+    : setMenuRows(exercise.actions);
 }
 
 /**

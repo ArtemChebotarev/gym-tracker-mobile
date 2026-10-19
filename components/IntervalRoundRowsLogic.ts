@@ -91,6 +91,40 @@ export function carryRoundTimeForward(
 }
 
 /**
+ * The edits once the rounds change under the card — Add round, Remove last round (GT-91). A round
+ * added after the last one is one more of it: while that one is unlogged, whatever its fields hold
+ * beyond the plan — picked or carried — fills the new round too, as a carry-over (the stored round
+ * copies a logged one's times itself, `withAddedRound`). A removed round's edits go with it, so a
+ * round added back in its place starts from the plan, not from what was picked for the old one.
+ */
+export function followRoundChanges(
+  edits: RoundTimeEdits,
+  previous: readonly WorkoutRoundRow[],
+  rounds: readonly WorkoutRoundRow[],
+): RoundTimeEdits {
+  const present = new Set(rounds.map((round) => round.roundNumber));
+  const last = previous.at(-1);
+  const added = rounds.filter((round) => last !== undefined && round.roundNumber > last.roundNumber);
+  const removed = previous.some((round) => !present.has(round.roundNumber));
+  if (added.length === 0 && !removed) {
+    return edits;
+  }
+  const follow = (column: RoundTimeColumn) => {
+    const kept = Object.fromEntries(
+      Object.entries(edits[column]).filter(([roundNumber]) => present.has(Number(roundNumber))),
+    );
+    const source = last?.log === undefined && last !== undefined ? kept[last.roundNumber] : undefined;
+    if (source !== undefined) {
+      for (const round of added) {
+        kept[round.roundNumber] = { sec: source.sec, isManual: false };
+      }
+    }
+    return kept;
+  };
+  return { work: follow('work'), rest: follow('rest') };
+}
+
+/**
  * The rounds as their fields show them: an unlogged round with the times picked or carried into it,
  * a logged one as it was logged. A round with no rest planned keeps none — its Rest cell is `–` and
  * has nothing to pick. Log, the Start timer label and the timer itself read these.

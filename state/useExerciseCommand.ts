@@ -1,9 +1,9 @@
 // The exercise menu's one-tap actions through the usecase layer via TanStack Query — task 097
 // (08.7 · Тренировка, "Лист «Меню упражнения»"; 05, "Действия во время тренировки"): add or remove
-// a set row (046), move the exercise up or down (048), skip or unskip it (049), delete it (086).
-// One mutation for all of them — they differ only in the use case called, and the screen treats
-// them alike: re-read the session on success, one error alert on failure. Each is written to
-// storage right away. Replace, which needs a picked exercise, is `useSwapExercise`.
+// a set row (046) or an interval's round (GT-91), move the exercise up or down (048), skip or
+// unskip it (049), delete it (086). One mutation for all of them — they differ only in the use
+// case called, and the screen treats them alike: re-read the session on success, one error alert
+// on failure. Each is written to storage right away. Replace, which needs a picked exercise, is `useSwapExercise`.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -13,13 +13,21 @@ import { moveExercise } from '@usecases/exerciseReorder';
 import { skipExercise, unskipExercise } from '@usecases/exerciseSkipping';
 import { swapExercise, type ExerciseSwapInput } from '@usecases/exerciseSwap';
 import type { SessionExerciseRef } from '@usecases/openSession';
-import { addSet, removeLastSet } from '@usecases/setRows';
+import { addRound, addSet, removeLastRound, removeLastSet } from '@usecases/setRows';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
 import { useExerciseSwapDeps, useWorkoutStore } from './workoutStore';
 
 export type ExerciseCommand =
-  'addSet' | 'removeLastSet' | 'moveUp' | 'moveDown' | 'skip' | 'unskip' | 'delete';
+  | 'addSet'
+  | 'removeLastSet'
+  | 'addRound'
+  | 'removeLastRound'
+  | 'moveUp'
+  | 'moveDown'
+  | 'skip'
+  | 'unskip'
+  | 'delete';
 
 function runExerciseCommand(
   command: ExerciseCommand,
@@ -31,6 +39,10 @@ function runExerciseCommand(
       return addSet(ref, store);
     case 'removeLastSet':
       return removeLastSet(ref, store);
+    case 'addRound':
+      return addRound(ref, store);
+    case 'removeLastRound':
+      return removeLastRound(ref, store);
     case 'moveUp':
       return moveExercise(ref, 'up', store);
     case 'moveDown':
