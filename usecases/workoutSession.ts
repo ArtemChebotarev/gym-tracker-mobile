@@ -97,11 +97,12 @@ export type WorkoutSetRow = {
  * What the exercise's `⋯` menu allows (08.7, "Меню упражнения"). Every flag is `false` outside live
  * mode, where the menu isn't shown.
  */
+/**
+ * What the `⋯` menu allows for any exercise, whatever its type (08.7, "Меню упражнения"). What a
+ * type adds — Add set / Remove last set for the set rows — is its own (`SetExerciseActions`).
+ */
 export type WorkoutExerciseActions = {
   canReplace: boolean;
-  canAddSet: boolean;
-  /** `false` with a single row — "Only one set". */
-  canRemoveLastSet: boolean;
   /** `false` for the first exercise — "Already first". */
   canMoveUp: boolean;
   /** `false` for the last exercise — "Already last". */
@@ -114,6 +115,13 @@ export type WorkoutExerciseActions = {
    * they're deleted too (05, "Удалить упражнение").
    */
   canDelete: boolean;
+};
+
+/** The menu's set-row actions, on top of the common ones — a strength or power exercise's. */
+export type SetExerciseActions = WorkoutExerciseActions & {
+  canAddSet: boolean;
+  /** `false` with a single row — "Only one set". */
+  canRemoveLastSet: boolean;
 };
 
 /**
@@ -131,11 +139,6 @@ type WorkoutExerciseBase = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
-  /**
-   * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
-   * weight swap. Power and a resistance band; absent on every other exercise.
-   */
-  isGuided?: boolean;
   /** `planned` in preview. */
   status: SessionExerciseStatus;
   /**
@@ -143,6 +146,21 @@ type WorkoutExerciseBase = {
    * only where there is a rest: absent on an interval or mobility exercise and on a rest of 0.
    */
   restSec?: number;
+  /** Anything logged — the Replace and Delete confirmations warn that it goes. */
+  hasLoggedSets: boolean;
+  actions: WorkoutExerciseActions;
+};
+
+/**
+ * What a card made of set rows adds — strength and power. An interval card has rounds instead, and
+ * a mobility one a single duration, so neither carries these.
+ */
+type SetRowsWorkoutExercise = WorkoutExerciseBase & {
+  /**
+   * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
+   * weight swap. Power and a resistance band; absent on every other exercise.
+   */
+  isGuided?: boolean;
   /**
    * Every set row — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in
    * preview.
@@ -151,8 +169,7 @@ type WorkoutExerciseBase = {
   /** Rows planned, for the menu subtitle `2 sets planned · 1 logged`. */
   plannedSetCount: number;
   loggedSetCount: number;
-  hasLoggedSets: boolean;
-  actions: WorkoutExerciseActions;
+  actions: SetExerciseActions;
 };
 
 /**
@@ -160,7 +177,7 @@ type WorkoutExerciseBase = {
  * or mobility one's too: they run strength's progression (`PROGRESSION_POLICIES`) and so are shown
  * as strength.
  */
-export type StrengthWorkoutExercise = WorkoutExerciseBase & {
+export type StrengthWorkoutExercise = SetRowsWorkoutExercise & {
   /** Absent means `strength`, as on `Exercise.type`. */
   type?: Exclude<ExerciseType, 'power'>;
   /** Not shown in preview — the day isn't programmed yet. */
@@ -173,7 +190,7 @@ export type StrengthWorkoutExercise = WorkoutExerciseBase & {
 };
 
 /** A power exercise's card (10.2). No RIR on screen (P5) and no weight hints — `ceilingHint` instead. */
-export type PowerWorkoutExercise = WorkoutExerciseBase & {
+export type PowerWorkoutExercise = SetRowsWorkoutExercise & {
   type: 'power';
   /** Kilograms, a level, or none (10.1 FR-2). */
   powerLoad: PowerLoad;
@@ -282,7 +299,7 @@ export type WorkoutSessionModel = {
   unlocksAfter?: { weekNumber: number; dayNumber: number };
 };
 
-const NO_EXERCISE_ACTIONS: WorkoutExerciseActions = {
+const NO_EXERCISE_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,
@@ -404,29 +421,20 @@ function toExercise(
   mode: WorkoutMode,
   context: SessionContext,
 ): WorkoutExercise {
-  const { sessionExercise, exercise, setLogs } = tree;
+  const { sessionExercise, exercise } = tree;
   const skipped = sessionExercise.status === 'skipped';
-  const loggedSetCount = sessionExercise.setTargets.filter((target) =>
-    setLogs.some((log) => log.setNumber === target.setNumber),
-  ).length;
-  const plannedSetCount = sessionExercise.setTargets.length;
 
-  const base: WorkoutExerciseBase = {
+  // What is logged is each type's own count — the set rows' for strength and power.
+  const base: Omit<WorkoutExerciseBase, 'hasLoggedSets'> = {
     sessionExerciseId: sessionExercise.id,
     exerciseId: exercise.id,
     name: exercise.name,
     muscleGroup: exercise.muscleGroup,
     status: sessionExercise.status,
-    rows: toRows(tree, mode, context),
-    plannedSetCount,
-    loggedSetCount,
-    hasLoggedSets: loggedSetCount > 0,
     actions:
       mode === 'live'
         ? {
             canReplace: true,
-            canAddSet: true,
-            canRemoveLastSet: plannedSetCount > 1,
             canMoveUp: index > 0,
             canMoveDown: index < count - 1,
             canSkip: !skipped,
@@ -437,9 +445,6 @@ function toExercise(
   };
   if (exercise.equipment !== undefined) {
     base.equipment = exercise.equipment;
-  }
-  if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
-    base.isGuided = true;
   }
   if (mode === 'live') {
     const restSec = restSecFor(
@@ -452,15 +457,46 @@ function toExercise(
       base.restSec = restSec;
     }
   }
+  const sets = toSetRowsExercise(base, tree, mode, context);
   const advises = mode === 'live' && !skipped;
   return exercise.type === 'power'
-    ? toPowerExercise(base, tree, advises)
-    : toStrengthExercise(base, tree, advises, context);
+    ? toPowerExercise(sets, tree, advises)
+    : toStrengthExercise(sets, tree, advises, context);
+}
+
+/** The set rows of a strength or power card, and the menu's set actions, on top of `base`. */
+function toSetRowsExercise(
+  base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
+  tree: SessionExerciseTree,
+  mode: WorkoutMode,
+  context: SessionContext,
+): SetRowsWorkoutExercise {
+  const { sessionExercise, exercise, setLogs } = tree;
+  const loggedSetCount = sessionExercise.setTargets.filter((target) =>
+    setLogs.some((log) => log.setNumber === target.setNumber),
+  ).length;
+  const plannedSetCount = sessionExercise.setTargets.length;
+  const model: SetRowsWorkoutExercise = {
+    ...base,
+    rows: toRows(tree, mode, context),
+    plannedSetCount,
+    loggedSetCount,
+    hasLoggedSets: loggedSetCount > 0,
+    actions: {
+      ...base.actions,
+      canAddSet: mode === 'live',
+      canRemoveLastSet: mode === 'live' && plannedSetCount > 1,
+    },
+  };
+  if (!usesTargetIndicator(exercise.type, exercise.equipment)) {
+    model.isGuided = true;
+  }
+  return model;
 }
 
 /** A strength card's own fields on top of `base` (and an interval or mobility one's, for now). */
 function toStrengthExercise(
-  base: WorkoutExerciseBase,
+  base: SetRowsWorkoutExercise,
   { sessionExercise, exercise }: SessionExerciseTree,
   advises: boolean,
   context: SessionContext,
@@ -484,7 +520,7 @@ function toStrengthExercise(
  * a row with no target is just empty.
  */
 function toPowerExercise(
-  base: WorkoutExerciseBase,
+  base: SetRowsWorkoutExercise,
   { sessionExercise, exercise }: SessionExerciseTree,
   advises: boolean,
 ): PowerWorkoutExercise {

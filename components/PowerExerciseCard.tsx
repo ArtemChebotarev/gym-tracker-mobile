@@ -28,7 +28,13 @@ import { RirBadge } from './RirBadge';
 import { deloadExplanation } from './RirExplanationLogic';
 import { usePopoverAnchor } from './usePopoverAnchor';
 import type { CeilingActions, ExerciseCardCommonProps } from './WorkoutExerciseCard';
-import { cardInfoTargets, cardLoadEquipment, exerciseCardView } from './WorkoutExerciseCardLogic';
+import {
+  cardInfoTargets,
+  cardLoadEquipment,
+  cardRowsOf,
+  exerciseCardView,
+} from './WorkoutExerciseCardLogic';
+import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { type SetLoggingProps, WorkoutSetRows } from './WorkoutSetRows';
 
 export type PowerExerciseCardProps = ExerciseCardCommonProps & {
@@ -50,10 +56,15 @@ export function PowerExerciseCard({
   sets,
   ceiling,
 }: PowerExerciseCardProps) {
-  const view = exerciseCardView(mode, exercise, isDeload);
+  const view = exerciseCardView(mode, exercise, cardRowsOf(exercise.rows), isDeload);
   const editable = mode === 'live' && !view.isNotDone;
   const loadEquipment = cardLoadEquipment(exercise);
-  const infoTargets = cardInfoTargets({ ...exercise, loadEquipment }, mode, isDeload);
+  const infoTargets = cardInfoTargets(
+    { ...exercise, loadEquipment },
+    exercise.rows,
+    mode,
+    isDeload,
+  );
   const ceilingNote =
     exercise.ceilingHint === undefined
       ? undefined
@@ -78,6 +89,7 @@ export function PowerExerciseCard({
       position={position}
       onOpenHistory={onOpenHistory}
       menuItems={menuItems}
+      menuSubtitle={formatExerciseMenuSubtitle(exercise.plannedSetCount, exercise.loggedSetCount)}
       badges={
         view.deloadLabel !== undefined && (
           <RirBadge
@@ -131,7 +143,7 @@ export function PowerExerciseCard({
         </InlineNote>
       )}
 
-      {view.showSets && (
+      {view.showRows && (
         <ExerciseColumnHeader
           columns={[
             {
@@ -163,7 +175,7 @@ export function PowerExerciseCard({
           ]}
         />
       )}
-      {view.showSets && (
+      {view.showRows && (
         // Keyed by the exercise: a replaced exercise's rows start fresh from its new targets and
         // an empty set of weight edits, instead of keeping what was typed for the old one.
         <WorkoutSetRows

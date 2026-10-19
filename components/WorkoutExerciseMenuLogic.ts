@@ -13,7 +13,11 @@ import { SwapIcon } from '@design/icons/SwapIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ExerciseCommand } from '@state/useExerciseCommand';
-import type { WorkoutExerciseActions } from '@usecases/workoutSession';
+import type {
+  SetExerciseActions,
+  WorkoutExercise,
+  WorkoutExerciseActions,
+} from '@usecases/workoutSession';
 
 /** The exercise menu's actions (08.7, "Меню упражнения"): Replace plus the one-tap commands. */
 export type ExerciseMenuItem = 'replace' | ExerciseCommand;
@@ -46,24 +50,42 @@ export type ExerciseMenuRow = {
   disabledReason?: string;
 };
 
+function menuRow(item: ExerciseMenuItem, available: boolean, reason: string): ExerciseMenuRow {
+  return available ? { item } : { item, disabledReason: reason };
+}
+
 /**
- * The rows of an exercise's menu, in the 08.7 order. Remove last set and the moves stay listed
- * when they're not available, disabled with the reason (`Only one set`, `Already first`, `Already
- * last`); Skip and Unskip take turns in one place. Replace, Add set, Skip and Delete are always
- * available, logged sets or not — 088 works all of it out from the exercise.
+ * The rows of an exercise's menu, in the 08.7 order: Replace, then the type's own rows
+ * (`typeMenuRows`), then what every type has. The moves stay listed when they're not available,
+ * disabled with the reason (`Already first`, `Already last`); Skip and Unskip take turns in one
+ * place. Replace, Skip and Delete are always available, logged sets or not — 088 works all of it
+ * out from the exercise.
  */
-export function exerciseMenuRows(actions: WorkoutExerciseActions): ExerciseMenuRow[] {
-  const row = (item: ExerciseMenuItem, available: boolean, reason: string): ExerciseMenuRow =>
-    available ? { item } : { item, disabledReason: reason };
+export function exerciseMenuRows(
+  actions: WorkoutExerciseActions,
+  typeRows: readonly ExerciseMenuRow[],
+): ExerciseMenuRow[] {
   return [
     { item: 'replace' },
-    { item: 'addSet' },
-    row('removeLastSet', actions.canRemoveLastSet, 'Only one set'),
-    row('moveUp', actions.canMoveUp, 'Already first'),
-    row('moveDown', actions.canMoveDown, 'Already last'),
+    ...typeRows,
+    menuRow('moveUp', actions.canMoveUp, 'Already first'),
+    menuRow('moveDown', actions.canMoveDown, 'Already last'),
     { item: actions.canUnskip ? 'unskip' : 'skip' },
     { item: 'delete' },
   ];
+}
+
+/**
+ * The set rows' own menu rows: Add set, always available, and Remove last set, which stays listed
+ * with a single row, disabled with `Only one set`.
+ */
+export function setMenuRows(actions: SetExerciseActions): ExerciseMenuRow[] {
+  return [{ item: 'addSet' }, menuRow('removeLastSet', actions.canRemoveLastSet, 'Only one set')];
+}
+
+/** The rows a card's type puts into its menu — today every card is made of set rows. */
+export function typeMenuRows(exercise: Pick<WorkoutExercise, 'actions'>): ExerciseMenuRow[] {
+  return setMenuRows(exercise.actions);
 }
 
 function formatSetCount(count: number, qualifier?: string): string {
@@ -103,20 +125,21 @@ export function formatReplaceExerciseWarning(exerciseName: string, loggedSetCoun
   return `The ${formatSetCount(loggedSetCount)} logged for ${exerciseName} will be deleted.`;
 }
 
-
 /**
  * An exercise's menu as `ActionMenu` takes it: the rows above, each carrying the handler the card
  * was given for it. A row that isn't available keeps its place and its reason — the menu disables
  * it rather than hiding it, so the reason is what explains the gap.
  */
 export function workoutExerciseMenuActions(
-  actions: WorkoutExerciseActions,
+  exercise: Pick<WorkoutExercise, 'actions'>,
   onAction: (item: ExerciseMenuItem) => void,
 ): ActionMenuItem[] {
-  return exerciseMenuRows(actions).map(({ item, disabledReason }) => ({
-    key: item,
-    ...EXERCISE_MENU_ACTIONS[item],
-    disabledReason,
-    onPress: () => onAction(item),
-  }));
+  return exerciseMenuRows(exercise.actions, typeMenuRows(exercise)).map(
+    ({ item, disabledReason }) => ({
+      key: item,
+      ...EXERCISE_MENU_ACTIONS[item],
+      disabledReason,
+      onPress: () => onAction(item),
+    }),
+  );
 }

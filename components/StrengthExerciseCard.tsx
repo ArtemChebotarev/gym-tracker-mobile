@@ -48,10 +48,12 @@ import { type WeightSwapPopover, weightSwapPopover } from './WeightSwapLogic';
 import type { ExerciseCardCommonProps } from './WorkoutExerciseCard';
 import {
   cardInfoTargets,
+  cardRowsOf,
   exerciseCardView,
   firstUnloggedRow,
   targetRirOf,
 } from './WorkoutExerciseCardLogic';
+import { formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { type SetLoggingProps, WorkoutSetRows } from './WorkoutSetRows';
 
 export type StrengthExerciseCardProps = ExerciseCardCommonProps & {
@@ -72,9 +74,14 @@ export function StrengthExerciseCard({
   sets,
 }: StrengthExerciseCardProps) {
   const targetRir = targetRirOf(exercise);
-  const view = exerciseCardView(mode, { ...exercise, targetRir }, isDeload);
+  const view = exerciseCardView(
+    mode,
+    { ...exercise, targetRir },
+    cardRowsOf(exercise.rows),
+    isDeload,
+  );
   const editable = mode === 'live' && !view.isNotDone;
-  const infoTargets = cardInfoTargets({ ...exercise, targetRir }, mode, isDeload);
+  const infoTargets = cardInfoTargets({ ...exercise, targetRir }, exercise.rows, mode, isDeload);
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
   const repsInfo = strengthRepsInfo(
@@ -96,6 +103,7 @@ export function StrengthExerciseCard({
       position={position}
       onOpenHistory={onOpenHistory}
       menuItems={menuItems}
+      menuSubtitle={formatExerciseMenuSubtitle(exercise.plannedSetCount, exercise.loggedSetCount)}
       badges={
         <>
           {infoTargets.rir && view.rirLabel !== undefined && targetRir !== undefined && (
@@ -157,7 +165,7 @@ export function StrengthExerciseCard({
         );
       })}
 
-      {view.showSets && (
+      {view.showRows && (
         <ExerciseColumnHeader
           columns={[
             {
@@ -194,7 +202,7 @@ export function StrengthExerciseCard({
           ]}
         />
       )}
-      {view.showSets && (
+      {view.showRows && (
         // Keyed by the exercise: a replaced exercise's rows start fresh from its new targets and
         // an empty set of weight edits, instead of keeping what was typed for the old one.
         <WorkoutSetRows

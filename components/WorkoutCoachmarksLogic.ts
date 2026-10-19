@@ -10,7 +10,12 @@ import { InfoIcon } from '@design/icons/InfoIcon';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
-import { cardInfoTargets, cardLoadEquipment, targetRirOf } from './WorkoutExerciseCardLogic';
+import {
+  cardInfoTargets,
+  cardLoadEquipment,
+  setRowsOf,
+  targetRirOf,
+} from './WorkoutExerciseCardLogic';
 import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 
 // The ⓘ in the text is the real icon, not the character: the character is a thin outline that
@@ -58,8 +63,8 @@ export type WorkoutCoachmarkInput = {
 
 /**
  * The steps this workout's tour has. A step is there only if the thing it points at is: a card
- * without a Reps ⓘ (bodyweight, a deload) just has no step for it, and the counter says `N of M`
- * with the M that is left. The same `cardInfoTargets` the card draws its buttons by decides it.
+ * without a Reps ⓘ (bodyweight, a deload, a card with no set rows) just has no step for it, and
+ * the counter says `N of M` with the M that is left. The same `cardInfoTargets` the card draws its buttons by decides it.
  *
  * Refs stay out of this on purpose — it only says which element each step is about, and the screen,
  * which owns the refs, puts them in. That keeps it a plain function of the data, and keeps refs out
@@ -74,8 +79,10 @@ export function workoutCoachmarks({
 
   if (exercise !== undefined) {
     const targetRir = targetRirOf(exercise);
+    // A first card without set rows (interval, mobility) has no Weight or Reps ⓘ to point at.
     const targets = cardInfoTargets(
       { ...exercise, targetRir, loadEquipment: cardLoadEquipment(exercise) },
+      setRowsOf(exercise),
       mode,
       isDeload,
     );

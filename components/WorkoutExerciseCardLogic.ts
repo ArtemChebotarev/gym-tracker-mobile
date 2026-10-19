@@ -5,14 +5,11 @@
 
 import { isResistanceBand } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
-import { isNotDone } from '@domain/sessionExerciseStatus';
+import type { SessionExerciseStatus } from '@domain/execution';
+import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
 import { formatRir } from '@design/formatRir';
-import type {
-  StrengthWorkoutExercise,
-  WorkoutExercise,
-  WorkoutSetRow,
-} from '@usecases/workoutSession';
+import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { weightSwapPopover } from './WeightSwapLogic';
@@ -39,24 +36,45 @@ export type ExerciseCardView = {
   /** Skipped or abandoned: the card is dimmed and nothing in it is editable. */
   isNotDone: boolean;
   /**
-   * The column header and set rows — everything but preview and a not-done card with nothing
-   * logged.
+   * The column header and the type's rows (sets, rounds) — everything but preview and a not-done
+   * card with nothing logged.
    */
-  showSets: boolean;
+  showRows: boolean;
   /** Not done with nothing logged: this one line (`Skipped` / `Abandoned`) instead of the rows. */
   notDoneNote: string | undefined;
   showNotProgrammed: boolean;
 };
 
+/**
+ * What `exerciseCardView` needs of a card's rows, whatever they are — set rows, rounds: how many
+ * there are, and whether every one of them is closed unlogged (`Skipped` / `Abandoned`).
+ */
+export type CardRows = { count: number; allNotDone: boolean };
+
+export function cardRowsOf(rows: readonly { notDone?: NotDoneStatus }[]): CardRows {
+  return {
+    count: rows.length,
+    allNotDone: rows.every((row) => row.notDone !== undefined),
+  };
+}
+
+/**
+ * The set rows of a card made of them — strength and power — or `undefined` for a type whose card
+ * has none. The one place that says which cards have sets, so nothing shared has to assume it.
+ */
+export function setRowsOf(exercise: WorkoutExercise): readonly WorkoutSetRow[] | undefined {
+  return 'rows' in exercise ? exercise.rows : undefined;
+}
+
 export function exerciseCardView(
   mode: WorkoutMode,
-  exercise: Pick<StrengthWorkoutExercise, 'status' | 'targetRir' | 'rows'>,
+  exercise: { status: SessionExerciseStatus; targetRir?: number | undefined },
+  rows: CardRows,
   isDeload = false,
 ): ExerciseCardView {
   const isPreview = mode === 'preview';
   const notDone = !isPreview && isNotDone(exercise.status) ? exercise.status : undefined;
-  const notDoneWhole =
-    notDone !== undefined && exercise.rows.every((row) => row.notDone !== undefined);
+  const notDoneWhole = notDone !== undefined && rows.allNotDone;
   return {
     showMenu: mode === 'live',
     rirLabel:
@@ -65,7 +83,7 @@ export function exerciseCardView(
         : undefined,
     deloadLabel: !isPreview && isDeload ? 'Deload' : undefined,
     isNotDone: notDone !== undefined,
-    showSets: !isPreview && !notDoneWhole && exercise.rows.length > 0,
+    showRows: !isPreview && !notDoneWhole && rows.count > 0,
     notDoneNote: notDoneWhole ? formatNotDone(notDone) : undefined,
     showNotProgrammed: isPreview,
   };
@@ -140,23 +158,32 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
  */
 export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
 
+/**
+ * `setRows` is the card's set rows, or `undefined` on a card without them (`setRowsOf`) — which
+ * then has neither ⓘ: both are a set row's.
+ */
 export function cardInfoTargets(
-  exercise: Pick<StrengthWorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'status'> & {
+  exercise: {
+    status: SessionExerciseStatus;
+    targetRir?: number | undefined;
+    equipment?: Equipment;
     loadEquipment?: Equipment;
   },
+  setRows: readonly WorkoutSetRow[] | undefined,
   mode: WorkoutMode,
   isDeload: boolean,
 ): CardInfoTargets {
-  const view = exerciseCardView(mode, exercise, isDeload);
+  const view = exerciseCardView(mode, exercise, cardRowsOf(setRows ?? []), isDeload);
+  // Both ⓘ sit in the column header, which is only there with the set rows.
+  const showsSets = setRows !== undefined && view.showRows;
   return {
     rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
-    // Both ⓘ sit in the column header, which is only there with the set rows.
     weight:
-      view.showSets &&
+      showsSets &&
       showsFirstWeightInfo(mode, isDeload, exercise.loadEquipment ?? exercise.equipment),
     reps:
-      view.showSets &&
+      showsSets &&
       mode === 'live' &&
-      weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir) !== undefined,
+      weightSwapPopover(firstUnloggedRow(setRows), exercise.targetRir) !== undefined,
   };
 }
