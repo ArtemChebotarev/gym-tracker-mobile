@@ -32,9 +32,11 @@ describe('policyFor', () => {
     expect(PROGRESSION_POLICIES.mobility).toBe(strengthPolicy);
   });
 
-  test('interval delegates all four jobs to strength until GT-100', () => {
+  test('interval plans its own working week (GT-93) and delegates the rest to strength', () => {
+    expect(PROGRESSION_POLICIES.interval.prescribeWorkingWeek).not.toBe(
+      strengthPolicy.prescribeWorkingWeek,
+    );
     for (const job of [
-      'prescribeWorkingWeek',
       'prescribeDeload',
       'prescribeFromReference',
       'prescribeBlockStart',

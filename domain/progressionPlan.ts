@@ -5,7 +5,7 @@
 // persists the result.
 
 import type { ExerciseType } from '@domain/catalog';
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
@@ -21,6 +21,11 @@ export type NextSessionInput = {
   exercises: readonly SourceExercise[];
   /** The source session's `SetLog`s; logs of other session exercises are ignored. */
   logs: readonly SetLog[];
+  /**
+   * The source session's `RoundLog`s — the fact of its interval exercises. Absent means none, as in
+   * a session with no interval.
+   */
+  roundLogs?: readonly RoundLog[];
   /** Week number of the session being planned (the source's week + 1). */
   weekNumber: number;
   lengthWeeks: number;
@@ -38,9 +43,9 @@ export type NextSessionInput = {
  * - Deload week: the whole day is planned by rule 5.
  */
 export function prescribeNextSession(input: NextSessionInput): ExercisePrescription[] {
-  const { exercises, logs, weekNumber, lengthWeeks, settings } = input;
+  const { exercises, logs, roundLogs = [], weekNumber, lengthWeeks, settings } = input;
   assertWeekInBlock(weekNumber, lengthWeeks);
-  const context = { logs, weekNumber, lengthWeeks, settings };
+  const context = { logs, roundLogs, weekNumber, lengthWeeks, settings };
 
   const ordered = [...exercises].sort((a, b) => a.sessionExercise.order - b.sessionExercise.order);
   if (isDeloadWeek(lengthWeeks, weekNumber)) {
