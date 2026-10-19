@@ -11,9 +11,10 @@
 // exercise (FR-6; Artem, 19.10.2026), shown even when nothing follows and no rest will run. A rest
 // the timer skipped reads `Skipped`, struck through.
 //
-// What this card does not do yet, each in its own task: log and un-log a round by hand (GT-89),
-// change a time with the picker (GT-90), Add / Remove round in `⋯` (GT-91), and the timer itself
-// (its own story) — until then the Log boxes and Start timer only show where they will be.
+// A round is logged by hand with one tap on its Log box — the times its fields hold — and un-logged
+// by a second tap on the filled one (FR-7, GT-89), as a set is. What this card does not do yet,
+// each in its own task: change a time with the picker (GT-90), Add / Remove round in `⋯` (GT-91),
+// and the timer itself (its own story) — until then Start timer only shows where it will be.
 // JSX/rendering only — styles live in IntervalExerciseCardStyles.ts and pure helpers in
 // IntervalExerciseCardLogic.ts, per the code-style skill.
 
@@ -24,7 +25,9 @@ import { getEquipmentLabel } from '@design/equipmentLabel';
 import { formatClock } from '@design/formatClock';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { PlayIcon } from '@design/icons/PlayIcon';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
+import type { RoundEntry } from '@domain/executionValidators';
+import { tapTargetSlop } from '@design/shapes';
 import type { IntervalWorkoutExercise, WorkoutRoundRow } from '@usecases/workoutSession';
 
 import { ExerciseCardFrame } from './ExerciseCardFrame';
@@ -34,6 +37,7 @@ import {
   NO_REST,
   progressionInfoLabel,
   REST_COLUMN,
+  roundEntryOf,
   ROUND_COLUMN,
   startTimerLabel,
   WORK_COLUMN,
@@ -47,8 +51,12 @@ import { exerciseLogCounts, formatExerciseMenuSubtitle } from './WorkoutExercise
 import { formatNotDone } from './WorkoutSetRowLogic';
 import { styles as rowStyles } from './WorkoutSetRowStyles';
 
-/** What an interval card acts with — the timer, once it exists. */
+/** What an interval card acts with: logging its rounds by hand, and the timer once it exists. */
 export type RoundActions = {
+  /** Logs round `roundNumber` with the times in its fields (FR-7). */
+  onLogRound?: (roundNumber: number, entry: RoundEntry) => void;
+  /** Un-logs a logged round — a second tap on its filled Log box. */
+  onUnlogRound?: (roundNumber: number) => void;
   /** Opens the interval timer from the first unlogged round (FR-6, FR-7). */
   onStartTimer?: () => void;
 };
@@ -65,6 +73,7 @@ export function IntervalExerciseCard({
   position = 0,
   onOpenHistory,
   menuItems,
+  isSaving,
   rounds,
 }: IntervalExerciseCardProps) {
   // No RIR, and no Deload badge yet: an interval's deload (fewer rounds, FR-13) isn't planned by
@@ -129,7 +138,14 @@ export function IntervalExerciseCard({
       )}
       {view.showRows &&
         exercise.rounds.map((round) => (
-          <RoundRow key={round.roundNumber} round={round} editable={editable} />
+          <RoundRow
+            key={round.roundNumber}
+            round={round}
+            editable={editable}
+            isSaving={isSaving}
+            {...(rounds?.onLogRound !== undefined ? { onLog: rounds.onLogRound } : {})}
+            {...(rounds?.onUnlogRound !== undefined ? { onUnlog: rounds.onUnlogRound } : {})}
+          />
         ))}
       {timerLabel !== undefined && (
         <Pressable
@@ -150,7 +166,17 @@ export function IntervalExerciseCard({
 }
 
 /** One round: its number, Work, Rest, the indicator's empty column and Log. */
-function RoundRow({ round, editable }: { round: WorkoutRoundRow; editable: boolean }) {
+type RoundRowProps = {
+  round: WorkoutRoundRow;
+  /** Live mode and the exercise isn't skipped — the Log box works. */
+  editable: boolean;
+  /** A log or un-log is being saved — Log waits for it, so a double tap can't repeat it. */
+  isSaving: boolean;
+  onLog?: (roundNumber: number, entry: RoundEntry) => void;
+  onUnlog?: (roundNumber: number) => void;
+};
+
+function RoundRow({ round, editable, isSaving, onLog, onUnlog }: RoundRowProps) {
   const logged = round.log !== undefined;
   const workSec = round.log?.workSec ?? round.workSec;
   const restSec = logged ? round.log?.restSec : round.restSec;
@@ -191,15 +217,28 @@ function RoundRow({ round, editable }: { round: WorkoutRoundRow; editable: boole
       <Text style={rowStyles.indicator} />
       <View style={rowStyles.logColumn}>
         {round.notDone === undefined && (
-          <View
-            style={[
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityLabel={
+              logged ? `Round ${round.roundNumber} logged` : `Log round ${round.roundNumber}`
+            }
+            accessibilityState={{ checked: logged, disabled: !editable || isSaving }}
+            disabled={!editable || isSaving}
+            hitSlop={tapTargetSlop(SIZES['size/log-box'])}
+            onPress={() =>
+              logged
+                ? onUnlog?.(round.roundNumber)
+                : onLog?.(round.roundNumber, roundEntryOf(round))
+            }
+            style={({ pressed }) => [
               rowStyles.logBox,
               logged && rowStyles.logBoxLogged,
               !logged && round.isFirstUnlogged && rowStyles.logBoxNext,
+              pressed && rowStyles.pressed,
             ]}
           >
             {logged && <CheckIcon size={ICON_SIZES['icon/small']} color={COLORS['accent/on']} />}
-          </View>
+          </Pressable>
         )}
       </View>
     </View>

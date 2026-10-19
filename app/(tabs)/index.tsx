@@ -14,6 +14,8 @@
 // `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05). A logged
 // set starts the rest before the next one — after an exercise's last set, before the next exercise
 // (10.1 FR-5, GT-86, `restAfterLog`); finishing or skipping the workout drops whatever rest is left.
+// An interval's rounds log and un-log by hand the same way, through `useLogRound` / `useUnlogRound`
+// (10.1 FR-7, GT-89), and rest for the round's own rest.
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
@@ -105,11 +107,14 @@ import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useHideCeilingTip } from '@state/useHideCeilingTip';
 import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
+import { useLogRound, useUnlogRound } from '@state/useRoundLogging';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import { loadErrorOf } from '@state/loadError';
+import type { LogRoundResult } from '@usecases/roundLogging';
+import type { LogSetResult } from '@usecases/setLogging';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
@@ -129,6 +134,8 @@ export default function TodayScreen() {
   const query = useTodayWorkout(workoutPickFromParams(params));
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
+  const logRound = useLogRound();
+  const unlogRound = useUnlogRound();
   const setNoHeavierAvailable = useSetNoHeavierAvailable();
   const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
@@ -287,6 +294,38 @@ export default function TodayScreen() {
     ]);
   }
 
+  /**
+   * What a logged row — a set, or an interval's round (GT-89) — does next. The rest before the
+   * next row starts by itself (GT-86) — after the last row, before the next exercise; once the
+   * workout has nothing left none does and any rest left is over; a correction leaves it be. A
+   * conflict with another session in progress names it, with Open to go there.
+   */
+  function afterLog(
+    exercise: WorkoutExercise,
+    rowNumber: number,
+    result: LogSetResult | LogRoundResult,
+  ) {
+    if (result.kind === 'logged') {
+      const rest = restAfterLog(
+        model?.exercises ?? [],
+        exercise,
+        rowNumber,
+        useRestTimerStore.getState().loggedSets,
+      );
+      noteLogged(loggedSetKey(exercise.sessionExerciseId, rowNumber));
+      if (rest.kind === 'start') {
+        startRest(rest.rest);
+      } else if (rest.kind === 'stop') {
+        stopRest();
+      }
+      return;
+    }
+    Alert.alert(formatInProgressConflict(result), undefined, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Open', onPress: () => router.navigate(workoutHref(result.inProgressSessionId)) },
+    ]);
+  }
+
   function showSaveError() {
     Alert.alert("Couldn't save the set", 'Try again.');
   }
@@ -426,7 +465,9 @@ export default function TodayScreen() {
         // for, and History is one tap further in from there.
         onOpenExerciseHistory={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
         onExerciseMenuAction={runExerciseMenuAction}
-        isSaving={logSet.isPending || unlogSet.isPending}
+        isSaving={
+          logSet.isPending || unlogSet.isPending || logRound.isPending || unlogRound.isPending
+        }
         onBodyWeightChange={saveBodyWeight}
         onRequestBodyWeight={() => setIsBodyWeightOpen(true)}
         onLogSet={(exercise, setNumber, entry) => {
@@ -443,36 +484,41 @@ export default function TodayScreen() {
               entry,
             },
             {
-              onSuccess: (result) => {
-                if (result.kind === 'logged') {
-                  // The rest before the next set starts by itself (GT-86) — after the last set,
-                  // before the next exercise; once the workout has nothing left none does and any
-                  // rest left is over; a correction leaves it be.
-                  const rest = restAfterLog(
-                    model?.exercises ?? [],
-                    exercise,
-                    setNumber,
-                    useRestTimerStore.getState().loggedSets,
-                  );
-                  noteLogged(loggedSetKey(exercise.sessionExerciseId, setNumber));
-                  if (rest.kind === 'start') {
-                    startRest(rest.rest);
-                  } else if (rest.kind === 'stop') {
-                    stopRest();
-                  }
-                }
-                if (result.kind === 'conflict') {
-                  Alert.alert(formatInProgressConflict(result), undefined, [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Open',
-                      onPress: () => router.navigate(workoutHref(result.inProgressSessionId)),
-                    },
-                  ]);
-                }
-              },
+              onSuccess: (result) => afterLog(exercise, setNumber, result),
               onError: showSaveError,
             },
+          );
+        }}
+        onLogRound={(exercise, roundNumber, entry) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          logRound.mutate(
+            {
+              ref: {
+                sessionId: currentSessionId,
+                sessionExerciseId: exercise.sessionExerciseId,
+                roundNumber,
+              },
+              entry,
+            },
+            {
+              onSuccess: (result) => afterLog(exercise, roundNumber, result),
+              onError: showSaveError,
+            },
+          );
+        }}
+        onUnlogRound={(exercise, roundNumber) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          unlogRound.mutate(
+            {
+              sessionId: currentSessionId,
+              sessionExerciseId: exercise.sessionExerciseId,
+              roundNumber,
+            },
+            { onError: showSaveError },
           );
         }}
         onUnlogSet={(exercise, setNumber) => {

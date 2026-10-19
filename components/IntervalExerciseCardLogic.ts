@@ -6,6 +6,7 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import { MinusIcon } from '@design/icons/MinusIcon';
 import { TrendIcon } from '@design/icons/TrendIcon';
 import { formatClock } from '@design/formatClock';
+import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalProgression, WorkoutRoundRow } from '@usecases/workoutSession';
 
 import type { BadgeExplanation } from './RirExplanationLogic';
@@ -16,6 +17,16 @@ export const REST_COLUMN = 'Rest';
 
 /** What a Rest cell reads with no rest to show — a round with no planned rest at all. */
 export const NO_REST = '–';
+
+/**
+ * What one tap on a round's Log box logs (FR-7, "запасной путь"): the times its Work and Rest
+ * fields hold — the round's planned ones until the picker can change them (GT-90).
+ */
+export function roundEntryOf(round: WorkoutRoundRow): RoundEntry {
+  return round.restSec === undefined
+    ? { workSec: round.workSec }
+    : { workSec: round.workSec, restSec: round.restSec };
+}
 
 /**
  * The Start timer button's label (08.7, "Interval card"; canvas 1.4, 1.6), or `undefined` once every

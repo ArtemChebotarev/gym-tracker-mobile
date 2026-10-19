@@ -2,13 +2,12 @@
 // skill; they live here because every file under app/ is a route.
 
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
-import { setRowsOf } from '@components/WorkoutExerciseCardLogic';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 import type { RestNext } from '@domain/restTimer';
-import { nextSetAfter } from '@domain/restTimerRules';
+import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
@@ -149,11 +148,33 @@ export function loggedSetKey(sessionExerciseId: string, setNumber: number): stri
   return `${sessionExerciseId}:${setNumber}`;
 }
 
+/** An exercise's rows as the rest timer reads them — its sets, or an interval's rounds. */
+function restRowsOf(exercise: WorkoutExercise): RestSetRow[] {
+  const rows: readonly { number: number; log?: unknown; notDone?: unknown }[] =
+    exercise.type === 'interval'
+      ? exercise.rounds.map((round) => ({ ...round, number: round.roundNumber }))
+      : exercise.rows.map((row) => ({ ...row, number: row.setNumber }));
+  return rows.map((row) => ({
+    setNumber: row.number,
+    open: row.log === undefined && row.notDone === undefined,
+  }));
+}
+
 /** Whether `exercise` still has a set or a round to do — logged neither nor closed as not done. */
 function hasWorkLeft(exercise: WorkoutExercise): boolean {
-  const rows: readonly { log?: unknown; notDone?: unknown }[] =
-    exercise.type === 'interval' ? exercise.rounds : exercise.rows;
-  return rows.some((row) => row.log === undefined && row.notDone === undefined);
+  return restRowsOf(exercise).some((row) => row.open);
+}
+
+/**
+ * The rest after row `rowNumber` of `exercise`: the exercise's own rest for a set (Settings for
+ * strength, its field for power), the round's own rest for an interval round (FR-6).
+ */
+function restSecAfter(exercise: WorkoutExercise, rowNumber: number): number | undefined {
+  const restSec =
+    exercise.type === 'interval'
+      ? exercise.rounds.find((round) => round.roundNumber === rowNumber)?.restSec
+      : exercise.restSec;
+  return restSec !== undefined && restSec > 0 ? restSec : undefined;
 }
 
 /**
@@ -170,16 +191,17 @@ function nextExerciseWithWorkLeft(
 }
 
 /**
- * What logging `setNumber` of `exercise` does to the rest timer (10.1 FR-5, GT-86; Artem,
- * 18.10.2026). A log is a correction, and leaves the timer alone, when an exercise further down
- * the workout has been started already — this one is being fixed or caught up on, the work is
- * below — or when this very set was logged before in this workout and is logged again.
- * Otherwise the rest before the next set still to do starts — and after the exercise's last set,
- * the rest before the next exercise with work left, unless the workout has none (Artem,
- * 19.10.2026): n sets, n rests, but none at the very end.
+ * What logging row `setNumber` of `exercise` — a set, or an interval's round logged by hand
+ * (GT-89) — does to the rest timer (10.1 FR-5, FR-6, GT-86; Artem, 18.10.2026). A log is a
+ * correction, and leaves the timer alone, when an exercise further down the workout has been
+ * started already — this one is being fixed or caught up on, the work is below — or when this very
+ * row was logged before in this workout and is logged again. Otherwise the rest before the next
+ * row still to do starts — and after the exercise's last row, the rest before the next exercise
+ * with work left, unless the workout has none (Artem, 19.10.2026): n rows, n rests, but none at the
+ * very end.
  *
  * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
- * sets logged so far in it.
+ * rows logged so far in it.
  */
 export function restAfterLog(
   exercises: readonly WorkoutExercise[],
@@ -194,20 +216,15 @@ export function restAfterLog(
   if (startedBelow || alreadyLogged.has(loggedSetKey(exercise.sessionExerciseId, setNumber))) {
     return { kind: 'keep' };
   }
-  if (exercise.restSec === undefined) return { kind: 'stop' };
-  // Only a card of set rows rests between sets; an interval runs its own timer.
-  const rows = setRowsOf(exercise);
-  if (rows === undefined) return { kind: 'stop' };
-  const nextSetNumber = nextSetAfter(
-    rows.map((row) => ({
-      setNumber: row.setNumber,
-      open: row.log === undefined && row.notDone === undefined,
-    })),
-    setNumber,
-  );
+  const durationSec = restSecAfter(exercise, setNumber);
+  if (durationSec === undefined) return { kind: 'stop' };
+  const nextRowNumber = nextSetAfter(restRowsOf(exercise), setNumber);
   let next: RestNext;
-  if (nextSetNumber !== undefined) {
-    next = { kind: 'set', setNumber: nextSetNumber };
+  if (nextRowNumber !== undefined) {
+    next =
+      exercise.type === 'interval'
+        ? { kind: 'round', roundNumber: nextRowNumber }
+        : { kind: 'set', setNumber: nextRowNumber };
   } else {
     const nextExercise = nextExerciseWithWorkLeft(exercises, index);
     if (nextExercise === undefined) return { kind: 'stop' };
@@ -215,6 +232,6 @@ export function restAfterLog(
   }
   return {
     kind: 'start',
-    rest: { sessionExerciseId: exercise.sessionExerciseId, next, durationSec: exercise.restSec },
+    rest: { sessionExerciseId: exercise.sessionExerciseId, next, durationSec },
   };
 }

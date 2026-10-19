@@ -36,3 +36,22 @@ export function validateSetEntry(
     throw new Error(`Reps must be a whole number of at least 1, got ${reps}.`);
   }
 }
+
+/**
+ * What a round row holds when it is logged by hand (10.1 FR-7, "запасной путь"): its Work and Rest
+ * fields, seconds. `restSec` is absent where the round has no rest to log.
+ */
+export type RoundEntry = { workSec: number; restSec?: number };
+
+/**
+ * Throws unless a round's times can be logged: `workSec` a whole number of seconds of at least 1,
+ * `restSec`, when given, a whole number of at least 0.
+ */
+export function validateRoundEntry(entry: RoundEntry): void {
+  if (!Number.isInteger(entry.workSec) || entry.workSec < 1) {
+    throw new Error(`Work must be a whole number of seconds of at least 1, got ${entry.workSec}.`);
+  }
+  if (entry.restSec !== undefined && (!Number.isInteger(entry.restSec) || entry.restSec < 0)) {
+    throw new Error(`Rest must be a whole number of seconds of at least 0, got ${entry.restSec}.`);
+  }
+}

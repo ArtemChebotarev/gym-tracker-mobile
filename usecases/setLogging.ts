@@ -12,7 +12,7 @@ import { statusFromLogs } from '@domain/sessionExerciseStatus';
 import { nowAsUtcIso } from '@domain/time';
 import type { WorkoutRepositories, WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
-import { startSessionOnFirstSet } from '@usecases/sessionStart';
+import { type InProgressConflict, startSessionForLog } from '@usecases/sessionStart';
 import type { Unsaved } from '@domain/timestamps';
 
 /** One set row of an exercise in a session. */
@@ -20,11 +20,7 @@ export type SetRowRef = SessionExerciseRef & { setNumber: number };
 
 export type LogSetResult =
   | { kind: 'logged'; setLog: SetLog; sessionExercise: SessionExercise; session: Session }
-  /**
-   * Another session is `in_progress` — nothing was written; the screen names it (`Finish Week W Day
-   * D first`) and offers to open it.
-   */
-  | { kind: 'conflict'; inProgressSessionId: string; weekNumber: number; dayNumber: number };
+  | InProgressConflict;
 
 export type UnlogSetResult = { sessionExercise: SessionExercise };
 
@@ -95,18 +91,9 @@ export async function logSet(
       );
     }
 
-    const start = await startSessionOnFirstSet(ref.sessionId, repos, now);
+    const start = await startSessionForLog(ref.sessionId, repos, now);
     if (start.kind === 'conflict') {
-      const inProgress = await repos.sessionRepo.getById(start.inProgressSessionId);
-      if (!inProgress) {
-        throw new NotFoundError(`Session "${start.inProgressSessionId}" does not exist.`);
-      }
-      return {
-        kind: 'conflict',
-        inProgressSessionId: inProgress.id,
-        weekNumber: inProgress.weekNumber,
-        dayNumber: inProgress.dayNumber,
-      };
+      return start;
     }
 
     const draft: Unsaved<SetLog> = {

@@ -51,6 +51,26 @@ describe('restCapsule', () => {
     });
   });
 
+  test('a rest between rounds names the round', () => {
+    const toRound = startRestTimer(
+      { sessionExerciseId: 'se', next: { kind: 'round', roundNumber: 2 }, durationSec: 45 },
+      T0,
+    );
+    expect(restCapsule({ timer: toRound, finished: null }, T0, ACTIONS)).toMatchObject({
+      caption: 'Rest · round 2 next',
+    });
+    expect(
+      restCapsule(
+        {
+          timer: null,
+          finished: { sessionExerciseId: 'se', next: { kind: 'round', roundNumber: 2 } },
+        },
+        T0,
+        ACTIONS,
+      ),
+    ).toMatchObject({ caption: 'Round 2 next' });
+  });
+
   test('a rest before the next exercise names it', () => {
     const toBag = startRestTimer(
       { sessionExerciseId: 'se', next: { kind: 'exercise', name: 'Heavy bag' }, durationSec: 60 },

@@ -847,6 +847,38 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Log round 1"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          hitSlop={6}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -862,6 +894,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
               {
                 "borderColor": "#CDFF57",
               },
+              false,
             ]
           }
         />
@@ -978,6 +1011,38 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Log round 2"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          hitSlop={6}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -989,6 +1054,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 32,
               },
+              false,
               false,
               false,
             ]
@@ -1107,6 +1173,38 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         }
       >
         <View
+          accessibilityLabel="Log round 3"
+          accessibilityRole="checkbox"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": false,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          hitSlop={6}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             [
               {
@@ -1118,6 +1216,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
                 "justifyContent": "center",
                 "width": 32,
               },
+              false,
               false,
               false,
             ]
