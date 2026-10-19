@@ -8,7 +8,8 @@
 //   Rest opens the picker, and when it closes the rounds below that aren't logged yet follow the
 //   new time, as a weight carries into the later sets (task 106). The times live here, not in each
 //   row, for that reason — the way WorkoutSetRows holds the Weight fields. Picked times are never
-//   saved on their own (05, "Сохранение данных"): Log takes them.
+//   saved on their own (05, "Сохранение данных"): Log takes them. A round added from the menu
+//   (GT-91) follows the last one's fields too.
 // - A round is logged by hand with one tap on its Log box — the times its fields hold — and
 //   un-logged by a second tap on the filled one, which brings its logged times back into the fields
 //   (FR-7, GT-89).
@@ -33,6 +34,7 @@ import { NO_REST, roundEntryOf, startTimerLabel } from './IntervalExerciseCardLo
 import {
   carryRoundTimeForward,
   editRoundTime,
+  followRoundChanges,
   holdLoggedRound,
   NO_ROUND_TIME_EDITS,
   ROUND_TIME_PICKER,
@@ -79,6 +81,14 @@ export function IntervalRoundRows({
 }: IntervalRoundRowsProps) {
   const [edits, setEdits] = useState<RoundTimeEdits>(NO_ROUND_TIME_EDITS);
   const [open, setOpen] = useState<OpenField | null>(null);
+  // The rounds the edits were made against: when Add round or Remove last round changes them, the
+  // edits follow (`followRoundChanges`) — adjusted while rendering, so the new round never shows a
+  // frame with the plan's time first.
+  const [editedRounds, setEditedRounds] = useState(rounds);
+  if (editedRounds !== rounds) {
+    setEditedRounds(rounds);
+    setEdits((current) => followRoundChanges(current, editedRounds, rounds));
+  }
   const shown = roundsWithEdits(rounds, edits);
   const timerLabel = editable ? startTimerLabel(shown) : undefined;
   const openRound =

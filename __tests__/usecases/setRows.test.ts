@@ -224,6 +224,20 @@ describe('addRound (GT-91)', () => {
     await expect(stored(workout)).resolves.toEqual(updated);
   });
 
+  test('a logged last round passes on the times it was done with', async () => {
+    const workout = await intervalWorkoutWith({
+      roundLogs: [{ ...roundLogFor(2), workSec: 135, restSec: 25 }],
+    });
+
+    const updated = await addRound(ref, workout);
+
+    expect(updated.setTargets.at(-1)).toEqual({
+      setNumber: 3,
+      targetWorkSec: 135,
+      targetRestSec: 25,
+    });
+  });
+
   test('a completed exercise goes back to planned', async () => {
     const workout = await intervalWorkoutWith({
       exercise: { ...heavyBag, status: 'completed' },

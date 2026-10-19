@@ -90,8 +90,10 @@ export async function removeLastSet(
 }
 
 /**
- * Appends a round to the interval exercise `ref` points at, with the last round's work and rest. A
- * `completed` exercise goes back to `planned` — the new round isn't logged.
+ * Appends a round to the interval exercise `ref` points at, with the last round's work and rest —
+ * the ones it was logged with, if it is (`withAddedRound`). A `completed` exercise goes back to
+ * `planned` — the new round isn't logged. Times picked on screen but not logged aren't stored;
+ * the card carries them into the new round itself.
  *
  * Rejects as `openSessionExercise` does.
  */
@@ -102,8 +104,10 @@ export async function addRound(
   return store.transaction(async (repos) => {
     const { sessionExercise } = await openSessionExercise(ref, repos);
     const logs = await repos.roundLogRepo.listBySessionExerciseId(sessionExercise.id);
+    const last = sessionExercise.setTargets.at(-1);
+    const lastLog = logs.find((log) => log.roundNumber === last?.setNumber);
     return saveWithStatus(
-      { ...sessionExercise, setTargets: withAddedRound(sessionExercise.setTargets) },
+      { ...sessionExercise, setTargets: withAddedRound(sessionExercise.setTargets, lastLog) },
       roundRowLogs(logs),
       repos,
     );

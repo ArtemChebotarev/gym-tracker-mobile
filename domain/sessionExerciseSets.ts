@@ -4,7 +4,7 @@
 // layer handles the row's log and persists the result.
 
 import { ConflictError } from '@domain/errors';
-import type { SetTarget } from '@domain/execution';
+import type { RoundLog, SetTarget } from '@domain/execution';
 
 /**
  * `setTargets` with one row appended: the next `setNumber` and the `suggestedWeight` copied from
@@ -22,18 +22,26 @@ export function withAddedSet(setTargets: readonly SetTarget[]): SetTarget[] {
 
 /**
  * `setTargets` with one round appended — an interval's rounds are its set targets (10 · Hybrid
- * Exercises). Unlike a set, a round's times are its plan, not a goal it can miss: the new round
- * copies the last one's work and rest, so it reads as one more of the same. A last round with no
- * times of its own gives none, and the card falls back on the cycle's plan for both.
+ * Exercises). Unlike a set, a round's times are its plan, not a goal it can miss, so the new round
+ * is one more of the last: it takes the times that round was done with when it is logged
+ * (`lastRoundLog`), its planned ones otherwise. A one-off is no new plan (FR-6, FR-8): a round
+ * ended early keeps the planned work, a skipped rest the planned rest. A last round with no times
+ * at all gives none, and the card falls back on the cycle's plan.
  */
-export function withAddedRound(setTargets: readonly SetTarget[]): SetTarget[] {
+export function withAddedRound(
+  setTargets: readonly SetTarget[],
+  lastRoundLog?: Pick<RoundLog, 'workSec' | 'restSec' | 'restSkipped' | 'completed'>,
+): SetTarget[] {
   const last = setTargets[setTargets.length - 1];
   const added: SetTarget = { setNumber: (last?.setNumber ?? 0) + 1 };
-  if (last?.targetWorkSec !== undefined) {
-    added.targetWorkSec = last.targetWorkSec;
+  const workSec = lastRoundLog?.completed ? lastRoundLog.workSec : last?.targetWorkSec;
+  if (workSec !== undefined) {
+    added.targetWorkSec = workSec;
   }
-  if (last?.targetRestSec !== undefined) {
-    added.targetRestSec = last.targetRestSec;
+  const loggedRest = lastRoundLog?.restSkipped === false ? lastRoundLog.restSec : undefined;
+  const restSec = loggedRest ?? last?.targetRestSec;
+  if (restSec !== undefined) {
+    added.targetRestSec = restSec;
   }
   return [...setTargets, added];
 }

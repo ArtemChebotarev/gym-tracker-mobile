@@ -1,6 +1,7 @@
 import {
   carryRoundTimeForward,
   editRoundTime,
+  followRoundChanges,
   holdLoggedRound,
   NO_ROUND_TIME_EDITS,
   ROUND_TIME_PICKER,
@@ -84,5 +85,60 @@ describe('round times (GT-90)', () => {
   test('the picker keeps the exercise config’s bounds, in 5 s steps', () => {
     expect(ROUND_TIME_PICKER.work).toEqual({ minSec: 5, maxSec: 3600, stepSec: 5 });
     expect(ROUND_TIME_PICKER.rest).toEqual({ minSec: 0, maxSec: 600, stepSec: 5 });
+  });
+});
+
+describe('rounds added and removed from the menu (GT-91)', () => {
+  const unlogged: WorkoutRoundRow[] = ROUNDS.slice(1, 3).map((round, index) => ({
+    ...round,
+    roundNumber: index + 1,
+  }));
+  const withThird: WorkoutRoundRow[] = [
+    ...unlogged,
+    { roundNumber: 3, workSec: 120, restSec: 60, isFirstUnlogged: false },
+  ];
+
+  test('a new round takes what the last one’s fields hold — picked or carried', () => {
+    const picked = carryRoundTimeForward(
+      editRoundTime(editRoundTime(NO_ROUND_TIME_EDITS, 'work', 2, 135), 'rest', 1, 45),
+      'rest',
+      unlogged,
+      1,
+    );
+
+    const followed = followRoundChanges(picked, unlogged, withThird);
+
+    expect(roundsWithEdits(withThird, followed)[2]).toMatchObject({ workSec: 135, restSec: 45 });
+    // Carried, not the user's own: picking again above still reaches it.
+    expect(followed.work[3]).toEqual({ sec: 135, isManual: false });
+  });
+
+  test('nothing picked, the new round keeps its plan', () => {
+    expect(followRoundChanges(NO_ROUND_TIME_EDITS, unlogged, withThird)).toEqual(
+      NO_ROUND_TIME_EDITS,
+    );
+  });
+
+  test('a logged last round passes nothing on — the stored round copies its log', () => {
+    const lastLogged = [unlogged[0]!, { ...unlogged[1]!, log: LOGGED }];
+    const edits = editRoundTime(NO_ROUND_TIME_EDITS, 'work', 2, 135);
+
+    expect(followRoundChanges(edits, lastLogged, [...lastLogged, withThird[2]!]).work[3]).toBe(
+      undefined,
+    );
+  });
+
+  test('a removed round’s times go with it, so one added back starts from the plan', () => {
+    const edits = editRoundTime(NO_ROUND_TIME_EDITS, 'work', 3, 150);
+
+    const removed = followRoundChanges(edits, withThird, unlogged);
+    expect(removed).toEqual(NO_ROUND_TIME_EDITS);
+    expect(followRoundChanges(removed, unlogged, withThird)).toEqual(NO_ROUND_TIME_EDITS);
+  });
+
+  test('the same rounds again leave the edits as they are', () => {
+    const edits = editRoundTime(NO_ROUND_TIME_EDITS, 'work', 1, 135);
+
+    expect(followRoundChanges(edits, unlogged, [...unlogged])).toBe(edits);
   });
 });

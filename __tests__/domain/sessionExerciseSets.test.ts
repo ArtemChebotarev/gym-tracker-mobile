@@ -63,6 +63,26 @@ describe('withAddedRound', () => {
     ]);
   });
 
+  test('a logged last round passes on the times it was done with', () => {
+    const log = { workSec: 150, restSec: 20, restSkipped: false, completed: true };
+
+    expect(withAddedRound(rounds, log).at(-1)).toEqual({
+      setNumber: 3,
+      targetWorkSec: 150,
+      targetRestSec: 20,
+    });
+  });
+
+  test('a round ended early or a skipped rest is a one-off: the plan stays', () => {
+    const log = { workSec: 40, restSec: 5, restSkipped: true, completed: false };
+
+    expect(withAddedRound(rounds, log).at(-1)).toEqual({
+      setNumber: 3,
+      targetWorkSec: 135,
+      targetRestSec: 30,
+    });
+  });
+
   test('a last round with no times of its own adds one with none — the plan fills them', () => {
     expect(withAddedRound([{ setNumber: 1 }])).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
   });
