@@ -5,7 +5,7 @@
 // removal (086) takes something out of the future.
 
 import type { SessionExercise } from '@domain/execution';
-import { statusFromLogs } from '@domain/sessionExerciseStatus';
+import { roundRowLogs, statusFromLogs } from '@domain/sessionExerciseStatus';
 import type { WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 
@@ -44,7 +44,11 @@ export async function unskipExercise(
     if (sessionExercise.status !== 'skipped') {
       return sessionExercise;
     }
-    const logs = await repos.setLogRepo.listBySessionExerciseId(sessionExercise.id);
+    // An interval's rows are logged as rounds (GT-89).
+    const logs = [
+      ...(await repos.setLogRepo.listBySessionExerciseId(sessionExercise.id)),
+      ...roundRowLogs(await repos.roundLogRepo.listBySessionExerciseId(sessionExercise.id)),
+    ];
     return repos.sessionExerciseRepo.update({
       ...sessionExercise,
       status: statusFromLogs(sessionExercise, logs),

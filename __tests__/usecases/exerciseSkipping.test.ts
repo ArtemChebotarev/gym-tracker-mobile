@@ -148,6 +148,25 @@ describe('unskipExercise', () => {
     await expect(unskipExercise(ref, workout)).resolves.toMatchObject({ status: 'completed' });
   });
 
+  test('an interval with every round logged returns to completed (GT-89)', async () => {
+    const workout = await workoutWith({ exercise: { ...bench, status: 'skipped' } });
+    for (const roundNumber of [1, 2, 3]) {
+      await workout.repos.roundLogRepo.create({
+        ...STAMPS,
+        id: `round-${roundNumber}`,
+        sessionExerciseId: 'session-exercise-bench',
+        exerciseId: 'exercise-bench',
+        roundNumber,
+        workSec: 120,
+        restSkipped: false,
+        completed: true,
+        completedAt: '2026-09-18T09:30:00.000Z',
+      });
+    }
+
+    await expect(unskipExercise(ref, workout)).resolves.toMatchObject({ status: 'completed' });
+  });
+
   test('an exercise that is not skipped is left as it is', async () => {
     const workout = await workoutWith();
 

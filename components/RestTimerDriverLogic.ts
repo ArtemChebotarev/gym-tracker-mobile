@@ -17,9 +17,21 @@ export type RestCapsuleActions = {
   dismiss: () => void;
 };
 
-/** What comes after the rest, as the capsule's caption words it: `set 3`, or the exercise's name. */
+/** What comes after the rest, as the capsule's caption words it: `set 3`, `round 2`, or a name. */
 function nextLabel(next: RestNext): string {
-  return next.kind === 'set' ? `set ${next.setNumber}` : next.name;
+  switch (next.kind) {
+    case 'set':
+      return `set ${next.setNumber}`;
+    case 'round':
+      return `round ${next.roundNumber}`;
+    case 'exercise':
+      return next.name;
+  }
+}
+
+/** `set 3 next` → `Set 3 next`: the line under `Rest is over` starts with it. */
+function capitalized(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** The capsule for the rest in `timer` or `finished` at `now`; `null` when there is neither. */
@@ -48,10 +60,11 @@ export function restCapsule(
       state: 'finished',
       icon: HourglassIcon,
       title: 'Rest is over',
+      // A set or a round starts the line with a capital; an exercise keeps its name as it is.
       caption:
-        finished.next.kind === 'set'
-          ? `Set ${finished.next.setNumber} next`
-          : `${finished.next.name} next`,
+        finished.next.kind === 'exercise'
+          ? `${finished.next.name} next`
+          : capitalized(`${nextLabel(finished.next)} next`),
       progress: 0,
       onDismiss: actions.dismiss,
     };

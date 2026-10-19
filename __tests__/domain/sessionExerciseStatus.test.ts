@@ -1,5 +1,5 @@
-import type { SessionExercise, SetLog } from '@domain/execution';
-import { isNotDone, statusFromLogs } from '@domain/sessionExerciseStatus';
+import type { RoundLog, SessionExercise, SetLog } from '@domain/execution';
+import { isNotDone, roundRowLogs, statusFromLogs } from '@domain/sessionExerciseStatus';
 import { STAMPS } from '../fixtures/stamps';
 
 const benchPress: Pick<SessionExercise, 'id' | 'setTargets'> = {
@@ -41,6 +41,34 @@ describe('statusFromLogs', () => {
 
   test('a log for a row that no longer exists does not count toward the rows that do', () => {
     expect(statusFromLogs(benchPress, [logFor(1), logFor(2), logFor(4)])).toBe('planned');
+  });
+});
+
+describe('roundRowLogs', () => {
+  function roundFor(roundNumber: number): RoundLog {
+    return {
+      ...STAMPS,
+      id: `round-${roundNumber}`,
+      sessionExerciseId: benchPress.id,
+      exerciseId: 'exercise-heavy-bag',
+      roundNumber,
+      workSec: 120,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-18T10:00:00.000Z',
+    };
+  }
+
+  test('a logged round marks its row, so every round logged completes the exercise (FR-7)', () => {
+    expect(statusFromLogs(benchPress, roundRowLogs([roundFor(1), roundFor(2)]))).toBe('planned');
+    expect(statusFromLogs(benchPress, roundRowLogs([1, 2, 3].map(roundFor)))).toBe('completed');
+  });
+
+  test('a round ended early still marks its row as logged', () => {
+    const early = { ...roundFor(3), completed: false };
+    expect(statusFromLogs(benchPress, roundRowLogs([roundFor(1), roundFor(2), early]))).toBe(
+      'completed',
+    );
   });
 });
 

@@ -174,6 +174,46 @@ describe('Interval card (GT-88)', () => {
     expect(within(screen.getByTestId('round-row-3')).getByText('–')).toBeTruthy();
   });
 
+  test('DoD: one tap on Log logs the round with its fields; a tap on a filled one un-logs it', () => {
+    const onLogRound = jest.fn();
+    const onUnlogRound = jest.fn();
+    const exercise = makeInterval({
+      rounds: [
+        {
+          ...ROUNDS[0]!,
+          isFirstUnlogged: false,
+          log: { workSec: 120, restSec: 45, restSkipped: false, completed: true },
+        },
+        { ...ROUNDS[1]!, isFirstUnlogged: true },
+        ROUNDS[2]!,
+      ],
+      loggedRoundCount: 1,
+      hasLoggedSets: true,
+    });
+    render(
+      <WorkoutExerciseCard {...makeProps({ exercise, rounds: { onLogRound, onUnlogRound } })} />,
+    );
+
+    fireEvent.press(screen.getByLabelText('Log round 2'));
+    fireEvent.press(screen.getByLabelText('Round 1 logged'));
+
+    expect(onLogRound).toHaveBeenCalledWith(2, { workSec: 120, restSec: 45 });
+    expect(onUnlogRound).toHaveBeenCalledWith(1);
+  });
+
+  test('read-only rounds have nothing to press, and a save in flight holds Log', () => {
+    const onLogRound = jest.fn();
+    const { rerender } = render(
+      <WorkoutExerciseCard {...makeProps({ mode: 'readonly', rounds: { onLogRound } })} />,
+    );
+    fireEvent.press(screen.getByLabelText('Log round 1'));
+
+    rerender(<WorkoutExerciseCard {...makeProps({ isSaving: true, rounds: { onLogRound } })} />);
+    fireEvent.press(screen.getByLabelText('Log round 1'));
+
+    expect(onLogRound).not.toHaveBeenCalled();
+  });
+
   test('a preview shows the Not programmed yet plate and no rounds', () => {
     render(
       <WorkoutExerciseCard

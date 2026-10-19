@@ -231,6 +231,57 @@ describe('restAfterLog', () => {
     expect(restAfterLog([a, b], a, 1, NONE).kind).toBe('start');
   });
 
+  test('a round logged by hand rests for its own rest before the next round (GT-89)', () => {
+    const bag: WorkoutExercise = {
+      sessionExerciseId: 'bag',
+      exerciseId: 'bag',
+      name: 'Heavy bag',
+      muscleGroup: 'fullBody',
+      type: 'interval',
+      status: 'planned',
+      rounds: [
+        { roundNumber: 1, workSec: 120, restSec: 45, isFirstUnlogged: true },
+        { roundNumber: 2, workSec: 120, restSec: 30, isFirstUnlogged: false },
+      ],
+      plannedRoundCount: 2,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      actions: card('x', 60, []).actions,
+    };
+    const after = card('after', 60, []);
+
+    expect(restAfterLog([bag, after], bag, 1, NONE)).toEqual({
+      kind: 'start',
+      rest: { sessionExerciseId: 'bag', next: { kind: 'round', roundNumber: 2 }, durationSec: 45 },
+    });
+    // The last round: its own rest, before the next exercise.
+    const lastLeft: WorkoutExercise = {
+      ...bag,
+      rounds: [
+        {
+          ...bag.rounds[0]!,
+          isFirstUnlogged: false,
+          log: { workSec: 120, restSkipped: false, completed: true },
+        },
+        { ...bag.rounds[1]!, isFirstUnlogged: true },
+      ],
+    };
+    expect(restAfterLog([lastLeft, after], lastLeft, 2, NONE)).toEqual({
+      kind: 'start',
+      rest: {
+        sessionExerciseId: 'bag',
+        next: { kind: 'exercise', name: 'after' },
+        durationSec: 30,
+      },
+    });
+    // A round with no rest ends any rest left.
+    const noRest: WorkoutExercise = {
+      ...bag,
+      rounds: [{ roundNumber: 1, workSec: 120, isFirstUnlogged: true }, bag.rounds[1]!],
+    };
+    expect(restAfterLog([noRest, after], noRest, 1, NONE)).toEqual({ kind: 'stop' });
+  });
+
   test('a set logged again in the same workout is a correction', () => {
     const a = card('a', 60, []);
     expect(restAfterLog([a], a, 1, new Set([loggedSetKey('a', 1)]))).toEqual({ kind: 'keep' });

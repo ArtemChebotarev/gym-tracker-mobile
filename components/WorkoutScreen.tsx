@@ -54,6 +54,7 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
+import type { RoundEntry } from '@domain/executionValidators';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
@@ -103,6 +104,10 @@ export type WorkoutScreenProps = {
   ) => void;
   /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** Logs an interval round by hand with the times in its fields (10.1 FR-7). Live only. */
+  onLogRound: (exercise: WorkoutExercise, roundNumber: number, entry: RoundEntry) => void;
+  /** Un-logs a logged round. Live only. */
+  onUnlogRound: (exercise: WorkoutExercise, roundNumber: number) => void;
   /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
   onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
   /** The user closed a power exercise's ceiling note for good (GT-81). Live only. */
@@ -160,6 +165,8 @@ export function WorkoutScreen({
   onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
+  onLogRound,
+  onUnlogRound,
   onSetNoHeavierAvailable,
   onHideCeilingTip,
   onBodyWeightChange,
@@ -309,6 +316,10 @@ export function WorkoutScreen({
                 onRequestBodyWeight,
                 onLogSet: (setNumber, entry) => onLogSet(exercise, setNumber, entry),
                 onUnlogSet: (setNumber) => onUnlogSet(exercise, setNumber),
+              }}
+              rounds={{
+                onLogRound: (roundNumber, entry) => onLogRound(exercise, roundNumber, entry),
+                onUnlogRound: (roundNumber) => onUnlogRound(exercise, roundNumber),
               }}
               ceiling={{
                 onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),

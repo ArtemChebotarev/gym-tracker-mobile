@@ -1,6 +1,7 @@
 import {
   intervalProgressionPlate,
   progressionInfoLabel,
+  roundEntryOf,
   startTimerLabel,
 } from '@components/IntervalExerciseCardLogic';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
@@ -66,6 +67,14 @@ describe('intervalProgressionPlate', () => {
     const plate = intervalProgressionPlate({ column: 'rest', stepSec: 10 }, [noRest]);
 
     expect(plate.rows).toHaveLength(2);
+  });
+});
+
+describe('roundEntryOf', () => {
+  test('one tap logs the times the fields hold', () => {
+    expect(roundEntryOf(ROUNDS[0]!)).toEqual({ workSec: 120, restSec: 45 });
+    const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
+    expect(roundEntryOf(noRest)).toEqual({ workSec: 120 });
   });
 });
 
