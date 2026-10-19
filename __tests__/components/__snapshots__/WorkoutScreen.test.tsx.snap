@@ -448,8 +448,10 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                         },
                         {
                           "$type": "foregroundStyle",
-                          "color": "#C9CDD2",
-                          "styleType": "color",
+                          "style": {
+                            "color": "#C9CDD2",
+                            "type": "color",
+                          },
                         },
                       ]
                     }
@@ -1892,8 +1894,10 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                         },
                         {
                           "$type": "foregroundStyle",
-                          "color": "#C9CDD2",
-                          "styleType": "color",
+                          "style": {
+                            "color": "#C9CDD2",
+                            "type": "color",
+                          },
                         },
                       ]
                     }
@@ -2407,8 +2411,10 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                                 },
                                 {
                                   "$type": "foregroundStyle",
-                                  "color": "#C9CDD2",
-                                  "styleType": "color",
+                                  "style": {
+                                    "color": "#C9CDD2",
+                                    "type": "color",
+                                  },
                                 },
                               ]
                             }
@@ -2867,8 +2873,10 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                         },
                         {
                           "$type": "foregroundStyle",
-                          "color": "#C9CDD2",
-                          "styleType": "color",
+                          "style": {
+                            "color": "#C9CDD2",
+                            "type": "color",
+                          },
                         },
                       ]
                     }

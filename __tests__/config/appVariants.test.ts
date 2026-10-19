@@ -82,6 +82,17 @@ describe('reading the generated native projects', () => {
     expect(idsMatch(['a.b', 'a.b.hybrid'], 'a.b')).toBe(false);
   });
 
+  it('lets app extensions through, but never the hybrid app as an extension of the real one', () => {
+    expect(idsMatch(['a.b.hybrid', 'a.b.hybrid.ExpoWidgetsTarget'], 'a.b.hybrid')).toBe(true);
+    expect(idsMatch(['a.b', 'a.b.ExpoWidgetsTarget'], 'a.b')).toBe(true);
+    // The hybrid project seen from the real app: no ID of the real app at all.
+    expect(idsMatch(['a.b.hybrid', 'a.b.hybrid.ExpoWidgetsTarget'], 'a.b')).toBe(false);
+    expect(idsMatch(['a.b', 'a.b.hybrid.ExpoWidgetsTarget'], 'a.b')).toBe(false);
+    // An extension without its app.
+    expect(idsMatch(['a.b.ExpoWidgetsTarget'], 'a.b')).toBe(false);
+    expect(idsMatch(['a.bc'], 'a.b')).toBe(false);
+  });
+
   describe('on disk', () => {
     let root: string;
 

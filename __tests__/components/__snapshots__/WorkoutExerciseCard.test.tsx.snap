@@ -431,8 +431,10 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
                       },
                       {
                         "$type": "foregroundStyle",
-                        "color": "#C9CDD2",
-                        "styleType": "color",
+                        "style": {
+                          "color": "#C9CDD2",
+                          "type": "color",
+                        },
                       },
                     ]
                   }
@@ -3514,8 +3516,10 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
                       },
                       {
                         "$type": "foregroundStyle",
-                        "color": "#C9CDD2",
-                        "styleType": "color",
+                        "style": {
+                          "color": "#C9CDD2",
+                          "type": "color",
+                        },
                       },
                     ]
                   }

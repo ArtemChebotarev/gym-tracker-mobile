@@ -803,8 +803,10 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                                   },
                                   {
                                     "$type": "foregroundStyle",
-                                    "color": "#C9CDD2",
-                                    "styleType": "color",
+                                    "style": {
+                                      "color": "#C9CDD2",
+                                      "type": "color",
+                                    },
                                   },
                                 ]
                               }
@@ -1298,8 +1300,10 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                                   },
                                   {
                                     "$type": "foregroundStyle",
-                                    "color": "#C9CDD2",
-                                    "styleType": "color",
+                                    "style": {
+                                      "color": "#C9CDD2",
+                                      "type": "color",
+                                    },
                                   },
                                 ]
                               }
@@ -2009,8 +2013,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                                   },
                                   {
                                     "$type": "foregroundStyle",
-                                    "color": "#C9CDD2",
-                                    "styleType": "color",
+                                    "style": {
+                                      "color": "#C9CDD2",
+                                      "type": "color",
+                                    },
                                   },
                                 ]
                               }
@@ -2236,8 +2242,10 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                                   },
                                   {
                                     "$type": "foregroundStyle",
-                                    "color": "#C9CDD2",
-                                    "styleType": "color",
+                                    "style": {
+                                      "color": "#C9CDD2",
+                                      "type": "color",
+                                    },
                                   },
                                 ]
                               }
