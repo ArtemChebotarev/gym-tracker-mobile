@@ -8,6 +8,7 @@ const ROUTES = [
   { key: 'index-1', name: 'index' },
   { key: 'mesocycles-1', name: 'mesocycles' },
   { key: 'library-1', name: 'library' },
+  { key: 'settings-1', name: 'settings' },
 ];
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -36,13 +37,14 @@ afterEach(() => {
 });
 
 describe('AppTabBar', () => {
-  test('shows Today, Cycles and Library, no Settings yet', () => {
+  test('shows Today, Cycles, Library and Settings', () => {
     setup(0);
 
     expect(screen.getAllByRole('button').map((b) => b.props.accessibilityLabel)).toEqual([
       'Today',
       'Cycles',
       'Library',
+      'Settings',
     ]);
   });
 

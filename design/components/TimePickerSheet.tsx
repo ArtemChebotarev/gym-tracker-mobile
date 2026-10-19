@@ -9,12 +9,7 @@
 // Controlled: it shows `value` and reports every change through `onChange`, held within
 // `[minSec, maxSec]` — what is picked is already what will be kept. Done only closes the panel.
 
-import {
-  joinSeconds,
-  minuteOptions,
-  secondOptions,
-  splitSeconds,
-} from '../timePickerLogic';
+import { joinSeconds, minuteOptions, secondOptions, splitSeconds } from '../timePickerLogic';
 import { WheelPickerSheet, type WheelColumn } from './WheelPickerSheet';
 
 export type TimePickerSheetProps = {
@@ -52,13 +47,15 @@ export function TimePickerSheet({
   stepSec = DEFAULT_STEP_SEC,
 }: TimePickerSheetProps) {
   const { minutes, seconds } = splitSeconds(value);
-  const secondValues = secondOptions(stepSec);
+  // Each wheel offers only what fits the bounds, so a time outside them can't be picked and then
+  // quietly put back — the seconds at the minute the other wheel is on.
+  const secondValues = secondOptions(stepSec, { minutes, minSec, maxSec });
   // A value that is not on a step (an old 0:07) shows on the nearest position below it.
   const shownSeconds = secondValues.filter((s) => s <= seconds).pop() ?? 0;
 
   const columns: WheelColumn[] = [
     {
-      values: minuteOptions(maxSec),
+      values: minuteOptions(maxSec, minSec),
       selected: minutes,
       onSelect: (next) => onChange(joinSeconds(next, shownSeconds, minSec, maxSec)),
       unit: 'min',

@@ -20,7 +20,7 @@ import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
-import { restSecFor } from '@domain/restTimerRules';
+import { restSecFor, strengthRestSecOf } from '@domain/restTimerRules';
 import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import { targetIndicatorAtWeight, usesTargetIndicator } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
@@ -37,6 +37,7 @@ import {
   workoutMode,
 } from '@domain/workoutViewRules';
 import type { SessionRepository } from '@repositories/session';
+import type { SettingsRepository } from '@repositories/settings';
 import type {
   SessionExerciseTree,
   SessionTree,
@@ -46,6 +47,8 @@ import type {
 export type WorkoutSessionDeps = {
   sessionTreeRepo: SessionTreeRepository;
   sessionRepo: SessionRepository;
+  /** Strength's rest timer lives in Settings (GT-87). */
+  settingsRepo: SettingsRepository;
 };
 
 /** One set row (08.7, "Строка подхода"). */
@@ -304,6 +307,8 @@ type SessionContext = {
   settings: ProgressionSettings;
   /** The cycle's own copy of each hybrid exercise's config (GT-158), by exercise id. */
   exerciseSettings: Record<string, ExerciseSettings>;
+  /** Strength's rest from Settings; absent while its timer is off (GT-87). */
+  strengthRestSec: number | undefined;
   isDeload: boolean;
   bodyWeight?: number;
   referenceLogs: ReferenceLogs;
@@ -441,6 +446,7 @@ function toExercise(
       exercise.type,
       context.exerciseSettings[exercise.id],
       exercise.config,
+      context.strengthRestSec,
     );
     if (restSec !== undefined) {
       base.restSec = restSec;
@@ -523,6 +529,7 @@ function fromTree(
   tree: SessionTree,
   source: SessionTree | null,
   mesoSessions: readonly Session[] | null,
+  strengthRestSec: number | undefined,
 ): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
   const mode = workoutMode(session, mesocycle);
@@ -543,6 +550,7 @@ function fromTree(
   const context: SessionContext = {
     settings: mesocycle.progressionSettings,
     exerciseSettings: mesocycle.exerciseSettings ?? {},
+    strengthRestSec,
     isDeload: session.isDeload,
     referenceLogs: referenceLogsOf(source),
   };
@@ -671,7 +679,11 @@ export async function getWorkoutSession(
       ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
       : null;
   const mesoSessions = mode === 'readonly' ? await deps.sessionRepo.listByMesoId(mesoId) : null;
-  return fromTree(tree, source, mesoSessions);
+  const strengthRestSec =
+    mode === 'live'
+      ? strengthRestSecOf((await deps.settingsRepo.read()).strengthRestTimer)
+      : undefined;
+  return fromTree(tree, source, mesoSessions, strengthRestSec);
 }
 
 /**

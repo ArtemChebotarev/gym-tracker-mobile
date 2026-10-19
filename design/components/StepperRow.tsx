@@ -21,11 +21,16 @@ export type StepperRowProps = Pick<
 > & {
   /** What qualifies the label, in grey after it on the same line: `Rest` + `between sets`. */
   labelSuffix?: string;
+  /**
+   * The divider under the row. On by default — a row among others; off for the last row of a card,
+   * whose own edge ends it (Settings, canvas 5.x).
+   */
+  divider?: boolean;
 };
 
-export function StepperRow({ label, labelSuffix, ...stepper }: StepperRowProps) {
+export function StepperRow({ label, labelSuffix, divider = true, ...stepper }: StepperRowProps) {
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, divider && styles.divider]}>
       <View style={styles.text}>
         <Text style={styles.label} numberOfLines={1}>
           {label}
@@ -50,6 +55,8 @@ const styles = StyleSheet.create({
     gap: SPACING['space/row'],
     // A fixed height, content centred in it.
     height: SIZES['size/stepper-row'],
+  },
+  divider: {
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
   },

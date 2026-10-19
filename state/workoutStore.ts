@@ -14,8 +14,8 @@ import type { WorkoutSessionDeps } from '@usecases/workoutSession';
 import type { WorkoutSkipDeps } from '@usecases/workoutSkip';
 
 export function useWorkoutSessionDeps(): WorkoutSessionDeps {
-  const { sessionTreeRepo, sessionRepo } = useRepositories();
-  return { sessionTreeRepo, sessionRepo };
+  const { sessionTreeRepo, sessionRepo, settingsRepo } = useRepositories();
+  return { sessionTreeRepo, sessionRepo, settingsRepo };
 }
 
 /** What the Today tab's pick (099) reads: the workout screen's repositories, plus the mesocycles. */

@@ -64,7 +64,7 @@ async function fill(deps: BackupDeps): Promise<void> {
   await sessionExerciseRepo.create(makeSessionExercise());
   await setLogRepo.create(makeSetLog());
   await settingsRepo.write({
-    defaultProgressionSettings: (await settingsRepo.read()).defaultProgressionSettings,
+    ...(await settingsRepo.read()),
     weightUnit: 'lb',
     onboarding: {
       welcomeSeen: true,

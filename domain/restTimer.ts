@@ -6,8 +6,26 @@
 // that was running while the app slept is still right when it wakes — what is left is always
 // `endsAt − now`, not a count of ticks.
 
-/** Rest between sets of a strength exercise until Settings has its own value (FR-5: "по умолчанию 2:00"). */
+/** Rest between sets of a strength exercise before the user sets their own (FR-5: "по умолчанию 2:00"). */
 export const STRENGTH_REST_SEC = 120;
+
+/**
+ * The rest timer of strength exercises, a global setting (10.1 FR-5, GT-87): on by default, 2:00.
+ * Power, interval and mobility keep their rest on the exercise, never here.
+ */
+export type StrengthRestTimer = {
+  enabled: boolean;
+  /** Rest between sets, seconds — a whole number of `CONFIG_TIME_STEP_SEC` steps. */
+  restSec: number;
+};
+
+/**
+ * What the setting may hold, seconds (Artem, 18.10.2026). Under a minute the next sets lose reps at
+ * the same weight, and the volume that drives hypertrophy goes with them; past five minutes is
+ * more than even a heavy squat or deadlift asks for. The app has no supersets, so nothing needs a
+ * shorter rest.
+ */
+export const STRENGTH_REST_RANGE_SEC = { min: 60, max: 5 * 60 } as const;
 
 /** A rest that is counting down, or paused part way. Exactly one of `endsAt` / `remainingMs` is set. */
 export type RestTimer = {

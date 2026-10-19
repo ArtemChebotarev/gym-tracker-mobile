@@ -1,4 +1,5 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
+import type { StrengthRestTimer } from '@domain/restTimer';
 
 /**
  * Which of the four first-run windows of 08.11 · Onboarding the user has already closed. Each flag
@@ -50,6 +51,8 @@ export type Settings = {
    * the user's data on purpose: wiping the data brings the onboarding back, and a backup carries it.
    */
   onboarding: OnboardingFlags;
+  /** The rest timer between strength sets (10.1 FR-5, GT-87): on or off, and how long. */
+  strengthRestTimer: StrengthRestTimer;
 };
 
 /**

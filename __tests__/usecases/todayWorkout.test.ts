@@ -4,6 +4,7 @@ import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
+import { SqliteSettingsRepository } from '@storage/sqlite/settings';
 import { SqliteSessionTreeRepository } from '@storage/sqlite/sessionTree';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { getTodayWorkout, type TodayWorkout, type TodayWorkoutDeps } from '@usecases/todayWorkout';
@@ -84,6 +85,7 @@ async function setUp({
     mesocycleRepo,
     sessionTreeRepo: new SqliteSessionTreeRepository(store),
     sessionRepo: new SqliteSessionRepository(store),
+    settingsRepo: new SqliteSettingsRepository(store),
   };
 }
 

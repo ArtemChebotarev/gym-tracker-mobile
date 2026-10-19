@@ -9,6 +9,7 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
 import { SqliteSessionTreeRepository } from '@storage/sqlite/sessionTree';
+import { SqliteSettingsRepository } from '@storage/sqlite/settings';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { skipExercise } from '@usecases/exerciseSkipping';
 import { moveExercise } from '@usecases/exerciseReorder';
@@ -212,6 +213,7 @@ function depsOver(store: SqliteDatabase): WorkoutSessionDeps {
   return {
     sessionTreeRepo: new SqliteSessionTreeRepository(store),
     sessionRepo: new SqliteSessionRepository(store),
+    settingsRepo: new SqliteSettingsRepository(store),
   };
 }
 
@@ -1016,6 +1018,21 @@ describe('weight swap on the workout data (task 120)', () => {
     const cards = (await getWorkoutSession('w2d1', deps)).exercises;
 
     expect(cards.map((card) => card.restSec)).toEqual([120, 90, 60]);
+  });
+
+  test("strength's rest is the one in Settings, and there is none while its timer is off", async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const { store, deps } = await setUp({ exercises: [bench, medball], logs: [] });
+    const settingsRepo = new SqliteSettingsRepository(store);
+    const settings = await settingsRepo.read();
+
+    await settingsRepo.write({ ...settings, strengthRestTimer: { enabled: true, restSec: 90 } });
+    const on = (await getWorkoutSession('w2d1', deps)).exercises;
+    await settingsRepo.write({ ...settings, strengthRestTimer: { enabled: false, restSec: 90 } });
+    const off = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(on.map((card) => card.restSec)).toEqual([90, 60]);
+    expect(off.map((card) => card.restSec)).toEqual([undefined, 60]);
   });
 
   test('a session that is not live carries no rest', async () => {

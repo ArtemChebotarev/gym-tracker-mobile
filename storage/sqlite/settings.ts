@@ -1,8 +1,13 @@
 import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
+import type { StrengthRestTimer } from '@domain/restTimer';
 import type { Settings, SettingsRepository } from '@repositories/settings';
 import { eq } from 'drizzle-orm';
 
-import { DEFAULT_ONBOARDING, DEFAULT_SETTINGS } from '../settingsDefaults';
+import {
+  DEFAULT_ONBOARDING,
+  DEFAULT_SETTINGS,
+  DEFAULT_STRENGTH_REST_TIMER,
+} from '../settingsDefaults';
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 import { SETTINGS_ROW_ID, settings } from './schema';
@@ -26,6 +31,10 @@ export class SqliteSettingsRepository implements SettingsRepository {
           defaultProgressionSettings: row.defaultProgressionSettings,
           weightUnit: row.weightUnit,
           onboarding: row.onboarding,
+          strengthRestTimer: {
+            enabled: row.strengthRestTimerEnabled,
+            restSec: row.strengthRestTimerSeconds,
+          },
         }
       : DEFAULT_SETTINGS;
     return {
@@ -38,7 +47,17 @@ export class SqliteSettingsRepository implements SettingsRepository {
   }
 
   async write(current: Settings): Promise<Settings> {
-    const row = { id: SETTINGS_ROW_ID, ...current };
+    const { strengthRestTimer, ...rest } = current;
+    // A backup exported before GT-87 has no `strengthRestTimer`, though its schema stamp is this
+    // build's: restored, it gets the setting as it ships rather than a write the columns refuse.
+    const timer: StrengthRestTimer =
+      (strengthRestTimer as StrengthRestTimer | undefined) ?? DEFAULT_STRENGTH_REST_TIMER;
+    const row = {
+      id: SETTINGS_ROW_ID,
+      ...rest,
+      strengthRestTimerEnabled: timer.enabled,
+      strengthRestTimerSeconds: timer.restSec,
+    };
     await runQuery(() =>
       this.db
         .insert(settings)
