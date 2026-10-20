@@ -90,9 +90,11 @@ describe('RestTimerDriver', () => {
     act(() => useRestTimerStore.getState().start(REST));
 
     // No ticks in between: the clock jumps, as it does when the app comes back from the background.
+    // The driver looks again as its next second was due — at the latest a second on.
     act(() => jest.setSystemTime(Date.now() + 42_000));
-    act(() => jest.advanceTimersByTime(250));
+    act(() => jest.advanceTimersByTime(1_000));
 
-    expect(capsule()).toMatchObject({ title: '0:18' });
+    // 42 s away and the second it waited: 43 s of the minute gone.
+    expect(capsule()).toMatchObject({ title: '0:17' });
   });
 });

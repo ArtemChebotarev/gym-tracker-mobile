@@ -103,6 +103,27 @@ describe('intervalTimerStore', () => {
     expect(useIntervalTimerStore.getState().finished).toBeNull();
   });
 
+  test('minimised while its screen is away; closing or a new start brings it back (GT-97)', () => {
+    const store = useIntervalTimerStore.getState();
+    store.minimize();
+    // Nothing to minimise without a timer.
+    expect(useIntervalTimerStore.getState().minimized).toBe(false);
+
+    store.start({ exercise: EXERCISE, rounds: ROUNDS, getReadySec: 5 });
+    store.minimize();
+    expect(useIntervalTimerStore.getState().minimized).toBe(true);
+    // Minimising never stops the clock.
+    jest.advanceTimersByTime(70_000);
+    store.catchUp();
+    expect(phase()).toBe('rest 1');
+
+    store.expand();
+    expect(useIntervalTimerStore.getState().minimized).toBe(false);
+    store.minimize();
+    store.close();
+    expect(useIntervalTimerStore.getState().minimized).toBe(false);
+  });
+
   test('a tick that changes nothing leaves the state as it was', () => {
     const store = useIntervalTimerStore.getState();
     store.start({ exercise: EXERCISE, rounds: ROUNDS, getReadySec: 5 });

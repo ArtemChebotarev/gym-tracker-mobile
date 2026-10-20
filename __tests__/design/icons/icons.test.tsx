@@ -2,6 +2,8 @@ import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { CheckIcon } from '@design/icons/CheckIcon';
+import { ChevronDownIcon } from '@design/icons/ChevronDownIcon';
+import { ChevronsRightIcon } from '@design/icons/ChevronsRightIcon';
 import { CopyIcon } from '@design/icons/CopyIcon';
 import { EditIcon } from '@design/icons/EditIcon';
 import { GridIcon } from '@design/icons/GridIcon';
@@ -14,6 +16,7 @@ import { MoreIcon } from '@design/icons/MoreIcon';
 import { PauseIcon } from '@design/icons/PauseIcon';
 import { PlayIcon } from '@design/icons/PlayIcon';
 import { PlusIcon } from '@design/icons/PlusIcon';
+import { PulseIcon } from '@design/icons/PulseIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
@@ -49,11 +52,16 @@ const ICONS: [string, IconComponent][] = [
   ['arrow-down', ArrowDownIcon],
   ['hourglass', HourglassIcon],
   ['pause', PauseIcon],
+  ['chevron-down', ChevronDownIcon],
+  ['pulse', PulseIcon],
+  ['chevrons-right', ChevronsRightIcon],
 ];
 
 describe('design/icons', () => {
   test.each(ICONS)('%s renders on the 24×24 grid at the given size', (_name, Icon) => {
-    const { toJSON } = render(<Icon size={ICON_SIZES['icon/button']} color={COLORS['text/primary']} />);
+    const { toJSON } = render(
+      <Icon size={ICON_SIZES['icon/button']} color={COLORS['text/primary']} />,
+    );
     const svg = toJSON();
 
     expect(svg).not.toBeNull();

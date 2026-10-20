@@ -1,4 +1,4 @@
-import { daysBefore, nowAsUtcIso, parseUtcIso } from '@domain/time';
+import { msUntilSecondChanges, daysBefore, nowAsUtcIso, parseUtcIso } from '@domain/time';
 
 const UTC_ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -63,5 +63,21 @@ describe('daysBefore', () => {
 
   test('throws on an invalid timestamp', () => {
     expect(() => daysBefore('not-a-date', 30)).toThrow();
+  });
+});
+
+describe('msUntilSecondChanges', () => {
+  test('waits for the next whole second the countdown shows', () => {
+    // 1:24.3 left shows 1:25 (rounded up) until 1:24.000 — 300 ms away.
+    expect(msUntilSecondChanges(84_300)).toBe(300);
+    expect(msUntilSecondChanges(84_999)).toBe(999);
+  });
+
+  test('on a whole second, the next one is a full second away', () => {
+    expect(msUntilSecondChanges(84_000)).toBe(1_000);
+  });
+
+  test('the very end is a change too', () => {
+    expect(msUntilSecondChanges(200)).toBe(200);
   });
 });

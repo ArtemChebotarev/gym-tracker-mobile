@@ -17,22 +17,31 @@
 // JSX only — what it shows is worked out in IntervalTimerScreenLogic.ts, styles live in
 // IntervalTimerScreenStyles.ts.
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@design/components/Button';
 import { Dialog } from '@design/components/Dialog';
+import { IconButton } from '@design/components/IconButton';
 import { ProgressRing } from '@design/components/ProgressRing';
 import { SegmentBar } from '@design/components/SegmentBar';
 import { CheckIcon } from '@design/icons/CheckIcon';
+import { ChevronDownIcon } from '@design/icons/ChevronDownIcon';
 import { PauseIcon } from '@design/icons/PauseIcon';
 import { PlayIcon } from '@design/icons/PlayIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
 import { BORDER_WIDTHS, COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 
 import type { IntervalSummaryView, IntervalTimerView } from './IntervalTimerScreenLogic';
-import { RING_COLOR, SEGMENT_COLOR, styles } from './IntervalTimerScreenStyles';
+import { RING_COLOR, SEGMENT_COLOR, styles, SWIPE } from './IntervalTimerScreenStyles';
 
 export type IntervalTimerScreenProps = {
   /** The running or paused timer; absent once the block is done. */
@@ -47,13 +56,68 @@ export type IntervalTimerScreenProps = {
   /** End early, confirmed. */
   onEndEarly: () => void;
   onBackToWorkout: () => void;
+  /** Folds the screen into the capsule — the chevron, or a swipe down (GT-97). The timer runs on. */
+  onMinimize: () => void;
 };
 
 export function IntervalTimerScreen(props: IntervalTimerScreenProps) {
   return (
     <SafeAreaProvider>
-      <TimerBody {...props} />
+      <SwipeDown onMinimize={props.onMinimize}>
+        <TimerBody {...props} />
+      </SwipeDown>
     </SafeAreaProvider>
+  );
+}
+
+/**
+ * The screen follows a finger dragged down, and folds into the capsule once let go far or fast
+ * enough; otherwise it springs back (GT-97). Sideways drags are left alone.
+ */
+function SwipeDown({ onMinimize, children }: { onMinimize: () => void; children: ReactNode }) {
+  const offset = useSharedValue(0);
+  const pan = Gesture.Pan()
+    .activeOffsetY(SWIPE.activateAfter)
+    .failOffsetX([-SWIPE.activateAfter, SWIPE.activateAfter])
+    .onUpdate((event) => {
+      offset.value = Math.max(0, event.translationY);
+    })
+    .onEnd((event) => {
+      if (event.translationY > SWIPE.distance || event.velocityY > SWIPE.velocity) {
+        runOnJS(onMinimize)();
+      } else {
+        offset.value = withSpring(0);
+      }
+    });
+  const follows = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }));
+  return (
+    <GestureDetector gesture={pan}>
+      <Animated.View style={[styles.swipe, follows]}>{children}</Animated.View>
+    </GestureDetector>
+  );
+}
+
+/** The exercise and where in it, with the chevron that minimises the timer on its left. */
+function Header({
+  title,
+  subtitle,
+  onMinimize,
+}: {
+  title: string;
+  subtitle: string;
+  onMinimize: () => void;
+}) {
+  return (
+    <View style={styles.header}>
+      <IconButton accessibilityLabel="Minimize timer" onPress={onMinimize}>
+        <ChevronDownIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
+      </IconButton>
+      <View style={styles.headerText}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
+      </View>
+      <View style={styles.headerBalance} />
+    </View>
   );
 }
 
@@ -66,16 +130,14 @@ function TimerBody({
   endEarlyMessage,
   onEndEarly,
   onBackToWorkout,
+  onMinimize,
 }: IntervalTimerScreenProps) {
   const [confirm, setConfirm] = useState<string | null>(null);
 
   if (summary !== undefined) {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{summary.title}</Text>
-          <Text style={styles.subtitle}>All rounds done</Text>
-        </View>
+        <Header title={summary.title} subtitle="All rounds done" onMinimize={onMinimize} />
         <View style={styles.summary}>
           <View style={styles.doneMark}>
             <CheckIcon size={ICON_SIZES['icon/button']} color={COLORS['accent/on']} />
@@ -96,10 +158,7 @@ function TimerBody({
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{view.title}</Text>
-        <Text style={styles.subtitle}>{view.subtitle}</Text>
-      </View>
+      <Header title={view.title} subtitle={view.subtitle} onMinimize={onMinimize} />
       <SegmentBar
         accessibilityLabel={view.subtitle}
         segments={view.segments.map((segment) => ({
