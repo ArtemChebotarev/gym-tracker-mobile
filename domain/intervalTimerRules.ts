@@ -2,7 +2,10 @@
 //
 // - Get ready → work → rest → work → … → the last round's work → done. Get ready only before a
 //   round started by a tap: the first one (Start timer) and one after Skip rest; after an ordinary
-//   rest the next round starts at once. A rest of 0 is no rest. No rest after the last round.
+//   rest the next round starts at once. A rest of 0 is no rest. No rest after the last round: the
+//   timer is over, and its rest is the ordinary rest timer's, after the summary (FR-6). The last
+//   round done is logged with that rest all the same — the one its field holds, as a round logged
+//   by hand is — so a rest changed in the workout reaches next week (FR-8; Artem, 20.10.2026).
 // - Pause holds the phase; resume runs it on with what was left.
 // - Skip rest: a one-off — the rest is logged as taken so far and marked skipped, then Get ready
 //   and the next round.
@@ -99,7 +102,12 @@ function finishPhase(timer: IntervalTimer): IntervalTimer {
         ],
       };
       if (isLast) {
-        return finish(done, 'done');
+        return finish(
+          round.restSec > 0
+            ? { ...done, results: withRest(done.results, round.roundNumber, round.restSec, false) }
+            : done,
+          'done',
+        );
       }
       return round.restSec > 0
         ? enter(done, { kind: 'rest', round: phase.round }, endsAt)

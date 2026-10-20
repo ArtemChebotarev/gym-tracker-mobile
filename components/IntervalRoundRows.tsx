@@ -2,7 +2,8 @@
 // round, and Start timer under them. The rounds are the plan: Work and Rest show the round's times —
 // its target, or the cycle's plan when the target has none — and, once logged, what was done. The
 // last round's Rest is there too: it is the rest before the next exercise (FR-6; Artem,
-// 19.10.2026). A rest the timer skipped reads `Skipped`, struck through.
+// 19.10.2026). A rest the timer skipped shows the planned rest, as does a round logged without one:
+// Skip rest changes neither the card nor next week (Artem, 20.10.2026) — `shownRestSec`.
 //
 // - A time is changed on two wheels (TimePickerSheet, GT-90): a tap on an unlogged round's Work or
 //   Rest opens the picker, and when it closes the rounds below that aren't logged yet follow the
@@ -45,6 +46,7 @@ import {
   roundsWithEdits,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
+  shownRestSec,
 } from './IntervalRoundRowsLogic';
 import { styles } from './IntervalRoundRowsStyles';
 import { formatNotDone } from './WorkoutSetRowLogic';
@@ -182,7 +184,7 @@ function RoundRow({
 }: RoundRowProps) {
   const logged = round.log !== undefined;
   const workSec = round.log?.workSec ?? round.workSec;
-  const restSec = logged ? round.log?.restSec : round.restSec;
+  const restSec = shownRestSec(round);
   // An unlogged round's times can be picked; a logged one reads as it was logged — un-log to change.
   const pickable = editable && !logged;
 
@@ -205,11 +207,7 @@ function RoundRow({
             focused={openColumn === 'work'}
             {...(pickable ? { onPress: () => onOpenField('work') } : {})}
           />
-          {round.log?.restSkipped === true ? (
-            <View style={styles.bareCell}>
-              <Text style={styles.restSkipped}>Skipped</Text>
-            </View>
-          ) : restSec === undefined ? (
+          {restSec === undefined ? (
             <View style={styles.bareCell}>
               <Text style={styles.noRest}>{NO_REST}</Text>
             </View>

@@ -6,8 +6,9 @@
 // slept is right when it wakes — a phase is over when its end has passed, however many ticks were
 // missed, and every phase starts exactly where the one before ended.
 //
-// The block ends with its last round (Artem, 19.10.2026): no rest follows it. The rest before the
-// next exercise is the ordinary rest timer, after the summary screen (FR-5).
+// The block ends with its last round (Artem, 19.10.2026): no rest follows it on the timer. The rest
+// before the next exercise is the ordinary rest timer, after the summary screen (FR-5, FR-6) — but
+// the last round is logged with it, as its field holds it (Artem, 20.10.2026).
 
 import type { RoundLog } from './execution';
 

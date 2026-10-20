@@ -23,6 +23,7 @@ const ROUNDS: IntervalTimerRound[] = [1, 2, 3].map((roundNumber) => ({
   restSec: 45,
 }));
 const EXERCISE: IntervalTimerExercise = {
+  sessionId: 'session',
   sessionExerciseId: 'bag',
   name: 'Heavy bag',
   totalRounds: 3,
@@ -68,9 +69,9 @@ describe('intervalTimerView', () => {
     ]);
   });
 
-  test('the last round says no rest follows it', () => {
+  test('the last round says just that', () => {
     const at = T0 + (5 + 120 + 45 + 120 + 45 + 10) * S;
-    expect(intervalTimerView(active(at), at)?.next).toBe('Last round. No rest after it.');
+    expect(intervalTimerView(active(at), at)?.next).toBe('Last round');
   });
 
   test('rest (canvas 2.2): the round done, grey, Skip rest offered, the next round named', () => {

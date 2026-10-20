@@ -77,7 +77,8 @@ function nextLine(timer: IntervalTimer): string {
         ? ''
         : `Next round ${round.roundNumber} · ${formatClock(round.workSec)}`;
     case 'work':
-      if (isLast) return 'Last round. No rest after it.';
+      // Just that (Artem, 20.10.2026): the rest after it is the rest timer's, after the summary.
+      if (isLast) return 'Last round';
       if (round === undefined || round.restSec === 0) {
         const after = roundOf(timer, phase.round + 1);
         return after === undefined ? '' : `Then round ${after.roundNumber}`;
@@ -158,7 +159,12 @@ export function intervalSummaryView({
   if (timer.outcome !== 'done') return undefined;
   const done = timer.results.filter((result) => result.completed).length;
   const workSec = timer.results.reduce((sum, result) => sum + result.workSec, 0);
-  const restSec = timer.results.reduce((sum, result) => sum + (result.restSec ?? 0), 0);
+  // The last round's rest is still to come — the rest timer's, after this screen — so it is not
+  // part of what the block took.
+  const lastRound = timer.rounds.at(-1)?.roundNumber;
+  const restSec = timer.results
+    .filter((result) => result.roundNumber !== lastRound)
+    .reduce((sum, result) => sum + (result.restSec ?? 0), 0);
   return {
     title: exercise.name,
     rounds: `${done} of ${timer.rounds.length} ${timer.rounds.length === 1 ? 'round' : 'rounds'}`,

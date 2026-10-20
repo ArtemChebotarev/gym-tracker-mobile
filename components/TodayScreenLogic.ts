@@ -12,7 +12,7 @@ import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
-import type { IntervalTimerExercise } from '@state/intervalTimerStore';
+import type { FinishedIntervalBlock, IntervalTimerExercise } from '@state/intervalTimerStore';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -251,6 +251,7 @@ export function restAfterLog(
  * for any other card, or when no round is left to run.
  */
 export function intervalTimerStartOf(
+  sessionId: string,
   exercise: WorkoutExercise,
   rounds: readonly IntervalTimerRound[],
 ):
@@ -261,6 +262,7 @@ export function intervalTimerStartOf(
   }
   return {
     exercise: {
+      sessionId,
       sessionExerciseId: exercise.sessionExerciseId,
       name: exercise.name,
       totalRounds: exercise.rounds.length,
@@ -271,4 +273,22 @@ export function intervalTimerStartOf(
     rounds,
     getReadySec: exercise.getReadySec,
   };
+}
+
+/**
+ * What a block the interval timer ran to its end does to the rest timer, once its summary is put
+ * away (10.1 FR-6): the rest before the next exercise with work left, for the rest the last round
+ * was logged with — or none when the workout has nothing left. The timer's rounds are no
+ * corrections, so nothing logged before holds the rest back. `undefined` when the exercise is no
+ * longer in the workout.
+ */
+export function restAfterIntervalBlock(
+  exercises: readonly WorkoutExercise[],
+  finished: FinishedIntervalBlock,
+): RestAfterLog | undefined {
+  const exercise = exercises.find((each) => each.sessionExerciseId === finished.sessionExerciseId);
+  if (exercise === undefined) {
+    return undefined;
+  }
+  return restAfterLog(exercises, exercise, finished.roundNumber, new Set(), finished.restSec);
 }

@@ -10,12 +10,16 @@
 // Paused is the running screen held (Artem, 20.10.2026 — the canvas drew it differently): the same
 // round button, now Play, labelled Resume, and End early as text as before.
 //
+// Its own SafeAreaProvider, as WizardScreen has: the app's root one is an ancestor of the
+// full-screen modal, not inside its presentation, and gave it no insets — the header went under
+// the status bar and Back to workout down to the home indicator (Artem, 20.10.2026).
+//
 // JSX only — what it shows is worked out in IntervalTimerScreenLogic.ts, styles live in
 // IntervalTimerScreenStyles.ts.
 
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@design/components/Button';
 import { Dialog } from '@design/components/Dialog';
@@ -45,7 +49,15 @@ export type IntervalTimerScreenProps = {
   onBackToWorkout: () => void;
 };
 
-export function IntervalTimerScreen({
+export function IntervalTimerScreen(props: IntervalTimerScreenProps) {
+  return (
+    <SafeAreaProvider>
+      <TimerBody {...props} />
+    </SafeAreaProvider>
+  );
+}
+
+function TimerBody({
   view,
   summary,
   onPause,
@@ -59,7 +71,7 @@ export function IntervalTimerScreen({
 
   if (summary !== undefined) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Text style={styles.title}>{summary.title}</Text>
           <Text style={styles.subtitle}>All rounds done</Text>
@@ -79,11 +91,11 @@ export function IntervalTimerScreen({
   }
 
   if (view === undefined) {
-    return <SafeAreaView style={styles.screen} />;
+    return <SafeAreaView style={styles.screen} edges={['top', 'bottom']} />;
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Text style={styles.title}>{view.title}</Text>
         <Text style={styles.subtitle}>{view.subtitle}</Text>

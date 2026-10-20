@@ -66,6 +66,7 @@ import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
   intervalTimerStartOf,
+  restAfterIntervalBlock,
   loggedSetKey,
   restAfterLog,
   shouldShowDeloadIntro,
@@ -145,6 +146,7 @@ export default function TodayScreen() {
   const stopRest = useRestTimerStore((s) => s.stop);
   const noteLogged = useRestTimerStore((s) => s.noteLogged);
   const clearRest = useRestTimerStore((s) => s.clear);
+  const finishedBlock = useIntervalTimerStore((s) => s.finished);
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
   const exerciseCommand = useExerciseCommand();
@@ -329,6 +331,22 @@ export default function TodayScreen() {
       { text: 'Open', onPress: () => router.navigate(workoutHref(result.inProgressSessionId)) },
     ]);
   }
+
+  // The interval timer's summary was put away after its last round: the rest before the next
+  // exercise starts, as after a round logged by hand (10.1 FR-6, GT-98).
+  useEffect(() => {
+    if (finishedBlock === null || model === undefined) {
+      return;
+    }
+    useIntervalTimerStore.getState().clearFinished();
+    const rest = restAfterIntervalBlock(model.exercises, finishedBlock);
+    noteLogged(loggedSetKey(finishedBlock.sessionExerciseId, finishedBlock.roundNumber));
+    if (rest?.kind === 'start') {
+      startRest(rest.rest);
+    } else if (rest?.kind === 'stop') {
+      stopRest();
+    }
+  }, [finishedBlock, model, noteLogged, startRest, stopRest]);
 
   function showSaveError() {
     Alert.alert("Couldn't save the set", 'Try again.');
@@ -526,7 +544,10 @@ export default function TodayScreen() {
           );
         }}
         onStartIntervalTimer={(exercise, rounds) => {
-          const start = intervalTimerStartOf(exercise, rounds);
+          if (currentSessionId === undefined) {
+            return;
+          }
+          const start = intervalTimerStartOf(currentSessionId, exercise, rounds);
           if (start === undefined) {
             return;
           }

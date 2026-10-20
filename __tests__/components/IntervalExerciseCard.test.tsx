@@ -94,7 +94,7 @@ describe('Interval card (GT-88)', () => {
     expect(screen.getByText('Start timer · 7:30')).toBeTruthy();
   });
 
-  test('a logged round shows what was done, and a skipped rest is struck through', () => {
+  test('a logged round shows the work done, and a skipped rest its planned rest (Artem, 20.10.2026)', () => {
     render(
       <WorkoutExerciseCard
         {...makeProps({
@@ -117,7 +117,8 @@ describe('Interval card (GT-88)', () => {
 
     const first = within(screen.getByTestId('round-row-1'));
     expect(first.getByText('1:50')).toBeTruthy();
-    expect(first.getByText('Skipped')).toBeTruthy();
+    expect(first.getByText('0:45')).toBeTruthy();
+    expect(first.queryByText('Skipped')).toBeNull();
     expect(screen.getByText('Start timer · 2 rounds left')).toBeTruthy();
   });
 
@@ -233,7 +234,10 @@ describe('Interval card (GT-88)', () => {
     });
     fireEvent.press(screen.getByRole('button', { name: 'Done' }));
     // The stored round 4 is planned like round 3: 2:00 of work.
-    const added = [...ROUNDS, { roundNumber: 4, workSec: 120, restSec: 45, isFirstUnlogged: false }];
+    const added = [
+      ...ROUNDS,
+      { roundNumber: 4, workSec: 120, restSec: 45, isFirstUnlogged: false },
+    ];
     rerender(<WorkoutExerciseCard {...makeProps({ exercise: makeInterval({ rounds: added }) })} />);
 
     expect(within(screen.getByTestId('round-row-4')).getByText('2:15')).toBeTruthy();

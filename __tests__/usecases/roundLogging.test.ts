@@ -1,7 +1,7 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { RoundLog, Session, SessionExercise } from '@domain/execution';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
-import { logRound, type RoundRowRef, unlogRound } from '@usecases/roundLogging';
+import { logRound, logTimerRound, type RoundRowRef, unlogRound } from '@usecases/roundLogging';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -187,5 +187,98 @@ describe('unlogRound (GT-89)', () => {
     const workout = await workoutWith();
 
     expect(isNotFoundError(await rejectionOf(unlogRound(round(1), workout)))).toBe(true);
+  });
+});
+
+describe('logTimerRound (GT-98)', () => {
+  const LATER = '2026-09-18T10:03:00.000Z';
+
+  test('a round is logged as its work ends, its rest added when that ends', async () => {
+    const workout = await workoutWith();
+
+    const afterWork = await logTimerRound(
+      round(1),
+      { roundNumber: 1, workSec: 120, restSkipped: false, completed: true },
+      workout,
+      FIRST_LOG_AT,
+    );
+    expect(afterWork).toMatchObject({ kind: 'logged', session: { status: 'in_progress' } });
+    await expect(workout.repos.roundLogRepo.listBySessionExerciseId(heavyBag.id)).resolves.toEqual([
+      expect.not.objectContaining({ restSec: expect.anything() }),
+    ]);
+
+    await logTimerRound(
+      round(1),
+      { roundNumber: 1, workSec: 120, restSec: 45, restSkipped: false, completed: true },
+      workout,
+      LATER,
+    );
+    const logs = await workout.repos.roundLogRepo.listBySessionExerciseId(heavyBag.id);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 45,
+      restSkipped: false,
+      completed: true,
+      completedAt: LATER,
+    });
+  });
+
+  test('a skipped rest is marked; a round ended early is not done, with the time it ran', async () => {
+    const workout = await workoutWith();
+
+    await logTimerRound(
+      round(1),
+      { roundNumber: 1, workSec: 120, restSec: 20, restSkipped: true, completed: true },
+      workout,
+      FIRST_LOG_AT,
+    );
+    await logTimerRound(
+      round(2),
+      { roundNumber: 2, workSec: 100, restSkipped: false, completed: false },
+      workout,
+      LATER,
+    );
+
+    const logs = await workout.repos.roundLogRepo.listBySessionExerciseId(heavyBag.id);
+    expect(logs).toEqual([
+      expect.objectContaining({ roundNumber: 1, restSec: 20, restSkipped: true, completed: true }),
+      expect.objectContaining({ roundNumber: 2, workSec: 100, completed: false }),
+    ]);
+    // Every round has a log, so the exercise is complete — the one cut short repeats next week (FR-6).
+    expect(await storedExercise(workout)).toMatchObject({ status: 'completed' });
+  });
+
+  test("DoD: the timer's log and the hand's sit together — and un-log alike", async () => {
+    const workout = await workoutWith();
+
+    await logRound(round(1), { workSec: 120, restSec: 45 }, workout, FIRST_LOG_AT);
+    await logTimerRound(
+      round(2),
+      { roundNumber: 2, workSec: 120, restSkipped: false, completed: true },
+      workout,
+      LATER,
+    );
+    expect(await storedExercise(workout)).toMatchObject({ status: 'completed' });
+
+    await unlogRound(round(2), workout);
+    const logs = await workout.repos.roundLogRepo.listBySessionExerciseId(heavyBag.id);
+    expect(logs.map((log) => log.roundNumber)).toEqual([1]);
+    expect(await storedExercise(workout)).toMatchObject({ status: 'planned' });
+  });
+
+  test('refuses times that are no whole seconds, writing nothing', async () => {
+    const workout = await workoutWith();
+    await expect(
+      logTimerRound(
+        round(1),
+        { roundNumber: 1, workSec: 0, restSkipped: false, completed: false },
+        workout,
+      ),
+    ).rejects.toThrow(/Work/);
+    await expect(workout.repos.roundLogRepo.listBySessionExerciseId(heavyBag.id)).resolves.toEqual(
+      [],
+    );
   });
 });

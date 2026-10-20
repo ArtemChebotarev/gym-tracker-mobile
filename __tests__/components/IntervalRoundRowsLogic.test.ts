@@ -8,6 +8,7 @@ import {
   roundsWithEdits,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
+  shownRestSec,
 } from '@components/IntervalRoundRowsLogic';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
@@ -140,5 +141,34 @@ describe('rounds added and removed from the menu (GT-91)', () => {
     const edits = editRoundTime(NO_ROUND_TIME_EDITS, 'work', 1, 135);
 
     expect(followRoundChanges(edits, unlogged, [...unlogged])).toBe(edits);
+  });
+});
+
+describe('shownRestSec (Artem, 20.10.2026)', () => {
+  const planned = ROUNDS[1]!;
+
+  test('an unlogged round shows its planned rest', () => {
+    expect(shownRestSec(planned)).toBe(60);
+  });
+
+  test('a logged round shows the rest it took — a rest cut short too', () => {
+    expect(shownRestSec({ ...planned, log: { ...LOGGED!, restSec: 25 } })).toBe(25);
+  });
+
+  test('a skipped rest, or a round logged without one, shows the planned rest', () => {
+    expect(shownRestSec({ ...planned, log: { ...LOGGED!, restSec: 10, restSkipped: true } })).toBe(
+      60,
+    );
+    const { restSec: _restSec, ...noRest } = LOGGED!;
+    expect(shownRestSec({ ...planned, log: noRest })).toBe(60);
+  });
+
+  test('un-logging a round whose rest was skipped brings back the planned rest, not the cut one', () => {
+    const skipped = { ...planned, log: { ...LOGGED!, restSec: 10, restSkipped: true } };
+    const held = holdLoggedRound(NO_ROUND_TIME_EDITS, skipped);
+    expect(roundsWithEdits([{ ...skipped, log: undefined }], held)[0]).toMatchObject({
+      workSec: 110,
+      restSec: 60,
+    });
   });
 });
