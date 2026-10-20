@@ -20,6 +20,11 @@ export type IntervalActivityLook = {
   barColor: string;
   /** The bar on an always-on screen, where the system dims the activity. */
   barColorDimmed: string;
+  /**
+   * The activity's own background, over the system's Liquid Glass — on which the grey buttons were
+   * hard to read (Artem on the phone, 20.10.2026; canvas 2.6).
+   */
+  backgroundColor: string;
   /** The buttons: their plate and their label. */
   buttonColor: string;
   buttonLabelColor: string;
@@ -74,6 +79,7 @@ export function intervalActivityLook(): IntervalActivityLook {
     clockColor: COLORS['text/primary'],
     barColor: COLORS['brand/orange'],
     barColorDimmed: COLORS['text/primary'],
+    backgroundColor: COLORS['surface/card'],
     buttonColor: COLORS['surface/control-active'],
     buttonLabelColor: COLORS['text/primary'],
     buttonHeight: SIZES['size/tap-target'],

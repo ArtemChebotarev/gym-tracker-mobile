@@ -1,5 +1,8 @@
 import { Button, HStack, Image, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
 import {
+  activityBackgroundTint,
+  animation,
+  Animation,
   background,
   buttonStyle,
   clipShape,
@@ -47,6 +50,10 @@ const IntervalTimerActivity = (
   // Changes swap in place: the system would otherwise morph one text into the next, and the
   // activity stretched like rubber between running and paused (Artem, 20.10.2026).
   const still = contentTransition('identity');
+  // Paused and running swap with no animation of their own: the system springs the activity on
+  // each update, and a morph between the two bars stretched it like rubber (Artem, 20.10.2026).
+  const noAnimation =
+    typeof Animation === 'undefined' ? [] : [animation(Animation.linear({ duration: 0 }), paused)];
   // One frame for both: a live timer takes all the width it may need, plain text only its own.
   const clockLook = (size: number, width?: number) => [
     font({ size }),
@@ -63,12 +70,15 @@ const IntervalTimerActivity = (
       <Text timerInterval={interval} modifiers={clockLook(size, width)} />
     );
   const bar = paused ? (
-    <ProgressView value={props.pausedProgress} modifiers={[tint(barColor), labelsHidden()]} />
+    <ProgressView
+      value={props.pausedProgress}
+      modifiers={[tint(barColor), labelsHidden(), still]}
+    />
   ) : (
     <ProgressView
       timerInterval={interval}
       countsDown
-      modifiers={[tint(barColor), labelsHidden()]}
+      modifiers={[tint(barColor), labelsHidden(), still]}
     />
   );
   // Drawn here rather than left to a button style: the system paints a Live Activity's styled
@@ -102,7 +112,14 @@ const IntervalTimerActivity = (
   );
   return {
     banner: (
-      <VStack spacing={look.gap} modifiers={[padding({ all: look.padding })]}>
+      <VStack
+        spacing={look.gap}
+        modifiers={[
+          padding({ all: look.padding }),
+          activityBackgroundTint(look.backgroundColor),
+          ...noAnimation,
+        ]}
+      >
         <HStack spacing={look.gap}>
           {props.iconUri !== undefined ? (
             <Image

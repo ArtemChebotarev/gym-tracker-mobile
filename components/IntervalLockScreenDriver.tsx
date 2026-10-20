@@ -7,6 +7,7 @@ import {
   endIntervalActivities,
   onIntervalActivityAction,
   startIntervalActivity,
+  updateIntervalActivity,
 } from '@state/intervalLiveActivity';
 import { type ActiveIntervalTimer, useIntervalTimerStore } from '@state/intervalTimerStore';
 import { liveActivityIconUri } from '@state/liveActivityIcon';
@@ -29,7 +30,13 @@ import {
 //   with the block. Its Pause (Resume while paused) and Skip rest act on the timer; a tap on the
 //   rest of it opens the timer.
 //
+// The activity's calls go one after another, each catching its own failure: iOS turns down an
+// update now and then — more so from the background — and one rejection in an unguarded chain made
+// every later update skip, the lock screen frozen on 0:00 of the phase before (Artem on the phone,
+// 20.10.2026). A failed update is tried once more a moment later (updateIntervalActivity).
+//
 // Draws nothing. It sits next to IntervalTimerDriver in the tab bar's overlay.
+
 export function IntervalLockScreenDriver() {
   useEffect(() => {
     let block: ActiveIntervalTimer['exercise'] | null = null;
@@ -65,7 +72,7 @@ export function IntervalLockScreenDriver() {
       const props = active === null ? undefined : intervalActivityPropsOf(active, now);
       if (props !== undefined) {
         activity = activity.then(async (current) => {
-          await current?.update(withIcon(props));
+          await updateIntervalActivity(current, withIcon(props));
           return current;
         });
         return;
@@ -74,7 +81,7 @@ export function IntervalLockScreenDriver() {
       block = active === null ? null : block;
       releaseTimer();
       activity = activity.then(async () => {
-        await endIntervalActivities();
+        await endIntervalActivities().catch(() => undefined);
         return null;
       });
     }
