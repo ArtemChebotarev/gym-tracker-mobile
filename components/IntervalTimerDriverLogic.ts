@@ -1,4 +1,14 @@
 import type { IntervalRoundResult, IntervalTimer } from '@domain/intervalTimer';
+import { intervalPhaseRemainingMs } from '@domain/intervalTimerRules';
+import { msUntilSecondChanges } from '@domain/time';
+
+/**
+ * Milliseconds until the running phase's time on screen next changes — the next whole second, or
+ * the phase's end: when the timer is moved on and redrawn, in the capsule and on the full screen.
+ */
+export function msToNextSecond(timer: IntervalTimer, now: number): number {
+  return msUntilSecondChanges(intervalPhaseRemainingMs(timer, now));
+}
 
 // What the interval timer's driver (IntervalTimerDriver.tsx) reacts to — pure.
 

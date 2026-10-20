@@ -45,6 +45,8 @@ export type TimerCapsuleProps = {
   caption: string;
   /** The share of the ring filled, 0..1 — the part of the phase still to run. Clamped. */
   progress: number;
+  /** When given (epoch ms), the ring runs down by itself, smoothly, to nothing by then (ProgressRing). */
+  runsOutAt?: number;
   /** Shows Skip — rest only (FR-5: "Skip и Pause"). */
   onSkip?: () => void;
   /** Shows the pause button while running. */
@@ -65,6 +67,7 @@ export function TimerCapsule({
   title,
   caption,
   progress,
+  runsOutAt,
   onSkip,
   onPause,
   onResume,
@@ -77,7 +80,11 @@ export function TimerCapsule({
 
   const body = (
     <>
-      {finished ? <DoneMark /> : <CapsuleRing icon={icon} paused={paused} progress={progress} />}
+      {finished ? (
+        <DoneMark />
+      ) : (
+        <CapsuleRing icon={icon} paused={paused} progress={progress} runsOutAt={runsOutAt} />
+      )}
       <View style={styles.text}>
         <Text
           style={[styles.title, finished && styles.finishedTitle, paused && styles.pausedTitle]}
@@ -137,16 +144,19 @@ function CapsuleRing({
   icon: Icon,
   paused,
   progress,
+  runsOutAt,
 }: {
   icon: IconComponent;
   paused: boolean;
   progress: number;
+  runsOutAt: number | undefined;
 }) {
   return (
     <ProgressRing
       size={SIZES['size/timer-ring']}
       strokeWidth={BORDER_WIDTHS['border/timer-ring']}
       progress={progress}
+      {...(runsOutAt !== undefined ? { runsOutAt } : {})}
       color={paused ? COLORS['text/faint'] : COLORS['brand/orange']}
       trackColor={COLORS['timer/track']}
       arcTestID="timer-capsule-arc"

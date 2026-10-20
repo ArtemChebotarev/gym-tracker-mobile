@@ -25,16 +25,32 @@ export const SEGMENT_COLOR: Record<RoundSegment['tone'], string> = {
   empty: COLORS['surface/control-active'],
 };
 
+/** Swipe down to minimise (GT-97): how far before it takes the drag, how far or fast lets it go. */
+export const SWIPE = { activateAfter: 12, distance: 120, velocity: 800 } as const;
+
 export const styles = StyleSheet.create({
+  swipe: {
+    flex: 1,
+  },
   screen: {
     flex: 1,
     backgroundColor: COLORS['surface/page'],
     paddingHorizontal: SPACING['space/sheet'],
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: SPACING['space/gap-tight'],
     paddingTop: SPACING['space/gap'],
     paddingBottom: SPACING['space/sheet'],
+  },
+  headerText: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  // As wide as the chevron, so the title sits in the middle of the screen.
+  headerBalance: {
+    width: SIZES['size/icon-button'],
   },
   title: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
@@ -35,6 +36,7 @@ function renderScreen(overrides: Partial<IntervalTimerScreenProps> = {}) {
     endEarlyMessage: () => 'Round 1 is in the log. Round 2 will be logged as 0:36 of 2:00.',
     onEndEarly: jest.fn(),
     onBackToWorkout: jest.fn(),
+    onMinimize: jest.fn(),
     ...overrides,
   };
   render(
@@ -44,7 +46,9 @@ function renderScreen(overrides: Partial<IntervalTimerScreenProps> = {}) {
         insets: { top: 0, left: 0, right: 0, bottom: 0 },
       }}
     >
-      <IntervalTimerScreen {...props} />
+      <GestureHandlerRootView>
+        <IntervalTimerScreen {...props} />
+      </GestureHandlerRootView>
     </SafeAreaProvider>,
   );
   return props;
@@ -107,5 +111,11 @@ describe('IntervalTimerScreen', () => {
     expect(screen.getByText('6:00 work · 1:30 rest')).toBeTruthy();
     fireEvent.press(screen.getByText('Back to workout'));
     expect(props.onBackToWorkout).toHaveBeenCalledTimes(1);
+  });
+
+  test('the chevron minimises the timer, on the running screen and the summary alike', () => {
+    const props = renderScreen();
+    fireEvent.press(screen.getByLabelText('Minimize timer'));
+    expect(props.onMinimize).toHaveBeenCalledTimes(1);
   });
 });

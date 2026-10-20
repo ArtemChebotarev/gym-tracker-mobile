@@ -92,13 +92,16 @@ describe('AppTabBar', () => {
   test('keeps the timer capsule over the bar when the tab changes', () => {
     const navigation = setup(0);
     act(() =>
-      useTimerCapsuleStore.getState().show({
-        state: 'running',
-        icon: HourglassIcon,
-        title: '1:46',
-        caption: 'Rest · set 3 next',
-        progress: 0.5,
-      }),
+      useTimerCapsuleStore.getState().show(
+        {
+          state: 'running',
+          icon: HourglassIcon,
+          title: '1:46',
+          caption: 'Rest · set 3 next',
+          progress: 0.5,
+        },
+        'rest',
+      ),
     );
     expect(screen.getByText('1:46')).toBeTruthy();
 

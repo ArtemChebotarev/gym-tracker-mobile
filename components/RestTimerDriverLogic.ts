@@ -50,6 +50,8 @@ export function restCapsule(
       title: formatClock(restRemainingSec(timer, now)),
       caption: running ? `Rest · ${next}` : `Paused · ${next}`,
       progress: restProgress(timer, now),
+      // Running, the ring runs down by itself to the end of the rest — smoothly (ProgressRing).
+      ...(timer.endsAt !== undefined ? { runsOutAt: timer.endsAt } : {}),
       onSkip: actions.skip,
       onPause: actions.pause,
       onResume: actions.resume,

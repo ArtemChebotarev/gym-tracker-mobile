@@ -51,6 +51,15 @@ type IntervalTimerStore = {
   active: ActiveIntervalTimer | null;
   /** Set by `close` after a block that ran to its end, until the workout has acted on it. */
   finished: FinishedIntervalBlock | null;
+  /**
+   * The timer runs on with its screen closed — shown in the capsule over the tab bar (GT-97). The
+   * screen says when it opens and when it goes, whichever way it goes: chevron, swipe, back.
+   */
+  minimized: boolean;
+  /** The timer's screen is open. */
+  expand: () => void;
+  /** The timer's screen went away with the timer still there. */
+  minimize: () => void;
   /** Starts the timer over `rounds` — the exercise's rounds from the first unlogged one. */
   start: (start: {
     exercise: IntervalTimerExercise;
@@ -85,11 +94,15 @@ export const useIntervalTimerStore = create<IntervalTimerStore>((set) => {
   return {
     active: null,
     finished: null,
+    minimized: false,
+    expand: () => set({ minimized: false }),
+    minimize: () => set((s) => (s.active === null ? s : { minimized: true })),
     start: ({ exercise, rounds, getReadySec }) => {
       useRestTimerStore.getState().stop();
       set({
         active: { exercise, timer: startIntervalTimer(rounds, getReadySec, Date.now()) },
         finished: null,
+        minimized: false,
       });
     },
     catchUp: () => apply(intervalTimerAt),
@@ -101,7 +114,7 @@ export const useIntervalTimerStore = create<IntervalTimerStore>((set) => {
       set((s) => {
         const last = s.active?.timer.outcome === 'done' ? s.active.timer.results.at(-1) : undefined;
         if (s.active === null || last === undefined) {
-          return { active: null };
+          return { active: null, minimized: false };
         }
         const finished: FinishedIntervalBlock = {
           sessionExerciseId: s.active.exercise.sessionExerciseId,
@@ -110,7 +123,7 @@ export const useIntervalTimerStore = create<IntervalTimerStore>((set) => {
         if (last.restSec !== undefined) {
           finished.restSec = last.restSec;
         }
-        return { active: null, finished };
+        return { active: null, finished, minimized: false };
       }),
     clearFinished: () => set({ finished: null }),
   };

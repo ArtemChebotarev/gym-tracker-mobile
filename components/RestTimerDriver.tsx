@@ -1,17 +1,15 @@
 import { useEffect } from 'react';
 
-import { restIsOver } from '@domain/restTimerRules';
+import { restIsOver, restRemainingMs } from '@domain/restTimerRules';
+import { msUntilSecondChanges } from '@domain/time';
 import { signalRestOver } from '@state/restSignal';
 import { useRestTimerStore } from '@state/restTimerStore';
 import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
 
 import { restCapsule } from './RestTimerDriverLogic';
 
-/** How often a running rest is looked at: often enough that the second changes on time. */
-const TICK_MS = 250;
-
-// Runs the rest between sets (10.1 FR-5, GT-86): while a rest counts down it looks at the clock a
-// few times a second, puts what is left into the floating capsule (state/timerCapsuleStore), and
+// Runs the rest between sets (10.1 FR-5, GT-86): while a rest counts down it looks at the clock
+// each time its second changes (`msUntilSecondChanges`; a fixed beat made the time jerk), puts what is left into the floating capsule (state/timerCapsuleStore), and
 // when the time is up gives the signal and turns the capsule into `Rest is over`. Draws nothing
 // itself. It sits next to the capsule's host in the tab bar's overlay, so a rest keeps running
 // and keeps showing whichever tab is open.
@@ -22,7 +20,7 @@ const TICK_MS = 250;
 // background shows the right time when it comes back.
 export function RestTimerDriver() {
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
+    let tick: ReturnType<typeof setTimeout> | null = null;
 
     function update() {
       const rest = useRestTimerStore.getState();
@@ -36,16 +34,14 @@ export function RestTimerDriver() {
       const capsule = restCapsule(rest, now, rest);
       const slot = useTimerCapsuleStore.getState();
       if (capsule === null) {
-        slot.clear();
+        slot.release('rest');
       } else {
-        slot.show(capsule);
+        slot.show(capsule, 'rest');
       }
-      const running = rest.timer?.endsAt !== undefined;
-      if (running && interval === null) {
-        interval = setInterval(update, TICK_MS);
-      } else if (!running && interval !== null) {
-        clearInterval(interval);
-        interval = null;
+      if (tick !== null) clearTimeout(tick);
+      tick = null;
+      if (rest.timer?.endsAt !== undefined) {
+        tick = setTimeout(update, msUntilSecondChanges(restRemainingMs(rest.timer, now)));
       }
     }
 
@@ -53,7 +49,7 @@ export function RestTimerDriver() {
     const unsubscribe = useRestTimerStore.subscribe(update);
     return () => {
       unsubscribe();
-      if (interval !== null) clearInterval(interval);
+      if (tick !== null) clearTimeout(tick);
     };
   }, []);
 
