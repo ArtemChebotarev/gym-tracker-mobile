@@ -40,7 +40,7 @@ jest.mock('expo-widgets', () => ({
 
 const PROPS = intervalActivityProps({
   phase: 'Rest',
-  round: 'Round 1 of 3',
+  detail: 'Next: round 2 · 2:00',
   phaseStartedAt: 0,
   phaseEndsAt: 60_000,
   canSkipRest: true,

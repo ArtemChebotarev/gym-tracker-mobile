@@ -58,8 +58,27 @@ Object.assign(Animated, { timing: instantAnimation, spring: instantAnimation });
 // (state/restSignal.ts, GT-86) is loaded by the tab bar. A player that plays nothing stands in for
 // every test; a test about the signal itself asserts on these mocks.
 jest.mock('expo-audio', () => ({
-  createAudioPlayer: jest.fn(() => ({ play: jest.fn(), seekTo: jest.fn(() => Promise.resolve()) })),
+  createAudioPlayer: jest.fn(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    seekTo: jest.fn(() => Promise.resolve()),
+  })),
   setAudioModeAsync: jest.fn(() => Promise.resolve()),
+}));
+
+// expo-widgets talks to ActivityKit through a native module jest doesn't have; the interval timer's
+// Live Activity (GT-99) is started from the tab bar's overlay. An activity that does nothing stands
+// in for every test; state/intervalLiveActivity's own test mocks it in more detail.
+jest.mock('expo-widgets', () => ({
+  createLiveActivity: () => ({
+    start: jest.fn(() => ({
+      getId: () => 'activity',
+      update: jest.fn(() => Promise.resolve()),
+      end: jest.fn(() => Promise.resolve()),
+    })),
+    getInstances: () => [],
+  }),
+  addUserInteractionListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
 
 let inTest = false;
