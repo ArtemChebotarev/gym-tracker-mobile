@@ -29,12 +29,6 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/set-value'].fontSize,
     color: COLORS['text/secondary'],
   },
-  // A rest the timer skipped (FR-6): the word, struck through, like a skipped day in the week grid.
-  restSkipped: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    color: COLORS['text/secondary'],
-    textDecorationLine: 'line-through',
-  },
   // Start timer (FR-14): dressed like the Done cell of the week grid — `accent/bg` fill, the
   // `accent/border` outline, lime text — so it reads as the card's action without a second
   // full-accent button on the screen.

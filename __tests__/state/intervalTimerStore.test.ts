@@ -3,6 +3,7 @@ import { useRestTimerStore } from '@state/restTimerStore';
 
 const T0 = 1_000_000;
 const EXERCISE = {
+  sessionId: 'session',
   sessionExerciseId: 'bag',
   name: 'Heavy bag',
   totalRounds: 2,

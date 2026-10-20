@@ -251,6 +251,7 @@ export function restAfterLog(
  * for any other card, or when no round is left to run.
  */
 export function intervalTimerStartOf(
+  sessionId: string,
   exercise: WorkoutExercise,
   rounds: readonly IntervalTimerRound[],
 ):
@@ -261,6 +262,7 @@ export function intervalTimerStartOf(
   }
   return {
     exercise: {
+      sessionId,
       sessionExerciseId: exercise.sessionExerciseId,
       name: exercise.name,
       totalRounds: exercise.rounds.length,

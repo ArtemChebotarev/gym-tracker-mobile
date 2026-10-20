@@ -332,8 +332,9 @@ describe('intervalTimerStartOf', () => {
   const rounds = [{ roundNumber: 2, workSec: 120, restSec: 45 }];
 
   test('an interval card: the exercise as the timer names it, its rounds and its Get ready', () => {
-    expect(intervalTimerStartOf(bag, rounds)).toEqual({
+    expect(intervalTimerStartOf('session', bag, rounds)).toEqual({
       exercise: {
+        sessionId: 'session',
         sessionExerciseId: 'bag',
         name: 'Heavy bag',
         totalRounds: 2,
@@ -345,6 +346,6 @@ describe('intervalTimerStartOf', () => {
   });
 
   test('nothing for a round-less start', () => {
-    expect(intervalTimerStartOf(bag, [])).toBeUndefined();
+    expect(intervalTimerStartOf('session', bag, [])).toBeUndefined();
   });
 });

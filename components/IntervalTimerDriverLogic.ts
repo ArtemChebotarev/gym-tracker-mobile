@@ -1,4 +1,4 @@
-import type { IntervalTimer } from '@domain/intervalTimer';
+import type { IntervalRoundResult, IntervalTimer } from '@domain/intervalTimer';
 
 // What the interval timer's driver (IntervalTimerDriver.tsx) reacts to — pure.
 
@@ -9,6 +9,29 @@ import type { IntervalTimer } from '@domain/intervalTimer';
 export function runningPhaseKey(timer: IntervalTimer | undefined): string | undefined {
   if (timer?.phase === undefined || timer.endsAt === undefined) return undefined;
   return `${timer.phase.kind}:${timer.phase.round}:${timer.endsAt}`;
+}
+
+/**
+ * The rounds to write as the timer goes from `before` to `after` (GT-98): each result that is new
+ * — a round whose work just ended, or one ended early — or changed — its rest over, skipped or cut
+ * short. A timer that was not running before (a new one) has nothing written yet.
+ */
+export function roundsToLog(
+  before: IntervalTimer | undefined,
+  after: IntervalTimer | undefined,
+): IntervalRoundResult[] {
+  if (after === undefined) return [];
+  const written = new Map((before?.results ?? []).map((result) => [result.roundNumber, result]));
+  return after.results.filter((result) => {
+    const was = written.get(result.roundNumber);
+    return (
+      was === undefined ||
+      was.workSec !== result.workSec ||
+      was.restSec !== result.restSec ||
+      was.restSkipped !== result.restSkipped ||
+      was.completed !== result.completed
+    );
+  });
 }
 
 /**

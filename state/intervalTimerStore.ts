@@ -25,6 +25,8 @@ import { useRestTimerStore } from './restTimerStore';
 
 /** The exercise a timer runs for, as its screen names it. */
 export type IntervalTimerExercise = {
+  /** The session the rounds are logged into (GT-98). */
+  sessionId: string;
   sessionExerciseId: string;
   name: string;
   /** Every round of the exercise, logged ones included — `Round 2 of 3`, the segments. */

@@ -526,7 +526,10 @@ export default function TodayScreen() {
           );
         }}
         onStartIntervalTimer={(exercise, rounds) => {
-          const start = intervalTimerStartOf(exercise, rounds);
+          if (currentSessionId === undefined) {
+            return;
+          }
+          const start = intervalTimerStartOf(currentSessionId, exercise, rounds);
           if (start === undefined) {
             return;
           }

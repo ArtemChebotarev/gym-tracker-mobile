@@ -23,6 +23,7 @@ const ROUNDS: IntervalTimerRound[] = [1, 2, 3].map((roundNumber) => ({
   restSec: 45,
 }));
 const EXERCISE: IntervalTimerExercise = {
+  sessionId: 'session',
   sessionExerciseId: 'bag',
   name: 'Heavy bag',
   totalRounds: 3,

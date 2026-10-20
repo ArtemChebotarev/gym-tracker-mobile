@@ -57,6 +57,20 @@ export function editRoundTime(
 }
 
 /**
+ * The rest a round's Rest field shows. A logged round shows the rest it took — but a skipped rest
+ * shows the planned one, and so does a round logged without a rest (the last one the timer ran):
+ * Skip rest is a here-and-now call that changes neither what the card says nor next week (Artem,
+ * 20.10.2026). The log keeps the skip all the same. An unlogged round shows its planned rest.
+ */
+export function shownRestSec(round: WorkoutRoundRow): number | undefined {
+  const log = round.log;
+  if (log === undefined || log.restSkipped || log.restSec === undefined) {
+    return round.restSec;
+  }
+  return log.restSec;
+}
+
+/**
  * Un-logging a round brings its logged times back into its fields (05, "Снять отметку") — as
  * times the user stands behind, so carry-over won't overwrite them either.
  */
@@ -65,9 +79,8 @@ export function holdLoggedRound(edits: RoundTimeEdits, round: WorkoutRoundRow): 
     return edits;
   }
   const held = editRoundTime(edits, 'work', round.roundNumber, round.log.workSec);
-  return round.log.restSec === undefined
-    ? held
-    : editRoundTime(held, 'rest', round.roundNumber, round.log.restSec);
+  const restSec = shownRestSec(round);
+  return restSec === undefined ? held : editRoundTime(held, 'rest', round.roundNumber, restSec);
 }
 
 /**
@@ -104,7 +117,9 @@ export function followRoundChanges(
 ): RoundTimeEdits {
   const present = new Set(rounds.map((round) => round.roundNumber));
   const last = previous.at(-1);
-  const added = rounds.filter((round) => last !== undefined && round.roundNumber > last.roundNumber);
+  const added = rounds.filter(
+    (round) => last !== undefined && round.roundNumber > last.roundNumber,
+  );
   const removed = previous.some((round) => !present.has(round.roundNumber));
   if (added.length === 0 && !removed) {
     return edits;
@@ -113,7 +128,8 @@ export function followRoundChanges(
     const kept = Object.fromEntries(
       Object.entries(edits[column]).filter(([roundNumber]) => present.has(Number(roundNumber))),
     );
-    const source = last?.log === undefined && last !== undefined ? kept[last.roundNumber] : undefined;
+    const source =
+      last?.log === undefined && last !== undefined ? kept[last.roundNumber] : undefined;
     if (source !== undefined) {
       for (const round of added) {
         kept[round.roundNumber] = { sec: source.sec, isManual: false };

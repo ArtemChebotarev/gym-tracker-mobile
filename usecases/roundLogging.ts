@@ -2,11 +2,17 @@
 // when the timer wasn't run — one tap on its Log box takes the Work and Rest fields — and un-logged
 // by a second tap. The same rules as a set (05, "Записать подход", "Снять отметку", "Статус
 // упражнения"): one transaction each, the first log starts the session, the exercise is
-// `completed` once every round is logged. The timer logs rounds by itself later (its own story).
+// `completed` once every round is logged.
+//
+// The interval timer logs rounds by itself (GT-98, FR-7 "основной путь"): `logTimerRound` writes a
+// round as soon as its work is over, and again when its rest is — the actual times, a skipped rest
+// marked, a round ended early marked not done. A round logged either way is the same `RoundLog`,
+// so the timer's and the hand's logs sit side by side in one workout and un-log alike.
 
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { RoundLog, Session, SessionExercise } from '@domain/execution';
 import { type RoundEntry, validateRoundEntry } from '@domain/executionValidators';
+import type { IntervalRoundResult } from '@domain/intervalTimer';
 import { generateId } from '@domain/id';
 import { roundRowLogs, statusFromLogs } from '@domain/sessionExerciseStatus';
 import { nowAsUtcIso } from '@domain/time';
@@ -65,6 +71,67 @@ async function syncStatus(
   return repos.sessionExerciseRepo.update({ ...sessionExercise, status });
 }
 
+/** What a round is logged with — its times and how it went. */
+type RoundFacts = Pick<RoundLog, 'workSec' | 'restSec' | 'restSkipped' | 'completed'>;
+
+/**
+ * Writes round `ref` with `facts`, `completedAt = now`: creates its `RoundLog`, or — with
+ * `rewrite` — replaces the times and flags of the one already there. Logging the last open round
+ * marks the exercise `completed`, and the first log of a `planned` session starts it. If another
+ * session is `in_progress`, nothing is written and the result names it.
+ */
+async function writeRound(
+  ref: RoundRowRef,
+  facts: RoundFacts,
+  rewrite: boolean,
+  store: WorkoutStore,
+  now: string,
+): Promise<LogRoundResult> {
+  validateRoundEntry(facts);
+  return store.transaction(async (repos) => {
+    const { sessionExercise, logs, loggedRound } = await openRoundRow(ref, repos);
+    if (loggedRound && !rewrite) {
+      throw new ConflictError(
+        `Round ${ref.roundNumber} of session exercise "${sessionExercise.id}" is already logged.`,
+      );
+    }
+
+    const start = await startSessionForLog(ref.sessionId, repos, now);
+    if (start.kind === 'conflict') {
+      return start;
+    }
+
+    let roundLog: RoundLog;
+    if (loggedRound) {
+      const { restSec: _restSec, ...kept } = loggedRound;
+      // The rest comes from `facts` alone: one absent there is no rest, not the old one.
+      roundLog = await repos.roundLogRepo.update({ ...kept, ...facts, completedAt: now });
+    } else {
+      const draft: Unsaved<RoundLog> = {
+        id: generateId(),
+        sessionExerciseId: sessionExercise.id,
+        exerciseId: sessionExercise.exerciseId,
+        roundNumber: ref.roundNumber,
+        workSec: facts.workSec,
+        restSkipped: facts.restSkipped,
+        completed: facts.completed,
+        completedAt: now,
+      };
+      if (facts.restSec !== undefined) {
+        draft.restSec = facts.restSec;
+      }
+      roundLog = await repos.roundLogRepo.create(draft);
+    }
+    const others = logs.filter((log) => log.id !== roundLog.id);
+    return {
+      kind: 'logged',
+      roundLog,
+      sessionExercise: await syncStatus(sessionExercise, [...others, roundLog], repos),
+      session: start.session,
+    };
+  });
+}
+
 /**
  * Logs round `ref` by hand with the times in its fields: a done round (`completed`), its rest not
  * skipped, `completedAt = now`. Logging the last open round marks the exercise `completed`, and the
@@ -80,41 +147,35 @@ export async function logRound(
   store: WorkoutStore,
   now: string = nowAsUtcIso(),
 ): Promise<LogRoundResult> {
-  validateRoundEntry(entry);
-  return store.transaction(async (repos) => {
-    const { sessionExercise, logs, loggedRound } = await openRoundRow(ref, repos);
-    if (loggedRound) {
-      throw new ConflictError(
-        `Round ${ref.roundNumber} of session exercise "${sessionExercise.id}" is already logged.`,
-      );
-    }
+  const facts: RoundFacts = { workSec: entry.workSec, restSkipped: false, completed: true };
+  if (entry.restSec !== undefined) {
+    facts.restSec = entry.restSec;
+  }
+  return writeRound(ref, facts, false, store, now);
+}
 
-    const start = await startSessionForLog(ref.sessionId, repos, now);
-    if (start.kind === 'conflict') {
-      return start;
-    }
-
-    const draft: Unsaved<RoundLog> = {
-      id: generateId(),
-      sessionExerciseId: sessionExercise.id,
-      exerciseId: sessionExercise.exerciseId,
-      roundNumber: ref.roundNumber,
-      workSec: entry.workSec,
-      restSkipped: false,
-      completed: true,
-      completedAt: now,
-    };
-    if (entry.restSec !== undefined) {
-      draft.restSec = entry.restSec;
-    }
-    const roundLog = await repos.roundLogRepo.create(draft);
-    return {
-      kind: 'logged',
-      roundLog,
-      sessionExercise: await syncStatus(sessionExercise, [...logs, roundLog], repos),
-      session: start.session,
-    };
-  });
+/**
+ * Logs a round the interval timer went through (GT-98): its actual work, its rest once there is
+ * one, whether the rest was skipped and whether the round was done. Called again for the same
+ * round when its rest is over, it rewrites the log it wrote when the work was — the timer is the
+ * only writer of a round it runs, since it starts from the first round not yet logged (FR-7).
+ * The rest is otherwise as `logRound`.
+ */
+export async function logTimerRound(
+  ref: RoundRowRef,
+  result: IntervalRoundResult,
+  store: WorkoutStore,
+  now: string = nowAsUtcIso(),
+): Promise<LogRoundResult> {
+  const facts: RoundFacts = {
+    workSec: result.workSec,
+    restSkipped: result.restSkipped,
+    completed: result.completed,
+  };
+  if (result.restSec !== undefined) {
+    facts.restSec = result.restSec;
+  }
+  return writeRound(ref, facts, true, store, now);
 }
 
 /**

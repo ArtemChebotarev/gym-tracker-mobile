@@ -1,8 +1,13 @@
 import { AppTabBar } from '@components/AppTabBar';
 import { HourglassIcon } from '@design/icons/HourglassIcon';
 import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
+
+// The interval timer's driver rides in the bar's overlay and writes rounds through storage (GT-98).
+withRepositories();
 
 const ROUTES = [
   { key: 'index-1', name: 'index' },
@@ -28,7 +33,7 @@ function setup(index: number, defaultPrevented = false) {
     emit: jest.fn(() => ({ defaultPrevented })),
     navigate: jest.fn(),
   };
-  const { rerender } = render(tabBar(index, navigation));
+  const { rerender } = renderWithRepositories(tabBar(index, navigation));
   return { ...navigation, showTab: (next: number) => rerender(tabBar(next, navigation)) };
 }
 
