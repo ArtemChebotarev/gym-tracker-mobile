@@ -1,6 +1,7 @@
 import * as Linking from 'expo-linking';
 import type { LiveActivity } from 'expo-widgets';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 
 import { keepAwakeForTimer, releaseTimer } from '@state/intervalSignal';
 import {
@@ -88,6 +89,13 @@ export function IntervalLockScreenDriver() {
 
     update();
     const unsubscribe = useIntervalTimerStore.subscribe(update);
+    // Back in front, the activity is brought up to date at once: an update sent from the
+    // background may have been turned down, and the next one might be a phase away.
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      lastKey = undefined;
+      update();
+    });
     const unlisten = onIntervalActivityAction((action) => {
       const store = useIntervalTimerStore.getState();
       const running = store.active?.timer.endsAt !== undefined;
@@ -99,6 +107,7 @@ export function IntervalLockScreenDriver() {
       }
     });
     return () => {
+      appState.remove();
       unsubscribe();
       unlisten();
     };

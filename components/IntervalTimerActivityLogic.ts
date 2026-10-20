@@ -3,9 +3,11 @@ import { COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/t
 import {
   intervalPhaseProgress,
   intervalPhaseRemainingMs,
+  intervalPhasesAhead,
   isIntervalTimerRunning,
+  resumeIntervalTimer,
 } from '@domain/intervalTimerRules';
-import type { IntervalTimer } from '@domain/intervalTimer';
+import type { IntervalTimer, IntervalTimerPhase } from '@domain/intervalTimer';
 import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
 
 // What the interval timer's Live Activity (10.1 FR-6; canvas 2.6, GT-99) is drawn from — see
@@ -18,6 +20,10 @@ export type IntervalActivityLook = {
   clockColor: string;
   /** The bar of the phase running down. */
   barColor: string;
+  /** A rest's cell in the block's bar (a work's is `barColor`). */
+  restBarColor: string;
+  /** The gap between the cells of the block's bar. */
+  segmentGap: number;
   /** The bar on an always-on screen, where the system dims the activity. */
   barColorDimmed: string;
   /** The bar's height, the same running and paused — see `size/activity-bar`. */
@@ -50,8 +56,40 @@ export type IntervalActivityLook = {
 /** A button on the Live Activity — its `target`, which comes back to the app when it is tapped. */
 export type IntervalActivityAction = 'pause' | 'skipRest';
 
+/**
+ * One cell of the block's bar: a work or a rest of a round. A cell that is done or held is a plain
+ * share (`value`); one running or still ahead fills between `startsAt` and `endsAt` by itself —
+ * empty before, full after — so the bar is right with no update from the app.
+ */
+export type IntervalActivitySegment = {
+  work: boolean;
+  startsAt?: number;
+  endsAt?: number;
+  value?: number;
+};
+
+/**
+ * The whole block, drawn so that the system keeps it right with no update from the app — what the
+ * lock screen shows when the app can't reach it. iOS turns down a Live Activity update from an app
+ * that is only playing audio in the background (spike on the locked screen, 20.10.2026): the phase
+ * may not change on time there, the block's time and its bar always do.
+ */
+export type IntervalActivityBlock = {
+  /** `Heavy bag`. */
+  title: string;
+  /** `3 rounds`. */
+  detail: string;
+  /** The block's time left runs down to `endsAt` (from any moment before now: `startedAt`). */
+  startedAt: number;
+  endsAt: number;
+  /** Set while paused: the block's time left, as plain text. */
+  pausedLabel?: string;
+  segments: IntervalActivitySegment[];
+};
+
 export type IntervalTimerActivityProps = {
   look: IntervalActivityLook;
+  block: IntervalActivityBlock;
   /**
    * The phase in bold: `Get ready`, `Work`, `Rest` — paused too: only the button and the held time
    * tell a paused activity apart (Artem, 20.10.2026), so it doesn't jump between the two.
@@ -81,6 +119,8 @@ export function intervalActivityLook(): IntervalActivityLook {
     clockColor: COLORS['text/primary'],
     barColor: COLORS['brand/orange'],
     barColorDimmed: COLORS['text/primary'],
+    restBarColor: COLORS['text/secondary'],
+    segmentGap: SPACING['space/gap-tight'] / 2,
     barHeight: SIZES['size/activity-bar'],
     backgroundColor: COLORS['surface/card'],
     buttonColor: COLORS['surface/control-active'],
@@ -115,6 +155,7 @@ export function intervalActivityProps(phase: {
   pausedRemainingMs?: number;
   pausedProgress?: number;
   canSkipRest: boolean;
+  block: IntervalActivityBlock;
 }): IntervalTimerActivityProps {
   const { pausedRemainingMs, pausedProgress, ...rest } = phase;
   const props: IntervalTimerActivityProps = { ...rest, look: intervalActivityLook() };
@@ -159,7 +200,60 @@ export function intervalActivityPropsOf(
           pausedProgress: intervalPhaseProgress(timer, now),
         }),
     canSkipRest: phase.kind === 'rest',
+    block: intervalActivityBlockOf({ exercise, timer }, now),
   });
+}
+
+const samePhase = (a: IntervalTimerPhase, b: IntervalTimerPhase) =>
+  a.kind === b.kind && a.round === b.round;
+
+/**
+ * The block of the timer `active` at `now`: a cell for each work and each rest still to come of the
+ * rounds it runs — a Get ready has none — with those before the phase running full.
+ */
+export function intervalActivityBlockOf(
+  { exercise, timer }: ActiveIntervalTimer,
+  now: number,
+): IntervalActivityBlock {
+  const running = isIntervalTimerRunning(timer);
+  // Paused, the block is drawn as it would run from now: its time left, its cells held.
+  const ahead = intervalPhasesAhead(running ? timer : resumeIntervalTimer(timer, now));
+  const current = timer.phase;
+  const elapsed = 1 - intervalPhaseProgress(timer, now);
+  const last = timer.rounds.length - 1;
+  let reached = false;
+  const segments: IntervalActivitySegment[] = [];
+  const cell = (work: boolean, phase: IntervalTimerPhase) => {
+    if (current !== undefined && current.kind === 'getReady' && phase.kind === 'work') {
+      reached ||= current.round === phase.round;
+    }
+    const isCurrent = current !== undefined && samePhase(current, phase);
+    reached ||= isCurrent;
+    if (!reached) return segments.push({ work, value: 1 });
+    if (!running) return segments.push({ work, value: isCurrent ? elapsed : 0 });
+    const scheduled = ahead.find((entry) => samePhase(entry.phase, phase));
+    return segments.push(
+      scheduled === undefined
+        ? { work, value: 0 }
+        : { work, startsAt: scheduled.startsAt, endsAt: scheduled.endsAt },
+    );
+  };
+  timer.rounds.forEach((round, index) => {
+    cell(true, { kind: 'work', round: index });
+    if (index < last && round.restSec > 0) cell(false, { kind: 'rest', round: index });
+  });
+  const endsAt = ahead.at(-1)?.endsAt ?? now;
+  const block: IntervalActivityBlock = {
+    title: exercise.name,
+    detail: `${exercise.totalRounds} rounds`,
+    startedAt: Math.min(now, ahead[0]?.startsAt ?? now),
+    endsAt,
+    segments,
+  };
+  if (!running) {
+    block.pausedLabel = formatClock(Math.max(0, Math.ceil((endsAt - now) / MS_PER_SEC)));
+  }
+  return block;
 }
 
 /**

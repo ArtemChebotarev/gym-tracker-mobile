@@ -4,6 +4,7 @@ import {
   intervalPhaseProgress,
   intervalPhaseRemainingMs,
   intervalPhaseRemainingSec,
+  intervalPhasesAhead,
   intervalTimerAt,
   isIntervalTimerOver,
   isIntervalTimerRunning,
@@ -133,6 +134,36 @@ describe('intervalTimerAt — the phases in order', () => {
     const timer = intervalTimerAt(startIntervalTimer(rounds, 0, T0), T0 + (30 + 45) * S);
     expect(phaseOf(timer)).toBe('work 2');
     expect(timer.endsAt).toBe(T0 + (30 + 45 + 40) * S);
+  });
+});
+
+describe('intervalPhasesAhead', () => {
+  test('from the phase running to the last work, each starting where the one before ends', () => {
+    const ahead = intervalPhasesAhead(
+      intervalTimerAt(startIntervalTimer(HEAVY_BAG, 5, T0), T0 + 10 * S),
+    );
+    expect(ahead.map((entry) => `${entry.phase.kind} ${entry.phase.round + 1}`)).toEqual([
+      'work 1',
+      'rest 1',
+      'work 2',
+      'rest 2',
+      'work 3',
+    ]);
+    expect(ahead[0]).toMatchObject({ startsAt: T0 + 5 * S, endsAt: T0 + 125 * S });
+    ahead.slice(1).forEach((entry, index) => expect(entry.startsAt).toBe(ahead[index]?.endsAt));
+    expect(ahead.at(-1)?.endsAt).toBe(T0 + (5 + 3 * 120 + 2 * 60) * S);
+  });
+
+  test('a rest of 0 is no phase at all', () => {
+    const noRest = HEAVY_BAG.map((round) => ({ ...round, restSec: 0 }));
+    const ahead = intervalPhasesAhead(startIntervalTimer(noRest, 0, T0));
+    expect(ahead.map((entry) => entry.phase.kind)).toEqual(['work', 'work', 'work']);
+  });
+
+  test('nothing while paused or over', () => {
+    const running = startIntervalTimer(HEAVY_BAG, 5, T0);
+    expect(intervalPhasesAhead(pauseIntervalTimer(running, T0 + S))).toEqual([]);
+    expect(intervalPhasesAhead(intervalTimerAt(running, T0 + 10_000 * S))).toEqual([]);
   });
 });
 

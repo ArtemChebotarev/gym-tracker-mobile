@@ -160,6 +160,28 @@ export function intervalTimerAt(timer: IntervalTimer, now: number): IntervalTime
   return current;
 }
 
+/** A phase still to run, with when it starts and ends if nothing is touched. */
+export type IntervalPhaseAhead = { phase: IntervalTimerPhase; startsAt: number; endsAt: number };
+
+/**
+ * The phases a running timer will run from the one running now to the end of the block, each
+ * starting where the one before ends — what the Live Activity draws ahead of time (GT-99). Empty
+ * for a paused or finished timer: nothing is scheduled while it holds.
+ */
+export function intervalPhasesAhead(timer: IntervalTimer): IntervalPhaseAhead[] {
+  const ahead: IntervalPhaseAhead[] = [];
+  let current = timer;
+  while (current.phase !== undefined && current.endsAt !== undefined) {
+    ahead.push({
+      phase: current.phase,
+      startsAt: current.endsAt - current.durationMs,
+      endsAt: current.endsAt,
+    });
+    current = finishPhase(current);
+  }
+  return ahead;
+}
+
 /**
  * Milliseconds left of the phase at `now` (after `intervalTimerAt`), never below 0 nor above the
  * phase itself — a `now` read a moment before the phase began still shows it whole, not `2:01`.
