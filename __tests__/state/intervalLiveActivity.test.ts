@@ -45,6 +45,7 @@ const PROPS = intervalActivityProps({
   phaseStartedAt: 0,
   phaseEndsAt: 60_000,
   canSkipRest: true,
+  block: { title: 'Heavy bag', detail: '3 rounds', startedAt: 0, endsAt: 120_000, segments: [] },
 });
 
 function tap(event: Interaction) {
