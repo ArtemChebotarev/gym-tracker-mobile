@@ -77,12 +77,8 @@ function nextLine(timer: IntervalTimer): string {
         ? ''
         : `Next round ${round.roundNumber} · ${formatClock(round.workSec)}`;
     case 'work':
-      // The last round's rest is the rest timer's, after the summary (FR-6) — it is still coming.
-      if (isLast) {
-        return round !== undefined && round.restSec > 0
-          ? `Last round. Then rest ${formatClock(round.restSec)}`
-          : 'Last round.';
-      }
+      // Just that (Artem, 20.10.2026): the rest after it is the rest timer's, after the summary.
+      if (isLast) return 'Last round';
       if (round === undefined || round.restSec === 0) {
         const after = roundOf(timer, phase.round + 1);
         return after === undefined ? '' : `Then round ${after.roundNumber}`;
