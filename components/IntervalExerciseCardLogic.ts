@@ -2,6 +2,7 @@
 // writes: its column labels, a round's times, the Start timer button's label and the ⓘ plate of the
 // column that progresses. See the code-style skill.
 
+import type { IntervalTimerRound } from '@domain/intervalTimer';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { MinusIcon } from '@design/icons/MinusIcon';
 import { TrendIcon } from '@design/icons/TrendIcon';
@@ -26,6 +27,21 @@ export function roundEntryOf(round: WorkoutRoundRow): RoundEntry {
   return round.restSec === undefined
     ? { workSec: round.workSec }
     : { workSec: round.workSec, restSec: round.restSec };
+}
+
+/**
+ * The rounds the timer runs (FR-6, FR-7): every round not yet logged, from the first, with the times
+ * their fields show — a time picked but not yet logged included (FR-9). A round without a rest of
+ * its own rests 0.
+ */
+export function timerRoundsOf(rounds: readonly WorkoutRoundRow[]): IntervalTimerRound[] {
+  return rounds
+    .filter((round) => round.log === undefined)
+    .map((round) => ({
+      roundNumber: round.roundNumber,
+      workSec: round.workSec,
+      restSec: round.restSec ?? 0,
+    }));
 }
 
 /**

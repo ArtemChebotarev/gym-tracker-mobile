@@ -37,6 +37,7 @@ function makeInterval(overrides: Partial<IntervalWorkoutExercise> = {}): Interva
     loggedRoundCount: 0,
     hasLoggedSets: false,
     progression: { column: 'rest', stepSec: 15 },
+    getReadySec: 5,
     actions: NO_ACTIONS,
     ...overrides,
   };

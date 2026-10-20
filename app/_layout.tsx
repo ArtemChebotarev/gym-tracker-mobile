@@ -70,6 +70,16 @@ export default function RootLayout() {
               {/* A day of a closed block (08.9, task 130) — pushed from the detail screen's grid, in
               History mode, with its own back button. */}
               <Stack.Screen name="session/[id]" options={{ headerShown: false }} />
+              {/* The interval timer (10.1 FR-6, GT-96) — full screen over the workout. No swipe down:
+              the timer is put away with Back to workout or End early, never by accident. */}
+              <Stack.Screen
+                name="interval-timer"
+                options={{
+                  headerShown: false,
+                  presentation: 'fullScreenModal',
+                  gestureEnabled: false,
+                }}
+              />
               {/* The developer door (task 070) — no link leads here, five taps on the Library title do. */}
               <Stack.Screen name="debug" options={{ headerShown: false, presentation: 'modal' }} />
             </Stack>

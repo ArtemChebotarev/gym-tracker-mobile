@@ -13,14 +13,14 @@
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 
 import { CheckIcon } from '../icons/CheckIcon';
 import { CloseIcon } from '../icons/CloseIcon';
 import type { IconComponent } from '../icons/IconFrame';
 import { PauseIcon } from '../icons/PauseIcon';
 import { PlayIcon } from '../icons/PlayIcon';
-import { circle, ring, roundedBar } from '../shapes';
+import { ProgressRing } from './ProgressRing';
+import { circle, roundedBar } from '../shapes';
 import {
   BORDER_WIDTHS,
   COLORS,
@@ -77,7 +77,7 @@ export function TimerCapsule({
 
   const body = (
     <>
-      {finished ? <DoneMark /> : <ProgressRing icon={icon} paused={paused} progress={progress} />}
+      {finished ? <DoneMark /> : <CapsuleRing icon={icon} paused={paused} progress={progress} />}
       <View style={styles.text}>
         <Text
           style={[styles.title, finished && styles.finishedTitle, paused && styles.pausedTitle]}
@@ -133,9 +133,7 @@ export function TimerCapsule({
   );
 }
 
-const RING = ring(SIZES['size/timer-ring'], BORDER_WIDTHS['border/timer-ring']);
-
-function ProgressRing({
+function CapsuleRing({
   icon: Icon,
   paused,
   progress,
@@ -144,44 +142,20 @@ function ProgressRing({
   paused: boolean;
   progress: number;
 }) {
-  const filled = Math.min(1, Math.max(0, progress)) * RING.circumference;
   return (
-    <View style={styles.ring}>
-      <Svg
-        width={SIZES['size/timer-ring']}
-        height={SIZES['size/timer-ring']}
-        style={StyleSheet.absoluteFill}
-      >
-        <Circle
-          cx={RING.center}
-          cy={RING.center}
-          r={RING.radius}
-          fill="none"
-          stroke={COLORS['timer/track']}
-          strokeWidth={BORDER_WIDTHS['border/timer-ring']}
-        />
-        {filled > 0 && (
-          <Circle
-            testID="timer-capsule-arc"
-            cx={RING.center}
-            cy={RING.center}
-            r={RING.radius}
-            fill="none"
-            stroke={paused ? COLORS['text/faint'] : COLORS['brand/orange']}
-            strokeWidth={BORDER_WIDTHS['border/timer-ring']}
-            strokeLinecap="round"
-            strokeDasharray={`${filled} ${RING.circumference}`}
-            // The arc starts at twelve o'clock, as a clock's hand does, not at three.
-            rotation={-90}
-            origin={`${RING.center}, ${RING.center}`}
-          />
-        )}
-      </Svg>
+    <ProgressRing
+      size={SIZES['size/timer-ring']}
+      strokeWidth={BORDER_WIDTHS['border/timer-ring']}
+      progress={progress}
+      color={paused ? COLORS['text/faint'] : COLORS['brand/orange']}
+      trackColor={COLORS['timer/track']}
+      arcTestID="timer-capsule-arc"
+    >
       <Icon
         size={ICON_SIZES['icon/small']}
         color={paused ? COLORS['text/muted'] : COLORS['text/primary']}
       />
-    </View>
+    </ProgressRing>
   );
 }
 

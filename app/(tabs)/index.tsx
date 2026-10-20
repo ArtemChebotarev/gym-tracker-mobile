@@ -65,6 +65,7 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  intervalTimerStartOf,
   loggedSetKey,
   restAfterLog,
   shouldShowDeloadIntro,
@@ -99,6 +100,7 @@ import {
   type ExerciseCommand,
 } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import { useRestTimerStore } from '@state/restTimerStore';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
@@ -522,6 +524,14 @@ export default function TodayScreen() {
             },
             { onError: showSaveError },
           );
+        }}
+        onStartIntervalTimer={(exercise, rounds) => {
+          const start = intervalTimerStartOf(exercise, rounds);
+          if (start === undefined) {
+            return;
+          }
+          useIntervalTimerStore.getState().start(start);
+          router.push('/interval-timer');
         }}
         onUnlogSet={(exercise, setNumber) => {
           if (currentSessionId === undefined) {

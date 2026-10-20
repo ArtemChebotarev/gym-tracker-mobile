@@ -152,11 +152,14 @@ export function intervalTimerAt(timer: IntervalTimer, now: number): IntervalTime
   return current;
 }
 
-/** Milliseconds left of the phase at `now` (after `intervalTimerAt`), never below 0. */
+/**
+ * Milliseconds left of the phase at `now` (after `intervalTimerAt`), never below 0 nor above the
+ * phase itself — a `now` read a moment before the phase began still shows it whole, not `2:01`.
+ */
 export function intervalPhaseRemainingMs(timer: IntervalTimer, now: number): number {
   if (timer.phase === undefined) return 0;
   const left = timer.endsAt !== undefined ? timer.endsAt - now : (timer.remainingMs ?? 0);
-  return Math.max(0, left);
+  return Math.min(timer.durationMs, Math.max(0, left));
 }
 
 /** Whole seconds left as the timer shows them: 0.2 s to go still reads 0:01. */

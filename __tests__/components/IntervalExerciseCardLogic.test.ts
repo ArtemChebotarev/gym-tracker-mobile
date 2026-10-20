@@ -3,6 +3,7 @@ import {
   progressionInfoLabel,
   roundEntryOf,
   startTimerLabel,
+  timerRoundsOf,
 } from '@components/IntervalExerciseCardLogic';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
@@ -82,5 +83,24 @@ describe('progressionInfoLabel', () => {
   test('names the column the ⓘ explains', () => {
     expect(progressionInfoLabel({ column: 'rest', stepSec: 15 })).toBe('How rest progresses');
     expect(progressionInfoLabel({ column: 'work', stepSec: 15 })).toBe('How work progresses');
+  });
+});
+
+describe('timerRoundsOf', () => {
+  test('the rounds not yet logged, from the first, with the times their fields show', () => {
+    const rounds: WorkoutRoundRow[] = [
+      { ...ROUNDS[0]!, log: LOGGED },
+      { ...ROUNDS[1]!, workSec: 90 },
+      { ...ROUNDS[2]!, restSec: undefined },
+    ];
+    expect(timerRoundsOf(rounds)).toEqual([
+      { roundNumber: 2, workSec: 90, restSec: 45 },
+      // A round without a rest of its own rests 0.
+      { roundNumber: 3, workSec: 120, restSec: 0 },
+    ]);
+  });
+
+  test('nothing once every round is logged', () => {
+    expect(timerRoundsOf(ROUNDS.map((round) => ({ ...round, log: LOGGED })))).toEqual([]);
   });
 });

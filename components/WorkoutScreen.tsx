@@ -55,6 +55,7 @@ import { GridIcon } from '@design/icons/GridIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
 import type { RoundEntry } from '@domain/executionValidators';
+import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
@@ -108,6 +109,8 @@ export type WorkoutScreenProps = {
   onLogRound: (exercise: WorkoutExercise, roundNumber: number, entry: RoundEntry) => void;
   /** Un-logs a logged round. Live only. */
   onUnlogRound: (exercise: WorkoutExercise, roundNumber: number) => void;
+  /** Start timer on an interval card, with the rounds it runs (10.1 FR-6, GT-96). Live only. */
+  onStartIntervalTimer?: (exercise: WorkoutExercise, rounds: IntervalTimerRound[]) => void;
   /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
   onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
   /** The user closed a power exercise's ceiling note for good (GT-81). Live only. */
@@ -167,6 +170,7 @@ export function WorkoutScreen({
   onUnlogSet,
   onLogRound,
   onUnlogRound,
+  onStartIntervalTimer,
   onSetNoHeavierAvailable,
   onHideCeilingTip,
   onBodyWeightChange,
@@ -320,6 +324,9 @@ export function WorkoutScreen({
               rounds={{
                 onLogRound: (roundNumber, entry) => onLogRound(exercise, roundNumber, entry),
                 onUnlogRound: (roundNumber) => onUnlogRound(exercise, roundNumber),
+                ...(onStartIntervalTimer !== undefined
+                  ? { onStartTimer: (rounds) => onStartIntervalTimer(exercise, rounds) }
+                  : {}),
               }}
               ceiling={{
                 onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),

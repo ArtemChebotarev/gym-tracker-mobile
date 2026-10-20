@@ -1,0 +1,60 @@
+import { useEffect } from 'react';
+import { Vibration } from 'react-native';
+
+import type { IntervalTimer } from '@domain/intervalTimer';
+import { cancelCountdown, scheduleCountdown } from '@state/intervalSignal';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
+
+import { phaseChanged, runningPhaseKey } from './IntervalTimerDriverLogic';
+
+/** How often a running timer is moved on: often enough that a phase changes on time. */
+const TICK_MS = 250;
+
+// Runs the interval timer (10.1 FR-6, GT-96) wherever the app is: moves it on to the phase really
+// running a few times a second, aims the countdown at the end of each phase (state/intervalSignal,
+// GT-94: ticks in the last 3 s and the start signal at zero), and buzzes as each phase starts and
+// as the block ends. Draws nothing. It sits next to RestTimerDriver in the tab bar's overlay, so the
+// timer runs on behind its screen too.
+//
+// Keeping the app awake behind a locked screen and the Live Activity are GT-99's.
+export function IntervalTimerDriver() {
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    let lastTimer: IntervalTimer | undefined;
+    let lastKey: string | undefined;
+
+    function update() {
+      const timer = useIntervalTimerStore.getState().active?.timer;
+      if (phaseChanged(lastTimer, timer)) {
+        Vibration.vibrate();
+      }
+      const key = runningPhaseKey(timer);
+      if (key !== lastKey) {
+        if (key === undefined || timer?.endsAt === undefined) {
+          cancelCountdown();
+        } else {
+          scheduleCountdown(timer.endsAt);
+        }
+      }
+      lastTimer = timer;
+      lastKey = key;
+
+      if (key !== undefined && interval === null) {
+        interval = setInterval(() => useIntervalTimerStore.getState().catchUp(), TICK_MS);
+      } else if (key === undefined && interval !== null) {
+        clearInterval(interval);
+        interval = null;
+      }
+    }
+
+    update();
+    const unsubscribe = useIntervalTimerStore.subscribe(update);
+    return () => {
+      unsubscribe();
+      if (interval !== null) clearInterval(interval);
+      cancelCountdown();
+    };
+  }, []);
+
+  return null;
+}

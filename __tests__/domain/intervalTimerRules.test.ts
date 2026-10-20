@@ -143,6 +143,12 @@ describe('remaining time', () => {
     expect(intervalPhaseProgress(timer, T0 + 2_500)).toBe(0.5);
   });
 
+  test('never more than the phase: a clock read just before it began shows it whole', () => {
+    const timer = startIntervalTimer(HEAVY_BAG, 0, T0);
+    expect(intervalPhaseRemainingMs(timer, T0 - 200)).toBe(120 * S);
+    expect(intervalPhaseRemainingSec(timer, T0 - 200)).toBe(120);
+  });
+
   test('an over timer has nothing left', () => {
     const over = endIntervalTimerEarly(startIntervalTimer(HEAVY_BAG, 5, T0), T0);
     expect(intervalPhaseRemainingMs(over, T0)).toBe(0);
