@@ -1,6 +1,7 @@
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import {
   formatInProgressConflict,
+  intervalTimerStartOf,
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
@@ -205,6 +206,7 @@ describe('restAfterLog', () => {
       plannedRoundCount: 1,
       loggedRoundCount: 0,
       hasLoggedSets: false,
+      getReadySec: 5,
       actions: { ...skipped.actions, canAddRound: true, canRemoveLastRound: false },
     };
     expect(restAfterLog([a, skipped, bag], a, 3, NONE)).toMatchObject({
@@ -246,6 +248,7 @@ describe('restAfterLog', () => {
       plannedRoundCount: 2,
       loggedRoundCount: 0,
       hasLoggedSets: false,
+      getReadySec: 5,
       actions: { ...card('x', 60, []).actions, canAddRound: true, canRemoveLastRound: true },
     };
     const after = card('after', 60, []);
@@ -290,5 +293,58 @@ describe('restAfterLog', () => {
   test('a set logged again in the same workout is a correction', () => {
     const a = card('a', 60, []);
     expect(restAfterLog([a], a, 1, new Set([loggedSetKey('a', 1)]))).toEqual({ kind: 'keep' });
+  });
+});
+
+describe('intervalTimerStartOf', () => {
+  const bag: WorkoutExercise = {
+    sessionExerciseId: 'bag',
+    exerciseId: 'heavy-bag',
+    name: 'Heavy bag',
+    muscleGroup: 'fullBody',
+    type: 'interval',
+    status: 'planned',
+    rounds: [
+      {
+        roundNumber: 1,
+        workSec: 120,
+        restSec: 45,
+        isFirstUnlogged: false,
+        log: { workSec: 120, restSec: 45, restSkipped: false, completed: true },
+      },
+      { roundNumber: 2, workSec: 120, restSec: 45, isFirstUnlogged: true },
+    ],
+    plannedRoundCount: 2,
+    loggedRoundCount: 1,
+    hasLoggedSets: true,
+    getReadySec: 10,
+    actions: {
+      canReplace: false,
+      canMoveUp: false,
+      canMoveDown: false,
+      canSkip: false,
+      canUnskip: false,
+      canDelete: false,
+      canAddRound: true,
+      canRemoveLastRound: true,
+    },
+  };
+  const rounds = [{ roundNumber: 2, workSec: 120, restSec: 45 }];
+
+  test('an interval card: the exercise as the timer names it, its rounds and its Get ready', () => {
+    expect(intervalTimerStartOf(bag, rounds)).toEqual({
+      exercise: {
+        sessionExerciseId: 'bag',
+        name: 'Heavy bag',
+        totalRounds: 2,
+        loggedRoundNumbers: [1],
+      },
+      rounds,
+      getReadySec: 10,
+    });
+  });
+
+  test('nothing for a round-less start', () => {
+    expect(intervalTimerStartOf(bag, [])).toBeUndefined();
   });
 });

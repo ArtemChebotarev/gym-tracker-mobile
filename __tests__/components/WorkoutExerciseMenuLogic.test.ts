@@ -68,6 +68,7 @@ function intervalCard(actions: RoundExerciseActions = ALL_ROUNDS): IntervalWorko
     plannedRoundCount: 3,
     loggedRoundCount: 1,
     hasLoggedSets: true,
+    getReadySec: 5,
     actions,
   };
 }

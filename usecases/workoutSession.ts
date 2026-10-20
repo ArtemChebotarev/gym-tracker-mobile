@@ -12,6 +12,7 @@ import type {
   IntervalStepSec,
   PowerLoad,
 } from '@domain/exerciseConfig';
+import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
 import { NotFoundError } from '@domain/errors';
@@ -259,6 +260,8 @@ export type IntervalWorkoutExercise = WorkoutExerciseBase & {
   loggedRoundCount: number;
   /** Absent with the `rounds` or `none` lever. */
   progression?: IntervalProgression;
+  /** The countdown before a round started by a tap — Start timer, Skip rest (FR-6), seconds. */
+  getReadySec: number;
   actions: RoundExerciseActions;
 };
 
@@ -625,6 +628,12 @@ function intervalProgressionOf(
   }
 }
 
+/** The Get ready a new interval exercise starts with (FR-9) — what one without a plan gets. */
+function defaultGetReadySec(): number {
+  const config = defaultExerciseConfig('interval');
+  return config?.type === 'interval' ? config.getReadySec : 0;
+}
+
 /** An interval card: its rounds on top of `base`. */
 function toIntervalExercise(
   base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
@@ -642,6 +651,7 @@ function toIntervalExercise(
     plannedRoundCount: rounds.length,
     loggedRoundCount,
     hasLoggedSets: loggedRoundCount > 0,
+    getReadySec: plan?.getReadySec ?? defaultGetReadySec(),
     actions: {
       ...base.actions,
       canAddRound: mode === 'live',
@@ -833,6 +843,7 @@ async function previewOf(
               type: 'interval',
               rounds: [],
               plannedRoundCount: 0,
+              getReadySec: defaultGetReadySec(),
               loggedRoundCount: 0,
               actions: NO_ROUND_ACTIONS,
             }

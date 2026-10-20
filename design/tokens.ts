@@ -112,6 +112,8 @@ export const TYPOGRAPHY = {
     textTransform: 'uppercase',
   },
   'type/caption': { fontSize: 12, fontWeight: '400' },
+  /** The time left on the interval timer's screen, in its dial (10.1 FR-6; canvas 2.x). */
+  'type/timer-clock': { fontSize: 72, fontWeight: '400' },
 } as const satisfies Record<string, TypographyValue>;
 
 export type TypographyToken = keyof typeof TYPOGRAPHY;
@@ -215,6 +217,8 @@ export const BORDER_WIDTHS = {
   'border/emphasis': 2,
   /** A timer's progress ring, track and arc alike (TimerCapsule, 10.1 FR-5). */
   'border/timer-ring': 3,
+  /** The interval timer screen's dial, track and arc alike (10.1 FR-6; canvas 2.x). */
+  'border/timer-dial': 12,
 } as const;
 
 export type BorderWidthToken = keyof typeof BORDER_WIDTHS;
@@ -257,6 +261,13 @@ export const SIZES = {
    */
   'size/timer-capsule': 60,
   'size/timer-ring': 40,
+  /**
+   * The interval timer's full screen (10.1 FR-6; canvas 2.x, GT-96): the dial with the time in
+   * it, the round control under it (Pause / Resume), and one bar per round across the top.
+   */
+  'size/timer-dial': 280,
+  'size/timer-button': 72,
+  'size/round-segment': 4,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
   'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */

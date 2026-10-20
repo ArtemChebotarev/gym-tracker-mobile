@@ -6,11 +6,13 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { RestNext } from '@domain/restTimer';
 import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
+import type { IntervalTimerExercise } from '@state/intervalTimerStore';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -240,5 +242,33 @@ export function restAfterLog(
   return {
     kind: 'start',
     rest: { sessionExerciseId: exercise.sessionExerciseId, next, durationSec },
+  };
+}
+
+/**
+ * What Start timer on an interval card starts the timer with (10.1 FR-6, GT-96): the exercise as
+ * the timer screen names it, its rounds from the first unlogged one, and its Get ready. `undefined`
+ * for any other card, or when no round is left to run.
+ */
+export function intervalTimerStartOf(
+  exercise: WorkoutExercise,
+  rounds: readonly IntervalTimerRound[],
+):
+  | { exercise: IntervalTimerExercise; rounds: readonly IntervalTimerRound[]; getReadySec: number }
+  | undefined {
+  if (exercise.type !== 'interval' || rounds.length === 0) {
+    return undefined;
+  }
+  return {
+    exercise: {
+      sessionExerciseId: exercise.sessionExerciseId,
+      name: exercise.name,
+      totalRounds: exercise.rounds.length,
+      loggedRoundNumbers: exercise.rounds
+        .filter((round) => round.log !== undefined)
+        .map((round) => round.roundNumber),
+    },
+    rounds,
+    getReadySec: exercise.getReadySec,
   };
 }

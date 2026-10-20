@@ -13,7 +13,8 @@
 // - A round is logged by hand with one tap on its Log box — the times its fields hold — and
 //   un-logged by a second tap on the filled one, which brings its logged times back into the fields
 //   (FR-7, GT-89).
-// - Start timer only shows where it will be until the timer exists (its own story).
+// - Start timer opens the interval timer (GT-96) over the rounds not yet logged, with the times
+//   their fields show.
 //
 // JSX/rendering only — styles live in IntervalRoundRowsStyles.ts and pure helpers in
 // IntervalRoundRowsLogic.ts and IntervalExerciseCardLogic.ts, per the code-style skill.
@@ -28,9 +29,10 @@ import { PlayIcon } from '@design/icons/PlayIcon';
 import { tapTargetSlop } from '@design/shapes';
 import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 import type { RoundEntry } from '@domain/executionValidators';
+import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
-import { NO_REST, roundEntryOf, startTimerLabel } from './IntervalExerciseCardLogic';
+import { NO_REST, roundEntryOf, startTimerLabel, timerRoundsOf } from './IntervalExerciseCardLogic';
 import {
   carryRoundTimeForward,
   editRoundTime,
@@ -54,8 +56,8 @@ export type RoundActions = {
   onLogRound?: (roundNumber: number, entry: RoundEntry) => void;
   /** Un-logs a logged round — a second tap on its filled Log box. */
   onUnlogRound?: (roundNumber: number) => void;
-  /** Opens the interval timer from the first unlogged round (FR-6, FR-7). */
-  onStartTimer?: () => void;
+  /** Opens the interval timer over the rounds not yet logged, as their fields show them (FR-6, FR-7). */
+  onStartTimer?: (rounds: IntervalTimerRound[]) => void;
 };
 
 export type IntervalRoundRowsProps = {
@@ -131,7 +133,7 @@ export function IntervalRoundRows({
           accessibilityLabel={timerLabel}
           accessibilityState={{ disabled: actions?.onStartTimer === undefined }}
           disabled={actions?.onStartTimer === undefined}
-          onPress={actions?.onStartTimer}
+          onPress={() => actions?.onStartTimer?.(timerRoundsOf(shown))}
           style={({ pressed }) => [styles.startTimer, pressed && styles.pressed]}
         >
           <PlayIcon size={ICON_SIZES['icon/small']} color={COLORS.accent} />

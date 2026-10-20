@@ -1173,6 +1173,8 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
       hasLoggedSets: false,
       // `HEAVY_BAG_CONFIG` moves the rest by 15 s a week.
       progression: { column: 'rest', stepSec: 15 },
+      // The timer's countdown before a round started by a tap (FR-6), from the same config.
+      getReadySec: 5,
     });
     expect(card?.rounds).toEqual([
       { roundNumber: 1, workSec: 120, restSec: 45, isFirstUnlogged: true },

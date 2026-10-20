@@ -65,6 +65,7 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
   'type/set-value',
   'type/label',
   'type/caption',
+  'type/timer-clock',
 ];
 
 const EXPECTED_RADIUS_TOKENS = [
