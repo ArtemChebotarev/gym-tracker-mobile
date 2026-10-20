@@ -25,6 +25,27 @@ export async function startIntervalActivity(
   return IntervalTimerActivity.start(props, url);
 }
 
+/** How long a failed update waits before its one retry. */
+const RETRY_MS = 1000;
+
+/**
+ * Updates `activity` with `props` — once more after a moment if iOS turned it down, which it does
+ * now and then, more so from the background. Never rejects: one failed update must not stop the
+ * ones after it (GT-99 — the lock screen froze on 0:00 of the phase before when it did).
+ */
+export async function updateIntervalActivity(
+  activity: LiveActivity<IntervalTimerActivityProps> | null,
+  props: IntervalTimerActivityProps,
+): Promise<void> {
+  if (activity === null) return;
+  try {
+    await activity.update(props);
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
+    await activity.update(props).catch(() => undefined);
+  }
+}
+
 /** Ends every interval Live Activity there is — the timer is over, or one is about to start. */
 export async function endIntervalActivities(): Promise<void> {
   await Promise.all(

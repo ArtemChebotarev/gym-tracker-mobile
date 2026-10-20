@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { AppTabBarStyles as styles } from './AppTabBarStyles';
+import { IntervalLockScreenDriver } from './IntervalLockScreenDriver';
 import { IntervalTimerDriver } from './IntervalTimerDriver';
 import { RestTimerDriver } from './RestTimerDriver';
 import { TimerCapsuleHost } from './TimerCapsuleHost';
@@ -59,6 +60,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
     <View pointerEvents="box-none" style={[styles.overlay, { paddingBottom: lift }]}>
       <RestTimerDriver />
       <IntervalTimerDriver />
+      <IntervalLockScreenDriver />
       <TimerCapsuleHost />
       <TabBar items={TABS} activeKey={activeKey} onChange={handlePress} />
     </View>

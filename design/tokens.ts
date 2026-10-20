@@ -114,6 +114,8 @@ export const TYPOGRAPHY = {
   'type/caption': { fontSize: 12, fontWeight: '400' },
   /** The time left on the interval timer's screen, in its dial (10.1 FR-6; canvas 2.x). */
   'type/timer-clock': { fontSize: 72, fontWeight: '400' },
+  /** The time left on the interval timer's Live Activity, on the lock screen (canvas 2.6, GT-99). */
+  'type/activity-clock': { fontSize: 40, fontWeight: '400' },
 } as const satisfies Record<string, TypographyValue>;
 
 export type TypographyToken = keyof typeof TYPOGRAPHY;
@@ -268,6 +270,20 @@ export const SIZES = {
   'size/timer-dial': 280,
   'size/timer-button': 72,
   'size/round-segment': 4,
+  /**
+   * The time on the interval timer's Live Activity: a fixed width, right-aligned, wide enough for
+   * `10:00` in `type/activity-clock` (canvas 2.6, GT-99). A live timer takes all the width it may
+   * need and plain text only its own, so without it the layout jumped between running and paused.
+   */
+  'size/activity-clock': 120,
+  /**
+   * The bar on the interval timer's Live Activity, running or paused. Fixed: the running bar (a
+   * system timer) stood 6 pt taller than the paused one, and the activity sprang between the two
+   * heights on every Pause and Resume (measured frame by frame on the simulator, GT-99).
+   */
+  'size/activity-bar': 4,
+  /** The app's icon on the interval timer's Live Activity (canvas 2.6, GT-99). */
+  'size/activity-icon': 28,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
   'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */

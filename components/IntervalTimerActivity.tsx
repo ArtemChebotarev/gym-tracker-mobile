@@ -1,11 +1,30 @@
-import { Button, HStack, Text, VStack } from '@expo/ui/swift-ui';
-import { font, foregroundStyle, padding } from '@expo/ui/swift-ui/modifiers';
+import { Button, HStack, Image, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  activityBackgroundTint,
+  animation,
+  Animation,
+  background,
+  buttonStyle,
+  clipShape,
+  contentTransition,
+  font,
+  foregroundStyle,
+  frame,
+  labelsHidden,
+  monospacedDigit,
+  multilineTextAlignment,
+  padding,
+  resizable,
+  tint,
+} from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
 
 import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
 
-// The interval timer on the lock screen and in the Dynamic Island (10.1 FR-6), worked out in the
-// GT-94 spike and checked on the phone. A working minimum: the design of canvas 2.x is GT-99's.
+// The interval timer on the lock screen and in the Dynamic Island (10.1 FR-6; canvas 2.6, GT-99):
+// the app's icon, the phase in bold over the exercise and round — or the next round in a rest — the time left on
+// the right, a bar under them, and the buttons: Pause (Resume while paused), and Skip rest in a
+// rest. No End early: too easy to hit by accident (canvas 6.3). A tap on the rest opens the timer.
 //
 // The `'widget'` function below is not run in the app. Babel turns it into a string, and the
 // widget extension runs that on its own (expo-widgets): nothing from this module's scope reaches
@@ -13,8 +32,10 @@ import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
 // `props.look` (IntervalTimerActivityLogic.ts), and the buttons' targets are written out here —
 // keep them in step with `IntervalActivityAction`.
 //
-// - Running, the time is a live timer that counts down by itself: the app need not wake to move it.
-// - Paused, it is plain text — see `pausedLabel`.
+// - Running, the time and the bar run down by themselves: the app need not wake to move them.
+// - Paused, the time is plain text and the bar holds — see `pausedLabel`, `pausedProgress`. Nothing
+//   else changes but the button (Artem, 20.10.2026): the time sits in a fixed, right-aligned frame,
+//   so the activity doesn't jump between the two.
 // - A button's tap comes back to the app as a user interaction (state/intervalLiveActivity.ts).
 
 const IntervalTimerActivity = (
@@ -23,45 +44,118 @@ const IntervalTimerActivity = (
 ) => {
   'widget';
   const look = props.look;
-  const color = environment.isLuminanceReduced ? look.clockColorDimmed : look.clockColor;
+  const paused = props.pausedLabel !== undefined;
+  const barColor = environment.isLuminanceReduced ? look.barColorDimmed : look.barColor;
   const interval = { lower: new Date(props.phaseStartedAt), upper: new Date(props.phaseEndsAt) };
-  const clock = (size: number) =>
-    props.pausedLabel === undefined ? (
-      <Text
-        timerInterval={interval}
-        modifiers={[font({ weight: 'bold', size }), foregroundStyle(color)]}
-      />
+  // Changes swap in place: the system would otherwise morph one text into the next, and the
+  // activity stretched like rubber between running and paused (Artem, 20.10.2026).
+  const still = contentTransition('identity');
+  // Paused and running swap with no animation of their own: the system springs the activity on
+  // each update, and a morph between the two bars stretched it like rubber (Artem, 20.10.2026).
+  const noAnimation =
+    typeof Animation === 'undefined' ? [] : [animation(Animation.linear({ duration: 0 }), paused)];
+  // One frame for both: a live timer takes all the width it may need, plain text only its own.
+  const clockLook = (size: number, width?: number) => [
+    font({ size }),
+    monospacedDigit(),
+    foregroundStyle(look.clockColor),
+    multilineTextAlignment('trailing'),
+    still,
+    ...(width === undefined ? [] : [frame({ width, alignment: 'trailing' })]),
+  ];
+  const clock = (size: number, width?: number) =>
+    paused ? (
+      <Text modifiers={clockLook(size, width)}>{props.pausedLabel}</Text>
     ) : (
-      <Text modifiers={[font({ weight: 'bold', size }), foregroundStyle(color)]}>
-        {props.pausedLabel}
-      </Text>
+      <Text timerInterval={interval} modifiers={clockLook(size, width)} />
     );
+  // The same height both ways: the running bar stood 6 pt taller, and the activity sprang between
+  // the two on every Pause and Resume — what read as rubber (Artem, 20.10.2026).
+  const barFrame = frame({ height: look.barHeight });
+  const bar = paused ? (
+    <ProgressView
+      value={props.pausedProgress}
+      modifiers={[tint(barColor), labelsHidden(), still, barFrame]}
+    />
+  ) : (
+    <ProgressView
+      timerInterval={interval}
+      countsDown
+      modifiers={[tint(barColor), labelsHidden(), still, barFrame]}
+    />
+  );
+  // Drawn here rather than left to a button style: the system paints a Live Activity's styled
+  // buttons its own way — a grey capsule, full width, with a white icon and label (canvas 2.6).
+  const button = (
+    target: string,
+    label: string,
+    systemImage: 'play.fill' | 'pause.fill' | 'forward.end.fill',
+  ) => (
+    <Button target={target} onPress={() => props} modifiers={[buttonStyle('plain')]}>
+      <HStack
+        spacing={look.gap}
+        modifiers={[
+          frame({ maxWidth: Infinity, minHeight: look.buttonHeight }),
+          background(look.buttonColor),
+          clipShape('capsule'),
+        ]}
+      >
+        <Image systemName={systemImage} size={look.buttonIconSize} color={look.buttonLabelColor} />
+        <Text
+          modifiers={[
+            font({ weight: 'medium', size: look.captionSize }),
+            foregroundStyle(look.buttonLabelColor),
+            still,
+          ]}
+        >
+          {label}
+        </Text>
+      </HStack>
+    </Button>
+  );
   return {
     banner: (
-      <HStack modifiers={[padding({ all: look.padding })]}>
-        <VStack>
-          <Text modifiers={[font({ weight: 'bold', size: look.titleSize })]}>{props.phase}</Text>
-          <Text modifiers={[font({ size: look.captionSize })]}>{props.round}</Text>
-          {clock(look.clockSize)}
-        </VStack>
-        <VStack>
-          <Button
-            label={props.pausedLabel === undefined ? 'Pause' : 'Resume'}
-            target="pause"
-            onPress={() => props}
-          />
-          {props.canSkipRest ? (
-            <Button label="Skip rest" target="skipRest" onPress={() => props} />
+      <VStack
+        spacing={look.gap}
+        modifiers={[
+          padding({ all: look.padding }),
+          activityBackgroundTint(look.backgroundColor),
+          ...noAnimation,
+        ]}
+      >
+        <HStack spacing={look.gap}>
+          {props.iconUri !== undefined ? (
+            <Image
+              uiImage={props.iconUri}
+              modifiers={[
+                resizable(),
+                frame({ width: look.iconSize, height: look.iconSize }),
+                clipShape('roundedRectangle', look.iconRadius),
+              ]}
+            />
           ) : null}
-        </VStack>
-      </HStack>
+          <VStack alignment="leading">
+            <Text modifiers={[font({ weight: 'semibold', size: look.titleSize }), still]}>
+              {props.phase}
+            </Text>
+            <Text modifiers={[font({ size: look.captionSize }), still]}>{props.detail}</Text>
+          </VStack>
+          <Spacer />
+          {clock(look.clockSize, look.clockWidth)}
+        </HStack>
+        {bar}
+        <HStack spacing={look.gap}>
+          {paused ? button('pause', 'Resume', 'play.fill') : button('pause', 'Pause', 'pause.fill')}
+          {props.canSkipRest ? button('skipRest', 'Skip rest', 'forward.end.fill') : null}
+        </HStack>
+      </VStack>
     ),
     compactLeading: <Text>{props.phase}</Text>,
     compactTrailing: clock(look.clockSizeCompact),
     minimal: clock(look.clockSizeMinimal),
     expandedLeading: <Text>{props.phase}</Text>,
     expandedTrailing: clock(look.clockSizeExpanded),
-    expandedBottom: <Text>{props.round}</Text>,
+    expandedBottom: <Text>{props.detail}</Text>,
   };
 };
 

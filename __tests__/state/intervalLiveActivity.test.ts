@@ -3,6 +3,7 @@ import {
   endIntervalActivities,
   onIntervalActivityAction,
   startIntervalActivity,
+  updateIntervalActivity,
 } from '@state/intervalLiveActivity';
 
 type FakeActivity = { getId: () => string; end: jest.Mock };
@@ -40,7 +41,7 @@ jest.mock('expo-widgets', () => ({
 
 const PROPS = intervalActivityProps({
   phase: 'Rest',
-  round: 'Round 1 of 3',
+  detail: 'Next: round 2 · 2:00',
   phaseStartedAt: 0,
   phaseEndsAt: 60_000,
   canSkipRest: true,
@@ -89,5 +90,25 @@ describe('intervalLiveActivity', () => {
     expect(onAction).not.toHaveBeenCalled();
 
     unsubscribe();
+  });
+
+  it('a turned-down update is tried once more, and never stops the ones after it', async () => {
+    jest.useFakeTimers();
+    const update = jest
+      .fn<Promise<void>, [unknown]>()
+      .mockRejectedValueOnce(new Error('throttled'))
+      .mockResolvedValue(undefined);
+    const activity = { update } as unknown as Parameters<typeof updateIntervalActivity>[0];
+
+    const first = updateIntervalActivity(activity, PROPS);
+    await jest.advanceTimersByTimeAsync(1_000);
+    await expect(first).resolves.toBeUndefined();
+    expect(update).toHaveBeenCalledTimes(2);
+
+    update.mockRejectedValue(new Error('still throttled'));
+    const second = updateIntervalActivity(activity, PROPS);
+    await jest.advanceTimersByTimeAsync(1_000);
+    await expect(second).resolves.toBeUndefined();
+    jest.useRealTimers();
   });
 });
