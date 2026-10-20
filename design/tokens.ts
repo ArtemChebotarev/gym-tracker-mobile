@@ -276,6 +276,12 @@ export const SIZES = {
    * need and plain text only its own, so without it the layout jumped between running and paused.
    */
   'size/activity-clock': 120,
+  /**
+   * The bar on the interval timer's Live Activity, running or paused. Fixed: the running bar (a
+   * system timer) stood 6 pt taller than the paused one, and the activity sprang between the two
+   * heights on every Pause and Resume (measured frame by frame on the simulator, GT-99).
+   */
+  'size/activity-bar': 4,
   /** The app's icon on the interval timer's Live Activity (canvas 2.6, GT-99). */
   'size/activity-icon': 28,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */

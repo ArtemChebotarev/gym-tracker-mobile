@@ -69,16 +69,19 @@ const IntervalTimerActivity = (
     ) : (
       <Text timerInterval={interval} modifiers={clockLook(size, width)} />
     );
+  // The same height both ways: the running bar stood 6 pt taller, and the activity sprang between
+  // the two on every Pause and Resume — what read as rubber (Artem, 20.10.2026).
+  const barFrame = frame({ height: look.barHeight });
   const bar = paused ? (
     <ProgressView
       value={props.pausedProgress}
-      modifiers={[tint(barColor), labelsHidden(), still]}
+      modifiers={[tint(barColor), labelsHidden(), still, barFrame]}
     />
   ) : (
     <ProgressView
       timerInterval={interval}
       countsDown
-      modifiers={[tint(barColor), labelsHidden(), still]}
+      modifiers={[tint(barColor), labelsHidden(), still, barFrame]}
     />
   );
   // Drawn here rather than left to a button style: the system paints a Live Activity's styled
