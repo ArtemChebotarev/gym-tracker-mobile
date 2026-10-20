@@ -37,8 +37,20 @@ export type IntervalTimerExercise = {
 
 export type ActiveIntervalTimer = { exercise: IntervalTimerExercise; timer: IntervalTimer };
 
+/**
+ * A block put away after its last round (Back to workout): what the workout needs to start the rest
+ * before the next exercise (FR-6) — the exercise, its last round and that round's rest.
+ */
+export type FinishedIntervalBlock = {
+  sessionExerciseId: string;
+  roundNumber: number;
+  restSec?: number;
+};
+
 type IntervalTimerStore = {
   active: ActiveIntervalTimer | null;
+  /** Set by `close` after a block that ran to its end, until the workout has acted on it. */
+  finished: FinishedIntervalBlock | null;
   /** Starts the timer over `rounds` — the exercise's rounds from the first unlogged one. */
   start: (start: {
     exercise: IntervalTimerExercise;
@@ -52,8 +64,13 @@ type IntervalTimerStore = {
   skipRest: () => void;
   /** End early, once the user confirmed it. */
   endEarly: () => void;
-  /** Puts the timer away — Back to workout, or after End early. */
+  /**
+   * Puts the timer away — Back to workout, or after End early. A block that ran to its end leaves
+   * `finished` behind for the workout to start the rest after it (FR-6); one ended early does not.
+   */
   close: () => void;
+  /** The workout has acted on `finished`. */
+  clearFinished: () => void;
 };
 
 export const useIntervalTimerStore = create<IntervalTimerStore>((set) => {
@@ -67,15 +84,34 @@ export const useIntervalTimerStore = create<IntervalTimerStore>((set) => {
 
   return {
     active: null,
+    finished: null,
     start: ({ exercise, rounds, getReadySec }) => {
       useRestTimerStore.getState().stop();
-      set({ active: { exercise, timer: startIntervalTimer(rounds, getReadySec, Date.now()) } });
+      set({
+        active: { exercise, timer: startIntervalTimer(rounds, getReadySec, Date.now()) },
+        finished: null,
+      });
     },
     catchUp: () => apply(intervalTimerAt),
     pause: () => apply(pauseIntervalTimer),
     resume: () => apply(resumeIntervalTimer),
     skipRest: () => apply(skipIntervalRest),
     endEarly: () => apply(endIntervalTimerEarly),
-    close: () => set({ active: null }),
+    close: () =>
+      set((s) => {
+        const last = s.active?.timer.outcome === 'done' ? s.active.timer.results.at(-1) : undefined;
+        if (s.active === null || last === undefined) {
+          return { active: null };
+        }
+        const finished: FinishedIntervalBlock = {
+          sessionExerciseId: s.active.exercise.sessionExerciseId,
+          roundNumber: last.roundNumber,
+        };
+        if (last.restSec !== undefined) {
+          finished.restSec = last.restSec;
+        }
+        return { active: null, finished };
+      }),
+    clearFinished: () => set({ finished: null }),
   };
 });

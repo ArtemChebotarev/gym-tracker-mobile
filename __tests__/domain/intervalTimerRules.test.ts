@@ -90,12 +90,13 @@ describe('intervalTimerAt — the phases in order', () => {
     expect(over.outcome).toBe('done');
   });
 
-  test('a finished block logs every round done, with the rest after all but the last', () => {
+  test('a finished block logs every round done — the last with its rest, still to come', () => {
     const over = intervalTimerAt(startIntervalTimer(HEAVY_BAG, 5, T0), T0 + 10_000 * S);
     expect(over.results).toEqual([
       { roundNumber: 1, workSec: 120, restSec: 60, restSkipped: false, completed: true },
       { roundNumber: 2, workSec: 120, restSec: 60, restSkipped: false, completed: true },
-      { roundNumber: 3, workSec: 120, restSkipped: false, completed: true },
+      // The rest before the next exercise, as the round's field holds it (Artem, 20.10.2026).
+      { roundNumber: 3, workSec: 120, restSec: 60, restSkipped: false, completed: true },
     ]);
   });
 

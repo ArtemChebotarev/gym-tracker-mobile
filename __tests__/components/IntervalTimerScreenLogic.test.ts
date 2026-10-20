@@ -69,9 +69,12 @@ describe('intervalTimerView', () => {
     ]);
   });
 
-  test('the last round says no rest follows it', () => {
+  test('the last round names the rest that follows it — the rest timer’s, after the summary', () => {
     const at = T0 + (5 + 120 + 45 + 120 + 45 + 10) * S;
-    expect(intervalTimerView(active(at), at)?.next).toBe('Last round. No rest after it.');
+    expect(intervalTimerView(active(at), at)?.next).toBe('Last round. Then rest 0:45');
+    const noRest = ROUNDS.map((round) => ({ ...round, restSec: 0 }));
+    const lastAt = T0 + (5 + 120 + 120 + 10) * S;
+    expect(intervalTimerView(active(lastAt, noRest), lastAt)?.next).toBe('Last round.');
   });
 
   test('rest (canvas 2.2): the round done, grey, Skip rest offered, the next round named', () => {

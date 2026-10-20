@@ -2,6 +2,7 @@ import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import {
   formatInProgressConflict,
   intervalTimerStartOf,
+  restAfterIntervalBlock,
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
@@ -347,5 +348,74 @@ describe('intervalTimerStartOf', () => {
 
   test('nothing for a round-less start', () => {
     expect(intervalTimerStartOf('session', bag, [])).toBeUndefined();
+  });
+});
+
+describe('restAfterIntervalBlock (GT-98)', () => {
+  const bag: WorkoutExercise = {
+    sessionExerciseId: 'bag',
+    exerciseId: 'heavy-bag',
+    name: 'Heavy bag',
+    muscleGroup: 'fullBody',
+    type: 'interval',
+    status: 'planned',
+    rounds: [1, 2].map((roundNumber) => ({
+      roundNumber,
+      workSec: 120,
+      restSec: 45,
+      isFirstUnlogged: false,
+      log: { workSec: 120, restSec: 45, restSkipped: false, completed: true },
+    })),
+    plannedRoundCount: 2,
+    loggedRoundCount: 2,
+    hasLoggedSets: true,
+    getReadySec: 5,
+    actions: {
+      canReplace: false,
+      canMoveUp: false,
+      canMoveDown: false,
+      canSkip: false,
+      canUnskip: false,
+      canDelete: false,
+      canAddRound: true,
+      canRemoveLastRound: true,
+    },
+  };
+  const cooldown: WorkoutExercise = {
+    ...bag,
+    sessionExerciseId: 'cooldown',
+    name: 'Cooldown',
+    rounds: [{ roundNumber: 1, workSec: 600, isFirstUnlogged: true }],
+    loggedRoundCount: 0,
+    hasLoggedSets: false,
+  };
+
+  test('the rest before the next exercise with work left, for the rest the last round was logged with', () => {
+    expect(
+      restAfterIntervalBlock([bag, cooldown], {
+        sessionExerciseId: 'bag',
+        roundNumber: 2,
+        restSec: 5,
+      }),
+    ).toEqual({
+      kind: 'start',
+      rest: {
+        sessionExerciseId: 'bag',
+        next: { kind: 'exercise', name: 'Cooldown' },
+        durationSec: 5,
+      },
+    });
+  });
+
+  test('none when the workout has nothing left', () => {
+    expect(
+      restAfterIntervalBlock([bag], { sessionExerciseId: 'bag', roundNumber: 2, restSec: 45 }),
+    ).toEqual({ kind: 'stop' });
+  });
+
+  test('nothing to act on when the exercise is gone from the workout', () => {
+    expect(
+      restAfterIntervalBlock([cooldown], { sessionExerciseId: 'bag', roundNumber: 2, restSec: 45 }),
+    ).toBeUndefined();
   });
 });

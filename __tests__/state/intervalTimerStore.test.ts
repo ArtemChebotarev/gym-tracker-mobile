@@ -19,6 +19,7 @@ function phase() {
 beforeEach(() => {
   jest.useFakeTimers({ now: T0 });
   useIntervalTimerStore.getState().close();
+  useIntervalTimerStore.getState().clearFinished();
   useRestTimerStore.getState().clear();
 });
 
@@ -76,6 +77,30 @@ describe('intervalTimerStore', () => {
 
     store.close();
     expect(useIntervalTimerStore.getState().active).toBeNull();
+  });
+
+  test('closing a block that ran to its end leaves its last round and rest for the workout', () => {
+    const store = useIntervalTimerStore.getState();
+    store.start({ exercise: EXERCISE, rounds: ROUNDS, getReadySec: 5 });
+    jest.advanceTimersByTime(10_000_000);
+    store.catchUp();
+    store.close();
+    expect(useIntervalTimerStore.getState().finished).toEqual({
+      sessionExerciseId: 'bag',
+      roundNumber: 2,
+      restSec: 30,
+    });
+    store.clearFinished();
+    expect(useIntervalTimerStore.getState().finished).toBeNull();
+  });
+
+  test('End early leaves nothing — no rest follows a block cut short', () => {
+    const store = useIntervalTimerStore.getState();
+    store.start({ exercise: EXERCISE, rounds: ROUNDS, getReadySec: 5 });
+    jest.advanceTimersByTime(20_000);
+    store.endEarly();
+    store.close();
+    expect(useIntervalTimerStore.getState().finished).toBeNull();
   });
 
   test('a tick that changes nothing leaves the state as it was', () => {
