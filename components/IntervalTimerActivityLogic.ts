@@ -2,6 +2,7 @@ import { formatClock } from '@design/formatClock';
 import { COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '@design/tokens';
 import {
   intervalPhaseProgress,
+  intervalPhaseRemainingMs,
   intervalPhasesAhead,
   isIntervalTimerRunning,
   resumeIntervalTimer,
@@ -43,6 +44,15 @@ export type IntervalActivityLook = {
   /** The time's fixed width — see `size/activity-clock`. */
   clockWidth: number;
   clockSize: number;
+  /** The phase row's height and the Dynamic Island's compact time box — see `size/activity-phase`. */
+  phaseHeight: number;
+  islandCompactWidth: number;
+  islandCompactHeight: number;
+  /** The line under the phase. */
+  detailColor: string;
+  /** A phase's gate: drawn `maskSolid` shows, `maskClear` doesn't — see `mask/clear`. */
+  maskClear: string;
+  maskSolid: string;
   clockSizeExpanded: number;
   clockSizeCompact: number;
   clockSizeMinimal: number;
@@ -68,31 +78,46 @@ export type IntervalActivitySegment = {
 };
 
 /**
- * The whole block, drawn so that the system keeps it right with no update from the app — what the
- * lock screen shows when the app can't reach it. iOS turns down a Live Activity update from an app
- * that is only playing audio in the background (research 10.3, 20.10.2026): a phase shown there
- * may not change on time, the block's time and its bar always do.
+ * The block: its bar — a cell for each work and rest, each filling over its own time by itself —
+ * and, for the Dynamic Island's minimal and expanded views, its name and time left.
  */
 export type IntervalActivityBlock = {
   /** `Heavy bag`. */
   title: string;
-  /** `3 rounds`. */
-  detail: string;
-  /** The block's time left runs down to `endsAt` (from any moment before now: `startedAt`). */
+  segments: IntervalActivitySegment[];
+  /** Running: the block's time left runs down to `endsAt` (from any moment before now). */
   startedAt: number;
   endsAt: number;
-  /**
-   * Set while paused: the block's time left, as plain text (`2:13`). A paused timer is drawn as
-   * text, not as a live timer given a pause time — on the phone that one went on counting for 4–9 s
-   * after the pause, its button already reading Resume (GT-94, 19.10.2026).
-   */
-  pausedLabel?: string;
-  segments: IntervalActivitySegment[];
+};
+
+/**
+ * A phase as the Live Activity shows it (canvas 2.6): `Work` over `Heavy bag · round 2 of 3`,
+ * `Rest` over `Next: round 3 · 2:00`, `Get ready` over the round it leads into.
+ */
+export type IntervalActivityPhase = {
+  label: string;
+  detail: string;
+  /** When it is shown — running, its time runs down to `endsAt`; held, always. */
+  startsAt: number;
+  endsAt: number;
 };
 
 export type IntervalTimerActivityProps = {
   look: IntervalActivityLook;
   block: IntervalActivityBlock;
+  /**
+   * Running: every phase from the one running to the last, with its time. The activity shows each
+   * in its own time by itself — iOS turns down an update from the app behind a locked screen
+   * (research 10.3), so nothing on it may wait for one.
+   */
+  phases: IntervalActivityPhase[];
+  /**
+   * Paused: the phase held, and what is left of it as plain text (`0:13`). A paused timer is drawn
+   * as text, not as a live timer given a pause time — on the phone that one went on counting for
+   * 4–9 s after the pause, its button already reading Resume (GT-94, 19.10.2026). A pause comes from
+   * the app or the activity's own button, and an update from either gets through.
+   */
+  held?: IntervalActivityPhase & { timeLabel: string };
   /** The app's icon in the shared directory (state/liveActivityIcon.ts); none if it isn't there. */
   iconUri?: string;
 };
@@ -114,6 +139,12 @@ export function intervalActivityLook(): IntervalActivityLook {
     iconRadius: RADII['radius/segment-inner'],
     clockWidth: SIZES['size/activity-clock'],
     clockSize: TYPOGRAPHY['type/activity-clock'].fontSize,
+    phaseHeight: SIZES['size/activity-phase'],
+    islandCompactWidth: SIZES['size/activity-island-compact-width'],
+    islandCompactHeight: SIZES['size/activity-island-compact-height'],
+    detailColor: COLORS['text/secondary'],
+    maskClear: COLORS['mask/clear'],
+    maskSolid: COLORS['mask/solid'],
     clockSizeExpanded: TYPOGRAPHY['type/value'].fontSize,
     clockSizeCompact: TYPOGRAPHY['type/footnote'].fontSize,
     clockSizeMinimal: TYPOGRAPHY['type/caption'].fontSize,
@@ -127,23 +158,69 @@ export function intervalActivityLook(): IntervalActivityLook {
 const MS_PER_SEC = 1000;
 
 /**
- * The Live Activity of the timer `active` at `now`: the block (`intervalActivityBlockOf`), running
- * or held. `undefined` once the block is over — the activity ends.
+ * A held phase is shown throughout — drawn through the same gate as a running one (so the two are
+ * the same size), its gate open from the earliest moment to the latest a `Date` can hold.
+ */
+const SHOWN_FROM = 0;
+const SHOWN_UNTIL = 8_640_000_000_000_000;
+
+const PHASE_LABELS = { getReady: 'Get ready', work: 'Work', rest: 'Rest' } as const;
+
+/** How the activity names `phase` of the timer of `exercise`. */
+function phaseOf(
+  exercise: ActiveIntervalTimer['exercise'],
+  timer: IntervalTimer,
+  phase: IntervalTimerPhase,
+  startsAt: number,
+  endsAt: number,
+): IntervalActivityPhase {
+  const round = timer.rounds[phase.round];
+  const after = timer.rounds[phase.round + 1];
+  const detail =
+    phase.kind === 'rest'
+      ? after === undefined
+        ? exercise.name
+        : `Next: round ${after.roundNumber} · ${formatClock(after.workSec)}`
+      : `${exercise.name} · round ${round?.roundNumber} of ${exercise.totalRounds}`;
+  return { label: PHASE_LABELS[phase.kind], detail, startsAt, endsAt };
+}
+
+/**
+ * The Live Activity of the timer `active` at `now`: running, every phase still to come with its
+ * time; paused, the phase held. `undefined` once the block is over — the activity ends.
  */
 export function intervalActivityPropsOf(
   active: ActiveIntervalTimer,
   now: number,
 ): IntervalTimerActivityProps | undefined {
-  if (active.timer.phase === undefined) return undefined;
-  return { look: intervalActivityLook(), block: intervalActivityBlockOf(active, now) };
+  const { exercise, timer } = active;
+  const phase = timer.phase;
+  if (phase === undefined) return undefined;
+  const props: IntervalTimerActivityProps = {
+    look: intervalActivityLook(),
+    block: intervalActivityBlockOf(active, now),
+    phases: [],
+  };
+  if (isIntervalTimerRunning(timer)) {
+    props.phases = intervalPhasesAhead(timer).map((ahead) =>
+      phaseOf(exercise, timer, ahead.phase, ahead.startsAt, ahead.endsAt),
+    );
+  } else {
+    const remainingMs = intervalPhaseRemainingMs(timer, now);
+    props.held = {
+      ...phaseOf(exercise, timer, phase, SHOWN_FROM, SHOWN_UNTIL),
+      timeLabel: formatClock(Math.max(0, Math.ceil(remainingMs / MS_PER_SEC))),
+    };
+  }
+  return props;
 }
 
 const samePhase = (a: IntervalTimerPhase, b: IntervalTimerPhase) =>
   a.kind === b.kind && a.round === b.round;
 
 /**
- * The block of the timer `active` at `now`: a cell for each work and each rest still to come of the
- * rounds it runs — a Get ready has none — with those before the phase running full.
+ * The block's bar of the timer `active` at `now`: a cell for each work and each rest of the rounds
+ * it runs — a Get ready has none — those before the phase running full; paused, held where they are.
  */
 export function intervalActivityBlockOf(
   { exercise, timer }: ActiveIntervalTimer,
@@ -176,23 +253,17 @@ export function intervalActivityBlockOf(
     cell(true, { kind: 'work', round: index });
     if (index < last && round.restSec > 0) cell(false, { kind: 'rest', round: index });
   });
-  const endsAt = ahead.at(-1)?.endsAt ?? now;
-  const block: IntervalActivityBlock = {
+  return {
     title: exercise.name,
-    detail: `${exercise.totalRounds} rounds`,
-    startedAt: Math.min(now, ahead[0]?.startsAt ?? now),
-    endsAt,
     segments,
+    startedAt: Math.min(now, ahead[0]?.startsAt ?? now),
+    endsAt: ahead.at(-1)?.endsAt ?? now,
   };
-  if (!running) {
-    block.pausedLabel = formatClock(Math.max(0, Math.ceil((endsAt - now) / MS_PER_SEC)));
-  }
-  return block;
 }
 
 /**
  * The timer's state as far as its Live Activity cares, as one value: it changes when the block's
- * schedule does — a pause, a resume, a skipped rest — the moments the activity is updated. A phase
+ * schedule does — a pause, a resume, a rest skipped in the app — the moments the activity is updated. A phase
  * that merely runs into the next changes nothing: the activity's time and cells run by themselves.
  * `undefined` once the block is over.
  */

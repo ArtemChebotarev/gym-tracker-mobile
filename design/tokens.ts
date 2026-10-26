@@ -74,6 +74,13 @@ export const COLORS = {
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
   /** Drop shadow under a lifted (dragged) row. */
   shadow: '#000000',
+  /**
+   * The two ends of a luminance mask on the interval timer's Live Activity (GT-180): what is drawn
+   * `mask/solid` inside a phase's gate shows, what is drawn `mask/clear` doesn't, and a grey in
+   * between shows that much of the white. See components/IntervalTimerActivity.tsx.
+   */
+  'mask/clear': '#000000',
+  'mask/solid': '#FFFFFF',
 } as const;
 
 export type ColorToken = keyof typeof COLORS;
@@ -284,6 +291,15 @@ export const SIZES = {
   'size/activity-bar': 4,
   /** The app's icon on the interval timer's Live Activity (canvas 2.6, GT-99). */
   'size/activity-icon': 28,
+  /**
+   * The phase row of the interval timer's Live Activity — phase, line under it, time — and its
+   * time in the Dynamic Island's compact view (GT-180). Fixed, because each phase is
+   * drawn as a layer of its own, stacked, and shown only in its time: a stack of layers has no size
+   * of its own to give.
+   */
+  'size/activity-phase': 52,
+  'size/activity-island-compact-width': 44,
+  'size/activity-island-compact-height': 20,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
   'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */

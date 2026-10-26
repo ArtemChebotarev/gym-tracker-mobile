@@ -1,35 +1,63 @@
-import { Button, HStack, Image, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Button,
+  HStack,
+  Image,
+  ProgressView,
+  Rectangle,
+  Spacer,
+  Text,
+  VStack,
+  ZStack,
+} from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   animation,
   Animation,
   background,
+  brightness,
   buttonStyle,
+  clipped,
   clipShape,
+  colorInvert,
   contentTransition,
+  contrast,
   font,
   foregroundStyle,
   frame,
+  geometryGroup,
   labelsHidden,
+  luminanceToAlpha,
   monospacedDigit,
   multilineTextAlignment,
   padding,
   resizable,
+  scaleEffect,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
+import type { ReactNode } from 'react';
 
-import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
+import type {
+  IntervalActivityPhase,
+  IntervalTimerActivityProps,
+} from './IntervalTimerActivityLogic';
 
-// The interval timer on the lock screen and in the Dynamic Island (10.1 FR-6; canvas 2.6, GT-99):
-// the app's icon, the exercise in bold over its rounds, the block's time left on the right, a bar
-// under them with a cell for each work and rest, and Pause (Resume while paused). No End early: too
-// easy to hit by accident (canvas 6.3). A tap on the rest opens the timer.
+// The interval timer on the lock screen and in the Dynamic Island (10.1 FR-6; canvas 2.6, GT-99,
+// GT-180): the app's icon, the phase in bold over the exercise and round — or the next round in a
+// rest — the phase's time left on the right, the block's bar under them, and Pause (Resume while
+// paused). No End early: too easy to hit by accident (canvas 6.3); no Skip rest — that is the app's
+// (Artem, 26.10.2026). A tap on the rest opens the timer.
 //
-// The block, not the phase (research 10.3, 20.10.2026): behind a locked screen iOS turns down the
-// app's updates once it is only playing audio, so a phase view froze on 0:00 of the phase before.
-// Everything drawn here runs by itself from the start, the same every time. No Skip rest: the
-// activity can't know a rest is running.
+// Right with no update. Behind a locked screen iOS turns down the app's updates once it is only
+// playing audio (research 10.3), so the activity is laid out once, at the start, for the whole
+// block, and the system's clock does the rest:
+// - the bar: a cell per work and rest, each filling over its own time;
+// - the phase: one layer per phase still to come, stacked, each shown only from its start to its
+//   end — by a gate (`during`), see below. Its time is a live timer over that phase.
+// A pause or a resume comes from the app or the activity's own button, and an update from either
+// gets through: the activity is then laid out anew. Each update redraws the whole activity, and a
+// gate is the heaviest thing on it — so there are as few stacks of them as can be: the phase row,
+// and the Dynamic Island's compact time.
 //
 // The `'widget'` function below is not run in the app. Babel turns it into a string, and the
 // widget extension runs that on its own (expo-widgets): nothing from this module's scope reaches
@@ -37,11 +65,10 @@ import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
 // `props.look` (IntervalTimerActivityLogic.ts), and the buttons' targets are written out here —
 // keep them in step with `IntervalActivityAction`.
 //
-// - Running, the time and the cells run by themselves: the app need not wake to move them.
-// - Paused, the time is plain text and the cells hold — see `IntervalActivityBlock`. Nothing
-//   else changes but the button (Artem, 20.10.2026): the time sits in a fixed, right-aligned frame,
-//   so the activity doesn't jump between the two.
-// - A button's tap comes back to the app as a user interaction (state/intervalLiveActivity.ts).
+// Paused, the time is plain text and the cells hold. Nothing else changes but the button (Artem,
+// 20.10.2026): the phase row and the time sit in the same fixed frames running and paused, so the
+// activity doesn't jump between the two — it sprang like rubber when their heights differed.
+// A button's tap comes back to the app as a user interaction (state/intervalLiveActivity.ts).
 
 const IntervalTimerActivity = (
   props: IntervalTimerActivityProps,
@@ -49,32 +76,135 @@ const IntervalTimerActivity = (
 ) => {
   'widget';
   const look = props.look;
-  const paused = props.block.pausedLabel !== undefined;
+  const held = props.held;
+  const paused = held !== undefined;
   const barColor = environment.isLuminanceReduced ? look.barColorDimmed : look.barColor;
   const block = props.block;
-  const interval = { lower: new Date(block.startedAt), upper: new Date(block.endsAt) };
   // Changes swap in place: the system would otherwise morph one text into the next, and the
   // activity stretched like rubber between running and paused (Artem, 20.10.2026).
   const still = contentTransition('identity');
   // Paused and running swap with no animation of their own: the system springs the activity on
-  // each update, and a morph between the two bars stretched it like rubber (Artem, 20.10.2026).
+  // each update, and a morph between the two stretched it like rubber (Artem, 20.10.2026).
   const noAnimation =
     typeof Animation === 'undefined' ? [] : [animation(Animation.linear({ duration: 0 }), paused)];
-  // One frame for both: a live timer takes all the width it may need, plain text only its own.
-  const clockLook = (size: number, width?: number) => [
+
+  // The gate: what is drawn inside it shows from `startsAt` to `endsAt` only, by the system's clock.
+  // Drawn white on black, two black bars stretched over all of it — one full until the phase
+  // starts and empty from then on, one empty until it ends and full from then on — and then
+  // `luminanceToAlpha` turns black clear and white opaque: a mask made of what the widget has
+  // (a view mask is not in @expo/ui). Found on the simulator (GT-180 spike, 26.10.2026):
+  // - `geometryGroup()` first, or each child is filtered on its own and a black bar turns clear
+  //   instead of hiding what is under it;
+  // - `brightness` and `contrast` before it hide the empty bars' grey track;
+  // - a button inside a gate is drawn but does not tap — the tap opens the app: no button in one.
+  const step = 100;
+  const during = (startsAt: number, endsAt: number, height: number, content: ReactNode) => {
+    const cover = (from: number, countsDown: boolean) => (
+      <ProgressView
+        timerInterval={{ lower: new Date(from), upper: new Date(from + step) }}
+        countsDown={countsDown}
+        modifiers={[
+          tint(look.maskClear),
+          labelsHidden(),
+          frame({ maxWidth: Infinity }),
+          scaleEffect({ x: 1.2, y: 30 }),
+        ]}
+      />
+    );
+    return (
+      <ZStack
+        modifiers={[
+          frame({ maxWidth: Infinity, height }),
+          clipped(),
+          geometryGroup(),
+          brightness(-0.15),
+          contrast(3),
+          luminanceToAlpha(),
+          colorInvert(),
+        ]}
+      >
+        <Rectangle modifiers={[foregroundStyle(look.maskClear)]} />
+        {content}
+        {cover(startsAt, true)}
+        {cover(endsAt, false)}
+      </ZStack>
+    );
+  };
+  // One layer per phase still to come, each in its own time — paused, the one phase held, its gate
+  // open throughout (IntervalTimerActivityLogic.ts): running and paused are drawn the same way, the
+  // same size, so the activity doesn't spring between them. Drawn otherwise, the paused row stood
+  // 4 pt lower and the activity sprang on every Pause and Resume (simulator, frame by frame).
+  const layers = held !== undefined ? [held] : props.phases;
+  const phased = (
+    width: number,
+    height: number,
+    layer: (phase: IntervalActivityPhase) => ReactNode,
+  ) => (
+    <ZStack modifiers={[frame({ maxWidth: width, height })]}>
+      {layers.map((phase, index) => (
+        <ZStack key={index} modifiers={[frame({ maxWidth: width, height })]}>
+          {during(phase.startsAt, phase.endsAt, height, layer(phase))}
+        </ZStack>
+      ))}
+    </ZStack>
+  );
+
+  // The time: running, a live timer over the phase; paused, plain text.
+  const clockLook = (size: number, color: string, width?: number) => [
     font({ size }),
     monospacedDigit(),
-    foregroundStyle(look.clockColor),
+    foregroundStyle(color),
     multilineTextAlignment('trailing'),
     still,
     ...(width === undefined ? [] : [frame({ width, alignment: 'trailing' })]),
   ];
-  const clock = (size: number, width?: number) =>
-    paused ? (
-      <Text modifiers={clockLook(size, width)}>{block.pausedLabel}</Text>
+  const phaseClock = (phase: IntervalActivityPhase, size: number, width?: number) =>
+    held !== undefined ? (
+      <Text modifiers={clockLook(size, look.maskSolid, width)}>{held.timeLabel}</Text>
     ) : (
-      <Text timerInterval={interval} modifiers={clockLook(size, width)} />
+      <Text
+        timerInterval={{ lower: new Date(phase.startsAt), upper: new Date(phase.endsAt) }}
+        modifiers={clockLook(size, look.maskSolid, width)}
+      />
     );
+  // The Dynamic Island: compact, the phase's time, gated; minimal and expanded, the block's time
+  // left — one live timer, no gates.
+  const islandClock = (size: number, width: number, height: number) =>
+    phased(width, height, (phase) => phaseClock(phase, size, width));
+  const blockClock = (size: number) =>
+    held !== undefined ? (
+      <Text modifiers={clockLook(size, look.clockColor)}>{held.timeLabel}</Text>
+    ) : (
+      <Text
+        timerInterval={{ lower: new Date(block.startedAt), upper: new Date(block.endsAt) }}
+        modifiers={clockLook(size, look.clockColor)}
+      />
+    );
+
+  // The phase in bold, the line under it, its time on the right.
+  const phaseView = phased(Infinity, look.phaseHeight, (phase) => (
+    <HStack spacing={look.gap}>
+      <VStack alignment="leading">
+        <Text
+          modifiers={[
+            font({ weight: 'semibold', size: look.titleSize }),
+            foregroundStyle(look.maskSolid),
+            still,
+          ]}
+        >
+          {phase.label}
+        </Text>
+        <Text
+          modifiers={[font({ size: look.captionSize }), foregroundStyle(look.detailColor), still]}
+        >
+          {phase.detail}
+        </Text>
+      </VStack>
+      <Spacer />
+      {phaseClock(phase, look.clockSize, look.clockWidth)}
+    </HStack>
+  ));
+
   // The same height both ways: the running bar stood 6 pt taller, and the activity sprang between
   // the two on every Pause and Resume — what read as rubber (Artem, 20.10.2026).
   const barFrame = frame({ height: look.barHeight });
@@ -102,6 +232,7 @@ const IntervalTimerActivity = (
       })}
     </HStack>
   );
+
   // Drawn here rather than left to a button style: the system paints a Live Activity's styled
   // buttons its own way — a grey capsule, full width, with a white icon and label (canvas 2.6).
   const button = (target: string, label: string, systemImage: 'play.fill' | 'pause.fill') => (
@@ -127,6 +258,7 @@ const IntervalTimerActivity = (
       </HStack>
     </Button>
   );
+
   return {
     banner: (
       <VStack
@@ -148,26 +280,21 @@ const IntervalTimerActivity = (
               ]}
             />
           ) : null}
-          <VStack alignment="leading">
-            <Text modifiers={[font({ weight: 'semibold', size: look.titleSize }), still]}>
-              {block.title}
-            </Text>
-            <Text modifiers={[font({ size: look.captionSize }), still]}>{block.detail}</Text>
-          </VStack>
-          <Spacer />
-          {clock(look.clockSize, look.clockWidth)}
+          {phaseView}
         </HStack>
         {segmentBar}
-        <HStack spacing={look.gap}>
-          {paused ? button('pause', 'Resume', 'play.fill') : button('pause', 'Pause', 'pause.fill')}
-        </HStack>
+        {paused ? button('pause', 'Resume', 'play.fill') : button('pause', 'Pause', 'pause.fill')}
       </VStack>
     ),
     compactLeading: <Text>{block.title}</Text>,
-    compactTrailing: clock(look.clockSizeCompact),
-    minimal: clock(look.clockSizeMinimal),
+    compactTrailing: islandClock(
+      look.clockSizeCompact,
+      look.islandCompactWidth,
+      look.islandCompactHeight,
+    ),
+    minimal: blockClock(look.clockSizeMinimal),
     expandedLeading: <Text>{block.title}</Text>,
-    expandedTrailing: clock(look.clockSizeExpanded),
+    expandedTrailing: blockClock(look.clockSizeExpanded),
     expandedBottom: segmentBar,
   };
 };

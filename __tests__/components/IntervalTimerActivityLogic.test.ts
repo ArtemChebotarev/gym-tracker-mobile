@@ -38,6 +38,61 @@ describe('intervalActivityPropsOf (10.3)', () => {
     expect(intervalActivityLook().barColor).toBe(COLORS['brand/orange']);
   });
 
+  test('running: every phase from the one running to the last, each with its own time', () => {
+    const sec = 5 + 120 + 10;
+    const resting = intervalTimerAt(start, T0 + sec * S);
+    const props = intervalActivityPropsOf({ exercise: EXERCISE, timer: resting }, T0 + sec * S);
+    expect(props?.held).toBeUndefined();
+    expect(props?.phases).toEqual([
+      {
+        label: 'Rest',
+        detail: 'Next: round 2 · 2:00',
+        startsAt: T0 + 125 * S,
+        endsAt: T0 + 170 * S,
+      },
+      {
+        label: 'Work',
+        detail: 'Heavy bag · round 2 of 3',
+        startsAt: T0 + 170 * S,
+        endsAt: T0 + 290 * S,
+      },
+      {
+        label: 'Rest',
+        detail: 'Next: round 3 · 2:00',
+        startsAt: T0 + 290 * S,
+        endsAt: T0 + 335 * S,
+      },
+      {
+        label: 'Work',
+        detail: 'Heavy bag · round 3 of 3',
+        startsAt: T0 + 335 * S,
+        endsAt: T0 + 455 * S,
+      },
+    ]);
+  });
+
+  test('from the start: Get ready leads, over the round it leads into', () => {
+    const props = intervalActivityPropsOf({ exercise: EXERCISE, timer: start }, T0 + S);
+    expect(props?.phases[0]).toEqual({
+      label: 'Get ready',
+      detail: 'Heavy bag · round 1 of 3',
+      startsAt: T0,
+      endsAt: T0 + 5 * S,
+    });
+  });
+
+  test('paused: no phases ahead, the phase held with what is left of it as text', () => {
+    const sec = 5 + 36;
+    const paused = pauseIntervalTimer(intervalTimerAt(start, T0 + sec * S), T0 + sec * S);
+    const props = intervalActivityPropsOf({ exercise: EXERCISE, timer: paused }, T0 + 999 * S);
+    expect(props?.phases).toEqual([]);
+    expect(props?.held).toMatchObject({
+      label: 'Work',
+      detail: 'Heavy bag · round 1 of 3',
+      timeLabel: '1:24',
+    });
+  });
+
   test('none once the block is over — the activity ends', () => {
     const over = intervalTimerAt(start, T0 + 10_000 * S);
     expect(
@@ -65,7 +120,7 @@ describe('intervalActivityBlockOf — the block, right with no update', () => {
 
   test('from Get ready: a cell per work and rest, each scheduled; the time runs to the last work’s end', () => {
     const block = blockAt(start, 2);
-    expect(block).toMatchObject({ title: 'Heavy bag', detail: '3 rounds' });
+    expect(block.title).toBe('Heavy bag');
     expect(block.endsAt).toBe(T0 + (5 + 3 * 120 + 2 * 45) * S);
     expect(block.segments).toEqual([
       { work: true, startsAt: T0 + 5 * S, endsAt: T0 + 125 * S },
@@ -74,7 +129,6 @@ describe('intervalActivityBlockOf — the block, right with no update', () => {
       { work: false, startsAt: T0 + 290 * S, endsAt: T0 + 335 * S },
       { work: true, startsAt: T0 + 335 * S, endsAt: T0 + 455 * S },
     ]);
-    expect(block.pausedLabel).toBeUndefined();
   });
 
   test('the same block whichever phase it is drawn in — nothing in it waits for an update', () => {
@@ -100,12 +154,11 @@ describe('intervalActivityBlockOf — the block, right with no update', () => {
     });
   });
 
-  test('paused: plain cells and the block’s time left as text', () => {
+  test('paused: plain cells, held where they are', () => {
     const sec = 5 + 30;
     const paused = pauseIntervalTimer(intervalTimerAt(start, T0 + sec * S), T0 + sec * S);
     const block = blockAt(paused, 999);
     expect(block.segments.map((segment) => segment.value)).toEqual([0.25, 0, 0, 0, 0]);
-    expect(block.pausedLabel).toBe('7:00');
   });
 });
 

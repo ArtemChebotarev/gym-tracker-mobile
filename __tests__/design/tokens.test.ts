@@ -50,6 +50,8 @@ const EXPECTED_COLOR_TOKENS = [
   'glass/fill',
   'overlay/scrim',
   'shadow',
+  'mask/clear',
+  'mask/solid',
 ];
 
 const EXPECTED_TYPOGRAPHY_TOKENS = [

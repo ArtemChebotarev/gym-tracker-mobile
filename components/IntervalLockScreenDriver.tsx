@@ -29,7 +29,9 @@ import {
 // - The Live Activity (components/IntervalTimerActivity) is started with the block, updated as it
 //   pauses, runs again or skips a rest — its time and cells run by themselves in between — resent as
 //   the app comes back to the front, and ended with the block. Its Pause (Resume while paused) acts
-//   on the timer; a tap on the rest of it opens the timer.
+//   on the timer; a tap on the rest of it opens the timer. Skip rest is the app's only (Artem,
+//   26.10.2026): on the activity it took a layer per phase and an invisible tap area, and the
+//   buttons worked worse for it.
 //
 // The activity's calls go one after another, each catching its own failure: iOS turns down an
 // update now and then — more so from the background — and one rejection in an unguarded chain made
