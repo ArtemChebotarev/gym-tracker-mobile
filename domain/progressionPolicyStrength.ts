@@ -11,6 +11,8 @@ import { targetRir } from '@domain/progressionRir';
 import { prescribeBlockStart } from '@domain/progressionStartReps';
 
 export const strengthPolicy: ProgressionPolicy = {
+  // Everything strength reads — the muscle group, the equipment — every exercise carries.
+  sourceFacts: () => ({}),
   prescribeWorkingWeek(
     { sessionExercise, equipment },
     { logs, weekNumber, lengthWeeks, settings },

@@ -1,13 +1,15 @@
 // Progression policy — the contract one `Exercise.type` implements to plan its own sets. See 03 ·
 // Progression Engine and 10 · Hybrid Exercises, "Что меняется в спеке": the engine dispatches by
 // type on top of the rules, so what a type does with them lives in that type's policy and not in a
-// branch at the call site. A policy plans four things: the next working week, a deload day, the
+// branch at the call site. A policy reads what it needs from the exercise's settings in its cycle,
+// and plans four things: the next working week, a deload day, the
 // targets of an exercise with no source session (rule 6) and the first targets of a copied block
 // (Flow C). Types only; the policies live in `domain/progressionPolicy<Type>.ts`, the dispatch in
 // `domain/progressionPolicies.ts`.
 
 import type { Equipment } from '@domain/catalog';
 import type { RoundLog, SetLog, SetTarget } from '@domain/execution';
+import type { ExerciseSettings } from '@domain/exerciseConfig';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type {
   ExercisePrescription,
@@ -39,7 +41,16 @@ export type ReferenceTargetsInput = {
   equipment?: Equipment;
 };
 
+/** The facts a type's policy reads off its exercise, beyond those every exercise carries. */
+export type TypeSourceFacts = Pick<SourceExercise, 'powerLoad' | 'intervalProgression'>;
+
 export type ProgressionPolicy = {
+  /**
+   * What the policy needs to know of the exercise from its settings in the cycle (the cycle's
+   * copy, or the library's values where it has none; `undefined` for a strength exercise). The use
+   * case puts it on the exercise's `SourceExercise` before planning.
+   */
+  sourceFacts(settings: ExerciseSettings | undefined): TypeSourceFacts;
   /** One exercise of a working week. Rule 1 (the set count is copied) holds for every policy. */
   prescribeWorkingWeek(exercise: SourceExercise, context: ProgressionContext): ExercisePrescription;
   /**

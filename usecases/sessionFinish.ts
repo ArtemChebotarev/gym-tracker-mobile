@@ -14,6 +14,7 @@ import {
   type NextSessionGenerationDeps,
 } from '@usecases/nextSessionGeneration';
 import { openSession } from '@usecases/openSession';
+import { hasLoggedWork } from '@usecases/sessionWork';
 
 export type SessionFinishDeps = NextSessionGenerationDeps & { workout: WorkoutStore };
 
@@ -25,7 +26,7 @@ export type SessionFinishResult = {
 
 /**
  * Finishes session `sessionId`. Every exercise must be `completed` or `skipped` — the Finish
- * button only appears then. With at least one logged set the session becomes `completed` with
+ * button only appears then. With at least one logged set or round the session becomes `completed` with
  * `completedAt = now`; with none (every exercise skipped before a set was logged) it becomes
  * `skipped`. Either way next week's session of the same day is generated in the same transaction
  * (none after deload).
@@ -53,8 +54,8 @@ export async function finishSession(
 
 /**
  * The step Finish and Skip workout share, once every exercise of `session` is `completed` or
- * `skipped`: with at least one logged set the session becomes `completed` with `completedAt =
- * now`, with none `skipped`; then next week's session of the same day is generated (none after
+ * `skipped`: with at least one logged set or round the session becomes `completed` with
+ * `completedAt = now`, with none `skipped`; then next week's session of the same day is generated (none after
  * deload). Runs inside the caller's transaction, with its repositories.
  */
 export async function closeSession(
@@ -63,10 +64,9 @@ export async function closeSession(
   deps: NextSessionGenerationDeps,
   now: string,
 ): Promise<SessionFinishResult> {
-  const logs = await repos.setLogRepo.listBySessionId(session.id);
   // Finish and Skip workout are both the user ending the day, so nothing logged reads `skipped`.
   const finished = await repos.sessionRepo.update(
-    closedSession(session, logs.length > 0, now, 'skipped'),
+    closedSession(session, await hasLoggedWork(session.id, repos), now, 'skipped'),
   );
   return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
 }
