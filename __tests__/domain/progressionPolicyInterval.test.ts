@@ -1,6 +1,7 @@
 import type { RoundLog, SessionExercise, SetTarget } from '@domain/execution';
 import type { SourceExercise } from '@domain/progression';
 import { FULL_BODY } from '@domain/catalog';
+import { INTERVAL_REST_MIN_SEC, INTERVAL_STEPS_SEC } from '@domain/exerciseConfig';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
   type IntervalProgression,
@@ -19,6 +20,23 @@ const rounds: SetTarget[] = [
 ];
 
 describe('stepIntervalLever', () => {
+  // GT-101: the levers' bounds (Artem, 26.10.2026). The rest stops at INTERVAL_REST_MIN_SEC; work
+  // and rounds have no ceiling — a block's length already bounds how many steps it takes.
+  test('the steps are 5 / 10 / 15 s, and the rest floor is 0:10', () => {
+    expect(INTERVAL_STEPS_SEC).toEqual([5, 10, 15]);
+    expect(INTERVAL_REST_MIN_SEC).toBe(10);
+  });
+
+  test('workTime and rounds have no ceiling', () => {
+    const long = [{ setNumber: 12, targetWorkSec: 59 * 60 + 55, targetRestSec: 60 }];
+    expect(stepLever(long, { lever: 'workTime', stepSec: 15 })[0]?.targetWorkSec).toBe(
+      60 * 60 + 10,
+    );
+    expect(stepLever(long, { lever: 'rounds', stepSec: 15 }).map((r) => r.setNumber)).toEqual([
+      12, 13,
+    ]);
+  });
+
   test('rest: every rest one step shorter', () => {
     expect(stepLever(rounds, { lever: 'rest', stepSec: 15 }).map((r) => r.targetRestSec)).toEqual([
       45, 45, 45,
