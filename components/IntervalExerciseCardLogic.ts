@@ -46,26 +46,19 @@ export function timerRoundsOf(rounds: readonly WorkoutRoundRow[]): IntervalTimer
 
 /**
  * The Start timer button's label (08.7, "Interval card"; canvas 1.4, 1.6), or `undefined` once every
- * round is logged and there is nothing left to time. With nothing logged yet it says how long the
- * whole block takes — every round's work and the rests between them, `Start timer · 7:30`; once a
- * round is logged by hand, how many are left, since the timer starts from the first unlogged one
- * (FR-7). The block ends on its last round, so the rest after it — the rest before the next
- * exercise (FR-6) — is not part of the length.
+ * round is logged and there is nothing left to time. It always counts rounds, the unit the timer
+ * runs: with nothing logged yet how many there are, `Start timer · 3 rounds`; once a round is logged
+ * by hand, how many are left, `Start timer · 2 rounds left`, since the timer starts from the first
+ * unlogged one (FR-7). Not a length: a block's total time reads as the length of one round (Artem,
+ * 26.10.2026).
  */
 export function startTimerLabel(rounds: readonly WorkoutRoundRow[]): string | undefined {
   const left = rounds.filter((round) => round.log === undefined);
   if (left.length === 0) {
     return undefined;
   }
-  if (left.length < rounds.length) {
-    return `Start timer · ${left.length} ${left.length === 1 ? 'round' : 'rounds'} left`;
-  }
-  const totalSec = rounds.reduce(
-    (sum, round, index) =>
-      sum + round.workSec + (index < rounds.length - 1 ? (round.restSec ?? 0) : 0),
-    0,
-  );
-  return `Start timer · ${formatClock(totalSec)}`;
+  const count = `${left.length} ${left.length === 1 ? 'round' : 'rounds'}`;
+  return `Start timer · ${left.length < rounds.length ? `${count} left` : count}`;
 }
 
 /**

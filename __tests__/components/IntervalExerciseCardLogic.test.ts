@@ -22,9 +22,9 @@ const LOGGED: WorkoutRoundRow['log'] = {
 };
 
 describe('startTimerLabel', () => {
-  test('with nothing logged it says how long the block takes: work plus the rests between', () => {
-    // The last round's rest is before the next exercise, not part of the block.
-    expect(startTimerLabel(ROUNDS)).toBe('Start timer · 7:30');
+  test('with nothing logged, how many rounds the block has', () => {
+    expect(startTimerLabel(ROUNDS)).toBe('Start timer · 3 rounds');
+    expect(startTimerLabel(ROUNDS.slice(0, 1))).toBe('Start timer · 1 round');
   });
 
   test('once a round is logged by hand, how many are left', () => {
