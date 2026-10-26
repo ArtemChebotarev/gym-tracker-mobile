@@ -91,6 +91,30 @@ describe('intervalTimerView', () => {
     expect(view?.segments.map((s) => s.tone)).toEqual(['done', 'done', 'empty']);
   });
 
+  test('the rest’s last 5 s are its Get ready (GT-176): orange, a ring of its own, Skip rest kept', () => {
+    const at = T0 + (5 + 120 + 45 - 3) * S;
+    const view = intervalTimerView(active(at), at);
+    expect(view).toMatchObject({
+      subtitle: 'Round 1 of 3 done',
+      phase: 'Get ready',
+      time: '0:03',
+      of: 'of 0:05',
+      progress: 0.6,
+      tone: 'running',
+      next: 'Next round 2 · 2:00',
+      canSkipRest: true,
+    });
+    expect(view?.pill).toBeUndefined();
+    expect(view?.runsOutAt).toBe(T0 + (5 + 120 + 45) * S);
+  });
+
+  test('paused in the rest’s Get ready, it is named so', () => {
+    const at = T0 + (5 + 120 + 45 - 3) * S;
+    const paused = pauseIntervalTimer(active(at).timer, at);
+    const view = intervalTimerView({ exercise: EXERCISE, timer: paused }, at + 60 * S);
+    expect(view).toMatchObject({ phase: 'Paused · get ready', tone: 'paused', time: '0:03' });
+  });
+
   test('after a skipped rest (canvas 2.3): Get ready with a Rest skipped pill', () => {
     const at = T0 + (5 + 120 + 10) * S;
     const skipped = skipIntervalRest(active(at).timer, at);

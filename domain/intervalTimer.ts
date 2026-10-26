@@ -45,7 +45,10 @@ export type IntervalRoundResult = Pick<
 export type IntervalTimer = {
   /** The rounds of the block, from the first one not yet logged (FR-7). Never empty. */
   rounds: readonly IntervalTimerRound[];
-  /** Get ready before a round started by a tap — Start timer, Skip rest. 0 is none. */
+  /**
+   * Get ready before a round started by a tap — Start timer, Skip rest — and the last seconds of
+   * every rest, which show as one (GT-176). 0 is none.
+   */
   getReadySec: number;
   /** The phase running or paused; absent once the block is over. */
   phase?: IntervalTimerPhase;

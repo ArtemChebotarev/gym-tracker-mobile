@@ -24,7 +24,7 @@
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { CONFIG_TIME_STEP_SEC, type ExerciseSettings } from '@domain/exerciseConfig';
+import type { ExerciseSettings } from '@domain/exerciseConfig';
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
@@ -100,7 +100,7 @@ export function CyclePlanSheet({
         onChange={(valueSec) => onChangeSettings(withTimeField(current, field.key, valueSec))}
         min={field.minSec}
         max={field.maxSec}
-        step={CONFIG_TIME_STEP_SEC}
+        step={field.stepSec}
         formatValue={formatClock}
         onValuePress={() => setEditing(field)}
       />
@@ -151,7 +151,9 @@ export function CyclePlanSheet({
                 <SegmentedControl
                   options={PLAN_STEP_OPTIONS}
                   value={String(current.stepSec)}
-                  onChange={(step) => onChangeSettings({ ...current, stepSec: stepFromValue(step) })}
+                  onChange={(step) =>
+                    onChangeSettings({ ...current, stepSec: stepFromValue(step) })
+                  }
                 />
               </View>
             )}
@@ -196,6 +198,7 @@ export function CyclePlanSheet({
           editing !== null && onChangeSettings(withTimeField(current, editing.key, valueSec))
         }
         minSec={editing?.minSec}
+        stepSec={editing?.stepSec}
         maxSec={editing?.maxSec ?? DURATION.maxSec}
       />
     </BottomSheet>

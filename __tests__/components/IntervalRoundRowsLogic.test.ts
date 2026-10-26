@@ -83,9 +83,9 @@ describe('round times (GT-90)', () => {
     expect(roundTimePickerSubtitle(ROUNDS, 4)).toBeUndefined();
   });
 
-  test('the picker keeps the exercise config’s bounds, in 5 s steps', () => {
+  test('the picker keeps the exercise config’s bounds, in 5 s steps — a rest of 10 s at least', () => {
     expect(ROUND_TIME_PICKER.work).toEqual({ minSec: 5, maxSec: 3600, stepSec: 5 });
-    expect(ROUND_TIME_PICKER.rest).toEqual({ minSec: 0, maxSec: 600, stepSec: 5 });
+    expect(ROUND_TIME_PICKER.rest).toEqual({ minSec: 10, maxSec: 600, stepSec: 5 });
   });
 });
 

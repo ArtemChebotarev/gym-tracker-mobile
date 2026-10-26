@@ -1,14 +1,17 @@
 // The transitions of the interval timer (10.1 FR-6, GT-95) — see `intervalTimer.ts` for the types.
 //
-// - Get ready → work → rest → work → … → the last round's work → done. Get ready only before a
-//   round started by a tap: the first one (Start timer) and one after Skip rest; after an ordinary
-//   rest the next round starts at once. A rest of 0 is no rest. No rest after the last round: the
+// - Get ready → work → rest → work → … → the last round's work → done. Get ready of its own only
+//   before a round started by a tap: the first one (Start timer) and one after Skip rest. After an
+//   ordinary rest there is none: the rest's last `getReadySec` are its Get ready — shown as one,
+//   still the rest, which is no longer for it (GT-176; `intervalPhaseShown`). A rest of 0 is no
+//   rest. No rest after the last round: the
 //   timer is over, and its rest is the ordinary rest timer's, after the summary (FR-6). The last
 //   round done is logged with that rest all the same — the one its field holds, as a round logged
 //   by hand is — so a rest changed in the workout reaches next week (FR-8; Artem, 20.10.2026).
 // - Pause holds the phase; resume runs it on with what was left.
 // - Skip rest: a one-off — the rest is logged as taken so far and marked skipped, then Get ready
-//   and the next round.
+//   and the next round. Skipped in the rest's Get ready, the next round starts at once: the Get
+//   ready was already running (Artem, 26.10.2026).
 // - End early: the round being worked is logged with the time it ran and counted as not done; a
 //   rest cut short is logged with the time it ran. Nothing is logged for the rounds after.
 // - Every transition first catches up with `now` (`intervalTimerAt`), so an action after the app
@@ -175,9 +178,42 @@ export function intervalPhaseRemainingSec(timer: IntervalTimer, now: number): nu
   return Math.ceil(intervalPhaseRemainingMs(timer, now) / MS_PER_SEC);
 }
 
-/** The share of the phase still to go, 0..1 — what the ring is filled with. */
+/** The Get ready a rest ends with: its last `getReadySec`, or all of a shorter one (GT-176). */
+function restTailMs(timer: IntervalTimer): number {
+  return Math.min(timer.getReadySec * MS_PER_SEC, timer.durationMs);
+}
+
+/** Whether `timer` is in a rest's last seconds at `now` — the ones that run as its Get ready. */
+export function isInIntervalRestTail(timer: IntervalTimer, now: number): boolean {
+  if (timer.phase?.kind !== 'rest') return false;
+  const tailMs = restTailMs(timer);
+  return tailMs > 0 && intervalPhaseRemainingMs(timer, now) <= tailMs;
+}
+
+/** A phase as the timer shows it: what it is called and how long it is. */
+export type IntervalShownPhase = { kind: IntervalTimerPhase['kind']; durationMs: number };
+
+/**
+ * The phase as the timer shows it at `now`: the one running — except a rest's last seconds, which
+ * are a Get ready of their own length (GT-176), ending where the rest ends. `undefined` once over.
+ */
+export function intervalPhaseShown(
+  timer: IntervalTimer,
+  now: number,
+): IntervalShownPhase | undefined {
+  if (timer.phase === undefined) return undefined;
+  return isInIntervalRestTail(timer, now)
+    ? { kind: 'getReady', durationMs: restTailMs(timer) }
+    : { kind: timer.phase.kind, durationMs: timer.durationMs };
+}
+
+/**
+ * The share of the phase still to go, 0..1 — what the ring is filled with. A rest's Get ready
+ * fills it anew: the share of the Get ready, not of the rest.
+ */
 export function intervalPhaseProgress(timer: IntervalTimer, now: number): number {
-  return timer.durationMs > 0 ? intervalPhaseRemainingMs(timer, now) / timer.durationMs : 0;
+  const durationMs = intervalPhaseShown(timer, now)?.durationMs ?? 0;
+  return durationMs > 0 ? Math.min(1, intervalPhaseRemainingMs(timer, now) / durationMs) : 0;
 }
 
 /** Milliseconds of the phase gone by at `now`. */
@@ -202,7 +238,8 @@ export function resumeIntervalTimer(timer: IntervalTimer, now: number): Interval
 
 /**
  * Skip rest at `now`: the rest so far is logged and marked skipped, then Get ready and the next
- * round, running — from a paused rest too. Outside a rest it changes nothing.
+ * round, running — from a paused rest too. From the rest's own Get ready (its last seconds), the
+ * next round at once, with no second one. Outside a rest it changes nothing.
  */
 export function skipIntervalRest(timer: IntervalTimer, now: number): IntervalTimer {
   const current = intervalTimerAt(timer, now);
@@ -218,7 +255,10 @@ export function skipIntervalRest(timer: IntervalTimer, now: number): IntervalTim
       true,
     ),
   };
-  return enter(skipped, { kind: 'getReady', round: phase.round + 1 }, now);
+  const next = phase.round + 1;
+  return isInIntervalRestTail(current, now)
+    ? enter(skipped, { kind: 'work', round: next }, now)
+    : enter(skipped, { kind: 'getReady', round: next }, now);
 }
 
 /**

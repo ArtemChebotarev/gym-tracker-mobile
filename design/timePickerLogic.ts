@@ -7,6 +7,14 @@ export function splitSeconds(totalSec: number): { minutes: number; seconds: numb
   return { minutes: Math.floor(whole / 60), seconds: whole % 60 };
 }
 
+/**
+ * Whether a field up to `maxSec` gets a minutes wheel: one that holds less than a minute — Get
+ * ready, 0–10 s — has the seconds wheel alone, as a minutes wheel stuck at 0 says nothing.
+ */
+export function hasMinutesWheel(maxSec: number): boolean {
+  return maxSec >= 60;
+}
+
 /** `totalSec` held within `[minSec, maxSec]`. */
 export function clampSeconds(totalSec: number, minSec: number, maxSec: number): number {
   return Math.min(maxSec, Math.max(minSec, totalSec));

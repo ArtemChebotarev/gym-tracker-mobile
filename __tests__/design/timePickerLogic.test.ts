@@ -1,4 +1,5 @@
 import {
+  hasMinutesWheel,
   clampSeconds,
   joinSeconds,
   minuteOptions,
@@ -35,6 +36,15 @@ describe('options', () => {
     expect(secondOptions(15)).toEqual([0, 15, 30, 45]);
     expect(secondOptions(5)).toHaveLength(12);
     expect(secondOptions(5).at(-1)).toBe(55);
+  });
+});
+
+describe('hasMinutesWheel', () => {
+  test('a field under a minute — Get ready, 0–10 s — has the seconds wheel alone (GT-176)', () => {
+    expect(hasMinutesWheel(10)).toBe(false);
+    expect(hasMinutesWheel(59)).toBe(false);
+    expect(hasMinutesWheel(60)).toBe(true);
+    expect(hasMinutesWheel(600)).toBe(true);
   });
 });
 
