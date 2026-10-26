@@ -91,9 +91,22 @@ describe('validateExerciseConfig', () => {
     expect(() => validateExerciseConfig('power', power({ restSec: 30.5 }))).toThrow('Rest');
   });
 
-  test('accept zero rest on power and interval, which is "go straight on"', () => {
+  test('accept zero rest on power, which is "go straight on"', () => {
     expect(() => validateExerciseConfig('power', power({ restSec: 0 }))).not.toThrow();
-    expect(() => validateExerciseConfig('interval', interval({ restSec: 0 }))).not.toThrow();
+  });
+
+  test('an interval rests 10 s at least, so its rounds stay apart (GT-176)', () => {
+    expect(() => validateExerciseConfig('interval', interval({ restSec: 10 }))).not.toThrow();
+    expect(() => validateExerciseConfig('interval', interval({ restSec: 5 }))).toThrow('Rest');
+    expect(() => validateExerciseConfig('interval', interval({ restSec: 0 }))).toThrow('Rest');
+  });
+
+  test('an interval’s Get ready is 0–10 s, by the second (GT-176)', () => {
+    expect(() => validateExerciseConfig('interval', interval({ getReadySec: 0 }))).not.toThrow();
+    expect(() => validateExerciseConfig('interval', interval({ getReadySec: 7 }))).not.toThrow();
+    expect(() => validateExerciseConfig('interval', interval({ getReadySec: 11 }))).toThrow(
+      'Get ready must be a whole number from 0 to 10',
+    );
   });
 
   test('refuse an interval without work time', () => {

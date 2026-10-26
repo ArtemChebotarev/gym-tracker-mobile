@@ -71,6 +71,17 @@ describe('intervalCapsule (canvas 3.2)', () => {
     });
   });
 
+  test('the rest’s last seconds: Get ready for the round after it, Skip kept (GT-176)', () => {
+    const sec = 5 + 120 + 42;
+    expect(intervalCapsule(at(sec), T0 + sec * S, ACTIONS)).toMatchObject({
+      icon: ChevronsRightIcon,
+      title: '0:03',
+      caption: 'Get ready · round 2 next',
+      progress: 0.6,
+      onSkip: ACTIONS.skipRest,
+    });
+  });
+
   test('paused: the phase kept, the time held, Resume', () => {
     const sec = 5 + 36;
     const paused = pauseIntervalTimer(at(sec).timer, T0 + sec * S);

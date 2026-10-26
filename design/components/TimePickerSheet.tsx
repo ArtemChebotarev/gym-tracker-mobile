@@ -4,12 +4,19 @@
 // or rest, an exercise's defaults — where `−` / `+` by five seconds is too many taps.
 //
 // Two wheels, minutes and seconds, in a WheelPickerSheet. (iOS's own countdown picker does not do
-// seconds, hence two wheels rather than one.)
+// seconds, hence two wheels rather than one.) A field under a minute has the seconds wheel alone
+// (`hasMinutesWheel`).
 //
 // Controlled: it shows `value` and reports every change through `onChange`, held within
 // `[minSec, maxSec]` — what is picked is already what will be kept. Done only closes the panel.
 
-import { joinSeconds, minuteOptions, secondOptions, splitSeconds } from '../timePickerLogic';
+import {
+  hasMinutesWheel,
+  joinSeconds,
+  minuteOptions,
+  secondOptions,
+  splitSeconds,
+} from '../timePickerLogic';
 import { WheelPickerSheet, type WheelColumn } from './WheelPickerSheet';
 
 export type TimePickerSheetProps = {
@@ -53,21 +60,26 @@ export function TimePickerSheet({
   // A value that is not on a step (an old 0:07) shows on the nearest position below it.
   const shownSeconds = secondValues.filter((s) => s <= seconds).pop() ?? 0;
 
-  const columns: WheelColumn[] = [
-    {
-      values: minuteOptions(maxSec, minSec),
-      selected: minutes,
-      onSelect: (next) => onChange(joinSeconds(next, shownSeconds, minSec, maxSec)),
-      unit: 'min',
-    },
-    {
-      values: secondValues,
-      selected: shownSeconds,
-      onSelect: (next) => onChange(joinSeconds(minutes, next, minSec, maxSec)),
-      format: twoDigits,
-      unit: 'sec',
-    },
-  ];
+  const secondsOnly = !hasMinutesWheel(maxSec);
+  const secondsColumn: WheelColumn = {
+    values: secondValues,
+    selected: shownSeconds,
+    onSelect: (next) => onChange(joinSeconds(minutes, next, minSec, maxSec)),
+    // `05` pairs with a minute; alone it is just `5 sec`.
+    ...(secondsOnly ? {} : { format: twoDigits }),
+    unit: 'sec',
+  };
+  const columns: WheelColumn[] = secondsOnly
+    ? [secondsColumn]
+    : [
+        {
+          values: minuteOptions(maxSec, minSec),
+          selected: minutes,
+          onSelect: (next) => onChange(joinSeconds(next, shownSeconds, minSec, maxSec)),
+          unit: 'min',
+        },
+        secondsColumn,
+      ];
 
   return (
     <WheelPickerSheet

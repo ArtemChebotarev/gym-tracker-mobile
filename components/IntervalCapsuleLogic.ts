@@ -14,6 +14,7 @@ import type { IntervalTimerPhase } from '@domain/intervalTimer';
 import {
   intervalPhaseProgress,
   intervalPhaseRemainingSec,
+  intervalPhaseShown,
   isIntervalTimerRunning,
 } from '@domain/intervalTimerRules';
 import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
@@ -64,17 +65,20 @@ export function intervalCapsule(
   const after = timer.rounds[phase.round + 1];
   const where = `${exercise.name} · ${round?.roundNumber} of ${exercise.totalRounds}`;
   const running = isIntervalTimerRunning(timer);
+  // A rest's last seconds are its Get ready (GT-176) — for the round after the rest.
+  const shown = intervalPhaseShown(timer, now)?.kind ?? phase.kind;
+  const leadsInto = phase.kind === 'rest' ? after : round;
   const caption = !running
     ? `Paused · ${where}`
-    : phase.kind === 'work'
+    : shown === 'work'
       ? `Work · ${where}`
-      : phase.kind === 'rest'
+      : shown === 'rest'
         ? `Rest · round ${after?.roundNumber} next`
-        : `Get ready · round ${round?.roundNumber} next`;
+        : `Get ready · round ${leadsInto?.roundNumber} next`;
 
   const capsule: TimerCapsuleProps = {
     state: running ? 'running' : 'paused',
-    icon: PHASE_ICON[phase.kind],
+    icon: PHASE_ICON[shown],
     title: formatClock(intervalPhaseRemainingSec(timer, now)),
     caption,
     progress: intervalPhaseProgress(timer, now),

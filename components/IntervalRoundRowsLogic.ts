@@ -3,7 +3,11 @@
 // rounds below that aren't logged yet follow it, the way a typed weight carries into the later sets
 // (task 106, `carryForward`). See the code-style skill.
 
-import { CONFIG_TIME_RANGE_SEC, CONFIG_TIME_STEP_SEC } from '@domain/exerciseConfig';
+import {
+  CONFIG_TIME_RANGE_SEC,
+  CONFIG_TIME_STEP_SEC,
+  INTERVAL_REST_MIN_SEC,
+} from '@domain/exerciseConfig';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
 import { carryForward, type CarriedField } from './RowCarryLogic';
@@ -40,7 +44,7 @@ export const ROUND_TIME_PICKER: Record<
     stepSec: CONFIG_TIME_STEP_SEC,
   },
   rest: {
-    minSec: CONFIG_TIME_RANGE_SEC.restSec.min,
+    minSec: INTERVAL_REST_MIN_SEC,
     maxSec: CONFIG_TIME_RANGE_SEC.restSec.max,
     stepSec: CONFIG_TIME_STEP_SEC,
   },

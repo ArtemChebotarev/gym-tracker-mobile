@@ -4,6 +4,7 @@ import {
   intervalPhaseProgress,
   intervalPhaseRemainingMs,
   intervalPhaseRemainingSec,
+  intervalPhaseShown,
   isIntervalTimerRunning,
 } from '@domain/intervalTimerRules';
 import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
@@ -11,7 +12,10 @@ import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
 // What the interval timer's screen shows (10.1 FR-6; canvas 2.1–2.4, 6.1, 6.3), worked out from the
 // timer and the time. Pure — IntervalTimerScreen.tsx only draws it.
 
-/** What the running time is, for its colour: work and Get ready run orange, a rest grey (canvas 2.2). */
+/**
+ * What the running time is, for its colour: work and Get ready run orange, a rest grey (canvas
+ * 2.2) — until its last seconds, its Get ready (GT-176).
+ */
 export type TimerTone = 'running' | 'rest' | 'paused';
 
 /** One bar across the top — a round of the exercise. */
@@ -122,6 +126,12 @@ export function intervalTimerView(
   const phase = timer.phase;
   if (phase === undefined) return undefined;
   const paused = !isIntervalTimerRunning(timer);
+  // A rest's last seconds read as Get ready; the rest's own lines — the round done, what is next,
+  // Skip rest — stay.
+  const shown = intervalPhaseShown(timer, now) ?? {
+    kind: phase.kind,
+    durationMs: timer.durationMs,
+  };
   const progress = intervalPhaseProgress(timer, now);
   const round = roundOf(timer, phase.round);
   const roundNumber = round?.roundNumber;
@@ -133,11 +143,11 @@ export function intervalTimerView(
         ? `Round ${roundNumber} of ${exercise.totalRounds} done`
         : `Round ${roundNumber} of ${exercise.totalRounds}`,
     segments: segmentsOf(active, progress, paused),
-    phase: paused ? `Paused · ${phaseName(phase.kind).toLowerCase()}` : phaseName(phase.kind),
+    phase: paused ? `Paused · ${phaseName(shown.kind).toLowerCase()}` : phaseName(shown.kind),
     time: formatClock(intervalPhaseRemainingSec(timer, now)),
-    of: `of ${formatClock(Math.round(timer.durationMs / MS_PER_SEC))}`,
+    of: `of ${formatClock(Math.round(shown.durationMs / MS_PER_SEC))}`,
     progress,
-    tone: paused ? 'paused' : phase.kind === 'rest' ? 'rest' : 'running',
+    tone: paused ? 'paused' : shown.kind === 'rest' ? 'rest' : 'running',
     next: nextLine(timer),
     paused,
     canSkipRest: phase.kind === 'rest',

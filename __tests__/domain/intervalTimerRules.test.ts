@@ -4,7 +4,9 @@ import {
   intervalPhaseProgress,
   intervalPhaseRemainingMs,
   intervalPhaseRemainingSec,
+  intervalPhaseShown,
   intervalTimerAt,
+  isInIntervalRestTail,
   isIntervalTimerOver,
   isIntervalTimerRunning,
   pauseIntervalTimer,
@@ -157,6 +159,70 @@ describe('remaining time', () => {
   });
 });
 
+describe('the rest’s Get ready (GT-176)', () => {
+  // Round 1's rest of Heavy bag, Get ready 5: work ends at 125 s, the rest at 185 s.
+  const start = startIntervalTimer(HEAVY_BAG, 5, T0);
+  const restEndsAt = T0 + (5 + 120 + 60) * S;
+  // What the screen does: the timer caught up with `now`, then shown.
+  const shownAt = (timer: IntervalTimer, now: number) =>
+    intervalPhaseShown(intervalTimerAt(timer, now), now);
+  const progressAt = (now: number) => intervalPhaseProgress(intervalTimerAt(start, now), now);
+
+  test('the rest’s last Get ready seconds show as a Get ready of their own length', () => {
+    expect(shownAt(start, restEndsAt - 5_001)).toEqual({
+      kind: 'rest',
+      durationMs: 60 * S,
+    });
+    expect(
+      isInIntervalRestTail(intervalTimerAt(start, restEndsAt - 5_001), restEndsAt - 5_001),
+    ).toBe(false);
+    expect(shownAt(start, restEndsAt - 5 * S)).toEqual({
+      kind: 'getReady',
+      durationMs: 5 * S,
+    });
+    expect(isInIntervalRestTail(intervalTimerAt(start, restEndsAt - S), restEndsAt - S)).toBe(true);
+  });
+
+  test('it is still the rest: it does not lengthen it, and the next round starts as it ends', () => {
+    const inTail = intervalTimerAt(start, restEndsAt - 3 * S);
+    expect(phaseOf(inTail)).toBe('rest 1');
+    expect(inTail.endsAt).toBe(restEndsAt);
+    const after = intervalTimerAt(start, restEndsAt);
+    expect(phaseOf(after)).toBe('work 2');
+    expect(after.results[0]).toMatchObject({ restSec: 60, restSkipped: false });
+  });
+
+  test('the ring fills anew for it: the share of the Get ready, not of the rest', () => {
+    expect(progressAt(restEndsAt - 5 * S)).toBe(1);
+    expect(progressAt(restEndsAt - 2_500)).toBe(0.5);
+    expect(progressAt(restEndsAt - 30 * S)).toBe(0.5);
+  });
+
+  test('paused in it, it stays a Get ready', () => {
+    const paused = pauseIntervalTimer(start, restEndsAt - 2 * S);
+    expect(shownAt(paused, restEndsAt + 100 * S)?.kind).toBe('getReady');
+  });
+
+  test('with a Get ready of 0 a rest is a rest to its end', () => {
+    const noCountdown = startIntervalTimer(HEAVY_BAG, 0, T0);
+    expect(shownAt(noCountdown, T0 + 179 * S)?.kind).toBe('rest');
+  });
+
+  test('a rest shorter than Get ready is a Get ready all through', () => {
+    const short = startIntervalTimer(
+      [{ roundNumber: 1, workSec: 20, restSec: 3 }, ...HEAVY_BAG],
+      5,
+      T0,
+    );
+    expect(shownAt(short, T0 + 25 * S)).toEqual({ kind: 'getReady', durationMs: 3 * S });
+  });
+
+  test('work and a Get ready of its own show as they are', () => {
+    expect(shownAt(start, T0)).toEqual({ kind: 'getReady', durationMs: 5 * S });
+    expect(shownAt(start, T0 + 10 * S)).toEqual({ kind: 'work', durationMs: 120 * S });
+  });
+});
+
 describe('pause and resume', () => {
   test('a paused phase does not run out, and resumes with what was left', () => {
     const start = startIntervalTimer(HEAVY_BAG, 0, T0);
@@ -219,6 +285,15 @@ describe('skip rest', () => {
     expect(skipped.results[0]?.restSec).toBe(15);
     expect(phaseOf(skipped)).toBe('work 2');
     expect(isIntervalTimerRunning(skipped)).toBe(true);
+  });
+
+  test('from the rest’s Get ready the next round starts at once, with no second Get ready', () => {
+    const start = startIntervalTimer(HEAVY_BAG, 5, T0);
+    const skipAt = T0 + (5 + 120 + 57) * S;
+    const skipped = skipIntervalRest(start, skipAt);
+    expect(skipped.results[0]).toMatchObject({ restSec: 57, restSkipped: true });
+    expect(phaseOf(skipped)).toBe('work 2');
+    expect(skipped.endsAt).toBe(skipAt + 120 * S);
   });
 
   test('outside a rest it changes nothing', () => {

@@ -29,8 +29,14 @@ export const INTERVAL_STEPS_SEC = [5, 10, 15] as const;
 
 export type IntervalStepSec = (typeof INTERVAL_STEPS_SEC)[number];
 
-/** The seconds every time field of a config is set in steps of — a rest of power's included. */
+/**
+ * The seconds a time field of a config is set in steps of — a rest of power's included. Get ready
+ * alone is set by the second (`GET_READY_STEP_SEC`).
+ */
 export const CONFIG_TIME_STEP_SEC = 5;
+
+/** Get ready is a few seconds, picked one by one (GT-176). */
+export const GET_READY_STEP_SEC = 1;
 
 /** The time fields of a config, by the key they are stored under. */
 export type ConfigTimeKey = 'restSec' | 'workSec' | 'getReadySec' | 'durationSec';
@@ -42,9 +48,17 @@ export type ConfigTimeKey = 'restSec' | 'workSec' | 'getReadySec' | 'durationSec
 export const CONFIG_TIME_RANGE_SEC: Record<ConfigTimeKey, { min: number; max: number }> = {
   restSec: { min: 0, max: 10 * 60 },
   workSec: { min: CONFIG_TIME_STEP_SEC, max: 60 * 60 },
-  getReadySec: { min: 0, max: 30 },
+  getReadySec: { min: 0, max: 10 },
   durationSec: { min: 60, max: 60 * 60 },
 };
+
+/**
+ * The least rest between the rounds of an interval (GT-176, Artem, 26.10.2026): 10 s, Tabata's
+ * 20/10. A rest of 0 would run the rounds into one, and with Get ready at most 10 s — the rest's
+ * last seconds — a rest is never shorter than its Get ready. Power's rest between sets may still
+ * be 0. The rest lever (FR-8) does not take a rest below it either.
+ */
+export const INTERVAL_REST_MIN_SEC = 10;
 
 export type PowerConfig = {
   type: 'power';

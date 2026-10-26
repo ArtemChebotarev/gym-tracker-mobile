@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import { CONFIG_TIME_STEP_SEC, type ExerciseConfig } from '@domain/exerciseConfig';
+import type { ExerciseConfig } from '@domain/exerciseConfig';
 import { fieldStyles } from '@design/components/fieldStyles';
 import { formatClock } from '@design/formatClock';
 import { SegmentedControl } from '@design/components/SegmentedControl';
@@ -32,11 +32,7 @@ import {
   WORK,
   type TimeField,
 } from './ExerciseConfigFieldsLogic';
-import {
-  describePowerLoad,
-  POWER_LOAD_OPTIONS,
-  powerLoadFromValue,
-} from './ExerciseFormLogic';
+import { describePowerLoad, POWER_LOAD_OPTIONS, powerLoadFromValue } from './ExerciseFormLogic';
 import { styles } from './ExerciseFormStyles';
 
 export type ExerciseConfigFieldsProps = {
@@ -66,7 +62,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
         onChange={(valueSec) => setValue(field, valueSec)}
         min={field.minSec}
         max={field.maxSec}
-        step={CONFIG_TIME_STEP_SEC}
+        step={field.stepSec}
         formatValue={formatClock}
         onValuePress={() => setEditing(field)}
       />
@@ -87,6 +83,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
       value={editing === null ? 0 : valueOf(editing)}
       onChange={(valueSec) => editing !== null && setValue(editing, valueSec)}
       minSec={editing?.minSec}
+      stepSec={editing?.stepSec}
       maxSec={editing?.maxSec ?? COUNTDOWN.maxSec}
     />
   );
