@@ -61,6 +61,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
       <RestTimerDriver />
       <IntervalTimerDriver />
       <IntervalLockScreenDriver />
+      {/* The Live Activity is parked (GT-180): <IntervalLiveActivityDriver /> brings it back. */}
       <TimerCapsuleHost />
       <TabBar items={TABS} activeKey={activeKey} onChange={handlePress} />
     </View>

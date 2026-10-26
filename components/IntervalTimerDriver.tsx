@@ -27,7 +27,8 @@ import { formatInProgressConflict } from './TodayScreenLogic';
 // Draws nothing itself. It sits next to RestTimerDriver in the tab bar's overlay, so the timer runs
 // on behind its screen too.
 //
-// Keeping the app awake behind a locked screen and the Live Activity: IntervalLockScreenDriver.
+// Keeping the app awake behind a locked screen: IntervalLockScreenDriver. The Live Activity is
+// parked: IntervalLiveActivityDriver.
 export function IntervalTimerDriver() {
   const onOutcome = useCallback((outcome: LogRoundResult | { kind: 'failed'; error: unknown }) => {
     if (outcome.kind === 'conflict') {
