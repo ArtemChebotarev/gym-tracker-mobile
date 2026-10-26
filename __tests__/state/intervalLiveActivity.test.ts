@@ -1,4 +1,5 @@
-import { intervalActivityProps } from '@components/IntervalTimerActivityLogic';
+import { intervalActivityPropsOf } from '@components/IntervalTimerActivityLogic';
+import { startIntervalTimer } from '@domain/intervalTimerRules';
 import {
   endIntervalActivities,
   onIntervalActivityAction,
@@ -39,14 +40,19 @@ jest.mock('expo-widgets', () => ({
   },
 }));
 
-const PROPS = intervalActivityProps({
-  phase: 'Rest',
-  detail: 'Next: round 2 · 2:00',
-  phaseStartedAt: 0,
-  phaseEndsAt: 60_000,
-  canSkipRest: true,
-  block: { title: 'Heavy bag', detail: '3 rounds', startedAt: 0, endsAt: 120_000, segments: [] },
-});
+const PROPS = intervalActivityPropsOf(
+  {
+    exercise: {
+      sessionId: 'session',
+      sessionExerciseId: 'bag',
+      name: 'Heavy bag',
+      totalRounds: 1,
+      loggedRoundNumbers: [],
+    },
+    timer: startIntervalTimer([{ roundNumber: 1, workSec: 60, restSec: 0 }], 5, 0),
+  },
+  0,
+)!;
 
 function tap(event: Interaction) {
   mockWidgets.listener?.(event);
@@ -66,14 +72,14 @@ describe('intervalLiveActivity', () => {
     expect(mockWidgets.instances).toEqual([second]);
   });
 
-  it('hears Pause and Skip rest on its own activity, matched by its id', async () => {
+  it('hears Pause on its own activity, matched by its id', async () => {
     const activity = await startIntervalActivity(PROPS);
     const onAction = jest.fn();
     const unsubscribe = onIntervalActivityAction(onAction);
 
     tap({ source: activity.getId(), target: 'pause' });
     tap({ source: activity.getId(), target: 'skipRest' });
-    expect(onAction.mock.calls).toEqual([['pause'], ['skipRest']]);
+    expect(onAction.mock.calls).toEqual([['pause']]);
 
     unsubscribe();
   });

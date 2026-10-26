@@ -10,7 +10,7 @@ import type {
 // buttons. Updates are local, from the app — no push: the activity is requested without a push
 // token, so it needs no APNs entitlement (GT-94).
 
-const ACTIONS: readonly IntervalActivityAction[] = ['pause', 'skipRest'];
+const ACTIONS: readonly IntervalActivityAction[] = ['pause'];
 
 /**
  * Starts the Live Activity of a timer. Ends every one still on the lock screen first: only one
@@ -29,9 +29,10 @@ export async function startIntervalActivity(
 const RETRY_MS = 1000;
 
 /**
- * Updates `activity` with `props` — once more after a moment if iOS turned it down, which it does
- * now and then, more so from the background. Never rejects: one failed update must not stop the
- * ones after it (GT-99 — the lock screen froze on 0:00 of the phase before when it did).
+ * Updates `activity` with `props` — once more after a moment if the call fails. Never rejects: one
+ * failed update must not stop the ones after it (GT-99 — the lock screen froze on 0:00 of the phase
+ * before when it did). An update iOS turns down from the background doesn't fail: it is dropped
+ * without a word (research 10.3), which is why the activity is drawn to need none.
  */
 export async function updateIntervalActivity(
   activity: LiveActivity<IntervalTimerActivityProps> | null,

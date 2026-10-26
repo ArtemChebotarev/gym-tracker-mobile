@@ -26,10 +26,10 @@ import {
 //   (state/intervalSignal): iOS would otherwise suspend it soon after the screen locks, and a
 //   suspended app neither moves the timer on, nor beeps, nor logs its rounds. It is kept while
 //   paused too — a Resume tapped on the lock screen has to find the app awake to play again.
-// - The Live Activity (components/IntervalTimerActivity) is started with the block, updated as a
-//   phase starts, pauses or runs again — its time and bar run by themselves in between — and ended
-//   with the block. Its Pause (Resume while paused) and Skip rest act on the timer; a tap on the
-//   rest of it opens the timer.
+// - The Live Activity (components/IntervalTimerActivity) is started with the block, updated as it
+//   pauses, runs again or skips a rest — its time and cells run by themselves in between — resent as
+//   the app comes back to the front, and ended with the block. Its Pause (Resume while paused) acts
+//   on the timer; a tap on the rest of it opens the timer.
 //
 // The activity's calls go one after another, each catching its own failure: iOS turns down an
 // update now and then — more so from the background — and one rejection in an unguarded chain made
@@ -96,15 +96,11 @@ export function IntervalLockScreenDriver() {
       lastKey = undefined;
       update();
     });
-    const unlisten = onIntervalActivityAction((action) => {
+    // Its one button: Pause, Resume while paused.
+    const unlisten = onIntervalActivityAction(() => {
       const store = useIntervalTimerStore.getState();
-      const running = store.active?.timer.endsAt !== undefined;
-      if (action === 'pause') {
-        if (running) store.pause();
-        else store.resume();
-      } else {
-        store.skipRest();
-      }
+      if (store.active?.timer.endsAt !== undefined) store.pause();
+      else store.resume();
     });
     return () => {
       appState.remove();

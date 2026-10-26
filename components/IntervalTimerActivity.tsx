@@ -26,10 +26,10 @@ import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
 // under them with a cell for each work and rest, and Pause (Resume while paused). No End early: too
 // easy to hit by accident (canvas 6.3). A tap on the rest opens the timer.
 //
-// SPIKE (locked screen, 20.10.2026): the block, not the phase. Behind a locked screen iOS turns
-// down the app's updates once it is only playing audio, so a phase view froze on 0:00 of the phase
-// before. Everything drawn here runs by itself from the start, the same every time. Skip rest is
-// gone with the phase: the activity can't know a rest is running.
+// The block, not the phase (research 10.3, 20.10.2026): behind a locked screen iOS turns down the
+// app's updates once it is only playing audio, so a phase view froze on 0:00 of the phase before.
+// Everything drawn here runs by itself from the start, the same every time. No Skip rest: the
+// activity can't know a rest is running.
 //
 // The `'widget'` function below is not run in the app. Babel turns it into a string, and the
 // widget extension runs that on its own (expo-widgets): nothing from this module's scope reaches
@@ -49,10 +49,8 @@ const IntervalTimerActivity = (
 ) => {
   'widget';
   const look = props.look;
-  const paused = props.pausedLabel !== undefined;
+  const paused = props.block.pausedLabel !== undefined;
   const barColor = environment.isLuminanceReduced ? look.barColorDimmed : look.barColor;
-  // The block, not the phase: iOS turns down an update from the app behind a locked screen, so
-  // nothing here may wait for one (IntervalTimerActivityLogic.ts, `IntervalActivityBlock`).
   const block = props.block;
   const interval = { lower: new Date(block.startedAt), upper: new Date(block.endsAt) };
   // Changes swap in place: the system would otherwise morph one text into the next, and the
@@ -106,11 +104,7 @@ const IntervalTimerActivity = (
   );
   // Drawn here rather than left to a button style: the system paints a Live Activity's styled
   // buttons its own way — a grey capsule, full width, with a white icon and label (canvas 2.6).
-  const button = (
-    target: string,
-    label: string,
-    systemImage: 'play.fill' | 'pause.fill' | 'forward.end.fill',
-  ) => (
+  const button = (target: string, label: string, systemImage: 'play.fill' | 'pause.fill') => (
     <Button target={target} onPress={() => props} modifiers={[buttonStyle('plain')]}>
       <HStack
         spacing={look.gap}
