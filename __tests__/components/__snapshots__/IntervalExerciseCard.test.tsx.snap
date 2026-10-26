@@ -1419,7 +1419,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
       </View>
     </View>
     <View
-      accessibilityLabel="Start timer · 7:30"
+      accessibilityLabel="Start timer · 3 rounds"
       accessibilityRole="button"
       accessibilityState={
         {
@@ -1550,7 +1550,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
           }
         }
       >
-        Start timer · 7:30
+        Start timer · 3 rounds
       </Text>
     </View>
   </View>

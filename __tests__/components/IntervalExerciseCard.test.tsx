@@ -88,10 +88,10 @@ describe('Interval card (GT-88)', () => {
     expect(within(screen.getByTestId('exercise-type-chip')).getByText('Timed work')).toBeTruthy();
   });
 
-  test('Start timer sits under the rounds with the block’s length', () => {
+  test('Start timer sits under the rounds with how many there are', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
-    expect(screen.getByText('Start timer · 7:30')).toBeTruthy();
+    expect(screen.getByText('Start timer · 3 rounds')).toBeTruthy();
   });
 
   test('a logged round shows the work done, and a skipped rest its planned rest (Artem, 20.10.2026)', () => {
@@ -220,7 +220,6 @@ describe('Interval card (GT-88)', () => {
 
     expect(within(screen.getByTestId('round-row-2')).getByText('0:30')).toBeTruthy();
     expect(within(screen.getByTestId('round-row-3')).getByText('0:30')).toBeTruthy();
-    expect(screen.getByText('Start timer · 7:00')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Log round 1'));
     expect(onLogRound).toHaveBeenCalledWith(1, { workSec: 120, restSec: 30 });
   });
