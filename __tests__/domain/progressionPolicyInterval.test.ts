@@ -1,9 +1,15 @@
 import type { RoundLog, SessionExercise, SetTarget } from '@domain/execution';
 import type { SourceExercise } from '@domain/progression';
-import { allRoundsDone, type IntervalProgression, stepLever } from '@domain/progressionLever';
-import { prescribeNextSession } from '@domain/progressionPlan';
-import { defaultProgressionSettings } from '@domain/mesocycle';
 import { FULL_BODY } from '@domain/catalog';
+import { defaultProgressionSettings } from '@domain/mesocycle';
+import {
+  type IntervalProgression,
+  stepIntervalLever as stepLever,
+} from '@domain/progressionLeverInterval';
+import { prescribeNextSession } from '@domain/progressionPlan';
+import { intervalPolicy } from '@domain/progressionPolicyInterval';
+import { allIntervalRoundsDone as allRoundsDone } from '@domain/progressionRoundsInterval';
+import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const rounds: SetTarget[] = [
@@ -12,7 +18,7 @@ const rounds: SetTarget[] = [
   { setNumber: 3, targetWorkSec: 120, targetRestSec: 60 },
 ];
 
-describe('stepLever', () => {
+describe('stepIntervalLever', () => {
   test('rest: every rest one step shorter', () => {
     expect(stepLever(rounds, { lever: 'rest', stepSec: 15 }).map((r) => r.targetRestSec)).toEqual([
       45, 45, 45,
@@ -51,7 +57,7 @@ describe('stepLever', () => {
   });
 });
 
-describe('allRoundsDone', () => {
+describe('allIntervalRoundsDone', () => {
   const done = { completed: true };
   test('every planned round logged and completed', () => {
     expect(
@@ -121,7 +127,11 @@ describe('interval working week', () => {
     };
   }
 
-  function plan(roundLogs: RoundLog[], intervalProgression?: IntervalProgression): SetTarget[] {
+  function plan(
+    roundLogs: RoundLog[],
+    intervalProgression?: IntervalProgression,
+    weekNumber = 2,
+  ): SetTarget[] {
     const exercise: SourceExercise = {
       sessionExercise: bag,
       muscleGroup: FULL_BODY,
@@ -132,7 +142,7 @@ describe('interval working week', () => {
       exercises: [exercise],
       logs: [],
       roundLogs,
-      weekNumber: 2,
+      weekNumber,
       lengthWeeks: 5,
       settings: defaultProgressionSettings,
     });
@@ -187,5 +197,29 @@ describe('interval working week', () => {
 
   test('no lever given: nothing to go by, the plan repeats', () => {
     expect(plan(allDone)).toEqual(rounds);
+  });
+
+  test('a deload day repeats the plan with no step, until the interval’s own deload (GT-105)', () => {
+    expect(plan(allDone, { lever: 'rest', stepSec: 15 }, 5)).toEqual(rounds);
+  });
+});
+
+describe('intervalPolicy', () => {
+  test('reads its lever and step off the cycle’s settings', () => {
+    expect(
+      intervalPolicy.sourceFacts({ ...HEAVY_BAG_CONFIG, rounds: 3, lever: 'workTime', stepSec: 5 }),
+    ).toEqual({ intervalProgression: { lever: 'workTime', stepSec: 5 } });
+    expect(intervalPolicy.sourceFacts(undefined)).toEqual({});
+  });
+
+  test('rule 6 and a copied block’s start: rows with no times, the cycle’s plan shows', () => {
+    const input = {
+      resolution: { kind: 'none' } as const,
+      rowCount: 2,
+      settings: defaultProgressionSettings,
+    };
+    const untimed = [{ setNumber: 1 }, { setNumber: 2 }];
+    expect(intervalPolicy.prescribeFromReference({ ...input, weekRir: 2 })).toEqual(untimed);
+    expect(intervalPolicy.prescribeBlockStart({ ...input, startRir: 3 })).toEqual(untimed);
   });
 });

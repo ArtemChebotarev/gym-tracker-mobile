@@ -13,6 +13,7 @@ import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { SourceExercise } from '@domain/progression';
+import { policyFor } from '@domain/progressionPolicies';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import { resolveBaseSession } from '@domain/progressionSource';
 import type { ExerciseRepository } from '@repositories/catalog';
@@ -87,15 +88,9 @@ export async function generateNextSession(
     if (loadEquipment !== undefined) {
       source.equipment = loadEquipment;
     }
-    if (exercise.config?.type === 'power') {
-      source.powerLoad = exercise.config.load;
-    }
-    // The lever is the cycle's, not the exercise's (FR-8): the library only gives the default.
+    // What else the type plans by is its policy's to read, from the cycle's settings (FR-9).
     const settings = exerciseSettingsFor(mesocycle.exerciseSettings ?? {}, exercise);
-    if (settings?.type === 'interval') {
-      source.intervalProgression = { lever: settings.lever, stepSec: settings.stepSec };
-    }
-    return source;
+    return { ...source, ...policyFor(source).sourceFacts(settings) };
   });
 
   const draft = buildNextSession({

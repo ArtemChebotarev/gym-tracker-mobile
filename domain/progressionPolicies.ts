@@ -10,7 +10,7 @@ import { powerPolicy } from '@domain/progressionPolicyPower';
 import { strengthPolicy } from '@domain/progressionPolicyStrength';
 
 /**
- * `power` and `interval` each have a file of their own. `mobility` has none yet and runs the
+ * `power` and `interval` each have a file of their own and share nothing with strength. `mobility` has none yet and runs the
  * strength policy, as every non-strength type did before the engine dispatched by type; the
  * strength rules aren't right for it (10 · Hybrid Exercises, "Зачем"), and this keeps the
  * behaviour from changing under it until its story gives it one.

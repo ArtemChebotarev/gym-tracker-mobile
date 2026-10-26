@@ -4,7 +4,7 @@
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
-import type { IntervalProgression } from '@domain/progressionLever';
+import type { IntervalProgression } from '@domain/progressionLeverInterval';
 
 /**
  * One exercise of the source session, plus the facts about it that the session itself doesn't
