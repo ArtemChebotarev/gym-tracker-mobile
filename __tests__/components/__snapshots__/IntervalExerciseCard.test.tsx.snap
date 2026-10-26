@@ -1465,6 +1465,9 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             "marginTop": 8,
             "paddingVertical": 15,
           },
+          {
+            "opacity": 0.5,
+          },
           false,
         ]
       }

@@ -18,16 +18,16 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/set-value'].fontSize,
     color: COLORS['text/secondary'],
   },
-  // A Rest cell with nothing in it — the last round's `–` — keeps the field's place but no frame.
-  bareCell: {
-    flex: 1,
-    height: SIZES['size/cell'],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noRest: {
-    fontSize: TYPOGRAPHY['type/set-value'].fontSize,
+  // Why Log and Start timer wait (GT-187): `text/secondary`, since the quieter greys don't read on
+  // the device.
+  hint: {
+    paddingTop: SPACING['space/gap-tight'],
+    textAlign: 'center',
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/secondary'],
+  },
+  startTimerDisabled: {
+    opacity: OPACITY['opacity/dimmed'],
   },
   // Start timer (FR-14): dressed like the Done cell of the week grid — `accent/bg` fill, the
   // `accent/border` outline, lime text — so it reads as the card's action without a second

@@ -103,16 +103,17 @@ export type WorkoutSetRow = {
 
 /**
  * One round row of an interval card (10.1 FR-14): the round's work and the rest after it. The
- * rounds are the plan — there is no separate plan block on the card.
+ * rounds are the plan — there is no separate plan block on the card. Its times come from history,
+ * like a set's weight (FR-9): with none, a round has no time yet, its fields are empty, and it can
+ * be neither logged nor timed until both are picked (GT-187).
  */
 export type WorkoutRoundRow = {
   roundNumber: number;
-  /** Planned work, seconds — what the Work field holds until the round is logged. */
-  workSec: number;
+  /** Planned work, seconds — what the Work field holds until the round is logged. Absent: not picked. */
+  workSec?: number;
   /**
    * Planned rest after the round, seconds — the last round's too: it is the rest before the next
-   * exercise (FR-6; Artem, 19.10.2026). Absent only when neither the target nor the cycle has one,
-   * and the cell reads `–`.
+   * exercise (FR-6; Artem, 19.10.2026). Absent: not picked.
    */
   restSec?: number;
   /** What was logged, if the round is: the actual work and rest, by hand or by the timer (FR-7). */
@@ -575,11 +576,7 @@ function intervalPlanOf(
   return settings?.type === 'interval' ? settings : undefined;
 }
 
-function toRounds(
-  tree: SessionExerciseTree,
-  mode: WorkoutMode,
-  plan: IntervalPlanConfig | undefined,
-): WorkoutRoundRow[] {
+function toRounds(tree: SessionExerciseTree, mode: WorkoutMode): WorkoutRoundRow[] {
   const { sessionExercise, roundLogs } = tree;
   const targets = sessionExercise.setTargets;
   const notDone = isNotDone(sessionExercise.status) ? sessionExercise.status : undefined;
@@ -590,16 +587,18 @@ function toRounds(
       : undefined;
 
   return targets.map((target) => {
-    // A round's times are its target's; a target without them (a week planned before its times were
-    // carried over) falls back on the cycle's plan, so a round never reads empty.
+    // A round's times are its target's alone. A target without them has no history behind it, and
+    // its fields stay empty — not 0, not the cycle's value: a number that looks set is worse than
+    // none (FR-9, GT-187).
     const row: WorkoutRoundRow = {
       roundNumber: target.setNumber,
-      workSec: target.targetWorkSec ?? plan?.workSec ?? 0,
       isFirstUnlogged: target === firstUnlogged,
     };
-    const restSec = target.targetRestSec ?? plan?.restSec;
-    if (restSec !== undefined) {
-      row.restSec = restSec;
+    if (target.targetWorkSec !== undefined) {
+      row.workSec = target.targetWorkSec;
+    }
+    if (target.targetRestSec !== undefined) {
+      row.restSec = target.targetRestSec;
     }
     const log = logOf(target.setNumber);
     if (log) {
@@ -642,7 +641,7 @@ function toIntervalExercise(
   context: SessionContext,
 ): IntervalWorkoutExercise {
   const plan = intervalPlanOf(tree, context);
-  const rounds = toRounds(tree, mode, plan);
+  const rounds = toRounds(tree, mode);
   const loggedRoundCount = rounds.filter((round) => round.log !== undefined).length;
   const model: IntervalWorkoutExercise = {
     ...base,

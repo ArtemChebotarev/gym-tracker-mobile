@@ -2,6 +2,7 @@ import { isConflictError } from '@domain/errors';
 import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import type { WorkoutStore } from '@repositories/workout';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
+import { setRoundTime } from '@usecases/roundTimes';
 import { addRound, addSet, removeLastRound, removeLastSet } from '@usecases/setRows';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
@@ -288,5 +289,63 @@ describe('removeLastRound (GT-91)', () => {
     expect(isConflictError(await rejectionOf(removeLastRound(ref, workout)))).toBe(true);
     await expect(stored(workout)).resolves.toEqual(heavyBag);
     await expect(storedRoundLogs(workout)).resolves.toHaveLength(2);
+  });
+});
+
+// Lives beside Add round: the same interval fixture, and the same kind of write — the rounds' plan.
+describe('setRoundTime (GT-187)', () => {
+  const timeless: SessionExercise = {
+    ...heavyBag,
+    setTargets: [{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }],
+  };
+
+  test('DoD: a time picked on an empty round is saved as the plan of it and the rounds that followed', async () => {
+    const workout = await intervalWorkoutWith({ exercise: timeless });
+
+    await setRoundTime(ref, 'work', [1, 2, 3], 30, workout);
+    const updated = await setRoundTime(ref, 'rest', [2, 3], 60, workout);
+
+    expect(updated.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 30 },
+      { setNumber: 2, targetWorkSec: 30, targetRestSec: 60 },
+      { setNumber: 3, targetWorkSec: 30, targetRestSec: 60 },
+    ]);
+    await expect(stored(workout)).resolves.toEqual(updated);
+  });
+
+  test('it neither starts the session nor changes the exercise’s status', async () => {
+    const workout = await intervalWorkoutWith({ exercise: timeless });
+
+    const updated = await setRoundTime(ref, 'work', [1], 30, workout);
+
+    expect(updated.status).toBe('planned');
+    await expect(workout.repos.sessionRepo.getById('session-1')).resolves.toMatchObject({
+      status: session.status,
+    });
+  });
+
+  test('a logged round is refused — un-log it first — and nothing is written', async () => {
+    const workout = await intervalWorkoutWith({ roundLogs: [roundLogFor(1)] });
+
+    const error = await rejectionOf(setRoundTime(ref, 'rest', [1, 2], 20, workout));
+
+    expect(isConflictError(error)).toBe(true);
+    await expect(stored(workout)).resolves.toMatchObject({ setTargets: heavyBag.setTargets });
+  });
+
+  test('a skipped exercise is refused', async () => {
+    const workout = await intervalWorkoutWith({ exercise: { ...heavyBag, status: 'skipped' } });
+
+    expect(isConflictError(await rejectionOf(setRoundTime(ref, 'work', [1], 30, workout)))).toBe(
+      true,
+    );
+  });
+
+  test('a rest under 0:10 or a round the exercise lacks is refused', async () => {
+    const workout = await intervalWorkoutWith();
+
+    await expect(setRoundTime(ref, 'rest', [1], 5, workout)).rejects.toThrow();
+    await expect(setRoundTime(ref, 'work', [3], 30, workout)).rejects.toThrow();
+    await expect(stored(workout)).resolves.toMatchObject({ setTargets: heavyBag.setTargets });
   });
 });

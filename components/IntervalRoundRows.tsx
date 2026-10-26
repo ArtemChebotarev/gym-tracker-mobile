@@ -1,16 +1,18 @@
 // The rounds of an interval card (10.1 FR-7, FR-9, FR-14; canvas 1.6, 8.1, 8.2) — one row per
 // round, and Start timer under them. The rounds are the plan: Work and Rest show the round's times —
-// its target, or the cycle's plan when the target has none — and, once logged, what was done. The
-// last round's Rest is there too: it is the rest before the next exercise (FR-6; Artem,
+// its target, from history — and, once logged, what was done. With no history the fields are empty
+// (GT-187): Log and Start timer wait until a round has both, and a line under the rounds says so.
+// The last round's Rest is there too: it is the rest before the next exercise (FR-6; Artem,
 // 19.10.2026). A rest the timer skipped shows the planned rest, as does a round logged without one:
 // Skip rest changes neither the card nor next week (Artem, 20.10.2026) — `shownRestSec`.
 //
 // - A time is changed on two wheels (TimePickerSheet, GT-90): a tap on an unlogged round's Work or
 //   Rest opens the picker, and when it closes the rounds below that aren't logged yet follow the
 //   new time, as a weight carries into the later sets (task 106). The times live here, not in each
-//   row, for that reason — the way WorkoutSetRows holds the Weight fields. Picked times are never
-//   saved on their own (05, "Сохранение данных"): Log takes them. A round added from the menu
-//   (GT-91) follows the last one's fields too.
+//   row, for that reason — the way WorkoutSetRows holds the Weight fields. When the picker closes
+//   the time is saved as the plan of that round and of the rounds that followed it
+//   (`onSetRoundTime`, GT-187): an interval's time is structure, not a result, and must outlive the
+//   screen. A round added from the menu (GT-91) follows the last one's fields too.
 // - A round is logged by hand with one tap on its Log box — the times its fields hold — and
 //   un-logged by a second tap on the filled one, which brings its logged times back into the fields
 //   (FR-7, GT-89).
@@ -33,19 +35,28 @@ import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
-import { NO_REST, roundEntryOf, startTimerLabel, timerRoundsOf } from './IntervalExerciseCardLogic';
+import {
+  hasRoundTimes,
+  lacksRoundTimes,
+  PICK_ROUND_TIMES_HINT,
+  roundEntryOf,
+  startTimerLabel,
+  timerRoundsOf,
+} from './IntervalExerciseCardLogic';
 import {
   carryRoundTimeForward,
   editRoundTime,
   followRoundChanges,
   holdLoggedRound,
   NO_ROUND_TIME_EDITS,
+  pickerStartSec,
   ROUND_TIME_PICKER,
   type RoundTimeColumn,
   type RoundTimeEdits,
   roundsWithEdits,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
+  roundTimeToSave,
   shownRestSec,
 } from './IntervalRoundRowsLogic';
 import { styles } from './IntervalRoundRowsStyles';
@@ -60,6 +71,11 @@ export type RoundActions = {
   onUnlogRound?: (roundNumber: number) => void;
   /** Opens the interval timer over the rounds not yet logged, as their fields show them (FR-6, FR-7). */
   onStartTimer?: (rounds: IntervalTimerRound[]) => void;
+  /**
+   * Saves a picked time as the plan of rounds `roundNumbers` — the one picked and those that
+   * followed it (FR-9, GT-187).
+   */
+  onSetRoundTime?: (column: RoundTimeColumn, roundNumbers: number[], sec: number) => void;
 };
 
 export type IntervalRoundRowsProps = {
@@ -95,18 +111,31 @@ export function IntervalRoundRows({
   }
   const shown = roundsWithEdits(rounds, edits);
   const timerLabel = editable ? startTimerLabel(shown) : undefined;
-  const openRound =
-    open === null ? undefined : shown.find((r) => r.roundNumber === open.roundNumber);
-  const openSec =
-    open === null || openRound === undefined
-      ? 0
-      : open.column === 'work'
-        ? openRound.workSec
-        : (openRound.restSec ?? 0);
+  const timerRounds = timerRoundsOf(shown);
+  const canStartTimer = actions?.onStartTimer !== undefined && timerRounds !== undefined;
+  const openSec = open === null ? 0 : pickerStartSec(shown, open.column, open.roundNumber);
+
+  // An empty field takes the wheels' time the moment its picker opens, so closing it straight away
+  // keeps what it showed. A field with a time is left alone until the wheels move.
+  function openPicker(column: RoundTimeColumn, roundNumber: number) {
+    const round = shown.find((each) => each.roundNumber === roundNumber);
+    const empty = column === 'work' ? round?.workSec === undefined : round?.restSec === undefined;
+    if (empty) {
+      setEdits((current) =>
+        editRoundTime(current, column, roundNumber, pickerStartSec(shown, column, roundNumber)),
+      );
+    }
+    setOpen({ column, roundNumber });
+  }
 
   function closePicker() {
     if (open !== null) {
-      setEdits((current) => carryRoundTimeForward(current, open.column, rounds, open.roundNumber));
+      const carried = carryRoundTimeForward(edits, open.column, rounds, open.roundNumber);
+      setEdits(carried);
+      const save = roundTimeToSave(edits, carried, open.column, open.roundNumber);
+      if (save !== undefined) {
+        actions?.onSetRoundTime?.(open.column, save.roundNumbers, save.sec);
+      }
     }
     setOpen(null);
   }
@@ -120,23 +149,39 @@ export function IntervalRoundRows({
           editable={editable}
           isSaving={isSaving}
           openColumn={open?.roundNumber === round.roundNumber ? open.column : undefined}
-          onOpenField={(column) => setOpen({ column, roundNumber: round.roundNumber })}
-          onLog={() => actions?.onLogRound?.(round.roundNumber, roundEntryOf(round))}
+          onOpenField={(column) => openPicker(column, round.roundNumber)}
+          onLog={() => {
+            const entry = roundEntryOf(round);
+            if (entry !== undefined) {
+              actions?.onLogRound?.(round.roundNumber, entry);
+            }
+          }}
           onUnlog={() => {
             setEdits((current) => holdLoggedRound(current, round));
             actions?.onUnlogRound?.(round.roundNumber);
           }}
         />
       ))}
+      {editable && lacksRoundTimes(shown) && (
+        <Text style={styles.hint}>{PICK_ROUND_TIMES_HINT}</Text>
+      )}
       {timerLabel !== undefined && (
         <Pressable
           testID={`start-timer-${sessionExerciseId}`}
           accessibilityRole="button"
           accessibilityLabel={timerLabel}
-          accessibilityState={{ disabled: actions?.onStartTimer === undefined }}
-          disabled={actions?.onStartTimer === undefined}
-          onPress={() => actions?.onStartTimer?.(timerRoundsOf(shown))}
-          style={({ pressed }) => [styles.startTimer, pressed && styles.pressed]}
+          accessibilityState={{ disabled: !canStartTimer }}
+          disabled={!canStartTimer}
+          onPress={() => {
+            if (timerRounds !== undefined) {
+              actions?.onStartTimer?.(timerRounds);
+            }
+          }}
+          style={({ pressed }) => [
+            styles.startTimer,
+            !canStartTimer && styles.startTimerDisabled,
+            pressed && styles.pressed,
+          ]}
         >
           <PlayIcon size={ICON_SIZES['icon/small']} color={COLORS.accent} />
           <Text style={styles.startTimerLabel}>{timerLabel}</Text>
@@ -187,6 +232,8 @@ function RoundRow({
   const restSec = shownRestSec(round);
   // An unlogged round's times can be picked; a logged one reads as it was logged — un-log to change.
   const pickable = editable && !logged;
+  // A round with an empty field can't be logged yet (FR-9); un-logging always works.
+  const logDisabled = !editable || isSaving || (!logged && !hasRoundTimes(round));
 
   return (
     <View testID={`round-row-${round.roundNumber}`} style={rowStyles.row}>
@@ -207,20 +254,14 @@ function RoundRow({
             focused={openColumn === 'work'}
             {...(pickable ? { onPress: () => onOpenField('work') } : {})}
           />
-          {restSec === undefined ? (
-            <View style={styles.bareCell}>
-              <Text style={styles.noRest}>{NO_REST}</Text>
-            </View>
-          ) : (
-            <TimeField
-              label={`Rest, round ${round.roundNumber}`}
-              sec={restSec}
-              logged={logged}
-              editable={editable}
-              focused={openColumn === 'rest'}
-              {...(pickable ? { onPress: () => onOpenField('rest') } : {})}
-            />
-          )}
+          <TimeField
+            label={`Rest, round ${round.roundNumber}`}
+            sec={restSec}
+            logged={logged}
+            editable={editable}
+            focused={openColumn === 'rest'}
+            {...(pickable ? { onPress: () => onOpenField('rest') } : {})}
+          />
         </>
       )}
       <Text style={rowStyles.indicator} />
@@ -231,8 +272,8 @@ function RoundRow({
             accessibilityLabel={
               logged ? `Round ${round.roundNumber} logged` : `Log round ${round.roundNumber}`
             }
-            accessibilityState={{ checked: logged, disabled: !editable || isSaving }}
-            disabled={!editable || isSaving}
+            accessibilityState={{ checked: logged, disabled: logDisabled }}
+            disabled={logDisabled}
             hitSlop={tapTargetSlop(SIZES['size/log-box'])}
             onPress={logged ? onUnlog : onLog}
             style={({ pressed }) => [
@@ -253,7 +294,8 @@ function RoundRow({
 type TimeFieldProps = {
   /** What the field is for a screen reader: `Rest, round 1`. */
   label: string;
-  sec: number;
+  /** Absent: no time yet — the field is empty, `–` (GT-187). */
+  sec: number | undefined;
   logged: boolean;
   editable: boolean;
   /** Its picker is open. */
@@ -267,7 +309,7 @@ function TimeField({ label, sec, logged, editable, focused, onPress }: TimeField
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label}, ${formatClock(sec)}`}
+      accessibilityLabel={`${label}, ${sec === undefined ? 'not set' : formatClock(sec)}`}
       accessibilityState={{ disabled: onPress === undefined, expanded: focused }}
       disabled={onPress === undefined}
       onPress={onPress}
@@ -277,7 +319,11 @@ function TimeField({ label, sec, logged, editable, focused, onPress }: TimeField
         focused && rowStyles.fieldFocused,
       ]}
     >
-      <Text style={rowStyles.value}>{formatClock(sec)}</Text>
+      {sec === undefined ? (
+        <Text style={rowStyles.placeholder}>–</Text>
+      ) : (
+        <Text style={rowStyles.value}>{formatClock(sec)}</Text>
+      )}
     </Pressable>
   );
 }

@@ -16,32 +16,53 @@ export const ROUND_COLUMN = 'Round';
 export const WORK_COLUMN = 'Work';
 export const REST_COLUMN = 'Rest';
 
-/** What a Rest cell reads with no rest to show — a round with no planned rest at all. */
-export const NO_REST = '–';
+/**
+ * The line under the rounds while one still has no time (10.1 FR-9, GT-187): why Log and Start timer
+ * don't work yet, and what to do about it.
+ */
+export const PICK_ROUND_TIMES_HINT = 'Pick work and rest to log a round or start the timer.';
+
+/** A round has both its times — picked, or from history — and can be logged and timed (FR-9). */
+export function hasRoundTimes(round: WorkoutRoundRow): boolean {
+  return round.workSec !== undefined && round.restSec !== undefined;
+}
 
 /**
  * What one tap on a round's Log box logs (FR-7, "запасной путь"): the times its Work and Rest
- * fields hold — the round's planned ones until the picker can change them (GT-90).
+ * fields hold. `undefined` while one of them is empty — the round can't be logged yet (FR-9).
  */
-export function roundEntryOf(round: WorkoutRoundRow): RoundEntry {
-  return round.restSec === undefined
-    ? { workSec: round.workSec }
+export function roundEntryOf(round: WorkoutRoundRow): RoundEntry | undefined {
+  return round.workSec === undefined || round.restSec === undefined
+    ? undefined
     : { workSec: round.workSec, restSec: round.restSec };
 }
 
 /**
  * The rounds the timer runs (FR-6, FR-7): every round not yet logged, from the first, with the times
- * their fields show — a time picked but not yet logged included (FR-9). A round without a rest of
- * its own rests 0.
+ * their fields show — a time picked but not yet logged included (FR-9). `undefined` while one of them
+ * has no time: the timer doesn't start on an empty field.
  */
-export function timerRoundsOf(rounds: readonly WorkoutRoundRow[]): IntervalTimerRound[] {
-  return rounds
-    .filter((round) => round.log === undefined)
-    .map((round) => ({
-      roundNumber: round.roundNumber,
-      workSec: round.workSec,
-      restSec: round.restSec ?? 0,
-    }));
+export function timerRoundsOf(
+  rounds: readonly WorkoutRoundRow[],
+): IntervalTimerRound[] | undefined {
+  const timed: IntervalTimerRound[] = [];
+  for (const round of rounds) {
+    if (round.log !== undefined) {
+      continue;
+    }
+    if (round.workSec === undefined || round.restSec === undefined) {
+      return undefined;
+    }
+    timed.push({ roundNumber: round.roundNumber, workSec: round.workSec, restSec: round.restSec });
+  }
+  return timed;
+}
+
+/** Some round still to do has no time yet — Log and Start timer wait for it, and the hint says so. */
+export function lacksRoundTimes(rounds: readonly WorkoutRoundRow[]): boolean {
+  return rounds.some(
+    (round) => round.log === undefined && round.notDone === undefined && !hasRoundTimes(round),
+  );
 }
 
 /**
@@ -63,7 +84,8 @@ export function startTimerLabel(rounds: readonly WorkoutRoundRow[]): string | un
 
 /**
  * The plate of the ⓘ beside the column that progresses (FR-8; canvas 1.6, "Tap ⓘ next to Rest"):
- * the step a week of every round done buys, what a missed round does, and this week's value.
+ * the step a week of every round done buys, what a missed round does, and this week's value — none
+ * on a week whose rounds have no time yet (FR-9).
  */
 export function intervalProgressionPlate(
   progression: IntervalProgression,

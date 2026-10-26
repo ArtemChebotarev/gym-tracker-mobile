@@ -92,8 +92,8 @@ export async function removeLastSet(
 /**
  * Appends a round to the interval exercise `ref` points at, with the last round's work and rest —
  * the ones it was logged with, if it is (`withAddedRound`). A `completed` exercise goes back to
- * `planned` — the new round isn't logged. Times picked on screen but not logged aren't stored;
- * the card carries them into the new round itself.
+ * `planned` — the new round isn't logged. A time picked on the card is stored already
+ * (`setRoundTime`, GT-187), so the last round's plan carries it.
  *
  * Rejects as `openSessionExercise` does.
  */

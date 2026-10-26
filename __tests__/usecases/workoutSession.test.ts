@@ -1179,7 +1179,8 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     expect(card?.rounds).toEqual([
       { roundNumber: 1, workSec: 120, restSec: 45, isFirstUnlogged: true },
       { roundNumber: 2, workSec: 120, restSec: 45, isFirstUnlogged: false },
-      { roundNumber: 3, workSec: 120, restSec: 45, isFirstUnlogged: false },
+      // Round 3's target has no rest: the field is empty, not the cycle's 0:45 (GT-187).
+      { roundNumber: 3, workSec: 120, isFirstUnlogged: false },
     ]);
     // An interval has no rest timer between sets and no set rows.
     expect(card).not.toHaveProperty('restSec');
@@ -1225,7 +1226,7 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     expect(card?.rounds[1]?.isFirstUnlogged).toBe(true);
   });
 
-  test('a round without times takes them from the cycle’s plan, and the lever too', async () => {
+  test('a round without times stays empty — not 0, not the cycle’s plan (GT-187); the lever still applies', async () => {
     const timeless = {
       ...bag,
       setTargets: [{ setNumber: 1 }, { setNumber: 2 }],
@@ -1251,8 +1252,8 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     const card = intervalCard(await getWorkoutSession('w2d1', deps));
 
     expect(card?.rounds).toEqual([
-      { roundNumber: 1, workSec: 90, restSec: 30, isFirstUnlogged: true },
-      { roundNumber: 2, workSec: 90, restSec: 30, isFirstUnlogged: false },
+      { roundNumber: 1, isFirstUnlogged: true },
+      { roundNumber: 2, isFirstUnlogged: false },
     ]);
     expect(card?.progression).toEqual({ column: 'work', stepSec: 5 });
   });

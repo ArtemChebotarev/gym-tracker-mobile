@@ -7,6 +7,8 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
+import { logRound } from '@usecases/roundLogging';
+import { setRoundTime } from '@usecases/roundTimes';
 import { HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -311,6 +313,46 @@ describe('generateNextSession', () => {
       { setNumber: 3, targetWorkSec: 120, targetRestSec: 30 },
       // Not logged: as it was planned.
       { setNumber: 4, targetWorkSec: 120, targetRestSec: 45 },
+    ]);
+  });
+
+  // GT-187: an interval done for the first time has no times; they're picked on the card, saved as
+  // the rounds' plan, logged — and next week starts from them, like any planned time.
+  test('DoD: a first interval — times picked, rounds logged — plans next week with those times', async () => {
+    await new SqliteExerciseRepository(db()).createCustom(HEAVY_BAG);
+    const live = makeSession(1, { status: 'in_progress', completedAt: undefined });
+    const bag: SessionExercise = {
+      ...makeExercise(1, HEAVY_BAG.id, 1),
+      setTargets: [{ setNumber: 1 }, { setNumber: 2 }],
+    };
+    const { workout, deps } = await setUp([live], [bag]);
+    const ref = { sessionId: live.id, sessionExerciseId: bag.id };
+
+    await setRoundTime(ref, 'work', [1, 2], 30, workout);
+    await setRoundTime(ref, 'rest', [1, 2], 60, workout);
+    await logRound({ ...ref, roundNumber: 1 }, { workSec: 30, restSec: 60 }, workout);
+    // Round 2 ends early: the plan repeats, so no lever step muddies what is checked here.
+    await workout.repos.roundLogRepo.create({
+      ...STAMPS,
+      id: 'round-2',
+      sessionExerciseId: bag.id,
+      exerciseId: bag.exerciseId,
+      roundNumber: 2,
+      workSec: 12,
+      restSec: 60,
+      restSkipped: false,
+      completed: false,
+      completedAt: '2026-09-01T09:30:00.000Z',
+    });
+    const trigger = makeSession(1);
+    await workout.repos.sessionRepo.update(trigger);
+
+    const next = await generateNextSession(trigger, workout.repos, deps);
+
+    const [planned] = await exercisesOf(workout, next);
+    expect(planned?.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 30, targetRestSec: 60 },
+      { setNumber: 2, targetWorkSec: 30, targetRestSec: 60 },
     ]);
   });
 
