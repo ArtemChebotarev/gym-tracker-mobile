@@ -36,7 +36,7 @@ export function assertSessionOpen(session: Session): void {
 
 /**
  * How a session ends once nothing is left to do in it (05, "Завершение тренировки"): with at least
- * one logged set it becomes `completed` with `completedAt = now` — whatever was trained stays
+ * one logged set or round it becomes `completed` with `completedAt = now` — whatever was trained stays
  * trained. With none, it becomes `notDone`: `skipped` when the user ended it (Finish with every
  * exercise skipped, Skip workout), `abandoned` when Stop mesocycle did (136). Finish workout (050),
  * Skip workout (049) and Stop mesocycle (052) all close a session by this one rule, so it lives
@@ -44,11 +44,11 @@ export function assertSessionOpen(session: Session): void {
  */
 export function closedSession(
   session: Session,
-  hasLoggedSet: boolean,
+  hasLoggedWork: boolean,
   now: string,
   notDone: Extract<SessionStatus, 'skipped' | 'abandoned'>,
 ): Session {
-  return hasLoggedSet
+  return hasLoggedWork
     ? { ...session, status: 'completed', completedAt: now }
     : { ...session, status: notDone };
 }

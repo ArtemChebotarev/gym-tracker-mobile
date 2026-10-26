@@ -24,6 +24,7 @@ import {
 } from '@domain/mesocycleLifecycle';
 import { closedSession } from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
+import { hasLoggedWork } from '@usecases/sessionWork';
 import type {
   MesocycleClosingRepositories,
   MesocycleClosingStore,
@@ -80,7 +81,7 @@ export type MesocycleStopResult = {
  * Stops mesocycle `id`, in one transaction (05, "Остановить мезоцикл"): the block becomes
  * `abandoned` with `completedAt = now`, and so does whatever of it wasn't finished (136) — every
  * `planned` exercise becomes `abandoned`, and each session that wasn't final becomes `completed`
- * with `completedAt = now` if it has a logged set and `abandoned` otherwise. Every set log is kept:
+ * with `completedAt = now` if it has a logged set or round and `abandoned` otherwise. Every set log is kept:
  * what was trained stays trained (05, "История неизменяема"), and a session that has any stays
  * open to look at.
  *
@@ -107,9 +108,9 @@ export async function stopMesocycle(
           await repos.sessionExerciseRepo.update({ ...exercise, status: 'abandoned' });
         }
       }
-      const logs = await repos.setLogRepo.listBySessionId(session.id);
+      const trained = await hasLoggedWork(session.id, repos);
       closed.push(
-        await repos.sessionRepo.update(closedSession(session, logs.length > 0, now, 'abandoned')),
+        await repos.sessionRepo.update(closedSession(session, trained, now, 'abandoned')),
       );
     }
 

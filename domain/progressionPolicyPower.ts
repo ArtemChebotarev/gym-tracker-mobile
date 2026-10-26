@@ -15,6 +15,7 @@ import { targetRir } from '@domain/progressionRir';
 import { prescribePowerBlockStart } from '@domain/progressionStartPower';
 
 export const powerPolicy: ProgressionPolicy = {
+  sourceFacts: (settings) => (settings?.type === 'power' ? { powerLoad: settings.load } : {}),
   prescribeWorkingWeek({ sessionExercise, equipment }, { logs, weekNumber, lengthWeeks }) {
     const logBySet = new Map<number, SetLog>();
     for (const log of logs) {

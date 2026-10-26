@@ -32,16 +32,15 @@ describe('policyFor', () => {
     expect(PROGRESSION_POLICIES.mobility).toBe(strengthPolicy);
   });
 
-  test('interval plans its own working week (GT-93) and delegates the rest to strength', () => {
-    expect(PROGRESSION_POLICIES.interval.prescribeWorkingWeek).not.toBe(
-      strengthPolicy.prescribeWorkingWeek,
-    );
+  test('interval shares none of its jobs with strength', () => {
     for (const job of [
+      'sourceFacts',
+      'prescribeWorkingWeek',
       'prescribeDeload',
       'prescribeFromReference',
       'prescribeBlockStart',
     ] as const) {
-      expect(PROGRESSION_POLICIES.interval[job]).toBe(strengthPolicy[job]);
+      expect(PROGRESSION_POLICIES.interval[job]).not.toBe(strengthPolicy[job]);
     }
   });
 
@@ -53,6 +52,7 @@ describe('policyFor', () => {
 
 describe('prescribeNextSession dispatch', () => {
   const spy: ProgressionPolicy = {
+    sourceFacts: jest.fn(() => ({})),
     prescribeWorkingWeek: jest.fn(({ sessionExercise }) => ({
       exerciseId: sessionExercise.exerciseId,
       order: sessionExercise.order,
