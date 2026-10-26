@@ -4,6 +4,7 @@
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
+import type { IntervalProgression } from '@domain/progressionLever';
 
 /**
  * One exercise of the source session, plus the facts about it that the session itself doesn't
@@ -31,6 +32,12 @@ export type SourceExercise = {
    * Absent for every other type, and for a power exercise whose config says nothing — kilograms.
    */
   powerLoad?: PowerLoad;
+  /**
+   * An interval exercise's lever and step in its cycle (10.1 FR-8) — the cycle's own copy, or the
+   * library's defaults where the cycle has none. Absent for every other type; an interval without
+   * it repeats its plan.
+   */
+  intervalProgression?: IntervalProgression;
 };
 
 /** The engine's plan for one exercise of the next session. */

@@ -9,6 +9,7 @@ import { toExerciseId } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { SourceExercise } from '@domain/progression';
@@ -88,6 +89,11 @@ export async function generateNextSession(
     }
     if (exercise.config?.type === 'power') {
       source.powerLoad = exercise.config.load;
+    }
+    // The lever is the cycle's, not the exercise's (FR-8): the library only gives the default.
+    const settings = exerciseSettingsFor(mesocycle.exerciseSettings ?? {}, exercise);
+    if (settings?.type === 'interval') {
+      source.intervalProgression = { lever: settings.lever, stepSec: settings.stepSec };
     }
     return source;
   });

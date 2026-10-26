@@ -1,0 +1,191 @@
+import type { RoundLog, SessionExercise, SetTarget } from '@domain/execution';
+import type { SourceExercise } from '@domain/progression';
+import { allRoundsDone, type IntervalProgression, stepLever } from '@domain/progressionLever';
+import { prescribeNextSession } from '@domain/progressionPlan';
+import { defaultProgressionSettings } from '@domain/mesocycle';
+import { FULL_BODY } from '@domain/catalog';
+import { STAMPS } from '../fixtures/stamps';
+
+const rounds: SetTarget[] = [
+  { setNumber: 1, targetWorkSec: 120, targetRestSec: 60 },
+  { setNumber: 2, targetWorkSec: 120, targetRestSec: 60 },
+  { setNumber: 3, targetWorkSec: 120, targetRestSec: 60 },
+];
+
+describe('stepLever', () => {
+  test('rest: every rest one step shorter', () => {
+    expect(stepLever(rounds, { lever: 'rest', stepSec: 15 }).map((r) => r.targetRestSec)).toEqual([
+      45, 45, 45,
+    ]);
+  });
+
+  test('rest: never below 0:10, and a rest already under it is not raised', () => {
+    const short = [
+      { setNumber: 1, targetWorkSec: 20, targetRestSec: 15 },
+      { setNumber: 2, targetWorkSec: 20, targetRestSec: 10 },
+      { setNumber: 3, targetWorkSec: 20, targetRestSec: 5 },
+    ];
+    expect(stepLever(short, { lever: 'rest', stepSec: 10 }).map((r) => r.targetRestSec)).toEqual([
+      10, 10, 5,
+    ]);
+  });
+
+  test('workTime: every round’s work one step longer, the rest as it was', () => {
+    expect(stepLever(rounds, { lever: 'workTime', stepSec: 5 })).toEqual([
+      { setNumber: 1, targetWorkSec: 125, targetRestSec: 60 },
+      { setNumber: 2, targetWorkSec: 125, targetRestSec: 60 },
+      { setNumber: 3, targetWorkSec: 125, targetRestSec: 60 },
+    ]);
+  });
+
+  test('rounds: one round more, a copy of the last; the step does not apply', () => {
+    const edited = [...rounds.slice(0, 2), { setNumber: 3, targetWorkSec: 90, targetRestSec: 30 }];
+    expect(stepLever(edited, { lever: 'rounds', stepSec: 15 })).toEqual([
+      ...edited,
+      { setNumber: 4, targetWorkSec: 90, targetRestSec: 30 },
+    ]);
+  });
+
+  test('none: the plan as it is', () => {
+    expect(stepLever(rounds, { lever: 'none', stepSec: 15 })).toEqual(rounds);
+  });
+});
+
+describe('allRoundsDone', () => {
+  const done = { completed: true };
+  test('every planned round logged and completed', () => {
+    expect(
+      allRoundsDone(
+        rounds,
+        new Map([
+          [1, done],
+          [2, done],
+          [3, done],
+        ]),
+      ),
+    ).toBe(true);
+  });
+  test('a round not logged, or ended early, is not done', () => {
+    expect(
+      allRoundsDone(
+        rounds,
+        new Map([
+          [1, done],
+          [2, done],
+        ]),
+      ),
+    ).toBe(false);
+    expect(
+      allRoundsDone(
+        rounds,
+        new Map([
+          [1, done],
+          [2, done],
+          [3, { completed: false }],
+        ]),
+      ),
+    ).toBe(false);
+  });
+  test('no rounds: none done', () => {
+    expect(allRoundsDone([], new Map())).toBe(false);
+  });
+});
+
+// The rule through the engine (10.1 FR-8): all rounds done → a lever step; otherwise the plan
+// repeats.
+describe('interval working week', () => {
+  const bag: SessionExercise = {
+    ...STAMPS,
+    id: 'bag-w1',
+    sessionId: 'session-w1',
+    exerciseId: 'heavy-bag',
+    order: 1,
+    setTargets: rounds,
+    targetRir: 3,
+    status: 'completed',
+  };
+
+  function log(roundNumber: number, overrides: Partial<RoundLog> = {}): RoundLog {
+    return {
+      ...STAMPS,
+      id: `round-${roundNumber}`,
+      sessionExerciseId: bag.id,
+      exerciseId: bag.exerciseId,
+      roundNumber,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-01T09:30:00.000Z',
+      ...overrides,
+    };
+  }
+
+  function plan(roundLogs: RoundLog[], intervalProgression?: IntervalProgression): SetTarget[] {
+    const exercise: SourceExercise = {
+      sessionExercise: bag,
+      muscleGroup: FULL_BODY,
+      type: 'interval',
+      ...(intervalProgression ? { intervalProgression } : {}),
+    };
+    const [prescription] = prescribeNextSession({
+      exercises: [exercise],
+      logs: [],
+      roundLogs,
+      weekNumber: 2,
+      lengthWeeks: 5,
+      settings: defaultProgressionSettings,
+    });
+    return prescription?.setTargets ?? [];
+  }
+
+  const allDone = [log(1), log(2), log(3)];
+
+  test.each<[IntervalProgression, SetTarget[]]>([
+    [{ lever: 'rest', stepSec: 15 }, rounds.map((round) => ({ ...round, targetRestSec: 45 }))],
+    [{ lever: 'workTime', stepSec: 10 }, rounds.map((round) => ({ ...round, targetWorkSec: 130 }))],
+    [
+      { lever: 'rounds', stepSec: 15 },
+      [...rounds, { setNumber: 4, targetWorkSec: 120, targetRestSec: 60 }],
+    ],
+    [{ lever: 'none', stepSec: 15 }, rounds],
+  ])('all rounds done, lever %o: one step', (progression, expected) => {
+    expect(plan(allDone, progression)).toEqual(expected);
+  });
+
+  test.each<IntervalProgression>([
+    { lever: 'rest', stepSec: 15 },
+    { lever: 'workTime', stepSec: 10 },
+    { lever: 'rounds', stepSec: 15 },
+  ])('a round ended early: the plan repeats, lever %o', (progression) => {
+    expect(plan([log(1), log(2), log(3, { workSec: 70, completed: false })], progression)).toEqual(
+      rounds,
+    );
+  });
+
+  test('a round not logged: the plan repeats', () => {
+    expect(plan([log(1), log(2)], { lever: 'rest', stepSec: 15 })).toEqual(rounds);
+  });
+
+  test('a skipped rest still counts the round done, and the step is from the planned rest', () => {
+    expect(
+      plan([log(1), log(2, { restSec: 3, restSkipped: true }), log(3)], {
+        lever: 'rest',
+        stepSec: 15,
+      }),
+    ).toEqual(rounds.map((round) => ({ ...round, targetRestSec: 45 })));
+  });
+
+  test('the step is from the structure as done: a rest changed in the workout', () => {
+    expect(
+      plan([log(1, { restSec: 50 }), log(2, { restSec: 50 }), log(3, { restSec: 50 })], {
+        lever: 'rest',
+        stepSec: 10,
+      }).map((round) => round.targetRestSec),
+    ).toEqual([40, 40, 40]);
+  });
+
+  test('no lever given: nothing to go by, the plan repeats', () => {
+    expect(plan(allDone)).toEqual(rounds);
+  });
+});

@@ -7,7 +7,7 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
-import { HEAVY_BAG } from '../fixtures/hybridExercises';
+import { HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -311,6 +311,49 @@ describe('generateNextSession', () => {
       { setNumber: 3, targetWorkSec: 120, targetRestSec: 30 },
       // Not logged: as it was planned.
       { setNumber: 4, targetWorkSec: 120, targetRestSec: 45 },
+    ]);
+  });
+
+  // GT-100: every round done → one step by the lever the cycle holds, not the library's default.
+  test('an interval with every round done steps by the cycle’s lever', async () => {
+    await new SqliteExerciseRepository(db()).createCustom(HEAVY_BAG);
+    const trigger = makeSession(1);
+    const bag: SessionExercise = {
+      ...makeExercise(1, HEAVY_BAG.id, 1),
+      setTargets: [
+        { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+      ],
+    };
+    const { workout, deps } = await setUp([trigger], [bag]);
+    // The library says `rest` by 15 s; the cycle changed it to `workTime` by 10 s.
+    await deps.mesocycleRepo.update({
+      ...mesocycle,
+      exerciseSettings: {
+        [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 2, lever: 'workTime', stepSec: 10 },
+      },
+    });
+    for (const roundNumber of [1, 2]) {
+      await workout.repos.roundLogRepo.create({
+        ...STAMPS,
+        id: `round-${roundNumber}`,
+        sessionExerciseId: bag.id,
+        exerciseId: bag.exerciseId,
+        roundNumber,
+        workSec: 120,
+        restSec: 45,
+        restSkipped: false,
+        completed: true,
+        completedAt: '2026-09-01T09:30:00.000Z',
+      });
+    }
+
+    const next = await generateNextSession(trigger, workout.repos, deps);
+
+    const [planned] = await exercisesOf(workout, next);
+    expect(planned?.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 130, targetRestSec: 45 },
+      { setNumber: 2, targetWorkSec: 130, targetRestSec: 45 },
     ]);
   });
 
