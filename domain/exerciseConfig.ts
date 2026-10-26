@@ -24,7 +24,11 @@ export const INTERVAL_LEVERS = ['rest', 'workTime', 'rounds', 'none'] as const;
 
 export type IntervalLever = (typeof INTERVAL_LEVERS)[number];
 
-/** The step a time lever moves by, in seconds (FR-8). `rounds` always steps by one. */
+/**
+ * The step a time lever moves by, in seconds (FR-8). `rounds` always steps by one. A lever's only
+ * bound is the rest's floor, `INTERVAL_REST_MIN_SEC`: work and rounds have no ceiling (GT-101,
+ * Artem, 26.10.2026).
+ */
 export const INTERVAL_STEPS_SEC = [5, 10, 15] as const;
 
 export type IntervalStepSec = (typeof INTERVAL_STEPS_SEC)[number];
