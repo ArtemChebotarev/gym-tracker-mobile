@@ -1,4 +1,14 @@
-import { Button, HStack, Image, ProgressView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Button,
+  HStack,
+  Image,
+  ProgressView,
+  Rectangle,
+  Spacer,
+  Text,
+  VStack,
+  ZStack,
+} from '@expo/ui/swift-ui';
 import {
   activityBackgroundTint,
   animation,
@@ -6,6 +16,14 @@ import {
   background,
   buttonStyle,
   clipShape,
+  brightness,
+  geometryGroup,
+  opacity,
+  clipped,
+  colorInvert,
+  contrast,
+  luminanceToAlpha,
+  scaleEffect,
   contentTransition,
   font,
   foregroundStyle,
@@ -18,8 +36,12 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { createLiveActivity, type LiveActivityEnvironment } from 'expo-widgets';
+import type { ReactNode } from 'react';
 
-import type { IntervalTimerActivityProps } from './IntervalTimerActivityLogic';
+import type {
+  IntervalActivityPhase,
+  IntervalTimerActivityProps,
+} from './IntervalTimerActivityLogic';
 
 // The interval timer on the lock screen and in the Dynamic Island (10.1 FR-6; canvas 2.6, GT-99):
 // the app's icon, the exercise in bold over its rounds, the block's time left on the right, a bar
@@ -127,6 +149,126 @@ const IntervalTimerActivity = (
       </HStack>
     </Button>
   );
+  // SPIKE — the phase, right with no update (GT-180): one layer per phase still to come, each
+  // shown only from its start to its end, by the system's clock alone. The gate: the layer is drawn
+  // white on black, with two black bars stretched over it — one full until the phase starts and
+  // empty from then on (`ProgressView(timerInterval: start…start+step, countsDown: true)`), one
+  // empty until the phase ends and full from then on. `luminanceToAlpha` then turns the black clear
+  // and the white opaque: a view mask made of what the widget has. Found on the simulator, 26.10.2026:
+  // - `geometryGroup()` first, or the widget filters each child on its own and a black bar on top
+  //   turns clear instead of hiding what is under it;
+  // - `brightness` + `contrast` before it hide the empty bars' grey track;
+  // - white comes out at ~75% opacity — the text reads grey (a zero-radius white `shadow` to
+  //   thicken it made the whole layer vanish);
+  // - a button inside a gate, or wrapping one, is drawn but does not tap (the tap opens the app).
+  const step = 100;
+  const black = look.maskClear;
+  const white = look.maskSolid;
+  const during = (startsAt: number, endsAt: number, height: number, content: ReactNode) => {
+    const cover = (from: number, countsDown: boolean) => (
+      <ProgressView
+        timerInterval={{ lower: new Date(from), upper: new Date(from + step) }}
+        countsDown={countsDown}
+        modifiers={[
+          tint(black),
+          labelsHidden(),
+          frame({ maxWidth: Infinity }),
+          scaleEffect({ x: 1.2, y: 30 }),
+        ]}
+      />
+    );
+    return (
+      <ZStack
+        modifiers={[
+          frame({ maxWidth: Infinity, height }),
+          clipped(),
+          geometryGroup(),
+          brightness(-0.15),
+          contrast(3),
+          luminanceToAlpha(),
+          colorInvert(),
+        ]}
+      >
+        <Rectangle modifiers={[foregroundStyle(black)]} />
+        {content}
+        {cover(startsAt, true)}
+        {cover(endsAt, false)}
+      </ZStack>
+    );
+  };
+  const phaseStack = (
+    width: number,
+    height: number,
+    layer: (phase: IntervalActivityPhase) => ReactNode,
+  ) => (
+    <ZStack modifiers={[frame({ maxWidth: width, height })]}>
+      {props.phases.map((phase, index) => (
+        <ZStack key={index} modifiers={[frame({ maxWidth: width, height })]}>
+          {during(phase.startsAt, phase.endsAt, height, layer(phase))}
+        </ZStack>
+      ))}
+    </ZStack>
+  );
+  const phaseTime = (phase: IntervalActivityPhase, size: number) => (
+    <Text
+      timerInterval={{ lower: new Date(phase.startsAt), upper: new Date(phase.endsAt) }}
+      modifiers={[font({ size, weight: 'semibold' }), monospacedDigit(), foregroundStyle(white)]}
+    />
+  );
+  const phasePanel = phaseStack(Infinity, look.phaseHeight, (phase) => (
+    <HStack modifiers={[padding({ horizontal: look.gap })]}>
+      <VStack alignment="leading">
+        <Text modifiers={[font({ weight: 'bold', size: look.titleSize }), foregroundStyle(white)]}>
+          {phase.label}
+        </Text>
+        <Text modifiers={[font({ size: look.captionSize }), foregroundStyle(white)]}>
+          {phase.detail}
+        </Text>
+      </VStack>
+      <Spacer />
+      {phaseTime(phase, look.clockSize)}
+    </HStack>
+  ));
+  // Skip rest: the button is always there, on top of the gates and outside them, with a near-clear
+  // face of its own. Only its look is gated, shown in a rest; a tap on its spot outside a rest
+  // reaches the app, which ignores it (IntervalLockScreenDriver).
+  const skipRest = (
+    <ZStack modifiers={[frame({ maxWidth: Infinity, height: look.buttonHeight })]}>
+      {phaseStack(Infinity, look.buttonHeight, (phase) =>
+        phase.rest ? (
+          <HStack
+            modifiers={[
+              frame({ maxWidth: Infinity, minHeight: look.buttonHeight }),
+              background(white),
+              clipShape('capsule'),
+            ]}
+          >
+            <Text
+              modifiers={[
+                font({ weight: 'medium', size: look.captionSize }),
+                foregroundStyle(black),
+              ]}
+            >
+              Skip rest
+            </Text>
+          </HStack>
+        ) : null,
+      )}
+      <Button target="skipRest" onPress={() => props} modifiers={[buttonStyle('plain')]}>
+        <Rectangle
+          modifiers={[
+            foregroundStyle(white),
+            opacity(0.01),
+            frame({ maxWidth: Infinity, height: look.buttonHeight }),
+          ]}
+        />
+      </Button>
+    </ZStack>
+  );
+  const compactPhaseTime = (size: number, width: number, height: number) =>
+    phaseStack(width, height, (phase) => phaseTime(phase, size));
+  const spike = props.phases.length > 0;
+
   return {
     banner: (
       <VStack
@@ -155,17 +297,23 @@ const IntervalTimerActivity = (
             <Text modifiers={[font({ size: look.captionSize }), still]}>{block.detail}</Text>
           </VStack>
           <Spacer />
-          {clock(look.clockSize, look.clockWidth)}
+          {spike ? null : clock(look.clockSize, look.clockWidth)}
         </HStack>
+        {spike ? phasePanel : null}
         {segmentBar}
         <HStack spacing={look.gap}>
           {paused ? button('pause', 'Resume', 'play.fill') : button('pause', 'Pause', 'pause.fill')}
+          {spike ? skipRest : null}
         </HStack>
       </VStack>
     ),
     compactLeading: <Text>{block.title}</Text>,
-    compactTrailing: clock(look.clockSizeCompact),
-    minimal: clock(look.clockSizeMinimal),
+    compactTrailing: spike
+      ? compactPhaseTime(look.clockSizeCompact, look.clockWidthCompact, look.clockHeightCompact)
+      : clock(look.clockSizeCompact),
+    minimal: spike
+      ? compactPhaseTime(look.clockSizeMinimal, look.clockWidthMinimal, look.clockHeightMinimal)
+      : clock(look.clockSizeMinimal),
     expandedLeading: <Text>{block.title}</Text>,
     expandedTrailing: clock(look.clockSizeExpanded),
     expandedBottom: segmentBar,

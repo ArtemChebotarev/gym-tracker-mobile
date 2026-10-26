@@ -97,8 +97,13 @@ export function IntervalLockScreenDriver() {
       update();
     });
     // Its one button: Pause, Resume while paused.
-    const unlisten = onIntervalActivityAction(() => {
+    const unlisten = onIntervalActivityAction((action) => {
       const store = useIntervalTimerStore.getState();
+      // SPIKE: Skip rest, in a rest only — a tap on its spot outside a rest does nothing.
+      if (action === 'skipRest') {
+        if (store.active?.timer.phase?.kind === 'rest') store.skipRest();
+        return;
+      }
       if (store.active?.timer.endsAt !== undefined) store.pause();
       else store.resume();
     });

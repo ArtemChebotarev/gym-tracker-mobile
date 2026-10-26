@@ -43,6 +43,15 @@ export type IntervalActivityLook = {
   /** The time's fixed width — see `size/activity-clock`. */
   clockWidth: number;
   clockSize: number;
+  /** SPIKE: the phase panel's height, the compact and minimal clocks' widths. */
+  phaseHeight: number;
+  clockWidthCompact: number;
+  clockWidthMinimal: number;
+  clockHeightCompact: number;
+  clockHeightMinimal: number;
+  /** SPIKE: a luminance mask's clear and opaque ends; the plates come out `maskClear`. */
+  maskClear: string;
+  maskSolid: string;
   clockSizeExpanded: number;
   clockSizeCompact: number;
   clockSizeMinimal: number;
@@ -53,7 +62,7 @@ export type IntervalActivityLook = {
 };
 
 /** A button on the Live Activity — its `target`, which comes back to the app when it is tapped. */
-export type IntervalActivityAction = 'pause';
+export type IntervalActivityAction = 'pause' | 'skipRest';
 
 /**
  * One cell of the block's bar: a work or a rest of a round. A cell that is done or held is a plain
@@ -90,9 +99,25 @@ export type IntervalActivityBlock = {
   segments: IntervalActivitySegment[];
 };
 
+/**
+ * SPIKE (phase view with no update): one phase still to come, with its scheduled time. The layout
+ * stacks one layer per phase, each shown from its `startsAt` by a time-driven gate.
+ */
+export type IntervalActivityPhase = {
+  /** `Get ready`, `Work`, `Rest`. */
+  label: string;
+  /** `Round 2 of 3`. */
+  detail: string;
+  rest: boolean;
+  startsAt: number;
+  endsAt: number;
+};
+
 export type IntervalTimerActivityProps = {
   look: IntervalActivityLook;
   block: IntervalActivityBlock;
+  /** SPIKE: the phases still to come, running ones included (none while paused). */
+  phases: IntervalActivityPhase[];
   /** The app's icon in the shared directory (state/liveActivityIcon.ts); none if it isn't there. */
   iconUri?: string;
 };
@@ -114,6 +139,13 @@ export function intervalActivityLook(): IntervalActivityLook {
     iconRadius: RADII['radius/segment-inner'],
     clockWidth: SIZES['size/activity-clock'],
     clockSize: TYPOGRAPHY['type/activity-clock'].fontSize,
+    phaseHeight: 52,
+    clockWidthCompact: 44,
+    clockWidthMinimal: 34,
+    clockHeightCompact: 20,
+    clockHeightMinimal: 18,
+    maskClear: COLORS['mask/clear'],
+    maskSolid: COLORS['mask/solid'],
     clockSizeExpanded: TYPOGRAPHY['type/value'].fontSize,
     clockSizeCompact: TYPOGRAPHY['type/footnote'].fontSize,
     clockSizeMinimal: TYPOGRAPHY['type/caption'].fontSize,
@@ -135,7 +167,28 @@ export function intervalActivityPropsOf(
   now: number,
 ): IntervalTimerActivityProps | undefined {
   if (active.timer.phase === undefined) return undefined;
-  return { look: intervalActivityLook(), block: intervalActivityBlockOf(active, now) };
+  return {
+    look: intervalActivityLook(),
+    block: intervalActivityBlockOf(active, now),
+    phases: intervalActivityPhasesOf(active),
+  };
+}
+
+const PHASE_LABELS = { getReady: 'Get ready', work: 'Work', rest: 'Rest' } as const;
+
+/** SPIKE: the phases of the running timer still to come, each with its scheduled time. */
+export function intervalActivityPhasesOf({
+  exercise,
+  timer,
+}: ActiveIntervalTimer): IntervalActivityPhase[] {
+  if (!isIntervalTimerRunning(timer)) return [];
+  return intervalPhasesAhead(timer).map(({ phase, startsAt, endsAt }) => ({
+    label: PHASE_LABELS[phase.kind],
+    detail: `Round ${timer.rounds[phase.round]?.roundNumber ?? phase.round + 1} of ${exercise.totalRounds}`,
+    rest: phase.kind === 'rest',
+    startsAt,
+    endsAt,
+  }));
 }
 
 const samePhase = (a: IntervalTimerPhase, b: IntervalTimerPhase) =>

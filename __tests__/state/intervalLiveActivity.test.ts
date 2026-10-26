@@ -72,14 +72,16 @@ describe('intervalLiveActivity', () => {
     expect(mockWidgets.instances).toEqual([second]);
   });
 
-  it('hears Pause on its own activity, matched by its id', async () => {
+  it('hears Pause and Skip rest on its own activity, matched by its id', async () => {
     const activity = await startIntervalActivity(PROPS);
     const onAction = jest.fn();
     const unsubscribe = onIntervalActivityAction(onAction);
 
     tap({ source: activity.getId(), target: 'pause' });
     tap({ source: activity.getId(), target: 'skipRest' });
-    expect(onAction.mock.calls).toEqual([['pause']]);
+    tap({ source: activity.getId(), target: 'endEarly' });
+    // SPIKE (GT-180): Skip rest is back on the activity, shown in a rest only.
+    expect(onAction.mock.calls).toEqual([['pause'], ['skipRest']]);
 
     unsubscribe();
   });

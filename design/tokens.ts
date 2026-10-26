@@ -74,6 +74,12 @@ export const COLORS = {
   'overlay/scrim': 'rgba(0, 0, 0, 0.5)',
   /** Drop shadow under a lifted (dragged) row. */
   shadow: '#000000',
+  /**
+   * SPIKE (GT-180): the two ends of a luminance mask in the Live Activity — black comes out clear,
+   * white opaque.
+   */
+  'mask/clear': '#000000',
+  'mask/solid': '#FFFFFF',
 } as const;
 
 export type ColorToken = keyof typeof COLORS;

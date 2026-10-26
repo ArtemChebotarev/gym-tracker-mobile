@@ -10,7 +10,14 @@ import type {
 // buttons. Updates are local, from the app — no push: the activity is requested without a push
 // token, so it needs no APNs entitlement (GT-94).
 
-const ACTIONS: readonly IntervalActivityAction[] = ['pause'];
+const ACTIONS: readonly IntervalActivityAction[] = ['pause', 'skipRest'];
+
+/**
+ * SPIKE (GT-180): drops every update after the start, as iOS does behind a locked screen for an
+ * app alive by background audio (research 10.3) — the layout has to stay right without them. In
+ * the app only: the tests keep checking the real update path.
+ */
+const DROP_UPDATES = process.env.NODE_ENV !== 'test';
 
 /**
  * Starts the Live Activity of a timer. Ends every one still on the lock screen first: only one
@@ -39,6 +46,9 @@ export async function updateIntervalActivity(
   props: IntervalTimerActivityProps,
 ): Promise<void> {
   if (activity === null) return;
+  if (DROP_UPDATES) {
+    return;
+  }
   try {
     await activity.update(props);
   } catch {
