@@ -75,8 +75,9 @@ export function useSourceWeekListDeps(): SourceWeekListDeps {
  * library records, for the hybrid settings the copy starts with (GT-159).
  */
 export function useSourceWeekDeps(): SourceWeekWithSettingsDeps {
-  const { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo } = useRepositories();
-  return { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo };
+  const { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo, roundLogRepo } =
+    useRepositories();
+  return { mesocycleRepo, sessionRepo, sessionExerciseRepo, exerciseRepo, roundLogRepo };
 }
 
 /** Flow B's step T (GT-6): the templates to choose from. */

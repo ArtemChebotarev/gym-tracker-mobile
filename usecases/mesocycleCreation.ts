@@ -22,13 +22,15 @@ import {
   type TemplateMesocycleDraftInput,
 } from '@domain/mesocycleBuilders';
 import type { WeekPlan } from '@domain/plan';
-import { extractWeekPlan } from '@domain/planConverters';
+import { extractWeekPlan, type SessionWithExercises } from '@domain/planConverters';
 import { validateCopyableSourceWeek } from '@domain/mesocycleValidators';
 import type { SourceWeekOption } from '@domain/sourceWeek';
 import { buildSourceWeekOptions } from '@domain/sourceWeekBuilders';
+import { exerciseSettingsFromSourceWeek } from '@domain/sourceWeekSettings';
 import { applyTemplate, type TemplateDraft } from '@domain/templateConverters';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SessionRepository } from '@repositories/session';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { SettingsRepository } from '@repositories/settings';
@@ -155,53 +157,85 @@ export async function extractSourceWeekPlan(
   }
   validateCopyableSourceWeek(source, sourceWeekNumber);
 
+  return extractWeekPlan(await readSourceWeek(query, deps));
+}
+
+/** The sessions of the source week with their exercises, in day order. */
+async function readSourceWeek(
+  { sourceMesoId, sourceWeekNumber }: { sourceMesoId: string; sourceWeekNumber: number },
+  deps: SourceWeekDeps,
+): Promise<SessionWithExercises[]> {
   const sessions = await deps.sessionRepo.listByMesoIdAndWeekNumber(sourceMesoId, sourceWeekNumber);
   if (sessions.length === 0) {
     throw new NotFoundError(
       `Mesocycle "${sourceMesoId}" has no sessions in week ${sourceWeekNumber}.`,
     );
   }
-
-  return extractWeekPlan(
-    await Promise.all(
-      sessions.map(async (session) => ({
+  return Promise.all(
+    [...sessions]
+      .sort((a, b) => a.dayNumber - b.dayNumber)
+      .map(async (session) => ({
         session,
         exercises: await deps.sessionExerciseRepo.listBySessionId(session.id),
       })),
-    ),
   );
 }
 
-export type SourceWeekWithSettingsDeps = SourceWeekDeps & { exerciseRepo: ExerciseRepository };
+export type SourceWeekWithSettingsDeps = SourceWeekDeps & {
+  exerciseRepo: ExerciseRepository;
+  /** An interval's rounds as the week ended are read from what was logged (`roundTimesOf`). */
+  roundLogRepo: RoundLogRepository;
+};
 
 /** What Flow C's draft is prefilled from: the week's structure and its hybrid settings. */
 export type SourceWeek = {
   weekPlan: WeekPlan;
   /**
    * For each power, interval and mobility exercise of `weekPlan`: the source cycle's own settings
-   * for it, or — for one the source has none for — a copy of its library config (GT-159).
+   * for it, or — for one the source has none for — a copy of its library config (GT-159), with
+   * what the week itself says about them: an interval's rounds, work and rest as the week ended.
    */
   exerciseSettings: ExerciseSettingsById;
 };
 
 /**
  * `extractSourceWeekPlan`, plus the settings the copy starts with (GT-159, Artem 18.10.2026): what
- * the source cycle actually ran each hybrid exercise with, the library's defaults where it has
- * nothing. Rejects as `extractSourceWeekPlan` does.
+ * the source cycle ran each hybrid exercise with, the library's defaults where it has nothing —
+ * and for an interval, its rounds, work and rest as the copied week ended (Artem, 26.10.2026).
+ * Rejects as `extractSourceWeekPlan` does.
  */
 export async function extractSourceWeek(
   query: { sourceMesoId: string; sourceWeekNumber: number },
   deps: SourceWeekWithSettingsDeps,
 ): Promise<SourceWeek> {
-  const weekPlan = await extractSourceWeekPlan(query, deps);
   const source = await deps.mesocycleRepo.getById(query.sourceMesoId);
+  if (!source) {
+    throw new NotFoundError(`Mesocycle "${query.sourceMesoId}" does not exist.`);
+  }
+  validateCopyableSourceWeek(source, query.sourceWeekNumber);
+  const week = await readSourceWeek(query, deps);
+  const weekPlan = extractWeekPlan(week);
   const exerciseIds = [
-    ...new Set(weekPlan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
+    ...new Set(
+      weekPlan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId)),
+    ),
   ].map(toExerciseId);
   const exercises = await deps.exerciseRepo.listByIds(exerciseIds);
+  const performances = await Promise.all(
+    week.flatMap(({ exercises: sessionExercises }) =>
+      sessionExercises.map(async (sessionExercise) => ({
+        exerciseId: sessionExercise.exerciseId,
+        sessionExercise,
+        roundLogs: await deps.roundLogRepo.listBySessionExerciseId(sessionExercise.id),
+      })),
+    ),
+  );
   return {
     weekPlan,
-    exerciseSettings: weekPlanExerciseSettings(weekPlan, exercises, source?.exerciseSettings),
+    exerciseSettings: exerciseSettingsFromSourceWeek(
+      weekPlanExerciseSettings(weekPlan, exercises, source.exerciseSettings),
+      performances,
+    ),
   };
 }
 
