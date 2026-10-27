@@ -1,5 +1,7 @@
 import {
+  hasRoundTimes,
   intervalProgressionPlate,
+  lacksRoundTimes,
   progressionInfoLabel,
   roundEntryOf,
   startTimerLabel,
@@ -63,7 +65,7 @@ describe('intervalProgressionPlate', () => {
     expect(plate.rows[2]?.text).toContainEqual({ strong: '2:00' });
   });
 
-  test('a round with no rest planned has no rest to show for this week', () => {
+  test('a week whose rounds have no time yet shows no “This week” (GT-187)', () => {
     const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
     const plate = intervalProgressionPlate({ column: 'rest', stepSec: 10 }, [noRest]);
 
@@ -74,8 +76,13 @@ describe('intervalProgressionPlate', () => {
 describe('roundEntryOf', () => {
   test('one tap logs the times the fields hold', () => {
     expect(roundEntryOf(ROUNDS[0]!)).toEqual({ workSec: 120, restSec: 45 });
+  });
+
+  test('nothing to log while a field is empty (GT-187)', () => {
     const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
-    expect(roundEntryOf(noRest)).toEqual({ workSec: 120 });
+    const { workSec: _workSec, ...noWork } = ROUNDS[2]!;
+    expect(roundEntryOf(noRest)).toBeUndefined();
+    expect(roundEntryOf(noWork)).toBeUndefined();
   });
 });
 
@@ -91,16 +98,39 @@ describe('timerRoundsOf', () => {
     const rounds: WorkoutRoundRow[] = [
       { ...ROUNDS[0]!, log: LOGGED },
       { ...ROUNDS[1]!, workSec: 90 },
-      { ...ROUNDS[2]!, restSec: undefined },
+      { ...ROUNDS[2]!, restSec: 30 },
     ];
     expect(timerRoundsOf(rounds)).toEqual([
       { roundNumber: 2, workSec: 90, restSec: 45 },
-      // A round without a rest of its own rests 0.
-      { roundNumber: 3, workSec: 120, restSec: 0 },
+      { roundNumber: 3, workSec: 120, restSec: 30 },
     ]);
+  });
+
+  test('no timer while a round still to do has an empty field (GT-187)', () => {
+    const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
+    expect(timerRoundsOf([ROUNDS[0]!, ROUNDS[1]!, noRest])).toBeUndefined();
+    // A logged round's empty plan doesn't matter: it isn't timed.
+    const { workSec: _workSec, ...noWork } = ROUNDS[0]!;
+    expect(timerRoundsOf([{ ...noWork, log: LOGGED }, ROUNDS[1]!])).toHaveLength(1);
   });
 
   test('nothing once every round is logged', () => {
     expect(timerRoundsOf(ROUNDS.map((round) => ({ ...round, log: LOGGED })))).toEqual([]);
+  });
+});
+
+describe('rounds with no time yet (GT-187)', () => {
+  test('a round has its times once both work and rest are set', () => {
+    const { restSec: _restSec, ...noRest } = ROUNDS[0]!;
+    expect(hasRoundTimes(ROUNDS[0]!)).toBe(true);
+    expect(hasRoundTimes(noRest)).toBe(false);
+  });
+
+  test('the hint shows while a round still to do lacks a time — not for a logged or skipped one', () => {
+    const empty: WorkoutRoundRow = { roundNumber: 3, isFirstUnlogged: false };
+    expect(lacksRoundTimes(ROUNDS)).toBe(false);
+    expect(lacksRoundTimes([ROUNDS[0]!, empty])).toBe(true);
+    expect(lacksRoundTimes([{ ...empty, log: LOGGED }])).toBe(false);
+    expect(lacksRoundTimes([{ ...empty, notDone: 'skipped' }])).toBe(false);
   });
 });

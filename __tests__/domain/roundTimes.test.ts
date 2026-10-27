@@ -1,4 +1,4 @@
-import { roundTimesOf } from '@domain/roundTimes';
+import { roundTimesOf, withRoundTime } from '@domain/roundTimes';
 
 const planned = { targetWorkSec: 120, targetRestSec: 45 };
 const done = { workSec: 135, restSec: 30, restSkipped: false, completed: true };
@@ -33,5 +33,27 @@ describe('roundTimesOf', () => {
   test('no times and nothing logged: none — the card falls back on the cycle’s plan', () => {
     expect(roundTimesOf({})).toEqual({});
     expect(roundTimesOf(undefined)).toEqual({});
+  });
+});
+
+describe('withRoundTime (GT-187)', () => {
+  const targets = [{ setNumber: 1 }, { setNumber: 2, targetWorkSec: 60, targetRestSec: 30 }];
+
+  test('sets the column of the rounds named, and leaves the others as they are', () => {
+    expect(withRoundTime(targets, 'rest', [1], 45)).toEqual([
+      { setNumber: 1, targetRestSec: 45 },
+      targets[1],
+    ]);
+    expect(withRoundTime(targets, 'work', [1, 2], 90)).toEqual([
+      { setNumber: 1, targetWorkSec: 90 },
+      { setNumber: 2, targetWorkSec: 90, targetRestSec: 30 },
+    ]);
+  });
+
+  test('refuses a time the picker can’t give and a round that isn’t there', () => {
+    expect(() => withRoundTime(targets, 'rest', [1], 5)).toThrow();
+    expect(() => withRoundTime(targets, 'work', [1], 0)).toThrow();
+    expect(() => withRoundTime(targets, 'work', [1], 30.5)).toThrow();
+    expect(() => withRoundTime(targets, 'work', [3], 30)).toThrow();
   });
 });

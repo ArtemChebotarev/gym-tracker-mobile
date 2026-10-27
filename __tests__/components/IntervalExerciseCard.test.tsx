@@ -168,15 +168,74 @@ describe('Interval card (GT-88)', () => {
     expect(screen.queryByText(/Start timer/)).toBeNull();
   });
 
-  test('a round with no rest planned at all reads –', () => {
-    const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
-    render(
-      <WorkoutExerciseCard
-        {...makeProps({ exercise: makeInterval({ rounds: [ROUNDS[0]!, ROUNDS[1]!, noRest] }) })}
-      />,
-    );
+  describe('rounds with no time yet (GT-187)', () => {
+    const EMPTY: WorkoutRoundRow[] = [
+      { roundNumber: 1, isFirstUnlogged: true },
+      { roundNumber: 2, isFirstUnlogged: false },
+    ];
 
-    expect(within(screen.getByTestId('round-row-3')).getByText('–')).toBeTruthy();
+    function renderEmpty(rounds: WorkoutRoundRow[] = EMPTY) {
+      const actions = { onLogRound: jest.fn(), onStartTimer: jest.fn(), onSetRoundTime: jest.fn() };
+      render(
+        <WorkoutExerciseCard
+          {...makeProps({
+            exercise: makeInterval({ rounds, plannedRoundCount: rounds.length }),
+            rounds: actions,
+          })}
+        />,
+      );
+      return actions;
+    }
+
+    test('the fields are empty, and Log and Start timer wait with a line on why', () => {
+      const actions = renderEmpty();
+
+      expect(screen.getByLabelText('Work, round 1, not set')).toBeTruthy();
+      expect(screen.getByLabelText('Rest, round 2, not set')).toBeTruthy();
+      expect(within(screen.getByTestId('round-row-1')).getAllByText('–')).toHaveLength(2);
+      expect(
+        screen.getByText('Pick work and rest to log a round or start the timer.'),
+      ).toBeTruthy();
+      fireEvent.press(screen.getByLabelText('Log round 1'));
+      fireEvent.press(screen.getByTestId('start-timer-session-exercise-bag'));
+      expect(actions.onLogRound).not.toHaveBeenCalled();
+      expect(actions.onStartTimer).not.toHaveBeenCalled();
+      expect(screen.getByLabelText('Log round 1')).toBeDisabled();
+    });
+
+    test('DoD: a picked time fills the rounds below and is saved; with both, Log and the timer work', () => {
+      const actions = renderEmpty();
+
+      fireEvent.press(screen.getByLabelText('Work, round 1, not set'));
+      act(() => {
+        screen.UNSAFE_getByType(TimePickerSheet).props.onChange(30);
+      });
+      fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+      expect(actions.onSetRoundTime).toHaveBeenCalledWith('work', [1, 2], 30);
+
+      // An empty field keeps the wheels' time even when they aren't moved: Rest starts at 0:10.
+      fireEvent.press(screen.getByLabelText('Rest, round 1, not set'));
+      fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+      expect(actions.onSetRoundTime).toHaveBeenLastCalledWith('rest', [1, 2], 10);
+
+      expect(screen.queryByText(/Pick work and rest/)).toBeNull();
+      fireEvent.press(screen.getByLabelText('Log round 1'));
+      expect(actions.onLogRound).toHaveBeenCalledWith(1, { workSec: 30, restSec: 10 });
+      fireEvent.press(screen.getByTestId('start-timer-session-exercise-bag'));
+      expect(actions.onStartTimer).toHaveBeenCalledWith([
+        { roundNumber: 1, workSec: 30, restSec: 10 },
+        { roundNumber: 2, workSec: 30, restSec: 10 },
+      ]);
+    });
+
+    test('opening a field that has a time and closing it saves nothing', () => {
+      const actions = renderEmpty(ROUNDS);
+
+      fireEvent.press(screen.getByLabelText('Rest, round 1, 0:45'));
+      fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+
+      expect(actions.onSetRoundTime).not.toHaveBeenCalled();
+    });
   });
 
   test('DoD: one tap on Log logs the round with its fields; a tap on a filled one un-logs it', () => {

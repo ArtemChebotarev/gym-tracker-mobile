@@ -1,31 +1,28 @@
 // Pure helpers behind components/IntervalRoundRows.tsx — a round's Work and Rest fields while the
-// card is on screen (10.1 FR-9, GT-90; canvas 8.1, 8.2). A time is picked on two wheels, and the
-// rounds below that aren't logged yet follow it, the way a typed weight carries into the later sets
-// (task 106, `carryForward`). See the code-style skill.
+// card is on screen (10.1 FR-9, GT-90, GT-187; canvas 8.1, 8.2). A time is picked on two wheels, and
+// the rounds below that aren't logged yet follow it, the way a typed weight carries into the later
+// sets (task 106, `carryForward`). With no history a round's fields start empty, and the first pick
+// fills them. See the code-style skill.
 
-import {
-  CONFIG_TIME_RANGE_SEC,
-  CONFIG_TIME_STEP_SEC,
-  INTERVAL_REST_MIN_SEC,
-} from '@domain/exerciseConfig';
+import { ROUND_TIME_BOUNDS, type RoundTimeColumn } from '@domain/roundTimes';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
 import { carryForward, type CarriedField } from './RowCarryLogic';
 
-/** The two times of a round the user can change in a workout. */
-export type RoundTimeColumn = 'work' | 'rest';
+export type { RoundTimeColumn } from '@domain/roundTimes';
 
 /**
- * One time field while nothing has been logged from it. `isManual` marks a time the user picked —
- * or brought back by un-logging the round; carry-over only replaces what the plan or an earlier
+ * One time field the user has touched on this visit. `isManual` marks a time the user picked — or
+ * brought back by un-logging the round; carry-over only replaces what the plan or an earlier
  * carry-over put there.
  */
 export type RoundTimeField = CarriedField & { sec: number };
 
 /**
- * What the round fields hold beyond the plan, by column and round number. Picked-but-unlogged times
- * are never saved (05, "Сохранение данных") — this lives in the card while it's mounted, and a
- * replaced exercise starts over with none.
+ * What the round fields hold beyond the model, by column and round number. A picked time is saved
+ * as the rounds' plan when the picker closes (`roundTimeToSave`, GT-187), and the model comes back
+ * with it; this keeps the screen from waiting on that, and remembers which times were picked by
+ * hand while the card is mounted, so a later carry-over passes them by.
  */
 export type RoundTimeEdits = Readonly<
   Record<RoundTimeColumn, Readonly<Record<number, RoundTimeField>>>
@@ -33,22 +30,8 @@ export type RoundTimeEdits = Readonly<
 
 export const NO_ROUND_TIME_EDITS: RoundTimeEdits = { work: {}, rest: {} };
 
-/** What the picker of each column may be set to, and its step — the exercise config's own bounds. */
-export const ROUND_TIME_PICKER: Record<
-  RoundTimeColumn,
-  { minSec: number; maxSec: number; stepSec: number }
-> = {
-  work: {
-    minSec: CONFIG_TIME_RANGE_SEC.workSec.min,
-    maxSec: CONFIG_TIME_RANGE_SEC.workSec.max,
-    stepSec: CONFIG_TIME_STEP_SEC,
-  },
-  rest: {
-    minSec: INTERVAL_REST_MIN_SEC,
-    maxSec: CONFIG_TIME_RANGE_SEC.restSec.max,
-    stepSec: CONFIG_TIME_STEP_SEC,
-  },
-};
+/** What the picker of each column may be set to, and its step — the round time's own bounds. */
+export const ROUND_TIME_PICKER = ROUND_TIME_BOUNDS;
 
 /** A time picked for round `roundNumber` — the user's own, so later carry-overs skip it. */
 export function editRoundTime(
@@ -146,8 +129,7 @@ export function followRoundChanges(
 
 /**
  * The rounds as their fields show them: an unlogged round with the times picked or carried into it,
- * a logged one as it was logged. A round with no rest planned keeps none — its Rest cell is `–` and
- * has nothing to pick. Log, the Start timer label and the timer itself read these.
+ * a logged one as it was logged. Log, the Start timer label and the timer itself read these.
  */
 export function roundsWithEdits(
   rounds: readonly WorkoutRoundRow[],
@@ -163,7 +145,7 @@ export function roundsWithEdits(
     if (work !== undefined) {
       shown.workSec = work.sec;
     }
-    if (rest !== undefined && round.restSec !== undefined) {
+    if (rest !== undefined) {
       shown.restSec = rest.sec;
     }
     return shown;
@@ -186,4 +168,46 @@ export function roundTimePickerSubtitle(
   const index = rounds.findIndex((round) => round.roundNumber === roundNumber);
   const followers = rounds.slice(index + 1).some((round) => round.log === undefined);
   return index !== -1 && followers ? 'Rounds below follow until you log them' : undefined;
+}
+
+/**
+ * Where the picker's wheels stand when it opens on round `roundNumber` (GT-187): the time the field
+ * holds; an empty one starts from the nearest round above that has a time in this column, else from
+ * the column's least time. Not a default — nothing is kept until the picker closes.
+ */
+export function pickerStartSec(
+  rounds: readonly WorkoutRoundRow[],
+  column: RoundTimeColumn,
+  roundNumber: number,
+): number {
+  const secOf = (round: WorkoutRoundRow) =>
+    column === 'work' ? (round.log?.workSec ?? round.workSec) : shownRestSec(round);
+  const index = rounds.findIndex((round) => round.roundNumber === roundNumber);
+  const upToOwn = index === -1 ? [] : rounds.slice(0, index + 1);
+  const sec = upToOwn
+    .map(secOf)
+    .reverse()
+    .find((each) => each !== undefined);
+  return sec ?? ROUND_TIME_PICKER[column].minSec;
+}
+
+/**
+ * What to save once the picker of round `roundNumber` closes (GT-187): the time it holds, for that
+ * round and every round below it the carry-over changed (`before` → `after`, see
+ * `carryRoundTimeForward`). `undefined` when nothing was picked there.
+ */
+export function roundTimeToSave(
+  before: RoundTimeEdits,
+  after: RoundTimeEdits,
+  column: RoundTimeColumn,
+  roundNumber: number,
+): { sec: number; roundNumbers: number[] } | undefined {
+  const picked = after[column][roundNumber];
+  if (picked === undefined) {
+    return undefined;
+  }
+  const followers = Object.keys(after[column])
+    .map(Number)
+    .filter((n) => n !== roundNumber && after[column][n] !== before[column][n]);
+  return { sec: picked.sec, roundNumbers: [roundNumber, ...followers.sort((a, b) => a - b)] };
 }

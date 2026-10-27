@@ -15,7 +15,8 @@
 // set starts the rest before the next one — after an exercise's last set, before the next exercise
 // (10.1 FR-5, GT-86, `restAfterLog`); finishing or skipping the workout drops whatever rest is left.
 // An interval's rounds log and un-log by hand the same way, through `useLogRound` / `useUnlogRound`
-// (10.1 FR-7, GT-89), and rest for the round's own rest.
+// (10.1 FR-7, GT-89), and rest for the round's own rest. A time picked in a round is saved as the
+// plan of the rounds it fills through `useSetRoundTime` (10.1 FR-9, GT-187).
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
@@ -110,7 +111,7 @@ import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useHideCeilingTip } from '@state/useHideCeilingTip';
 import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
-import { useLogRound, useUnlogRound } from '@state/useRoundLogging';
+import { useLogRound, useSetRoundTime, useUnlogRound } from '@state/useRoundLogging';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
@@ -139,6 +140,7 @@ export default function TodayScreen() {
   const unlogSet = useUnlogSet();
   const logRound = useLogRound();
   const unlogRound = useUnlogRound();
+  const setRoundTime = useSetRoundTime();
   const setNoHeavierAvailable = useSetNoHeavierAvailable();
   const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
@@ -539,6 +541,20 @@ export default function TodayScreen() {
               sessionId: currentSessionId,
               sessionExerciseId: exercise.sessionExerciseId,
               roundNumber,
+            },
+            { onError: showSaveError },
+          );
+        }}
+        onSetRoundTime={(exercise, column, roundNumbers, sec) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          setRoundTime.mutate(
+            {
+              ref: { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId },
+              column,
+              roundNumbers,
+              sec,
             },
             { onError: showSaveError },
           );

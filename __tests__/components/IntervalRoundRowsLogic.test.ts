@@ -4,10 +4,12 @@ import {
   followRoundChanges,
   holdLoggedRound,
   NO_ROUND_TIME_EDITS,
+  pickerStartSec,
   ROUND_TIME_PICKER,
   roundsWithEdits,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
+  roundTimeToSave,
   shownRestSec,
 } from '@components/IntervalRoundRowsLogic';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
@@ -19,7 +21,7 @@ const LOGGED: WorkoutRoundRow['log'] = {
   completed: true,
 };
 
-/** Round 1 logged, rounds 2–4 planned at 2:00 / 1:00; round 4 has no rest planned. */
+/** Round 1 logged, rounds 2–4 planned at 2:00 / 1:00; round 4 has no rest yet (GT-187). */
 const ROUNDS: WorkoutRoundRow[] = [
   { roundNumber: 1, workSec: 120, restSec: 60, isFirstUnlogged: false, log: LOGGED },
   { roundNumber: 2, workSec: 120, restSec: 60, isFirstUnlogged: true },
@@ -36,7 +38,7 @@ describe('round times (GT-90)', () => {
       60, // round 1 is logged: it reads as logged, its plan untouched
       45,
       45,
-      undefined, // no rest planned, nothing to fill
+      45, // an empty rest is filled too (GT-187)
     ]);
   });
 
@@ -62,7 +64,7 @@ describe('round times (GT-90)', () => {
       60,
       45,
       30,
-      undefined,
+      45, // an empty rest follows the pick past the hand-set round (GT-187)
     ]);
   });
 
@@ -170,5 +172,57 @@ describe('shownRestSec (Artem, 20.10.2026)', () => {
       workSec: 110,
       restSec: 60,
     });
+  });
+});
+
+describe('rounds with no time yet (GT-187)', () => {
+  const EMPTY: WorkoutRoundRow[] = [
+    { roundNumber: 1, isFirstUnlogged: true },
+    { roundNumber: 2, isFirstUnlogged: false },
+    { roundNumber: 3, isFirstUnlogged: false },
+  ];
+
+  test('DoD: the first pick fills the empty rounds below, Work and Rest alike', () => {
+    let edits = carryRoundTimeForward(
+      editRoundTime(NO_ROUND_TIME_EDITS, 'work', 1, 30),
+      'work',
+      EMPTY,
+      1,
+    );
+    edits = carryRoundTimeForward(editRoundTime(edits, 'rest', 1, 60), 'rest', EMPTY, 1);
+
+    expect(roundsWithEdits(EMPTY, edits).map(({ workSec, restSec }) => [workSec, restSec])).toEqual(
+      [
+        [30, 60],
+        [30, 60],
+        [30, 60],
+      ],
+    );
+  });
+
+  test('an empty field’s wheels start from the nearest time above, else the least time', () => {
+    const filled: WorkoutRoundRow[] = [
+      { ...EMPTY[0]!, workSec: 45, restSec: 20 },
+      ...EMPTY.slice(1),
+    ];
+
+    expect(pickerStartSec(filled, 'work', 3)).toBe(45);
+    expect(pickerStartSec(filled, 'rest', 2)).toBe(20);
+    expect(pickerStartSec(EMPTY, 'work', 2)).toBe(ROUND_TIME_PICKER.work.minSec);
+    expect(pickerStartSec(EMPTY, 'rest', 1)).toBe(10);
+    // A field with a time starts from it.
+    expect(pickerStartSec(ROUNDS, 'rest', 1)).toBe(50);
+  });
+
+  test('what a closed picker saves: the round picked and every round the carry-over changed', () => {
+    const picked = editRoundTime(editRoundTime(NO_ROUND_TIME_EDITS, 'rest', 3, 30), 'rest', 2, 45);
+    const carried = carryRoundTimeForward(picked, 'rest', ROUNDS, 2);
+
+    // Round 3 was picked by hand and keeps its own time; round 4 followed.
+    expect(roundTimeToSave(picked, carried, 'rest', 2)).toEqual({ sec: 45, roundNumbers: [2, 4] });
+  });
+
+  test('nothing picked on the round, nothing to save', () => {
+    expect(roundTimeToSave(NO_ROUND_TIME_EDITS, NO_ROUND_TIME_EDITS, 'work', 2)).toBeUndefined();
   });
 });
