@@ -26,10 +26,10 @@ describe('PROGRESSION_POLICIES', () => {
 });
 
 describe('policyFor', () => {
-  test('every type has its own policy except mobility, which still runs strength (GT-106)', () => {
+  test('every type has its own policy (mobility since GT-106)', () => {
     expect(PROGRESSION_POLICIES.power).not.toBe(strengthPolicy);
     expect(PROGRESSION_POLICIES.interval).not.toBe(strengthPolicy);
-    expect(PROGRESSION_POLICIES.mobility).toBe(strengthPolicy);
+    expect(PROGRESSION_POLICIES.mobility).not.toBe(strengthPolicy);
   });
 
   test('interval shares none of its jobs with strength', () => {

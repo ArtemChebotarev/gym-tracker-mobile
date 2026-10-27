@@ -4,6 +4,7 @@
 // layer reads the sessions, their set logs and the exercises behind them.
 
 import { MUSCLE_GROUPS, type Exercise, type MuscleGroup } from './catalog';
+import { exerciseTypeOf } from './exerciseConfigBuilders';
 import type { Mesocycle } from './mesocycle';
 import { currentWeekNumber } from './mesoGridBuilders';
 import type { MesoSessionLog, MesoSummary, MesoWeeklySetsRow } from './mesoSummary';
@@ -12,19 +13,30 @@ import type { MesoSessionLog, MesoSummary, MesoWeeklySetsRow } from './mesoSumma
  * The summary of `mesocycle` from its sessions and their set logs (any order; sessions of other
  * mesocycles or outside the block's weeks are ignored). `exercises` resolves each set's muscle
  * group — the set's own `exerciseId`, so a swapped exercise counts toward the group actually
- * trained.
+ * trained. A mobility exercise's sets count toward neither the sets nor any group's volume (10 ·
+ * Hybrid Exercises, GT-106): it is logged as sets only until its card has its own log (GT-107).
  */
 export function buildMesoSummary(
   mesocycle: Mesocycle,
   sessionLogs: readonly MesoSessionLog[],
-  exercises: readonly Pick<Exercise, 'id' | 'muscleGroup'>[],
+  exercises: readonly Pick<Exercise, 'id' | 'muscleGroup' | 'type'>[],
 ): MesoSummary {
-  const own = sessionLogs.filter(
-    ({ session }) =>
-      session.mesoId === mesocycle.id &&
-      session.weekNumber >= 1 &&
-      session.weekNumber <= mesocycle.lengthWeeks,
+  const mobilityIds = new Set<string>(
+    exercises
+      .filter((exercise) => exerciseTypeOf(exercise) === 'mobility')
+      .map((exercise) => exercise.id),
   );
+  const own = sessionLogs
+    .filter(
+      ({ session }) =>
+        session.mesoId === mesocycle.id &&
+        session.weekNumber >= 1 &&
+        session.weekNumber <= mesocycle.lengthWeeks,
+    )
+    .map(({ session, setLogs }) => ({
+      session,
+      setLogs: setLogs.filter((setLog) => !mobilityIds.has(setLog.exerciseId)),
+    }));
 
   const completed = own.filter(({ session }) => session.status === 'completed').length;
   // The week the block is on, by workouts — the same number its subtitle shows (08.3's rule). Not
