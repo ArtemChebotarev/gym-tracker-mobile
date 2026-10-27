@@ -23,7 +23,6 @@ export function holdIntervalConfig(): IntervalConfig {
     type: 'interval',
     workSec: 30,
     restSec: 60,
-    getReadySec: 5,
     lever: 'workTime',
     stepSec: 5,
   };
@@ -41,13 +40,12 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
     case 'strength':
       return undefined;
     case 'power':
-      return { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false };
+      return { type: 'power', load: 'weight', noHeavierAvailable: false };
     case 'interval':
       return {
         type: 'interval',
         workSec: 120,
         restSec: 60,
-        getReadySec: 5,
         lever: 'rest',
         stepSec: 10,
       };

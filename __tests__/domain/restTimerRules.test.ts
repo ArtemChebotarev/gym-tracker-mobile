@@ -1,4 +1,4 @@
-import { STRENGTH_REST_SEC } from '@domain/restTimer';
+import { REST_BETWEEN_SETS_SEC } from '@domain/restTimer';
 import {
   isRunning,
   nextSetAfter,
@@ -9,12 +9,9 @@ import {
   restRemainingSec,
   restSecFor,
   resumeRestTimer,
+  restBetweenSetsSecOf,
   startRestTimer,
-  strengthRestSecOf,
 } from '@domain/restTimerRules';
-
-const POWER_90 = { type: 'power', load: 'weight', restSec: 90, noHeavierAvailable: false } as const;
-const POWER_45 = { ...POWER_90, restSec: 45 };
 
 const T0 = 1_000_000;
 const REST = {
@@ -25,29 +22,23 @@ const REST = {
 
 describe('restSecFor', () => {
   test('strength rests 2:00, whether its type is spelled out or not', () => {
-    expect(restSecFor(undefined, undefined, undefined, 120)).toBe(STRENGTH_REST_SEC);
-    expect(restSecFor('strength', undefined, undefined, 120)).toBe(120);
+    expect(restSecFor(undefined, 120)).toBe(REST_BETWEEN_SETS_SEC);
+    expect(restSecFor('strength', 120)).toBe(120);
   });
 
-  test("power takes the cycle's rest first, then the library's, then the default 1:00", () => {
-    expect(restSecFor('power', POWER_90, POWER_45, 120)).toBe(90);
-    expect(restSecFor('power', undefined, POWER_45, 120)).toBe(45);
-    expect(restSecFor('power', undefined, undefined, 120)).toBe(60);
+  test('power takes the same rest from Settings as strength (GT-188)', () => {
+    expect(restSecFor('power', 90)).toBe(90);
   });
 
-  test('a rest of 0 is no rest', () => {
-    expect(restSecFor('power', { ...POWER_90, restSec: 0 }, undefined, 120)).toBeUndefined();
-  });
-
-  test('strength takes its rest from Settings, and has none while the timer is off', () => {
-    expect(restSecFor('strength', undefined, undefined, 90)).toBe(90);
-    expect(restSecFor('strength', undefined, undefined, undefined)).toBeUndefined();
-    expect(restSecFor('power', undefined, POWER_45, undefined)).toBe(45);
+  test('neither has a rest while the timer is off, nor one of 0', () => {
+    expect(restSecFor('strength', undefined)).toBeUndefined();
+    expect(restSecFor('power', undefined)).toBeUndefined();
+    expect(restSecFor('power', 0)).toBeUndefined();
   });
 
   test('interval and mobility have no rest between sets', () => {
-    expect(restSecFor('interval', undefined, undefined, 120)).toBeUndefined();
-    expect(restSecFor('mobility', undefined, undefined, 120)).toBeUndefined();
+    expect(restSecFor('interval', 120)).toBeUndefined();
+    expect(restSecFor('mobility', 120)).toBeUndefined();
   });
 });
 
@@ -103,9 +94,9 @@ describe('a rest on the clock', () => {
   });
 });
 
-describe('strengthRestSecOf', () => {
+describe('restBetweenSetsSecOf', () => {
   test('the seconds while the timer is on, none while it is off', () => {
-    expect(strengthRestSecOf({ enabled: true, restSec: 150 })).toBe(150);
-    expect(strengthRestSecOf({ enabled: false, restSec: 150 })).toBeUndefined();
+    expect(restBetweenSetsSecOf({ enabled: true, restSec: 150 })).toBe(150);
+    expect(restBetweenSetsSecOf({ enabled: false, restSec: 150 })).toBeUndefined();
   });
 });

@@ -34,6 +34,7 @@ import { canContinueFromBasics } from '@components/MesoEditorBasicsStepLogic';
 import { MesoEditorDaysStep } from '@components/MesoEditorDaysStep';
 import {
   canContinueFromDays,
+  planSettingsFor,
   reorderDayExercises,
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
@@ -52,7 +53,6 @@ import {
   resetDraftExerciseSettings,
   withDraftExerciseSettings,
 } from '@components/MesoEditorScreenLogic';
-import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
@@ -225,7 +225,7 @@ export function MesoEditorScreen({
   const planSettings =
     planExercise === undefined
       ? undefined
-      : exerciseSettingsFor(draft.exerciseSettings ?? {}, planExercise);
+      : planSettingsFor(draft.exerciseSettings ?? {}, planExercise);
 
   const discardDraft = useCallback(() => {
     resetDraft();
@@ -430,22 +430,9 @@ export function MesoEditorScreen({
         exerciseName={planExercise?.name ?? ''}
         dayNumber={planRow?.dayNumber ?? activeDay}
         settings={planSettings}
-        sets={planEntry?.sets ?? 0}
         onChangeSettings={(settings) =>
           planExercise &&
           setDraft((current) => withDraftExerciseSettings(current, planExercise.id, settings))
-        }
-        onChangeSets={(sets) =>
-          planRow &&
-          setDraft((current) => ({
-            ...current,
-            exercisesByDay: updateExerciseSets(
-              current.exercisesByDay,
-              planRow.dayNumber,
-              planRow.index,
-              sets,
-            ),
-          }))
         }
         onReset={() =>
           planExercise &&

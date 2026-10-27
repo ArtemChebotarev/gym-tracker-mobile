@@ -1,11 +1,13 @@
-// The plan sheet of a power, interval or mobility exercise in the cycle editor — 10.1 FR-9, canvas
-// 7.3 (GT-92). The row's plan chip opens it; what it edits is the cycle's own copy of the
+// The plan sheet of an interval or mobility exercise in the cycle editor — 10.1 FR-9, canvas 7.3
+// (GT-92). The row's plan chip opens it; what it edits is the cycle's own copy of the
 // exercise's settings (`Mesocycle.exerciseSettings`, GT-158), never the library.
 //
-// - interval: Rounds, Work, Rest, Get ready, Progress by and — for a lever that moves time — Step.
-// - power: Sets and Rest. Its sets are the day's own (`WeekPlanExercise.sets`), as a strength
-//   exercise's are; its rest is the cycle's. No Progress by: power progresses by 10.2's rules.
+// - interval: Rounds, Work, Rest, Progress by and — for a lever that moves time — Step. Get ready
+//   is a setting, the same for every interval (GT-188).
 // - mobility: Length.
+//
+// A power exercise has no sheet: its rest is the one from Settings and its sets are the day's own,
+// set on the row's stepper (GT-188).
 //
 // Every change applies at once — the sheet is controlled, and Done only closes it. `Reset to
 // defaults`, a link over the full-width Done, puts the library's values back.
@@ -24,7 +26,6 @@
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import type { ExerciseSettings } from '@domain/exerciseConfig';
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
@@ -34,14 +35,7 @@ import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 import { formatClock } from '@design/formatClock';
 
-import {
-  COUNTDOWN,
-  DURATION,
-  REST_BETWEEN_ROUNDS,
-  REST_BETWEEN_SETS,
-  WORK,
-  type TimeField,
-} from './ExerciseConfigFieldsLogic';
+import { DURATION, REST_BETWEEN_ROUNDS, WORK, type TimeField } from './ExerciseConfigFieldsLogic';
 import { leverMovesTime } from './ExerciseProgressionFieldsLogic';
 import {
   leverFromValue,
@@ -53,20 +47,17 @@ import {
   withTimeField,
 } from './CyclePlanSheetLogic';
 import { styles } from './CyclePlanSheetStyles';
+import type { PlanSettings } from './MesoEditorDaysStepLogic';
 
-// The plan sheet's names for two of the config's time fields (canvas 7.3).
-const GET_READY: TimeField = { ...COUNTDOWN, label: 'Get ready', suffix: undefined };
+// The plan sheet's name for the config's duration (canvas 7.3).
 const LENGTH: TimeField = { ...DURATION, label: 'Length' };
 
 export type CyclePlanSheetProps = {
   visible: boolean;
   exerciseName: string;
   dayNumber: number;
-  settings: ExerciseSettings | undefined;
-  /** The day's sets of the exercise — what a power plan's Sets edits. */
-  sets: number;
-  onChangeSettings: (settings: ExerciseSettings) => void;
-  onChangeSets: (sets: number) => void;
+  settings: PlanSettings | undefined;
+  onChangeSettings: (settings: PlanSettings) => void;
   onReset: () => void;
   onClose: () => void;
 };
@@ -76,9 +67,7 @@ export function CyclePlanSheet({
   exerciseName,
   dayNumber,
   settings,
-  sets,
   onChangeSettings,
-  onChangeSets,
   onReset,
   onClose,
 }: CyclePlanSheetProps) {
@@ -109,19 +98,6 @@ export function CyclePlanSheet({
 
   function renderFields() {
     switch (current.type) {
-      case 'power':
-        return (
-          <>
-            <StepperRow
-              label="Sets"
-              value={sets}
-              onChange={onChangeSets}
-              min={MIN_EXERCISE_SETS}
-              max={MAX_EXERCISE_SETS}
-            />
-            {renderTimeRow(REST_BETWEEN_SETS)}
-          </>
-        );
       case 'mobility':
         return renderTimeRow(LENGTH);
       case 'interval':
@@ -136,7 +112,6 @@ export function CyclePlanSheet({
             />
             {renderTimeRow(WORK)}
             {renderTimeRow(REST_BETWEEN_ROUNDS)}
-            {renderTimeRow(GET_READY)}
             <View style={styles.section}>
               <Text style={fieldStyles.label}>Progress by</Text>
               <SegmentedControl

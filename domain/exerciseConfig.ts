@@ -5,6 +5,10 @@
 // A `strength` exercise has no config — what it needs is already on `Exercise` and in the plan.
 // The other three each have one shape, tagged with the `type` it belongs to so a stored JSON
 // document says what it is without the row next to it.
+//
+// The rest between a power exercise's sets and an interval's Get ready are not here: they are
+// settings, the same for every exercise (GT-188). A config stored before that still carries
+// `restSec` / `getReadySec`; nothing reads them.
 
 /** How a power exercise's load is expressed (FR-2). */
 export const POWER_LOADS = ['weight', 'level', 'none'] as const;
@@ -34,16 +38,13 @@ export const INTERVAL_STEPS_SEC = [5, 10, 15] as const;
 export type IntervalStepSec = (typeof INTERVAL_STEPS_SEC)[number];
 
 /**
- * The seconds a time field of a config is set in steps of — a rest of power's included. Get ready
- * alone is set by the second (`GET_READY_STEP_SEC`).
+ * The seconds a time field of a config is set in steps of — and the rest between sets in Settings
+ * (`REST_BETWEEN_SETS_RANGE_SEC`). Get ready, a setting too, is set by the second.
  */
 export const CONFIG_TIME_STEP_SEC = 5;
 
-/** Get ready is a few seconds, picked one by one (GT-176). */
-export const GET_READY_STEP_SEC = 1;
-
 /** The time fields of a config, by the key they are stored under. */
-export type ConfigTimeKey = 'restSec' | 'workSec' | 'getReadySec' | 'durationSec';
+export type ConfigTimeKey = 'restSec' | 'workSec' | 'durationSec';
 
 /**
  * What each time field may hold, seconds — the same range wherever it is set: the New/Edit
@@ -52,23 +53,20 @@ export type ConfigTimeKey = 'restSec' | 'workSec' | 'getReadySec' | 'durationSec
 export const CONFIG_TIME_RANGE_SEC: Record<ConfigTimeKey, { min: number; max: number }> = {
   restSec: { min: 0, max: 10 * 60 },
   workSec: { min: CONFIG_TIME_STEP_SEC, max: 60 * 60 },
-  getReadySec: { min: 0, max: 10 },
   durationSec: { min: 60, max: 60 * 60 },
 };
 
 /**
  * The least rest between the rounds of an interval (GT-176, Artem, 26.10.2026): 10 s, Tabata's
  * 20/10. A rest of 0 would run the rounds into one, and with Get ready at most 10 s — the rest's
- * last seconds — a rest is never shorter than its Get ready. Power's rest between sets may still
- * be 0. The rest lever (FR-8) does not take a rest below it either.
+ * last seconds — a rest is never shorter than its Get ready. The rest lever (FR-8) does not take a
+ * rest below it either.
  */
 export const INTERVAL_REST_MIN_SEC = 10;
 
 export type PowerConfig = {
   type: 'power';
   load: PowerLoad;
-  /** Rest between sets, seconds. */
-  restSec: number;
   /**
    * The user has said there is nothing heavier to take (FR-4, "No heavier available"): the hint
    * at the ceiling changes from "try heavier" to "try a harder variation".
@@ -87,8 +85,6 @@ export type IntervalConfig = {
   workSec: number;
   /** Rest between rounds, seconds. The same after every round. */
   restSec: number;
-  /** The countdown before a round that was started by a tap, seconds (FR-6). */
-  getReadySec: number;
   lever: IntervalLever;
   /** Seconds a time lever moves by. Unused while the lever is `rounds` or `none`. */
   stepSec: IntervalStepSec;

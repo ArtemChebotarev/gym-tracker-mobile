@@ -93,7 +93,7 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
       const slam = makeCustomExercise('exercise-custom-slam', {
         muscleGroup: 'fullBody',
         type: 'power',
-        config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: true },
+        config: { type: 'power', load: 'weight', noHeavierAvailable: true },
       });
 
       await exerciseRepo.createCustom(slam);
@@ -115,7 +115,6 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
             type: 'interval',
             workSec: 120,
             restSec: 60,
-            getReadySec: 5,
             lever: 'rest',
             stepSec: 15,
           },

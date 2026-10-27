@@ -1,7 +1,7 @@
 // The rules of the rest timer between sets (10.1 FR-5, GT-86) — see `restTimer.ts` for the types.
 //
-// - It starts by itself after a set is logged, for the exercise's rest: power's from its own field
-//   (the cycle's copy first, then the library's), strength's from Settings (GT-87). Interval and
+// - It starts by itself after a set is logged, for the rest between sets from Settings (GT-87) —
+//   one for strength and power alike, off for both while its timer is off (GT-188). Interval and
 //   mobility have none — an interval runs its own timer, mobility rests not at all.
 // - After the last set too — the rest before the next exercise, which never starts by itself — but
 //   not once the workout has nothing left to do (Artem, 19.10.2026): n sets, n rests. "Last" is
@@ -10,51 +10,33 @@
 // - Skip and Pause; no ±15 s. It never feeds the progression.
 
 import type { ExerciseType } from './catalog';
-import type { ExerciseConfig, ExerciseSettings } from './exerciseConfig';
-import { defaultExerciseConfig } from './exerciseConfigBuilders';
-import type { RestNext, RestTimer, StrengthRestTimer } from './restTimer';
+import type { RestBetweenSets, RestNext, RestTimer } from './restTimer';
 
 const MS_PER_SEC = 1000;
 
-/** The power rest a new exercise starts with (FR-9) — what one with no rest of its own gets. */
-function defaultPowerRestSec(): number {
-  const config = defaultExerciseConfig('power');
-  return config?.type === 'power' ? config.restSec : 0;
-}
-
-/** Strength's rest from its setting: its seconds while the timer is on, none while it is off. */
-export function strengthRestSecOf(setting: StrengthRestTimer): number | undefined {
+/** The rest from its setting: its seconds while the timer is on, none while it is off. */
+export function restBetweenSetsSecOf(setting: RestBetweenSets): number | undefined {
   return setting.enabled ? setting.restSec : undefined;
 }
 
 /**
  * Seconds of rest after a set of an exercise of `type`, or `undefined` when it has none: an
- * interval or mobility exercise, a strength one while its timer is off, or a rest set to 0.
- * `settings` is the cycle's copy of the exercise's config (`Mesocycle.exerciseSettings`), `config`
- * the library's, `strengthRestSec` strength's from Settings (`strengthRestSecOf`).
+ * interval or mobility exercise, or any while the timer is off. `restBetweenSetsSec` is the
+ * setting's (`restBetweenSetsSecOf`).
  */
 export function restSecFor(
   type: ExerciseType | undefined,
-  settings: ExerciseSettings | undefined,
-  config: ExerciseConfig | undefined,
-  strengthRestSec: number | undefined,
+  restBetweenSetsSec: number | undefined,
 ): number | undefined {
-  let restSec: number;
   switch (type ?? 'strength') {
     case 'strength':
-      if (strengthRestSec === undefined) return undefined;
-      restSec = strengthRestSec;
-      break;
     case 'power':
-      restSec =
-        (settings?.type === 'power' ? settings.restSec : undefined) ??
-        (config?.type === 'power' ? config.restSec : undefined) ??
-        defaultPowerRestSec();
-      break;
+      return restBetweenSetsSec !== undefined && restBetweenSetsSec > 0
+        ? restBetweenSetsSec
+        : undefined;
     default:
       return undefined;
   }
-  return restSec > 0 ? restSec : undefined;
 }
 
 /** A set row as far as the rest timer cares: its number, and whether it is still to be done. */

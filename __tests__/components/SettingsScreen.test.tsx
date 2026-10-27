@@ -9,41 +9,41 @@ const METRICS: Metrics = {
 };
 
 function renderScreen(props: Partial<SettingsScreenProps> = {}) {
-  const onChangeStrengthRestTimer = jest.fn();
+  const onChangeRestBetweenSets = jest.fn();
+  const onChangeGetReadySec = jest.fn();
   render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <SettingsScreen
-        strengthRestTimer={{ enabled: true, restSec: 120 }}
-        onChangeStrengthRestTimer={onChangeStrengthRestTimer}
+        restBetweenSets={{ enabled: true, restSec: 120 }}
+        getReadySec={5}
+        onChangeRestBetweenSets={onChangeRestBetweenSets}
+        onChangeGetReadySec={onChangeGetReadySec}
         {...props}
       />
     </SafeAreaProvider>,
   );
-  return onChangeStrengthRestTimer;
+  return { onChange: onChangeRestBetweenSets, onChangeGetReadySec };
 }
 
 describe('SettingsScreen', () => {
-  test('shows the strength rest timer: on, 2:00', () => {
+  test('shows the rest timer, on at 2:00, for strength and power alike (GT-188)', () => {
     renderScreen();
 
-    expect(screen.getByRole('switch', { name: 'Rest timer for strength' }).props.value).toBe(true);
+    expect(screen.getByRole('switch', { name: 'Rest timer' }).props.value).toBe(true);
+    expect(screen.getByText('Starts after you log a strength or power set')).toBeTruthy();
     expect(screen.getByText('2:00')).toBeTruthy();
   });
 
   test('turning the timer off saves it off, keeping the rest', () => {
-    const onChange = renderScreen();
+    const { onChange } = renderScreen();
 
-    fireEvent(
-      screen.getByRole('switch', { name: 'Rest timer for strength' }),
-      'valueChange',
-      false,
-    );
+    fireEvent(screen.getByRole('switch', { name: 'Rest timer' }), 'valueChange', false);
 
     expect(onChange).toHaveBeenCalledWith({ enabled: false, restSec: 120 });
   });
 
   test('+ adds 15 s to the rest', () => {
-    const onChange = renderScreen();
+    const { onChange } = renderScreen();
 
     fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
 
@@ -51,20 +51,44 @@ describe('SettingsScreen', () => {
   });
 
   test('the rest goes no lower than 1:00', () => {
-    const atMin = renderScreen({ strengthRestTimer: { enabled: true, restSec: 60 } });
+    const { onChange } = renderScreen({ restBetweenSets: { enabled: true, restSec: 60 } });
     fireEvent.press(screen.getByRole('button', { name: 'Decrease Rest between sets' }));
-    expect(atMin).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   test('the rest goes no higher than 5:00', () => {
-    const atMax = renderScreen({ strengthRestTimer: { enabled: true, restSec: 300 } });
+    const { onChange } = renderScreen({ restBetweenSets: { enabled: true, restSec: 300 } });
     fireEvent.press(screen.getByRole('button', { name: 'Increase Rest between sets' }));
-    expect(atMax).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   test('while the timer is off there is no rest to set', () => {
-    renderScreen({ strengthRestTimer: { enabled: false, restSec: 120 } });
+    renderScreen({ restBetweenSets: { enabled: false, restSec: 120 } });
 
     expect(screen.queryByText('Rest between sets')).toBeNull();
+  });
+
+  test('shows Get ready, 0:05, and steps it by the second within 0–10 s (GT-188)', () => {
+    const { onChangeGetReadySec } = renderScreen();
+
+    expect(screen.getByText('Get ready')).toBeTruthy();
+    expect(screen.getByText('0:05')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Get ready' }));
+    expect(onChangeGetReadySec).toHaveBeenLastCalledWith(6);
+    fireEvent.press(screen.getByRole('button', { name: 'Decrease Get ready' }));
+    expect(onChangeGetReadySec).toHaveBeenLastCalledWith(4);
+  });
+
+  test('Get ready goes no higher than 0:10', () => {
+    const atMax = renderScreen({ getReadySec: 10 });
+    fireEvent.press(screen.getByRole('button', { name: 'Increase Get ready' }));
+    expect(atMax.onChangeGetReadySec).not.toHaveBeenCalled();
+  });
+
+  test('Get ready goes no lower than 0:00', () => {
+    const atMin = renderScreen({ getReadySec: 0 });
+    fireEvent.press(screen.getByRole('button', { name: 'Decrease Get ready' }));
+    expect(atMin.onChangeGetReadySec).not.toHaveBeenCalled();
   });
 });

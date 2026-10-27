@@ -15,7 +15,7 @@ export const MEDBALL_THROW: Exercise = {
   source: 'custom',
   isHidden: false,
   type: 'power',
-  config: { type: 'power', load: 'weight', restSec: 75, noHeavierAvailable: false },
+  config: { type: 'power', load: 'weight', noHeavierAvailable: false },
 };
 
 /** `HEAVY_BAG`'s config, typed as what it is, for a test that spreads it into an edited copy. */
@@ -23,7 +23,6 @@ export const HEAVY_BAG_CONFIG: IntervalConfig = {
   type: 'interval',
   workSec: 120,
   restSec: 45,
-  getReadySec: 5,
   lever: 'rest',
   stepSec: 15,
 };

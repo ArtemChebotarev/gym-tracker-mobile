@@ -10,7 +10,6 @@ import {
 } from './catalog';
 import { ConflictError } from './errors';
 import {
-  CONFIG_TIME_RANGE_SEC,
   INTERVAL_LEVERS,
   INTERVAL_REST_MIN_SEC,
   INTERVAL_STEPS_SEC,
@@ -18,10 +17,9 @@ import {
   type ExerciseConfig,
 } from './exerciseConfig';
 
-function assertWholeSeconds(value: number, what: string, min: number, max = Infinity): void {
-  if (!Number.isInteger(value) || value < min || value > max) {
-    const range = max === Infinity ? `at least ${min}` : `from ${min} to ${max}`;
-    throw new Error(`${what} must be a whole number ${range}, got ${value}.`);
+function assertWholeSeconds(value: number, what: string, min: number): void {
+  if (!Number.isInteger(value) || value < min) {
+    throw new Error(`${what} must be a whole number at least ${min}, got ${value}.`);
   }
 }
 
@@ -74,17 +72,10 @@ export function validateExerciseConfig(
       if (!POWER_LOADS.includes(config.load)) {
         throw new Error(`Unknown power load: "${config.load}".`);
       }
-      assertWholeSeconds(config.restSec, 'Rest', 0);
       return;
     case 'interval':
       assertWholeSeconds(config.workSec, 'Work time', 1);
       assertWholeSeconds(config.restSec, 'Rest', INTERVAL_REST_MIN_SEC);
-      assertWholeSeconds(
-        config.getReadySec,
-        'Get ready',
-        CONFIG_TIME_RANGE_SEC.getReadySec.min,
-        CONFIG_TIME_RANGE_SEC.getReadySec.max,
-      );
       if (!INTERVAL_LEVERS.includes(config.lever)) {
         throw new Error(`Unknown interval lever: "${config.lever}".`);
       }

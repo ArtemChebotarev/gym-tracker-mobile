@@ -12,6 +12,17 @@
 
 import type { RoundLog } from './execution';
 
+/**
+ * Get ready, a setting (10.1 FR-6, GT-188): the same for every interval exercise. 0–10 s (GT-176),
+ * picked by the second, 0:05 until the user sets their own — what a rest is never shorter than
+ * (`INTERVAL_REST_MIN_SEC`).
+ */
+export const GET_READY_RANGE_SEC = { min: 0, max: 10 } as const;
+
+export const GET_READY_STEP_SEC = 1;
+
+export const DEFAULT_GET_READY_SEC = 5;
+
 /** One round the timer runs: its place in the exercise and its own times (FR-9 lets them differ). */
 export type IntervalTimerRound = {
   roundNumber: number;

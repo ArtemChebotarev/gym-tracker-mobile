@@ -16,7 +16,7 @@ describe('weekPlanMaterializers (GT-160)', () => {
     expect(
       materializeSetTargets('power', {
         entry,
-        settings: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+        settings: { type: 'power', load: 'weight', noHeavierAvailable: false },
       }),
     ).toEqual(setRows({ entry }));
   });

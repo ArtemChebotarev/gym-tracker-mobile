@@ -14,6 +14,13 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import { makeSession, makeSessionExercise, makeSetLog } from '../contracts/fixtures';
 import { openTestDatabase, readMigrationBundle } from '../fixtures/sqliteDatabase';
 
+/** How many migrations come before `tag` — `bundleUpTo` of it is the build just before that one. */
+function migrationIndex(bundle: MigrationBundle, tag: string): number {
+  const index = bundle.journal.entries.findIndex((entry) => entry.tag === tag);
+  if (index < 0) throw new Error(`No migration "${tag}".`);
+  return index;
+}
+
 /** `bundle` as the build that shipped with its first `count` migrations carried it. */
 function bundleUpTo(bundle: MigrationBundle, count: number): MigrationBundle {
   const entries = bundle.journal.entries.slice(0, count);
@@ -207,6 +214,7 @@ describe('the app’s own migrations', () => {
       '0004_template_description': 1791899270911,
       '0005_seed_catalog_templates': 1791909901083,
       '0006_hybrid_exercise_types': 1791988803753,
+      '0007_settings_get_ready': 1793097297644,
     });
   });
 
@@ -309,8 +317,9 @@ describe('the app’s own migrations', () => {
         defaultProgressionSettings,
         weightUnit: 'lb',
         onboarding: DEFAULT_ONBOARDING,
-        // The columns of migration 0006 bring the strength rest timer as it ships (GT-87).
-        strengthRestTimer: { enabled: true, restSec: 120 },
+        // The columns of migration 0006 bring the rest timer as it ships (GT-87), 0007 Get ready.
+        restBetweenSets: { enabled: true, restSec: 120 },
+        getReadySec: 5,
       });
     } finally {
       close();
@@ -320,11 +329,14 @@ describe('the app’s own migrations', () => {
   // GT-69: the hybrid exercise types arrive as columns with defaults and one new table. What the
   // phone already holds must come through as it was — every exercise a strength one, the settings
   // row with the rest timer on at 2:00, no mesocycle given parameters it never had.
-  test('give what the previous build holds the strength type and the default rest timer', async () => {
+  test('give what the build before 0006 holds the strength type and the default rest timer', async () => {
     const full = readMigrationBundle();
     const { db, close } = openTestDatabase();
     try {
-      await migrateToLatest(db, bundleUpTo(full, full.journal.entries.length - 1));
+      await migrateToLatest(
+        db,
+        bundleUpTo(full, migrationIndex(full, '0006_hybrid_exercise_types')),
+      );
       const before = await db.values<[string, string, string]>(
         sql`SELECT id, name, muscle_group FROM exercise ORDER BY id`,
       );
@@ -365,6 +377,30 @@ describe('the app’s own migrations', () => {
         await db.values<[string | null]>(sql`SELECT exercise_settings FROM mesocycle`),
       ).toEqual([[null]]);
       expect(await db.values<[number]>(sql`SELECT COUNT(*) FROM round_log`)).toEqual([[0]]);
+    } finally {
+      close();
+    }
+  });
+
+  // GT-188: Get ready becomes a setting. The settings row already on the device keeps its rest
+  // timer as the user set it and gets Get ready as it ships, 0:05.
+  test('give the settings row before 0007 Get ready 0:05 and keep its rest timer', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0007_settings_get_ready')));
+      await db.run(sql`
+        INSERT INTO settings
+          (id, default_progression_settings, weight_unit, strength_rest_timer_enabled,
+           strength_rest_timer_seconds)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg', 0, 90)
+      `);
+
+      await migrateToLatest(db, full);
+
+      const settings = await new SqliteSettingsRepository(db).read();
+      expect(settings.restBetweenSets).toEqual({ enabled: false, restSec: 90 });
+      expect(settings.getReadySec).toBe(5);
     } finally {
       close();
     }

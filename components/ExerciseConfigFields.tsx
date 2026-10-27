@@ -9,8 +9,9 @@
 // the cycle and in the workout, as sets are for a strength exercise. `IntervalConfig.rounds` stays
 // as the count a cycle starts from.
 //
-// A power exercise also picks its load (kg / level / none, FR-2). Not here: the interval's
-// progression (ExerciseProgressionFields), which is a step of its own.
+// A power exercise picks only its load (kg / level / none, FR-2). Its rest between sets and an
+// interval's Get ready are not here: they are settings, the same for every exercise (GT-188). Not
+// here either: the interval's progression (ExerciseProgressionFields), which is a step of its own.
 //
 // JSX/rendering only — formatting lives in ExerciseFormLogic.ts.
 
@@ -24,14 +25,7 @@ import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 
-import {
-  COUNTDOWN,
-  DURATION,
-  REST_BETWEEN_ROUNDS,
-  REST_BETWEEN_SETS,
-  WORK,
-  type TimeField,
-} from './ExerciseConfigFieldsLogic';
+import { DURATION, REST_BETWEEN_ROUNDS, WORK, type TimeField } from './ExerciseConfigFieldsLogic';
 import { describePowerLoad, POWER_LOAD_OPTIONS, powerLoadFromValue } from './ExerciseFormLogic';
 import { styles } from './ExerciseFormStyles';
 
@@ -84,7 +78,7 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
       onChange={(valueSec) => editing !== null && setValue(editing, valueSec)}
       minSec={editing?.minSec}
       stepSec={editing?.stepSec}
-      maxSec={editing?.maxSec ?? COUNTDOWN.maxSec}
+      maxSec={editing?.maxSec ?? DURATION.maxSec}
     />
   );
 
@@ -99,8 +93,6 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
             onChange={(load) => onChange({ ...config, load: powerLoadFromValue(load) })}
           />
           <Text style={[styles.stepHint, styles.loadHint]}>{describePowerLoad(config.load)}</Text>
-          {renderTimeRow(REST_BETWEEN_SETS)}
-          {picker}
         </View>
       );
     case 'mobility':
@@ -116,7 +108,6 @@ export function ExerciseConfigFields({ config, onChange }: ExerciseConfigFieldsP
           <Text style={[fieldStyles.label, styles.sectionLabel]}>Default plan</Text>
           {renderTimeRow(WORK)}
           {renderTimeRow(REST_BETWEEN_ROUNDS)}
-          {renderTimeRow(COUNTDOWN)}
           {picker}
         </View>
       );

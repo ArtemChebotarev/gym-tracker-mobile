@@ -105,23 +105,19 @@ describe('New exercise page', () => {
     expect(screen.getByRole('button', { name: 'Create exercise' })).toBeTruthy();
   });
 
-  test('power: only a name is needed; stored as fullBody with its defaults, rest steppable', async () => {
+  test('power: only a name is needed; stored as fullBody with its defaults, no rest of its own', async () => {
     mockParams = { type: 'power' };
     renderRoute();
 
-    expect(screen.getByText('1:00')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Increase Rest' }));
-    expect(screen.getByText('1:05')).toBeTruthy();
+    // The rest between sets is the one in Settings (GT-188).
+    expect(screen.queryByText('Rest')).toBeNull();
     fireEvent.changeText(screen.getByLabelText('Name'), 'Medball slam');
     fireEvent.press(createButton());
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
-    expect(await lastCreated()).toMatchObject({
-      name: 'Medball slam',
-      muscleGroup: 'fullBody',
-      type: 'power',
-      config: { type: 'power', load: 'weight', restSec: 65, noHeavierAvailable: false },
-    });
+    const created = await lastCreated();
+    expect(created).toMatchObject({ name: 'Medball slam', muscleGroup: 'fullBody', type: 'power' });
+    expect(created?.config).toEqual({ type: 'power', load: 'weight', noHeavierAvailable: false });
   });
 
   test('timed work: step 1 is the plan with the FR-9 defaults, and ends in Next, not Create', () => {
@@ -130,7 +126,8 @@ describe('New exercise page', () => {
 
     expect(screen.getByText('Step 1 of 2')).toBeTruthy();
     expect(screen.getByText('2:00')).toBeTruthy();
-    expect(screen.getByText('0:05')).toBeTruthy();
+    // Get ready is a setting, not a field of the exercise (GT-188).
+    expect(screen.queryByText('Countdown')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Create exercise' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Next' }).props.accessibilityState.disabled).toBe(
       true,
@@ -166,7 +163,6 @@ describe('New exercise page', () => {
         type: 'interval',
         workSec: 120,
         restSec: 60,
-        getReadySec: 5,
         lever: 'workTime',
         stepSec: 5,
       },

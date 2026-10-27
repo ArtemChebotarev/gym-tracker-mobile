@@ -89,8 +89,8 @@ describe('MesoEditorReviewStep', () => {
       />,
     );
 
-    expect(screen.getByText('3 sets')).toBeTruthy();
-    expect(screen.getByText('3 sets · 1:15 rest')).toBeTruthy();
+    // Bench press and the medball throw alike: a power exercise has only its sets (GT-188).
+    expect(screen.getAllByText('3 sets')).toHaveLength(2);
     expect(screen.getByText('3 × 2:00 · 0:45 rest')).toBeTruthy();
     expect(screen.getByText('10:00')).toBeTruthy();
   });

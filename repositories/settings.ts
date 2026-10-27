@@ -1,5 +1,5 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
-import type { StrengthRestTimer } from '@domain/restTimer';
+import type { RestBetweenSets } from '@domain/restTimer';
 
 /**
  * Which of the four first-run windows of 08.11 · Onboarding the user has already closed. Each flag
@@ -51,8 +51,16 @@ export type Settings = {
    * the user's data on purpose: wiping the data brings the onboarding back, and a backup carries it.
    */
   onboarding: OnboardingFlags;
-  /** The rest timer between strength sets (10.1 FR-5, GT-87): on or off, and how long. */
-  strengthRestTimer: StrengthRestTimer;
+  /**
+   * The rest timer between sets of strength and power exercises (10.1 FR-5, GT-87, GT-188): on or
+   * off, and how long.
+   */
+  restBetweenSets: RestBetweenSets;
+  /**
+   * Get ready before an interval round started by a tap, and the last seconds of every rest
+   * between rounds (10.1 FR-6, GT-176, GT-188), seconds — the same for every interval exercise.
+   */
+  getReadySec: number;
 };
 
 /**

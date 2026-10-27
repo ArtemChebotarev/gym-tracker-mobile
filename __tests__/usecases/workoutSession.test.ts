@@ -177,7 +177,6 @@ async function setUp(setup: Setup = {}) {
             config: {
               type: 'power' as const,
               load: id === 'boxjump' ? ('none' as const) : ('weight' as const),
-              restSec: 60,
               noHeavierAvailable: false,
             },
           }
@@ -1015,39 +1014,31 @@ describe('weight swap on the workout data (task 120)', () => {
     expect(rowsOf(card)[1]).not.toHaveProperty('weightSwap');
   });
 
-  // GT-86, 10.1 FR-5: the rest the timer runs after a set is logged.
-  test('a live card carries its rest: power from the cycle, then the library; strength 2:00', async () => {
+  // GT-86, GT-188, 10.1 FR-5: the rest the timer runs after a set is logged — one from Settings,
+  // strength and power alike; a power exercise keeps no rest of its own.
+  test('a live card carries the rest from Settings: strength and power alike, 2:00', async () => {
     const medball = planned('w2d1', 'medball', 2, [6, 6]);
     const boxjump = planned('w2d1', 'boxjump', 3, [3, 3]);
-    const { deps } = await setUp({
-      exercises: [bench, medball, boxjump],
-      logs: [],
-      mesocycle: {
-        ...mesocycle,
-        exerciseSettings: {
-          medball: { type: 'power', load: 'weight', restSec: 90, noHeavierAvailable: false },
-        },
-      },
-    });
+    const { deps } = await setUp({ exercises: [bench, medball, boxjump], logs: [] });
 
     const cards = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(cards.map((card) => card.restSec)).toEqual([120, 90, 60]);
+    expect(cards.map((card) => card.restSec)).toEqual([120, 120, 120]);
   });
 
-  test("strength's rest is the one in Settings, and there is none while its timer is off", async () => {
+  test('the rest is the one in Settings, and there is none while its timer is off', async () => {
     const medball = planned('w2d1', 'medball', 2, [6, 6]);
     const { store, deps } = await setUp({ exercises: [bench, medball], logs: [] });
     const settingsRepo = new SqliteSettingsRepository(store);
     const settings = await settingsRepo.read();
 
-    await settingsRepo.write({ ...settings, strengthRestTimer: { enabled: true, restSec: 90 } });
+    await settingsRepo.write({ ...settings, restBetweenSets: { enabled: true, restSec: 90 } });
     const on = (await getWorkoutSession('w2d1', deps)).exercises;
-    await settingsRepo.write({ ...settings, strengthRestTimer: { enabled: false, restSec: 90 } });
+    await settingsRepo.write({ ...settings, restBetweenSets: { enabled: false, restSec: 90 } });
     const off = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(on.map((card) => card.restSec)).toEqual([90, 60]);
-    expect(off.map((card) => card.restSec)).toEqual([undefined, 60]);
+    expect(on.map((card) => card.restSec)).toEqual([90, 90]);
+    expect(off.map((card) => card.restSec)).toEqual([undefined, undefined]);
   });
 
   test('a session that is not live carries no rest', async () => {
@@ -1173,7 +1164,7 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
       hasLoggedSets: false,
       // `HEAVY_BAG_CONFIG` moves the rest by 15 s a week.
       progression: { column: 'rest', stepSec: 15 },
-      // The timer's countdown before a round started by a tap (FR-6), from the same config.
+      // The timer's countdown before a round started by a tap (FR-6), from Settings (GT-188).
       getReadySec: 5,
     });
     expect(card?.rounds).toEqual([
@@ -1185,6 +1176,16 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     // An interval has no rest timer between sets and no set rows.
     expect(card).not.toHaveProperty('restSec');
     expect(card).not.toHaveProperty('rows');
+  });
+
+  test('the Get ready is the one in Settings (GT-188)', async () => {
+    const { store, deps } = await setUp({ exercises: [bag], logs: [] });
+    const settingsRepo = new SqliteSettingsRepository(store);
+    await settingsRepo.write({ ...(await settingsRepo.read()), getReadySec: 8 });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.getReadySec).toBe(8);
   });
 
   test('live: the menu adds a round and removes the last one (GT-91)', async () => {

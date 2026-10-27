@@ -73,7 +73,6 @@ describe('valuesForType', () => {
     expect(values.config).toEqual({
       type: 'power',
       load: 'weight',
-      restSec: 60,
       noHeavierAvailable: false,
     });
     expect(values.muscleGroup).toBe('fullBody');

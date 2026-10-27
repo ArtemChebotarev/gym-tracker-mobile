@@ -25,9 +25,9 @@ describe('formatReviewPlan', () => {
     expect(formatReviewPlan(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 })).toBe('3 sets');
   });
 
-  test('a power and an interval exercise show their plan on one line', () => {
+  test('a power exercise shows its sets, an interval its plan on one line (GT-188)', () => {
     expect(formatReviewPlan(exercisesById, { exerciseId: MEDBALL_THROW.id, order: 0, sets: 3 })).toBe(
-      '3 sets · 1:15 rest',
+      '3 sets',
     );
     expect(formatReviewPlan(exercisesById, { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 })).toBe(
       '3 × 2:00 · 0:45 rest',

@@ -264,21 +264,14 @@ describe('hybrid rows (GT-157)', () => {
   });
 
   test('formatExercisePlan reads each type the way the chip shows it', () => {
-    expect(formatExercisePlan({ type: 'power', load: 'none', restSec: 60, noHeavierAvailable: false }, 4)).toEqual({
-      value: '4 sets',
-      caption: '1:00 rest',
-    });
     expect(
-      formatExercisePlan(
-        { type: 'interval', workSec: 30, restSec: 60, getReadySec: 5, lever: 'rest', stepSec: 10, rounds: 6 },
-        2,
-      ),
+      formatExercisePlan({ type: 'interval', workSec: 30, restSec: 60, lever: 'rest', stepSec: 10, rounds: 6 }),
     ).toEqual({ value: '6 × 0:30', caption: '1:00 rest' });
-    expect(formatExercisePlan({ type: 'mobility', durationSec: 90 }, 2)).toEqual({ value: '1:30', caption: 'Length' });
+    expect(formatExercisePlan({ type: 'mobility', durationSec: 90 })).toEqual({ value: '1:30', caption: 'Length' });
   });
 
-  test('exercisePlan: power takes the day\'s sets and the library rest', () => {
-    expect(exercisePlan(exercisesById, entry(MEDBALL_THROW.id, 3))).toEqual({ value: '3 sets', caption: '1:15 rest' });
+  test('exercisePlan: power has no plan chip — it keeps the sets stepper (GT-188)', () => {
+    expect(exercisePlan(exercisesById, entry(MEDBALL_THROW.id, 3))).toBeUndefined();
   });
 
   test('exercisePlan: interval takes the default rounds and the library times, not the day\'s sets', () => {
