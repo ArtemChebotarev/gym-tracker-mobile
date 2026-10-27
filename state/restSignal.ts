@@ -1,6 +1,8 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { Vibration } from 'react-native';
 
+import type { Signals } from '@domain/signals';
+
 import { playFrom } from './soundPlayer';
 
 // The signal at the end of a rest (10.1 FR-5, GT-86): a vibration and a soft low "bong", the sound
@@ -13,6 +15,9 @@ import { playFrom } from './soundPlayer';
 //
 // The player is made on the first rest that runs out, not at startup, and kept: a rest every few
 // minutes is not worth reloading the sound for, and an app that never rests never loads it.
+//
+// Either half can be switched off in Settings (GT-172); with both off the rest ends in silence,
+// the capsule's `Rest is over` the only sign.
 
 const REST_OVER_SOUND = require('../assets/sounds/rest-over.wav');
 
@@ -26,8 +31,11 @@ function restOverPlayer(): AudioPlayer {
   return player;
 }
 
-/** Tells the user the rest is over: one vibration and the sound from the start. */
-export function signalRestOver(): void {
-  Vibration.vibrate();
-  void playFrom(restOverPlayer(), 0);
+/**
+ * Tells the user the rest is over: one vibration and the sound from the start, each only if its
+ * signal is on.
+ */
+export function signalRestOver({ sound, vibration }: Signals): void {
+  if (vibration) Vibration.vibrate();
+  if (sound) void playFrom(restOverPlayer(), 0);
 }

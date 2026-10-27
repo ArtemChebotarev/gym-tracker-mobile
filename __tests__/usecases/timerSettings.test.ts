@@ -1,5 +1,10 @@
 import { SqliteSettingsRepository } from '@storage/sqlite/settings';
-import { readTimerSettings, setGetReadySec, setRestBetweenSets } from '@usecases/timerSettings';
+import {
+  readTimerSettings,
+  setGetReadySec,
+  setRestBetweenSets,
+  setSignals,
+} from '@usecases/timerSettings';
 
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -10,10 +15,14 @@ function setUp() {
   return { deps: { settingsRepo }, settingsRepo };
 }
 
-const AS_SHIPPED = { restBetweenSets: { enabled: true, restSec: 120 }, getReadySec: 5 };
+const AS_SHIPPED = {
+  restBetweenSets: { enabled: true, restSec: 120 },
+  getReadySec: 5,
+  signals: { sound: true, vibration: true },
+};
 
 describe('timer settings', () => {
-  test('ship with the rest timer on at 2:00 and Get ready at 0:05', async () => {
+  test('ship with the rest timer on at 2:00, Get ready at 0:05 and both signals on', async () => {
     const { deps } = setUp();
 
     await expect(readTimerSettings(deps)).resolves.toEqual(AS_SHIPPED);
@@ -40,6 +49,17 @@ describe('timer settings', () => {
 
     const reopened = new SqliteSettingsRepository(db());
     await expect(reopened.read()).resolves.toEqual({ ...before, getReadySec: 8 });
+  });
+
+  test('a change of the signals is kept — a restart reads the same store — and the rest of Settings is untouched (GT-172)', async () => {
+    const { deps, settingsRepo } = setUp();
+    const before = await settingsRepo.read();
+    const signals = { sound: false, vibration: true };
+
+    await expect(setSignals(signals, deps)).resolves.toEqual({ ...AS_SHIPPED, signals });
+
+    const reopened = new SqliteSettingsRepository(db());
+    await expect(reopened.read()).resolves.toEqual({ ...before, signals });
   });
 
   test('a value the setting may not hold is refused, and nothing is written', async () => {

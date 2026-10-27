@@ -241,6 +241,10 @@ export const settings = sqliteTable('settings', {
   // Get ready before an interval round (10.1 FR-6, GT-188), seconds: a setting rather than a field
   // of each exercise. 5 is `DEFAULT_GET_READY_SEC`, what the existing row gets.
   getReadySeconds: integer('get_ready_seconds').notNull().default(5),
+  // The signals of the timers (10.1 FR-5, FR-6, GT-172): the sound and the vibration, each on or
+  // off, both on by default — what the existing row gets.
+  signalSound: integer('signal_sound', { mode: 'boolean' }).notNull().default(true),
+  signalVibration: integer('signal_vibration', { mode: 'boolean' }).notNull().default(true),
 });
 
 /** The single settings row's id — see `settings`. */

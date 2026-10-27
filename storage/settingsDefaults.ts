@@ -1,6 +1,7 @@
 import { DEFAULT_GET_READY_SEC } from '@domain/intervalTimer';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { REST_BETWEEN_SETS_SEC, type RestBetweenSets } from '@domain/restTimer';
+import { DEFAULT_SIGNALS } from '@domain/signals';
 import type { OnboardingFlags, Settings } from '@repositories/settings';
 
 /** Nothing dismissed yet: what a fresh store, and a settings row that predates a flag, reads as. */
@@ -31,4 +32,5 @@ export const DEFAULT_SETTINGS: Settings = {
   onboarding: DEFAULT_ONBOARDING,
   restBetweenSets: DEFAULT_REST_BETWEEN_SETS,
   getReadySec: DEFAULT_GET_READY_SEC,
+  signals: DEFAULT_SIGNALS,
 };

@@ -1,11 +1,13 @@
 // The timer settings (10.1 FR-5, FR-6): the rest between sets of strength and power exercises —
-// on or off, and how long (GT-87) — and the Get ready of interval rounds (GT-188). Part of
+// on or off, and how long (GT-87) — the Get ready of interval rounds (GT-188), and the signals
+// the timers give, sound and vibration (GT-172). Part of
 // `Settings`, so they are read and written through `SettingsRepository` like the rest of it. They
 // never feed the progression.
 
 import { assertGetReadySec } from '@domain/intervalTimerValidators';
 import type { RestBetweenSets } from '@domain/restTimer';
 import { assertRestBetweenSets } from '@domain/restTimerValidators';
+import type { Signals } from '@domain/signals';
 import type { Settings, SettingsRepository } from '@repositories/settings';
 
 export type TimerSettingsDeps = {
@@ -13,10 +15,10 @@ export type TimerSettingsDeps = {
 };
 
 /** What the Settings tab's timer section shows. */
-export type TimerSettings = Pick<Settings, 'restBetweenSets' | 'getReadySec'>;
+export type TimerSettings = Pick<Settings, 'restBetweenSets' | 'getReadySec' | 'signals'>;
 
-function timerSettingsOf({ restBetweenSets, getReadySec }: Settings): TimerSettings {
-  return { restBetweenSets, getReadySec };
+function timerSettingsOf({ restBetweenSets, getReadySec, signals }: Settings): TimerSettings {
+  return { restBetweenSets, getReadySec, signals };
 }
 
 export async function readTimerSettings(deps: TimerSettingsDeps): Promise<TimerSettings> {
@@ -49,4 +51,13 @@ export async function setGetReadySec(
   assertGetReadySec(getReadySec);
   const settings = await deps.settingsRepo.read();
   return timerSettingsOf(await deps.settingsRepo.write({ ...settings, getReadySec }));
+}
+
+/**
+ * Saves the signals, leaving every other setting as it was. A rest already running signals by them
+ * when it runs out.
+ */
+export async function setSignals(signals: Signals, deps: TimerSettingsDeps): Promise<TimerSettings> {
+  const settings = await deps.settingsRepo.read();
+  return timerSettingsOf(await deps.settingsRepo.write({ ...settings, signals }));
 }
