@@ -53,6 +53,7 @@ function performance(
 ): ExercisePerformance {
   return {
     session: session(sessionOverrides),
+    roundLogs: [],
     setLogs: setLogs.map((overrides) => setLog(overrides)),
   };
 }
@@ -63,6 +64,36 @@ describe('buildExerciseOverview', () => {
 
     expect(overview.stats).toBeNull();
     expect(overview.lastSession).toBeNull();
+  });
+
+  test('counts and dates an interval exercise by its rounds, with no best set', () => {
+    const round = {
+      ...STAMPS,
+      id: 'round-1',
+      sessionExerciseId: 'session-exercise-1',
+      exerciseId: EXERCISE_ID,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+    };
+    const overview = buildExerciseOverview(exercise(), [
+      {
+        session: session({ id: 's1' }),
+        setLogs: [],
+        roundLogs: [
+          { ...round, id: 'round-2', roundNumber: 2, completedAt: '2026-09-10T12:05:00.000Z' },
+          { ...round, roundNumber: 1, completedAt: '2026-09-10T12:02:00.000Z' },
+        ],
+      },
+    ]);
+
+    expect(overview.stats).toEqual({
+      bestSet: null,
+      sessionCount: 1,
+      lastDoneAt: '2026-09-10T12:05:00.000Z',
+    });
+    expect(overview.lastSession?.roundLogs.map((log) => log.roundNumber)).toEqual([1, 2]);
   });
 
   test('ignores a performance that carries no set logs', () => {

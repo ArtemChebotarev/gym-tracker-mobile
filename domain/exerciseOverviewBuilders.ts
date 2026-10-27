@@ -5,6 +5,7 @@
 
 import type { Exercise } from './catalog';
 import type { SetLog } from './execution';
+import { hasLogs } from './exerciseHistoryBuilders';
 import type {
   ExerciseBestSet,
   ExerciseLastSession,
@@ -17,14 +18,14 @@ import type {
 /**
  * The Overview model for `exercise` over every performance of it, in any order.
  *
- * With no set logged at all there are no tiles and no sessions — the screen shows the empty state
+ * With nothing logged at all, no set and no round, there are no tiles and no sessions — the screen shows the empty state
  * instead (08.6, "Пустое состояние").
  */
 export function buildExerciseOverview(
   exercise: Exercise,
   performances: readonly ExercisePerformance[],
 ): ExerciseOverview {
-  const performed = performances.filter((performance) => performance.setLogs.length > 0);
+  const performed = performances.filter(hasLogs);
   const [last] = completedNewestFirst(performed);
 
   return {
@@ -47,24 +48,24 @@ export function exerciseOverviewActions(exercise: Exercise): ExerciseOverviewAct
 function buildExerciseOverviewStats(
   performances: readonly ExercisePerformance[],
 ): ExerciseOverviewStats | null {
-  const setLogs = performances.flatMap((performance) => performance.setLogs);
-  const bestSet = findBestSet(setLogs);
-  if (!bestSet) {
+  const completions = performances.flatMap((performance) => [
+    ...performance.setLogs.map((log) => log.completedAt),
+    ...performance.roundLogs.map((log) => log.completedAt),
+  ]);
+  const [first] = completions;
+  if (first === undefined) {
     return null;
   }
 
   return {
-    bestSet,
+    bestSet: findBestSet(performances.flatMap((performance) => performance.setLogs)),
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
-    lastDoneAt: setLogs.reduce(
-      (latest, log) => (log.completedAt > latest ? log.completedAt : latest),
-      setLogs[0]?.completedAt ?? '',
-    ),
+    lastDoneAt: completions.reduce((latest, at) => (at > latest ? at : latest), first),
   };
 }
 
 /**
- * The completed sessions holding a set of the exercise, most recent first (08.6: "Берётся
+ * The completed sessions holding a set or round of the exercise, most recent first (08.6: "Берётся
  * последняя завершённая сессия"). A session still in progress — the one being trained right now —
  * is not among them: these blocks exist to recall what was already done.
  */
@@ -83,6 +84,7 @@ function toLastSession(performance: ExercisePerformance): ExerciseLastSession {
     dayNumber: performance.session.dayNumber,
     completedAt: completionOf(performance),
     setLogs: [...performance.setLogs].sort((a, b) => a.setNumber - b.setNumber),
+    roundLogs: [...performance.roundLogs].sort((a, b) => a.roundNumber - b.roundNumber),
   };
 }
 

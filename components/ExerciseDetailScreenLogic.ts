@@ -3,9 +3,10 @@
 import type { Equipment, Exercise } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
 import type { ExerciseBestSet, ExerciseLastSession } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
+import { formatClock } from '@design/formatClock';
 import { formatAbsoluteDate } from '@design/formatDate';
 import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
@@ -84,4 +85,59 @@ export function powerLoadOf(exercise: Pick<Exercise, 'type' | 'config'>): PowerL
   }
   const config = exercise.config ?? defaultExerciseConfig('power');
   return config?.type === 'power' ? config.load : undefined;
+}
+
+/** A logged round's row label — `Round 1`. */
+export function formatRoundLabel(roundLog: Pick<RoundLog, 'roundNumber'>): string {
+  return `Round ${roundLog.roundNumber}`;
+}
+
+/** A logged round's value: the work it ran, `2:00` (10.1 FR-12, Artem, 27.10.2026). */
+export function formatRoundValue(roundLog: Pick<RoundLog, 'workSec'>): string {
+  return formatClock(roundLog.workSec);
+}
+
+/**
+ * What followed the work, a step quieter: ` · rest 1:00`, ` · rest skipped`, or ` · ended early`
+ * for a round cut short — that one says why it is short, which matters more than its rest.
+ * `undefined` where there was no rest to take.
+ */
+export function formatRoundTail(
+  roundLog: Pick<RoundLog, 'restSec' | 'restSkipped' | 'completed'>,
+): string | undefined {
+  if (!roundLog.completed) {
+    return ' · ended early';
+  }
+  if (roundLog.restSkipped) {
+    return ' · rest skipped';
+  }
+  return roundLog.restSec === undefined ? undefined : ` · rest ${formatClock(roundLog.restSec)}`;
+}
+
+/** One row of a performance's card — a set or a round, already read. */
+export type ExerciseLogRow = { key: string; label: string; value: string; tail?: string };
+
+/**
+ * A performance's rows, the same in History and in Overview's Last session: its sets, then its
+ * rounds — an exercise has one or the other (10.1 FR-12).
+ */
+export function exerciseLogRows(
+  logs: { setLogs: readonly SetLog[]; roundLogs: readonly RoundLog[] },
+  equipment?: Equipment,
+  powerLoad?: PowerLoad,
+): ExerciseLogRow[] {
+  return [
+    ...logs.setLogs.map((setLog) => ({
+      key: setLog.id,
+      label: formatSetLabel(setLog),
+      value: formatSetValue(setLog, equipment, powerLoad),
+      tail: formatSetRirTail(setLog, powerLoad),
+    })),
+    ...logs.roundLogs.map((roundLog) => ({
+      key: roundLog.id,
+      label: formatRoundLabel(roundLog),
+      value: formatRoundValue(roundLog),
+      tail: formatRoundTail(roundLog),
+    })),
+  ];
 }

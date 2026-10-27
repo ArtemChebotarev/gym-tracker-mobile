@@ -71,6 +71,7 @@ describe('loadExerciseOverview', () => {
               status: 'completed',
               completedAt: '2026-09-10T12:00:00.000Z',
             },
+            roundLogs: [],
             setLogs: [
               {
                 ...STAMPS,

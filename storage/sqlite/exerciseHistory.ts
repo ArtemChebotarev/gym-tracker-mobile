@@ -147,14 +147,11 @@ export class SqliteExerciseHistoryRepository implements ExerciseHistoryRepositor
     );
     const byId = new Map(rows.map((row) => [row.id, rowToMesocycle(row)]));
 
-    return performances.flatMap(({ session, setLogs: logs }) => {
-      // A performance made of rounds has no sets to show or to aggregate; the History tab reads
-      // them when it gets its interval rows (10.1, FR-12).
-      if (logs.length === 0) {
-        return [];
-      }
+    // A performance made of rounds (interval, mobility) is listed like one made of sets: the
+    // History tab shows what was done whatever the type (10.1, FR-12).
+    return performances.flatMap(({ session, setLogs: logs, roundLogs: rounds }) => {
       const mesocycle = byId.get(session.mesoId);
-      return mesocycle ? [{ session, mesocycle, setLogs: logs }] : [];
+      return mesocycle ? [{ session, mesocycle, setLogs: logs, roundLogs: rounds }] : [];
     });
   }
 }

@@ -47,21 +47,19 @@ import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
-import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard';
+import { ExerciseDetailCard } from './ExerciseDetailCard';
 import {
   EXERCISE_DETAIL_TABS,
   formatBestSet,
   formatLastDone,
   formatLastSessionMeta,
-  formatSetLabel,
-  formatSetRirTail,
-  formatSetValue,
   powerLoadOf,
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
 import { ExerciseDetailEmpty } from './ExerciseDetailEmpty';
 import { ExerciseHistoryTab } from './ExerciseHistoryTab';
+import { ExerciseLogRows } from './ExerciseLogRows';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
 
 export type ExerciseDetailScreenProps = {
@@ -155,7 +153,7 @@ export function ExerciseDetailScreen({
       />
 
       {stats === null ? (
-        // No set ever logged: there are no tiles to show and no history to show either, so the
+        // Nothing ever logged, no set and no round: there are no tiles to show and no history to show either, so the
         // same line answers both tabs (08.6, "Пустое состояние"). On Overview the how-to card
         // goes first, right under the switcher: it is the one useful thing on a screen that
         // has nothing to report yet, and the line below reads as a note rather than the page.
@@ -176,7 +174,10 @@ export function ExerciseDetailScreen({
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
           <View style={styles.tiles}>
-            <StatTile label="Best set" value={formatBestSet(stats.bestSet)} />
+            {/* An exercise of rounds has no best set (10.1 FR-12): the tile is left out. */}
+            {stats.bestSet !== null && (
+              <StatTile label="Best set" value={formatBestSet(stats.bestSet)} />
+            )}
             <StatTile label="Sessions" value={String(stats.sessionCount)} />
             <StatTile label="Last done" value={formatLastDone(stats.lastDoneAt)} />
           </View>
@@ -229,15 +230,12 @@ function LastSessionBlock({
       label="Last session"
       meta={formatLastSessionMeta(lastSession)}
     >
-      {lastSession.setLogs.map((setLog, index) => (
-        <ExerciseDetailCardRow
-          key={setLog.id}
-          label={formatSetLabel(setLog)}
-          value={formatSetValue(setLog, equipment, powerLoad)}
-          tail={formatSetRirTail(setLog, powerLoad)}
-          isLast={index === lastSession.setLogs.length - 1}
-        />
-      ))}
+      <ExerciseLogRows
+        setLogs={lastSession.setLogs}
+        roundLogs={lastSession.roundLogs}
+        equipment={equipment}
+        powerLoad={powerLoad}
+      />
     </ExerciseDetailCard>
   );
 }
