@@ -11,7 +11,7 @@ import type { SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
 import { targetRir } from '@domain/progressionRir';
 import { nextOrder } from '@domain/sessionExerciseOrder';
-import { ADDED_EXERCISE_SET_COUNT } from '@domain/sessionExerciseSets';
+import { addedExerciseRowCount } from '@domain/sessionExerciseSets';
 import { nowAsUtcIso } from '@domain/time';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
@@ -35,9 +35,9 @@ export type ExerciseAdditionInput = {
 
 /**
  * Appends one session exercise per `exerciseIds` entry to the end of the session, in one
- * transaction: 2 set rows with rule 6 targets from the exercise's last performance (none → the
- * screen shows `N RIR`), the week's `targetRir`, status `planned`. Resolves to the new session
- * exercises, in order.
+ * transaction: its rows (`addedExerciseRowCount` — 2 sets or rounds, one mobility block) with
+ * rule 6 targets from the exercise's last performance (none → the screen shows `N RIR`), the
+ * week's `targetRir`, status `planned`. Resolves to the new session exercises, in order.
  *
  * Rejects with `ConflictError` in a deload session (03, rule 6: nothing can be added there) and in
  * a final or `awaiting_source` one, and with `NotFoundError` if the session or its mesocycle
@@ -78,7 +78,7 @@ export async function addExercises(
           {
             exerciseId,
             session,
-            rowCount: ADDED_EXERCISE_SET_COUNT,
+            rowCount: addedExerciseRowCount(typeById.get(exerciseId)),
             weekRir,
             settings: mesocycle.progressionSettings,
             equipment: equipmentById.get(exerciseId),

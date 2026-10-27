@@ -3,6 +3,7 @@
 // are only ever added or removed at the end, so they never need renumbering. Pure: the use case
 // layer handles the row's log and persists the result.
 
+import type { ExerciseType } from '@domain/catalog';
 import { ConflictError } from '@domain/errors';
 import type { RoundLog, SetTarget } from '@domain/execution';
 import { roundTimesOf } from '@domain/roundTimes';
@@ -64,6 +65,10 @@ export function withoutLastRound(setTargets: readonly SetTarget[]) {
 
 /**
  * Rows an exercise added mid-session starts with (05 · Workout Execution & Logging, "Добавить
- * внеплановое упражнение").
+ * внеплановое упражнение"): two sets or rounds — and one block for a mobility exercise, which is
+ * never more than one (10.1 FR-1, FR-10; GT-109). A second block would be one its card can't show
+ * nor log, and the exercise could never be done.
  */
-export const ADDED_EXERCISE_SET_COUNT = 2;
+export function addedExerciseRowCount(type: ExerciseType | undefined): number {
+  return type === 'mobility' ? 1 : 2;
+}

@@ -6,10 +6,11 @@ import type { WorkoutStore } from '@repositories/workout';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
+import { addExercises } from '@usecases/exerciseAddition';
 import { generateNextSession } from '@usecases/nextSessionGeneration';
-import { logRound } from '@usecases/roundLogging';
+import { logRound, logTimerRound } from '@usecases/roundLogging';
 import { setRoundTime } from '@usecases/roundTimes';
-import { HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -397,6 +398,61 @@ describe('generateNextSession', () => {
       { setNumber: 1, targetWorkSec: 130, targetRestSec: 45 },
       { setNumber: 2, targetWorkSec: 130, targetRestSec: 45 },
     ]);
+  });
+
+  // GT-109 (10.1 FR-10; 03, "Структура наследуется от факта"): a mobility exercise added in week 1
+  // is in week 2 — one block, with the length it was done with — like any exercise added in a
+  // workout. The block is picked, logged by hand or by the timer, and the day is generated.
+  describe('a mobility exercise added in the workout (GT-109)', () => {
+    async function weekOneWithCooldown() {
+      await new SqliteExerciseRepository(db()).createCustom(COOLDOWN);
+      const live = makeSession(1, { status: 'in_progress', completedAt: undefined });
+      const bench = makeExercise(1, 'bench', 1);
+      const { workout, deps } = await setUp([live], [bench], logsFor(bench, [10, 9], 60));
+      const [cooldown] = await addExercises(
+        { sessionId: live.id, exerciseIds: [COOLDOWN.id] },
+        { workout, ...deps },
+      );
+      return { workout, deps, live, cooldown: cooldown! };
+    }
+
+    test('DoD: added in week 1, done — in week 2 after the bench, one block of its length', async () => {
+      const { workout, deps, live, cooldown } = await weekOneWithCooldown();
+      // One block, not the two rows an added exercise gets: a second could never be logged.
+      expect(cooldown.setTargets).toEqual([{ setNumber: 1 }]);
+
+      const ref = { sessionId: live.id, sessionExerciseId: cooldown.id };
+      await setRoundTime(ref, 'work', [1], 600, workout);
+      await logRound({ ...ref, roundNumber: 1 }, { workSec: 600 }, workout);
+      const trigger = makeSession(1);
+      await workout.repos.sessionRepo.update(trigger);
+
+      const next = await generateNextSession(trigger, workout.repos, deps);
+
+      const planned = await exercisesOf(workout, next);
+      expect(planned.map((exercise) => exercise.exerciseId)).toEqual(['bench', COOLDOWN.id]);
+      expect(planned[1]?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+    });
+
+    test('the timer’s length carries; a block ended early keeps its plan', async () => {
+      const { workout, deps, live, cooldown } = await weekOneWithCooldown();
+      const ref = { sessionId: live.id, sessionExerciseId: cooldown.id };
+      await setRoundTime(ref, 'work', [1], 600, workout);
+      const trigger = makeSession(1);
+
+      await logTimerRound(
+        { ...ref, roundNumber: 1 },
+        { roundNumber: 1, workSec: 200, restSkipped: false, completed: false },
+        workout,
+      );
+      await workout.repos.sessionRepo.update(trigger);
+      const next = await generateNextSession(trigger, workout.repos, deps);
+
+      const planned = await exercisesOf(workout, next);
+      expect(planned.find((exercise) => exercise.exerciseId === COOLDOWN.id)?.setTargets).toEqual([
+        { setNumber: 1, targetWorkSec: 600 },
+      ]);
+    });
   });
 
   test('a deload session generates nothing', async () => {
