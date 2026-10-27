@@ -14,7 +14,6 @@
 
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
-import type { ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 
 import {
@@ -26,7 +25,7 @@ import {
   type ExercisesByDay,
   type ExercisesById,
 } from './MesoEditorDaysStepLogic';
-import { formatReviewPlan, formatReviewSummary } from './MesoEditorReviewStepLogic';
+import { formatReviewCount, formatReviewSummary } from './MesoEditorReviewStepLogic';
 import { styles } from './MesoEditorReviewStepStyles';
 
 export type MesoEditorReviewStepProps = {
@@ -35,8 +34,6 @@ export type MesoEditorReviewStepProps = {
   daysPerWeek: number;
   exercisesByDay: ExercisesByDay;
   exercisesById: ExercisesById;
-  /** The cycle's own hybrid settings (GT-158) — what each plan line shows. */
-  exerciseSettings?: ExerciseSettingsById;
   onEditDay: (dayNumber: number) => void;
 };
 
@@ -46,7 +43,6 @@ export function MesoEditorReviewStep({
   daysPerWeek,
   exercisesByDay,
   exercisesById,
-  exerciseSettings,
   onEditDay,
 }: MesoEditorReviewStepProps) {
   return (
@@ -92,7 +88,7 @@ export function MesoEditorReviewStep({
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {exerciseTitle(exercisesById, exercise.exerciseId)}
                 </Text>
-                <Text style={styles.exerciseSets}>{formatReviewPlan(exercisesById, exercise, exerciseSettings)}</Text>
+                <Text style={styles.exerciseSets}>{formatReviewCount(exercisesById, exercise)}</Text>
               </View>
             );
           })}

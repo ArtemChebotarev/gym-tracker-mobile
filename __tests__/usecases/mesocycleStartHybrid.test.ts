@@ -1,8 +1,9 @@
 // GT-160 end to end, over SQLite: a cycle that mixes strength, power, interval and mobility goes
 // from the editor's draft through Confirm to Start, and week 1 opens with every type's own rows —
-// interval rounds and the mobility block timed from the cycle's settings, not the library's.
+// interval rounds by the day's stepper (GT-190) and the mobility block, untimed.
 
-import { addExercisesToDraft, withDraftExerciseSettings } from '@components/MesoEditorScreenLogic';
+import { updateExerciseSets } from '@components/MesoEditorDaysStepLogic';
+import { addExercisesToDraft } from '@components/MesoEditorScreenLogic';
 import { toExerciseId } from '@domain/catalog';
 import { DEFAULT_MESO_BUILDER_DRAFT, toScratchMesocycleDraftInput } from '@state/draftStore';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
@@ -13,7 +14,7 @@ import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise
 import { SqliteSettingsRepository } from '@storage/sqlite/settings';
 import { confirmScratchMesocycleDraft } from '@usecases/mesocycleCreation';
 import { startMesocycle } from '@usecases/mesocycleStart';
-import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -35,14 +36,16 @@ test('a mixed cycle goes through Confirm → Start and week 1 has every type’s
   await seedReferences(store, { exerciseIds: [BENCH] });
   const bench = (await exerciseRepo.getById(toExerciseId(BENCH)))!;
 
-  // The editor: four exercises on day 1, and the heavy bag's plan changed in the plan sheet.
+  // The editor: four exercises on day 1.
   let draft = addExercisesToDraft(
     { ...DEFAULT_MESO_BUILDER_DRAFT, name: 'Hybrid' },
     1,
     [bench.id, MEDBALL_THROW.id, HEAVY_BAG.id, COOLDOWN.id],
     { [bench.id]: bench, [MEDBALL_THROW.id]: MEDBALL_THROW, [HEAVY_BAG.id]: HEAVY_BAG, [COOLDOWN.id]: COOLDOWN },
   );
-  draft = withDraftExerciseSettings(draft, HEAVY_BAG.id, { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 4 });
+  // A new interval starts with one round (GT-183); the stepper takes it to four.
+  expect(draft.exercisesByDay[1]?.[2]).toMatchObject({ exerciseId: HEAVY_BAG.id, sets: 1 });
+  draft = { ...draft, exercisesByDay: updateExerciseSets(draft.exercisesByDay, 1, 2, 4) };
 
   const saved = await confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), {
     mesocycleRepo: new SqliteMesocycleRepository(store),
@@ -60,7 +63,7 @@ test('a mixed cycle goes through Confirm → Start and week 1 has every type’s
 
   expect(rows.get(BENCH)?.setTargets).toHaveLength(2);
   expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(2);
-  // Flow A has no history: the cycle's four rounds, with no times — picked on the card (GT-187).
+  // Flow A has no history: the day's four rounds, with no times — picked on the card (GT-187).
   expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([
     { setNumber: 1 },
     { setNumber: 2 },

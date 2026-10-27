@@ -132,18 +132,26 @@ describe('MesoEditorDaysStep', () => {
       expect(render(<MesoEditorDaysStep {...MIXED_PROPS} />).toJSON()).toMatchSnapshot();
     });
 
-    test('a strength or power row keeps its stepper, an interval shows its plan chip, a mobility row neither', () => {
+    test('strength and power step their sets, an interval its rounds; a mobility row has no stepper (GT-190)', () => {
       render(<MesoEditorDaysStep {...MIXED_PROPS} />);
 
       expect(screen.getByLabelText('Increase Bench Press sets')).toBeTruthy();
-      // A power exercise has nothing to plan but its sets (GT-188).
       expect(screen.getByLabelText('Increase Medball straight punch throw sets')).toBeTruthy();
-      expect(screen.queryByLabelText('Increase Heavy bag sets')).toBeNull();
-      expect(screen.getByLabelText('Heavy bag plan: 3 rounds, Less rest')).toBeTruthy();
+      expect(screen.getByLabelText('Increase Heavy bag rounds')).toBeTruthy();
       // Mobility is one block with nothing to set (GT-191).
-      expect(screen.queryByLabelText('Increase Cooldown sets')).toBeNull();
-      expect(screen.queryByLabelText(/^Cooldown plan/)).toBeNull();
-      expect(screen.getByText('Plan')).toBeTruthy();
+      expect(screen.queryByLabelText(/Cooldown (sets|rounds)/)).toBeNull();
+      // No plan chip, and the column reads Sets: the editor sets nothing else.
+      expect(screen.queryByLabelText(/plan$/)).toBeNull();
+      expect(screen.getByText('Sets')).toBeTruthy();
+    });
+
+    test('an interval\'s rounds change through the same stepper as sets', () => {
+      const onChangeSets = jest.fn();
+      render(<MesoEditorDaysStep {...MIXED_PROPS} onChangeSets={onChangeSets} />);
+
+      fireEvent.press(screen.getByLabelText('Increase Heavy bag rounds'));
+
+      expect(onChangeSets).toHaveBeenCalledWith(1, 2, 3);
     });
 
     test('an exercise without a group is captioned with its type', () => {
@@ -152,15 +160,6 @@ describe('MesoEditorDaysStep', () => {
       expect(screen.getByText('Power')).toBeTruthy();
       expect(screen.getByText('Timed work')).toBeTruthy();
       expect(screen.getByText('Mobility')).toBeTruthy();
-    });
-
-    test('a hybrid row’s chip opens its plan by day and index (GT-92)', () => {
-      const onOpenPlan = jest.fn();
-      render(<MesoEditorDaysStep {...MIXED_PROPS} onOpenPlan={onOpenPlan} />);
-
-      fireEvent.press(screen.getByRole('button', { name: 'Heavy bag plan: 3 rounds, Less rest' }));
-
-      expect(onOpenPlan).toHaveBeenCalledWith(1, 2);
     });
 
     test('a hybrid row is removed by its own index', () => {

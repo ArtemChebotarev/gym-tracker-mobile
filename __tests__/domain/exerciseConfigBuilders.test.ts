@@ -1,7 +1,6 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import {
-  DEFAULT_INTERVAL_ROUNDS,
   defaultExerciseSettings,
   defaultExerciseConfig,
   exerciseTypeOf,
@@ -87,9 +86,9 @@ describe('holdIntervalConfig', () => {
 });
 
 describe('defaultExerciseSettings', () => {
-  it('copies an interval config and adds the default round count', () => {
+  it('copies an interval config as it is — its rounds are the day\'s (GT-190)', () => {
     const config = defaultExerciseConfig('interval')!;
-    expect(defaultExerciseSettings(config)).toEqual({ ...config, rounds: DEFAULT_INTERVAL_ROUNDS });
+    expect(defaultExerciseSettings(config)).toEqual({ ...config });
   });
 
   it('copies a power and a mobility config as they are', () => {

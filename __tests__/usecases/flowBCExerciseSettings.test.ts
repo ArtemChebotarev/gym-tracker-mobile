@@ -3,8 +3,8 @@
 // library defaults for one the source has none for; a template (Flow B) gives library defaults.
 
 import type { Session, SessionExercise } from '@domain/execution';
-import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { materializeSetTargets } from '@domain/weekPlanMaterializers';
 import type { Unsaved } from '@domain/timestamps';
 import {
   toCopiedMesoBuilderDraft,
@@ -49,17 +49,22 @@ const SOURCE_ID = 'meso-source';
 // What the source cycle ran with: both edited away from the library. Cooldown has no entry — a
 // cycle saved before the cycle kept its own settings.
 const SOURCE_SETTINGS: Mesocycle['exerciseSettings'] = {
-  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 5 },
+  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' },
   [MEDBALL_THROW.id]: { type: 'power', load: 'weight', noHeavierAvailable: true },
 };
 
-function sessionExercise(id: string, exerciseId: string, order: number): Unsaved<SessionExercise> {
+function sessionExercise(
+  id: string,
+  exerciseId: string,
+  order: number,
+  rows = 2,
+): Unsaved<SessionExercise> {
   return {
     id,
     sessionId: 'session-w1-d1',
     exerciseId,
     order,
-    setTargets: [{ setNumber: 1 }, { setNumber: 2 }],
+    setTargets: Array.from({ length: rows }, (_, index) => ({ setNumber: index + 1 })),
     targetRir: 2,
     status: 'completed',
   };
@@ -98,7 +103,8 @@ async function seedSource(deps: ReturnType<typeof makeDeps>) {
   await deps.sessionRepo.createMany([session]);
   await deps.sessionExerciseRepo.createMany([
     sessionExercise('sx-medball', MEDBALL_THROW.id, 1),
-    sessionExercise('sx-bag', HEAVY_BAG.id, 2),
+    // Planned with three rounds; one was added in the workout (Add round, GT-91).
+    sessionExercise('sx-bag', HEAVY_BAG.id, 2, 4),
     sessionExercise('sx-cooldown', COOLDOWN.id, 3),
   ]);
 }
@@ -132,6 +138,23 @@ describe('Flow C: settings come from the source cycle (GT-159)', () => {
   });
 });
 
+describe('Flow C: an interval\'s rounds come from the source week (GT-190)', () => {
+  test('the copied slot has the rounds the source week ran — an added round included — and week 1 builds them', async () => {
+    const deps = makeDeps();
+    await seedSource(deps);
+
+    const week = await extractSourceWeek({ sourceMesoId: SOURCE_ID, sourceWeekNumber: 1 }, deps);
+    const bag = week.weekPlan.days[0]?.exercises.find((entry) => entry.exerciseId === HEAVY_BAG.id);
+
+    expect(bag?.sets).toBe(4);
+    // The cycle's copy carries no round count: the slot alone decides it.
+    expect(week.exerciseSettings[HEAVY_BAG.id]).not.toHaveProperty('rounds');
+    expect(
+      materializeSetTargets('interval', { entry: bag!, settings: week.exerciseSettings[HEAVY_BAG.id] }),
+    ).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }, { setNumber: 4 }]);
+  });
+});
+
 describe('Flow B: settings come from the library (GT-159)', () => {
   test('a template with hybrid exercises fills the draft with their library defaults', async () => {
     const deps = makeDeps();
@@ -158,7 +181,7 @@ describe('Flow B: settings come from the library (GT-159)', () => {
     const draft = toTemplateMesoBuilderDraft(await prepareTemplateDraft('template-hybrid', deps));
 
     expect(draft.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });

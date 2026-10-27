@@ -372,7 +372,7 @@ describe('generateNextSession', () => {
     await deps.mesocycleRepo.update({
       ...mesocycle,
       exerciseSettings: {
-        [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 2, lever: 'workTime', stepSec: 10 },
+        [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'workTime', stepSec: 10 },
       },
     });
     for (const roundNumber of [1, 2]) {

@@ -263,11 +263,11 @@ export type MesocycleStart = {
  * next week is generated when the same day of this one is finished.
  *
  * Each exercise's rows come from the materializer of its type (GT-160,
- * `domain/weekPlanMaterializers.ts`): sets for strength and power, the cycle's rounds for an
- * interval one, one block for a mobility one — with no times: those are history's (10.1 FR-9). The
- * type and the round count come from `exercisesById` and the cycle's settings (`exerciseSettings`,
- * the library's where the cycle has none). An exercise `exercisesById` lacks is materialized as
- * strength. `weekOneTargets` prices sets and an interval's rounds (GT-185), not a mobility block
+ * `domain/weekPlanMaterializers.ts`): the day's sets for strength and power and as rounds for an
+ * interval one (GT-190), one block for a mobility one — with no times: those are history's (10.1
+ * FR-9). The type comes from `exercisesById`, and a mobility one's block from the cycle's settings
+ * (`exerciseSettings`, the library's where the cycle has none). An exercise `exercisesById` lacks
+ * is materialized as strength. `weekOneTargets` prices sets and an interval's rounds (GT-185), not a mobility block
  * (`pricedFromHistory`).
  *
  * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before

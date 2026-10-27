@@ -21,23 +21,16 @@ describe('weekPlanMaterializers (GT-160)', () => {
     ).toEqual(setRows({ entry }));
   });
 
-  test('interval: the cycle’s rounds, with no times — the cycle’s work and rest aren’t copied (GT-185)', () => {
-    const settings = { ...HEAVY_BAG_CONFIG, rounds: 3 };
-
-    expect(materializeSetTargets('interval', { entry, settings })).toEqual([
-      { setNumber: 1 },
-      { setNumber: 2 },
-      { setNumber: 3 },
-    ]);
+  test('interval: one round per the day’s sets, with no times (GT-185, GT-190)', () => {
+    expect(
+      materializeSetTargets('interval', { entry: { ...entry, sets: 3 }, settings: HEAVY_BAG_CONFIG }),
+    ).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
   });
 
-  test('interval: rounds come from the settings, not from the day’s sets', () => {
-    const rows = materializeSetTargets('interval', {
-      entry: { ...entry, sets: 9 },
-      settings: { ...HEAVY_BAG_CONFIG, rounds: 4 },
-    });
+  test('interval: a copy stored with `rounds` before GT-190 doesn’t decide the count', () => {
+    const legacy = { ...HEAVY_BAG_CONFIG, rounds: 4 } as typeof HEAVY_BAG_CONFIG;
 
-    expect(rows).toHaveLength(4);
+    expect(materializeSetTargets('interval', { entry: { ...entry, sets: 2 }, settings: legacy })).toHaveLength(2);
   });
 
   test('mobility: one block, its length not copied from the cycle (GT-185)', () => {
@@ -48,9 +41,9 @@ describe('weekPlanMaterializers (GT-160)', () => {
 
   test('interval and mobility without settings of their type fall back to rows by sets', () => {
     expect(materializeSetTargets('interval', { entry, settings: undefined })).toEqual(setRows({ entry }));
-    expect(
-      materializeSetTargets('mobility', { entry, settings: { ...HEAVY_BAG_CONFIG, rounds: 3 } }),
-    ).toEqual(setRows({ entry }));
+    expect(materializeSetTargets('mobility', { entry, settings: HEAVY_BAG_CONFIG })).toEqual(
+      setRows({ entry }),
+    );
   });
 
   test('history prices strength, power and interval rows at Start — not a mobility block yet (GT-185)', () => {

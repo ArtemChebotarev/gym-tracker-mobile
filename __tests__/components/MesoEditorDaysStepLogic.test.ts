@@ -6,23 +6,22 @@ import {
   canContinueFromDays,
   dragTargetIndex,
   exerciseDotColor,
-  exercisePlan,
   exerciseSubtitle,
   exerciseTitle,
   exerciseTypeIcon,
-  formatExercisePlan,
+  formatRoundCount,
   hasSetsStepper,
   formatSetCount,
   getDayExercises,
   getDayNumbers,
   moveIndex,
-  planColumnLabel,
   removeExerciseFromDay,
   reorderDayExercises,
+  stepperNoun,
   updateExerciseSets,
   type ExercisesByDay,
 } from '@components/MesoEditorDaysStepLogic';
-import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -257,57 +256,28 @@ describe('hybrid rows (GT-157)', () => {
     [HEAVY_BAG.id]: HEAVY_BAG,
     [COOLDOWN.id]: COOLDOWN,
   };
-  const entry = (exerciseId: string, sets = 3) => ({ exerciseId, order: 0, sets });
-
   test('formatSetCount pluralizes sets', () => {
     expect(formatSetCount(1)).toBe('1 set');
     expect(formatSetCount(3)).toBe('3 sets');
   });
 
-  test('formatExercisePlan shows an interval\'s rounds and lever, no times (GT-191)', () => {
-    expect(formatExercisePlan({ type: 'interval', lever: 'rest', stepSec: 10, rounds: 6 })).toEqual({
-      value: '6 rounds',
-      caption: 'Less rest',
-    });
-    expect(formatExercisePlan({ type: 'interval', lever: 'none', stepSec: 10, rounds: 1 })).toEqual({
-      value: '1 round',
-      caption: 'None',
-    });
+  test('formatRoundCount pluralizes rounds', () => {
+    expect(formatRoundCount(1)).toBe('1 round');
+    expect(formatRoundCount(3)).toBe('3 rounds');
   });
 
-  test('exercisePlan: power has no plan chip — it keeps the sets stepper (GT-188)', () => {
-    expect(exercisePlan(exercisesById, entry(MEDBALL_THROW.id, 3))).toBeUndefined();
+  test('every row has a stepper but a mobility one: sets, or an interval\'s rounds (GT-190, GT-191)', () => {
+    expect(hasSetsStepper(exercisesById, BENCH_PRESS.id)).toBe(true);
     expect(hasSetsStepper(exercisesById, MEDBALL_THROW.id)).toBe(true);
-  });
-
-  test('exercisePlan: interval takes the default rounds, not the day\'s sets', () => {
-    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id, 2))).toEqual({ value: '3 rounds', caption: 'Less rest' });
-  });
-
-  test('exercisePlan: the cycle’s own copy wins over the library (GT-158)', () => {
-    const settings = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'workTime' as const, rounds: 6 } };
-    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id), settings)).toEqual({
-      value: '6 rounds',
-      caption: 'More work',
-    });
-  });
-
-  test('mobility has neither a plan chip nor a sets stepper: nothing to set (GT-191)', () => {
-    expect(exercisePlan(exercisesById, entry(COOLDOWN.id))).toBeUndefined();
+    expect(hasSetsStepper(exercisesById, HEAVY_BAG.id)).toBe(true);
     expect(hasSetsStepper(exercisesById, COOLDOWN.id)).toBe(false);
+    expect(hasSetsStepper(exercisesById, 'missing')).toBe(true);
   });
 
-  test('exercisePlan: falls back to the type defaults for a hybrid exercise without a config', () => {
-    const { config: _config, ...withoutConfig } = HEAVY_BAG;
-    expect(exercisePlan({ [HEAVY_BAG.id]: withoutConfig }, entry(HEAVY_BAG.id))).toEqual({
-      value: '3 rounds',
-      caption: 'Less rest',
-    });
-  });
-
-  test('exercisePlan: undefined for strength and for an exercise not loaded yet', () => {
-    expect(exercisePlan(exercisesById, entry(BENCH_PRESS.id))).toBeUndefined();
-    expect(exercisePlan(exercisesById, entry('missing'))).toBeUndefined();
+  test('an interval\'s stepper counts rounds, every other one sets', () => {
+    expect(stepperNoun(exercisesById, HEAVY_BAG.id)).toBe('rounds');
+    expect(stepperNoun(exercisesById, MEDBALL_THROW.id)).toBe('sets');
+    expect(stepperNoun(exercisesById, BENCH_PRESS.id)).toBe('sets');
   });
 
   test('exerciseSubtitle shows the type of an exercise without a muscle group', () => {
@@ -327,11 +297,6 @@ describe('hybrid rows (GT-157)', () => {
     const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
     expect(exerciseTypeIcon({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBeUndefined();
     expect(exerciseTypeIcon(exercisesById, 'missing')).toBeUndefined();
-  });
-
-  test('planColumnLabel reads Sets for an all-strength day and Plan once a chip is in it', () => {
-    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id)])).toBe('Sets');
-    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id), entry(HEAVY_BAG.id)])).toBe('Plan');
   });
 
   test('a hybrid row is added, reordered and removed like a strength one', () => {

@@ -3,12 +3,11 @@ import {
   hasUnsavedDraft,
   rememberSelectedExercises,
   removeExerciseFromDraft,
-  resetDraftExerciseSettings,
-  withDraftExerciseSettings,
 } from '@components/MesoEditorScreenLogic';
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
 import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
+import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { DEFAULT_MESO_BUILDER_DRAFT, type MesoBuilderDraft } from '@state/draftStore';
@@ -80,13 +79,23 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
       COOLDOWN.id,
     ]);
     expect(draft.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG.config, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: HEAVY_BAG.config,
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });
 
-  test('adding the same exercise to another day keeps the copy the cycle already edited', () => {
-    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 } };
+  test('a new interval row starts with one round, the others with the default sets (GT-183)', () => {
+    const draft = addExercisesToDraft(DEFAULT_MESO_BUILDER_DRAFT, 1, [BENCH_PRESS.id, HEAVY_BAG.id], records);
+
+    expect(draft.exercisesByDay[1]?.map((entry) => entry.sets)).toEqual([
+      DEFAULT_EXERCISE_SETS,
+      DEFAULT_INTERVAL_ROUNDS,
+    ]);
+    expect(DEFAULT_INTERVAL_ROUNDS).toBe(1);
+  });
+
+  test('adding the same exercise to another day keeps the copy the cycle already has', () => {
+    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const } };
     const draft = addExercisesToDraft(
       { ...DEFAULT_MESO_BUILDER_DRAFT, daysPerWeek: 2, exerciseSettings: edited },
       2,
@@ -123,21 +132,5 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
 
     remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [COOLDOWN.id]);
     expect(remembered).toEqual({ [COOLDOWN.id]: COOLDOWN });
-  });
-});
-
-describe('the plan sheet’s edits (GT-92)', () => {
-  test('an edit replaces the copy for that exercise only; Reset puts the library’s back', () => {
-    const start = addExercisesToDraft(DEFAULT_MESO_BUILDER_DRAFT, 1, [HEAVY_BAG.id, COOLDOWN.id], {
-      [HEAVY_BAG.id]: HEAVY_BAG,
-      [COOLDOWN.id]: COOLDOWN,
-    });
-
-    const edited = withDraftExerciseSettings(start, HEAVY_BAG.id, { ...HEAVY_BAG_CONFIG, rounds: 6 });
-    expect(edited.exerciseSettings?.[HEAVY_BAG.id]).toEqual({ ...HEAVY_BAG_CONFIG, rounds: 6 });
-    expect(edited.exerciseSettings?.[COOLDOWN.id]).toEqual(COOLDOWN.config);
-
-    const reset = resetDraftExerciseSettings(edited, HEAVY_BAG);
-    expect(reset.exerciseSettings).toEqual(start.exerciseSettings);
   });
 });

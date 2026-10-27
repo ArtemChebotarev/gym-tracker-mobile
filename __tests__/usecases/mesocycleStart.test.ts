@@ -844,7 +844,8 @@ describe('startMesocycle — copyWeek interval rounds from history (GT-185)', ()
     days: [1, 2, 3].map((dayNumber) => ({
       dayNumber,
       name: '',
-      exercises: [{ exerciseId: HEAVY_BAG.id, order: 0, sets: 1 }],
+      // Three rounds on the day (GT-190): the count is the slot's, as sets are.
+      exercises: [{ exerciseId: HEAVY_BAG.id, order: 0, sets: 3 }],
     })),
   };
 
@@ -908,7 +909,7 @@ describe('startMesocycle — copyWeek interval rounds from history (GT-185)', ()
     // The new block plans three rounds of it; its 2:00 / 0:45 must not reach week 1.
     await store.repos.mesocycleRepo.update({
       ...(await store.repos.mesocycleRepo.getById('meso-copy'))!,
-      exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 3 } },
+      exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG } },
     });
     for (const performance of performances) {
       await seedRounds(store, performance);
@@ -968,7 +969,7 @@ describe('startMesocycle — copyWeek interval rounds from history (GT-185)', ()
     ]);
   });
 
-  test('no history at all: the cycle’s rounds, with no times — not the cycle’s 2:00 / 0:45', async () => {
+  test('no history at all: the day’s rounds, with no times — not the cycle’s 2:00 / 0:45', async () => {
     const store = await startWithBagHistory([]);
 
     await expect(startedTargetsOf(store, HEAVY_BAG.id, 1)).resolves.toEqual([

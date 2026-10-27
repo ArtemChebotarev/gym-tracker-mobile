@@ -3,8 +3,7 @@
 // neither the library exercise nor another cycle that uses it.
 
 import { addExercisesToDraft } from '@components/MesoEditorScreenLogic';
-import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
-import type { IntervalPlanConfig } from '@domain/exerciseConfig';
+import type { IntervalConfig } from '@domain/exerciseConfig';
 import {
   DEFAULT_MESO_BUILDER_DRAFT,
   toMesoBuilderDraft,
@@ -49,7 +48,7 @@ describe('a cycle’s own exercise settings (GT-158)', () => {
 
     const stored = await deps.mesocycleRepo.getById(saved.id);
     expect(stored?.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG.config, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG.config },
     });
   });
 
@@ -66,22 +65,21 @@ describe('a cycle’s own exercise settings (GT-158)', () => {
     );
 
     const draft = toMesoBuilderDraft((await deps.mesocycleRepo.getById(first.id))!);
-    const bag = draft.exerciseSettings?.[HEAVY_BAG.id] as IntervalPlanConfig;
+    const bag = draft.exerciseSettings?.[HEAVY_BAG.id] as IntervalConfig;
     await editPlannedMesocycle(
       first.id,
       toScratchMesocycleDraftInput({
         ...draft,
-        exerciseSettings: { [HEAVY_BAG.id]: { ...bag, lever: 'none', rounds: 5 } },
+        exerciseSettings: { [HEAVY_BAG.id]: { ...bag, lever: 'none' } },
       }),
       deps,
     );
 
     expect((await deps.mesocycleRepo.getById(first.id))?.exerciseSettings?.[HEAVY_BAG.id]).toMatchObject({
       lever: 'none',
-      rounds: 5,
     });
     expect((await deps.mesocycleRepo.getById(second.id))?.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...libraryConfig, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...libraryConfig },
     });
     expect(HEAVY_BAG.config).toEqual(libraryConfig);
   });
