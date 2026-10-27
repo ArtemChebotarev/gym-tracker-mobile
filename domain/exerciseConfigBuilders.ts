@@ -53,19 +53,16 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
 }
 
 /**
- * How many rounds an interval exercise does in a cycle that has not said otherwise (10.1 FR-9).
- * Not part of `IntervalConfig`: a count is the cycle's, not the
- * exercise's (see `IntervalPlanConfig`).
+ * How many rounds a new interval exercise has on its day of the cycle editor (10.1 FR-9, GT-183):
+ * one, rather than a strength exercise's `DEFAULT_EXERCISE_SETS` — the stepper adds more.
  */
-export const DEFAULT_INTERVAL_ROUNDS = 3;
+export const DEFAULT_INTERVAL_ROUNDS = 1;
 
 /**
- * What a cycle starts with for a hybrid exercise (`Mesocycle.exerciseSettings`, 10.1 FR-9): a
- * copy of the library's `config`, plus the default round count for an interval one. Fresh object
- * each call, so editing the cycle's copy never reaches the library's.
+ * What a cycle keeps for a hybrid exercise (`Mesocycle.exerciseSettings`, 10.1 FR-8): a copy of
+ * the library's `config`. Fresh object each call, so the cycle's copy never shares one with the
+ * library.
  */
 export function defaultExerciseSettings(config: ExerciseConfig): ExerciseSettings {
-  return config.type === 'interval'
-    ? { ...config, rounds: DEFAULT_INTERVAL_ROUNDS }
-    : { ...config };
+  return { ...config };
 }

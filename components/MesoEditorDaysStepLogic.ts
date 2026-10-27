@@ -6,9 +6,7 @@
 import type { Animated } from 'react-native';
 
 import { FULL_BODY, type Exercise } from '@domain/catalog';
-import type { IntervalLever, IntervalPlanConfig } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
-import { exerciseSettingsFor, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
@@ -33,8 +31,9 @@ export function getDayExercises(exercisesByDay: ExercisesByDay, dayNumber: numbe
 }
 
 /**
- * Appends `exerciseId` to `dayNumber` with the mockup's default sets (08.5, "Шаг 2": "степпер
- * sets с дефолтом 2") and the next `order`. Called once per selected exercise by
+ * Appends `exerciseId` to `dayNumber` with `sets` — the mockup's default (08.5, "Шаг 2": "степпер
+ * sets с дефолтом 2") unless the caller says otherwise, as for an interval's one round — and the
+ * next `order`. Called once per selected exercise by
  * app/meso-editor/new.tsx when task 077's "Add exercise" sheet confirms a (possibly multi-)
  * selection.
  */
@@ -42,10 +41,11 @@ export function addExerciseToDay(
   exercisesByDay: ExercisesByDay,
   dayNumber: number,
   exerciseId: string,
+  sets: number = DEFAULT_EXERCISE_SETS,
 ): ExercisesByDay {
   const existing = getDayExercises(exercisesByDay, dayNumber);
   const order = existing.reduce((highest, exercise) => Math.max(highest, exercise.order), -1) + 1;
-  const next: WeekPlanExercise = { exerciseId, order, sets: DEFAULT_EXERCISE_SETS };
+  const next: WeekPlanExercise = { exerciseId, order, sets };
   return { ...exercisesByDay, [dayNumber]: [...existing, next] };
 }
 
@@ -203,90 +203,30 @@ export function exerciseTypeIcon(exercisesById: ExercisesById, exerciseId: strin
   return getExerciseTypeIcon(exerciseTypeOf(exercise));
 }
 
-/** 08.5, "Шаг 3", and the power chip's value: `N sets`. */
+/** 08.5, "Шаг 3": `N sets`. */
 export function formatSetCount(sets: number): string {
   return `${sets} ${sets === 1 ? 'set' : 'sets'}`;
 }
 
-/** The two lines of a hybrid row's plan chip (10.1 FR-9). */
-export type ExercisePlan = { value: string; caption: string };
-
-/**
- * What each lever is called on the plan chip and the plan sheet's segmented control (10.1 FR-8,
- * canvas 7.3): four segments in one row, so the short words of FR-8 rather than the library's
- * option cards' titles. `none` reads "None", as in the library (Artem, 18.10.2026), not 7.3's
- * "Keep".
- */
-export const PLAN_LEVER_LABEL: Record<IntervalLever, string> = {
-  rest: 'Less rest',
-  workTime: 'More work',
-  rounds: '+1 round',
-  none: 'None',
-};
-
-/**
- * The settings a plan chip and the plan sheet show: an interval's — its rounds, lever and step.
- * A power exercise has none left to plan — its rest is the one from Settings and its sets are the
- * day's own (GT-188) — so its row keeps the sets stepper, as a strength one does. A mobility one
- * has nothing at all: its length comes from history (GT-191).
- */
-export type PlanSettings = IntervalPlanConfig;
-
-/**
- * The cycle's plan settings for `exercise` (`exerciseSettingsFor`), or `undefined` for any but an
- * interval, which has none.
- */
-export function planSettingsFor(
-  exerciseSettings: ExerciseSettingsById,
-  exercise: Exercise,
-): PlanSettings | undefined {
-  const settings = exerciseSettingsFor(exerciseSettings, exercise);
-  return settings?.type === 'interval' ? settings : undefined;
+/** 08.5, "Шаг 3", for an interval: `N rounds`. */
+export function formatRoundCount(rounds: number): string {
+  return `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`;
 }
 
 /**
- * The plan chip of an interval exercise, from the cycle's settings for it: `3 rounds` / `Less
- * rest` (10.1 FR-9). Its times come from history, so the chip shows none (GT-191).
- */
-export function formatExercisePlan(settings: PlanSettings): ExercisePlan {
-  return {
-    value: `${settings.rounds} ${settings.rounds === 1 ? 'round' : 'rounds'}`,
-    caption: PLAN_LEVER_LABEL[settings.lever],
-  };
-}
-
-/**
- * Whether the row sets its sets with a stepper: a strength or power exercise. A mobility one is a
- * single block with nothing to set (GT-191); an interval has its plan chip.
+ * Whether the row has a stepper: strength and power for their sets, an interval for its rounds
+ * (GT-190). A mobility one is a single block with nothing to set (GT-191). The cycle editor sets
+ * nothing else (Artem, 27.10.2026).
  */
 export function hasSetsStepper(exercisesById: ExercisesById, exerciseId: string): boolean {
   const exercise = exercisesById[exerciseId];
-  const type = exercise ? exerciseTypeOf(exercise) : 'strength';
-  return type === 'strength' || type === 'power';
+  return exercise === undefined || exerciseTypeOf(exercise) !== 'mobility';
 }
 
-/**
- * The plan chip of the row, or `undefined` for any but an interval exercise and for one not
- * loaded yet. It shows the cycle's own copy of the settings (GT-158); a row the cycle has no copy
- * for yet — prefilled by Flow B or C — shows what that copy would start from, the library's
- * config.
- */
-export function exercisePlan(
-  exercisesById: ExercisesById,
-  entry: WeekPlanExercise,
-  exerciseSettings: ExerciseSettingsById = {},
-): ExercisePlan | undefined {
-  const exercise = exercisesById[entry.exerciseId];
-  const settings = exercise && planSettingsFor(exerciseSettings, exercise);
-  return settings ? formatExercisePlan(settings) : undefined;
-}
-
-/**
- * The header over the right-hand column: `Sets` while every row of the day is a sets stepper,
- * `Plan` once a plan chip shares the column (canvas 7.2).
- */
-export function planColumnLabel(exercisesById: ExercisesById, exercises: readonly WeekPlanExercise[]): string {
-  return exercises.some((entry) => exercisePlan(exercisesById, entry) !== undefined) ? 'Plan' : 'Sets';
+/** What the row's stepper counts: an interval's rounds, every other exercise's sets. */
+export function stepperNoun(exercisesById: ExercisesById, exerciseId: string): 'rounds' | 'sets' {
+  const exercise = exercisesById[exerciseId];
+  return exercise !== undefined && exerciseTypeOf(exercise) === 'interval' ? 'rounds' : 'sets';
 }
 
 export function exerciseTitle(exercisesById: ExercisesById, exerciseId: string): string {

@@ -1271,7 +1271,6 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
             ...HEAVY_BAG_CONFIG,
             lever: 'workTime',
             stepSec: 5,
-            rounds: 2,
           },
         },
       },
@@ -1293,7 +1292,7 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
       mesocycle: {
         ...mesocycle,
         exerciseSettings: {
-          [toExerciseId('bag')]: { ...HEAVY_BAG_CONFIG, lever: 'rounds', rounds: 3 },
+          [toExerciseId('bag')]: { ...HEAVY_BAG_CONFIG, lever: 'rounds' },
         },
       },
     });

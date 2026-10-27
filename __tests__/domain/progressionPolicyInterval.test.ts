@@ -229,7 +229,7 @@ describe('interval working week', () => {
 describe('intervalPolicy', () => {
   test('reads its lever and step off the cycle’s settings', () => {
     expect(
-      intervalPolicy.sourceFacts({ ...HEAVY_BAG_CONFIG, rounds: 3, lever: 'workTime', stepSec: 5 }),
+      intervalPolicy.sourceFacts({ ...HEAVY_BAG_CONFIG, lever: 'workTime', stepSec: 5 }),
     ).toEqual({ intervalProgression: { lever: 'workTime', stepSec: 5 } });
     expect(intervalPolicy.sourceFacts(undefined)).toEqual({});
   });

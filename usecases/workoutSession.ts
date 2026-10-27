@@ -8,7 +8,7 @@ import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type {
   ExerciseSettings,
-  IntervalPlanConfig,
+  IntervalConfig,
   IntervalStepSec,
   PowerLoad,
 } from '@domain/exerciseConfig';
@@ -568,7 +568,7 @@ function toSetRowsExercise(
 function intervalPlanOf(
   { exercise }: SessionExerciseTree,
   context: SessionContext,
-): IntervalPlanConfig | undefined {
+): IntervalConfig | undefined {
   const settings = exerciseSettingsFor(context.exerciseSettings, exercise);
   return settings?.type === 'interval' ? settings : undefined;
 }
@@ -612,7 +612,7 @@ function toRounds(tree: SessionExerciseTree, mode: WorkoutMode): WorkoutRoundRow
 
 /** The column the lever moves (FR-8), if it moves one. */
 function intervalProgressionOf(
-  plan: IntervalPlanConfig | undefined,
+  plan: IntervalConfig | undefined,
 ): IntervalProgression | undefined {
   switch (plan?.lever) {
     case 'rest':

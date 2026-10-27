@@ -84,11 +84,10 @@ export type MobilityConfig = {
 export type ExerciseConfig = PowerConfig | IntervalConfig | MobilityConfig;
 
 /**
- * An interval exercise's config as a cycle holds it: the library's lever and step plus how many
- * rounds the cycle does. The count is not a property of the exercise — as sets are not for a strength
- * one — so it exists only here, set when the cycle is created (FR-9).
+ * What a cycle keeps per hybrid exercise (`Mesocycle.exerciseSettings`): a copy of the library's
+ * config, taken when the exercise joins the cycle and never edited in it (10.1 FR-8, Artem,
+ * 27.10.2026) — the cycle lives by it, so an edit in the library reaches new cycles only. How many
+ * rounds an interval does is the day's, as sets are (`WeekPlanExercise.sets`, GT-190); a copy
+ * stored before still carries `rounds`, and nothing reads it.
  */
-export type IntervalPlanConfig = IntervalConfig & { rounds: number };
-
-/** What a cycle keeps per hybrid exercise (`Mesocycle.exerciseSettings`). */
-export type ExerciseSettings = PowerConfig | IntervalPlanConfig | MobilityConfig;
+export type ExerciseSettings = ExerciseConfig;

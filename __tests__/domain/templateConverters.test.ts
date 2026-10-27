@@ -2,7 +2,6 @@ import type { Exercise, MuscleGroup } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
 import { applyTemplate } from '@domain/templateConverters';
-import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -213,7 +212,7 @@ describe('applyTemplate: hybrid settings (GT-159)', () => {
     const draft = applyTemplate(hybridTemplate, [...library, HEAVY_BAG, COOLDOWN], []);
 
     expect(draft.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });

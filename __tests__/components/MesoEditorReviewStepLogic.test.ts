@@ -1,5 +1,5 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import { formatReviewPlan, formatReviewSummary } from '@components/MesoEditorReviewStepLogic';
+import { formatReviewCount, formatReviewSummary } from '@components/MesoEditorReviewStepLogic';
 import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -12,7 +12,7 @@ const BENCH_PRESS: Exercise = {
   isHidden: false,
 };
 
-describe('formatReviewPlan', () => {
+describe('formatReviewCount', () => {
   const exercisesById = {
     [BENCH_PRESS.id]: BENCH_PRESS,
     [MEDBALL_THROW.id]: MEDBALL_THROW,
@@ -21,25 +21,25 @@ describe('formatReviewPlan', () => {
   };
 
   test('a strength exercise shows its sets', () => {
-    expect(formatReviewPlan(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 1 })).toBe('1 set');
-    expect(formatReviewPlan(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 })).toBe('3 sets');
+    expect(formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 1 })).toBe('1 set');
+    expect(formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 })).toBe('3 sets');
   });
 
-  test('a power exercise shows its sets, an interval its plan on one line (GT-188)', () => {
-    expect(formatReviewPlan(exercisesById, { exerciseId: MEDBALL_THROW.id, order: 0, sets: 3 })).toBe(
+  test('a power exercise shows its sets, an interval its rounds (GT-188, GT-190)', () => {
+    expect(formatReviewCount(exercisesById, { exerciseId: MEDBALL_THROW.id, order: 0, sets: 3 })).toBe(
       '3 sets',
     );
-    expect(formatReviewPlan(exercisesById, { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 })).toBe(
-      '3 rounds · Less rest',
+    expect(formatReviewCount(exercisesById, { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 })).toBe(
+      '2 rounds',
     );
   });
 
-  test('a mobility exercise shows nothing: it is one block, its length from history (GT-191)', () => {
-    expect(formatReviewPlan(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe('');
+  test('a mobility exercise shows nothing: it is one block with nothing to set (GT-191)', () => {
+    expect(formatReviewCount(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe('');
   });
 
   test('an exercise not loaded yet falls back to its sets', () => {
-    expect(formatReviewPlan(exercisesById, { exerciseId: 'missing', order: 0, sets: 2 })).toBe('2 sets');
+    expect(formatReviewCount(exercisesById, { exerciseId: 'missing', order: 0, sets: 2 })).toBe('2 sets');
   });
 });
 

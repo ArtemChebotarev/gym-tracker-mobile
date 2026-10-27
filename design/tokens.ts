@@ -358,22 +358,10 @@ export const SIZES = {
   'size/sets-column': 104,
   /**
    * Mesocycle editor: the value of the inline sets stepper, fixed so the stepper is exactly
-   * `size/sets-column` wide (two `size/control-inline` buttons, two `space/gap-tight` gaps, this) —
-   * the same width as the plan chip beside it, whatever the digit.
+   * `size/sets-column` wide (two `size/control-inline` buttons, two `space/gap-tight` gaps, this),
+   * whatever the digit.
    */
   'size/sets-value': 24,
-  /**
-   * Mesocycle editor: the least height of the plan sheet's fields (CyclePlanSheet, GT-92) — what
-   * the tallest plan, an interval one with its Step row, takes (measured on an iPhone 17 Pro). Every
-   * type's sheet opens at it, so a mobility plan's one row and an interval's eight read as one
-   * sheet; a larger text size only lets the interval grow past it.
-   */
-  'size/plan-sheet-fields': 416,
-  /**
-   * Mesocycle editor: the plan chip of a power, interval or mobility row (`PlanChip`, 10.1 FR-9) —
-   * two lines, the same height for every type. It sits in the Sets column, so its width is that.
-   */
-  'size/plan-chip': 52,
   /** Bottom sheet grabber. */
   'size/grabber-width': 36,
   'size/grabber-height': 5,

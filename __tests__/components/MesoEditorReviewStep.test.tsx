@@ -67,7 +67,7 @@ describe('MesoEditorReviewStep', () => {
     expect(onEditDay).toHaveBeenCalledWith(2);
   });
 
-  test('shows the plan of each hybrid exercise instead of its sets (GT-157)', () => {
+  test('shows sets, an interval’s rounds, and nothing for mobility (GT-157, GT-190)', () => {
     render(
       <MesoEditorReviewStep
         {...BASE_PROPS}
@@ -91,7 +91,8 @@ describe('MesoEditorReviewStep', () => {
 
     // Bench press and the medball throw alike: a power exercise has only its sets (GT-188).
     expect(screen.getAllByText('3 sets')).toHaveLength(2);
-    expect(screen.getByText('3 rounds · Less rest')).toBeTruthy();
+    // The heavy bag's two rounds on the day (GT-190).
+    expect(screen.getByText('2 rounds')).toBeTruthy();
     // Cooldown, a mobility exercise, shows nothing: no length is planned (GT-191).
     expect(screen.queryByText('10:00')).toBeNull();
   });

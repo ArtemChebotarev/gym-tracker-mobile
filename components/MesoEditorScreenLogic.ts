@@ -1,11 +1,8 @@
 import type { Exercise, ExerciseId } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
-import type { ExerciseSettings } from '@domain/exerciseConfig';
-import {
-  prunedExerciseSettings,
-  resetExerciseSettings,
-  withExerciseSettings,
-} from '@domain/exerciseSettingsBuilders';
+import { DEFAULT_INTERVAL_ROUNDS, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import { prunedExerciseSettings, withExerciseSettings } from '@domain/exerciseSettingsBuilders';
+import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { MesoBuilderDraft } from '@state/draftStore';
 
 import { addExerciseToDay, removeExerciseFromDay } from './MesoEditorDaysStepLogic';
@@ -59,6 +56,13 @@ export function rememberSelectedExercises(
   return next;
 }
 
+/** What a new row starts with: an interval one round (GT-183), any other the default sets. */
+function startingSets(exercise: Exercise | undefined): number {
+  return exercise !== undefined && exerciseTypeOf(exercise) === 'interval'
+    ? DEFAULT_INTERVAL_ROUNDS
+    : DEFAULT_EXERCISE_SETS;
+}
+
 /**
  * Add exercise's confirm: appends every id to `dayNumber` and gives the cycle its own copy of each
  * hybrid one's library config (10.1 FR-9, GT-158) — unless the cycle already has one, from the
@@ -73,7 +77,7 @@ export function addExercisesToDraft(
   return {
     ...draft,
     exercisesByDay: ids.reduce(
-      (exercisesByDay, id) => addExerciseToDay(exercisesByDay, dayNumber, id),
+      (exercisesByDay, id) => addExerciseToDay(exercisesByDay, dayNumber, id, startingSets(exercisesById[id])),
       draft.exercisesByDay,
     ),
     exerciseSettings: ids
@@ -100,18 +104,4 @@ export function removeExerciseFromDraft(
     exercisesByDay,
     exerciseSettings: prunedExerciseSettings(draft.exerciseSettings ?? {}, remainingIds),
   };
-}
-
-/** The plan sheet's edit (GT-92): the cycle's copy for `exerciseId` becomes `settings`. */
-export function withDraftExerciseSettings(
-  draft: MesoBuilderDraft,
-  exerciseId: string,
-  settings: ExerciseSettings,
-): MesoBuilderDraft {
-  return { ...draft, exerciseSettings: { ...draft.exerciseSettings, [exerciseId]: settings } };
-}
-
-/** The plan sheet's `Reset to defaults`: the cycle's copy for `exercise` goes back to the library's. */
-export function resetDraftExerciseSettings(draft: MesoBuilderDraft, exercise: Exercise): MesoBuilderDraft {
-  return { ...draft, exerciseSettings: resetExerciseSettings(draft.exerciseSettings ?? {}, exercise) };
 }

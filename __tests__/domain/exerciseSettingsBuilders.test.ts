@@ -1,9 +1,7 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import {
   exerciseSettingsFor,
   prunedExerciseSettings,
-  resetExerciseSettings,
   weekPlanExerciseSettings,
   withExerciseSettings,
 } from '@domain/exerciseSettingsBuilders';
@@ -28,7 +26,7 @@ describe('withExerciseSettings', () => {
 
     expect(settings).toEqual({
       [MEDBALL_THROW.id]: MEDBALL_THROW.config,
-      [HEAVY_BAG.id]: { ...HEAVY_BAG.config, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG.config },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });
@@ -38,7 +36,7 @@ describe('withExerciseSettings', () => {
   });
 
   test('keeps the copy the cycle already has, edited or not', () => {
-    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 } } as const;
+    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const } } as const;
 
     expect(withExerciseSettings(edited, HEAVY_BAG)).toBe(edited);
   });
@@ -58,30 +56,9 @@ describe('withExerciseSettings', () => {
     const copy = settings[HEAVY_BAG.id]!;
     if (copy.type === 'interval') {
       copy.lever = 'none';
-      copy.rounds = 8;
     }
 
     expect(HEAVY_BAG.config).toEqual(libraryConfig);
-  });
-});
-
-describe('resetExerciseSettings', () => {
-  test('puts the library values back, rounds included', () => {
-    const edited = {
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 6 },
-      [COOLDOWN.id]: { type: 'mobility' as const },
-    };
-
-    expect(resetExerciseSettings(edited, HEAVY_BAG)).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG.config, rounds: DEFAULT_INTERVAL_ROUNDS },
-      [COOLDOWN.id]: { type: 'mobility' },
-    });
-  });
-
-  test('changes nothing for a strength exercise', () => {
-    const settings = { [COOLDOWN.id]: { type: 'mobility' as const } };
-
-    expect(resetExerciseSettings(settings, BENCH_PRESS)).toBe(settings);
   });
 });
 
@@ -121,26 +98,26 @@ describe('weekPlanExerciseSettings (GT-159)', () => {
 
   test('without inherited settings every hybrid exercise gets the library’s — Flow B', () => {
     expect(weekPlanExerciseSettings(weekPlan, library)).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });
 
   test('inherited settings win; an exercise they lack falls back to the library — Flow C', () => {
     const fromSource = {
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const },
       // The source had this one, but the copied week does not: it stays behind.
       [MEDBALL_THROW.id]: { type: 'power' as const, load: 'weight' as const, restSec: 90, noHeavierAvailable: true },
     };
 
     expect(weekPlanExerciseSettings(weekPlan, library, fromSource)).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });
 
   test('the result is a copy: changing it leaves the inherited settings alone', () => {
-    const fromSource = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 5 } };
+    const fromSource = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG } };
     const settings = weekPlanExerciseSettings(weekPlan, library, fromSource);
 
     expect(settings[HEAVY_BAG.id]).not.toBe(fromSource[HEAVY_BAG.id]);
@@ -153,10 +130,10 @@ describe('weekPlanExerciseSettings (GT-159)', () => {
 
 describe('exerciseSettingsFor', () => {
   test('the cycle’s own copy, the library’s while there is none, nothing for strength', () => {
-    const own = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 6 } };
+    const own = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG } };
 
-    expect(exerciseSettingsFor(own, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG, rounds: 6 });
-    expect(exerciseSettingsFor({}, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS });
+    expect(exerciseSettingsFor(own, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG });
+    expect(exerciseSettingsFor({}, HEAVY_BAG)).toEqual({ ...HEAVY_BAG_CONFIG });
     expect(exerciseSettingsFor({}, BENCH_PRESS)).toBeUndefined();
   });
 });

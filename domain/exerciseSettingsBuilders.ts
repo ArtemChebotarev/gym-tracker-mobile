@@ -55,18 +55,6 @@ export function withExerciseSettings(
 }
 
 /**
- * `Reset to defaults` (FR-9): the cycle's copy for `exercise` goes back to the library's values,
- * rounds included. Nothing changes for a `strength` exercise.
- */
-export function resetExerciseSettings(
-  settings: ExerciseSettingsById,
-  exercise: Exercise,
-): ExerciseSettingsById {
-  const copy = librarySettings(exercise);
-  return copy ? { ...settings, [exercise.id]: copy } : settings;
-}
-
-/**
  * Keeps only the settings of exercises the cycle still has: one removed from every day leaves no
  * copy behind, so adding it again starts from the library rather than from an old edit.
  */

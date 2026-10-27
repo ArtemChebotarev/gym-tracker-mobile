@@ -3,7 +3,6 @@
 // library defaults for one the source has none for; a template (Flow B) gives library defaults.
 
 import type { Session, SessionExercise } from '@domain/execution';
-import { DEFAULT_INTERVAL_ROUNDS } from '@domain/exerciseConfigBuilders';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { Unsaved } from '@domain/timestamps';
 import {
@@ -49,7 +48,7 @@ const SOURCE_ID = 'meso-source';
 // What the source cycle ran with: both edited away from the library. Cooldown has no entry — a
 // cycle saved before the cycle kept its own settings.
 const SOURCE_SETTINGS: Mesocycle['exerciseSettings'] = {
-  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 5 },
+  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' },
   [MEDBALL_THROW.id]: { type: 'power', load: 'weight', noHeavierAvailable: true },
 };
 
@@ -158,7 +157,7 @@ describe('Flow B: settings come from the library (GT-159)', () => {
     const draft = toTemplateMesoBuilderDraft(await prepareTemplateDraft('template-hybrid', deps));
 
     expect(draft.exerciseSettings).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: DEFAULT_INTERVAL_ROUNDS },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });

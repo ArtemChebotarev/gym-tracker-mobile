@@ -54,12 +54,11 @@
 // reason: iOS's elastic overscroll made the whole content area visibly "stretch" on any
 // touch-drag inside it, including over rows with no handle at all (e.g. "Add exercise").
 //
-// A power exercise keeps the sets stepper, as a strength one does (GT-188). An interval (GT-157,
-// 10.1 FR-9, canvas 7.2) has a plan chip in the same column instead (`3 rounds / Less rest`), and
-// the column header reads `Plan` once a chip is in it. A mobility one has neither: it is one block
-// with nothing to set (GT-191), and the column stays empty. One without a muscle
-// group shows its type's icon where the group dot would be, and its type under the name. Drag,
-// remove and order are the strength row's, untouched — the chip has the row's fixed height to fit.
+// The step sets exercises and their sets, nothing else (10.1 FR-9, Artem, 27.10.2026): strength
+// and power have the sets stepper, an interval the same stepper for its rounds (GT-190), and a
+// mobility exercise none — it is one block with nothing to set (GT-191), and its column stays
+// empty. An exercise without a muscle group (GT-157) shows its type's icon where the group dot
+// would be, and its type under the name. Drag, remove and order are the same for every type.
 //
 // JSX/rendering only — styles live in MesoEditorDaysStepStyles.ts and pure helpers in
 // MesoEditorDaysStepLogic.ts, per the code-style skill.
@@ -76,10 +75,8 @@ import {
   type PanResponderGestureState,
 } from 'react-native';
 
-import type { ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
-import { PlanChip } from '@design/components/PlanChip';
 import { Stepper } from '@design/components/Stepper';
 import { tapTargetSlop } from '@design/shapes';
 import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
@@ -87,15 +84,14 @@ import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 import {
   dragTargetIndex,
   exerciseDotColor,
-  exercisePlan,
   hasSetsStepper,
+  stepperNoun,
   exerciseSubtitle,
   exerciseTitle,
   exerciseTypeIcon,
   getDayExercises,
   getDayNumbers,
   moveIndex,
-  planColumnLabel,
   resetRowShiftAnimations,
   rowShiftUnits,
   type ExercisesByDay,
@@ -110,14 +106,10 @@ export type MesoEditorDaysStepProps = {
   onChangeActiveDay: (day: number) => void;
   exercisesByDay: ExercisesByDay;
   exercisesById: ExercisesById;
-  /** The cycle's own hybrid settings (GT-158) — what each plan chip shows. */
-  exerciseSettings?: ExerciseSettingsById;
   onChangeSets: (dayNumber: number, index: number, sets: number) => void;
   onRemoveExercise: (dayNumber: number, index: number) => void;
   onReorderExercises: (dayNumber: number, newOrder: readonly number[]) => void;
   onAddExercise: (dayNumber: number) => void;
-  /** A hybrid row's plan chip: opens its plan sheet (GT-92). */
-  onOpenPlan?: (dayNumber: number, index: number) => void;
 };
 
 export function MesoEditorDaysStep({
@@ -126,12 +118,10 @@ export function MesoEditorDaysStep({
   onChangeActiveDay,
   exercisesByDay,
   exercisesById,
-  exerciseSettings,
   onChangeSets,
   onRemoveExercise,
   onReorderExercises,
   onAddExercise,
-  onOpenPlan,
 }: MesoEditorDaysStepProps) {
   const dayNumbers = getDayNumbers(daysPerWeek);
   const activeDayExercises = getDayExercises(exercisesByDay, activeDay);
@@ -281,14 +271,13 @@ export function MesoEditorDaysStep({
             <View style={styles.columnHeaderHandleSpacer} />
             <View style={styles.columnHeaderDotSpacer} />
             <Text style={styles.columnHeaderExercise}>Exercise</Text>
-            <Text style={styles.columnHeaderSets}>{planColumnLabel(exercisesById, activeDayExercises)}</Text>
+            <Text style={styles.columnHeaderSets}>Sets</Text>
             <View style={styles.columnHeaderRemoveSpacer} />
           </View>
         )}
 
         {activeDayExercises.map((exercise, index) => {
           const title = exerciseTitle(exercisesById, exercise.exerciseId);
-          const plan = exercisePlan(exercisesById, exercise, exerciseSettings);
           const TypeIcon = exerciseTypeIcon(exercisesById, exercise.exerciseId);
           const isDragging = draggingIndex === index;
           const rowShift = rowShiftAnimations[index];
@@ -328,16 +317,9 @@ export function MesoEditorDaysStep({
                   {exerciseSubtitle(exercisesById, exercise.exerciseId)}
                 </Text>
               </View>
-              {plan ? (
-                <PlanChip
-                  value={plan.value}
-                  caption={plan.caption}
-                  accessibilityLabel={`${title} plan`}
-                  onPress={onOpenPlan && (() => onOpenPlan(activeDay, index))}
-                />
-              ) : hasSetsStepper(exercisesById, exercise.exerciseId) ? (
+              {hasSetsStepper(exercisesById, exercise.exerciseId) ? (
                 <Stepper
-                  label={`${title} sets`}
+                  label={`${title} ${stepperNoun(exercisesById, exercise.exerciseId)}`}
                   variant="inline"
                   value={exercise.sets}
                   onChange={(sets) => onChangeSets(activeDay, index, sets)}

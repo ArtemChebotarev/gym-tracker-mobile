@@ -1,6 +1,6 @@
 // StepperRow — one numeric setting as a list row: its name (and a line under it) on the left, a
-// `−  value  +` stepper on the right, a divider under it (canvas 4.2 / 4.3, "Default plan"; the
-// same row is the cycle editor's plan sheet, 7.3). Where `Stepper variant="field"` is a bordered
+// `−  value  +` stepper on the right, a divider under it (canvas 4.2 / 4.3; the Settings timers).
+// Where `Stepper variant="field"` is a bordered
 // card with a caption label — the form field of a mesocycle's length or days — this is a quiet row
 // among others and costs a third of the height.
 //
