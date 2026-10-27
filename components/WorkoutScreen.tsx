@@ -20,8 +20,8 @@
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
 // (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — active when
 // the model's `showFinish` says every exercise is `completed` or `skipped`; before that it is there
-// inactive, with a line on what to do first (`showFinishLocked`, GT-48), so a newcomer sees that
-// finishing exists. The moment it turns active the list scrolls down to it. Finishing needs no confirmation: the screen stays put and re-reads
+// inactive, with a line on what to do first (`showFinishLocked`, GT-48; worded for every type, as an
+// interval or a mobility block has no sets — GT-108), so a newcomer sees that finishing exists. The moment it turns active the list scrolls down to it. Finishing needs no confirmation: the screen stays put and re-reads
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
 // A read-only session shows a secondary `Next workout` button in the same place when the model has
@@ -365,7 +365,7 @@ export function WorkoutScreen({
           {model.showFinishLocked && (
             <View style={styles.finish}>
               <Button label="Finish workout" onPress={onFinish} disabled />
-              <Text style={styles.finishHint}>Log all sets first to finish the workout.</Text>
+              <Text style={styles.finishHint}>Log or skip every exercise to finish the workout.</Text>
             </View>
           )}
           {nextSessionId !== undefined && (
