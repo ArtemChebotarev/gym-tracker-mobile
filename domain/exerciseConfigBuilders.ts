@@ -44,7 +44,8 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
       return {
         type: 'interval',
         lever: 'rest',
-        stepSec: 10,
+        // The smallest step by default (Artem, 27.10.2026).
+        stepSec: 5,
       };
     case 'mobility':
       return { type: 'mobility' };

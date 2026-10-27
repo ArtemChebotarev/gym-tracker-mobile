@@ -45,11 +45,11 @@ describe('defaultExerciseConfig', () => {
     });
   });
 
-  test('give interval the rest lever and a 10 s step, no times — they come from history (GT-191)', () => {
+  test('give interval the rest lever and a 5 s step, no times — they come from history (GT-191)', () => {
     expect(defaultExerciseConfig('interval')).toEqual({
       type: 'interval',
       lever: 'rest',
-      stepSec: 10,
+      stepSec: 5,
     });
   });
 
