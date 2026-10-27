@@ -13,7 +13,9 @@
 //   and the next round. Skipped in the rest's Get ready, the next round starts at once: the Get
 //   ready was already running (Artem, 26.10.2026).
 // - End early: the round being worked is logged with the time it ran and counted as not done; a
-//   rest cut short is logged with the time it ran. Nothing is logged for the rounds after.
+//   rest cut short is logged with the time it ran and marked skipped, as Skip rest leaves it — the
+//   rest wasn't changed, only not taken, so next week keeps its plan (FR-8, GT-102). Nothing is
+//   logged for the rounds after.
 // - Every transition first catches up with `now` (`intervalTimerAt`), so an action after the app
 //   slept acts on the phase that is really running.
 //
@@ -264,8 +266,8 @@ export function skipIntervalRest(timer: IntervalTimer, now: number): IntervalTim
 /**
  * End early at `now` — after the user confirmed it (FR-6). The round being worked is logged with
  * the whole seconds it ran and counted as not done; one cut short before its first second is not
- * logged at all, as there is no time to log. A rest cut short is logged with the time it ran.
- * Nothing is logged for the rounds after. A timer already over is as it was.
+ * logged at all, as there is no time to log. A rest cut short is logged with the time it ran and
+ * marked skipped (GT-102). Nothing is logged for the rounds after. A timer already over is as it was.
  */
 export function endIntervalTimerEarly(timer: IntervalTimer, now: number): IntervalTimer {
   const current = intervalTimerAt(timer, now);
@@ -280,7 +282,7 @@ export function endIntervalTimerEarly(timer: IntervalTimer, now: number): Interv
       { roundNumber: round.roundNumber, workSec: ranSec, restSkipped: false, completed: false },
     ];
   } else if (phase.kind === 'rest') {
-    results = withRest(results, round.roundNumber, ranSec, false);
+    results = withRest(results, round.roundNumber, ranSec, true);
   }
   return finish({ ...current, results }, 'endedEarly');
 }
