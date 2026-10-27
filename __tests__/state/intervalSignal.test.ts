@@ -62,7 +62,7 @@ describe('intervalSignal', () => {
   it('plays the countdown clip from its start 3 s before the phase ends, once', async () => {
     const signal = loadSignal();
     await signal.keepAwakeForTimer();
-    signal.scheduleCountdown(Date.now() + 20_000);
+    signal.scheduleCountdown(Date.now() + 20_000, () => true);
 
     jest.advanceTimersByTime(16_999);
     await flush();
@@ -77,7 +77,7 @@ describe('intervalSignal', () => {
   it('picks up part way into the clip when less than 3 s are left', async () => {
     const signal = loadSignal();
     await signal.keepAwakeForTimer();
-    signal.scheduleCountdown(Date.now() + 2_000);
+    signal.scheduleCountdown(Date.now() + 2_000, () => true);
 
     jest.advanceTimersByTime(0);
     await flush();
@@ -88,7 +88,7 @@ describe('intervalSignal', () => {
   it('a cancelled countdown never sounds, and one already sounding stops', async () => {
     const signal = loadSignal();
     await signal.keepAwakeForTimer();
-    signal.scheduleCountdown(Date.now() + 10_000);
+    signal.scheduleCountdown(Date.now() + 10_000, () => true);
 
     signal.cancelCountdown();
     jest.advanceTimersByTime(60_000);
@@ -101,8 +101,8 @@ describe('intervalSignal', () => {
   it('a new phase replaces the countdown of the one before', async () => {
     const signal = loadSignal();
     await signal.keepAwakeForTimer();
-    signal.scheduleCountdown(Date.now() + 10_000);
-    signal.scheduleCountdown(Date.now() + 30_000);
+    signal.scheduleCountdown(Date.now() + 10_000, () => true);
+    signal.scheduleCountdown(Date.now() + 30_000, () => true);
 
     jest.advanceTimersByTime(10_000);
     await flush();
@@ -113,10 +113,25 @@ describe('intervalSignal', () => {
     expect(players().countdown.play).toHaveBeenCalledTimes(1);
   });
 
+  it('stays silent when the sound is off as the countdown comes due (GT-172)', async () => {
+    const signal = loadSignal();
+    await signal.keepAwakeForTimer();
+    let soundOn = true;
+    signal.scheduleCountdown(Date.now() + 20_000, () => soundOn);
+
+    // Switched off after the phase began: what counts is the switch when the countdown is due.
+    soundOn = false;
+    jest.advanceTimersByTime(20_000);
+    await flush();
+
+    expect(players().countdown.play).not.toHaveBeenCalled();
+    expect(players().silence.pause).not.toHaveBeenCalled();
+  });
+
   it('sets nothing off for a phase that is already over', async () => {
     const signal = loadSignal();
     await signal.keepAwakeForTimer();
-    signal.scheduleCountdown(Date.now() - 1);
+    signal.scheduleCountdown(Date.now() - 1, () => true);
 
     jest.advanceTimersByTime(60_000);
     await flush();
