@@ -43,6 +43,7 @@ const summary: MesoSummary = {
     { muscleGroup: 'back', sets: [12, 14, 15, 8] },
     { muscleGroup: 'hamstrings', sets: [2, 0, 4, 0] },
   ],
+  hybridTables: [],
 };
 
 function session(week: number, day: number, status: Session['status']): Session {
@@ -82,7 +83,11 @@ function detail(overrides: Partial<MesocycleDetail> = {}): MesocycleDetail {
   };
 }
 
-const stopped = { ...mesocycle, status: 'abandoned' as const, completedAt: '2026-08-20T12:00:00.000Z' };
+const stopped = {
+  ...mesocycle,
+  status: 'abandoned' as const,
+  completedAt: '2026-08-20T12:00:00.000Z',
+};
 
 function renderScreen(props: Partial<MesocycleDetailScreenProps> = {}) {
   const shown = props.detail === undefined ? detail() : props.detail;
@@ -150,6 +155,34 @@ describe('MesocycleDetailScreen', () => {
     expect(screen.toJSON()).toMatchSnapshot();
   });
 
+  test('draws a card per hybrid type under Strength, a row per exercise', () => {
+    renderScreen({
+      detail: detail({
+        summary: {
+          ...summary,
+          hybridTables: [
+            {
+              type: 'interval',
+              rows: [
+                {
+                  exerciseId: 'bag',
+                  name: 'Heavy bag',
+                  muscleGroup: 'fullBody',
+                  counts: [3, 2, 0, 3],
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    });
+
+    expect(screen.getByText('Strength')).toBeTruthy();
+    expect(screen.getByText('Timed work')).toBeTruthy();
+    expect(screen.getByTestId('weekly-interval')).toBeTruthy();
+    expect(screen.getByText('Heavy bag')).toBeTruthy();
+  });
+
   test('a block without a single set says so instead of the card', () => {
     renderScreen({
       detail: detail({
@@ -159,13 +192,14 @@ describe('MesocycleDetailScreen', () => {
           strengthSets: 0,
           weeks: { value: 1, total: 4 },
           weeklySets: [],
+          hybridTables: [],
         },
         weekNumber: 1,
       }),
     });
 
     expect(screen.getByText('No sets logged in this cycle')).toBeTruthy();
-    expect(screen.queryByTestId('weekly-sets')).toBeNull();
+    expect(screen.queryByTestId('weekly-strength')).toBeNull();
   });
 
   test('never shows tonnage', () => {

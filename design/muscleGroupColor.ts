@@ -109,6 +109,17 @@ export function getCategoryVolumeFill(category: MuscleGroupColorCategory, share:
   return blendOver(COLORS['surface/card'], CATEGORY_COLOR[category], min + (max - min) * clamped);
 }
 
+/**
+ * The same scale for a row with no category — a hybrid exercise without a muscle group (GT-113):
+ * the secondary text color, so the cell reads as filled without claiming any group's color.
+ */
+export function getNeutralVolumeFill(share: number): string {
+  const min = OPACITY['opacity/volume-min'];
+  const max = OPACITY['opacity/volume-max'];
+  const clamped = Math.max(0, Math.min(1, share));
+  return blendOver(COLORS['surface/card'], COLORS['text/secondary'], min + (max - min) * clamped);
+}
+
 // --- color math, private to this module -------------------------------------------------
 
 type Rgb = [number, number, number];

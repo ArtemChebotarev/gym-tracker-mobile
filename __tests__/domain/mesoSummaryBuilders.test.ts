@@ -1,6 +1,6 @@
 import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
-import type { Session, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesoSessionLog } from '@domain/mesoSummary';
 import { buildMesoSummary } from '@domain/mesoSummaryBuilders';
@@ -18,12 +18,20 @@ const mesocycle: Mesocycle = {
   progressionSettings: defaultProgressionSettings,
 };
 
-const exercises: Pick<Exercise, 'id' | 'muscleGroup' | 'type'>[] = [
-  { id: toExerciseId('bench'), muscleGroup: 'chest' },
-  { id: toExerciseId('fly'), muscleGroup: 'chest' },
-  { id: toExerciseId('squat'), muscleGroup: 'quads' },
-  { id: toExerciseId('row'), muscleGroup: 'back' },
-  { id: toExerciseId('hamstring-stretch'), muscleGroup: 'hamstrings', type: 'mobility' },
+const exercises: Pick<Exercise, 'id' | 'name' | 'muscleGroup' | 'type'>[] = [
+  { id: toExerciseId('bench'), name: 'Bench press', muscleGroup: 'chest' },
+  { id: toExerciseId('fly'), name: 'Fly', muscleGroup: 'chest' },
+  { id: toExerciseId('squat'), name: 'Squat', muscleGroup: 'quads' },
+  { id: toExerciseId('row'), name: 'Row', muscleGroup: 'back' },
+  {
+    id: toExerciseId('hamstring-stretch'),
+    name: 'Hamstring stretch',
+    muscleGroup: 'hamstrings',
+    type: 'mobility',
+  },
+  { id: toExerciseId('slam'), name: 'Medball slam', muscleGroup: 'fullBody', type: 'power' },
+  { id: toExerciseId('throw'), name: 'Medball throw', muscleGroup: 'chest', type: 'power' },
+  { id: toExerciseId('bag'), name: 'Heavy bag', muscleGroup: 'fullBody', type: 'interval' },
 ];
 
 function session(week: number, day: number, overrides: Partial<Session> = {}): Session {
@@ -54,8 +62,24 @@ function sets(sessionId: string, exerciseId: string, count: number): SetLog[] {
   }));
 }
 
+/** `count` rounds of `exerciseId`, logged in the session `sessionId`. */
+function rounds(sessionId: string, exerciseId: string, count: number): RoundLog[] {
+  return Array.from({ length: count }, (_, index) => ({
+    ...STAMPS,
+    id: `${sessionId}-${exerciseId}-round-${index + 1}`,
+    sessionExerciseId: `${sessionId}-${exerciseId}`,
+    exerciseId,
+    roundNumber: index + 1,
+    workSec: 120,
+    restSec: 60,
+    restSkipped: false,
+    completed: true,
+    completedAt: '2026-09-01T09:00:00.000Z',
+  }));
+}
+
 function logged(target: Session, ...setLogs: SetLog[][]): MesoSessionLog {
-  return { session: target, setLogs: setLogs.flat() };
+  return { session: target, setLogs: setLogs.flat(), roundLogs: [] };
 }
 
 describe('buildMesoSummary', () => {
@@ -84,10 +108,11 @@ describe('buildMesoSummary', () => {
         { muscleGroup: 'back', sets: [3, 1, 0, 0] },
         { muscleGroup: 'quads', sets: [2, 0, 0, 0] },
       ],
+      hybridTables: [],
     });
   });
 
-  test("Weeks is the week the block is on, not the weeks generation has run ahead into", () => {
+  test('Weeks is the week the block is on, not the weeks generation has run ahead into', () => {
     // Artem's check on 130: W1 Day 1 done, which generated W2 Day 1; W1 Day 2 is next. The
     // subtitle says `Week 1 of 4`, and so must the tile — not `2 / 4`.
     const summary = buildMesoSummary(
@@ -160,6 +185,7 @@ describe('buildMesoSummary', () => {
       strengthSets: 0,
       weeks: { value: 1, total: 4 },
       weeklySets: [],
+      hybridTables: [],
     });
   });
 
@@ -169,6 +195,7 @@ describe('buildMesoSummary', () => {
       strengthSets: 0,
       weeks: { value: 0, total: 4 },
       weeklySets: [],
+      hybridTables: [],
     });
   });
 
@@ -184,16 +211,93 @@ describe('buildMesoSummary', () => {
     expect(summary.weeklySets).toEqual([{ muscleGroup: 'back', sets: [2, 0, 0, 0] }]);
   });
 
-  test('a mobility exercise counts toward neither the sets nor any group (GT-106)', () => {
+  test('a hybrid exercise counts toward neither the sets nor any group (GT-106, GT-113)', () => {
     const summary = buildMesoSummary(
       mesocycle,
-      [logged(session(1, 1), sets('w1d1', 'bench', 3), sets('w1d1', 'hamstring-stretch', 1))],
+      [
+        {
+          session: session(1, 1),
+          setLogs: [...sets('w1d1', 'bench', 3), ...sets('w1d1', 'throw', 3)],
+          roundLogs: [...rounds('w1d1', 'bag', 3), ...rounds('w1d1', 'hamstring-stretch', 1)],
+        },
+      ],
       exercises,
     );
 
     expect(summary.strengthSets).toBe(3);
     expect(summary.weeklySets).toEqual([{ muscleGroup: 'chest', sets: [3, 0, 0, 0] }]);
     expect(summary.workouts.value).toBe(1);
+  });
+
+  test('gives each hybrid type a table, a row per exercise counting what it logs by week', () => {
+    const summary = buildMesoSummary(
+      mesocycle,
+      [
+        {
+          session: session(1, 1),
+          setLogs: [...sets('w1d1', 'throw', 3), ...sets('w1d1', 'slam', 2)],
+          roundLogs: [...rounds('w1d1', 'bag', 3), ...rounds('w1d1', 'hamstring-stretch', 1)],
+        },
+        {
+          session: session(2, 1),
+          setLogs: sets('w2d1', 'slam', 4),
+          roundLogs: [...rounds('w2d1', 'bag', 2), ...rounds('w2d1', 'hamstring-stretch', 1)],
+        },
+        {
+          session: session(2, 2),
+          setLogs: [],
+          roundLogs: rounds('w2d2', 'hamstring-stretch', 1),
+        },
+      ],
+      exercises,
+    );
+
+    expect(summary.hybridTables).toEqual([
+      {
+        type: 'power',
+        rows: [
+          {
+            exerciseId: 'slam',
+            name: 'Medball slam',
+            muscleGroup: 'fullBody',
+            counts: [2, 4, 0, 0],
+          },
+          {
+            exerciseId: 'throw',
+            name: 'Medball throw',
+            muscleGroup: 'chest',
+            counts: [3, 0, 0, 0],
+          },
+        ],
+      },
+      {
+        type: 'interval',
+        rows: [
+          { exerciseId: 'bag', name: 'Heavy bag', muscleGroup: 'fullBody', counts: [3, 2, 0, 0] },
+        ],
+      },
+      {
+        type: 'mobility',
+        rows: [
+          {
+            exerciseId: 'hamstring-stretch',
+            name: 'Hamstring stretch',
+            muscleGroup: 'hamstrings',
+            counts: [1, 2, 0, 0],
+          },
+        ],
+      },
+    ]);
+  });
+
+  test('leaves out a type with nothing logged in the block', () => {
+    const summary = buildMesoSummary(
+      mesocycle,
+      [logged(session(1, 1), sets('w1d1', 'bench', 3), sets('w1d1', 'slam', 2))],
+      exercises,
+    );
+
+    expect(summary.hybridTables.map((table) => table.type)).toEqual(['power']);
   });
 
   test('ignores sessions of other mesocycles and outside the block', () => {
@@ -212,6 +316,7 @@ describe('buildMesoSummary', () => {
       strengthSets: 1,
       weeks: { value: 1, total: 4 },
       weeklySets: [{ muscleGroup: 'chest', sets: [1, 0, 0, 0] }],
+      hybridTables: [],
     });
   });
 });
