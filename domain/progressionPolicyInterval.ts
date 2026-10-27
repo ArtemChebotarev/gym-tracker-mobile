@@ -6,17 +6,20 @@
 //   the plan repeats (GT-100). With no lever given, nothing is recommended (03, "Не уверен — не
 //   рекомендуй") and the plan repeats.
 // - Deload day: the plan repeats, with no step, until the interval's own deload (GT-105).
-// - Rule 6 and a copied block's start: rows with no times — the card shows the cycle's plan for
-//   them. A round's times are a plan, not a result history could price.
+// - Rule 6 and a copied block's start: the rounds of the reference the resolver found for the slot
+//   (day + exercise), as they ended — round N from round N, past its last from its last — and no
+//   lever step: a round's times are a plan, not a result to add to (10.1 FR-9; GT-185). With no
+//   reference, rounds with no times, picked on the card (GT-187).
 
-import type { SetTarget } from '@domain/execution';
 import { stepIntervalLever } from '@domain/progressionLeverInterval';
-import type { ProgressionPolicy } from '@domain/progressionPolicy';
+import type { ProgressionPolicy, ReferenceTargetsInput } from '@domain/progressionPolicy';
 import { targetRir } from '@domain/progressionRir';
 import {
   allIntervalRoundsDone,
   inheritedIntervalRounds,
   intervalLogsByRound,
+  referenceRounds,
+  roundsFromReference,
 } from '@domain/progressionRoundsInterval';
 
 export const intervalPolicy: ProgressionPolicy = {
@@ -51,10 +54,15 @@ export const intervalPolicy: ProgressionPolicy = {
       ),
       targetRir: settings.deloadRir,
     })),
-  prescribeFromReference: ({ rowCount }) => untimedRounds(rowCount),
-  prescribeBlockStart: ({ rowCount }) => untimedRounds(rowCount),
+  prescribeFromReference: roundsForSlot,
+  prescribeBlockStart: roundsForSlot,
 };
 
-function untimedRounds(rowCount: number): SetTarget[] {
-  return Array.from({ length: rowCount }, (_, index) => ({ setNumber: index + 1 }));
+/**
+ * `rowCount` rounds from what the resolver found. A target and an estimate are read alike: an
+ * estimate differs from a target by the +1 it doesn't get, and a round never gets one.
+ */
+function roundsForSlot({ resolution, rowCount }: ReferenceTargetsInput) {
+  const reference = resolution.kind === 'none' ? [] : referenceRounds(resolution.reference);
+  return roundsFromReference(reference, rowCount);
 }

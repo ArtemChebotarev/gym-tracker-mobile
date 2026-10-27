@@ -87,6 +87,7 @@ export class SqliteSetLogRepository implements SetLogRepository {
         performedAt: performedAt(performance),
         setLogs: performance.setLogs,
         roundLogs: performance.roundLogs,
+        roundTargets: performance.roundTargets,
       }))
       .filter((performance) => performance.performedAt >= since)
       .sort((a, b) => b.performedAt.localeCompare(a.performedAt));

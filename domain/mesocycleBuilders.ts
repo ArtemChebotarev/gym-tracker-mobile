@@ -27,7 +27,7 @@ import { materializeWeekPlan, type SessionWithExercises } from '@domain/planConv
 import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
-import { materializeSetTargets, rowsAreSets } from '@domain/weekPlanMaterializers';
+import { materializeSetTargets, pricedFromHistory } from '@domain/weekPlanMaterializers';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -234,9 +234,9 @@ export function weekPlanSlotKey(dayNumber: number, exerciseId: string): string {
  * own `sets` decides how many rows it prices.
  *
  * Only a `copyWeek` block has any: the user already trained these exercises, so week 1's reps and
- * weights are computed from each one's reference performance (04 · Meso Creation Flows, "Расчёт
- * startReps"). Flow A and B hand over nothing and their rows show `N RIR` instead — as does a
- * copied exercise with no reference to price it from, which is simply a slot missing from the map.
+ * weights — and an interval's work and rest (GT-185) — are computed from each one's reference
+ * performance (04 · Meso Creation Flows, "Расчёт startReps"). Flow A and B hand over nothing and
+ * their rows show `N RIR` instead — as does a copied exercise with no reference to price it from, which is simply a slot missing from the map.
  *
  * The lookup behind it is asynchronous and belongs to the use case (`startMesocycle`, task 122),
  * the same split as rule 6 in 047/048; what arrives here is already decided.
@@ -263,11 +263,12 @@ export type MesocycleStart = {
  * next week is generated when the same day of this one is finished.
  *
  * Each exercise's rows come from the materializer of its type (GT-160,
- * `domain/weekPlanMaterializers.ts`): sets for strength and power, the cycle's rounds — work and
- * rest — for an interval one, one block of the cycle's length for a mobility one. The type and the
- * library's values come from `exercisesById`; the times are the cycle's own copy
- * (`exerciseSettings`), the library's only where the cycle has none. An exercise `exercisesById`
- * lacks is materialized as strength. Only rows that are sets are priced by `weekOneTargets`.
+ * `domain/weekPlanMaterializers.ts`): sets for strength and power, the cycle's rounds for an
+ * interval one, one block for a mobility one — with no times: those are history's (10.1 FR-9). The
+ * type and the round count come from `exercisesById` and the cycle's settings (`exerciseSettings`,
+ * the library's where the cycle has none). An exercise `exercisesById` lacks is materialized as
+ * strength. `weekOneTargets` prices sets and an interval's rounds (GT-185), not a mobility block
+ * (`pricedFromHistory`).
  *
  * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
  * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
@@ -307,7 +308,7 @@ export function buildMesocycleStart(
     session,
     exercises: renumbered(
       exercises.map((exercise) => {
-        const priced = rowsAreSets(typeOf(exercise.exerciseId))
+        const priced = pricedFromHistory(typeOf(exercise.exerciseId))
           ? weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId))
           : undefined;
         return priced === undefined

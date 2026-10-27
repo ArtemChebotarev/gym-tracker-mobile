@@ -60,13 +60,14 @@ test('a mixed cycle goes through Confirm → Start and week 1 has every type’s
 
   expect(rows.get(BENCH)?.setTargets).toHaveLength(2);
   expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(2);
+  // Flow A has no history: the cycle's four rounds, with no times — picked on the card (GT-187).
   expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([
-    { setNumber: 1, targetWorkSec: 120, targetRestSec: 30 },
-    { setNumber: 2, targetWorkSec: 120, targetRestSec: 30 },
-    { setNumber: 3, targetWorkSec: 120, targetRestSec: 30 },
-    { setNumber: 4, targetWorkSec: 120, targetRestSec: 30 },
+    { setNumber: 1 },
+    { setNumber: 2 },
+    { setNumber: 3 },
+    { setNumber: 4 },
   ]);
-  expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+  expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1 }]);
   const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));
   expect(rirs.size).toBe(1);
 });

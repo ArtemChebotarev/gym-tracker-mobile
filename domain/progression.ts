@@ -72,6 +72,12 @@ export type ExercisePerformance = {
    * reference for them.
    */
   roundLogs: RoundLog[];
+  /**
+   * The rounds as planned in it (`SessionExercise.setTargets`) — empty when it has no rounds logged.
+   * A round hands on its plan where the log isn't a new plan: a skipped rest, a round ended early
+   * (`roundTimesOf`), so a round reference needs both (GT-185).
+   */
+  roundTargets: SetTarget[];
 };
 
 /** A training week: a (mesocycle, week number) pair, not a calendar week. */

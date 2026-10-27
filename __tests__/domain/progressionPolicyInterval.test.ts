@@ -9,7 +9,11 @@ import {
 } from '@domain/progressionLeverInterval';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import { intervalPolicy } from '@domain/progressionPolicyInterval';
-import { allIntervalRoundsDone as allRoundsDone } from '@domain/progressionRoundsInterval';
+import {
+  allIntervalRoundsDone as allRoundsDone,
+  referenceRounds,
+  roundsFromReference,
+} from '@domain/progressionRoundsInterval';
 import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -230,7 +234,7 @@ describe('intervalPolicy', () => {
     expect(intervalPolicy.sourceFacts(undefined)).toEqual({});
   });
 
-  test('rule 6 and a copied block’s start: rows with no times, the cycle’s plan shows', () => {
+  test('rule 6 and a copied block’s start with no reference: rounds with no times (GT-187)', () => {
     const input = {
       resolution: { kind: 'none' } as const,
       rowCount: 2,
@@ -239,5 +243,97 @@ describe('intervalPolicy', () => {
     const untimed = [{ setNumber: 1 }, { setNumber: 2 }];
     expect(intervalPolicy.prescribeFromReference({ ...input, weekRir: 2 })).toEqual(untimed);
     expect(intervalPolicy.prescribeBlockStart({ ...input, startRir: 3 })).toEqual(untimed);
+  });
+});
+
+// GT-185 (10.1 FR-9): what a past performance of rounds hands to a slot that takes it as reference.
+describe('rounds from a reference (GT-185)', () => {
+  function log(roundNumber: number, overrides: Partial<RoundLog> = {}): RoundLog {
+    return {
+      ...STAMPS,
+      id: `round-${roundNumber}`,
+      sessionExerciseId: 'se-past',
+      exerciseId: 'heavy-bag',
+      roundNumber,
+      workSec: 135,
+      restSec: 30,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-10T08:00:00.000Z',
+      ...overrides,
+    };
+  }
+
+  test('each round as it ended: a skipped rest and a round ended early keep their plan', () => {
+    expect(
+      referenceRounds({
+        roundTargets: rounds,
+        roundLogs: [log(2, { workSec: 40, completed: false }), log(1, { restSkipped: true })],
+      }),
+    ).toEqual([
+      { targetWorkSec: 135, targetRestSec: 60 },
+      { targetWorkSec: 120, targetRestSec: 30 },
+      // Not logged: as planned.
+      { targetWorkSec: 120, targetRestSec: 60 },
+    ]);
+  });
+
+  test('a round logged that its plan doesn’t have hands on its log', () => {
+    expect(referenceRounds({ roundTargets: [], roundLogs: [log(1)] })).toEqual([
+      { targetWorkSec: 135, targetRestSec: 30 },
+    ]);
+  });
+
+  test('round N from round N; past the last, the last; no times, none', () => {
+    const reference = [
+      { targetWorkSec: 90, targetRestSec: 30 },
+      { targetWorkSec: 95, targetRestSec: 25 },
+    ];
+    expect(roundsFromReference(reference, 3)).toEqual([
+      { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
+      { setNumber: 2, targetWorkSec: 95, targetRestSec: 25 },
+      { setNumber: 3, targetWorkSec: 95, targetRestSec: 25 },
+    ]);
+    expect(roundsFromReference(reference, 1)).toEqual([
+      { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
+    ]);
+    // A round with a time missing can't be one to copy.
+    expect(roundsFromReference([{ targetWorkSec: 90 }], 2)).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
+  });
+
+  test('the policy reads a target and an estimate alike, with no lever step', () => {
+    const reference = {
+      mesoId: 'meso',
+      weekNumber: 1,
+      dayNumber: 1,
+      isDeload: false,
+      targetRir: 2,
+      performedAt: '2026-09-10T08:00:00.000Z',
+      setLogs: [],
+      roundLogs: [log(1), log(2)],
+      roundTargets: rounds.slice(0, 2),
+    };
+    const input = { rowCount: 2, settings: defaultProgressionSettings };
+    const expected = [
+      { setNumber: 1, targetWorkSec: 135, targetRestSec: 30 },
+      { setNumber: 2, targetWorkSec: 135, targetRestSec: 30 },
+    ];
+    expect(
+      intervalPolicy.prescribeFromReference({
+        ...input,
+        resolution: { kind: 'target', reference },
+        weekRir: 2,
+      }),
+    ).toEqual(expected);
+    expect(
+      intervalPolicy.prescribeBlockStart({
+        ...input,
+        resolution: { kind: 'estimate', reference, reason: 'other_slot', source: 'other_block' },
+        startRir: 3,
+      }),
+    ).toEqual(expected);
   });
 });

@@ -1,4 +1,4 @@
-import type { RoundLog, Session, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SetLog, SetTarget } from '@domain/execution';
 import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import { and, asc, eq, inArray, ne } from 'drizzle-orm';
@@ -33,6 +33,11 @@ export type StoredExercisePerformance = {
   setLogs: SetLog[];
   /** Sorted by `roundNumber`. */
   roundLogs: RoundLog[];
+  /**
+   * The session exercise's planned rounds (`setTargets`), read with its rounds — empty when it has
+   * none logged. A round reference reads its plan beside its log (GT-185).
+   */
+  roundTargets: SetTarget[];
 };
 
 /**
@@ -70,7 +75,12 @@ export async function readExercisePerformances(
   // performance is keyed by it either way and nothing here assumes they don't.
   const roundRows = await runQuery(() =>
     db
-      .select({ roundLog: roundLogs, session: sessions, targetRir: sessionExercises.targetRir })
+      .select({
+        roundLog: roundLogs,
+        session: sessions,
+        targetRir: sessionExercises.targetRir,
+        setTargets: sessionExercises.setTargets,
+      })
       .from(roundLogs)
       .innerJoin(sessionExercises, eq(roundLogs.sessionExerciseId, sessionExercises.id))
       .innerJoin(sessions, eq(sessionExercises.sessionId, sessions.id))
@@ -95,6 +105,7 @@ export async function readExercisePerformances(
       targetRir,
       setLogs: [],
       roundLogs: [],
+      roundTargets: [],
     };
     performances.set(sessionExerciseId, existing);
     return existing;
@@ -102,10 +113,10 @@ export async function readExercisePerformances(
   for (const { setLog, session, targetRir } of rows) {
     performanceOf(setLog.sessionExerciseId, session, targetRir).setLogs.push(rowToSetLog(setLog));
   }
-  for (const { roundLog, session, targetRir } of roundRows) {
-    performanceOf(roundLog.sessionExerciseId, session, targetRir).roundLogs.push(
-      rowToRoundLog(roundLog),
-    );
+  for (const { roundLog, session, targetRir, setTargets } of roundRows) {
+    const performance = performanceOf(roundLog.sessionExerciseId, session, targetRir);
+    performance.roundLogs.push(rowToRoundLog(roundLog));
+    performance.roundTargets = setTargets;
   }
   return [...performances.values()];
 }
