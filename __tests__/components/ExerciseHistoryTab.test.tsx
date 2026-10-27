@@ -2,10 +2,7 @@ import { render, screen } from '@testing-library/react-native';
 
 import type { SetLog } from '@domain/execution';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
-import {
-  ExerciseHistoryTab,
-  type ExerciseHistoryTabProps,
-} from '@components/ExerciseHistoryTab';
+import { ExerciseHistoryTab, type ExerciseHistoryTabProps } from '@components/ExerciseHistoryTab';
 import { STAMPS } from '../fixtures/stamps';
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
@@ -128,5 +125,40 @@ describe('ExerciseHistoryTab', () => {
 
     expect(screen.getByText('No finished workouts yet')).toBeTruthy();
     expect(screen.getByText('A workout appears here once you finish it.')).toBeTruthy();
+  });
+  test('lists a power exercise by week, its best set and what changed', () => {
+    renderTab({
+      powerLoad: 'level',
+      groups: [
+        {
+          mesoId: 'meso-1',
+          name: 'Upper/Lower',
+          sessions: [
+            {
+              id: 'log-2',
+              weekNumber: 2,
+              dayNumber: 1,
+              completedAt: '2026-08-17T12:00:00.000Z',
+              setLogs: [setLog({ id: 'log-2', weight: 2, reps: 3 })],
+            },
+            {
+              id: 'log-1',
+              weekNumber: 1,
+              dayNumber: 1,
+              completedAt: '2026-08-10T12:00:00.000Z',
+              setLogs: [setLog({ weight: 1, reps: 6 })],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(screen.getByText('Best set each week')).toBeTruthy();
+    expect(screen.getByText('Week 2')).toBeTruthy();
+    expect(screen.getByText(/Level 2 × 3/)).toBeTruthy();
+    expect(screen.getByText(' · Higher level')).toBeTruthy();
+    expect(screen.getByText(/Level 1 × 6/)).toBeTruthy();
+    expect(screen.getByText(' · Top of range')).toBeTruthy();
+    expect(screen.queryByText('Week 2 · Day 1')).toBeNull();
   });
 });

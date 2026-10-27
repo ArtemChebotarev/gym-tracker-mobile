@@ -1,6 +1,10 @@
 import type { Session, SetLog } from '@domain/execution';
 import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
-import { buildExerciseHistory } from '@domain/exerciseHistoryBuilders';
+import {
+  buildExerciseHistory,
+  buildPowerWeeklyHistory,
+  findBestSet,
+} from '@domain/exerciseHistoryBuilders';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -139,5 +143,99 @@ describe('buildExerciseHistory', () => {
     ]);
 
     expect(groups[0]?.sessions.map((entry) => entry.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('findBestSet', () => {
+  test('takes the heaviest set, ties broken by reps', () => {
+    const best = findBestSet([
+      setLog({ id: 'a', weight: 6, reps: 6 }),
+      setLog({ id: 'b', weight: 8, reps: 3 }),
+      setLog({ id: 'c', weight: 8, reps: 4 }),
+    ]);
+
+    expect(best?.id).toBe('c');
+  });
+
+  test('is null for no sets', () => {
+    expect(findBestSet([])).toBeNull();
+  });
+});
+
+describe('buildPowerWeeklyHistory', () => {
+  function powerHistory(load: 'weight' | 'level' | 'none' = 'weight') {
+    return buildPowerWeeklyHistory(
+      buildExerciseHistory([
+        performance(UPPER, { id: 'w1', weekNumber: 1, completedAt: '2026-08-03T12:00:00.000Z' }, [
+          { id: 'w1-1', weight: 6, reps: 4 },
+          { id: 'w1-2', setNumber: 2, weight: 6, reps: 3 },
+        ]),
+        // Two days of week 2: one row, the best across both.
+        performance(
+          UPPER,
+          { id: 'w2a', weekNumber: 2, dayNumber: 1, completedAt: '2026-08-10T12:00:00.000Z' },
+          [{ id: 'w2a-1', weight: 6, reps: 6 }],
+        ),
+        performance(
+          UPPER,
+          { id: 'w2b', weekNumber: 2, dayNumber: 2, completedAt: '2026-08-12T12:00:00.000Z' },
+          [{ id: 'w2b-1', weight: 6, reps: 7 }],
+        ),
+        performance(
+          FULL_BODY,
+          { id: 'n1', weekNumber: 1, completedAt: '2026-09-07T12:00:00.000Z' },
+          [{ id: 'n1-1', weight: 8, reps: 3 }],
+        ),
+        performance(
+          FULL_BODY,
+          { id: 'n2', weekNumber: 2, completedAt: '2026-09-14T12:00:00.000Z' },
+          [{ id: 'n2-1', weight: 6, reps: 7 }],
+        ),
+      ]),
+      load,
+    );
+  }
+
+  test('keeps the mesocycle sections, each with its weeks newest first', () => {
+    const history = powerHistory();
+
+    expect(history.map((section) => section.name)).toEqual(['Full body', 'Upper/Lower']);
+    expect(history[1]?.weeks.map((week) => week.weekNumber)).toEqual([2, 1]);
+    expect(history[1]?.weeks.map((week) => week.id)).toEqual(['meso-1:2', 'meso-1:1']);
+  });
+
+  test('takes the best set of a week over every session of it', () => {
+    const week2 = powerHistory()[1]?.weeks[0];
+
+    expect(week2?.bestSet.id).toBe('w2b-1');
+  });
+
+  test('marks a week where every set reached the top of the corridor', () => {
+    const upper = powerHistory()[1]?.weeks;
+
+    expect(upper?.map((week) => week.isAtTopOfRange)).toEqual([true, false]);
+  });
+
+  test('marks the load going up or down against the week before, across a mesocycle', () => {
+    const history = powerHistory();
+
+    expect(history[1]?.weeks.map((week) => week.loadChange)).toEqual([undefined, undefined]);
+    expect(history[0]?.weeks.map((week) => week.loadChange)).toEqual(['down', 'up']);
+  });
+
+  test('with no load of its own, goes by reps and never shows a load change', () => {
+    const history = powerHistory('none');
+
+    expect(history[0]?.weeks[1]?.bestSet.id).toBe('n1-1');
+    expect(history.flatMap((section) => section.weeks.map((week) => week.loadChange))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  test('is empty when there is no history', () => {
+    expect(buildPowerWeeklyHistory([], 'weight')).toEqual([]);
   });
 });

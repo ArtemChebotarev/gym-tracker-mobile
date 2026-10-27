@@ -1,6 +1,8 @@
 // Pure, non-JSX logic behind ExerciseDetailScreen.tsx — see the code-style skill.
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, Exercise } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
+import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { SetLog } from '@domain/execution';
 import type { ExerciseBestSet, ExerciseLastSession } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
@@ -57,4 +59,19 @@ export function formatSetValue(setLog: SetLog, equipment?: Equipment): string {
  */
 export function formatSetRirTail(setLog: SetLog): string | undefined {
   return setLog.rir === undefined ? undefined : ` · ${formatRir(setLog.rir)}`;
+}
+
+/**
+ * The load a power exercise's History tab reads its weeks in (10.1 FR-12), `undefined` for every
+ * other type — they keep the list of sessions. An exercise stored without a config reads as the
+ * type's default, as everywhere else.
+ */
+export function historyPowerLoad(
+  exercise: Pick<Exercise, 'type' | 'config'>,
+): PowerLoad | undefined {
+  if (exerciseTypeOf(exercise) !== 'power') {
+    return undefined;
+  }
+  const config = exercise.config ?? defaultExerciseConfig('power');
+  return config?.type === 'power' ? config.load : undefined;
 }

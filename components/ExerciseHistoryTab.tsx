@@ -9,6 +9,8 @@
 // what was already done, the same rule the Overview blocks follow. With nothing finished yet the
 // tab says so instead of staying blank.
 //
+// A power exercise reads by week instead — PowerHistoryList (10.1 FR-12, GT-110).
+//
 // Virtualized (SectionList), unlike the Overview tab's ScrollView: Overview shows three sessions
 // at most, this one grows with every block trained.
 //
@@ -23,6 +25,7 @@
 import { SectionList, Text } from 'react-native';
 
 import type { Equipment } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { ExerciseHistoryMesocycle, ExerciseHistorySession } from '@domain/exerciseHistory';
 import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 
@@ -36,6 +39,7 @@ import {
   type ExerciseHistorySection,
 } from './ExerciseHistoryTabLogic';
 import { styles } from './ExerciseHistoryTabStyles';
+import { PowerHistoryList } from './PowerHistoryList';
 
 const BLEED = listBleed();
 
@@ -45,9 +49,16 @@ export type ExerciseHistoryTabProps = {
   isPending: boolean;
   /** The exercise's equipment — a `bodyweight-weighted` set reads back split (task 105). */
   equipment?: Equipment;
+  /** Set for a power exercise: its history goes by week, not by session (10.1 FR-12, GT-110). */
+  powerLoad?: PowerLoad;
 };
 
-export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHistoryTabProps) {
+export function ExerciseHistoryTab({
+  groups,
+  isPending,
+  equipment,
+  powerLoad,
+}: ExerciseHistoryTabProps) {
   if (isPending || groups === undefined) {
     return <Text style={styles.status}>Loading…</Text>;
   }
@@ -61,6 +72,10 @@ export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHis
         description="A workout appears here once you finish it."
       />
     );
+  }
+
+  if (powerLoad !== undefined) {
+    return <PowerHistoryList groups={groups} load={powerLoad} />;
   }
 
   return (

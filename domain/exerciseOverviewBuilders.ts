@@ -4,15 +4,14 @@
 // `lastDoneAt` into `3 d`).
 
 import type { Exercise } from './catalog';
-import type { SetLog } from './execution';
 import type {
-  ExerciseBestSet,
   ExerciseLastSession,
   ExerciseOverview,
   ExerciseOverviewAction,
   ExerciseOverviewStats,
   ExercisePerformance,
 } from './exerciseOverview';
+import { findBestSet } from './exerciseHistoryBuilders';
 
 /**
  * The Overview model for `exercise` over every performance of it, in any order.
@@ -54,7 +53,7 @@ function buildExerciseOverviewStats(
   }
 
   return {
-    bestSet,
+    bestSet: { weight: bestSet.weight, reps: bestSet.reps },
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
     lastDoneAt: setLogs.reduce(
       (latest, log) => (log.completedAt > latest ? log.completedAt : latest),
@@ -84,24 +83,6 @@ function toLastSession(performance: ExercisePerformance): ExerciseLastSession {
     completedAt: completionOf(performance),
     setLogs: [...performance.setLogs].sort((a, b) => a.setNumber - b.setNumber),
   };
-}
-
-/**
- * The heaviest set: maximum `weight`, ties broken by `reps` (08.6). On a `bodyweight-weighted`
- * exercise `weight` is the added weight (task 105) — which is the axis that progresses, so it is
- * also the one this compares on.
- */
-function findBestSet(setLogs: readonly SetLog[]): ExerciseBestSet | null {
-  const best = setLogs.reduce<SetLog | null>((current, log) => {
-    if (!current) {
-      return log;
-    }
-    if (log.weight > current.weight) {
-      return log;
-    }
-    return log.weight === current.weight && log.reps > current.reps ? log : current;
-  }, null);
-  return best ? { weight: best.weight, reps: best.reps } : null;
 }
 
 function completionOf(performance: ExercisePerformance): string {

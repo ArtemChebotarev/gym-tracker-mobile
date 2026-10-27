@@ -55,6 +55,7 @@ import {
   formatSetLabel,
   formatSetRirTail,
   formatSetValue,
+  historyPowerLoad,
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
@@ -169,6 +170,7 @@ export function ExerciseDetailScreen({
           groups={history}
           isPending={isHistoryPending}
           equipment={exercise.equipment}
+          powerLoad={historyPowerLoad(exercise)}
         />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>

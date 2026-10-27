@@ -1,5 +1,6 @@
 import type { SetLog } from '@domain/execution';
 import {
+  historyPowerLoad,
   formatBestSet,
   formatLastDone,
   formatLastSessionMeta,
@@ -76,5 +77,22 @@ describe('a logged set row', () => {
     expect(formatSetValue(setLog({ weight: 5, bodyWeight: 83 }), 'bodyweight-weighted')).toBe(
       '83 (+5) kg × 8',
     );
+  });
+});
+
+describe('historyPowerLoad', () => {
+  test('is the load of a power exercise, its default when it has no config', () => {
+    expect(
+      historyPowerLoad({
+        type: 'power',
+        config: { type: 'power', load: 'level', noHeavierAvailable: false },
+      }),
+    ).toBe('level');
+    expect(historyPowerLoad({ type: 'power' })).toBe('weight');
+  });
+
+  test('is absent for every other type', () => {
+    expect(historyPowerLoad({})).toBeUndefined();
+    expect(historyPowerLoad({ type: 'interval' })).toBeUndefined();
   });
 });
