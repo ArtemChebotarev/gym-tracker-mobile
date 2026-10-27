@@ -1,5 +1,5 @@
 // "Мезоцикл (деталь)" — 08.9, task 129. Orchestration only: reads the mesocycle, its sessions,
-// their set logs and the exercises behind those sets, and hands them to the domain — the summary is
+// their set and round logs and the exercises behind them, and hands them to the domain — the summary is
 // `buildMesoSummary` (055) and the week is `currentWeekNumber` (089), per 06 · History & Analytics
 // ("Агрегаты считаются в доменном слое поверх сырых данных"). The workout grid of a closed block
 // (130) is `buildMesoGrid` (089) over the same sessions.
@@ -13,12 +13,14 @@ import { buildMesoGrid, currentWeekNumber } from '@domain/mesoGridBuilders';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
 import type { SessionRepository } from '@repositories/session';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 
 export type MesocycleDetailDeps = {
   mesocycleRepo: MesocycleRepository;
   sessionRepo: SessionRepository;
   setLogRepo: SetLogRepository;
+  roundLogRepo: RoundLogRepository;
   exerciseRepo: ExerciseRepository;
 };
 
@@ -52,10 +54,13 @@ export async function loadMesocycleDetail(
     sessions.map(async (session) => ({
       session,
       setLogs: await deps.setLogRepo.listBySessionId(session.id),
+      roundLogs: await deps.roundLogRepo.listBySessionId(session.id),
     })),
   );
   const exerciseIds = new Set(
-    sessionLogs.flatMap(({ setLogs }) => setLogs.map((setLog) => setLog.exerciseId)),
+    sessionLogs.flatMap(({ setLogs, roundLogs }) =>
+      [...setLogs, ...roundLogs].map((log) => log.exerciseId),
+    ),
   );
   const exercises = await deps.exerciseRepo.listByIds([...exerciseIds].map(toExerciseId));
 

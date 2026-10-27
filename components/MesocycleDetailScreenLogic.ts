@@ -7,14 +7,22 @@ import { formatAbsoluteDate } from '@design/formatDate';
 import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { CopyIcon } from '@design/icons/CopyIcon';
 import { EditIcon } from '@design/icons/EditIcon';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import {
   getCategoryColor,
   getCategoryVolumeFill,
   getMuscleGroupCategory,
+  getNeutralVolumeFill,
 } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import type { Mesocycle } from '@domain/mesocycle';
-import type { MesoSummaryCount, MesoWeeklySetsRow } from '@domain/mesoSummary';
+import type { MuscleGroup } from '@domain/catalog';
+import type {
+  MesoSummary,
+  MesoSummaryCount,
+  MesoWeeklyExerciseRow,
+  MesoWeeklySetsRow,
+} from '@domain/mesoSummary';
 import { FINAL_MESOCYCLE_STATUSES } from '@domain/mesocycleLifecycle';
 
 /**
@@ -97,19 +105,28 @@ export function weekColumnLabels(lengthWeeks: number): string[] {
   return Array.from({ length: lengthWeeks }, (_, index) => `W${index + 1}`);
 }
 
-export type WeeklySetsCell = {
+export type WeeklyTableCell = {
   weekNumber: number;
-  /** `–` for a week with no set of this group — drawn as a dashed, empty cell. */
+  /** `–` for an empty week — drawn as a dashed, empty cell. */
   label: string;
   /** The cell's fill; absent on an empty week. */
   fill?: string;
 };
 
-export type WeeklySetsRowView = {
-  muscleGroup: MesoWeeklySetsRow['muscleGroup'];
+/** One row of a weekly table as drawn — a muscle group on the Strength card, an exercise on the others. */
+export type WeeklyTableRowView = {
+  key: string;
   label: string;
   dotColor?: string;
-  cells: WeeklySetsCell[];
+  cells: WeeklyTableCell[];
+};
+
+/** One card of the summary: Strength, then a card per hybrid type logged in the block (GT-113). */
+export type WeeklyTableView = {
+  key: string;
+  /** The card's label — the type's own name. */
+  title: string;
+  rows: WeeklyTableRowView[];
 };
 
 /**
@@ -117,25 +134,78 @@ export type WeeklySetsRowView = {
  * each week with its count on the group's category color — the more sets, the more saturated,
  * scaled to the card's largest cell so the strongest week reads strongest.
  */
-export function weeklySetsRowViews(rows: readonly MesoWeeklySetsRow[]): WeeklySetsRowView[] {
+export function weeklySetsRowViews(rows: readonly MesoWeeklySetsRow[]): WeeklyTableRowView[] {
   const most = Math.max(1, ...rows.flatMap((row) => row.sets));
-  return rows.map((row) => {
-    const category = getMuscleGroupCategory(row.muscleGroup);
-    return {
-      muscleGroup: row.muscleGroup,
-      label: getMuscleGroupLabel(row.muscleGroup),
-      dotColor: category ? getCategoryColor(category) : undefined,
-      cells: row.sets.map((sets, index) =>
-        sets === 0 || category === undefined
-          ? { weekNumber: index + 1, label: sets === 0 ? '–' : String(sets) }
-          : {
-              weekNumber: index + 1,
-              label: String(sets),
-              fill: getCategoryVolumeFill(category, sets / most),
-            },
-      ),
-    };
-  });
+  return rows.map((row) => ({
+    key: row.muscleGroup,
+    label: getMuscleGroupLabel(row.muscleGroup),
+    ...groupColors(row.muscleGroup, row.sets, most),
+  }));
+}
+
+/**
+ * A hybrid type's card as it's drawn (GT-113): each exercise by name, each week with what the
+ * type logs. An exercise with a group of its own keeps that group's dot and color; one without
+ * (`fullBody`) is drawn in the neutral fill, scaled the same way.
+ */
+export function weeklyExerciseRowViews(
+  rows: readonly MesoWeeklyExerciseRow[],
+): WeeklyTableRowView[] {
+  const most = Math.max(1, ...rows.flatMap((row) => row.counts));
+  return rows.map((row) => ({
+    key: row.exerciseId,
+    label: row.name,
+    ...groupColors(row.muscleGroup, row.counts, most),
+  }));
+}
+
+/**
+ * The cards of the summary, in order: Strength — with an empty-state line when the block has no
+ * strength set and nothing else either — then Power, Timed work, Mobility for the types logged.
+ * A block of hybrid work only has no Strength card at all.
+ */
+export function weeklyTableViews(summary: MesoSummary): WeeklyTableView[] {
+  const strength: WeeklyTableView[] =
+    summary.weeklySets.length > 0 || summary.hybridTables.length === 0
+      ? [
+          {
+            key: 'strength',
+            title: getExerciseTypeLabel('strength'),
+            rows: weeklySetsRowViews(summary.weeklySets),
+          },
+        ]
+      : [];
+  return [
+    ...strength,
+    ...summary.hybridTables.map((table) => ({
+      key: table.type,
+      title: getExerciseTypeLabel(table.type),
+      rows: weeklyExerciseRowViews(table.rows),
+    })),
+  ];
+}
+
+function groupColors(
+  muscleGroup: MuscleGroup,
+  counts: readonly number[],
+  most: number,
+): Pick<WeeklyTableRowView, 'dotColor' | 'cells'> {
+  const category = getMuscleGroupCategory(muscleGroup);
+  return {
+    dotColor: category ? getCategoryColor(category) : undefined,
+    cells: counts.map((count, index) => {
+      const weekNumber = index + 1;
+      if (count === 0) {
+        return { weekNumber, label: '–' };
+      }
+      const share = count / most;
+      return {
+        weekNumber,
+        label: String(count),
+        fill: category ? getCategoryVolumeFill(category, share) : getNeutralVolumeFill(share),
+      };
+    }),
+  };
 }
 
 /**

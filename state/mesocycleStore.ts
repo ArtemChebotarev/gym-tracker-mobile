@@ -60,8 +60,8 @@ export function useMesoGridDeps(): MesoGridDeps {
 
 /** "Мезоцикл (деталь)" (129): the block, its sessions and set logs, and the exercises behind them. */
 export function useMesocycleDetailDeps(): MesocycleDetailDeps {
-  const { mesocycleRepo, sessionRepo, setLogRepo, exerciseRepo } = useRepositories();
-  return { mesocycleRepo, sessionRepo, setLogRepo, exerciseRepo };
+  const { mesocycleRepo, sessionRepo, setLogRepo, roundLogRepo, exerciseRepo } = useRepositories();
+  return { mesocycleRepo, sessionRepo, setLogRepo, roundLogRepo, exerciseRepo };
 }
 
 /** Flow C's step S (124): which weeks of a finished block may be copied — sessions only. */
