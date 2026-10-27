@@ -120,14 +120,15 @@ describe('New exercise page', () => {
     expect(created?.config).toEqual({ type: 'power', load: 'weight', noHeavierAvailable: false });
   });
 
-  test('timed work: step 1 is the plan with the FR-9 defaults, and ends in Next, not Create', () => {
+  test('timed work: step 1 has no times, and ends in Next, not Create', () => {
     mockParams = { type: 'interval' };
     renderRoute();
 
     expect(screen.getByText('Step 1 of 2')).toBeTruthy();
-    expect(screen.getByText('2:00')).toBeTruthy();
-    // Get ready is a setting, not a field of the exercise (GT-188).
-    expect(screen.queryByText('Countdown')).toBeNull();
+    // Work and rest come from history, Get ready is a setting (GT-188, GT-191).
+    for (const label of ['Work', 'Rest', 'Countdown', 'Default plan']) {
+      expect(screen.queryByText(label)).toBeNull();
+    }
     expect(screen.queryByRole('button', { name: 'Create exercise' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Next' }).props.accessibilityState.disabled).toBe(
       true,
@@ -159,13 +160,11 @@ describe('New exercise page', () => {
     expect(await lastCreated()).toMatchObject({
       name: 'Heavy bag',
       type: 'interval',
-      config: {
-        type: 'interval',
-        workSec: 120,
-        restSec: 60,
-        lever: 'workTime',
-        stepSec: 5,
-      },
+    });
+    expect((await lastCreated())?.config).toEqual({
+      type: 'interval',
+      lever: 'workTime',
+      stepSec: 5,
     });
   });
 
@@ -190,34 +189,18 @@ describe('New exercise page', () => {
     expect(screen.getByLabelText('Name').props.value).toBe('Heavy bag');
   });
 
-  test('mobility: only the duration, 10:00 by default', async () => {
+  test('mobility: no fields of its own — its length comes from history (GT-191)', async () => {
     mockParams = { type: 'mobility' };
     renderRoute();
 
-    expect(screen.getByText('10:00')).toBeTruthy();
+    expect(screen.queryByText('Duration')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Progress by' })).toBeNull();
     fireEvent.changeText(screen.getByLabelText('Name'), 'Cooldown');
     fireEvent.press(createButton());
 
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
-    expect(await lastCreated()).toMatchObject({
-      type: 'mobility',
-      config: { type: 'mobility', durationSec: 600 },
-    });
-  });
-
-  test('tapping a time opens the time picker for that field, and Done closes it', () => {
-    mockParams = { type: 'interval' };
-    renderRoute();
-
-    fireEvent.press(screen.getByRole('button', { name: 'Set Work' }));
-
-    // The row's label and the picker's title.
-    expect(screen.getAllByText('Work')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
-
-    fireEvent.press(screen.getByRole('button', { name: 'Done' }));
-    expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+    expect(await lastCreated()).toMatchObject({ type: 'mobility', config: { type: 'mobility' } });
+    expect((await lastCreated())?.config).toEqual({ type: 'mobility' });
   });
 
   test('timed work asks for no rounds: how many is set in the cycle and the workout', () => {
@@ -226,7 +209,6 @@ describe('New exercise page', () => {
 
     expect(screen.queryByText('Rounds')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Set Rounds' })).toBeNull();
-    expect(screen.getByText('Work')).toBeTruthy();
   });
 
   test('a failed save says so and keeps the page open with what was typed', async () => {

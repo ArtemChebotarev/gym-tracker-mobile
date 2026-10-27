@@ -21,17 +21,17 @@ function renderSheet(overrides: Partial<CyclePlanSheetProps> = {}) {
 }
 
 describe('CyclePlanSheet (GT-92)', () => {
-  test('interval: rounds, work and rest, Progress by and Step — no Get ready (GT-188)', () => {
+  test('interval: rounds, Progress by and Step — no times (GT-188, GT-191)', () => {
     renderSheet();
 
     expect(screen.getByText('Heavy bag')).toBeTruthy();
     expect(screen.getByText('Plan for this training cycle · Day 2')).toBeTruthy();
-    for (const label of ['Rounds', 'Work', 'Progress by', 'Step']) {
+    for (const label of ['Rounds', 'Progress by', 'Step']) {
       expect(screen.getByText(label)).toBeTruthy();
     }
-    expect(screen.queryByText('Get ready')).toBeNull();
-    expect(screen.getByText('2:00')).toBeTruthy();
-    expect(screen.getByText('0:45')).toBeTruthy();
+    for (const label of ['Work', 'Rest', 'Get ready']) {
+      expect(screen.queryByText(label)).toBeNull();
+    }
     expect(screen.getByText('Less rest')).toBeTruthy();
     expect(screen.getByText('None')).toBeTruthy();
     // The note under the fields was dropped on review (18.10.2026).
@@ -55,16 +55,6 @@ describe('CyclePlanSheet (GT-92)', () => {
     renderSheet({ settings: { ...bag, lever: 'none' } });
 
     expect(screen.queryByText('Step')).toBeNull();
-  });
-
-  test('mobility: its length alone', () => {
-    const props = renderSheet({ exerciseName: 'Cooldown', settings: { type: 'mobility', durationSec: 600 } });
-
-    expect(screen.getByText('Length')).toBeTruthy();
-    expect(screen.queryByText('Rounds')).toBeNull();
-
-    fireEvent.press(screen.getByLabelText('Decrease Length'));
-    expect(props.onChangeSettings).toHaveBeenCalledWith({ type: 'mobility', durationSec: 595 });
   });
 
   test('Reset to defaults and Done', () => {

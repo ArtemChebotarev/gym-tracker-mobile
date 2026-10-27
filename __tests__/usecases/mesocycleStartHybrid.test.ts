@@ -42,7 +42,7 @@ test('a mixed cycle goes through Confirm → Start and week 1 has every type’s
     [bench.id, MEDBALL_THROW.id, HEAVY_BAG.id, COOLDOWN.id],
     { [bench.id]: bench, [MEDBALL_THROW.id]: MEDBALL_THROW, [HEAVY_BAG.id]: HEAVY_BAG, [COOLDOWN.id]: COOLDOWN },
   );
-  draft = withDraftExerciseSettings(draft, HEAVY_BAG.id, { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 4 });
+  draft = withDraftExerciseSettings(draft, HEAVY_BAG.id, { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 4 });
 
   const saved = await confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), {
     mesocycleRepo: new SqliteMesocycleRepository(store),

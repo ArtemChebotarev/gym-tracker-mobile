@@ -113,8 +113,6 @@ export function describeCatalogContract(harness: RepositoryHarness): void {
           type: 'interval',
           config: {
             type: 'interval',
-            workSec: 120,
-            restSec: 60,
             lever: 'rest',
             stepSec: 15,
           },

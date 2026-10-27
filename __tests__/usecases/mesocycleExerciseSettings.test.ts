@@ -71,13 +71,13 @@ describe('a cycle’s own exercise settings (GT-158)', () => {
       first.id,
       toScratchMesocycleDraftInput({
         ...draft,
-        exerciseSettings: { [HEAVY_BAG.id]: { ...bag, restSec: 30, rounds: 5 } },
+        exerciseSettings: { [HEAVY_BAG.id]: { ...bag, lever: 'none', rounds: 5 } },
       }),
       deps,
     );
 
     expect((await deps.mesocycleRepo.getById(first.id))?.exerciseSettings?.[HEAVY_BAG.id]).toMatchObject({
-      restSec: 30,
+      lever: 'none',
       rounds: 5,
     });
     expect((await deps.mesocycleRepo.getById(second.id))?.exerciseSettings).toEqual({

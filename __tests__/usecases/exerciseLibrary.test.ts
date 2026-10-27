@@ -510,7 +510,7 @@ describe('hybrid exercise types', () => {
           name: 'Heavy Bag',
           muscleGroup: 'fullBody',
           type: 'interval',
-          config: { type: 'mobility', durationSec: 600 },
+          config: { type: 'mobility' },
         },
         makeDeps(),
       ),
@@ -529,7 +529,7 @@ describe('hybrid exercise types', () => {
     expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
       type: 'interval',
       muscleGroup: 'fullBody',
-      config: { type: 'interval', workSec: 120, lever: 'rest' },
+      config: { type: 'interval', lever: 'rest' },
     });
   });
 
@@ -583,7 +583,7 @@ describe('hybrid exercise types', () => {
         name: 'Rope',
         muscleGroup: 'fullBody',
         type: 'interval',
-        config: { ...(defaultExerciseConfig('interval') as IntervalConfig), workSec: 90 },
+        config: { ...(defaultExerciseConfig('interval') as IntervalConfig), lever: 'none' },
       },
       deps,
     );
@@ -596,7 +596,7 @@ describe('hybrid exercise types', () => {
     expect(await deps.exerciseRepo.getById(created.id)).toMatchObject({
       name: 'Jump Rope',
       type: 'interval',
-      config: { workSec: 90 },
+      config: { lever: 'none' },
     });
   });
 });

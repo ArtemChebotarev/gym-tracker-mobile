@@ -49,7 +49,7 @@ const SOURCE_ID = 'meso-source';
 // What the source cycle ran with: both edited away from the library. Cooldown has no entry — a
 // cycle saved before the cycle kept its own settings.
 const SOURCE_SETTINGS: Mesocycle['exerciseSettings'] = {
-  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
+  [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 5 },
   [MEDBALL_THROW.id]: { type: 'power', load: 'weight', noHeavierAvailable: true },
 };
 

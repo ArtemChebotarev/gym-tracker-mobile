@@ -89,14 +89,8 @@ describe('validateExerciseConfig', () => {
     );
   });
 
-  test('an interval rests 10 s at least, so its rounds stay apart (GT-176)', () => {
-    expect(() => validateExerciseConfig('interval', interval({ restSec: 10 }))).not.toThrow();
-    expect(() => validateExerciseConfig('interval', interval({ restSec: 5 }))).toThrow('Rest');
-    expect(() => validateExerciseConfig('interval', interval({ restSec: 0 }))).toThrow('Rest');
-  });
-
-  test('refuse an interval without work time', () => {
-    expect(() => validateExerciseConfig('interval', interval({ workSec: 0 }))).toThrow('Work time');
+  test('an interval carries no times: they come from history (GT-191)', () => {
+    expect(() => validateExerciseConfig('interval', interval())).not.toThrow();
   });
 
   test('refuse a lever or a step outside the ones the first version has', () => {
@@ -117,10 +111,8 @@ describe('validateExerciseConfig', () => {
     }
   });
 
-  test('refuse a mobility without a length', () => {
-    expect(() => validateExerciseConfig('mobility', mobility({ durationSec: 0 }))).toThrow(
-      'Duration',
-    );
+  test('accept a mobility config, which has nothing to set (GT-191)', () => {
+    expect(() => validateExerciseConfig('mobility', mobility())).not.toThrow();
   });
 });
 

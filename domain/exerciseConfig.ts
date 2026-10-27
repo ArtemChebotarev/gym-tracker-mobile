@@ -6,9 +6,11 @@
 // The other three each have one shape, tagged with the `type` it belongs to so a stored JSON
 // document says what it is without the row next to it.
 //
-// The rest between a power exercise's sets and an interval's Get ready are not here: they are
-// settings, the same for every exercise (GT-188). A config stored before that still carries
-// `restSec` / `getReadySec`; nothing reads them.
+// No time is here (10.1 FR-9, Artem, 26.10.2026). The rest between a power exercise's sets and an
+// interval's Get ready are settings, the same for every exercise (GT-188); an interval's work and
+// rest and a mobility exercise's length come from history and are picked on the card the first
+// time, as a weight is (GT-187, GT-185, GT-191). A config stored before that still carries
+// `restSec` / `getReadySec` / `workSec` / `durationSec`; nothing reads them.
 
 /** How a power exercise's load is expressed (FR-2). */
 export const POWER_LOADS = ['weight', 'level', 'none'] as const;
@@ -38,23 +40,11 @@ export const INTERVAL_STEPS_SEC = [5, 10, 15] as const;
 export type IntervalStepSec = (typeof INTERVAL_STEPS_SEC)[number];
 
 /**
- * The seconds a time field of a config is set in steps of — and the rest between sets in Settings
- * (`REST_BETWEEN_SETS_RANGE_SEC`). Get ready, a setting too, is set by the second.
+ * The seconds a time is picked in steps of: a round's work and rest on the card (`ROUND_TIME_BOUNDS`)
+ * and the rest between sets in Settings (`REST_BETWEEN_SETS_RANGE_SEC`). Get ready goes by the
+ * second.
  */
-export const CONFIG_TIME_STEP_SEC = 5;
-
-/** The time fields of a config, by the key they are stored under. */
-export type ConfigTimeKey = 'restSec' | 'workSec' | 'durationSec';
-
-/**
- * What each time field may hold, seconds — the same range wherever it is set: the New/Edit
- * exercise page, the cycle editor's plan sheet (GT-92).
- */
-export const CONFIG_TIME_RANGE_SEC: Record<ConfigTimeKey, { min: number; max: number }> = {
-  restSec: { min: 0, max: 10 * 60 },
-  workSec: { min: CONFIG_TIME_STEP_SEC, max: 60 * 60 },
-  durationSec: { min: 60, max: 60 * 60 },
-};
+export const TIME_STEP_SEC = 5;
 
 /**
  * The least rest between the rounds of an interval (GT-176, Artem, 26.10.2026): 10 s, Tabata's
@@ -81,26 +71,21 @@ export type PowerConfig = {
 
 export type IntervalConfig = {
   type: 'interval';
-  /** Work time of one round, seconds. */
-  workSec: number;
-  /** Rest between rounds, seconds. The same after every round. */
-  restSec: number;
   lever: IntervalLever;
   /** Seconds a time lever moves by. Unused while the lever is `rounds` or `none`. */
   stepSec: IntervalStepSec;
 };
 
+/** A mobility exercise has nothing to set: its length comes from history (FR-9, FR-10). */
 export type MobilityConfig = {
   type: 'mobility';
-  /** Length of the one position, seconds (FR-10). */
-  durationSec: number;
 };
 
 export type ExerciseConfig = PowerConfig | IntervalConfig | MobilityConfig;
 
 /**
- * An interval exercise's config as a cycle holds it: the library's values plus how many rounds
- * the cycle does. The count is not a property of the exercise — as sets are not for a strength
+ * An interval exercise's config as a cycle holds it: the library's lever and step plus how many
+ * rounds the cycle does. The count is not a property of the exercise — as sets are not for a strength
  * one — so it exists only here, set when the cycle is created (FR-9).
  */
 export type IntervalPlanConfig = IntervalConfig & { rounds: number };

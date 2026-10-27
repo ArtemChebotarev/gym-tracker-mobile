@@ -42,7 +42,7 @@ describe('weekPlanMaterializers (GT-160)', () => {
 
   test('mobility: one block, its length not copied from the cycle (GT-185)', () => {
     expect(
-      materializeSetTargets('mobility', { entry, settings: { type: 'mobility', durationSec: 600 } }),
+      materializeSetTargets('mobility', { entry, settings: { type: 'mobility' } }),
     ).toEqual([{ setNumber: 1 }]);
   });
 

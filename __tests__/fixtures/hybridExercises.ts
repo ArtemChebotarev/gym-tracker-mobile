@@ -21,8 +21,6 @@ export const MEDBALL_THROW: Exercise = {
 /** `HEAVY_BAG`'s config, typed as what it is, for a test that spreads it into an edited copy. */
 export const HEAVY_BAG_CONFIG: IntervalConfig = {
   type: 'interval',
-  workSec: 120,
-  restSec: 45,
   lever: 'rest',
   stepSec: 15,
 };
@@ -46,5 +44,5 @@ export const COOLDOWN: Exercise = {
   source: 'custom',
   isHidden: false,
   type: 'mobility',
-  config: { type: 'mobility', durationSec: 600 },
+  config: { type: 'mobility' },
 };

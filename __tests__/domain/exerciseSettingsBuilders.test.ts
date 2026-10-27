@@ -38,7 +38,7 @@ describe('withExerciseSettings', () => {
   });
 
   test('keeps the copy the cycle already has, edited or not', () => {
-    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 } } as const;
+    const edited = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 } } as const;
 
     expect(withExerciseSettings(edited, HEAVY_BAG)).toBe(edited);
   });
@@ -47,7 +47,7 @@ describe('withExerciseSettings', () => {
     const { config: _config, ...withoutConfig } = COOLDOWN;
 
     expect(withExerciseSettings({}, withoutConfig)).toEqual({
-      [COOLDOWN.id]: { type: 'mobility', durationSec: 600 },
+      [COOLDOWN.id]: { type: 'mobility' },
     });
   });
 
@@ -57,7 +57,7 @@ describe('withExerciseSettings', () => {
 
     const copy = settings[HEAVY_BAG.id]!;
     if (copy.type === 'interval') {
-      copy.restSec = 15;
+      copy.lever = 'none';
       copy.rounds = 8;
     }
 
@@ -68,18 +68,18 @@ describe('withExerciseSettings', () => {
 describe('resetExerciseSettings', () => {
   test('puts the library values back, rounds included', () => {
     const edited = {
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 6 },
-      [COOLDOWN.id]: { type: 'mobility' as const, durationSec: 300 },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 6 },
+      [COOLDOWN.id]: { type: 'mobility' as const },
     };
 
     expect(resetExerciseSettings(edited, HEAVY_BAG)).toEqual({
       [HEAVY_BAG.id]: { ...HEAVY_BAG.config, rounds: DEFAULT_INTERVAL_ROUNDS },
-      [COOLDOWN.id]: { type: 'mobility', durationSec: 300 },
+      [COOLDOWN.id]: { type: 'mobility' },
     });
   });
 
   test('changes nothing for a strength exercise', () => {
-    const settings = { [COOLDOWN.id]: { type: 'mobility' as const, durationSec: 600 } };
+    const settings = { [COOLDOWN.id]: { type: 'mobility' as const } };
 
     expect(resetExerciseSettings(settings, BENCH_PRESS)).toBe(settings);
   });
@@ -128,13 +128,13 @@ describe('weekPlanExerciseSettings (GT-159)', () => {
 
   test('inherited settings win; an exercise they lack falls back to the library — Flow C', () => {
     const fromSource = {
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 },
       // The source had this one, but the copied week does not: it stays behind.
       [MEDBALL_THROW.id]: { type: 'power' as const, load: 'weight' as const, restSec: 90, noHeavierAvailable: true },
     };
 
     expect(weekPlanExerciseSettings(weekPlan, library, fromSource)).toEqual({
-      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
+      [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const, rounds: 5 },
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });

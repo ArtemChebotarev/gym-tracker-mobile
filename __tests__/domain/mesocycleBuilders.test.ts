@@ -702,7 +702,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
       ],
     },
     // The cycle's own interval plan; Cooldown has no copy and takes the library's length.
-    exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, workSec: 90, restSec: 30, rounds: 2 } },
+    exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none', rounds: 2 } },
     createdAt: '2026-09-01T12:00:00.000Z',
   };
   const exercisesById = new Map([

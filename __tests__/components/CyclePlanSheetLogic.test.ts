@@ -3,12 +3,7 @@ import {
   PLAN_LEVER_OPTIONS,
   planSheetSubtitle,
   stepFromValue,
-  timeFieldValue,
-  withTimeField,
 } from '@components/CyclePlanSheetLogic';
-import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
-
-const bag = { ...HEAVY_BAG_CONFIG, rounds: 3 };
 
 describe('CyclePlanSheetLogic', () => {
   test('offers the four levers of FR-8 under the sheet’s short names', () => {
@@ -20,15 +15,6 @@ describe('CyclePlanSheetLogic', () => {
     expect(stepFromValue('10')).toBe(10);
     expect(() => leverFromValue('output')).toThrow();
     expect(() => stepFromValue('20')).toThrow();
-  });
-
-  test('sets and reads a time field, leaving a type without it alone', () => {
-    expect(withTimeField(bag, 'restSec', 30)).toEqual({ ...bag, restSec: 30 });
-    expect(timeFieldValue(bag, 'workSec')).toBe(120);
-
-    const mobility = { type: 'mobility' as const, durationSec: 600 };
-    expect(withTimeField(mobility, 'restSec', 30)).toBe(mobility);
-    expect(timeFieldValue(mobility, 'restSec')).toBe(0);
   });
 
   test('says whose plan it is', () => {

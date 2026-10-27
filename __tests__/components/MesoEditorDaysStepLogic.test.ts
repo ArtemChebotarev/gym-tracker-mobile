@@ -11,6 +11,7 @@ import {
   exerciseTitle,
   exerciseTypeIcon,
   formatExercisePlan,
+  hasSetsStepper,
   formatSetCount,
   getDayExercises,
   getDayNumbers,
@@ -263,38 +264,44 @@ describe('hybrid rows (GT-157)', () => {
     expect(formatSetCount(3)).toBe('3 sets');
   });
 
-  test('formatExercisePlan reads each type the way the chip shows it', () => {
-    expect(
-      formatExercisePlan({ type: 'interval', workSec: 30, restSec: 60, lever: 'rest', stepSec: 10, rounds: 6 }),
-    ).toEqual({ value: '6 × 0:30', caption: '1:00 rest' });
-    expect(formatExercisePlan({ type: 'mobility', durationSec: 90 })).toEqual({ value: '1:30', caption: 'Length' });
+  test('formatExercisePlan shows an interval\'s rounds and lever, no times (GT-191)', () => {
+    expect(formatExercisePlan({ type: 'interval', lever: 'rest', stepSec: 10, rounds: 6 })).toEqual({
+      value: '6 rounds',
+      caption: 'Less rest',
+    });
+    expect(formatExercisePlan({ type: 'interval', lever: 'none', stepSec: 10, rounds: 1 })).toEqual({
+      value: '1 round',
+      caption: 'None',
+    });
   });
 
   test('exercisePlan: power has no plan chip — it keeps the sets stepper (GT-188)', () => {
     expect(exercisePlan(exercisesById, entry(MEDBALL_THROW.id, 3))).toBeUndefined();
+    expect(hasSetsStepper(exercisesById, MEDBALL_THROW.id)).toBe(true);
   });
 
-  test('exercisePlan: interval takes the default rounds and the library times, not the day\'s sets', () => {
-    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id, 2))).toEqual({ value: '3 × 2:00', caption: '0:45 rest' });
+  test('exercisePlan: interval takes the default rounds, not the day\'s sets', () => {
+    expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id, 2))).toEqual({ value: '3 rounds', caption: 'Less rest' });
   });
 
   test('exercisePlan: the cycle’s own copy wins over the library (GT-158)', () => {
-    const settings = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 6 } };
+    const settings = { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'workTime' as const, rounds: 6 } };
     expect(exercisePlan(exercisesById, entry(HEAVY_BAG.id), settings)).toEqual({
-      value: '6 × 2:00',
-      caption: '0:30 rest',
+      value: '6 rounds',
+      caption: 'More work',
     });
   });
 
-  test('exercisePlan: mobility shows its length', () => {
-    expect(exercisePlan(exercisesById, entry(COOLDOWN.id))).toEqual({ value: '10:00', caption: 'Length' });
+  test('mobility has neither a plan chip nor a sets stepper: nothing to set (GT-191)', () => {
+    expect(exercisePlan(exercisesById, entry(COOLDOWN.id))).toBeUndefined();
+    expect(hasSetsStepper(exercisesById, COOLDOWN.id)).toBe(false);
   });
 
   test('exercisePlan: falls back to the type defaults for a hybrid exercise without a config', () => {
-    const { config: _config, ...withoutConfig } = COOLDOWN;
-    expect(exercisePlan({ [COOLDOWN.id]: withoutConfig }, entry(COOLDOWN.id))).toEqual({
-      value: '10:00',
-      caption: 'Length',
+    const { config: _config, ...withoutConfig } = HEAVY_BAG;
+    expect(exercisePlan({ [HEAVY_BAG.id]: withoutConfig }, entry(HEAVY_BAG.id))).toEqual({
+      value: '3 rounds',
+      caption: 'Less rest',
     });
   });
 
@@ -324,7 +331,7 @@ describe('hybrid rows (GT-157)', () => {
 
   test('planColumnLabel reads Sets for an all-strength day and Plan once a chip is in it', () => {
     expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id)])).toBe('Sets');
-    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id), entry(COOLDOWN.id)])).toBe('Plan');
+    expect(planColumnLabel(exercisesById, [entry(BENCH_PRESS.id), entry(HEAVY_BAG.id)])).toBe('Plan');
   });
 
   test('a hybrid row is added, reordered and removed like a strength one', () => {

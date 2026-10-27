@@ -1,6 +1,6 @@
 // Defaults for a hybrid exercise's config and the reading of its type — see
-// `domain/exerciseConfig.ts` for the shapes. The numbers are the system defaults of 10.1 FR-9;
-// the corridors and steps the progression engine uses are its own and arrive with it.
+// `domain/exerciseConfig.ts` for the shapes. The lever and step are the system defaults of 10.1
+// FR-9; there is no default time (GT-191).
 
 import type { Exercise, ExerciseType } from './catalog';
 import type { ExerciseConfig, ExerciseSettings, IntervalConfig } from './exerciseConfig';
@@ -14,15 +14,14 @@ export function exerciseTypeOf(exercise: Pick<Exercise, 'type'>): ExerciseType {
 }
 
 /**
- * The "Hold" preset of an `interval` exercise (10.1 FR-10, "Timed work"): a plank or a hang as
- * 0:30 of work with a minute's rest, progressing on `workTime` in 5 s steps. The `interval` key stays;
- * "Timed work" is only its label in the UI. Fresh object each call, like the defaults.
+ * The "Hold" preset of an `interval` exercise (10.1 FR-16, "Timed work"): a plank or a hang,
+ * progressing on `workTime` in 5 s steps; its times come from history, as every interval's do.
+ * The `interval` key stays; "Timed work" is only its label in the UI. Fresh object each call,
+ * like the defaults.
  */
 export function holdIntervalConfig(): IntervalConfig {
   return {
     type: 'interval',
-    workSec: 30,
-    restSec: 60,
     lever: 'workTime',
     stepSec: 5,
   };
@@ -44,19 +43,17 @@ export function defaultExerciseConfig(type: ExerciseType): ExerciseConfig | unde
     case 'interval':
       return {
         type: 'interval',
-        workSec: 120,
-        restSec: 60,
         lever: 'rest',
         stepSec: 10,
       };
     case 'mobility':
-      return { type: 'mobility', durationSec: 600 };
+      return { type: 'mobility' };
   }
 }
 
 /**
- * How many rounds an interval exercise does in a cycle that has not said otherwise (10.1 FR-9:
- * "interval — 3 × 2:00"). Not part of `IntervalConfig`: a count is the cycle's, not the
+ * How many rounds an interval exercise does in a cycle that has not said otherwise (10.1 FR-9).
+ * Not part of `IntervalConfig`: a count is the cycle's, not the
  * exercise's (see `IntervalPlanConfig`).
  */
 export const DEFAULT_INTERVAL_ROUNDS = 3;

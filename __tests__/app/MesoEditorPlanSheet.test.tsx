@@ -44,7 +44,7 @@ async function openPlanSheet() {
     </SafeAreaProvider>,
   );
   fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
-  fireEvent.press(await screen.findByRole('button', { name: 'Heavy bag plan: 3 × 2:00, 0:45 rest' }));
+  fireEvent.press(await screen.findByRole('button', { name: 'Heavy bag plan: 3 rounds, Less rest' }));
   expect(screen.getByText('Plan for this training cycle · Day 1')).toBeTruthy();
 }
 
@@ -61,14 +61,14 @@ describe('the plan sheet in the editor (GT-92)', () => {
       lever: 'workTime',
     });
     fireEvent.press(screen.getByRole('button', { name: 'Done' }));
-    expect(screen.getByRole('button', { name: 'Heavy bag plan: 4 × 2:00, 0:45 rest' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Heavy bag plan: 4 rounds, More work' })).toBeTruthy();
     expect((await repositories().exerciseRepo.getById(HEAVY_BAG.id))?.config).toEqual(HEAVY_BAG_CONFIG);
   });
 
   test('Reset to defaults brings back the library’s values', async () => {
     await openPlanSheet();
     fireEvent.press(screen.getByLabelText('Increase Rounds'));
-    fireEvent.press(screen.getByLabelText('Decrease Rest'));
+    fireEvent.press(screen.getByText('More work'));
 
     fireEvent.press(screen.getByRole('button', { name: 'Reset to defaults' }));
 
