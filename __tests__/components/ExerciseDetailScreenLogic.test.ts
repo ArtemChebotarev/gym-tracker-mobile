@@ -1,5 +1,6 @@
 import type { SetLog } from '@domain/execution';
 import {
+  powerLoadOf,
   formatBestSet,
   formatLastDone,
   formatLastSessionMeta,
@@ -76,5 +77,30 @@ describe('a logged set row', () => {
     expect(formatSetValue(setLog({ weight: 5, bodyWeight: 83 }), 'bodyweight-weighted')).toBe(
       '83 (+5) kg × 8',
     );
+  });
+
+  test('reads a power set in its own load, with no RIR', () => {
+    const log = setLog({ weight: 2, reps: 3, rir: 2 });
+
+    expect(formatSetValue(log, undefined, 'level')).toBe('Level 2 × 3');
+    expect(formatSetValue(log, undefined, 'weight')).toBe('2 kg × 3');
+    expect(formatSetRirTail(log, 'level')).toBeUndefined();
+  });
+});
+
+describe('powerLoadOf', () => {
+  test('is the load of a power exercise, its default when it has no config', () => {
+    expect(
+      powerLoadOf({
+        type: 'power',
+        config: { type: 'power', load: 'level', noHeavierAvailable: false },
+      }),
+    ).toBe('level');
+    expect(powerLoadOf({ type: 'power' })).toBe('weight');
+  });
+
+  test('is absent for every other type', () => {
+    expect(powerLoadOf({})).toBeUndefined();
+    expect(powerLoadOf({ type: 'interval' })).toBeUndefined();
   });
 });

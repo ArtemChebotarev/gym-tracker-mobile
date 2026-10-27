@@ -2,10 +2,7 @@ import { render, screen } from '@testing-library/react-native';
 
 import type { SetLog } from '@domain/execution';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
-import {
-  ExerciseHistoryTab,
-  type ExerciseHistoryTabProps,
-} from '@components/ExerciseHistoryTab';
+import { ExerciseHistoryTab, type ExerciseHistoryTabProps } from '@components/ExerciseHistoryTab';
 import { STAMPS } from '../fixtures/stamps';
 
 function setLog(overrides: Partial<SetLog> = {}): SetLog {
@@ -128,5 +125,29 @@ describe('ExerciseHistoryTab', () => {
 
     expect(screen.getByText('No finished workouts yet')).toBeTruthy();
     expect(screen.getByText('A workout appears here once you finish it.')).toBeTruthy();
+  });
+  test('lists a power exercise like any other, its sets in its own load', () => {
+    renderTab({
+      powerLoad: 'level',
+      groups: [
+        {
+          mesoId: 'meso-1',
+          name: 'Upper/Lower',
+          sessions: [
+            {
+              id: 'log-1',
+              weekNumber: 2,
+              dayNumber: 1,
+              completedAt: '2026-08-10T12:00:00.000Z',
+              setLogs: [setLog({ weight: 2, reps: 3, rir: 2 })],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(screen.getByText('Week 2 · Day 1')).toBeTruthy();
+    expect(screen.getByText('Level 2 × 3')).toBeTruthy();
+    expect(screen.queryByText(' · 2 RIR')).toBeNull();
   });
 });

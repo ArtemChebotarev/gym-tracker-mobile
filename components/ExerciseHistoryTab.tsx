@@ -9,6 +9,9 @@
 // what was already done, the same rule the Overview blocks follow. With nothing finished yet the
 // tab says so instead of staying blank.
 //
+// Every type reads the same list (10.1 FR-12, GT-110): what was done, session by session. A power
+// set only reads in its own load — `Level 2 × 3` — and without RIR.
+//
 // Virtualized (SectionList), unlike the Overview tab's ScrollView: Overview shows three sessions
 // at most, this one grows with every block trained.
 //
@@ -23,6 +26,7 @@
 import { SectionList, Text } from 'react-native';
 
 import type { Equipment } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { ExerciseHistoryMesocycle, ExerciseHistorySession } from '@domain/exerciseHistory';
 import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 
@@ -45,9 +49,16 @@ export type ExerciseHistoryTabProps = {
   isPending: boolean;
   /** The exercise's equipment — a `bodyweight-weighted` set reads back split (task 105). */
   equipment?: Equipment;
+  /** Set for a power exercise: its sets read in its own load, with no RIR (10.1 FR-12, GT-110). */
+  powerLoad?: PowerLoad;
 };
 
-export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHistoryTabProps) {
+export function ExerciseHistoryTab({
+  groups,
+  isPending,
+  equipment,
+  powerLoad,
+}: ExerciseHistoryTabProps) {
   if (isPending || groups === undefined) {
     return <Text style={styles.status}>Loading…</Text>;
   }
@@ -83,8 +94,8 @@ export function ExerciseHistoryTab({ groups, isPending, equipment }: ExerciseHis
             <ExerciseDetailCardRow
               key={setLog.id}
               label={formatSetLabel(setLog)}
-              value={formatSetValue(setLog, equipment)}
-              tail={formatSetRirTail(setLog)}
+              value={formatSetValue(setLog, equipment, powerLoad)}
+              tail={formatSetRirTail(setLog, powerLoad)}
               isLast={index === item.setLogs.length - 1}
             />
           ))}
