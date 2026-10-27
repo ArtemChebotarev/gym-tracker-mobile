@@ -57,6 +57,7 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
       weekNumber: 3,
       dayNumber: 2,
       completedAt: '2026-09-17T12:00:00.000Z',
+      roundLogs: [],
       setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
     },
     actions: ['hide'],
@@ -74,6 +75,7 @@ const HISTORY: ExerciseHistoryMesocycle[] = [
         weekNumber: 3,
         dayNumber: 2,
         completedAt: '2026-09-17T12:00:00.000Z',
+        roundLogs: [],
         setLogs: [setLog({ rir: 2 })],
       },
     ],
@@ -149,6 +151,39 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByTestId('exercise-last-session')).toBeTruthy();
   });
 
+  test('an interval exercise drops the Best set tile and lists its rounds', () => {
+    renderScreen({
+      overview: overview({
+        stats: { bestSet: null, sessionCount: 2, lastDoneAt: '2026-09-17T11:30:00.000Z' },
+        lastSession: {
+          weekNumber: 1,
+          dayNumber: 1,
+          completedAt: '2026-09-17T12:00:00.000Z',
+          setLogs: [],
+          roundLogs: [
+            {
+              ...STAMPS,
+              id: 'round-1',
+              sessionExerciseId: 'se-1',
+              exerciseId: 'heavy-bag',
+              roundNumber: 1,
+              workSec: 120,
+              restSec: 60,
+              restSkipped: false,
+              completed: true,
+              completedAt: '2026-09-17T11:30:00.000Z',
+            },
+          ],
+        },
+      }),
+    });
+
+    expect(screen.queryByText('Best set')).toBeNull();
+    expect(screen.getByText('Sessions')).toBeTruthy();
+    expect(screen.getByText('Round 1')).toBeTruthy();
+    expect(screen.getByText('2:00 · rest 1:00')).toBeTruthy();
+  });
+
   test('a set with no RIR renders without the tail', () => {
     renderScreen({
       overview: overview({
@@ -156,6 +191,7 @@ describe('ExerciseDetailScreen', () => {
           weekNumber: 1,
           dayNumber: 1,
           completedAt: '2026-09-17T12:00:00.000Z',
+          roundLogs: [],
           setLogs: [setLog()],
         },
       }),

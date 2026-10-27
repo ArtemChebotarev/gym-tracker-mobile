@@ -21,7 +21,7 @@ import {
   validateExerciseEquipment,
 } from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
 import type { ExerciseConfig, PowerConfig } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import {
@@ -234,12 +234,18 @@ export async function listExerciseGroups(
 ): Promise<ExerciseListGroup[]> {
   const exercises = await deps.exerciseRepo.getAll();
 
-  const lastSetLogEntries = await Promise.all(
-    exercises.map(async (exercise): Promise<[string, SetLog | null]> => {
-      const lastSetLog = await deps.setLogRepo.getLastByExerciseId(exercise.id);
-      return [exercise.id, lastSetLog];
-    }),
+  const lastLogEntries = await Promise.all(
+    exercises.map(async (exercise): Promise<[string, SetLog | null, RoundLog | null]> => [
+      exercise.id,
+      await deps.setLogRepo.getLastByExerciseId(exercise.id),
+      await deps.roundLogRepo.getLastByExerciseId(exercise.id),
+    ]),
   );
 
-  return buildExerciseListGroups(exercises, new Map(lastSetLogEntries), query);
+  return buildExerciseListGroups(
+    exercises,
+    new Map(lastLogEntries.map(([id, setLog]) => [id, setLog])),
+    query,
+    new Map(lastLogEntries.map(([id, , roundLog]) => [id, roundLog])),
+  );
 }

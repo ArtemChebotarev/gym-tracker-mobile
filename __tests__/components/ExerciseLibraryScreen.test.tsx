@@ -4,10 +4,15 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup } from '@domain/catalogListing';
 import type { SetLog } from '@domain/execution';
-import { ExerciseLibraryScreen, type ExerciseLibraryScreenProps } from '@components/ExerciseLibraryScreen';
+import {
+  ExerciseLibraryScreen,
+  type ExerciseLibraryScreenProps,
+} from '@components/ExerciseLibraryScreen';
 import { STAMPS } from '../fixtures/stamps';
 
-function exercise(overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>): Exercise {
+function exercise(
+  overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>,
+): Exercise {
   return { ...STAMPS, source: 'catalog', isHidden: false, ...overrides };
 }
 
@@ -26,7 +31,7 @@ function setLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 function entry(exerciseValue: Exercise, lastSetLog: SetLog | null = null): ExerciseListEntry {
-  return { exercise: exerciseValue, lastSetLog };
+  return { exercise: exerciseValue, lastSetLog, lastRoundLog: null };
 }
 
 const BASE_PROPS: ExerciseLibraryScreenProps = {
@@ -133,7 +138,11 @@ describe('ExerciseLibraryScreen', () => {
         muscleGroup: 'back',
         entries: [
           entry(
-            exercise({ id: toExerciseId('lat-pulldown'), name: 'Lat Pulldown', muscleGroup: 'back' }),
+            exercise({
+              id: toExerciseId('lat-pulldown'),
+              name: 'Lat Pulldown',
+              muscleGroup: 'back',
+            }),
             setLog({ weight: 60, reps: 10, completedAt: '2026-09-09T12:00:00.000Z' }),
           ),
         ],
@@ -187,7 +196,11 @@ describe('ExerciseLibraryScreen', () => {
         muscleGroup: 'triceps',
         entries: [
           entry(
-            exercise({ id: toExerciseId('triceps-pushdown'), name: 'Triceps Pushdown', muscleGroup: 'triceps' }),
+            exercise({
+              id: toExerciseId('triceps-pushdown'),
+              name: 'Triceps Pushdown',
+              muscleGroup: 'triceps',
+            }),
           ),
         ],
       },
@@ -237,7 +250,11 @@ describe('ExerciseLibraryScreen', () => {
   });
 
   test('files exercises without a group under Power, Intervals and Mobility, and says the type in the row', () => {
-    const bench = exercise({ id: toExerciseId('bench'), name: 'Bench Press', muscleGroup: 'chest' });
+    const bench = exercise({
+      id: toExerciseId('bench'),
+      name: 'Bench Press',
+      muscleGroup: 'chest',
+    });
     const slam = exercise({
       id: toExerciseId('slam'),
       name: 'Medball Slam',

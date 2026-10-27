@@ -57,6 +57,7 @@ function performance(
   return {
     mesocycle: meso,
     session: session({ mesoId: meso.id, ...sessionOverrides }),
+    roundLogs: [],
     setLogs: setLogs.map((overrides) => setLog(overrides)),
   };
 }
@@ -114,6 +115,7 @@ describe('buildExerciseHistory', () => {
       weekNumber: 3,
       dayNumber: 2,
       completedAt: '2026-09-10T12:00:00.000Z',
+      roundLogs: [],
       setLogs: [
         expect.objectContaining({ setNumber: 1 }),
         expect.objectContaining({ setNumber: 2 }),

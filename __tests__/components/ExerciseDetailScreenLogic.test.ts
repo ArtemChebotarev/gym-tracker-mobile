@@ -1,5 +1,7 @@
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
 import {
+  exerciseLogRows,
+  formatRoundTail,
   powerLoadOf,
   formatBestSet,
   formatLastDone,
@@ -51,6 +53,7 @@ describe('formatLastSessionMeta', () => {
         weekNumber: 3,
         dayNumber: 1,
         completedAt: '2026-08-10T12:00:00.000Z',
+        roundLogs: [],
         setLogs: [],
       }),
     ).toBe('Week 3 · Day 1 · 10 Aug');
@@ -102,5 +105,46 @@ describe('powerLoadOf', () => {
   test('is absent for every other type', () => {
     expect(powerLoadOf({})).toBeUndefined();
     expect(powerLoadOf({ type: 'interval' })).toBeUndefined();
+  });
+});
+
+function roundLog(overrides: Partial<RoundLog> = {}): RoundLog {
+  return {
+    ...STAMPS,
+    id: 'round-1',
+    sessionExerciseId: 'se-1',
+    exerciseId: 'heavy-bag',
+    roundNumber: 1,
+    workSec: 120,
+    restSec: 60,
+    restSkipped: false,
+    completed: true,
+    completedAt: '2026-08-10T12:00:00.000Z',
+    ...overrides,
+  };
+}
+
+describe('a logged round row', () => {
+  test('reads its work, then its rest a step quieter', () => {
+    expect(exerciseLogRows({ setLogs: [], roundLogs: [roundLog()] })).toEqual([
+      { key: 'round-1', label: 'Round 1', value: '2:00', tail: ' · rest 1:00' },
+    ]);
+  });
+
+  test('says the rest was skipped, or that the round ended early', () => {
+    expect(formatRoundTail(roundLog({ restSkipped: true }))).toBe(' · rest skipped');
+    expect(formatRoundTail(roundLog({ completed: false, restSkipped: true }))).toBe(
+      ' · ended early',
+    );
+  });
+
+  test('has no tail where there was no rest to take', () => {
+    expect(formatRoundTail(roundLog({ restSec: undefined }))).toBeUndefined();
+  });
+
+  test('lists sets before rounds, each with its own row', () => {
+    const rows = exerciseLogRows({ setLogs: [setLog()], roundLogs: [roundLog()] });
+
+    expect(rows.map((row) => row.label)).toEqual(['Set 1', 'Round 1']);
   });
 });

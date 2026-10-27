@@ -431,6 +431,33 @@ describe('listExerciseGroups', () => {
     expect(groups[0]?.entries.map((entry) => entry.exercise.id)).toEqual(['e-performed']);
   });
 
+  test('performedOnly keeps an interval exercise that logged a round, with that round', async () => {
+    const deps = makeDeps();
+    await deps.exerciseRepo.seedCatalog([
+      makeExercise({ id: toExerciseId('e-bag'), name: 'Heavy Bag', type: 'interval' }),
+      makeExercise({ id: toExerciseId('e-never'), name: 'Never Done' }),
+    ]);
+    await seedLogHost();
+    await deps.roundLogRepo.create({
+      id: 'round-1',
+      sessionExerciseId: 'session-exercise-1',
+      exerciseId: 'e-bag',
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-08-26T08:00:00.000Z',
+    });
+
+    const groups = await listExerciseGroups({ performedOnly: true }, deps);
+
+    const entries = groups.flatMap((group) => group.entries);
+    expect(entries.map((entry) => entry.exercise.id)).toEqual(['e-bag']);
+    expect(entries[0]?.lastRoundLog?.id).toBe('round-1');
+    expect(entries[0]?.lastSetLog).toBeNull();
+  });
+
   test("attaches each exercise's last set log for the row caption", async () => {
     const deps = makeDeps();
     await deps.exerciseRepo.seedCatalog([makeExercise()]);

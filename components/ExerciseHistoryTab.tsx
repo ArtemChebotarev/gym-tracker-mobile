@@ -9,8 +9,9 @@
 // what was already done, the same rule the Overview blocks follow. With nothing finished yet the
 // tab says so instead of staying blank.
 //
-// Every type reads the same list (10.1 FR-12, GT-110): what was done, session by session. A power
-// set only reads in its own load — `Level 2 × 3` — and without RIR.
+// Every type reads the same list (10.1 FR-12, GT-110, GT-111): what was done, session by session.
+// A power set only reads in its own load — `Level 2 × 3` — and without RIR; an interval lists its
+// rounds — `Round 1  2:00 · rest 1:00`.
 //
 // Virtualized (SectionList), unlike the Overview tab's ScrollView: Overview shows three sessions
 // at most, this one grows with every block trained.
@@ -30,9 +31,8 @@ import type { PowerLoad } from '@domain/exerciseConfig';
 import type { ExerciseHistoryMesocycle, ExerciseHistorySession } from '@domain/exerciseHistory';
 import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 
-import { ExerciseDetailCard, ExerciseDetailCardRow } from './ExerciseDetailCard';
+import { ExerciseDetailCard } from './ExerciseDetailCard';
 import { ExerciseDetailEmpty } from './ExerciseDetailEmpty';
-import { formatSetLabel, formatSetRirTail, formatSetValue } from './ExerciseDetailScreenLogic';
 import {
   buildHistorySections,
   formatHistorySessionDate,
@@ -40,6 +40,7 @@ import {
   type ExerciseHistorySection,
 } from './ExerciseHistoryTabLogic';
 import { styles } from './ExerciseHistoryTabStyles';
+import { ExerciseLogRows } from './ExerciseLogRows';
 
 const BLEED = listBleed();
 
@@ -90,15 +91,12 @@ export function ExerciseHistoryTab({
           label={formatHistorySessionLabel(item)}
           meta={formatHistorySessionDate(item)}
         >
-          {item.setLogs.map((setLog, index) => (
-            <ExerciseDetailCardRow
-              key={setLog.id}
-              label={formatSetLabel(setLog)}
-              value={formatSetValue(setLog, equipment, powerLoad)}
-              tail={formatSetRirTail(setLog, powerLoad)}
-              isLast={index === item.setLogs.length - 1}
-            />
-          ))}
+          <ExerciseLogRows
+            setLogs={item.setLogs}
+            roundLogs={item.roundLogs}
+            equipment={equipment}
+            powerLoad={powerLoad}
+          />
         </ExerciseDetailCard>
       )}
     />
