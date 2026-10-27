@@ -15,7 +15,9 @@ import {
 } from '@components/ExerciseLibraryScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
-function exercise(overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>): Exercise {
+function exercise(
+  overrides: Partial<Exercise> & Pick<Exercise, 'id' | 'name' | 'muscleGroup'>,
+): Exercise {
   return { ...STAMPS, source: 'catalog', isHidden: false, ...overrides };
 }
 
@@ -54,8 +56,16 @@ describe('countEntries', () => {
       {
         muscleGroup: 'back',
         entries: [
-          { exercise: exercise({ id: toExerciseId('a'), name: 'A', muscleGroup: 'back' }), lastSetLog: null },
-          { exercise: exercise({ id: toExerciseId('b'), name: 'B', muscleGroup: 'back' }), lastSetLog: null },
+          {
+            exercise: exercise({ id: toExerciseId('a'), name: 'A', muscleGroup: 'back' }),
+            lastSetLog: null,
+            lastRoundLog: null,
+          },
+          {
+            exercise: exercise({ id: toExerciseId('b'), name: 'B', muscleGroup: 'back' }),
+            lastSetLog: null,
+            lastRoundLog: null,
+          },
         ],
       },
     ];
@@ -71,6 +81,25 @@ describe('formatSubtitle', () => {
 
   test('weight, reps, and a relative date when there is a last set log', () => {
     expect(formatSubtitle(setLog({ weight: 85, reps: 8 }))).toContain('85 kg × 8');
+  });
+
+  test('a power set on levels reads as a level', () => {
+    expect(formatSubtitle(setLog({ weight: 2, reps: 3 }), 'power', 'level')).toMatch(
+      /^Power · Level 2 × 3 · /,
+    );
+  });
+
+  test('a round reads as the work it ran', () => {
+    const round = {
+      ...setLog(),
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+    };
+
+    expect(formatSubtitle(round, 'interval')).toMatch(/^Timed work · 2:00 · /);
   });
 });
 
@@ -118,19 +147,26 @@ describe('equipmentSuffix', () => {
   test('the equipment label when the exercise has equipment', () => {
     expect(
       equipmentSuffix(
-        exercise({ id: toExerciseId('db-bench'), name: 'Bench Press', muscleGroup: 'chest', equipment: 'dumbbell' }),
+        exercise({
+          id: toExerciseId('db-bench'),
+          name: 'Bench Press',
+          muscleGroup: 'chest',
+          equipment: 'dumbbell',
+        }),
       ),
     ).toBe('Dumbbell');
   });
 
   test('undefined when the exercise has no equipment', () => {
     expect(
-      equipmentSuffix(exercise({ id: toExerciseId('my-fly'), name: 'My Fly', muscleGroup: 'chest' })),
+      equipmentSuffix(
+        exercise({ id: toExerciseId('my-fly'), name: 'My Fly', muscleGroup: 'chest' }),
+      ),
     ).toBeUndefined();
   });
 });
 
-describe('the type in a row\'s subtitle', () => {
+describe("the type in a row's subtitle", () => {
   test('is left out for Strength and said for the hybrid types', () => {
     expect(formatSubtitle(null)).toBe('Never performed');
     expect(formatSubtitle(null, 'strength')).toBe('Never performed');
@@ -148,8 +184,12 @@ describe('the type in a row\'s subtitle', () => {
       type: 'power',
     });
 
-    expect(rowSubtitle({ exercise: plain, lastSetLog: null })).toBe('Never performed');
-    expect(rowSubtitle({ exercise: slam, lastSetLog: null })).toBe('Power · Never performed');
+    expect(rowSubtitle({ exercise: plain, lastSetLog: null, lastRoundLog: null })).toBe(
+      'Never performed',
+    );
+    expect(rowSubtitle({ exercise: slam, lastSetLog: null, lastRoundLog: null })).toBe(
+      'Power · Never performed',
+    );
   });
 });
 

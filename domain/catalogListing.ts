@@ -10,7 +10,7 @@ import {
   type ExerciseType,
   type MuscleGroup,
 } from './catalog';
-import type { SetLog } from './execution';
+import type { RoundLog, SetLog } from './execution';
 import { exerciseTypeOf } from './exerciseConfigBuilders';
 import { nameMatchesSearch } from './names';
 
@@ -23,14 +23,19 @@ export type ExerciseListQuery = {
   types?: readonly ExerciseType[];
   /** Keep only these sources. Empty or omitted means both. */
   sources?: readonly ExerciseSource[];
-  /** Keep only exercises with at least one set log. */
+  /** Keep only exercises with at least one set or round logged. */
   performedOnly?: boolean;
 };
 
 export type ExerciseListEntry = {
   exercise: Exercise;
-  /** The exercise's most recent set log, or `null` if it has never been performed. */
+  /** The exercise's most recent set log, or `null` if it has never logged a set. */
   lastSetLog: SetLog | null;
+  /**
+   * The exercise's most recent round, or `null` if it has never logged one. An interval or
+   * mobility exercise logs rounds rather than sets (10.1 FR-7); it is performed all the same.
+   */
+  lastRoundLog: RoundLog | null;
 };
 
 export type ExerciseListGroup = {
@@ -60,6 +65,7 @@ export function buildExerciseListGroups(
   exercises: readonly Exercise[],
   lastSetLogByExerciseId: ReadonlyMap<string, SetLog | null>,
   query: ExerciseListQuery = {},
+  lastRoundLogByExerciseId: ReadonlyMap<string, RoundLog | null> = new Map(),
 ): ExerciseListGroup[] {
   const search = query.search ?? '';
   const muscleGroupFilter = query.muscleGroups?.length ? new Set(query.muscleGroups) : null;
@@ -87,11 +93,12 @@ export function buildExerciseListGroups(
     }
 
     const lastSetLog = lastSetLogByExerciseId.get(exercise.id) ?? null;
-    if (query.performedOnly && !lastSetLog) {
+    const lastRoundLog = lastRoundLogByExerciseId.get(exercise.id) ?? null;
+    if (query.performedOnly && !lastSetLog && !lastRoundLog) {
       continue;
     }
 
-    const entry: ExerciseListEntry = { exercise, lastSetLog };
+    const entry: ExerciseListEntry = { exercise, lastSetLog, lastRoundLog };
     const key =
       exercise.muscleGroup === FULL_BODY ? exerciseTypeOf(exercise) : exercise.muscleGroup;
     const bucket = entriesByKey.get(key);

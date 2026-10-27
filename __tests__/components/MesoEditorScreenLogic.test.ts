@@ -62,7 +62,10 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
     [MEDBALL_THROW.id]: MEDBALL_THROW,
   };
   const groupOf = (...exercises: Exercise[]): ExerciseListGroup[] => [
-    { muscleGroup: 'fullBody', entries: exercises.map((exercise) => ({ exercise, lastSetLog: null })) },
+    {
+      muscleGroup: 'fullBody',
+      entries: exercises.map((exercise) => ({ exercise, lastSetLog: null, lastRoundLog: null })),
+    },
   ];
 
   test('adding copies each hybrid exercise’s library config into the draft, none for strength', () => {
@@ -85,7 +88,12 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
   });
 
   test('a new interval row starts with one round, the others with the default sets (GT-183)', () => {
-    const draft = addExercisesToDraft(DEFAULT_MESO_BUILDER_DRAFT, 1, [BENCH_PRESS.id, HEAVY_BAG.id], records);
+    const draft = addExercisesToDraft(
+      DEFAULT_MESO_BUILDER_DRAFT,
+      1,
+      [BENCH_PRESS.id, HEAVY_BAG.id],
+      records,
+    );
 
     expect(draft.exercisesByDay[1]?.map((entry) => entry.sets)).toEqual([
       DEFAULT_EXERCISE_SETS,
@@ -114,11 +122,18 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
   });
 
   test('removing an exercise from its last day drops its settings; from one of two days keeps them', () => {
-    let draft = addExercisesToDraft({ ...DEFAULT_MESO_BUILDER_DRAFT, daysPerWeek: 2 }, 1, [HEAVY_BAG.id], records);
+    let draft = addExercisesToDraft(
+      { ...DEFAULT_MESO_BUILDER_DRAFT, daysPerWeek: 2 },
+      1,
+      [HEAVY_BAG.id],
+      records,
+    );
     draft = addExercisesToDraft(draft, 2, [HEAVY_BAG.id, COOLDOWN.id], records);
 
     draft = removeExerciseFromDraft(draft, 1, 0);
-    expect(Object.keys(draft.exerciseSettings ?? {}).sort()).toEqual([COOLDOWN.id, HEAVY_BAG.id].sort());
+    expect(Object.keys(draft.exerciseSettings ?? {}).sort()).toEqual(
+      [COOLDOWN.id, HEAVY_BAG.id].sort(),
+    );
 
     draft = removeExerciseFromDraft(draft, 2, 0);
     expect(draft.exerciseSettings).toEqual({ [COOLDOWN.id]: COOLDOWN.config });
@@ -127,7 +142,10 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
   test('a record is remembered when ticked, survives a new search, and goes when unticked', () => {
     let remembered = rememberSelectedExercises({}, groupOf(HEAVY_BAG), [HEAVY_BAG.id]);
     // A new search lists something else; the bag is still selected.
-    remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [HEAVY_BAG.id, COOLDOWN.id]);
+    remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [
+      HEAVY_BAG.id,
+      COOLDOWN.id,
+    ]);
     expect(remembered).toEqual({ [HEAVY_BAG.id]: HEAVY_BAG, [COOLDOWN.id]: COOLDOWN });
 
     remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [COOLDOWN.id]);
