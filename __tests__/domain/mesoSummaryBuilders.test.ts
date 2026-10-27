@@ -18,11 +18,12 @@ const mesocycle: Mesocycle = {
   progressionSettings: defaultProgressionSettings,
 };
 
-const exercises: Pick<Exercise, 'id' | 'muscleGroup'>[] = [
+const exercises: Pick<Exercise, 'id' | 'muscleGroup' | 'type'>[] = [
   { id: toExerciseId('bench'), muscleGroup: 'chest' },
   { id: toExerciseId('fly'), muscleGroup: 'chest' },
   { id: toExerciseId('squat'), muscleGroup: 'quads' },
   { id: toExerciseId('row'), muscleGroup: 'back' },
+  { id: toExerciseId('hamstring-stretch'), muscleGroup: 'hamstrings', type: 'mobility' },
 ];
 
 function session(week: number, day: number, overrides: Partial<Session> = {}): Session {
@@ -181,6 +182,18 @@ describe('buildMesoSummary', () => {
     const summary = buildMesoSummary(mesocycle, [logged(session(1, 1), setLogs)], exercises);
 
     expect(summary.weeklySets).toEqual([{ muscleGroup: 'back', sets: [2, 0, 0, 0] }]);
+  });
+
+  test('a mobility exercise counts toward neither the sets nor any group (GT-106)', () => {
+    const summary = buildMesoSummary(
+      mesocycle,
+      [logged(session(1, 1), sets('w1d1', 'bench', 3), sets('w1d1', 'hamstring-stretch', 1))],
+      exercises,
+    );
+
+    expect(summary.strengthSets).toBe(3);
+    expect(summary.weeklySets).toEqual([{ muscleGroup: 'chest', sets: [3, 0, 0, 0] }]);
+    expect(summary.workouts.value).toBe(1);
   });
 
   test('ignores sessions of other mesocycles and outside the block', () => {

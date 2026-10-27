@@ -6,20 +6,16 @@ import type { ExerciseType } from '@domain/catalog';
 import type { SourceExercise } from '@domain/progression';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
 import { intervalPolicy } from '@domain/progressionPolicyInterval';
+import { mobilityPolicy } from '@domain/progressionPolicyMobility';
 import { powerPolicy } from '@domain/progressionPolicyPower';
 import { strengthPolicy } from '@domain/progressionPolicyStrength';
 
-/**
- * `power` and `interval` each have a file of their own and share nothing with strength. `mobility` has none yet and runs the
- * strength policy, as every non-strength type did before the engine dispatched by type; the
- * strength rules aren't right for it (10 · Hybrid Exercises, "Зачем"), and this keeps the
- * behaviour from changing under it until its story gives it one.
- */
+/** Every type has a file of its own, and none shares anything with strength. */
 export const PROGRESSION_POLICIES: Record<ExerciseType, ProgressionPolicy> = {
   strength: strengthPolicy,
   power: powerPolicy,
   interval: intervalPolicy,
-  mobility: strengthPolicy,
+  mobility: mobilityPolicy,
 };
 
 /** The policy of the exercise's type; an exercise with no `type` is `strength`. */

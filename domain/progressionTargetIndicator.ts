@@ -12,13 +12,14 @@ import { evaluateWeightSwap } from '@domain/weightSwapRules';
  * Whether a set of this exercise is judged against its target (08.7, row mode `scored`) or only
  * guided by it (`guided`, 10.2 P11): power, and a resistance band, whose target is a placeholder
  * to aim at and never a mark to hit — a drop in reps after a heavier weight must not read as a
- * miss. One predicate by type and equipment, so a screen never decides this on its own.
+ * miss. And mobility, which has no target at all (GT-106). One predicate by type and equipment,
+ * so a screen never decides this on its own — weight swap (rule 7) asks it too.
  */
 export function usesTargetIndicator(
   type: ExerciseType | undefined,
   equipment: Equipment | undefined,
 ): boolean {
-  return type !== 'power' && !isResistanceBand(equipment);
+  return type !== 'power' && type !== 'mobility' && !isResistanceBand(equipment);
 }
 
 /**
