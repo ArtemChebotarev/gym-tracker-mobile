@@ -215,6 +215,7 @@ describe('the app’s own migrations', () => {
       '0005_seed_catalog_templates': 1791909901083,
       '0006_hybrid_exercise_types': 1791988803753,
       '0007_settings_get_ready': 1793097297644,
+      '0008_settings_signals': 1793108004948,
     });
   });
 
@@ -320,6 +321,8 @@ describe('the app’s own migrations', () => {
         // The columns of migration 0006 bring the rest timer as it ships (GT-87), 0007 Get ready.
         restBetweenSets: { enabled: true, restSec: 120 },
         getReadySec: 5,
+        // 0008 the signals, sound and vibration both on (GT-172).
+        signals: { sound: true, vibration: true },
       });
     } finally {
       close();
@@ -401,6 +404,31 @@ describe('the app’s own migrations', () => {
       const settings = await new SqliteSettingsRepository(db).read();
       expect(settings.restBetweenSets).toEqual({ enabled: false, restSec: 90 });
       expect(settings.getReadySec).toBe(5);
+    } finally {
+      close();
+    }
+  });
+
+  // GT-172: the signals become settings. The settings row already on the device keeps what the
+  // user set and gets both signals on, as the rest timer gave them before.
+  test('give the settings row before 0008 both signals on and keep its timers', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0008_settings_signals')));
+      await db.run(sql`
+        INSERT INTO settings
+          (id, default_progression_settings, weight_unit, strength_rest_timer_enabled,
+           strength_rest_timer_seconds, get_ready_seconds)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg', 0, 90, 3)
+      `);
+
+      await migrateToLatest(db, full);
+
+      const settings = await new SqliteSettingsRepository(db).read();
+      expect(settings.restBetweenSets).toEqual({ enabled: false, restSec: 90 });
+      expect(settings.getReadySec).toBe(3);
+      expect(settings.signals).toEqual({ sound: true, vibration: true });
     } finally {
       close();
     }

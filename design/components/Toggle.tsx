@@ -1,5 +1,7 @@
-// Toggle — see 08.0 · Design SDK, "Компоненты": on/off, always carrying a label and an
-// explanatory caption below it (08.0: "Всегда с подписью и пояснением под ней"). Built on React
+// Toggle — see 08.0 · Design SDK, "Компоненты": on/off, carrying a label and an explanatory
+// caption below it (08.0: "Всегда с подписью и пояснением под ней"). The caption may be left out
+// where the label says it all and a neighbouring toggle's caption covers both — Vibration under
+// Sound in Settings' Signals (GT-172). Built on React
 // Native's own Switch rather than a custom control: it needs no icon, and Switch is already
 // themeable (trackColor/thumbColor) and accessible out of the box. `disabled` dims the whole
 // row, matching Button/IconButton's 0.5-opacity disabled treatment.
@@ -9,7 +11,7 @@ import { COLORS, OPACITY, SPACING, TYPOGRAPHY } from '../tokens';
 
 export type ToggleProps = {
   label: string;
-  description: string;
+  description?: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
   disabled?: boolean;
@@ -26,7 +28,7 @@ export function Toggle({
     <View style={[styles.container, disabled && styles.disabled]}>
       <View style={styles.text}>
         <Text style={styles.label}>{label}</Text>
-        <Text style={styles.description}>{description}</Text>
+        {description !== undefined && <Text style={styles.description}>{description}</Text>}
       </View>
       <Switch
         accessibilityLabel={label}

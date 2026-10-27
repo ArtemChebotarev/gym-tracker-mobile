@@ -11,18 +11,21 @@ const METRICS: Metrics = {
 function renderScreen(props: Partial<SettingsScreenProps> = {}) {
   const onChangeRestBetweenSets = jest.fn();
   const onChangeGetReadySec = jest.fn();
+  const onChangeSignals = jest.fn();
   render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <SettingsScreen
         restBetweenSets={{ enabled: true, restSec: 120 }}
         getReadySec={5}
+        signals={{ sound: true, vibration: true }}
         onChangeRestBetweenSets={onChangeRestBetweenSets}
         onChangeGetReadySec={onChangeGetReadySec}
+        onChangeSignals={onChangeSignals}
         {...props}
       />
     </SafeAreaProvider>,
   );
-  return { onChange: onChangeRestBetweenSets, onChangeGetReadySec };
+  return { onChange: onChangeRestBetweenSets, onChangeGetReadySec, onChangeSignals };
 }
 
 describe('SettingsScreen', () => {
@@ -90,5 +93,30 @@ describe('SettingsScreen', () => {
     const atMin = renderScreen({ getReadySec: 0 });
     fireEvent.press(screen.getByRole('button', { name: 'Decrease Get ready' }));
     expect(atMin.onChangeGetReadySec).not.toHaveBeenCalled();
+  });
+
+  test('shows the signals, sound and vibration both on (GT-172)', () => {
+    renderScreen();
+
+    expect(screen.getByText('Signals')).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Sound' }).props.value).toBe(true);
+    expect(screen.getByText('End of rest, start of work and rest')).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Vibration' }).props.value).toBe(true);
+  });
+
+  test('turning the sound off saves it off, keeping the vibration', () => {
+    const { onChangeSignals } = renderScreen();
+
+    fireEvent(screen.getByRole('switch', { name: 'Sound' }), 'valueChange', false);
+
+    expect(onChangeSignals).toHaveBeenCalledWith({ sound: false, vibration: true });
+  });
+
+  test('turning the vibration off saves it off, keeping the sound', () => {
+    const { onChangeSignals } = renderScreen({ signals: { sound: false, vibration: true } });
+
+    fireEvent(screen.getByRole('switch', { name: 'Vibration' }), 'valueChange', false);
+
+    expect(onChangeSignals).toHaveBeenCalledWith({ sound: false, vibration: false });
   });
 });

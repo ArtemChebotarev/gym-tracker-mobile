@@ -1,15 +1,17 @@
-// Reads and changes the timer settings — the rest between sets (10.1 FR-5, GT-87) and Get ready
-// (FR-6, GT-188) — through the usecase layer via TanStack Query. A change re-reads the workout too:
+// Reads and changes the timer settings — the rest between sets (10.1 FR-5, GT-87), Get ready
+// (FR-6, GT-188) and the signals (GT-172) — through the usecase layer via TanStack Query. A change re-reads the workout too:
 // its cards carry the rest the timer runs after a set (`WorkoutExercise.restSec`) and an
 // interval's Get ready (`IntervalWorkoutExercise.getReadySec`).
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { RestBetweenSets } from '@domain/restTimer';
+import type { Signals } from '@domain/signals';
 import {
   readTimerSettings,
   setGetReadySec,
   setRestBetweenSets,
+  setSignals,
   type TimerSettings,
   type TimerSettingsDeps,
 } from '@usecases/timerSettings';
@@ -69,4 +71,11 @@ export function useSetGetReadySec() {
       getReadySec,
     }),
   );
+}
+
+export function useSetSignals() {
+  return useTimerSettingMutation<Signals>('setSignals', setSignals, (settings, signals) => ({
+    ...settings,
+    signals,
+  }));
 }

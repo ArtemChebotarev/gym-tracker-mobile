@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { restIsOver, restRemainingMs } from '@domain/restTimerRules';
+import { DEFAULT_SIGNALS } from '@domain/signals';
 import { msUntilSecondChanges } from '@domain/time';
 import { signalRestOver } from '@state/restSignal';
 import { useRestTimerStore } from '@state/restTimerStore';
 import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
+import { useTimerSettings } from '@state/useTimerSettings';
 
 import { restCapsule } from './RestTimerDriverLogic';
 
@@ -18,7 +20,16 @@ import { restCapsule } from './RestTimerDriverLogic';
 // the rest and the clock afresh and publishes the capsule. What is left is always worked out from
 // the clock, never counted down tick by tick, so a rest that went on while the app was in the
 // background shows the right time when it comes back.
+//
+// The signal follows the settings as they are when the rest runs out (GT-172), not as they were
+// when it started; until they have been read it is given as it ships, sound and vibration both.
 export function RestTimerDriver() {
+  const signals = useTimerSettings().data?.signals ?? DEFAULT_SIGNALS;
+  const signalsRef = useRef(signals);
+  useEffect(() => {
+    signalsRef.current = signals;
+  }, [signals]);
+
   useEffect(() => {
     let tick: ReturnType<typeof setTimeout> | null = null;
 
@@ -28,7 +39,7 @@ export function RestTimerDriver() {
       if (rest.timer !== null && restIsOver(rest.timer, now)) {
         // `finish` changes the store, which calls `update` again with the rest run out.
         rest.finish();
-        signalRestOver();
+        signalRestOver(signalsRef.current);
         return;
       }
       const capsule = restCapsule(rest, now, rest);

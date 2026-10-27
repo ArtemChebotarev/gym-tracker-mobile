@@ -1,6 +1,7 @@
 // The Settings tab (08 · Screens & Navigation, "Настройки"). For now it holds the timers (10.1 FR-5,
 // FR-6; canvas 5.x): the rest between sets of strength and power exercises — on or off, and how
-// long (GT-87) — and the Get ready of interval rounds (GT-188). Laid out as canvas 5.x draws it: a
+// long (GT-87) — the Get ready of interval rounds (GT-188), and the signals they give, sound and
+// vibration, each on or off (GT-172). Laid out as canvas 5.x draws it: a
 // card of rows under the section's label, a grey note under it.
 //
 // The rest is set with `−` / `+` in 15 s steps, or straight away in the time picker by tapping the
@@ -18,6 +19,7 @@ import { Toggle } from '@design/components/Toggle';
 import { formatClock } from '@design/formatClock';
 import { GET_READY_RANGE_SEC, GET_READY_STEP_SEC } from '@domain/intervalTimer';
 import { REST_BETWEEN_SETS_RANGE_SEC, type RestBetweenSets } from '@domain/restTimer';
+import type { Signals } from '@domain/signals';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
@@ -34,17 +36,21 @@ export type SettingsScreenProps = {
   /** Absent while they load, or when they could not be read. */
   restBetweenSets?: RestBetweenSets;
   getReadySec?: number;
+  signals?: Signals;
   loadError?: LoadError;
   onChangeRestBetweenSets: (setting: RestBetweenSets) => void;
   onChangeGetReadySec: (getReadySec: number) => void;
+  onChangeSignals: (signals: Signals) => void;
 };
 
 export function SettingsScreen({
   restBetweenSets,
   getReadySec,
+  signals,
   loadError,
   onChangeRestBetweenSets,
   onChangeGetReadySec,
+  onChangeSignals,
 }: SettingsScreenProps) {
   const [openPicker, setOpenPicker] = useState<OpenPicker>(null);
   const tabBarClearance = useTabBarClearance();
@@ -125,6 +131,28 @@ export function SettingsScreen({
             maxSec={GET_READY_RANGE_SEC.max}
             stepSec={GET_READY_STEP_SEC}
           />
+        </View>
+      )}
+      {signals !== undefined && (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Signals</Text>
+          <View style={styles.card}>
+            <View style={[styles.toggleRow, styles.rowDivider]}>
+              <Toggle
+                label="Sound"
+                description="End of rest, start of work and rest"
+                value={signals.sound}
+                onValueChange={(sound) => onChangeSignals({ ...signals, sound })}
+              />
+            </View>
+            <View style={styles.toggleRow}>
+              <Toggle
+                label="Vibration"
+                value={signals.vibration}
+                onValueChange={(vibration) => onChangeSignals({ ...signals, vibration })}
+              />
+            </View>
+          </View>
         </View>
       )}
     </RootScreen>

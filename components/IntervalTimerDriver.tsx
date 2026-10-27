@@ -3,9 +3,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Alert, Vibration } from 'react-native';
 
 import type { IntervalTimer } from '@domain/intervalTimer';
+import { DEFAULT_SIGNALS } from '@domain/signals';
 import { cancelCountdown, scheduleCountdown } from '@state/intervalSignal';
 import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import { useTimerCapsuleStore } from '@state/timerCapsuleStore';
+import { useTimerSettings } from '@state/useTimerSettings';
 import { useTimerRoundLogging } from '@state/useTimerRoundLogging';
 import type { LogRoundResult } from '@usecases/roundLogging';
 
@@ -26,6 +28,9 @@ import { formatInProgressConflict } from './TodayScreenLogic';
 // closed it puts the timer in the floating capsule (GT-97), a tap on which opens the screen again.
 // Draws nothing itself. It sits next to RestTimerDriver in the tab bar's overlay, so the timer runs
 // on behind its screen too.
+//
+// The sound and the buzz each follow their switch in Settings (GT-172) as it is when they are due;
+// until the settings have been read, both are on, as they ship.
 //
 // Keeping the app awake behind a locked screen: IntervalLockScreenDriver. The Live Activity is
 // parked: IntervalLiveActivityDriver.
@@ -52,6 +57,11 @@ export function IntervalTimerDriver() {
   useEffect(() => {
     logRoundRef.current = logRound;
   }, [logRound]);
+  const signals = useTimerSettings().data?.signals ?? DEFAULT_SIGNALS;
+  const signalsRef = useRef(signals);
+  useEffect(() => {
+    signalsRef.current = signals;
+  }, [signals]);
 
   useEffect(() => {
     let tick: ReturnType<typeof setTimeout> | null = null;
@@ -112,7 +122,7 @@ export function IntervalTimerDriver() {
           );
         }
       }
-      if (phaseChanged(lastTimer, timer)) {
+      if (phaseChanged(lastTimer, timer) && signalsRef.current.vibration) {
         Vibration.vibrate();
       }
       const key = runningPhaseKey(timer);
@@ -121,7 +131,7 @@ export function IntervalTimerDriver() {
         if (key === undefined || timer?.endsAt === undefined) {
           cancelCountdown();
         } else {
-          scheduleCountdown(timer.endsAt);
+          scheduleCountdown(timer.endsAt, () => signalsRef.current.sound);
         }
       }
       lastTimer = timer;

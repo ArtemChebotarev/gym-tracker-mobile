@@ -1,5 +1,6 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { RestBetweenSets } from '@domain/restTimer';
+import type { Signals } from '@domain/signals';
 
 /**
  * Which of the four first-run windows of 08.11 · Onboarding the user has already closed. Each flag
@@ -61,6 +62,11 @@ export type Settings = {
    * between rounds (10.1 FR-6, GT-176, GT-188), seconds — the same for every interval exercise.
    */
   getReadySec: number;
+  /**
+   * How the timers signal — the end of a rest, the start of work and rest in an interval (10.1
+   * FR-5, FR-6, GT-172): the sound and the vibration, each on or off.
+   */
+  signals: Signals;
 };
 
 /**

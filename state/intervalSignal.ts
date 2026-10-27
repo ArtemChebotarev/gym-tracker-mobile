@@ -22,6 +22,9 @@ import { playFrom } from './soundPlayer';
 // - So the session plays in silent mode too: the background audio category that keeps the app
 //   awake is the one that ignores the silent switch. The rest timer alone follows the switch
 //   (state/restSignal.ts) — while an interval runs, the last mode set wins.
+// - **Sound off in Settings (GT-172) silences the countdown**, asked at the moment it is due to
+//   sound, so a change made while a phase runs counts for that phase. The silent loop plays on: it
+//   is not heard, and the app still has to stay awake.
 
 const COUNTDOWN_SOUND = require('../assets/sounds/interval-countdown.wav');
 const SILENCE = require('../assets/sounds/silence.wav');
@@ -58,10 +61,11 @@ export function releaseTimer(): void {
 
 /**
  * Sets the countdown of the running phase to go off so its signal lands on `phaseEndsAt` (epoch
- * ms). Replaces any countdown set before — one phase runs at a time. Call it again after a pause,
- * with the new end: it picks up part way into the clip if the countdown has begun.
+ * ms), if `soundOn` says so when it is due. Replaces any countdown set before — one phase runs at
+ * a time. Call it again after a pause, with the new end: it picks up part way into the clip if the
+ * countdown has begun.
  */
-export function scheduleCountdown(phaseEndsAt: number): void {
+export function scheduleCountdown(phaseEndsAt: number, soundOn: () => boolean): void {
   cancelCountdown();
   const start = countdownStart(phaseEndsAt, Date.now());
   if (start === null) {
@@ -72,7 +76,7 @@ export function scheduleCountdown(phaseEndsAt: number): void {
     // Worked out again at the moment it goes off: a timeout that fires late still lands the signal
     // on the phase's end, starting further into the clip.
     const due = countdownStart(phaseEndsAt, Date.now());
-    if (due !== null) {
+    if (due !== null && soundOn()) {
       void playFrom(intervalPlayers().countdown, due.offsetSec);
     }
   }, start.delayMs);
