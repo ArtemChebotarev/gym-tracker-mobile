@@ -100,24 +100,39 @@ export function roundMenuRows(actions: RoundExerciseActions): ExerciseMenuRow[] 
 
 /**
  * The rows a card's type puts into its menu: a card of set rows Add set and Remove last set, an
- * interval card Add round and Remove last round.
+ * interval card Add round and Remove last round, a mobility card none — it is one block (FR-1).
  */
 export function typeMenuRows(exercise: WorkoutExercise): ExerciseMenuRow[] {
-  return exercise.type === 'interval'
-    ? roundMenuRows(exercise.actions)
-    : setMenuRows(exercise.actions);
+  switch (exercise.type) {
+    case 'interval':
+      return roundMenuRows(exercise.actions);
+    case 'mobility':
+      return [];
+    default:
+      return setMenuRows(exercise.actions);
+  }
 }
 
 /**
- * What an exercise has planned and logged, in its own unit — sets, or an interval's rounds. The
+ * What an exercise has planned and logged, in its own unit — sets, an interval's rounds or a
+ * mobility block. The
  * menu's subtitle and the Skip / Delete / Replace confirmations count in it.
  */
-export type ExerciseLogCounts = { unit: 'set' | 'round'; planned: number; logged: number };
+export type ExerciseLogCounts = {
+  unit: 'set' | 'round' | 'block';
+  planned: number;
+  logged: number;
+};
 
 export function exerciseLogCounts(exercise: WorkoutExercise): ExerciseLogCounts {
-  return exercise.type === 'interval'
-    ? { unit: 'round', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount }
-    : { unit: 'set', planned: exercise.plannedSetCount, logged: exercise.loggedSetCount };
+  switch (exercise.type) {
+    case 'interval':
+      return { unit: 'round', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+    case 'mobility':
+      return { unit: 'block', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+    default:
+      return { unit: 'set', planned: exercise.plannedSetCount, logged: exercise.loggedSetCount };
+  }
 }
 
 function formatCount(count: number, unit: ExerciseLogCounts['unit'], qualifier?: string): string {

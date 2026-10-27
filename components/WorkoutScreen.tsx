@@ -110,8 +110,13 @@ export type WorkoutScreenProps = {
   onLogRound: (exercise: WorkoutExercise, roundNumber: number, entry: RoundEntry) => void;
   /** Un-logs a logged round. Live only. */
   onUnlogRound: (exercise: WorkoutExercise, roundNumber: number) => void;
-  /** Start timer on an interval card, with the rounds it runs (10.1 FR-6, GT-96). Live only. */
+  /**
+   * Start timer on an interval card, with the rounds it runs (10.1 FR-6, GT-96) — or on a mobility
+   * card, with its block (GT-107). Live only.
+   */
   onStartIntervalTimer?: (exercise: WorkoutExercise, rounds: IntervalTimerRound[]) => void;
+  /** Opens the running interval timer's screen — from a mobility card while its block runs. Live only. */
+  onOpenIntervalTimer?: () => void;
   /** A time picked in an interval round, saved as the plan of the rounds it fills (FR-9, GT-187). Live only. */
   onSetRoundTime?: (
     exercise: WorkoutExercise,
@@ -179,6 +184,7 @@ export function WorkoutScreen({
   onLogRound,
   onUnlogRound,
   onStartIntervalTimer,
+  onOpenIntervalTimer,
   onSetRoundTime,
   onSetNoHeavierAvailable,
   onHideCeilingTip,
@@ -342,6 +348,7 @@ export function WorkoutScreen({
                         onSetRoundTime(exercise, column, roundNumbers, sec),
                     }
                   : {}),
+                ...(onOpenIntervalTimer !== undefined ? { onOpenTimer: onOpenIntervalTimer } : {}),
               }}
               ceiling={{
                 onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),

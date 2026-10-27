@@ -19,8 +19,10 @@ import {
   getWorkoutSession,
   getWorkoutSlot,
   type IntervalWorkoutExercise,
+  type MobilityWorkoutExercise,
   type PowerWorkoutExercise,
   type StrengthWorkoutExercise,
+  type WorkoutExercise,
   type WorkoutSessionDeps,
 } from '@usecases/workoutSession';
 import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
@@ -60,6 +62,7 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
   ['medball', 'Medball throw', 'fullBody', 'medicine-ball'],
   ['boxjump', 'Box jump', 'quads', 'plyo-box'],
   ['bag', 'Heavy bag', 'fullBody', undefined],
+  ['cooldown', 'Cooldown', 'fullBody', undefined],
 ];
 
 /** The catalog ids that are power exercises — the rest are strength, but for `INTERVAL_IDS`. */
@@ -67,6 +70,9 @@ const POWER_IDS = new Set(['medball', 'boxjump']);
 
 /** The catalog ids that are interval exercises, on `HEAVY_BAG_CONFIG`: 2:00 work, 0:45 rest. */
 const INTERVAL_IDS = new Set(['bag']);
+
+/** The catalog ids that are mobility exercises — one block each, its length from history. */
+const MOBILITY_IDS = new Set(['cooldown']);
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
@@ -182,6 +188,9 @@ async function setUp(setup: Setup = {}) {
           }
         : {}),
       ...(INTERVAL_IDS.has(id) ? { type: 'interval' as const, config: HEAVY_BAG_CONFIG } : {}),
+      ...(MOBILITY_IDS.has(id)
+        ? { type: 'mobility' as const, config: { type: 'mobility' as const } }
+        : {}),
     });
   }
   const workout = createSqliteWorkoutStore(store);
@@ -1343,5 +1352,71 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
 
     expect(card?.rounds.some((round) => round.isFirstUnlogged)).toBe(false);
     expect(Object.values(card?.actions ?? {}).some(Boolean)).toBe(false);
+  });
+});
+
+describe('getWorkoutSession — a mobility block (GT-107)', () => {
+  const cooldown = planned('w2d1', 'cooldown', 1, [], {
+    setTargets: [{ setNumber: 1, targetWorkSec: 600 }],
+  });
+
+  function mobilityCard(model: { exercises: readonly WorkoutExercise[] }) {
+    return model.exercises.find(
+      (exercise): exercise is MobilityWorkoutExercise => exercise.type === 'mobility',
+    );
+  }
+
+  test('its own card: one block with its length, no RIR, no rest, nothing for the menu to add', async () => {
+    const { deps } = await setUp({ exercises: [bench, cooldown], logs: [] });
+
+    const card = mobilityCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).toMatchObject({
+      name: 'Cooldown',
+      type: 'mobility',
+      plannedRoundCount: 1,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      getReadySec: 5,
+    });
+    expect(card?.rounds).toEqual([{ roundNumber: 1, workSec: 600, isFirstUnlogged: true }]);
+    expect(card).not.toHaveProperty('restSec');
+    expect(card).not.toHaveProperty('rows');
+    expect(card).not.toHaveProperty('targetRir');
+    expect(card?.actions).not.toHaveProperty('canAddSet');
+    expect(card?.actions).not.toHaveProperty('canAddRound');
+  });
+
+  test('logged, by the timer or by hand: the block carries its log and the card counts it', async () => {
+    const { deps } = await setUp({
+      exercises: [cooldown],
+      logs: [],
+      roundLogs: [
+        {
+          ...STAMPS,
+          id: 'cooldown-block',
+          sessionExerciseId: cooldown.id,
+          exerciseId: cooldown.exerciseId,
+          roundNumber: 1,
+          workSec: 540,
+          restSkipped: false,
+          completed: true,
+          completedAt: NOW,
+        },
+      ],
+    });
+
+    const card = mobilityCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).toMatchObject({ loggedRoundCount: 1, hasLoggedSets: true });
+    expect(card?.rounds[0]?.log).toEqual({ workSec: 540, restSkipped: false, completed: true });
+  });
+
+  test('a preview keeps its type, with no block', async () => {
+    const { deps } = await setUp({ exercises: [bench, cooldown], logs: [] });
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 1 }, deps);
+
+    expect(mobilityCard(model)).toMatchObject({ type: 'mobility', rounds: [] });
   });
 });

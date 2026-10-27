@@ -11,6 +11,9 @@ import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
 
 // What the interval timer's screen shows (10.1 FR-6; canvas 2.1–2.4, 6.1, 6.3), worked out from the
 // timer and the time. Pure — IntervalTimerScreen.tsx only draws it.
+//
+// A mobility block runs on the same timer as one round with no rest (GT-107); its lines speak of
+// the block — `Mobility`, `Time`, `Done` — rather than of rounds.
 
 /**
  * What the running time is, for its colour: work and Get ready run orange, a rest grey (canvas
@@ -23,7 +26,7 @@ export type RoundSegment = { fill: number; tone: 'done' | 'running' | 'paused' |
 
 export type IntervalTimerView = {
   title: string;
-  /** `Round 2 of 3`, `Round 2 of 3 done` in its rest, `All rounds done`. */
+  /** `Round 2 of 3`, `Round 2 of 3 done` in its rest, `All rounds done`; `Mobility` for a block. */
   subtitle: string;
   segments: RoundSegment[];
   /** `Get ready`, `Work`, `Rest`; `Paused · work` while paused. */
@@ -47,7 +50,7 @@ export type IntervalTimerView = {
 /** The screen once the block is done (canvas 6.1, frame 6). */
 export type IntervalSummaryView = {
   title: string;
-  /** `2 of 2 rounds`. */
+  /** `2 of 2 rounds`; `Done` for a mobility block. */
   rounds: string;
   /** `4:00 work · 1:00 rest`. */
   totals: string;
@@ -59,13 +62,20 @@ function roundOf(timer: IntervalTimer, index: number): IntervalTimerRound | unde
   return timer.rounds[index];
 }
 
-function phaseName(kind: 'getReady' | 'work' | 'rest'): string {
-  return kind === 'getReady' ? 'Get ready' : kind === 'work' ? 'Work' : 'Rest';
+const MOBILITY_SUBTITLE = 'Mobility';
+
+function phaseName(kind: 'getReady' | 'work' | 'rest', mobility: boolean): string {
+  if (kind === 'getReady') return 'Get ready';
+  if (kind === 'rest') return 'Rest';
+  return mobility ? 'Time' : 'Work';
 }
 
-function nextLine(timer: IntervalTimer): string {
+function nextLine(timer: IntervalTimer, mobility: boolean): string {
   const phase = timer.phase;
   if (phase === undefined) return '';
+  if (mobility) {
+    return timer.endsAt === undefined ? 'The time goes on from here when you resume.' : '';
+  }
   const round = roundOf(timer, phase.round);
   const isLast = phase.round === timer.rounds.length - 1;
   if (timer.endsAt === undefined) {
@@ -136,19 +146,22 @@ export function intervalTimerView(
   const round = roundOf(timer, phase.round);
   const roundNumber = round?.roundNumber;
   const lastResult = timer.results.at(-1);
+  const mobility = exercise.type === 'mobility';
+  const name = phaseName(shown.kind, mobility);
   const view: IntervalTimerView = {
     title: exercise.name,
-    subtitle:
-      phase.kind === 'rest'
+    subtitle: mobility
+      ? MOBILITY_SUBTITLE
+      : phase.kind === 'rest'
         ? `Round ${roundNumber} of ${exercise.totalRounds} done`
         : `Round ${roundNumber} of ${exercise.totalRounds}`,
     segments: segmentsOf(active, progress, paused),
-    phase: paused ? `Paused · ${phaseName(shown.kind).toLowerCase()}` : phaseName(shown.kind),
+    phase: paused ? `Paused · ${name.toLowerCase()}` : name,
     time: formatClock(intervalPhaseRemainingSec(timer, now)),
     of: `of ${formatClock(Math.round(shown.durationMs / MS_PER_SEC))}`,
     progress,
     tone: paused ? 'paused' : shown.kind === 'rest' ? 'rest' : 'running',
-    next: nextLine(timer),
+    next: nextLine(timer, mobility),
     paused,
     canSkipRest: phase.kind === 'rest',
   };
@@ -167,6 +180,10 @@ export function intervalSummaryView({
   timer,
 }: ActiveIntervalTimer): IntervalSummaryView | undefined {
   if (timer.outcome !== 'done') return undefined;
+  if (exercise.type === 'mobility') {
+    const workSec = timer.results.reduce((sum, result) => sum + result.workSec, 0);
+    return { title: exercise.name, rounds: 'Done', totals: formatClock(workSec) };
+  }
   const done = timer.results.filter((result) => result.completed).length;
   const workSec = timer.results.reduce((sum, result) => sum + result.workSec, 0);
   // The last round's rest is still to come — the rest timer's, after this screen — so it is not
@@ -197,7 +214,7 @@ function roundList(numbers: readonly number[]): string {
  * and what the one running will be logged as.
  */
 export function endEarlyMessage(active: ActiveIntervalTimer, now: number): string {
-  const { timer } = active;
+  const { exercise, timer } = active;
   const lines: string[] = [];
   const done = timer.results.map((result) => result.roundNumber);
   if (done.length > 0) {
@@ -209,6 +226,11 @@ export function endEarlyMessage(active: ActiveIntervalTimer, now: number): strin
     const ranSec = Math.round(
       (timer.durationMs - intervalPhaseRemainingMs(timer, now)) / MS_PER_SEC,
     );
+    if (exercise.type === 'mobility') {
+      return ranSec >= 1
+        ? `It will be logged as ${formatClock(ranSec)} of ${formatClock(round.workSec)}.`
+        : 'It has not started, so it won’t be logged.';
+    }
     lines.push(
       ranSec >= 1
         ? `Round ${round.roundNumber} will be logged as ${formatClock(ranSec)} of ${formatClock(round.workSec)}.`

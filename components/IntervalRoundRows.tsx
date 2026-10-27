@@ -77,6 +77,8 @@ export type RoundActions = {
    * followed it (FR-9, GT-187).
    */
   onSetRoundTime?: (column: RoundTimeColumn, roundNumbers: number[], sec: number) => void;
+  /** Opens the timer that runs for this exercise — a mobility card's, while its block is out (GT-107). */
+  onOpenTimer?: () => void;
 };
 
 export type IntervalRoundRowsProps = {

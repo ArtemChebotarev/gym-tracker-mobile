@@ -5,7 +5,7 @@
 // and the screen re-reads this model, so nothing here is cached between calls.
 
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
-import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { Equipment, MuscleGroup } from '@domain/catalog';
 import type {
   ExerciseSettings,
   IntervalConfig,
@@ -192,7 +192,7 @@ type WorkoutExerciseBase = {
 
 /**
  * What a card made of set rows adds — strength and power. An interval card has rounds instead, and
- * a mobility one a single duration, so neither carries these.
+ * a mobility one a single block, so neither carries these.
  */
 type SetRowsWorkoutExercise = WorkoutExerciseBase & {
   /**
@@ -211,13 +211,10 @@ type SetRowsWorkoutExercise = WorkoutExerciseBase & {
   actions: SetExerciseActions;
 };
 
-/**
- * A strength exercise's card — and, until its story gives it a card of its own, a mobility one's
- * too: it runs strength's progression (`PROGRESSION_POLICIES`) and so is shown as strength.
- */
+/** A strength exercise's card. */
 export type StrengthWorkoutExercise = SetRowsWorkoutExercise & {
   /** Absent means `strength`, as on `Exercise.type`. */
-  type?: Exclude<ExerciseType, 'power' | 'interval'>;
+  type?: 'strength';
   /** Not shown in preview — the day isn't programmed yet. */
   targetRir?: number;
   /**
@@ -266,9 +263,36 @@ export type IntervalWorkoutExercise = WorkoutExerciseBase & {
   actions: RoundExerciseActions;
 };
 
+/**
+ * A mobility exercise's card (10.1 FR-10, FR-14; GT-107): one block with its length, a timer and
+ * Done. The block is an interval's round in every way that matters — the same `RoundLog`, the same
+ * picker, the same timer, run as one round of `workSec` with no rest — so it is carried as one:
+ * `rounds` holds the block (none in preview), its length in `workSec`, and `restSec` is never set.
+ */
+export type MobilityWorkoutExercise = WorkoutExerciseBase & {
+  type: 'mobility';
+  rounds: WorkoutRoundRow[];
+  /** Blocks planned, for the menu subtitle `1 block planned · 0 logged`. */
+  plannedRoundCount: number;
+  loggedRoundCount: number;
+  /** Get ready before the timer's block, from Settings — as an interval's (FR-6, GT-188). */
+  getReadySec: number;
+};
+
 /** One exercise card (08.7, "Карточка упражнения"), told apart by `type`. */
 export type WorkoutExercise =
-  StrengthWorkoutExercise | PowerWorkoutExercise | IntervalWorkoutExercise;
+  | StrengthWorkoutExercise
+  | PowerWorkoutExercise
+  | IntervalWorkoutExercise
+  | MobilityWorkoutExercise;
+
+/** A card of timed rounds rather than set rows — an interval's, or a mobility block. */
+export type RoundsWorkoutExercise = IntervalWorkoutExercise | MobilityWorkoutExercise;
+
+/** Whether `exercise` is logged in rounds (`RoundLog`) — the interval timer runs it too. */
+export function hasRounds(exercise: WorkoutExercise): exercise is RoundsWorkoutExercise {
+  return exercise.type === 'interval' || exercise.type === 'mobility';
+}
 
 /** The header's title and subtitle (08.7, "Шапка"). */
 export type WorkoutHeader = {
@@ -527,6 +551,9 @@ function toExercise(
   if (exercise.type === 'interval') {
     return toIntervalExercise(base, tree, mode, context);
   }
+  if (exercise.type === 'mobility') {
+    return toMobilityExercise(base, tree, mode, context);
+  }
   const sets = toSetRowsExercise(base, tree, mode, context);
   const advises = mode === 'live' && !skipped;
   return exercise.type === 'power'
@@ -624,6 +651,29 @@ function intervalProgressionOf(
   }
 }
 
+/**
+ * A mobility card: its block on top of `base` (GT-107). Nothing to add or remove from the menu — a
+ * mobility exercise is one block (FR-1) — and no rest after it (FR-10).
+ */
+function toMobilityExercise(
+  base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
+  tree: SessionExerciseTree,
+  mode: WorkoutMode,
+  context: SessionContext,
+): MobilityWorkoutExercise {
+  const rounds = toRounds(tree, mode);
+  const loggedRoundCount = rounds.filter((round) => round.log !== undefined).length;
+  return {
+    ...base,
+    type: 'mobility',
+    rounds,
+    plannedRoundCount: rounds.length,
+    loggedRoundCount,
+    hasLoggedSets: loggedRoundCount > 0,
+    getReadySec: context.getReadySec,
+  };
+}
+
 /** An interval card: its rounds on top of `base`. */
 function toIntervalExercise(
   base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
@@ -655,7 +705,7 @@ function toIntervalExercise(
   return model;
 }
 
-/** A strength card's own fields on top of `base` (and a mobility one's, for now). */
+/** A strength card's own fields on top of `base`. */
 function toStrengthExercise(
   base: SetRowsWorkoutExercise,
   { sessionExercise, exercise }: SessionExerciseTree,
@@ -663,8 +713,8 @@ function toStrengthExercise(
   context: SessionContext,
 ): StrengthWorkoutExercise {
   const model: StrengthWorkoutExercise = { ...base, targetRir: sessionExercise.targetRir };
-  if (exercise.type !== undefined && exercise.type !== 'power' && exercise.type !== 'interval') {
-    model.type = exercise.type;
+  if (exercise.type === 'strength') {
+    model.type = 'strength';
   }
   if (advises) {
     const weightHints = exerciseWeightHints(sessionExercise.setTargets, context.settings);
@@ -832,8 +882,9 @@ async function previewOf(
       if (exercise.equipment !== undefined) {
         base.equipment = exercise.equipment;
       }
-      // An interval keeps its type, so its chip reads `Timed work` here too; the rest have no
-      // card of their own to keep yet.
+      // An interval and a mobility exercise keep their type, so their chips read `Timed work` and
+      // `Mobility` here too; power has no preview card of its own yet. A preview starts no timer:
+      // Get ready is only there for the shape.
       const preview: WorkoutExercise =
         exercise.type === 'interval'
           ? {
@@ -841,12 +892,20 @@ async function previewOf(
               type: 'interval',
               rounds: [],
               plannedRoundCount: 0,
-              // A preview starts no timer; Get ready is only there for the shape.
               getReadySec: DEFAULT_GET_READY_SEC,
               loggedRoundCount: 0,
               actions: NO_ROUND_ACTIONS,
             }
-          : {
+          : exercise.type === 'mobility'
+            ? {
+                ...base,
+                type: 'mobility',
+                rounds: [],
+                plannedRoundCount: 0,
+                getReadySec: DEFAULT_GET_READY_SEC,
+                loggedRoundCount: 0,
+              }
+            : {
               ...base,
               rows: [],
               plannedSetCount: 0,

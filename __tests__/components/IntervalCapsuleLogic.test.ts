@@ -106,3 +106,37 @@ describe('intervalCapsule (canvas 3.2)', () => {
     });
   });
 });
+
+describe('intervalCapsule for a mobility block (GT-107)', () => {
+  const COOLDOWN: IntervalTimerExercise = {
+    type: 'mobility',
+    sessionId: 'session',
+    sessionExerciseId: 'cooldown',
+    name: 'Cooldown',
+    totalRounds: 1,
+    loggedRoundNumbers: [],
+  };
+  const BLOCK = [{ roundNumber: 1, workSec: 600, restSec: 0 }];
+  const block = (sec: number): ActiveIntervalTimer => ({
+    exercise: COOLDOWN,
+    timer: intervalTimerAt(startIntervalTimer(BLOCK, 5, T0), T0 + sec * S),
+  });
+
+  test('named by its exercise alone — no rounds, no `Work`', () => {
+    expect(intervalCapsule(block(2), T0 + 2 * S, ACTIONS).caption).toBe('Get ready · Cooldown');
+    expect(intervalCapsule(block(65), T0 + 65 * S, ACTIONS)).toMatchObject({
+      title: '9:00',
+      caption: 'Cooldown',
+    });
+    const paused = { ...block(65), timer: pauseIntervalTimer(block(65).timer, T0 + 65 * S) };
+    expect(intervalCapsule(paused, T0 + 65 * S, ACTIONS).caption).toBe('Paused · Cooldown');
+  });
+
+  test('done: `Cooldown done`, logged', () => {
+    expect(intervalCapsule(block(605), T0 + 605 * S, ACTIONS)).toMatchObject({
+      state: 'finished',
+      title: 'Cooldown done',
+      caption: 'Logged',
+    });
+  });
+});

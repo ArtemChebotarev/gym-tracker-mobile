@@ -10,7 +10,7 @@ import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { RestNext } from '@domain/restTimer';
 import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
-import type { WorkoutExercise } from '@usecases/workoutSession';
+import { hasRounds, type WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
 import type { FinishedIntervalBlock, IntervalTimerExercise } from '@state/intervalTimerStore';
 
@@ -153,7 +153,7 @@ export function loggedSetKey(sessionExerciseId: string, setNumber: number): stri
 /** An exercise's rows as the rest timer reads them — its sets, or an interval's rounds. */
 function restRowsOf(exercise: WorkoutExercise): RestSetRow[] {
   const rows: readonly { number: number; log?: unknown; notDone?: unknown }[] =
-    exercise.type === 'interval'
+    hasRounds(exercise)
       ? exercise.rounds.map((round) => ({ ...round, number: round.roundNumber }))
       : exercise.rows.map((row) => ({ ...row, number: row.setNumber }));
   return rows.map((row) => ({
@@ -247,8 +247,9 @@ export function restAfterLog(
 
 /**
  * What Start timer on an interval card starts the timer with (10.1 FR-6, GT-96): the exercise as
- * the timer screen names it, its rounds from the first unlogged one, and its Get ready. `undefined`
- * for any other card, or when no round is left to run.
+ * the timer screen names it, its rounds from the first unlogged one, and its Get ready. A mobility
+ * card's play starts the same timer over its one block (GT-107). `undefined` for any other card, or
+ * when no round is left to run.
  */
 export function intervalTimerStartOf(
   sessionId: string,
@@ -257,11 +258,12 @@ export function intervalTimerStartOf(
 ):
   | { exercise: IntervalTimerExercise; rounds: readonly IntervalTimerRound[]; getReadySec: number }
   | undefined {
-  if (exercise.type !== 'interval' || rounds.length === 0) {
+  if (!hasRounds(exercise) || rounds.length === 0) {
     return undefined;
   }
   return {
     exercise: {
+      ...(exercise.type === 'mobility' ? { type: 'mobility' as const } : {}),
       sessionId,
       sessionExerciseId: exercise.sessionExerciseId,
       name: exercise.name,

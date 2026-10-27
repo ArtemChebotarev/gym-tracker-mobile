@@ -25,6 +25,11 @@ import { useRestTimerStore } from './restTimerStore';
 
 /** The exercise a timer runs for, as its screen names it. */
 export type IntervalTimerExercise = {
+  /**
+   * A mobility block (GT-107) runs as one round with no rest, and its screen and capsule speak of
+   * the block, not of rounds. Absent: an interval.
+   */
+  type?: 'mobility';
   /** The session the rounds are logged into (GT-98). */
   sessionId: string;
   sessionExerciseId: string;

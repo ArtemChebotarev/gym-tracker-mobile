@@ -12,7 +12,7 @@ import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { startMesocycle } from '@usecases/mesocycleStart';
 import { finishSession } from '@usecases/sessionFinish';
 import { logSet } from '@usecases/setLogging';
-import { HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -980,6 +980,87 @@ describe('startMesocycle — copyWeek interval rounds from history (GT-185)', ()
   });
 });
 
+// GT-107 (10.1 FR-9, FR-10): a copied block's mobility exercise starts from history as an interval
+// does — its block's length, as it ended. A block cut short keeps its plan; with no history the
+// length is picked on the card.
+describe('startMesocycle — copyWeek mobility length from history (GT-107)', () => {
+  const cooldownOnDayOne: Mesocycle['weekPlan'] = {
+    days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: COOLDOWN.id, order: 0, sets: 1 }] }],
+  };
+
+  async function startWithCooldown(block?: {
+    plannedSec: number;
+    workSec: number;
+    completed: boolean;
+  }) {
+    await new SqliteExerciseRepository(db()).createCustom(COOLDOWN);
+    const store = await setUpCopied([], cooldownOnDayOne);
+    await store.repos.mesocycleRepo.update({
+      ...(await store.repos.mesocycleRepo.getById('meso-copy'))!,
+      exerciseSettings: { [COOLDOWN.id]: { type: 'mobility' } },
+    });
+    if (block !== undefined) {
+      const completedAt = '2026-09-11T08:00:00.000Z';
+      await store.repos.sessionRepo.create({
+        ...STAMPS,
+        id: 'session-cooldown',
+        mesoId: PAST_MESO,
+        weekNumber: 3,
+        dayNumber: 1,
+        isDeload: false,
+        prescriptionStatus: 'ready',
+        status: 'completed',
+        completedAt,
+      });
+      await store.repos.sessionExerciseRepo.create({
+        ...STAMPS,
+        id: 'sx-cooldown',
+        sessionId: 'session-cooldown',
+        exerciseId: COOLDOWN.id,
+        order: 1,
+        setTargets: [{ setNumber: 1, targetWorkSec: block.plannedSec }],
+        targetRir: 0,
+        status: 'completed',
+      });
+      await createSqliteWorkoutStore(db()).repos.roundLogRepo.create({
+        ...STAMPS,
+        id: 'sx-cooldown-block',
+        sessionExerciseId: 'sx-cooldown',
+        exerciseId: COOLDOWN.id,
+        roundNumber: 1,
+        workSec: block.workSec,
+        restSkipped: false,
+        completed: block.completed,
+        completedAt,
+      });
+    }
+    await startMesocycle('meso-copy', { store }, NOW);
+    return store;
+  }
+
+  test('the length it was done with', async () => {
+    const store = await startWithCooldown({ plannedSec: 600, workSec: 480, completed: true });
+
+    await expect(startedTargetsOf(store, COOLDOWN.id, 1)).resolves.toEqual([
+      { setNumber: 1, targetWorkSec: 480 },
+    ]);
+  });
+
+  test('a block ended early keeps its plan', async () => {
+    const store = await startWithCooldown({ plannedSec: 600, workSec: 200, completed: false });
+
+    await expect(startedTargetsOf(store, COOLDOWN.id, 1)).resolves.toEqual([
+      { setNumber: 1, targetWorkSec: 600 },
+    ]);
+  });
+
+  test('no history: one block with no length', async () => {
+    const store = await startWithCooldown();
+
+    await expect(startedTargetsOf(store, COOLDOWN.id, 1)).resolves.toEqual([{ setNumber: 1 }]);
+  });
+});
+
 describe('startMesocycle — a mixed block through to week 2 (GT-84)', () => {
   const benchPerformance: Performance = {
     sessionExerciseId: 'sx-bench',
@@ -1119,7 +1200,10 @@ describe('startMesocycle — a mixed block through to week 2 (GT-84)', () => {
       ],
       { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'row', order: 0, sets: 3 }] }] },
     );
-    await db().update(exercises).set({ type: 'power' }).where(eq(exercises.id, toExerciseId('row')));
+    await db()
+      .update(exercises)
+      .set({ type: 'power' })
+      .where(eq(exercises.id, toExerciseId('row')));
     await store.repos.mesocycleRepo.update({
       ...(await store.repos.mesocycleRepo.getById('meso-copy'))!,
       lengthWeeks: 4,

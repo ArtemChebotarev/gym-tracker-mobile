@@ -15,6 +15,7 @@ import type {
   IntervalWorkoutExercise,
   SetExerciseActions,
   StrengthWorkoutExercise,
+  WorkoutExercise,
 } from '@usecases/workoutSession';
 
 // A live, planned exercise in the middle of the list with several rows: everything available.
@@ -70,6 +71,23 @@ function intervalCard(actions: RoundExerciseActions = ALL_ROUNDS): IntervalWorko
     hasLoggedSets: true,
     getReadySec: 5,
     actions,
+  };
+}
+
+function mobilityCard(): WorkoutExercise {
+  return {
+    sessionExerciseId: 'se-3',
+    exerciseId: 'cooldown',
+    name: 'Cooldown',
+    muscleGroup: 'fullBody',
+    type: 'mobility',
+    status: 'planned',
+    rounds: [],
+    plannedRoundCount: 1,
+    loggedRoundCount: 0,
+    hasLoggedSets: false,
+    getReadySec: 5,
+    actions: ALL,
   };
 }
 
@@ -129,6 +147,10 @@ describe('typeMenuRows', () => {
     ]);
   });
 
+  test('a mobility card has none of its own — it is one block (GT-107)', () => {
+    expect(typeMenuRows(mobilityCard())).toEqual([]);
+  });
+
   test('an interval with a single round keeps Remove last round listed, disabled', () => {
     expect(typeMenuRows(intervalCard({ ...ALL_ROUNDS, canRemoveLastRound: false }))).toEqual([
       { item: 'addRound' },
@@ -138,9 +160,13 @@ describe('typeMenuRows', () => {
 });
 
 describe('exerciseLogCounts', () => {
-  test('a card of set rows counts sets, an interval card rounds', () => {
+  test('a card of set rows counts sets, an interval card rounds, a mobility card its block', () => {
     expect(exerciseLogCounts(strengthCard())).toEqual({ unit: 'set', planned: 3, logged: 1 });
     expect(exerciseLogCounts(intervalCard())).toEqual({ unit: 'round', planned: 3, logged: 1 });
+    expect(exerciseLogCounts(mobilityCard())).toEqual({ unit: 'block', planned: 1, logged: 0 });
+    expect(formatExerciseMenuSubtitle(exerciseLogCounts(mobilityCard()))).toBe(
+      '1 block planned · 0 logged',
+    );
   });
 });
 

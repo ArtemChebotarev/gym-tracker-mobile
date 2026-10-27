@@ -27,7 +27,7 @@ import { materializeWeekPlan, type SessionWithExercises } from '@domain/planConv
 import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
-import { materializeSetTargets, pricedFromHistory } from '@domain/weekPlanMaterializers';
+import { materializeSetTargets } from '@domain/weekPlanMaterializers';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -267,8 +267,8 @@ export type MesocycleStart = {
  * interval one (GT-190), one block for a mobility one — with no times: those are history's (10.1
  * FR-9). The type comes from `exercisesById`, and a mobility one's block from the cycle's settings
  * (`exerciseSettings`, the library's where the cycle has none). An exercise `exercisesById` lacks
- * is materialized as strength. `weekOneTargets` prices sets and an interval's rounds (GT-185), not a mobility block
- * (`pricedFromHistory`).
+ * is materialized as strength. `weekOneTargets` prices sets, an interval's rounds (GT-185) and a
+ * mobility block's length (GT-107).
  *
  * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
  * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
@@ -308,9 +308,7 @@ export function buildMesocycleStart(
     session,
     exercises: renumbered(
       exercises.map((exercise) => {
-        const priced = pricedFromHistory(typeOf(exercise.exerciseId))
-          ? weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId))
-          : undefined;
+        const priced = weekOneTargets?.get(weekPlanSlotKey(session.dayNumber, exercise.exerciseId));
         return priced === undefined
           ? exercise
           : { ...exercise, setTargets: priced(exercise.setTargets.length) };

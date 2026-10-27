@@ -196,3 +196,49 @@ describe('endEarlyMessage (canvas 6.3, B)', () => {
     expect(endEarlyMessage(active(at), at)).toBe('Round 1 has not started, so it won’t be logged.');
   });
 });
+
+describe('a mobility block (GT-107)', () => {
+  const COOLDOWN: IntervalTimerExercise = {
+    type: 'mobility',
+    sessionId: 'session',
+    sessionExerciseId: 'cooldown',
+    name: 'Cooldown',
+    totalRounds: 1,
+    loggedRoundNumbers: [],
+  };
+  const BLOCK: IntervalTimerRound[] = [{ roundNumber: 1, workSec: 600, restSec: 0 }];
+
+  test('runs as one round named for the block: `Mobility`, `Time`, and nothing next', () => {
+    const at = T0 + 5 * S + 198 * S;
+    expect(intervalTimerView(active(at, BLOCK, COOLDOWN), at)).toMatchObject({
+      title: 'Cooldown',
+      subtitle: 'Mobility',
+      phase: 'Time',
+      time: '6:42',
+      of: 'of 10:00',
+      next: '',
+      canSkipRest: false,
+    });
+  });
+
+  test('Get ready before it keeps its own name', () => {
+    expect(intervalTimerView(active(T0, BLOCK, COOLDOWN), T0)?.phase).toBe('Get ready');
+  });
+
+  test('done: `Done` and the time it took', () => {
+    const at = T0 + 5 * S + 600 * S;
+    expect(intervalSummaryView(active(at, BLOCK, COOLDOWN))).toEqual({
+      title: 'Cooldown',
+      rounds: 'Done',
+      totals: '10:00',
+    });
+  });
+
+  test('End early says what the block will be logged as', () => {
+    const at = T0 + 5 * S + 198 * S;
+    expect(endEarlyMessage(active(at, BLOCK, COOLDOWN), at)).toBe(
+      'It will be logged as 3:18 of 10:00.',
+    );
+    expect(endEarlyMessage(active(T0, BLOCK, COOLDOWN), T0)).toBe('Nothing has been logged yet.');
+  });
+});

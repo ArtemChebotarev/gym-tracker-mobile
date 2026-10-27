@@ -728,7 +728,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
     expect(rirs.size).toBe(1);
   });
 
-  test('a copied block’s history prices sets and an interval’s rounds, not a mobility block (GT-185)', () => {
+  test('a copied block’s history prices sets, an interval’s rounds and a mobility block (GT-185, GT-107)', () => {
     const priced = () => [{ setNumber: 1, targetReps: 8, suggestedWeight: 40 }];
     const timed = (rowCount: number) =>
       Array.from({ length: rowCount }, (_, index) => ({
@@ -736,18 +736,21 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
         targetWorkSec: 75,
         targetRestSec: 20,
       }));
+    const length = (rowCount: number) =>
+      Array.from({ length: rowCount }, (_, index) => ({ setNumber: index + 1, targetWorkSec: 600 }));
     const rows = rowsOf(
       new Map<string, (rowCount: number) => SetTarget[]>([
         [weekPlanSlotKey(1, MEDBALL_THROW.id), priced],
         [weekPlanSlotKey(1, HEAVY_BAG.id), timed],
-        [weekPlanSlotKey(1, COOLDOWN.id), priced],
+        [weekPlanSlotKey(1, COOLDOWN.id), length],
       ]),
     );
 
     expect(rows.get(MEDBALL_THROW.id)?.setTargets).toEqual(priced());
     // As many rounds as the cycle plans, priced by history.
     expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual(timed(2));
-    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1 }]);
+    // One block, with the length history gives it.
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
   });
 
   test('without exercise records every exercise is laid out as sets, as before', () => {
