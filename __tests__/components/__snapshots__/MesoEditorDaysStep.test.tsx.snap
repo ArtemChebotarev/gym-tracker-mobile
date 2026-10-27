@@ -1048,7 +1048,7 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
           </Text>
         </View>
         <View
-          accessibilityLabel="Heavy bag plan: 3 × 2:00, 0:45 rest"
+          accessibilityLabel="Heavy bag plan: 3 rounds, Less rest"
           accessible={true}
           style={
             {
@@ -1082,7 +1082,7 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
                 }
               }
             >
-              3 × 2:00
+              3 rounds
             </Text>
             <Text
               numberOfLines={1}
@@ -1094,7 +1094,7 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
                 }
               }
             >
-              0:45 rest
+              Less rest
             </Text>
           </View>
           <Text
@@ -1335,66 +1335,12 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
           </Text>
         </View>
         <View
-          accessibilityLabel="Cooldown plan: 10:00, Length"
-          accessible={true}
           style={
             {
-              "alignItems": "center",
-              "backgroundColor": "#1A1C1F",
-              "borderColor": "#2A2D31",
-              "borderRadius": 8,
-              "borderWidth": 1,
-              "flexDirection": "row",
-              "gap": 4,
-              "height": 52,
-              "paddingHorizontal": 8,
               "width": 104,
             }
           }
-        >
-          <View
-            style={
-              {
-                "flex": 1,
-              }
-            }
-          >
-            <Text
-              numberOfLines={1}
-              style={
-                {
-                  "color": "#F5F5F4",
-                  "fontSize": 15,
-                  "fontWeight": "400",
-                }
-              }
-            >
-              10:00
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={
-                {
-                  "color": "#8A9099",
-                  "fontSize": 12,
-                  "fontWeight": "400",
-                }
-              }
-            >
-              Length
-            </Text>
-          </View>
-          <Text
-            style={
-              {
-                "color": "#8A9099",
-                "fontSize": 22,
-              }
-            }
-          >
-            ›
-          </Text>
-        </View>
+        />
         <View
           accessibilityLabel="Remove Cooldown"
           accessibilityRole="button"

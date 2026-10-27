@@ -7,11 +7,7 @@
 // Pure.
 
 import { NotFoundError } from '@domain/errors';
-import {
-  CONFIG_TIME_RANGE_SEC,
-  CONFIG_TIME_STEP_SEC,
-  INTERVAL_REST_MIN_SEC,
-} from '@domain/exerciseConfig';
+import { INTERVAL_REST_MIN_SEC, TIME_STEP_SEC } from '@domain/exerciseConfig';
 import type { RoundLog, SetTarget } from '@domain/execution';
 
 export type RoundTimes = Pick<SetTarget, 'targetWorkSec' | 'targetRestSec'>;
@@ -41,22 +37,14 @@ export type RoundTimeColumn = 'work' | 'rest';
 
 /**
  * What a picked time may be, by column, and its step — the round fields' picker (10.1 FR-9): work
- * from 0:05 up, rest no less than 0:10 (GT-176).
+ * from 0:05 to an hour, rest from 0:10 (GT-176) to ten minutes.
  */
 export const ROUND_TIME_BOUNDS: Record<
   RoundTimeColumn,
   { minSec: number; maxSec: number; stepSec: number }
 > = {
-  work: {
-    minSec: CONFIG_TIME_RANGE_SEC.workSec.min,
-    maxSec: CONFIG_TIME_RANGE_SEC.workSec.max,
-    stepSec: CONFIG_TIME_STEP_SEC,
-  },
-  rest: {
-    minSec: INTERVAL_REST_MIN_SEC,
-    maxSec: CONFIG_TIME_RANGE_SEC.restSec.max,
-    stepSec: CONFIG_TIME_STEP_SEC,
-  },
+  work: { minSec: TIME_STEP_SEC, maxSec: 60 * 60, stepSec: TIME_STEP_SEC },
+  rest: { minSec: INTERVAL_REST_MIN_SEC, maxSec: 10 * 60, stepSec: TIME_STEP_SEC },
 };
 
 /**

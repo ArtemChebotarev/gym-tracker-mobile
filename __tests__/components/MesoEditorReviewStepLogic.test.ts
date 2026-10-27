@@ -30,12 +30,12 @@ describe('formatReviewPlan', () => {
       '3 sets',
     );
     expect(formatReviewPlan(exercisesById, { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 })).toBe(
-      '3 × 2:00 · 0:45 rest',
+      '3 rounds · Less rest',
     );
   });
 
-  test('a mobility exercise shows its length alone', () => {
-    expect(formatReviewPlan(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe('10:00');
+  test('a mobility exercise shows nothing: it is one block, its length from history (GT-191)', () => {
+    expect(formatReviewPlan(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe('');
   });
 
   test('an exercise not loaded yet falls back to its sets', () => {

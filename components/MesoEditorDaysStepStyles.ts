@@ -55,6 +55,9 @@ export const styles = StyleSheet.create({
     textTransform: TYPOGRAPHY['type/label'].textTransform,
     color: COLORS['text/muted'],
   },
+  planSlot: {
+    width: SIZES['size/sets-column'],
+  },
   columnHeaderSets: {
     width: SIZES['size/sets-column'],
     textAlign: 'center',

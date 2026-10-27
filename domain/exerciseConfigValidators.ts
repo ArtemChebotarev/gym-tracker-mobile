@@ -11,17 +11,10 @@ import {
 import { ConflictError } from './errors';
 import {
   INTERVAL_LEVERS,
-  INTERVAL_REST_MIN_SEC,
   INTERVAL_STEPS_SEC,
   POWER_LOADS,
   type ExerciseConfig,
 } from './exerciseConfig';
-
-function assertWholeSeconds(value: number, what: string, min: number): void {
-  if (!Number.isInteger(value) || value < min) {
-    throw new Error(`${what} must be a whole number at least ${min}, got ${value}.`);
-  }
-}
 
 /** Throws unless `type` is one of `EXERCISE_TYPES`. */
 export function validateExerciseType(type: ExerciseType): void {
@@ -74,8 +67,6 @@ export function validateExerciseConfig(
       }
       return;
     case 'interval':
-      assertWholeSeconds(config.workSec, 'Work time', 1);
-      assertWholeSeconds(config.restSec, 'Rest', INTERVAL_REST_MIN_SEC);
       if (!INTERVAL_LEVERS.includes(config.lever)) {
         throw new Error(`Unknown interval lever: "${config.lever}".`);
       }
@@ -84,7 +75,6 @@ export function validateExerciseConfig(
       }
       return;
     case 'mobility':
-      assertWholeSeconds(config.durationSec, 'Duration', 1);
       return;
   }
 }

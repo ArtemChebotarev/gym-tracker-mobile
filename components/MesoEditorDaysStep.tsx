@@ -54,9 +54,10 @@
 // reason: iOS's elastic overscroll made the whole content area visibly "stretch" on any
 // touch-drag inside it, including over rows with no handle at all (e.g. "Add exercise").
 //
-// A power, interval or mobility exercise (GT-157, 10.1 FR-9, canvas 7.2) has no sets stepper: its
-// row carries a plan chip in the same column instead (`3 sets / 1:00 rest`, `3 × 2:00 / 1:00 rest`,
-// `10:00 / Length`), and the column header reads `Plan` once a chip is in it. One without a muscle
+// A power exercise keeps the sets stepper, as a strength one does (GT-188). An interval (GT-157,
+// 10.1 FR-9, canvas 7.2) has a plan chip in the same column instead (`3 rounds / Less rest`), and
+// the column header reads `Plan` once a chip is in it. A mobility one has neither: it is one block
+// with nothing to set (GT-191), and the column stays empty. One without a muscle
 // group shows its type's icon where the group dot would be, and its type under the name. Drag,
 // remove and order are the strength row's, untouched — the chip has the row's fixed height to fit.
 //
@@ -87,6 +88,7 @@ import {
   dragTargetIndex,
   exerciseDotColor,
   exercisePlan,
+  hasSetsStepper,
   exerciseSubtitle,
   exerciseTitle,
   exerciseTypeIcon,
@@ -333,7 +335,7 @@ export function MesoEditorDaysStep({
                   accessibilityLabel={`${title} plan`}
                   onPress={onOpenPlan && (() => onOpenPlan(activeDay, index))}
                 />
-              ) : (
+              ) : hasSetsStepper(exercisesById, exercise.exerciseId) ? (
                 <Stepper
                   label={`${title} sets`}
                   variant="inline"
@@ -343,6 +345,9 @@ export function MesoEditorDaysStep({
                   max={MAX_EXERCISE_SETS}
                   valueWidth={SIZES['size/sets-value']}
                 />
+              ) : (
+                // A mobility exercise is one block with nothing to set (GT-191).
+                <View style={styles.planSlot} />
               )}
               <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>
                 <Text style={styles.removeIcon}>✕</Text>

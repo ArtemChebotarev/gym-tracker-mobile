@@ -6,14 +6,13 @@
 import type { Animated } from 'react-native';
 
 import { FULL_BODY, type Exercise } from '@domain/catalog';
-import type { ExerciseSettings, PowerConfig } from '@domain/exerciseConfig';
+import type { IntervalLever, IntervalPlanConfig } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { exerciseSettingsFor, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
-import { formatClock } from '@design/formatClock';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
@@ -213,45 +212,64 @@ export function formatSetCount(sets: number): string {
 export type ExercisePlan = { value: string; caption: string };
 
 /**
- * The settings a plan chip and the plan sheet show: an interval's and a mobility exercise's. A
- * power exercise has none left to plan — its rest is the one from Settings and its sets are the
- * day's own (GT-188) — so its row keeps the sets stepper, as a strength one does.
+ * What each lever is called on the plan chip and the plan sheet's segmented control (10.1 FR-8,
+ * canvas 7.3): four segments in one row, so the short words of FR-8 rather than the library's
+ * option cards' titles. `none` reads "None", as in the library (Artem, 18.10.2026), not 7.3's
+ * "Keep".
  */
-export type PlanSettings = Exclude<ExerciseSettings, PowerConfig>;
+export const PLAN_LEVER_LABEL: Record<IntervalLever, string> = {
+  rest: 'Less rest',
+  workTime: 'More work',
+  rounds: '+1 round',
+  none: 'None',
+};
 
 /**
- * The cycle's plan settings for `exercise` (`exerciseSettingsFor`), or `undefined` for a strength
- * or power one, which has none.
+ * The settings a plan chip and the plan sheet show: an interval's — its rounds, lever and step.
+ * A power exercise has none left to plan — its rest is the one from Settings and its sets are the
+ * day's own (GT-188) — so its row keeps the sets stepper, as a strength one does. A mobility one
+ * has nothing at all: its length comes from history (GT-191).
+ */
+export type PlanSettings = IntervalPlanConfig;
+
+/**
+ * The cycle's plan settings for `exercise` (`exerciseSettingsFor`), or `undefined` for any but an
+ * interval, which has none.
  */
 export function planSettingsFor(
   exerciseSettings: ExerciseSettingsById,
   exercise: Exercise,
 ): PlanSettings | undefined {
   const settings = exerciseSettingsFor(exerciseSettings, exercise);
-  return settings?.type === 'power' ? undefined : settings;
+  return settings?.type === 'interval' ? settings : undefined;
 }
 
 /**
- * The plan chip of an interval or mobility exercise, from the cycle's settings for it: `3 × 2:00`
- * / `1:00 rest`, `10:00` / `Length` (10.1 FR-9). An interval's rounds belong to the cycle.
+ * The plan chip of an interval exercise, from the cycle's settings for it: `3 rounds` / `Less
+ * rest` (10.1 FR-9). Its times come from history, so the chip shows none (GT-191).
  */
 export function formatExercisePlan(settings: PlanSettings): ExercisePlan {
-  switch (settings.type) {
-    case 'interval':
-      return {
-        value: `${settings.rounds} × ${formatClock(settings.workSec)}`,
-        caption: `${formatClock(settings.restSec)} rest`,
-      };
-    case 'mobility':
-      return { value: formatClock(settings.durationSec), caption: 'Length' };
-  }
+  return {
+    value: `${settings.rounds} ${settings.rounds === 1 ? 'round' : 'rounds'}`,
+    caption: PLAN_LEVER_LABEL[settings.lever],
+  };
 }
 
 /**
- * The plan chip of the row, or `undefined` for a strength or power exercise (it keeps its sets
- * stepper) and for one not loaded yet. It shows the cycle's own copy of the settings (GT-158); a
- * row the cycle has no copy for yet — prefilled by Flow B or C — shows what that copy would start
- * from, the library's config.
+ * Whether the row sets its sets with a stepper: a strength or power exercise. A mobility one is a
+ * single block with nothing to set (GT-191); an interval has its plan chip.
+ */
+export function hasSetsStepper(exercisesById: ExercisesById, exerciseId: string): boolean {
+  const exercise = exercisesById[exerciseId];
+  const type = exercise ? exerciseTypeOf(exercise) : 'strength';
+  return type === 'strength' || type === 'power';
+}
+
+/**
+ * The plan chip of the row, or `undefined` for any but an interval exercise and for one not
+ * loaded yet. It shows the cycle's own copy of the settings (GT-158); a row the cycle has no copy
+ * for yet — prefilled by Flow B or C — shows what that copy would start from, the library's
+ * config.
  */
 export function exercisePlan(
   exercisesById: ExercisesById,

@@ -132,15 +132,17 @@ describe('MesoEditorDaysStep', () => {
       expect(render(<MesoEditorDaysStep {...MIXED_PROPS} />).toJSON()).toMatchSnapshot();
     });
 
-    test('a strength or power row keeps its stepper, an interval or mobility row shows its plan chip instead', () => {
+    test('a strength or power row keeps its stepper, an interval shows its plan chip, a mobility row neither', () => {
       render(<MesoEditorDaysStep {...MIXED_PROPS} />);
 
       expect(screen.getByLabelText('Increase Bench Press sets')).toBeTruthy();
       // A power exercise has nothing to plan but its sets (GT-188).
       expect(screen.getByLabelText('Increase Medball straight punch throw sets')).toBeTruthy();
       expect(screen.queryByLabelText('Increase Heavy bag sets')).toBeNull();
-      expect(screen.getByLabelText('Heavy bag plan: 3 × 2:00, 0:45 rest')).toBeTruthy();
-      expect(screen.getByLabelText('Cooldown plan: 10:00, Length')).toBeTruthy();
+      expect(screen.getByLabelText('Heavy bag plan: 3 rounds, Less rest')).toBeTruthy();
+      // Mobility is one block with nothing to set (GT-191).
+      expect(screen.queryByLabelText('Increase Cooldown sets')).toBeNull();
+      expect(screen.queryByLabelText(/^Cooldown plan/)).toBeNull();
       expect(screen.getByText('Plan')).toBeTruthy();
     });
 
@@ -156,9 +158,9 @@ describe('MesoEditorDaysStep', () => {
       const onOpenPlan = jest.fn();
       render(<MesoEditorDaysStep {...MIXED_PROPS} onOpenPlan={onOpenPlan} />);
 
-      fireEvent.press(screen.getByRole('button', { name: 'Cooldown plan: 10:00, Length' }));
+      fireEvent.press(screen.getByRole('button', { name: 'Heavy bag plan: 3 rounds, Less rest' }));
 
-      expect(onOpenPlan).toHaveBeenCalledWith(1, 3);
+      expect(onOpenPlan).toHaveBeenCalledWith(1, 2);
     });
 
     test('a hybrid row is removed by its own index', () => {

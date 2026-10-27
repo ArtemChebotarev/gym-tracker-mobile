@@ -1269,8 +1269,6 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
         exerciseSettings: {
           [toExerciseId('bag')]: {
             ...HEAVY_BAG_CONFIG,
-            workSec: 90,
-            restSec: 30,
             lever: 'workTime',
             stepSec: 5,
             rounds: 2,

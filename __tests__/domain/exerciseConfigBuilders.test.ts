@@ -45,18 +45,16 @@ describe('defaultExerciseConfig', () => {
     });
   });
 
-  test('give interval 3 x 2:00 with 1:00 rest, the rest lever and a 10 s step — Get ready is a setting (GT-188)', () => {
+  test('give interval the rest lever and a 5 s step, no times — they come from history (GT-191)', () => {
     expect(defaultExerciseConfig('interval')).toEqual({
       type: 'interval',
-      workSec: 120,
-      restSec: 60,
       lever: 'rest',
-      stepSec: 10,
+      stepSec: 5,
     });
   });
 
-  test('give mobility ten minutes', () => {
-    expect(defaultExerciseConfig('mobility')).toEqual({ type: 'mobility', durationSec: 600 });
+  test('give mobility nothing to set: its length comes from history (GT-191)', () => {
+    expect(defaultExerciseConfig('mobility')).toEqual({ type: 'mobility' });
   });
 
   test('hand out a fresh object each time, so two exercises never share one', () => {
@@ -71,11 +69,9 @@ describe('defaultExerciseConfig', () => {
 });
 
 describe('holdIntervalConfig', () => {
-  test('give Hold 3 x 0:30 with 1:00 rest, the work time lever and a 5 s step (10.1, FR-10)', () => {
+  test('give Hold the work time lever and a 5 s step, no times (10.1, FR-16, GT-191)', () => {
     expect(holdIntervalConfig()).toEqual({
       type: 'interval',
-      workSec: 30,
-      restSec: 60,
       lever: 'workTime',
       stepSec: 5,
     });
