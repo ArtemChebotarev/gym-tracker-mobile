@@ -343,14 +343,14 @@ describe('WorkoutScreen Finish workout', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Finish workout' }));
 
     expect(onFinish).not.toHaveBeenCalled();
-    expect(screen.getByText('Log all sets first to finish the workout.')).toBeTruthy();
+    expect(screen.getByText('Log or skip every exercise to finish the workout.')).toBeTruthy();
   });
 
   test('without a live session (or with the button active) there is no locked hint', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps()} />);
 
     expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
-    expect(screen.queryByText(/Log all sets first/)).toBeNull();
+    expect(screen.queryByText(/Log or skip every exercise/)).toBeNull();
   });
 
   test('shows the button once every exercise is completed or skipped, and finishes on press', () => {
