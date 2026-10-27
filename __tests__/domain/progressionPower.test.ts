@@ -124,6 +124,7 @@ describe('rule 6 for power (P13)', () => {
       performedAt: '2026-10-01T08:00:00.000Z',
       setLogs: [log(1, 4, reps)],
       roundLogs: [],
+      roundTargets: [],
     },
   });
   const settings = defaultProgressionSettings;
@@ -180,6 +181,7 @@ describe('Flow C start for power (P14)', () => {
       performedAt: '2026-10-01T08:00:00.000Z',
       setLogs: [log(1, 10, reps), ...more],
       roundLogs: [],
+      roundTargets: [],
     },
   });
   const start = (resolution: ReferenceResolution, rowCount = 1, startRir = 3) =>

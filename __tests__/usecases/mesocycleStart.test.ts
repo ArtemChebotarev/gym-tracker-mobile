@@ -12,6 +12,7 @@ import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { startMesocycle } from '@usecases/mesocycleStart';
 import { finishSession } from '@usecases/sessionFinish';
 import { logSet } from '@usecases/setLogging';
+import { HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -835,6 +836,149 @@ describe('startMesocycle — copyWeek targets per target day', () => {
 // GT-84, 10.2 P14 and P3: a block with a strength and a power exercise, copied from a past week,
 // goes through Start, a logged week 1 and its Finish, the way the app drives it. Start prices
 // each exercise by its own policy; week 2 is planned from week 1's fact, again per type.
+// GT-185 (10.1 FR-9; 04, Flow C): a copied block's interval starts from history, as strength does —
+// per day + exercise, round N from round N of the day's reference as it ended, and no lever step:
+// the cycle's settings give the round count, never the times.
+describe('startMesocycle — copyWeek interval rounds from history (GT-185)', () => {
+  const bagOnThreeDays: Mesocycle['weekPlan'] = {
+    days: [1, 2, 3].map((dayNumber) => ({
+      dayNumber,
+      name: '',
+      exercises: [{ exerciseId: HEAVY_BAG.id, order: 0, sets: 1 }],
+    })),
+  };
+
+  type RoundsPerformance = {
+    id: string;
+    dayNumber: number;
+    /** Planned work / rest per round. */
+    planned: [number, number][];
+    /** Logged work / rest per round, with what the timer says about it. */
+    logged: { workSec: number; restSec: number; restSkipped?: boolean; completed?: boolean }[];
+  };
+
+  async function seedRounds(store: MesocycleStartStore, performance: RoundsPerformance) {
+    const sessionId = `session-${performance.id}`;
+    const completedAt = `2026-09-1${performance.dayNumber}T08:00:00.000Z`;
+    await store.repos.sessionRepo.create({
+      ...STAMPS,
+      id: sessionId,
+      mesoId: PAST_MESO,
+      weekNumber: 3,
+      dayNumber: performance.dayNumber,
+      isDeload: false,
+      prescriptionStatus: 'ready',
+      status: 'completed',
+      completedAt,
+    });
+    await store.repos.sessionExerciseRepo.create({
+      ...STAMPS,
+      id: performance.id,
+      sessionId,
+      exerciseId: HEAVY_BAG.id,
+      order: 1,
+      setTargets: performance.planned.map(([targetWorkSec, targetRestSec], index) => ({
+        setNumber: index + 1,
+        targetWorkSec,
+        targetRestSec,
+      })),
+      targetRir: 0,
+      status: 'completed',
+    });
+    const { roundLogRepo } = createSqliteWorkoutStore(db()).repos;
+    for (const [index, log] of performance.logged.entries()) {
+      await roundLogRepo.create({
+        ...STAMPS,
+        id: `${performance.id}-round-${index + 1}`,
+        sessionExerciseId: performance.id,
+        exerciseId: HEAVY_BAG.id,
+        roundNumber: index + 1,
+        workSec: log.workSec,
+        restSec: log.restSec,
+        restSkipped: log.restSkipped ?? false,
+        completed: log.completed ?? true,
+        completedAt,
+      });
+    }
+  }
+
+  async function startWithBagHistory(performances: RoundsPerformance[]) {
+    await new SqliteExerciseRepository(db()).createCustom(HEAVY_BAG);
+    const store = await setUpCopied([], bagOnThreeDays);
+    // The new block plans three rounds of it; its 2:00 / 0:45 must not reach week 1.
+    await store.repos.mesocycleRepo.update({
+      ...(await store.repos.mesocycleRepo.getById('meso-copy'))!,
+      exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, rounds: 3 } },
+    });
+    for (const performance of performances) {
+      await seedRounds(store, performance);
+    }
+    await startMesocycle('meso-copy', { store }, NOW);
+    return store;
+  }
+
+  test('DoD: each day starts from its own last run — two days, two times — with no lever step', async () => {
+    const store = await startWithBagHistory([
+      // Day 1: two rounds, both done — a step would apply next week, not at a block's start.
+      {
+        id: 'sx-bag-day-1',
+        dayNumber: 1,
+        planned: [
+          [90, 30],
+          [90, 30],
+        ],
+        logged: [
+          { workSec: 90, restSec: 30 },
+          { workSec: 90, restSec: 30 },
+        ],
+      },
+      // Day 2: a skipped rest and a round ended early — each keeps its plan.
+      {
+        id: 'sx-bag-day-2',
+        dayNumber: 2,
+        planned: [
+          [60, 20],
+          [60, 20],
+          [60, 20],
+        ],
+        logged: [
+          { workSec: 60, restSec: 3, restSkipped: true },
+          { workSec: 60, restSec: 20 },
+          { workSec: 25, restSec: 20, completed: false },
+        ],
+      },
+    ]);
+
+    // The reference had two rounds: round 3 takes the last one's.
+    await expect(startedTargetsOf(store, HEAVY_BAG.id, 1)).resolves.toEqual([
+      { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
+      { setNumber: 2, targetWorkSec: 90, targetRestSec: 30 },
+      { setNumber: 3, targetWorkSec: 90, targetRestSec: 30 },
+    ]);
+    await expect(startedTargetsOf(store, HEAVY_BAG.id, 2)).resolves.toEqual([
+      { setNumber: 1, targetWorkSec: 60, targetRestSec: 20 },
+      { setNumber: 2, targetWorkSec: 60, targetRestSec: 20 },
+      { setNumber: 3, targetWorkSec: 60, targetRestSec: 20 },
+    ]);
+    // Day 3 is new, and the two old days differ: nothing to go by — rounds with no times.
+    await expect(startedTargetsOf(store, HEAVY_BAG.id, 3)).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  test('no history at all: the cycle’s rounds, with no times — not the cycle’s 2:00 / 0:45', async () => {
+    const store = await startWithBagHistory([]);
+
+    await expect(startedTargetsOf(store, HEAVY_BAG.id, 1)).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+});
+
 describe('startMesocycle — a mixed block through to week 2 (GT-84)', () => {
   const benchPerformance: Performance = {
     sessionExerciseId: 'sx-bench',

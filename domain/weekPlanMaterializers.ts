@@ -5,9 +5,11 @@
 //
 // - strength, power: one bare row per `sets` of the day — reps and loads come later (Flow C's
 //   history at Start, the engine for the weeks after).
-// - interval: the cycle's rounds, each with the cycle's work time and the rest after it — the last
-//   one's too, which is the rest before the next exercise (FR-6; Artem, 19.10.2026).
-// - mobility: one block of the cycle's length (FR-10).
+// - interval: the cycle's rounds, with no times. Work and rest come from history, like a set's
+//   weight (FR-9, revised 26.10.2026): Flow C's history fills them at Start (GT-185), and with
+//   none they stay empty and are picked on the card (GT-187). The cycle's work and rest are no
+//   longer copied in — they were the library's defaults, a number that looks set and isn't.
+// - mobility: one block, its length likewise left to history (FR-10, FR-9).
 //
 // The settings are the cycle's own copy (`Mesocycle.exerciseSettings`, GT-158) — the library's
 // values only where the cycle has none. An interval or mobility exercise with no settings of the
@@ -37,11 +39,7 @@ function intervalRounds(input: MaterializeInput): SetTarget[] {
   if (settings?.type !== 'interval') {
     return setRows(input);
   }
-  return Array.from({ length: settings.rounds }, (_, index) => ({
-    setNumber: index + 1,
-    targetWorkSec: settings.workSec,
-    targetRestSec: settings.restSec,
-  }));
+  return Array.from({ length: settings.rounds }, (_, index) => ({ setNumber: index + 1 }));
 }
 
 function mobilityBlock(input: MaterializeInput): SetTarget[] {
@@ -49,7 +47,7 @@ function mobilityBlock(input: MaterializeInput): SetTarget[] {
   if (settings?.type !== 'mobility') {
     return setRows(input);
   }
-  return [{ setNumber: 1, targetWorkSec: settings.durationSec }];
+  return [{ setNumber: 1 }];
 }
 
 const MATERIALIZERS: Record<ExerciseType, Materializer> = {
@@ -65,10 +63,10 @@ export function materializeSetTargets(type: ExerciseType, input: MaterializeInpu
 }
 
 /**
- * Whether a type's rows are sets of reps and load — the rows Flow C's history prices at Start
- * (`prescribeBlockStart`). An interval's rounds and a mobility block carry their times from the
- * cycle and are not re-priced.
+ * Whether a type's week 1 rows are priced from history at Start (`prescribeBlockStart`): a set's
+ * reps and load, an interval round's work and rest (GT-185). Not a mobility block yet: until its
+ * card (GT-107) it is logged as sets, and history has no length to give it.
  */
-export function rowsAreSets(type: ExerciseType): boolean {
-  return MATERIALIZERS[type] === setRows;
+export function pricedFromHistory(type: ExerciseType): boolean {
+  return type !== 'mobility';
 }

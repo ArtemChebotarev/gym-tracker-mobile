@@ -236,10 +236,11 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         });
 
         expect(
-          performances.map(({ setLogs, roundLogs, ...rest }) => ({
+          performances.map(({ setLogs, roundLogs, roundTargets, ...rest }) => ({
             ...rest,
             setLogIds: setLogs.map((setLog) => setLog.id),
             roundLogIds: roundLogs.map((round) => round.id),
+            roundTargets,
           })),
         ).toEqual([
           {
@@ -251,6 +252,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             performedAt: '2026-09-15T08:00:00.000Z',
             setLogIds: ['se-deload-set-1'],
             roundLogIds: [],
+            roundTargets: [],
           },
           {
             mesoId: PAST_MESO,
@@ -261,6 +263,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             performedAt: '2026-09-01T08:00:00.000Z',
             setLogIds: ['se-older-set-1', 'se-older-set-2'],
             roundLogIds: [],
+            roundTargets: [],
           },
         ]);
       });
@@ -280,6 +283,10 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             sessionId: 'session-bag',
             exerciseId: 'exercise-heavy-bag',
             status: 'completed',
+            setTargets: [
+              { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+              { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+            ],
           }),
         );
         for (const roundNumber of [2, 1]) {
@@ -308,6 +315,11 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         expect(performances[0]!.roundLogs.map((round) => round.id)).toEqual([
           'bag-round-1',
           'bag-round-2',
+        ]);
+        // The rounds as planned come with them: a round reference reads both (GT-185).
+        expect(performances[0]!.roundTargets).toEqual([
+          { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+          { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
         ]);
       });
 

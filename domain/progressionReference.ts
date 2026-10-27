@@ -7,6 +7,7 @@
 // same place of the week. Numbers from another day or another block are a guide, not a base.
 
 import type { SetLog } from '@domain/execution';
+import { referenceRounds } from '@domain/progressionRoundsInterval';
 import type {
   EstimateSource,
   ExercisePerformance,
@@ -30,9 +31,24 @@ function sameSets(a: readonly SetLog[], b: readonly SetLog[]): boolean {
   );
 }
 
+/** Two performances of rounds say the same thing: as many rounds, each with the same work and rest. */
+function sameRounds(a: ExercisePerformance, b: ExercisePerformance): boolean {
+  const x = referenceRounds(a);
+  const y = referenceRounds(b);
+  return (
+    x.length === y.length &&
+    x.every(
+      (round, index) =>
+        round.targetWorkSec === y[index]?.targetWorkSec &&
+        round.targetRestSec === y[index]?.targetRestSec,
+    )
+  );
+}
+
 /**
  * Whether every performance says the same thing: the same number of logged sets, and the same
- * weight **and** reps in each position — the pair is compared whole, never one half of it.
+ * weight **and** reps in each position — the pair is compared whole, never one half of it. Rounds
+ * likewise (GT-185): as many, each with the same work and rest as it ended.
  */
 export function areIdentical(performances: readonly ExercisePerformance[]): boolean {
   const [first, ...rest] = performances;
@@ -41,7 +57,10 @@ export function areIdentical(performances: readonly ExercisePerformance[]): bool
   }
   const bySet = (logs: readonly SetLog[]) => [...logs].sort((x, y) => x.setNumber - y.setNumber);
   const reference = bySet(first.setLogs);
-  return rest.every((performance) => sameSets(reference, bySet(performance.setLogs)));
+  return rest.every(
+    (performance) =>
+      sameSets(reference, bySet(performance.setLogs)) && sameRounds(first, performance),
+  );
 }
 
 /**
@@ -76,7 +95,7 @@ function estimateIfUnambiguous(
  * The reference for an exercise placed into `slot`, from its `performances` inside the history
  * window (`historyLookbackDays` — the caller has already cut the window).
  *
- * Deload performances and ones with no set logged don't count. Of what is left, the reference
+ * Deload performances and ones with nothing logged — no set and no round (GT-185) — don't count. Of what is left, the reference
  * week is the latest training week that has any; for rule 6 (`slot.currentWeek` given) that is the
  * latest week **before** the current one, and the current week only when there is none. Then:
  *
@@ -94,7 +113,8 @@ export function resolveReference(
   slot: ReferenceSlot,
 ): ReferenceResolution {
   const counted = performances.filter(
-    (performance) => !performance.isDeload && performance.setLogs.length > 0,
+    (performance) =>
+      !performance.isDeload && (performance.setLogs.length > 0 || performance.roundLogs.length > 0),
   );
   const weeks = byWeekNewestFirst(counted);
   const { currentWeek } = slot;

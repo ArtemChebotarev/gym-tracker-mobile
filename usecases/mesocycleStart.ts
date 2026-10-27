@@ -39,7 +39,8 @@ function planExerciseIds(plan: WeekPlan): string[] {
 }
 
 /**
- * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
+ * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"; an
+ * interval's rounds too, 10.1 FR-9 and GT-185): per
  * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
  * that day (`resolveReference`, task 134.2) among the exercise's performances inside
  * `historyLookbackDays`, re-priced for this block's starting RIR by the exercise type's policy (`prescribeBlockStart`).
@@ -123,9 +124,10 @@ async function weekOneTargetsFromHistory(
  * it active without its sessions.
  *
  * A `copyWeek` block's week 1 gets its reps and weights here, from each exercise's own history —
- * this is the only place Start reads history, and Flow A and B don't reach it at all. Every flow
- * reads the plan's exercise records, though: an interval's rounds and a mobility block are laid out
- * by type, from the cycle's settings (GT-160).
+ * this is the only place Start reads history, and Flow A and B don't reach it at all — an interval's
+ * work and rest included (GT-185), so theirs start empty and are picked on the card (GT-187). Every
+ * flow reads the plan's exercise records, though: an interval's rounds and a mobility block are laid
+ * out by type (GT-160).
  *
  * Whether the launch may happen at all is settled first, by `validateMesocycleCanStart`: the
  * history read that follows is one query per exercise, and a Start that was going to be refused

@@ -1,6 +1,6 @@
 import {
   materializeSetTargets,
-  rowsAreSets,
+  pricedFromHistory,
   setRows,
 } from '@domain/weekPlanMaterializers';
 import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
@@ -21,20 +21,14 @@ describe('weekPlanMaterializers (GT-160)', () => {
     ).toEqual(setRows({ entry }));
   });
 
-  test('interval: the cycle’s rounds with work and rest — the last one’s rest too (19.10.2026)', () => {
+  test('interval: the cycle’s rounds, with no times — the cycle’s work and rest aren’t copied (GT-185)', () => {
     const settings = { ...HEAVY_BAG_CONFIG, rounds: 3 };
 
     expect(materializeSetTargets('interval', { entry, settings })).toEqual([
-      { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
-      { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
-      { setNumber: 3, targetWorkSec: 120, targetRestSec: 45 },
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
     ]);
-  });
-
-  test('interval: one round has its rest too — the rest before the next exercise (FR-6)', () => {
-    expect(
-      materializeSetTargets('interval', { entry, settings: { ...HEAVY_BAG_CONFIG, rounds: 1 } }),
-    ).toEqual([{ setNumber: 1, targetWorkSec: 120, targetRestSec: 45 }]);
   });
 
   test('interval: rounds come from the settings, not from the day’s sets', () => {
@@ -46,10 +40,10 @@ describe('weekPlanMaterializers (GT-160)', () => {
     expect(rows).toHaveLength(4);
   });
 
-  test('mobility: one block of the cycle’s length', () => {
+  test('mobility: one block, its length not copied from the cycle (GT-185)', () => {
     expect(
       materializeSetTargets('mobility', { entry, settings: { type: 'mobility', durationSec: 600 } }),
-    ).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+    ).toEqual([{ setNumber: 1 }]);
   });
 
   test('interval and mobility without settings of their type fall back to rows by sets', () => {
@@ -59,10 +53,10 @@ describe('weekPlanMaterializers (GT-160)', () => {
     ).toEqual(setRows({ entry }));
   });
 
-  test('only strength and power rows are sets', () => {
-    expect(rowsAreSets('strength')).toBe(true);
-    expect(rowsAreSets('power')).toBe(true);
-    expect(rowsAreSets('interval')).toBe(false);
-    expect(rowsAreSets('mobility')).toBe(false);
+  test('history prices strength, power and interval rows at Start — not a mobility block yet (GT-185)', () => {
+    expect(pricedFromHistory('strength')).toBe(true);
+    expect(pricedFromHistory('power')).toBe(true);
+    expect(pricedFromHistory('interval')).toBe(true);
+    expect(pricedFromHistory('mobility')).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
 import type { ExercisePerformance, ReferenceSlot } from '@domain/progression';
 import { areIdentical, resolveReference } from '@domain/progressionReference';
 import { STAMPS } from '../fixtures/stamps';
@@ -42,6 +42,7 @@ function performance(
     performedAt,
     setLogs,
     roundLogs: [],
+    roundTargets: [],
     ...overrides,
   };
 }
@@ -431,5 +432,65 @@ describe('areIdentical', () => {
         performance({ weekNumber: 1, dayNumber: 2 }, other),
       ]),
     ).toBe(false);
+  });
+});
+
+// GT-185: an interval's performance is made of rounds — it counts, and two of them are compared by
+// their rounds.
+describe('resolveReference — rounds (GT-185)', () => {
+  function rounds(times: readonly (readonly [work: number, rest: number])[]): RoundLog[] {
+    return times.map(([workSec, restSec], index) => ({
+      ...STAMPS,
+      id: `round-${(nextId += 1)}`,
+      sessionExerciseId: 'se-bag',
+      exerciseId: 'heavy-bag',
+      roundNumber: index + 1,
+      workSec,
+      restSec,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-10T08:00:00.000Z',
+    }));
+  }
+
+  test('a performance with rounds and no sets counts', () => {
+    const bag = performance({ weekNumber: 1, dayNumber: 1 }, [], {
+      roundLogs: rounds([[120, 45]]),
+    });
+
+    expect(resolveReference([bag], ruleSix(2, 1))).toEqual({ kind: 'target', reference: bag });
+  });
+
+  test('a performance with nothing logged still doesn’t', () => {
+    expect(
+      resolveReference([performance({ weekNumber: 1, dayNumber: 1 }, [])], ruleSix(2, 1)),
+    ).toEqual({ kind: 'none' });
+  });
+
+  test('two days with the same rounds are identical; a different rest makes them differ', () => {
+    const day1 = performance({ weekNumber: 1, dayNumber: 1 }, [], {
+      roundLogs: rounds([
+        [120, 45],
+        [120, 45],
+      ]),
+    });
+    const sameDay2 = performance({ weekNumber: 1, dayNumber: 2 }, [], {
+      roundLogs: rounds([
+        [120, 45],
+        [120, 45],
+      ]),
+    });
+    const otherDay2 = performance({ weekNumber: 1, dayNumber: 2 }, [], {
+      roundLogs: rounds([
+        [120, 45],
+        [120, 30],
+      ]),
+    });
+
+    expect(areIdentical([day1, sameDay2])).toBe(true);
+    expect(areIdentical([day1, otherDay2])).toBe(false);
+    // A new day 3: the same rounds on both days give a target, different ones nothing.
+    expect(resolveReference([day1, sameDay2], ruleSix(2, 3)).kind).toBe('target');
+    expect(resolveReference([day1, otherDay2], ruleSix(2, 3))).toEqual({ kind: 'none' });
   });
 });

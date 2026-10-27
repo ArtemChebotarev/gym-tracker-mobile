@@ -1,3 +1,4 @@
+import type { SetTarget } from '@domain/execution';
 import { isConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import {
@@ -720,28 +721,33 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
 
     expect(rows.get('bench')?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
     expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(3);
-    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([
-      { setNumber: 1, targetWorkSec: 90, targetRestSec: 30 },
-      { setNumber: 2, targetWorkSec: 90, targetRestSec: 30 },
-    ]);
-    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+    // The cycle's rounds, not its times: those are history's (GT-185).
+    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1 }]);
     const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));
     expect(rirs.size).toBe(1);
   });
 
-  test('a copied block’s history prices sets, never an interval’s rounds or a mobility block', () => {
+  test('a copied block’s history prices sets and an interval’s rounds, not a mobility block (GT-185)', () => {
     const priced = () => [{ setNumber: 1, targetReps: 8, suggestedWeight: 40 }];
+    const timed = (rowCount: number) =>
+      Array.from({ length: rowCount }, (_, index) => ({
+        setNumber: index + 1,
+        targetWorkSec: 75,
+        targetRestSec: 20,
+      }));
     const rows = rowsOf(
-      new Map([
+      new Map<string, (rowCount: number) => SetTarget[]>([
         [weekPlanSlotKey(1, MEDBALL_THROW.id), priced],
-        [weekPlanSlotKey(1, HEAVY_BAG.id), priced],
+        [weekPlanSlotKey(1, HEAVY_BAG.id), timed],
         [weekPlanSlotKey(1, COOLDOWN.id), priced],
       ]),
     );
 
     expect(rows.get(MEDBALL_THROW.id)?.setTargets).toEqual(priced());
-    expect(rows.get(HEAVY_BAG.id)?.setTargets[0]).toEqual({ setNumber: 1, targetWorkSec: 90, targetRestSec: 30 });
-    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+    // As many rounds as the cycle plans, priced by history.
+    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual(timed(2));
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1 }]);
   });
 
   test('without exercise records every exercise is laid out as sets, as before', () => {

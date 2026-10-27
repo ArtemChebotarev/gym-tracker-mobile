@@ -1,5 +1,6 @@
+import { toExerciseId } from '@domain/catalog';
 import { isConflictError } from '@domain/errors';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
@@ -8,6 +9,7 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { swapExercise } from '@usecases/exerciseSwap';
+import { HEAVY_BAG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -308,5 +310,100 @@ describe('swapExercise', () => {
 
     expect(result).toEqual(weekTwoExercise);
     await expect(storedExercise(deps.workout)).resolves.toEqual(weekTwoExercise);
+  });
+});
+
+// GT-185 (10.1 FR-9): an interval swapped in takes its rounds' times from its history in the slot —
+// day + exercise — as the reference resolver finds it, with no lever step.
+describe('swapExercise — an interval back from history (GT-185)', () => {
+  const BAND_PUNCHES = { ...HEAVY_BAG, id: toExerciseId('band-punches'), name: 'Band punches' };
+
+  /** Heavy bag in week 1, day 1: two rounds planned at 2:00 / 0:45. */
+  const bagWeekOne: SessionExercise = makeExercise(1, {
+    id: 'session-exercise-w1-bag',
+    exerciseId: HEAVY_BAG.id,
+    order: 2,
+    setTargets: [
+      { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+      { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+    ],
+    status: 'completed',
+  });
+
+  function round(roundNumber: number, overrides: Partial<RoundLog> = {}): RoundLog {
+    return {
+      ...STAMPS,
+      id: `bag-w1-round-${roundNumber}`,
+      sessionExerciseId: bagWeekOne.id,
+      exerciseId: HEAVY_BAG.id,
+      roundNumber,
+      workSec: 135,
+      restSec: 30,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-11T08:40:00.000Z',
+      ...overrides,
+    };
+  }
+
+  /** Week 2 has Band punches in its place, three rounds — the user swaps Heavy bag back in. */
+  async function setUpBagHistory(logs: RoundLog[]) {
+    const exerciseRepo = new SqliteExerciseRepository(db());
+    await exerciseRepo.createCustom(HEAVY_BAG);
+    await exerciseRepo.createCustom(BAND_PUNCHES);
+    const deps = await setUp({
+      session: weekTwoSession,
+      exercise: makeExercise(2, {
+        exerciseId: BAND_PUNCHES.id,
+        setTargets: [
+          { setNumber: 1, targetWorkSec: 30, targetRestSec: 60 },
+          { setNumber: 2, targetWorkSec: 30, targetRestSec: 60 },
+          { setNumber: 3, targetWorkSec: 30, targetRestSec: 60 },
+        ],
+      }),
+    });
+    await deps.workout.repos.sessionExerciseRepo.create(bagWeekOne);
+    for (const log of logs) {
+      await deps.workout.repos.roundLogRepo.create(log);
+    }
+    return deps;
+  }
+
+  const swapToBag = { ...swapToBarbell, exerciseId: HEAVY_BAG.id };
+
+  test('DoD: done in week 1, swapped out, swapped back → its rounds as they ended, no lever step', async () => {
+    const deps = await setUpBagHistory([round(1), round(2)]);
+
+    const swapped = await swapExercise(swapToBag, deps, NOW);
+
+    // Every round done, yet no 15 s step: a step is next week's, not a slot's start.
+    expect(swapped.setTargets).toEqual([
+      { setNumber: 1, targetWorkSec: 135, targetRestSec: 30 },
+      { setNumber: 2, targetWorkSec: 135, targetRestSec: 30 },
+      // Fewer rounds in the reference: round 3 takes the last one's.
+      { setNumber: 3, targetWorkSec: 135, targetRestSec: 30 },
+    ]);
+  });
+
+  test('a skipped rest and a round ended early keep their plan', async () => {
+    const deps = await setUpBagHistory([
+      round(1, { restSec: 5, restSkipped: true }),
+      round(2, { workSec: 40, completed: false }),
+    ]);
+
+    const swapped = await swapExercise(swapToBag, deps, NOW);
+
+    expect(swapped.setTargets.slice(0, 2)).toEqual([
+      { setNumber: 1, targetWorkSec: 135, targetRestSec: 45 },
+      { setNumber: 2, targetWorkSec: 120, targetRestSec: 30 },
+    ]);
+  });
+
+  test('no history of it: rounds with no times, to pick on the card', async () => {
+    const deps = await setUpBagHistory([]);
+
+    const swapped = await swapExercise(swapToBag, deps, NOW);
+
+    expect(swapped.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
   });
 });
