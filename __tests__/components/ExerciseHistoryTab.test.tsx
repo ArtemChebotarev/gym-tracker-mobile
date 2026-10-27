@@ -126,7 +126,7 @@ describe('ExerciseHistoryTab', () => {
     expect(screen.getByText('No finished workouts yet')).toBeTruthy();
     expect(screen.getByText('A workout appears here once you finish it.')).toBeTruthy();
   });
-  test('lists a power exercise by week, its best set and what changed', () => {
+  test('lists a power exercise like any other, its sets in its own load', () => {
     renderTab({
       powerLoad: 'level',
       groups: [
@@ -135,30 +135,19 @@ describe('ExerciseHistoryTab', () => {
           name: 'Upper/Lower',
           sessions: [
             {
-              id: 'log-2',
+              id: 'log-1',
               weekNumber: 2,
               dayNumber: 1,
-              completedAt: '2026-08-17T12:00:00.000Z',
-              setLogs: [setLog({ id: 'log-2', weight: 2, reps: 3 })],
-            },
-            {
-              id: 'log-1',
-              weekNumber: 1,
-              dayNumber: 1,
               completedAt: '2026-08-10T12:00:00.000Z',
-              setLogs: [setLog({ weight: 1, reps: 6 })],
+              setLogs: [setLog({ weight: 2, reps: 3, rir: 2 })],
             },
           ],
         },
       ],
     });
 
-    expect(screen.getByText('Best set each week')).toBeTruthy();
-    expect(screen.getByText('Week 2')).toBeTruthy();
-    expect(screen.getByText(/Level 2 × 3/)).toBeTruthy();
-    expect(screen.getByText(' · Higher level')).toBeTruthy();
-    expect(screen.getByText(/Level 1 × 6/)).toBeTruthy();
-    expect(screen.getByText(' · Top of range')).toBeTruthy();
-    expect(screen.queryByText('Week 2 · Day 1')).toBeNull();
+    expect(screen.getByText('Week 2 · Day 1')).toBeTruthy();
+    expect(screen.getByText('Level 2 × 3')).toBeTruthy();
+    expect(screen.queryByText(' · 2 RIR')).toBeNull();
   });
 });

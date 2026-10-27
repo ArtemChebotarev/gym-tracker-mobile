@@ -9,7 +9,8 @@
 // what was already done, the same rule the Overview blocks follow. With nothing finished yet the
 // tab says so instead of staying blank.
 //
-// A power exercise reads by week instead — PowerHistoryList (10.1 FR-12, GT-110).
+// Every type reads the same list (10.1 FR-12, GT-110): what was done, session by session. A power
+// set only reads in its own load — `Level 2 × 3` — and without RIR.
 //
 // Virtualized (SectionList), unlike the Overview tab's ScrollView: Overview shows three sessions
 // at most, this one grows with every block trained.
@@ -39,7 +40,6 @@ import {
   type ExerciseHistorySection,
 } from './ExerciseHistoryTabLogic';
 import { styles } from './ExerciseHistoryTabStyles';
-import { PowerHistoryList } from './PowerHistoryList';
 
 const BLEED = listBleed();
 
@@ -49,7 +49,7 @@ export type ExerciseHistoryTabProps = {
   isPending: boolean;
   /** The exercise's equipment — a `bodyweight-weighted` set reads back split (task 105). */
   equipment?: Equipment;
-  /** Set for a power exercise: its history goes by week, not by session (10.1 FR-12, GT-110). */
+  /** Set for a power exercise: its sets read in its own load, with no RIR (10.1 FR-12, GT-110). */
   powerLoad?: PowerLoad;
 };
 
@@ -74,10 +74,6 @@ export function ExerciseHistoryTab({
     );
   }
 
-  if (powerLoad !== undefined) {
-    return <PowerHistoryList groups={groups} load={powerLoad} />;
-  }
-
   return (
     <SectionList<ExerciseHistorySession, ExerciseHistorySection>
       style={[styles.list, BLEED.style]}
@@ -98,8 +94,8 @@ export function ExerciseHistoryTab({
             <ExerciseDetailCardRow
               key={setLog.id}
               label={formatSetLabel(setLog)}
-              value={formatSetValue(setLog, equipment)}
-              tail={formatSetRirTail(setLog)}
+              value={formatSetValue(setLog, equipment, powerLoad)}
+              tail={formatSetRirTail(setLog, powerLoad)}
               isLast={index === item.setLogs.length - 1}
             />
           ))}

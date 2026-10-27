@@ -55,30 +55,3 @@ export type ExerciseHistoryMesocycle = {
   /** Newest first. */
   sessions: ExerciseHistorySession[];
 };
-
-/**
- * Which way a power exercise's load went from the week before (10.1 FR-12, "смены варианта"): a
- * heavier ball, a higher box. A change of the exercise itself is a replacement and starts a history
- * of its own, so within one history the load is the variation that changes.
- */
-export type PowerLoadChange = 'up' | 'down';
-
-/** One week of a power exercise's history — its best set, the row of canvas 5.2. */
-export type PowerHistoryWeek = {
-  /** Unique across the whole history: a week number repeats in every mesocycle. */
-  id: string;
-  weekNumber: number;
-  /** The week's best set across every session of it: the highest load, ties by reps. */
-  bestSet: SetLog;
-  /** Every set of the week reached the top of the corridor — when the card offers a heavier load. */
-  isAtTopOfRange: boolean;
-  /** Against the week before it, across a mesocycle boundary too; absent when the load held. */
-  loadChange?: PowerLoadChange;
-};
-
-/** One section of a power exercise's history: a mesocycle and its weeks, newest first. */
-export type PowerHistoryMesocycle = {
-  mesoId: string;
-  name: string;
-  weeks: PowerHistoryWeek[];
-};

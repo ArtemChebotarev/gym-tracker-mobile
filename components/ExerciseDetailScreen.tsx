@@ -30,6 +30,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Equipment, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
 import type { ExerciseLastSession, ExerciseOverview } from '@domain/exerciseOverview';
 import { Badge } from '@design/components/Badge';
@@ -55,7 +56,7 @@ import {
   formatSetLabel,
   formatSetRirTail,
   formatSetValue,
-  historyPowerLoad,
+  powerLoadOf,
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
@@ -170,7 +171,7 @@ export function ExerciseDetailScreen({
           groups={history}
           isPending={isHistoryPending}
           equipment={exercise.equipment}
-          powerLoad={historyPowerLoad(exercise)}
+          powerLoad={powerLoadOf(exercise)}
         />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -181,7 +182,11 @@ export function ExerciseDetailScreen({
           </View>
 
           {lastSession !== null && (
-            <LastSessionBlock lastSession={lastSession} equipment={exercise.equipment} />
+            <LastSessionBlock
+              lastSession={lastSession}
+              equipment={exercise.equipment}
+              powerLoad={powerLoadOf(exercise)}
+            />
           )}
 
           <WatchHowToCard onPress={onWatchHowTo} />
@@ -212,9 +217,11 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
 function LastSessionBlock({
   lastSession,
   equipment,
+  powerLoad,
 }: {
   lastSession: ExerciseLastSession;
   equipment?: Equipment;
+  powerLoad?: PowerLoad;
 }) {
   return (
     <ExerciseDetailCard
@@ -226,8 +233,8 @@ function LastSessionBlock({
         <ExerciseDetailCardRow
           key={setLog.id}
           label={formatSetLabel(setLog)}
-          value={formatSetValue(setLog, equipment)}
-          tail={formatSetRirTail(setLog)}
+          value={formatSetValue(setLog, equipment, powerLoad)}
+          tail={formatSetRirTail(setLog, powerLoad)}
           isLast={index === lastSession.setLogs.length - 1}
         />
       ))}
