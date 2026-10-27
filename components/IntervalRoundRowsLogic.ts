@@ -46,8 +46,9 @@ export function editRoundTime(
 /**
  * The rest a round's Rest field shows. A logged round shows the rest it took — but a skipped rest
  * shows the planned one, and so does a round logged without a rest (the last one the timer ran):
- * Skip rest is a here-and-now call that changes neither what the card says nor next week (Artem,
- * 20.10.2026). The log keeps the skip all the same. An unlogged round shows its planned rest.
+ * Skip rest is a here-and-now call that changes neither the plan nor next week (Artem, 20.10.2026):
+ * the planned rest is what un-logging brings back and where the picker starts. The field itself
+ * reads `Skipped` (GT-102). An unlogged round shows its planned rest.
  */
 export function shownRestSec(round: WorkoutRoundRow): number | undefined {
   const log = round.log;

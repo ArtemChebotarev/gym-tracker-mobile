@@ -3,8 +3,9 @@
 // its target, from history — and, once logged, what was done. With no history the fields are empty
 // (GT-187): Log and Start timer wait until a round has both, and a line under the rounds says so.
 // The last round's Rest is there too: it is the rest before the next exercise (FR-6; Artem,
-// 19.10.2026). A rest the timer skipped shows the planned rest, as does a round logged without one:
-// Skip rest changes neither the card nor next week (Artem, 20.10.2026) — `shownRestSec`.
+// 19.10.2026). A rest the timer skipped — Skip rest, or End early in a rest — reads `Skipped`: the
+// card says what happened, and the skip changes neither the plan nor next week (FR-8; Artem,
+// 27.10.2026, GT-102). A round logged without a rest shows the planned one — `shownRestSec`.
 //
 // - A time is changed on two wheels (TimePickerSheet, GT-90): a tap on an unlogged round's Work or
 //   Rest opens the picker, and when it closes the rounds below that aren't logged yet follow the
@@ -230,6 +231,7 @@ function RoundRow({
   const logged = round.log !== undefined;
   const workSec = round.log?.workSec ?? round.workSec;
   const restSec = shownRestSec(round);
+  const restSkipped = round.log?.restSkipped === true;
   // An unlogged round's times can be picked; a logged one reads as it was logged — un-log to change.
   const pickable = editable && !logged;
   // A round with an empty field can't be logged yet (FR-9); un-logging always works.
@@ -257,6 +259,7 @@ function RoundRow({
           <TimeField
             label={`Rest, round ${round.roundNumber}`}
             sec={restSec}
+            skipped={restSkipped}
             logged={logged}
             editable={editable}
             focused={openColumn === 'rest'}
@@ -296,6 +299,8 @@ type TimeFieldProps = {
   label: string;
   /** Absent: no time yet — the field is empty, `–` (GT-187). */
   sec: number | undefined;
+  /** A rest the timer skipped: the field reads `Skipped` in place of a time (GT-102). */
+  skipped?: boolean;
   logged: boolean;
   editable: boolean;
   /** Its picker is open. */
@@ -305,11 +310,12 @@ type TimeFieldProps = {
 };
 
 /** A Work or Rest field: the set rows' field frame, a button that opens the picker. */
-function TimeField({ label, sec, logged, editable, focused, onPress }: TimeFieldProps) {
+function TimeField({ label, sec, skipped, logged, editable, focused, onPress }: TimeFieldProps) {
+  const shown = skipped ? 'skipped' : sec === undefined ? 'not set' : formatClock(sec);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label}, ${sec === undefined ? 'not set' : formatClock(sec)}`}
+      accessibilityLabel={`${label}, ${shown}`}
       accessibilityState={{ disabled: onPress === undefined, expanded: focused }}
       disabled={onPress === undefined}
       onPress={onPress}
@@ -319,7 +325,9 @@ function TimeField({ label, sec, logged, editable, focused, onPress }: TimeField
         focused && rowStyles.fieldFocused,
       ]}
     >
-      {sec === undefined ? (
+      {skipped ? (
+        <Text style={rowStyles.skippedLabel}>Skipped</Text>
+      ) : sec === undefined ? (
         <Text style={rowStyles.placeholder}>–</Text>
       ) : (
         <Text style={rowStyles.value}>{formatClock(sec)}</Text>

@@ -208,6 +208,12 @@ describe('interval working week', () => {
     ).toEqual(rounds.map((round) => ({ ...round, targetRestSec: 45 })));
   });
 
+  test('End early in a rest: the rest cut short is a skip, and the plan repeats as planned (GT-102)', () => {
+    expect(
+      plan([log(1), log(2, { restSec: 15, restSkipped: true })], { lever: 'rest', stepSec: 15 }),
+    ).toEqual(rounds);
+  });
+
   test('the step is from the structure as done: a rest changed in the workout', () => {
     expect(
       plan([log(1, { restSec: 50 }), log(2, { restSec: 50 }), log(3, { restSec: 50 })], {

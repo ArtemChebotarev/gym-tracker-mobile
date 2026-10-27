@@ -315,11 +315,11 @@ describe('end early', () => {
     ]);
   });
 
-  test('a rest cut short is logged with the time it ran; the rounds after are not logged', () => {
+  test('a rest cut short is logged with the time it ran, marked skipped; the rounds after are not logged (GT-102)', () => {
     const start = startIntervalTimer(HEAVY_BAG, 5, T0);
     const ended = endIntervalTimerEarly(start, T0 + (5 + 120 + 25) * S);
     expect(ended.results).toEqual([
-      { roundNumber: 1, workSec: 120, restSec: 25, restSkipped: false, completed: true },
+      { roundNumber: 1, workSec: 120, restSec: 25, restSkipped: true, completed: true },
     ]);
   });
 

@@ -94,7 +94,7 @@ describe('Interval card (GT-88)', () => {
     expect(screen.getByText('Start timer · 3 rounds')).toBeTruthy();
   });
 
-  test('a logged round shows the work done, and a skipped rest its planned rest (Artem, 20.10.2026)', () => {
+  test('a logged round shows the work done, and a skipped rest as Skipped (GT-102)', () => {
     render(
       <WorkoutExerciseCard
         {...makeProps({
@@ -117,8 +117,9 @@ describe('Interval card (GT-88)', () => {
 
     const first = within(screen.getByTestId('round-row-1'));
     expect(first.getByText('1:50')).toBeTruthy();
-    expect(first.getByText('0:45')).toBeTruthy();
-    expect(first.queryByText('Skipped')).toBeNull();
+    expect(first.getByText('Skipped')).toBeTruthy();
+    expect(first.queryByText('0:45')).toBeNull();
+    expect(first.getByLabelText('Rest, round 1, skipped')).toBeTruthy();
     expect(screen.getByText('Start timer · 2 rounds left')).toBeTruthy();
   });
 
