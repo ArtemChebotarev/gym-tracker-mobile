@@ -1014,6 +1014,35 @@ describe('weight swap on the workout data (task 120)', () => {
     expect(rowsOf(card)[1]).not.toHaveProperty('weightSwap');
   });
 
+  // GT-189, 10.1 FR-8: the card shows the load the cycle plans by — its own copy — not the
+  // library's, which may have changed since the exercise joined the cycle.
+  test("a power card's load is the cycle's copy, not the library's", async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const { deps } = await setUp({
+      exercises: [medball],
+      logs: [],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          medball: { type: 'power', load: 'level', noHeavierAvailable: false },
+        },
+      },
+    });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', powerLoad: 'level' });
+  });
+
+  test('a power card of a cycle with no copy shows the library load', async () => {
+    const boxjump = planned('w2d1', 'boxjump', 2, [3, 3]);
+    const { deps } = await setUp({ exercises: [boxjump], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', powerLoad: 'none' });
+  });
+
   // GT-86, GT-188, 10.1 FR-5: the rest the timer runs after a set is logged — one from Settings,
   // strength and power alike; a power exercise keeps no rest of its own.
   test('a live card carries the rest from Settings: strength and power alike, 2:00', async () => {

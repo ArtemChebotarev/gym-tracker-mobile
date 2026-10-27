@@ -530,7 +530,7 @@ function toExercise(
   const sets = toSetRowsExercise(base, tree, mode, context);
   const advises = mode === 'live' && !skipped;
   return exercise.type === 'power'
-    ? toPowerExercise(sets, tree, advises)
+    ? toPowerExercise(sets, tree, advises, context)
     : toStrengthExercise(sets, tree, advises, context);
 }
 
@@ -679,17 +679,25 @@ function toStrengthExercise(
  * A power card's own fields on top of `base`. Power has no RIR on screen (10.2 P5): the week's RIR
  * stays in the data for the next block's Start, but there is no badge and no `N RIR` placeholder —
  * a row with no target is just empty.
+ *
+ * The load is the cycle's own copy, else the library's (FR-8, GT-189) — the one the next week is
+ * planned by, so the card never shows a load the targets weren't counted in. "No heavier" and the
+ * closed note stay the library's: they say what the gym has, not what the cycle does.
  */
 function toPowerExercise(
   base: SetRowsWorkoutExercise,
-  { sessionExercise, exercise }: SessionExerciseTree,
+  tree: SessionExerciseTree,
   advises: boolean,
+  context: SessionContext,
 ): PowerWorkoutExercise {
+  const { sessionExercise, exercise } = tree;
   const config = exercise.config?.type === 'power' ? exercise.config : undefined;
+  const settings = exerciseSettingsFor(context.exerciseSettings, exercise);
+  const load = settings?.type === 'power' ? settings.load : 'weight';
   const model: PowerWorkoutExercise = {
     ...base,
     type: 'power',
-    powerLoad: config?.load ?? 'weight',
+    powerLoad: load,
   };
   const loadEquipment = loadEquipmentOf(exercise);
   if (loadEquipment !== exercise.equipment && loadEquipment !== undefined) {
@@ -697,7 +705,7 @@ function toPowerExercise(
   }
   if (advises && config !== undefined) {
     const hint = powerCeilingHint({
-      load: config.load,
+      load,
       noHeavierAvailable: config.noHeavierAvailable,
       tipHidden: config.ceilingTipHidden === true,
       setTargets: sessionExercise.setTargets,
