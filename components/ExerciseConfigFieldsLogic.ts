@@ -6,7 +6,6 @@
 import {
   CONFIG_TIME_RANGE_SEC,
   CONFIG_TIME_STEP_SEC,
-  GET_READY_STEP_SEC,
   INTERVAL_REST_MIN_SEC,
   type ConfigTimeKey,
 } from '@domain/exerciseConfig';
@@ -42,12 +41,8 @@ function timeField(
   };
 }
 
-export const REST_BETWEEN_SETS = timeField('restSec', 'Rest', 'between sets');
 export const REST_BETWEEN_ROUNDS = timeField('restSec', 'Rest', 'between rounds', {
   minSec: INTERVAL_REST_MIN_SEC,
 });
 export const WORK = timeField('workSec', 'Work');
-export const COUNTDOWN = timeField('getReadySec', 'Countdown', 'before round', {
-  stepSec: GET_READY_STEP_SEC,
-});
 export const DURATION = timeField('durationSec', 'Duration');

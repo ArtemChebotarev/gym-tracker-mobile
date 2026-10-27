@@ -998,7 +998,7 @@ describe('startMesocycle — a mixed block through to week 2 (GT-84)', () => {
       .update(exercises)
       .set({
         type: 'power',
-        config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+        config: { type: 'power', load: 'weight', noHeavierAvailable: false },
       })
       .where(eq(exercises.id, toExerciseId(exerciseId)));
   }

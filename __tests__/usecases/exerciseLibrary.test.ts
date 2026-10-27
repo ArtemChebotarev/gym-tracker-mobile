@@ -283,7 +283,7 @@ describe('hideExercise', () => {
 });
 
 describe('setNoHeavierAvailable', () => {
-  const POWER = { type: 'power' as const, load: 'weight' as const, restSec: 60 };
+  const POWER = { type: 'power' as const, load: 'weight' as const };
 
   async function seedCustomPower(deps: ReturnType<typeof makeDeps>) {
     return deps.exerciseRepo.createCustom({
@@ -361,7 +361,7 @@ describe('hideCeilingTip', () => {
       source: 'custom',
       isHidden: false,
       type: 'power',
-      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: true },
+      config: { type: 'power', load: 'weight', noHeavierAvailable: true },
     });
 
     const updated = await hideCeilingTip(created.id, deps);
@@ -369,7 +369,6 @@ describe('hideCeilingTip', () => {
     expect(updated.config).toEqual({
       type: 'power',
       load: 'weight',
-      restSec: 60,
       noHeavierAvailable: true,
       ceilingTipHidden: true,
     });
@@ -481,7 +480,7 @@ describe('hybrid exercise types', () => {
     expect(stored).toMatchObject({
       type: 'power',
       muscleGroup: 'fullBody',
-      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+      config: { type: 'power', load: 'weight', noHeavierAvailable: false },
     });
   });
 

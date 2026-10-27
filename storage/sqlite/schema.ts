@@ -230,13 +230,17 @@ export const settings = sqliteTable('settings', {
       coachmarksSeen: false,
       deloadIntroSeen: false,
     } as Settings['onboarding']),
-  // The rest timer between strength sets (10.1, FR-5): one global setting, on by default, 2:00.
-  // Separate from the hybrid exercises' own rest, and not part of progression. Defaults are what
-  // the existing row gets when the migration adds the columns.
+  // The rest timer between sets (10.1, FR-5): one global setting, on by default, 2:00. Named for
+  // strength, which it was first; power uses it too since GT-188 (`Settings.restBetweenSets`) —
+  // renaming a column is a migration for a name nothing shows. Not part of progression. Defaults
+  // are what the existing row gets when the migration adds the columns.
   strengthRestTimerEnabled: integer('strength_rest_timer_enabled', { mode: 'boolean' })
     .notNull()
     .default(true),
   strengthRestTimerSeconds: integer('strength_rest_timer_seconds').notNull().default(120),
+  // Get ready before an interval round (10.1 FR-6, GT-188), seconds: a setting rather than a field
+  // of each exercise. 5 is `DEFAULT_GET_READY_SEC`, what the existing row gets.
+  getReadySeconds: integer('get_ready_seconds').notNull().default(5),
 });
 
 /** The single settings row's id — see `settings`. */

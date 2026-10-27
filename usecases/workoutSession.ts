@@ -12,7 +12,6 @@ import type {
   IntervalStepSec,
   PowerLoad,
 } from '@domain/exerciseConfig';
-import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { powerCeilingHint, type PowerCeilingHint } from '@domain/powerCeilingHint';
 import { NotFoundError } from '@domain/errors';
@@ -28,7 +27,8 @@ import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
-import { restSecFor, strengthRestSecOf } from '@domain/restTimerRules';
+import { DEFAULT_GET_READY_SEC } from '@domain/intervalTimer';
+import { restBetweenSetsSecOf, restSecFor } from '@domain/restTimerRules';
 import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import { targetIndicatorAtWeight, usesTargetIndicator } from '@domain/progressionTargetIndicator';
 import type { WeightSwap } from '@domain/weightSwap';
@@ -261,7 +261,7 @@ export type IntervalWorkoutExercise = WorkoutExerciseBase & {
   loggedRoundCount: number;
   /** Absent with the `rounds` or `none` lever. */
   progression?: IntervalProgression;
-  /** The countdown before a round started by a tap — Start timer, Skip rest (FR-6), seconds. */
+  /** Get ready before a round started by a tap — Start timer, Skip rest (FR-6), seconds; from Settings (GT-188). */
   getReadySec: number;
   actions: RoundExerciseActions;
 };
@@ -394,8 +394,10 @@ type SessionContext = {
   settings: ProgressionSettings;
   /** The cycle's own copy of each hybrid exercise's config (GT-158), by exercise id. */
   exerciseSettings: Record<string, ExerciseSettings>;
-  /** Strength's rest from Settings; absent while its timer is off (GT-87). */
-  strengthRestSec: number | undefined;
+  /** The rest between sets from Settings; absent while its timer is off (GT-87, GT-188). */
+  restBetweenSetsSec: number | undefined;
+  /** Get ready from Settings (GT-188). */
+  getReadySec: number;
   isDeload: boolean;
   bodyWeight?: number;
   referenceLogs: ReferenceLogs;
@@ -517,12 +519,7 @@ function toExercise(
     base.equipment = exercise.equipment;
   }
   if (mode === 'live') {
-    const restSec = restSecFor(
-      exercise.type,
-      context.exerciseSettings[exercise.id],
-      exercise.config,
-      context.strengthRestSec,
-    );
+    const restSec = restSecFor(exercise.type, context.restBetweenSetsSec);
     if (restSec !== undefined) {
       base.restSec = restSec;
     }
@@ -627,12 +624,6 @@ function intervalProgressionOf(
   }
 }
 
-/** The Get ready a new interval exercise starts with (FR-9) — what one without a plan gets. */
-function defaultGetReadySec(): number {
-  const config = defaultExerciseConfig('interval');
-  return config?.type === 'interval' ? config.getReadySec : 0;
-}
-
 /** An interval card: its rounds on top of `base`. */
 function toIntervalExercise(
   base: Omit<WorkoutExerciseBase, 'hasLoggedSets'>,
@@ -650,7 +641,7 @@ function toIntervalExercise(
     plannedRoundCount: rounds.length,
     loggedRoundCount,
     hasLoggedSets: loggedRoundCount > 0,
-    getReadySec: plan?.getReadySec ?? defaultGetReadySec(),
+    getReadySec: context.getReadySec,
     actions: {
       ...base.actions,
       canAddRound: mode === 'live',
@@ -735,7 +726,7 @@ function fromTree(
   tree: SessionTree,
   source: SessionTree | null,
   mesoSessions: readonly Session[] | null,
-  strengthRestSec: number | undefined,
+  timers: Pick<SessionContext, 'restBetweenSetsSec' | 'getReadySec'>,
 ): WorkoutSessionModel {
   const { session, mesocycle, exercises } = tree;
   const mode = workoutMode(session, mesocycle);
@@ -756,7 +747,7 @@ function fromTree(
   const context: SessionContext = {
     settings: mesocycle.progressionSettings,
     exerciseSettings: mesocycle.exerciseSettings ?? {},
-    strengthRestSec,
+    ...timers,
     isDeload: session.isDeload,
     referenceLogs: referenceLogsOf(source),
   };
@@ -842,7 +833,8 @@ async function previewOf(
               type: 'interval',
               rounds: [],
               plannedRoundCount: 0,
-              getReadySec: defaultGetReadySec(),
+              // A preview starts no timer; Get ready is only there for the shape.
+              getReadySec: DEFAULT_GET_READY_SEC,
               loggedRoundCount: 0,
               actions: NO_ROUND_ACTIONS,
             }
@@ -902,11 +894,13 @@ export async function getWorkoutSession(
       ? await deps.sessionTreeRepo.getBySessionId(sourceSessionId)
       : null;
   const mesoSessions = mode === 'readonly' ? await deps.sessionRepo.listByMesoId(mesoId) : null;
-  const strengthRestSec =
-    mode === 'live'
-      ? strengthRestSecOf((await deps.settingsRepo.read()).strengthRestTimer)
-      : undefined;
-  return fromTree(tree, source, mesoSessions, strengthRestSec);
+  const settings = await deps.settingsRepo.read();
+  return fromTree(tree, source, mesoSessions, {
+    // No rest runs outside a live workout.
+    restBetweenSetsSec:
+      mode === 'live' ? restBetweenSetsSecOf(settings.restBetweenSets) : undefined,
+    getReadySec: settings.getReadySec,
+  });
 }
 
 /**

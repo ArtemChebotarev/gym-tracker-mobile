@@ -6,7 +6,7 @@
 import type { Animated } from 'react-native';
 
 import { FULL_BODY, type Exercise } from '@domain/catalog';
-import type { ExerciseSettings } from '@domain/exerciseConfig';
+import type { ExerciseSettings, PowerConfig } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { exerciseSettingsFor, type ExerciseSettingsById } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
@@ -213,15 +213,30 @@ export function formatSetCount(sets: number): string {
 export type ExercisePlan = { value: string; caption: string };
 
 /**
- * The plan chip of a power, interval or mobility exercise, from the cycle's settings for it:
- * `3 sets` / `1:00 rest`, `3 × 2:00` / `1:00 rest`, `10:00` / `Length` (10.1 FR-9). A power
- * exercise's sets are the day's own (`WeekPlanExercise.sets`), as a strength one's are; an
- * interval's rounds belong to the cycle.
+ * The settings a plan chip and the plan sheet show: an interval's and a mobility exercise's. A
+ * power exercise has none left to plan — its rest is the one from Settings and its sets are the
+ * day's own (GT-188) — so its row keeps the sets stepper, as a strength one does.
  */
-export function formatExercisePlan(settings: ExerciseSettings, sets: number): ExercisePlan {
+export type PlanSettings = Exclude<ExerciseSettings, PowerConfig>;
+
+/**
+ * The cycle's plan settings for `exercise` (`exerciseSettingsFor`), or `undefined` for a strength
+ * or power one, which has none.
+ */
+export function planSettingsFor(
+  exerciseSettings: ExerciseSettingsById,
+  exercise: Exercise,
+): PlanSettings | undefined {
+  const settings = exerciseSettingsFor(exerciseSettings, exercise);
+  return settings?.type === 'power' ? undefined : settings;
+}
+
+/**
+ * The plan chip of an interval or mobility exercise, from the cycle's settings for it: `3 × 2:00`
+ * / `1:00 rest`, `10:00` / `Length` (10.1 FR-9). An interval's rounds belong to the cycle.
+ */
+export function formatExercisePlan(settings: PlanSettings): ExercisePlan {
   switch (settings.type) {
-    case 'power':
-      return { value: formatSetCount(sets), caption: `${formatClock(settings.restSec)} rest` };
     case 'interval':
       return {
         value: `${settings.rounds} × ${formatClock(settings.workSec)}`,
@@ -233,10 +248,10 @@ export function formatExercisePlan(settings: ExerciseSettings, sets: number): Ex
 }
 
 /**
- * The plan chip of the row, or `undefined` for a strength exercise (it keeps its sets stepper)
- * and for one not loaded yet. It shows the cycle's own copy of the settings (GT-158); a row the
- * cycle has no copy for yet — prefilled by Flow B or C — shows what that copy would start from,
- * the library's config.
+ * The plan chip of the row, or `undefined` for a strength or power exercise (it keeps its sets
+ * stepper) and for one not loaded yet. It shows the cycle's own copy of the settings (GT-158); a
+ * row the cycle has no copy for yet — prefilled by Flow B or C — shows what that copy would start
+ * from, the library's config.
  */
 export function exercisePlan(
   exercisesById: ExercisesById,
@@ -244,8 +259,8 @@ export function exercisePlan(
   exerciseSettings: ExerciseSettingsById = {},
 ): ExercisePlan | undefined {
   const exercise = exercisesById[entry.exerciseId];
-  const settings = exercise && exerciseSettingsFor(exerciseSettings, exercise);
-  return settings ? formatExercisePlan(settings, entry.sets) : undefined;
+  const settings = exercise && planSettingsFor(exerciseSettings, exercise);
+  return settings ? formatExercisePlan(settings) : undefined;
 }
 
 /**

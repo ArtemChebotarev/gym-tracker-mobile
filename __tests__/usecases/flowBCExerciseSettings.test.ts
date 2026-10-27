@@ -50,7 +50,7 @@ const SOURCE_ID = 'meso-source';
 // cycle saved before the cycle kept its own settings.
 const SOURCE_SETTINGS: Mesocycle['exerciseSettings'] = {
   [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, restSec: 30, rounds: 5 },
-  [MEDBALL_THROW.id]: { type: 'power', load: 'weight', restSec: 90, noHeavierAvailable: true },
+  [MEDBALL_THROW.id]: { type: 'power', load: 'weight', noHeavierAvailable: true },
 };
 
 function sessionExercise(id: string, exerciseId: string, order: number): Unsaved<SessionExercise> {

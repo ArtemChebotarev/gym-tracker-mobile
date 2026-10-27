@@ -221,7 +221,7 @@ describe('generateNextSession', () => {
       source: 'custom',
       isHidden: false,
       type: 'power',
-      config: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
+      config: { type: 'power', load: 'weight', noHeavierAvailable: false },
     });
 
     const { workout, deps } = await setUp(
@@ -252,7 +252,7 @@ describe('generateNextSession', () => {
       isHidden: false,
       type: 'power',
       equipment: 'plyo-box',
-      config: { type: 'power', load: 'none', restSec: 60, noHeavierAvailable: false },
+      config: { type: 'power', load: 'none', noHeavierAvailable: false },
     });
     const { workout, deps } = await setUp([trigger], [jump], logsFor(jump, [5, 5], 10));
 

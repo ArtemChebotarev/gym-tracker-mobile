@@ -37,21 +37,19 @@ describe('defaultExerciseConfig', () => {
     expect(defaultExerciseConfig('strength')).toBeUndefined();
   });
 
-  test('give power one minute of rest and no "no heavier" flag (10.1, FR-9)', () => {
+  test('give power the weight load and no "no heavier" flag (10.1, FR-9) — its rest is a setting (GT-188)', () => {
     expect(defaultExerciseConfig('power')).toEqual({
       type: 'power',
       load: 'weight',
-      restSec: 60,
       noHeavierAvailable: false,
     });
   });
 
-  test('give interval 3 x 2:00 with 1:00 rest, 5 s get ready, the rest lever and a 10 s step', () => {
+  test('give interval 3 x 2:00 with 1:00 rest, the rest lever and a 10 s step — Get ready is a setting (GT-188)', () => {
     expect(defaultExerciseConfig('interval')).toEqual({
       type: 'interval',
       workSec: 120,
       restSec: 60,
-      getReadySec: 5,
       lever: 'rest',
       stepSec: 10,
     });
@@ -78,7 +76,6 @@ describe('holdIntervalConfig', () => {
       type: 'interval',
       workSec: 30,
       restSec: 60,
-      getReadySec: 5,
       lever: 'workTime',
       stepSec: 5,
     });

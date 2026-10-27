@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `get_ready_seconds` integer DEFAULT 5 NOT NULL;

@@ -11,9 +11,7 @@ function renderSheet(overrides: Partial<CyclePlanSheetProps> = {}) {
     exerciseName: 'Heavy bag',
     dayNumber: 2,
     settings: bag,
-    sets: 3,
     onChangeSettings: jest.fn(),
-    onChangeSets: jest.fn(),
     onReset: jest.fn(),
     onClose: jest.fn(),
     ...overrides,
@@ -23,14 +21,15 @@ function renderSheet(overrides: Partial<CyclePlanSheetProps> = {}) {
 }
 
 describe('CyclePlanSheet (GT-92)', () => {
-  test('interval: rounds, the three times, Progress by and Step', () => {
+  test('interval: rounds, work and rest, Progress by and Step — no Get ready (GT-188)', () => {
     renderSheet();
 
     expect(screen.getByText('Heavy bag')).toBeTruthy();
     expect(screen.getByText('Plan for this training cycle · Day 2')).toBeTruthy();
-    for (const label of ['Rounds', 'Work', 'Get ready', 'Progress by', 'Step']) {
+    for (const label of ['Rounds', 'Work', 'Progress by', 'Step']) {
       expect(screen.getByText(label)).toBeTruthy();
     }
+    expect(screen.queryByText('Get ready')).toBeNull();
     expect(screen.getByText('2:00')).toBeTruthy();
     expect(screen.getByText('0:45')).toBeTruthy();
     expect(screen.getByText('Less rest')).toBeTruthy();
@@ -56,20 +55,6 @@ describe('CyclePlanSheet (GT-92)', () => {
     renderSheet({ settings: { ...bag, lever: 'none' } });
 
     expect(screen.queryByText('Step')).toBeNull();
-  });
-
-  test('power: the day’s sets and the rest, no Progress by', () => {
-    const props = renderSheet({
-      exerciseName: 'Medball throw',
-      settings: { type: 'power', load: 'weight', restSec: 60, noHeavierAvailable: false },
-    });
-
-    expect(screen.getByText('Sets')).toBeTruthy();
-    expect(screen.getByText('1:00')).toBeTruthy();
-    expect(screen.queryByText('Progress by')).toBeNull();
-
-    fireEvent.press(screen.getByLabelText('Increase Sets'));
-    expect(props.onChangeSets).toHaveBeenCalledWith(4);
   });
 
   test('mobility: its length alone', () => {

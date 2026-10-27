@@ -4,10 +4,11 @@ import {
   INTERVAL_LEVERS,
   type ConfigTimeKey,
   INTERVAL_STEPS_SEC,
-  type ExerciseSettings,
   type IntervalLever,
   type IntervalStepSec,
 } from '@domain/exerciseConfig';
+
+import type { PlanSettings } from './MesoEditorDaysStepLogic';
 
 /**
  * What each lever is called on the plan sheet's segmented control (10.1 FR-8, canvas 7.3): four
@@ -55,20 +56,20 @@ export function planSheetSubtitle(dayNumber: number): string {
 }
 
 /**
- * `settings` with one time field set — the four keys a plan sheet edits. A key the settings' type
+ * `settings` with one time field set — the keys a plan sheet edits. A key the settings' type
  * has no such field for leaves them as they are.
  */
 export function withTimeField(
-  settings: ExerciseSettings,
+  settings: PlanSettings,
   key: ConfigTimeKey,
   valueSec: number,
-): ExerciseSettings {
-  return key in settings ? ({ ...settings, [key]: valueSec } as ExerciseSettings) : settings;
+): PlanSettings {
+  return key in settings ? ({ ...settings, [key]: valueSec } as PlanSettings) : settings;
 }
 
 /** The value of one time field of `settings`, 0 where its type has no such field. */
 export function timeFieldValue(
-  settings: ExerciseSettings,
+  settings: PlanSettings,
   key: ConfigTimeKey,
 ): number {
   return (settings as Partial<Record<typeof key, number>>)[key] ?? 0;
