@@ -1,6 +1,5 @@
 import {
   materializeSetTargets,
-  pricedFromHistory,
   setRows,
 } from '@domain/weekPlanMaterializers';
 import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
@@ -44,12 +43,5 @@ describe('weekPlanMaterializers (GT-160)', () => {
     expect(materializeSetTargets('mobility', { entry, settings: HEAVY_BAG_CONFIG })).toEqual(
       setRows({ entry }),
     );
-  });
-
-  test('history prices strength, power and interval rows at Start — not a mobility block yet (GT-185)', () => {
-    expect(pricedFromHistory('strength')).toBe(true);
-    expect(pricedFromHistory('power')).toBe(true);
-    expect(pricedFromHistory('interval')).toBe(true);
-    expect(pricedFromHistory('mobility')).toBe(false);
   });
 });

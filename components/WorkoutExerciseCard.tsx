@@ -6,8 +6,8 @@
 //
 // What every card shares — the chip above it, the frame, the title row — is ExerciseCardFrame, the
 // header over its rows ExerciseColumnHeader, and the set rows of strength and power WorkoutSetRows.
-// An interval exercise has its own card of rounds; mobility is shown as strength until its story,
-// as it runs strength's progression for now.
+// An interval exercise has its own card of rounds, and a mobility one a card of its one block
+// (GT-107), run on the same timer and acting with the same `rounds` group.
 //
 // The props come in groups: what every card needs, then what each kind of card acts with — `sets`
 // for a card of set rows, `ceiling` for power's ceiling note. A type that logs something else
@@ -21,6 +21,7 @@ import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 import { IntervalExerciseCard, type RoundActions } from './IntervalExerciseCard';
+import { MobilityExerciseCard } from './MobilityExerciseCard';
 import { PowerExerciseCard } from './PowerExerciseCard';
 import { StrengthExerciseCard } from './StrengthExerciseCard';
 import type { CardChip } from './WorkoutExerciseCardLogic';
@@ -79,7 +80,7 @@ export type WorkoutExerciseCardProps = ExerciseCardCommonProps & {
   sets: SetLoggingProps;
   /** Power only. */
   ceiling?: CeilingActions;
-  /** Interval only. */
+  /** Interval and mobility. */
   rounds?: RoundActions;
 };
 
@@ -108,9 +109,16 @@ export function WorkoutExerciseCard({
           {...common}
         />
       );
+    case 'mobility':
+      return (
+        <MobilityExerciseCard
+          exercise={exercise}
+          {...(rounds !== undefined ? { rounds } : {})}
+          {...common}
+        />
+      );
     case undefined:
     case 'strength':
-    case 'mobility':
       return <StrengthExerciseCard exercise={exercise} sets={sets} {...common} />;
   }
 }

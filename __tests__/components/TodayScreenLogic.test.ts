@@ -349,6 +349,36 @@ describe('intervalTimerStartOf', () => {
   test('nothing for a round-less start', () => {
     expect(intervalTimerStartOf('session', bag, [])).toBeUndefined();
   });
+
+  test('a mobility card: its one block, marked so the timer speaks of the block (GT-107)', () => {
+    const cooldown: WorkoutExercise = {
+      sessionExerciseId: 'cooldown',
+      exerciseId: 'cooldown',
+      name: 'Cooldown',
+      muscleGroup: 'fullBody',
+      type: 'mobility',
+      status: 'planned',
+      rounds: [{ roundNumber: 1, workSec: 600, isFirstUnlogged: true }],
+      plannedRoundCount: 1,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      getReadySec: 5,
+      actions: bag.actions,
+    };
+    const block = [{ roundNumber: 1, workSec: 600, restSec: 0 }];
+    expect(intervalTimerStartOf('session', cooldown, block)).toEqual({
+      exercise: {
+        type: 'mobility',
+        sessionId: 'session',
+        sessionExerciseId: 'cooldown',
+        name: 'Cooldown',
+        totalRounds: 1,
+        loggedRoundNumbers: [],
+      },
+      rounds: block,
+      getReadySec: 5,
+    });
+  });
 });
 
 describe('restAfterIntervalBlock (GT-98)', () => {

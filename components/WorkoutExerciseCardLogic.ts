@@ -93,12 +93,13 @@ export function exerciseCardView(
  * The week's target RIR as the card shows it — the `N RIR` badge and the Reps placeholder of a set
  * with no other. A strength exercise's, except on a resistance band: a band isn't dosed precisely
  * enough for a reserve to mean anything (10.1 FR-15). Power has none on screen either (10.2 P5),
- * and an interval none at all.
+ * and an interval or a mobility block none at all.
  * The RIR stays in the data all the same.
  */
 export function targetRirOf(exercise: WorkoutExercise): number | undefined {
   return exercise.type === 'power' ||
     exercise.type === 'interval' ||
+    exercise.type === 'mobility' ||
     isResistanceBand(exercise.equipment)
     ? undefined
     : exercise.targetRir;

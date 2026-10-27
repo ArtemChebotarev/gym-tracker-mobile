@@ -2,7 +2,8 @@
 // 2.5, 6.2): the phase's icon in the ring, the time left, and a caption — `Work · Heavy bag · 2 of
 // 3`, `Rest · round 3 next`, `Get ready · round 3 next`, `Paused · Heavy bag · 2 of 3`. Work and
 // Get ready have Pause, a rest Skip and Pause, paused Resume. Done, it reads `Heavy bag done` over
-// how many rounds are logged, with a cross. A tap on its body opens the timer again.
+// how many rounds are logged, with a cross. A tap on its body opens the timer again. A mobility
+// block (GT-107) is named by its exercise alone: `Cooldown`, `Get ready · Cooldown`, `Logged`.
 
 import type { TimerCapsuleProps } from '@design/components/TimerCapsule';
 import { formatClock } from '@design/formatClock';
@@ -44,6 +45,7 @@ export function intervalCapsule(
   const { exercise, timer } = active;
   const opens = { onPress: actions.open, accessibilityLabel: 'Open interval timer' };
   const phase = timer.phase;
+  const mobility = exercise.type === 'mobility';
 
   if (phase === undefined) {
     const logged = new Set([
@@ -54,7 +56,7 @@ export function intervalCapsule(
       state: 'finished',
       icon: PulseIcon,
       title: `${exercise.name} done`,
-      caption: `${logged} of ${exercise.totalRounds} rounds logged`,
+      caption: mobility ? 'Logged' : `${logged} of ${exercise.totalRounds} rounds logged`,
       progress: 0,
       onDismiss: actions.dismiss,
       ...opens,
@@ -63,7 +65,9 @@ export function intervalCapsule(
 
   const round = timer.rounds[phase.round];
   const after = timer.rounds[phase.round + 1];
-  const where = `${exercise.name} · ${round?.roundNumber} of ${exercise.totalRounds}`;
+  const where = mobility
+    ? exercise.name
+    : `${exercise.name} · ${round?.roundNumber} of ${exercise.totalRounds}`;
   const running = isIntervalTimerRunning(timer);
   // A rest's last seconds are its Get ready (GT-176) — for the round after the rest.
   const shown = intervalPhaseShown(timer, now)?.kind ?? phase.kind;
@@ -71,10 +75,14 @@ export function intervalCapsule(
   const caption = !running
     ? `Paused · ${where}`
     : shown === 'work'
-      ? `Work · ${where}`
+      ? mobility
+        ? where
+        : `Work · ${where}`
       : shown === 'rest'
         ? `Rest · round ${after?.roundNumber} next`
-        : `Get ready · round ${leadsInto?.roundNumber} next`;
+        : mobility
+          ? `Get ready · ${exercise.name}`
+          : `Get ready · round ${leadsInto?.roundNumber} next`;
 
   const capsule: TimerCapsuleProps = {
     state: running ? 'running' : 'paused',

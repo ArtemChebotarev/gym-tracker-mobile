@@ -570,6 +570,7 @@ export default function TodayScreen() {
           useIntervalTimerStore.getState().start(start);
           router.push('/interval-timer');
         }}
+        onOpenIntervalTimer={() => router.push('/interval-timer')}
         onUnlogSet={(exercise, setNumber) => {
           if (currentSessionId === undefined) {
             return;

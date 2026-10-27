@@ -55,11 +55,3 @@ export function materializeSetTargets(type: ExerciseType, input: MaterializeInpu
   return MATERIALIZERS[type](input);
 }
 
-/**
- * Whether a type's week 1 rows are priced from history at Start (`prescribeBlockStart`): a set's
- * reps and load, an interval round's work and rest (GT-185). Not a mobility block yet: until its
- * card (GT-107) it is logged as sets, and history has no length to give it.
- */
-export function pricedFromHistory(type: ExerciseType): boolean {
-  return type !== 'mobility';
-}
