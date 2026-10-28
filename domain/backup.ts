@@ -6,7 +6,7 @@
 // decides whether a file can be restored. Producing and consuming it is `usecases/backup.ts`.
 
 import type { Exercise } from './catalog';
-import type { Session, SessionExercise, SetLog } from './execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from './execution';
 import type { Mesocycle } from './mesocycle';
 import type { MesoTemplate } from './plan';
 import type { Settings } from '@repositories/settings';
@@ -51,6 +51,11 @@ export type BackupData = {
   sessions: Session[];
   sessionExercises: SessionExercise[];
   setLogs: SetLog[];
+  /**
+   * Interval rounds and mobility blocks — the fact of the exercises measured in time (10.1 FR-7).
+   * Their history is read from these rows alone, so a backup without them loses it.
+   */
+  roundLogs: RoundLog[];
   settings: Settings;
 };
 
