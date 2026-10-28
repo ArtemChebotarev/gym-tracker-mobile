@@ -36,6 +36,27 @@ export function readMigrationBundle(): MigrationBundle {
   return { journal, migrations };
 }
 
+/** How many migrations come before `tag` — `bundleUpTo` of it is the build just before that one. */
+export function migrationIndex(bundle: MigrationBundle, tag: string): number {
+  const index = bundle.journal.entries.findIndex((entry) => entry.tag === tag);
+  if (index < 0) throw new Error(`No migration "${tag}".`);
+  return index;
+}
+
+/** `bundle` as the build that shipped with its first `count` migrations carried it. */
+export function bundleUpTo(bundle: MigrationBundle, count: number): MigrationBundle {
+  const entries = bundle.journal.entries.slice(0, count);
+  return {
+    journal: { entries },
+    migrations: Object.fromEntries(
+      entries.map((entry) => {
+        const key = `m${entry.idx.toString().padStart(4, '0')}`;
+        return [key, bundle.migrations[key]!];
+      }),
+    ),
+  };
+}
+
 export type TestDatabase = {
   db: SqliteDatabase;
   close(): void;
