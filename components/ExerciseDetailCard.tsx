@@ -41,13 +41,17 @@ export function ExerciseDetailSection({
   );
 }
 
-export type ExerciseDetailCardProps = ExerciseDetailSectionProps;
+export type ExerciseDetailCardProps = ExerciseDetailSectionProps & {
+  /** A line under the card, on its text's inset — what the rows above it add up to. */
+  footnote?: string;
+};
 
 /** A section whose content is a card of rows. */
-export function ExerciseDetailCard({ children, ...section }: ExerciseDetailCardProps) {
+export function ExerciseDetailCard({ children, footnote, ...section }: ExerciseDetailCardProps) {
   return (
     <ExerciseDetailSection {...section}>
       <View style={styles.card}>{children}</View>
+      {footnote !== undefined && <Text style={styles.footnote}>{footnote}</Text>}
     </ExerciseDetailSection>
   );
 }

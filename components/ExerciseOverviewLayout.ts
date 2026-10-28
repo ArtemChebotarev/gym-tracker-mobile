@@ -18,29 +18,42 @@ export type OverviewTile = 'bestSet' | 'sessions' | 'lastDone';
 
 /**
  * A section a type puts after the shared ones. `settings`: how the exercise is set up in the
- * library, read-only (10.1 FR-1, FR-9) — see `exerciseSettingsRows`.
+ * library, read-only (10.1 FR-1, FR-9) — see `exerciseSettings`.
  */
 export type OverviewTypeSection = 'settings';
 
 export type OverviewSection =
   | { kind: 'tiles'; tiles: readonly OverviewTile[] }
-  | { kind: 'empty' }
+  | { kind: 'empty'; title: string }
   | { kind: 'howTo' }
   | { kind: OverviewTypeSection };
 
 type OverviewByType = {
   tiles: readonly OverviewTile[];
   sections: readonly OverviewTypeSection[];
+  /** What the empty state says is missing — the type's own unit. */
+  emptyTitle: string;
 };
+
+const NO_SETS = 'No sets logged yet';
 
 const OVERVIEW_BY_TYPE: Record<ExerciseType, OverviewByType> = {
   // Canvas 4.5: three tiles and How to perform, no Settings — strength has nothing to configure.
-  strength: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: [] },
+  strength: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: [], emptyTitle: NO_SETS },
   // Canvas 4.6: the strength tiles, then the load it is set up with (GT-196).
-  power: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: ['settings'] },
-  // Rounds, not sets: a best set means nothing here (10.1 FR-12).
-  interval: { tiles: ['sessions', 'lastDone'], sections: [] },
-  mobility: { tiles: ['sessions', 'lastDone'], sections: [] },
+  power: {
+    tiles: ['bestSet', 'sessions', 'lastDone'],
+    sections: ['settings'],
+    emptyTitle: NO_SETS,
+  },
+  // Canvas 4.8. Rounds, not sets: a best set means nothing here (10.1 FR-12), and no other tile
+  // took its place (Artem, 28.10.2026). Then the lever it progresses by (GT-197).
+  interval: {
+    tiles: ['sessions', 'lastDone'],
+    sections: ['settings'],
+    emptyTitle: 'No rounds logged yet',
+  },
+  mobility: { tiles: ['sessions', 'lastDone'], sections: [], emptyTitle: NO_SETS },
 };
 
 /**
@@ -60,8 +73,13 @@ export function overviewSections(
       ? layout.tiles.filter((tile) => tile !== 'bestSet')
       : layout.tiles;
   return [
-    stats === null ? { kind: 'empty' } : { kind: 'tiles', tiles },
+    stats === null ? { kind: 'empty', title: layout.emptyTitle } : { kind: 'tiles', tiles },
     { kind: 'howTo' },
     ...layout.sections.map((kind) => ({ kind })),
   ];
+}
+
+/** The empty state's line for this exercise's type — the same on both tabs. */
+export function emptyTitleOf(exercise: Pick<Exercise, 'type'>): string {
+  return OVERVIEW_BY_TYPE[exerciseTypeOf(exercise)].emptyTitle;
 }

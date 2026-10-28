@@ -186,6 +186,31 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText('No heavier available')).toBeNull();
   });
 
+  test('a timed work exercise with no history: no rounds yet, then its lever in Settings', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'interval',
+          config: { type: 'interval', lever: 'rest', stepSec: 5 },
+        }),
+        stats: null,
+      }),
+      history: [],
+    });
+
+    expect(screen.getByText('No rounds logged yet')).toBeTruthy();
+    expect(screen.getByText('Timed work')).toBeTruthy();
+    expect(screen.getByText('Progress by')).toBeTruthy();
+    expect(screen.getByText('Less rest')).toBeTruthy();
+    expect(screen.getByText('5 s')).toBeTruthy();
+    expect(
+      screen.getByText("Finish every round and next week's rest is 5 s shorter."),
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByText('History'));
+    expect(screen.getByText('No rounds logged yet')).toBeTruthy();
+  });
+
   test('the equipment chip shows for every type with equipment, and only then', () => {
     renderScreen({ overview: overview({ exercise: exercise({ equipment: 'barbell' }) }) });
     expect(screen.getByText('Barbell')).toBeTruthy();

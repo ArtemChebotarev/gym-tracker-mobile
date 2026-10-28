@@ -50,7 +50,23 @@ describe('overviewSections', () => {
 
   test('power with nothing logged still has its Settings — they exist from creation', () => {
     expect(overviewSections({ type: 'power' }, null)).toEqual([
-      { kind: 'empty' },
+      { kind: 'empty', title: 'No sets logged yet' },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
+  test('timed work: two tiles, How to perform, then its Settings (canvas 4.8)', () => {
+    expect(overviewSections({ type: 'interval' }, STATS)).toEqual([
+      { kind: 'tiles', tiles: ['sessions', 'lastDone'] },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
+  test('timed work with nothing logged says no rounds, and keeps its Settings', () => {
+    expect(overviewSections({ type: 'interval' }, null)).toEqual([
+      { kind: 'empty', title: 'No rounds logged yet' },
       { kind: 'howTo' },
       { kind: 'settings' },
     ]);
@@ -77,7 +93,7 @@ describe('overviewSections', () => {
     (type) => {
       const sections = overviewSections({ type }, null);
 
-      expect(sections[0]).toEqual({ kind: 'empty' });
+      expect(sections[0]?.kind).toBe('empty');
       expect(sections).toContainEqual({ kind: 'howTo' });
       expect(sections.some((section) => section.kind === 'tiles')).toBe(false);
     },

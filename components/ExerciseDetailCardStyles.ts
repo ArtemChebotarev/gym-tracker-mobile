@@ -42,6 +42,12 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
     color: COLORS['text/muted'],
   },
+  // Inset like the label row, so it starts where the text inside the card does.
+  footnote: {
+    paddingHorizontal: SPACING['space/row'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/muted'],
+  },
   // No border of its own: rows are separated by hairlines inside it (08.0: "Разделитель между
   // строками, а не рамка вокруг каждой"), the card's fill does the framing.
   card: {
