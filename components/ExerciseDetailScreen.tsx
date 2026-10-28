@@ -56,7 +56,7 @@ import {
 } from './ExerciseDetailCard';
 import {
   EXERCISE_DETAIL_TABS,
-  exerciseSettingsRows,
+  exerciseSettings,
   formatBestSet,
   formatLastDone,
   powerLoadOf,
@@ -67,6 +67,7 @@ import { ExerciseDetailEmpty } from './ExerciseDetailEmpty';
 import { ExerciseHistoryTab } from './ExerciseHistoryTab';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
 import {
+  emptyTitleOf,
   overviewSections,
   type OverviewSection,
   type OverviewTile,
@@ -175,7 +176,7 @@ export function ExerciseDetailScreen({
         // Nothing ever logged, no set and no round: there is no history to show either (08.6,
         // "Пустое состояние").
         <ExerciseDetailEmpty
-          title="No sets logged yet"
+          title={emptyTitleOf(exercise)}
           description="Your first workout with this exercise fills this in."
         />
       ) : (
@@ -244,7 +245,7 @@ function OverviewSectionView({
     case 'empty':
       return (
         <ExerciseDetailEmpty
-          title="No sets logged yet"
+          title={section.title}
           description="Highlights show up after your first workout."
         />
       );
@@ -261,13 +262,19 @@ function OverviewSectionView({
 
 /**
  * How the exercise is set up in the library, read-only. `Used in new cycles`: these are the values a
- * new cycle starts from — a running cycle keeps its own copy (10.1 FR-8, FR-9).
+ * new cycle starts from — a running cycle keeps its own copy (10.1 FR-8, FR-9). A timed work's
+ * lever says under the card what it does next week (canvas 4.8).
  */
 function SettingsCard({ exercise }: { exercise: Exercise }) {
-  const rows = exerciseSettingsRows(exercise);
+  const { rows, note } = exerciseSettings(exercise);
 
   return (
-    <ExerciseDetailCard testID="exercise-settings" label="Settings" meta="Used in new cycles">
+    <ExerciseDetailCard
+      testID="exercise-settings"
+      label="Settings"
+      meta="Used in new cycles"
+      footnote={note}
+    >
       {rows.map((row, index) => (
         <ExerciseDetailCardRow
           key={row.key}

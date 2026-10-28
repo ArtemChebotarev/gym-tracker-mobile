@@ -11,6 +11,7 @@ import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
 
 import { POWER_LOAD_LABEL, powerNoHeavierLabel } from './ExerciseFormLogic';
+import { describeLever, LEVER_LABEL, leverMovesTime } from './ExerciseProgressionFieldsLogic';
 import { formatLoggedWeight, formatRowWeight } from './WorkoutSetRowLogic';
 
 /** The two tabs of the Exercise screen (08.6, "Переключатель"). */
@@ -84,28 +85,47 @@ export function powerLoadOf(exercise: Pick<Exercise, 'type' | 'config'>): PowerL
 /** One row of the Overview's Settings card: what is set, and to what. */
 export type ExerciseSettingsRow = { key: string; label: string; value: string };
 
+/** The Settings card: its rows, and the line under it where the setting needs one. */
+export type ExerciseSettings = { rows: ExerciseSettingsRow[]; note?: string };
+
 /**
- * The Settings card of the Overview (08.6, GT-196): how the exercise is set up in the library,
- * worded as the New exercise sheet words it, so a value is called one thing on every screen. Empty
- * for a type with nothing to set. An exercise stored without a config reads as its type's default.
+ * The Settings card of the Overview (08.6, GT-196, GT-197): how the exercise is set up in the
+ * library, worded as the New exercise sheet words it, so a value is called one thing on every
+ * screen. No rows for a type with nothing to set. An exercise stored without a config reads as its
+ * type's default.
  *
  * Power: its load, and `No heavier available` only while it is on — a row reading `Off` would only
  * say the user never pressed a button they may not know exists (10.1 FR-4).
+ *
+ * Timed work: the lever, its step only where it moves a time (`rounds` always moves by one, `None`
+ * not at all — FR-8), and under the card what the lever does next week, the sheet's own line for it.
+ * Keeping the plan needs no explaining, so `None` has no line.
  */
-export function exerciseSettingsRows(
-  exercise: Pick<Exercise, 'type' | 'config'>,
-): ExerciseSettingsRow[] {
-  const type = exerciseTypeOf(exercise);
-  const config = exercise.config ?? defaultExerciseConfig(type);
-  if (config?.type !== 'power') {
-    return [];
+export function exerciseSettings(exercise: Pick<Exercise, 'type' | 'config'>): ExerciseSettings {
+  const config = exercise.config ?? defaultExerciseConfig(exerciseTypeOf(exercise));
+  switch (config?.type) {
+    case 'power':
+      return {
+        rows: [
+          { key: 'load', label: 'Load', value: POWER_LOAD_LABEL[config.load] },
+          ...(config.noHeavierAvailable
+            ? [{ key: 'noHeavier', label: powerNoHeavierLabel(config.load), value: 'On' }]
+            : []),
+        ],
+      };
+    case 'interval':
+      return {
+        rows: [
+          { key: 'lever', label: 'Progress by', value: LEVER_LABEL[config.lever] },
+          ...(leverMovesTime(config.lever)
+            ? [{ key: 'step', label: 'Step', value: `${config.stepSec} s` }]
+            : []),
+        ],
+        ...(config.lever === 'none' ? {} : { note: describeLever(config.lever, config.stepSec) }),
+      };
+    default:
+      return { rows: [] };
   }
-  return [
-    { key: 'load', label: 'Load', value: POWER_LOAD_LABEL[config.load] },
-    ...(config.noHeavierAvailable
-      ? [{ key: 'noHeavier', label: powerNoHeavierLabel(config.load), value: 'On' }]
-      : []),
-  ];
 }
 
 /** A logged round's row label — `Round 1`. */

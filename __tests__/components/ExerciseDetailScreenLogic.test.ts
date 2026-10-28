@@ -1,8 +1,8 @@
-import type { PowerLoad } from '@domain/exerciseConfig';
+import type { IntervalLever, PowerLoad } from '@domain/exerciseConfig';
 import type { RoundLog, SetLog } from '@domain/execution';
 import {
   exerciseLogRows,
-  exerciseSettingsRows,
+  exerciseSettings,
   formatRoundTail,
   powerLoadOf,
   formatBestSet,
@@ -136,9 +136,9 @@ describe('a logged round row', () => {
   });
 });
 
-describe('exerciseSettingsRows', () => {
+describe('exerciseSettings — power', () => {
   const power = (load: PowerLoad, noHeavierAvailable = false) =>
-    exerciseSettingsRows({ type: 'power', config: { type: 'power', load, noHeavierAvailable } });
+    exerciseSettings({ type: 'power', config: { type: 'power', load, noHeavierAvailable } }).rows;
 
   test.each([
     ['weight', 'Kg'],
@@ -164,13 +164,51 @@ describe('exerciseSettingsRows', () => {
   });
 
   test('a power exercise stored without a config reads as the default load', () => {
-    expect(exerciseSettingsRows({ type: 'power' })).toEqual([
-      { key: 'load', label: 'Load', value: 'Kg' },
-    ]);
+    expect(exerciseSettings({ type: 'power' })).toEqual({
+      rows: [{ key: 'load', label: 'Load', value: 'Kg' }],
+    });
   });
 
   test('strength has nothing to set', () => {
-    expect(exerciseSettingsRows({})).toEqual([]);
-    expect(exerciseSettingsRows({ type: 'strength' })).toEqual([]);
+    expect(exerciseSettings({})).toEqual({ rows: [] });
+    expect(exerciseSettings({ type: 'strength' })).toEqual({ rows: [] });
+  });
+});
+
+describe('exerciseSettings — timed work', () => {
+  const interval = (lever: IntervalLever, stepSec: 5 | 10 | 15 = 5) =>
+    exerciseSettings({ type: 'interval', config: { type: 'interval', lever, stepSec } });
+
+  test('Less rest: the lever, its step, and what next week brings', () => {
+    expect(interval('rest', 10)).toEqual({
+      rows: [
+        { key: 'lever', label: 'Progress by', value: 'Less rest' },
+        { key: 'step', label: 'Step', value: '10 s' },
+      ],
+      note: "Finish every round and next week's rest is 10 s shorter.",
+    });
+  });
+
+  test('More work: the lever, its step, and what next week brings', () => {
+    expect(interval('workTime', 15)).toEqual({
+      rows: [
+        { key: 'lever', label: 'Progress by', value: 'More work' },
+        { key: 'step', label: 'Step', value: '15 s' },
+      ],
+      note: "Finish every round and next week's work is 15 s longer.",
+    });
+  });
+
+  test('More rounds has no step — it always adds one round', () => {
+    expect(interval('rounds')).toEqual({
+      rows: [{ key: 'lever', label: 'Progress by', value: 'More rounds' }],
+      note: 'Finish every round and next week has one more round.',
+    });
+  });
+
+  test('None keeps the plan: no step and no line under the card', () => {
+    expect(interval('none')).toEqual({
+      rows: [{ key: 'lever', label: 'Progress by', value: 'None' }],
+    });
   });
 });
