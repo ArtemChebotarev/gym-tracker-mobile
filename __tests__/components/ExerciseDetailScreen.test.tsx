@@ -147,6 +147,45 @@ describe('ExerciseDetailScreen', () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
+  test('a power exercise shows its Settings, labelled as values for new cycles', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'power',
+          config: { type: 'power', load: 'level', noHeavierAvailable: true },
+        }),
+      }),
+    });
+
+    expect(screen.getByText('Settings')).toBeTruthy();
+    expect(screen.getByText('Used in new cycles')).toBeTruthy();
+    expect(screen.getByText('Load')).toBeTruthy();
+    expect(screen.getByText('Level')).toBeTruthy();
+    expect(screen.getByText('No higher level available')).toBeTruthy();
+    expect(screen.getByText('On')).toBeTruthy();
+  });
+
+  test('a power exercise with no history still shows its Settings under How to perform', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'power',
+          config: { type: 'power', load: 'weight', noHeavierAvailable: false },
+        }),
+        stats: null,
+      }),
+      history: [],
+    });
+
+    const rendered = JSON.stringify(screen.toJSON());
+    expect(rendered.indexOf('No sets logged yet')).toBeGreaterThan(-1);
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
+      rendered.indexOf('Settings'),
+    );
+    expect(screen.getByText('Kg')).toBeTruthy();
+    expect(screen.queryByText('No heavier available')).toBeNull();
+  });
+
   test('the equipment chip shows for every type with equipment, and only then', () => {
     renderScreen({ overview: overview({ exercise: exercise({ equipment: 'barbell' }) }) });
     expect(screen.getByText('Barbell')).toBeTruthy();

@@ -16,6 +16,22 @@ describe('overviewSections', () => {
     ]);
   });
 
+  test('power: the strength tiles, How to perform, then its Settings (canvas 4.6)', () => {
+    expect(overviewSections({ type: 'power' }, STATS)).toEqual([
+      { kind: 'tiles', tiles: ['bestSet', 'sessions', 'lastDone'] },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
+  test('power with nothing logged still has its Settings — they exist from creation', () => {
+    expect(overviewSections({ type: 'power' }, null)).toEqual([
+      { kind: 'empty' },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
   test('an exercise stored without a type is laid out as strength', () => {
     expect(overviewSections({}, STATS)).toEqual(overviewSections({ type: 'strength' }, STATS));
   });

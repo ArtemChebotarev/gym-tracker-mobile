@@ -56,6 +56,15 @@ export const POWER_LOAD_LABEL: Record<PowerLoad, string> = {
   none: 'None',
 };
 
+/**
+ * "No heavier available" (FR-4) in the load's own words: a level has no "heavier", it has a higher
+ * one. The workout's ceiling note offers it under this name, and the Exercise screen's Settings
+ * shows it under the same one (GT-196).
+ */
+export function powerNoHeavierLabel(load: PowerLoad): string {
+  return load === 'level' ? 'No higher level available' : 'No heavier available';
+}
+
 /** The segments of the load control, in the order of FR-2. */
 export const POWER_LOAD_OPTIONS = POWER_LOADS.map((load) => ({
   value: load,

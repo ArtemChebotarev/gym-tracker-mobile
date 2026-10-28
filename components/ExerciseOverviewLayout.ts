@@ -14,8 +14,11 @@ import type { ExerciseOverviewStats } from '@domain/exerciseOverview';
 /** One tile of the row (08.6, "Определение плиток"). */
 export type OverviewTile = 'bestSet' | 'sessions' | 'lastDone';
 
-/** A section a type puts after the shared ones. None yet: GT-196/197 add `settings`. */
-export type OverviewTypeSection = never;
+/**
+ * A section a type puts after the shared ones. `settings`: how the exercise is set up in the
+ * library, read-only (10.1 FR-1, FR-9) — see `exerciseSettingsRows`.
+ */
+export type OverviewTypeSection = 'settings';
 
 export type OverviewSection =
   | { kind: 'tiles'; tiles: readonly OverviewTile[] }
@@ -31,7 +34,8 @@ type OverviewByType = {
 const OVERVIEW_BY_TYPE: Record<ExerciseType, OverviewByType> = {
   // Canvas 4.5: three tiles and How to perform, no Settings — strength has nothing to configure.
   strength: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: [] },
-  power: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: [] },
+  // Canvas 4.6: the strength tiles, then the load it is set up with (GT-196).
+  power: { tiles: ['bestSet', 'sessions', 'lastDone'], sections: ['settings'] },
   // Rounds, not sets: a best set means nothing here (10.1 FR-12).
   interval: { tiles: ['sessions', 'lastDone'], sections: [] },
   mobility: { tiles: ['sessions', 'lastDone'], sections: [] },

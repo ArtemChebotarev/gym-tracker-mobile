@@ -5,6 +5,8 @@ import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
 import { POWER_MAX_REPS } from '@domain/progressionCorridor';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
+import { powerNoHeavierLabel } from './ExerciseFormLogic';
+
 /** The Load column's header (10.1 FR-2, GT-82): what the load is — kilograms, a level, or the body. */
 export function powerLoadColumnLabel(load: PowerLoad): string {
   switch (load) {
@@ -81,12 +83,7 @@ export function formatCeilingNote(
     icon,
     lead,
     text: isVariation ? `${heaviest} Or keep it here while your strength catches up.` : didReps,
-    ...(hint.canFlagNoHeavier
-      ? {
-          flagLabel:
-            context.load === 'level' ? 'No higher level available' : 'No heavier available',
-        }
-      : {}),
+    ...(hint.canFlagNoHeavier ? { flagLabel: powerNoHeavierLabel(context.load) } : {}),
     ...(isVariation ? { replaceLabel: 'Replace exercise' } : {}),
     ...(hint.canHideTip ? { hideLabel: 'Hide this tip' } : {}),
   };
