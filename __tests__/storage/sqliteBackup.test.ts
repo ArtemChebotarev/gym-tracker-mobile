@@ -5,6 +5,7 @@ import { exportBackup, importBackup, type BackupDeps } from '@usecases/backup';
 import {
   makeCustomExercise,
   makeMesocycle,
+  makeRoundLog,
   makeSession,
   makeSessionExercise,
   makeSetLog,
@@ -14,7 +15,7 @@ import { migratedTestDatabase, readMigrationBundle, type TestDatabase } from '..
 
 // The round trip through the medium (task 070's DoD). `__tests__/usecases/backup.test.ts` states
 // the use case's rules; this proves they survive the columns — `week_plan`, `origin` and
-// `set_targets` are JSON columns, `startDate` and `rir` are nullable, and a value that round-trips
+// `set_targets` are JSON columns, `startDate`, `rir` and a round's `rest_sec` are nullable, and a value that round-trips
 // through a Map need not round-trip through SQLite.
 //
 // The database is migrated exactly as the app migrates its own, so it starts with the shipped
@@ -39,8 +40,15 @@ afterEach(() => {
 describe('a backup round trip on SQLite', () => {
   test('reproduces the store exactly, catalog and all', async () => {
     const source = await freshDeps();
-    const { exerciseRepo, templateRepo, mesocycleRepo, sessionRepo, sessionExerciseRepo, setLogRepo } =
-      source.store.repos;
+    const {
+      exerciseRepo,
+      templateRepo,
+      mesocycleRepo,
+      sessionRepo,
+      sessionExerciseRepo,
+      setLogRepo,
+      roundLogRepo,
+    } = source.store.repos;
     // Foreign keys are on, so the session exercise and the set
     // log point at an exercise that really exists rather than the fixtures' default id.
     const exercise = await exerciseRepo.createCustom(makeCustomExercise('exercise-my-own'));
@@ -49,11 +57,29 @@ describe('a backup round trip on SQLite', () => {
     await sessionRepo.create(makeSession());
     await sessionExerciseRepo.create(makeSessionExercise({ exerciseId: exercise.id }));
     await setLogRepo.create(makeSetLog({ exerciseId: exercise.id }));
+    const bag = await exerciseRepo.createCustom(
+      makeCustomExercise('exercise-my-bag', { muscleGroup: 'fullBody', type: 'interval' }),
+    );
+    await sessionExerciseRepo.create(
+      makeSessionExercise({
+        id: 'session-exercise-bag',
+        exerciseId: bag.id,
+        order: 2,
+        setTargets: [{ setNumber: 1, targetWorkSec: 120, targetRestSec: 45 }],
+      }),
+    );
+    const { restSec: _noRest, ...round } = makeRoundLog({
+      sessionExerciseId: 'session-exercise-bag',
+      exerciseId: bag.id,
+      restSkipped: true,
+    });
+    await roundLogRepo.create(round);
 
     const exported = await exportBackup(source);
     const restored = await freshDeps();
     await importBackup(exported, restored);
 
+    expect(exported.data.roundLogs).toHaveLength(1);
     await expect(exportBackup(restored, exported.exportedAt)).resolves.toEqual(exported);
   });
 

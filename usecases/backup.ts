@@ -26,10 +26,10 @@ export type BackupDeps = {
 };
 
 /**
- * Everything in the store, as a file. Sessions, their exercises and their set logs are walked
- * through the mesocycles that own them — the repositories offer no "all sessions" read, and
- * adding one just for the backup would widen the contract for a single caller. A session that
- * belonged to no mesocycle could not exist: the foreign key forbids it.
+ * Everything in the store, as a file. Sessions, their exercises, their set logs and round logs
+ * are walked through the mesocycles that own them — the repositories offer no "all sessions"
+ * read, and adding one just for the backup would widen the contract for a single caller. A
+ * session that belonged to no mesocycle could not exist: the foreign key forbids it.
  */
 export async function exportBackup(
   deps: BackupDeps,
@@ -42,6 +42,7 @@ export async function exportBackup(
     sessionRepo,
     sessionExerciseRepo,
     setLogRepo,
+    roundLogRepo,
     settingsRepo,
   } = deps.store.repos;
 
@@ -54,6 +55,9 @@ export async function exportBackup(
   ).flat();
   const setLogs = (
     await Promise.all(sessions.map((session) => setLogRepo.listBySessionId(session.id)))
+  ).flat();
+  const roundLogs = (
+    await Promise.all(sessions.map((session) => roundLogRepo.listBySessionId(session.id)))
   ).flat();
 
   return {
@@ -68,6 +72,7 @@ export async function exportBackup(
       sessions,
       sessionExercises,
       setLogs,
+      roundLogs,
       settings: await settingsRepo.read(),
     },
   };
@@ -91,8 +96,9 @@ export async function exportBackupJson(deps: BackupDeps, now?: string): Promise<
  *
  * Records go in parents first, because foreign keys are enforced (`PRAGMA foreign_keys = ON`):
  * exercises and mesocycles before sessions, sessions before their exercises, those before set
- * logs. Every record carries its own stamps — `Incoming` accepts them exactly for this, so a
- * restore puts history back as it was written rather than restating it as written today.
+ * logs and round logs. Every record carries its own stamps — `Incoming` accepts them exactly for
+ * this, so a restore puts history back as it was written rather than restating it as written
+ * today.
  */
 export async function importBackup(value: unknown, deps: BackupDeps): Promise<void> {
   assertRestorable(value, deps.schemaVersion);
@@ -146,6 +152,9 @@ async function restore(data: BackupData, repos: BackupRepositories): Promise<voi
   await repos.sessionExerciseRepo.createMany(data.sessionExercises);
   for (const setLog of data.setLogs) {
     await repos.setLogRepo.create(setLog);
+  }
+  for (const roundLog of data.roundLogs) {
+    await repos.roundLogRepo.create(roundLog);
   }
   await repos.settingsRepo.write(data.settings);
 }
