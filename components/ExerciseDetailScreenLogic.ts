@@ -4,10 +4,9 @@ import type { Equipment, Exercise } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { RoundLog, SetLog } from '@domain/execution';
-import type { ExerciseBestSet, ExerciseLastSession } from '@domain/exerciseOverview';
+import type { ExerciseBestSet } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
 import { formatClock } from '@design/formatClock';
-import { formatAbsoluteDate } from '@design/formatDate';
 import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
 
@@ -29,12 +28,6 @@ export function formatBestSet(bestSet: ExerciseBestSet): string {
 /** `Last done` — `3 d`, `2 w` (08.6). */
 export function formatLastDone(lastDoneAt: string, now: Date = new Date()): string {
   return formatShortDuration(parseUtcIso(lastDoneAt), now);
-}
-
-/** The Last session label's right-hand side: `Week 3 · Day 1 · 10 Aug` (the mockup). */
-export function formatLastSessionMeta(lastSession: ExerciseLastSession): string {
-  const date = formatAbsoluteDate(parseUtcIso(lastSession.completedAt));
-  return `Week ${lastSession.weekNumber} · Day ${lastSession.dayNumber} · ${date}`;
 }
 
 /** A logged set's row label — `Set 1`. */
@@ -118,8 +111,7 @@ export function formatRoundTail(
 export type ExerciseLogRow = { key: string; label: string; value: string; tail?: string };
 
 /**
- * A performance's rows, the same in History and in Overview's Last session: its sets, then its
- * rounds — an exercise has one or the other (10.1 FR-12).
+ * A performance's rows on the History tab: its sets, then its rounds — an exercise has one or the other (10.1 FR-12).
  */
 export function exerciseLogRows(
   logs: { setLogs: readonly SetLog[]; roundLogs: readonly RoundLog[] },

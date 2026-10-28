@@ -8,7 +8,6 @@
 // to a backend then moves the queries, not this logic.
 
 import type { Exercise } from './catalog';
-import type { RoundLog, SetLog } from './execution';
 import type { ExercisePerformance } from './exerciseHistory';
 
 export type { ExercisePerformance };
@@ -32,18 +31,6 @@ export type ExerciseOverviewStats = {
   lastDoneAt: string;
 };
 
-/** The last completed session's block (08.6, "Последняя сессия"). */
-export type ExerciseLastSession = {
-  weekNumber: number;
-  dayNumber: number;
-  /** UTC ISO timestamp of the session's completion — the block's date. */
-  completedAt: string;
-  /** Every set of this exercise in that session, ascending by `setNumber`. */
-  setLogs: SetLog[];
-  /** Every round of this exercise in that session, ascending by `roundNumber`. */
-  roundLogs: RoundLog[];
-};
-
 /** What the `⋯` menu offers, by `Exercise.source` (08.6, "Меню и действия"). */
 export type ExerciseOverviewAction = 'edit' | 'hide';
 
@@ -54,10 +41,5 @@ export type ExerciseOverview = {
    * the tiles (08.6).
    */
   stats: ExerciseOverviewStats | null;
-  /**
-   * `null` when no *completed* session holds a set or round of it, even if some in-progress one
-   * does.
-   */
-  lastSession: ExerciseLastSession | null;
   actions: ExerciseOverviewAction[];
 };

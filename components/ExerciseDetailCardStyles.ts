@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
   block: {
     gap: SPACING['space/gap-tight'],
   },
-  /** `LAST SESSION` on the left, `Week 3 · Day 1 · 10 Aug` on the right. */
+  /** The label on the left, its meta (a History session's date) on the right. */
   // Inset by the card's own padding: the label and its date start and end where the text inside
   // the card does, not at the card's edge.
   labelRow: {

@@ -1,21 +1,19 @@
 // The Exercise screen — 08.6 · Библиотека упражнений, "Exercise — вкладка Overview" (task 065),
-// laid out after its mockup 02-exercise-detail.html. A pushed screen: back and `⋯` in the header,
-// then the exercise's name with its muscle-group chip in the group's own tint and a
+// laid out after the canvas "Hybro · Hybrid exercises (10.1)", frames 4.5–4.9 (GT-195). A pushed
+// screen: back and `⋯` in the header, then the exercise's name with its chips — the muscle group in
+// the group's own tint, the type for anything but strength, the equipment when it has one — and a
 // `Catalog`/`Custom` badge, then the Overview / History switcher.
 //
-// Overview answers one question — what did I do last time, before I get under the bar: three
-// tiles (Best set, Sessions, Last done) and the last completed session set by set. Earlier
-// sessions are not repeated here: the History tab right above has them (ExerciseHistoryTab, task
-// 108). `Watch how to perform exercise` closes the tab (task 153): the screen shows no technique of
-// its own, so it hands over to a YouTube Shorts search. With nothing ever logged, both tabs are
-// replaced by a line saying so (08.6, "Пустое состояние") — tiles of zeros would be worse than no
-// tiles, and with no set logged there is no history either. The how-to card then moves up to the
-// top, under the switcher, since someone who has never done the exercise wants it most.
+// What Overview holds depends on the exercise's type, and this file doesn't decide it:
+// `overviewSections` (ExerciseOverviewLayout.ts) hands it a list, and the screen draws each entry.
+// Whatever the type, the tiles come first — or, with nothing ever logged, a framed line saying so
+// in their place — then `How to perform`, which hands over to a YouTube Shorts search (task 153).
+// Sessions themselves are on the History tab only (ExerciseHistoryTab, task 108): Overview used to
+// repeat the last one, and dropped it (GT-195).
 //
 // The switcher is the only way into History (08.6: "Единственная точка входа — переключатель
 // Overview / History на самом экране Exercise"), and Overview always opens first, from wherever
-// the screen was entered — including from a workout, where the last-session block is exactly what
-// you came for. So the tab is this component's own state rather than a prop: the screen
+// the screen was entered. So the tab is this component's own state rather than a prop: the screen
 // deliberately doesn't remember it ("Экран не запоминает, на какой вкладке был в прошлый раз"),
 // and leaving and re-entering remounts it back on Overview. `onTabChange` only reports the switch
 // outward, so the route can start loading the history the first time it's actually asked for —
@@ -25,20 +23,23 @@
 // app/exercise/[id]/index.tsx. JSX/rendering only — styles live in ExerciseDetailScreenStyles.ts
 // and pure helpers in ExerciseDetailScreenLogic.ts, per the code-style skill.
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Equipment, MuscleGroup } from '@domain/catalog';
-import type { PowerLoad } from '@domain/exerciseConfig';
+import type { Exercise, MuscleGroup } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
-import type { ExerciseLastSession, ExerciseOverview } from '@domain/exerciseOverview';
+import type { ExerciseOverview, ExerciseOverviewStats } from '@domain/exerciseOverview';
 import { Badge } from '@design/components/Badge';
 import { EmptyState } from '@design/components/EmptyState';
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { StatTile } from '@design/components/StatTile';
+import { getEquipmentLabel } from '@design/equipmentLabel';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { BackIcon } from '@design/icons/BackIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
@@ -47,20 +48,23 @@ import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
-import { ExerciseDetailCard } from './ExerciseDetailCard';
+import { ExerciseDetailSection } from './ExerciseDetailCard';
 import {
   EXERCISE_DETAIL_TABS,
   formatBestSet,
   formatLastDone,
-  formatLastSessionMeta,
   powerLoadOf,
   type ExerciseDetailTab,
 } from './ExerciseDetailScreenLogic';
 import { styles } from './ExerciseDetailScreenStyles';
 import { ExerciseDetailEmpty } from './ExerciseDetailEmpty';
 import { ExerciseHistoryTab } from './ExerciseHistoryTab';
-import { ExerciseLogRows } from './ExerciseLogRows';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
+import {
+  overviewSections,
+  type OverviewSection,
+  type OverviewTile,
+} from './ExerciseOverviewLayout';
 
 export type ExerciseDetailScreenProps = {
   /** `undefined` while it loads, `null` when no such exercise exists. */
@@ -127,7 +131,7 @@ export function ExerciseDetailScreen({
     );
   }
 
-  const { exercise, stats, lastSession } = overview;
+  const { exercise, stats } = overview;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -140,10 +144,7 @@ export function ExerciseDetailScreen({
 
       <View style={styles.heading}>
         <Text style={styles.title}>{exercise.name}</Text>
-        <View style={styles.headingMeta}>
-          <GroupChip muscleGroup={exercise.muscleGroup} />
-          <Badge label={sourceLabel(exercise.source)} />
-        </View>
+        <HeadingChips exercise={exercise} />
       </View>
 
       <SegmentedControl
@@ -152,48 +153,127 @@ export function ExerciseDetailScreen({
         onChange={(value) => openTab(value as ExerciseDetailTab)}
       />
 
-      {stats === null ? (
-        // Nothing ever logged, no set and no round: there are no tiles to show and no history to show either, so the
-        // same line answers both tabs (08.6, "Пустое состояние"). On Overview the how-to card
-        // goes first, right under the switcher: it is the one useful thing on a screen that
-        // has nothing to report yet, and the line below reads as a note rather than the page.
-        <>
-          {tab === 'overview' && <WatchHowToCard onPress={onWatchHowTo} />}
-          <ExerciseDetailEmpty
-            title="No sets logged yet"
-            description="Your first workout with this exercise fills this in."
-          />
-        </>
-      ) : tab === 'history' ? (
+      {tab === 'overview' ? (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+          {overviewSections(exercise, stats).map((section) => (
+            <OverviewSectionView
+              key={section.kind}
+              section={section}
+              stats={stats}
+              onWatchHowTo={onWatchHowTo}
+            />
+          ))}
+        </ScrollView>
+      ) : stats === null ? (
+        // Nothing ever logged, no set and no round: there is no history to show either (08.6,
+        // "Пустое состояние").
+        <ExerciseDetailEmpty
+          title="No sets logged yet"
+          description="Your first workout with this exercise fills this in."
+        />
+      ) : (
         <ExerciseHistoryTab
           groups={history}
           isPending={isHistoryPending}
           equipment={exercise.equipment}
           powerLoad={powerLoadOf(exercise)}
         />
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-          <View style={styles.tiles}>
-            {/* An exercise of rounds has no best set (10.1 FR-12): the tile is left out. */}
-            {stats.bestSet !== null && (
-              <StatTile label="Best set" value={formatBestSet(stats.bestSet)} />
-            )}
-            <StatTile label="Sessions" value={String(stats.sessionCount)} />
-            <StatTile label="Last done" value={formatLastDone(stats.lastDoneAt)} />
-          </View>
-
-          {lastSession !== null && (
-            <LastSessionBlock
-              lastSession={lastSession}
-              equipment={exercise.equipment}
-              powerLoad={powerLoadOf(exercise)}
-            />
-          )}
-
-          <WatchHowToCard onPress={onWatchHowTo} />
-        </ScrollView>
       )}
     </SafeAreaView>
+  );
+}
+
+/**
+ * Under the name: the muscle group, then the type (strength has none — it is the default), then the
+ * equipment when the exercise has one, then where it comes from (canvas 4.5–4.9).
+ */
+function HeadingChips({ exercise }: { exercise: Exercise }) {
+  const type = exerciseTypeOf(exercise);
+
+  return (
+    <View style={styles.headingMeta}>
+      <GroupChip muscleGroup={exercise.muscleGroup} />
+      {type !== 'strength' && (
+        <OutlinedChip
+          label={getExerciseTypeLabel(type)}
+          icon={getExerciseTypeIcon(type)({
+            size: ICON_SIZES['icon/glyph'],
+            color: COLORS['text/secondary'],
+          })}
+        />
+      )}
+      {exercise.equipment !== undefined && (
+        <OutlinedChip label={getEquipmentLabel(exercise.equipment)} />
+      )}
+      <Badge label={sourceLabel(exercise.source)} />
+    </View>
+  );
+}
+
+/** The type and the equipment: the group chip's box, outlined rather than tinted (canvas 4.5–4.9). */
+function OutlinedChip({ label, icon }: { label: string; icon?: ReactNode }) {
+  return (
+    <View style={[styles.groupChip, styles.outlinedChip]}>
+      {icon}
+      <Text style={[styles.groupLabel, styles.outlinedLabel]}>{label}</Text>
+    </View>
+  );
+}
+
+function OverviewSectionView({
+  section,
+  stats,
+  onWatchHowTo,
+}: {
+  section: OverviewSection;
+  stats: ExerciseOverviewStats | null;
+  onWatchHowTo: () => void;
+}) {
+  switch (section.kind) {
+    case 'tiles':
+      return stats === null ? null : <OverviewTiles tiles={section.tiles} stats={stats} />;
+    case 'empty':
+      return (
+        <ExerciseDetailEmpty
+          framed
+          title="No sets logged yet"
+          description="Highlights show up after your first workout."
+        />
+      );
+    case 'howTo':
+      return (
+        <ExerciseDetailSection label="How to perform">
+          <WatchHowToCard onPress={onWatchHowTo} />
+        </ExerciseDetailSection>
+      );
+  }
+}
+
+function OverviewTiles({
+  tiles,
+  stats,
+}: {
+  tiles: readonly OverviewTile[];
+  stats: ExerciseOverviewStats;
+}) {
+  return (
+    <View style={styles.tiles}>
+      {tiles.map((tile) => {
+        switch (tile) {
+          case 'bestSet':
+            // `null` only without a logged set — never for a type whose layout lists the tile.
+            return stats.bestSet === null ? null : (
+              <StatTile key={tile} label="Best set" value={formatBestSet(stats.bestSet)} />
+            );
+          case 'sessions':
+            return <StatTile key={tile} label="Sessions" value={String(stats.sessionCount)} />;
+          case 'lastDone':
+            return (
+              <StatTile key={tile} label="Last done" value={formatLastDone(stats.lastDoneAt)} />
+            );
+        }
+      })}
+    </View>
   );
 }
 
@@ -212,31 +292,6 @@ function GroupChip({ muscleGroup }: { muscleGroup: MuscleGroup }) {
         {getMuscleGroupLabel(muscleGroup)}
       </Text>
     </View>
-  );
-}
-
-function LastSessionBlock({
-  lastSession,
-  equipment,
-  powerLoad,
-}: {
-  lastSession: ExerciseLastSession;
-  equipment?: Equipment;
-  powerLoad?: PowerLoad;
-}) {
-  return (
-    <ExerciseDetailCard
-      testID="exercise-last-session"
-      label="Last session"
-      meta={formatLastSessionMeta(lastSession)}
-    >
-      <ExerciseLogRows
-        setLogs={lastSession.setLogs}
-        roundLogs={lastSession.roundLogs}
-        equipment={equipment}
-        powerLoad={powerLoad}
-      />
-    </ExerciseDetailCard>
   );
 }
 
