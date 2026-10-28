@@ -11,6 +11,8 @@ import type { Exercise, ExerciseType } from '@domain/catalog';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { ExerciseOverviewStats } from '@domain/exerciseOverview';
 
+import { powerLoadOf } from './ExerciseDetailScreenLogic';
+
 /** One tile of the row (08.6, "Определение плиток"). */
 export type OverviewTile = 'bestSet' | 'sessions' | 'lastDone';
 
@@ -47,12 +49,18 @@ const OVERVIEW_BY_TYPE: Record<ExerciseType, OverviewByType> = {
  * settings are there from the moment the exercise exists.
  */
 export function overviewSections(
-  exercise: Pick<Exercise, 'type'>,
+  exercise: Pick<Exercise, 'type' | 'config'>,
   stats: ExerciseOverviewStats | null,
 ): OverviewSection[] {
   const layout = OVERVIEW_BY_TYPE[exerciseTypeOf(exercise)];
+  // A power exercise with no load logs reps alone: there is no weight to rank a set by, so it
+  // drops Best set the way an interval does (Artem, 28.10.2026).
+  const tiles =
+    powerLoadOf(exercise) === 'none'
+      ? layout.tiles.filter((tile) => tile !== 'bestSet')
+      : layout.tiles;
   return [
-    stats === null ? { kind: 'empty' } : { kind: 'tiles', tiles: layout.tiles },
+    stats === null ? { kind: 'empty' } : { kind: 'tiles', tiles },
     { kind: 'howTo' },
     ...layout.sections.map((kind) => ({ kind })),
   ];
