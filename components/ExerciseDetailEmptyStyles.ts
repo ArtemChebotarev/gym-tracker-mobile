@@ -2,23 +2,24 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
+import { COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  // The fill and corner of the tiles and cards around it, its text on their inner padding.
   empty: {
-    gap: SPACING['space/gap-tight'],
-    paddingVertical: SPACING['space/section'],
-    alignItems: 'center',
+    gap: SPACING['space/xs'],
+    backgroundColor: COLORS['surface/card'],
+    borderRadius: RADII['radius/field'],
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/row'],
   },
   title: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
-    color: COLORS['text/secondary'],
-    textAlign: 'center',
+    color: COLORS['text/primary'],
   },
   description: {
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/muted'],
-    textAlign: 'center',
   },
 });

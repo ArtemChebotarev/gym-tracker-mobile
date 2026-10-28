@@ -1,6 +1,5 @@
 // A performance's rows inside an ExerciseDetailCard — its sets or its rounds, read by
-// `exerciseLogRows`. One component for both cards that list a performance, History's sessions and
-// Overview's Last session, so a set or a round reads the same in both (10.1 FR-12).
+// `exerciseLogRows` — one session of the History tab, whatever the type (10.1 FR-12).
 
 import type { Equipment } from '@domain/catalog';
 import type { RoundLog, SetLog } from '@domain/execution';

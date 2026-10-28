@@ -68,11 +68,16 @@ describe('Exercise screen route', () => {
     expect(screen.getByText('Best set')).toBeTruthy();
   });
 
-  test('shows the last completed session the fixture logged', async () => {
+  test('Overview repeats no session the fixture logged — History lists it', async () => {
     mockParams = { id: 'bench-press-barbell' };
     renderRoute();
+    await screen.findByText('Bench Press');
 
-    expect(await screen.findByTestId('exercise-last-session')).toBeTruthy();
+    expect(screen.queryByText('Week 1 · Day 1')).toBeNull();
+
+    fireEvent.press(screen.getByText('History'));
+
+    expect(await screen.findByText('Week 1 · Day 1')).toBeTruthy();
   });
 
   test('an exercise that was never performed shows the empty state instead of tiles', async () => {

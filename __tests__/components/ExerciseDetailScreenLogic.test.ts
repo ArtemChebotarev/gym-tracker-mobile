@@ -5,7 +5,6 @@ import {
   powerLoadOf,
   formatBestSet,
   formatLastDone,
-  formatLastSessionMeta,
   formatSetLabel,
   formatSetRirTail,
   formatSetValue,
@@ -43,20 +42,6 @@ describe('formatLastDone', () => {
     expect(formatLastDone('2026-09-01T12:00:00.000Z', new Date('2026-09-20T12:00:00.000Z'))).toBe(
       '2 w',
     );
-  });
-});
-
-describe('formatLastSessionMeta', () => {
-  test('is week, day and date', () => {
-    expect(
-      formatLastSessionMeta({
-        weekNumber: 3,
-        dayNumber: 1,
-        completedAt: '2026-08-10T12:00:00.000Z',
-        roundLogs: [],
-        setLogs: [],
-      }),
-    ).toBe('Week 3 · Day 1 · 10 Aug');
   });
 });
 
