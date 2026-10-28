@@ -235,7 +235,6 @@ function OverviewSectionView({
     case 'empty':
       return (
         <ExerciseDetailEmpty
-          framed
           title="No sets logged yet"
           description="Highlights show up after your first workout."
         />
