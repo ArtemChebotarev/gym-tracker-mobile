@@ -16,6 +16,46 @@ describe('overviewSections', () => {
     ]);
   });
 
+  test('power: the strength tiles, How to perform, then its Settings (canvas 4.6)', () => {
+    expect(overviewSections({ type: 'power' }, STATS)).toEqual([
+      { kind: 'tiles', tiles: ['bestSet', 'sessions', 'lastDone'] },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
+  test('power with no load has no Best set, like an interval — there is no weight to rank by', () => {
+    const noLoad = {
+      type: 'power',
+      config: { type: 'power', load: 'none', noHeavierAvailable: false },
+    } as const;
+
+    expect(overviewSections(noLoad, STATS)[0]).toEqual({
+      kind: 'tiles',
+      tiles: ['sessions', 'lastDone'],
+    });
+  });
+
+  test.each(['weight', 'level'] as const)('power by %s keeps its Best set', (load) => {
+    const exercise = {
+      type: 'power',
+      config: { type: 'power', load, noHeavierAvailable: false },
+    } as const;
+
+    expect(overviewSections(exercise, STATS)[0]).toEqual({
+      kind: 'tiles',
+      tiles: ['bestSet', 'sessions', 'lastDone'],
+    });
+  });
+
+  test('power with nothing logged still has its Settings — they exist from creation', () => {
+    expect(overviewSections({ type: 'power' }, null)).toEqual([
+      { kind: 'empty' },
+      { kind: 'howTo' },
+      { kind: 'settings' },
+    ]);
+  });
+
   test('an exercise stored without a type is laid out as strength', () => {
     expect(overviewSections({}, STATS)).toEqual(overviewSections({ type: 'strength' }, STATS));
   });

@@ -7,7 +7,8 @@
 // What Overview holds depends on the exercise's type, and this file doesn't decide it:
 // `overviewSections` (ExerciseOverviewLayout.ts) hands it a list, and the screen draws each entry.
 // Whatever the type, the tiles come first — or, with nothing ever logged, a framed line saying so
-// in their place — then `How to perform`, which hands over to a YouTube Shorts search (task 153).
+// in their place — then `How to perform`, which hands over to a YouTube Shorts search (task 153),
+// then what the type adds: power's `Settings`, how it is set up in the library (GT-196).
 // Sessions themselves are on the History tab only (ExerciseHistoryTab, task 108): Overview used to
 // repeat the last one, and dropped it (GT-195).
 //
@@ -48,9 +49,14 @@ import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
-import { ExerciseDetailSection } from './ExerciseDetailCard';
+import {
+  ExerciseDetailCard,
+  ExerciseDetailCardRow,
+  ExerciseDetailSection,
+} from './ExerciseDetailCard';
 import {
   EXERCISE_DETAIL_TABS,
+  exerciseSettingsRows,
   formatBestSet,
   formatLastDone,
   powerLoadOf,
@@ -159,6 +165,7 @@ export function ExerciseDetailScreen({
             <OverviewSectionView
               key={section.kind}
               section={section}
+              exercise={exercise}
               stats={stats}
               onWatchHowTo={onWatchHowTo}
             />
@@ -197,7 +204,7 @@ function HeadingChips({ exercise }: { exercise: Exercise }) {
         <OutlinedChip
           label={getExerciseTypeLabel(type)}
           icon={getExerciseTypeIcon(type)({
-            size: ICON_SIZES['icon/glyph'],
+            size: ICON_SIZES['icon/chip'],
             color: COLORS['text/secondary'],
           })}
         />
@@ -222,10 +229,12 @@ function OutlinedChip({ label, icon }: { label: string; icon?: ReactNode }) {
 
 function OverviewSectionView({
   section,
+  exercise,
   stats,
   onWatchHowTo,
 }: {
   section: OverviewSection;
+  exercise: Exercise;
   stats: ExerciseOverviewStats | null;
   onWatchHowTo: () => void;
 }) {
@@ -245,7 +254,30 @@ function OverviewSectionView({
           <WatchHowToCard onPress={onWatchHowTo} />
         </ExerciseDetailSection>
       );
+    case 'settings':
+      return <SettingsCard exercise={exercise} />;
   }
+}
+
+/**
+ * How the exercise is set up in the library, read-only. `Used in new cycles`: these are the values a
+ * new cycle starts from — a running cycle keeps its own copy (10.1 FR-8, FR-9).
+ */
+function SettingsCard({ exercise }: { exercise: Exercise }) {
+  const rows = exerciseSettingsRows(exercise);
+
+  return (
+    <ExerciseDetailCard testID="exercise-settings" label="Settings" meta="Used in new cycles">
+      {rows.map((row, index) => (
+        <ExerciseDetailCardRow
+          key={row.key}
+          label={row.label}
+          value={row.value}
+          isLast={index === rows.length - 1}
+        />
+      ))}
+    </ExerciseDetailCard>
+  );
 }
 
 function OverviewTiles({

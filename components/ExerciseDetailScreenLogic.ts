@@ -10,6 +10,7 @@ import { formatClock } from '@design/formatClock';
 import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
 
+import { POWER_LOAD_LABEL, powerNoHeavierLabel } from './ExerciseFormLogic';
 import { formatLoggedWeight, formatRowWeight } from './WorkoutSetRowLogic';
 
 /** The two tabs of the Exercise screen (08.6, "Переключатель"). */
@@ -78,6 +79,33 @@ export function powerLoadOf(exercise: Pick<Exercise, 'type' | 'config'>): PowerL
   }
   const config = exercise.config ?? defaultExerciseConfig('power');
   return config?.type === 'power' ? config.load : undefined;
+}
+
+/** One row of the Overview's Settings card: what is set, and to what. */
+export type ExerciseSettingsRow = { key: string; label: string; value: string };
+
+/**
+ * The Settings card of the Overview (08.6, GT-196): how the exercise is set up in the library,
+ * worded as the New exercise sheet words it, so a value is called one thing on every screen. Empty
+ * for a type with nothing to set. An exercise stored without a config reads as its type's default.
+ *
+ * Power: its load, and `No heavier available` only while it is on — a row reading `Off` would only
+ * say the user never pressed a button they may not know exists (10.1 FR-4).
+ */
+export function exerciseSettingsRows(
+  exercise: Pick<Exercise, 'type' | 'config'>,
+): ExerciseSettingsRow[] {
+  const type = exerciseTypeOf(exercise);
+  const config = exercise.config ?? defaultExerciseConfig(type);
+  if (config?.type !== 'power') {
+    return [];
+  }
+  return [
+    { key: 'load', label: 'Load', value: POWER_LOAD_LABEL[config.load] },
+    ...(config.noHeavierAvailable
+      ? [{ key: 'noHeavier', label: powerNoHeavierLabel(config.load), value: 'On' }]
+      : []),
+  ];
 }
 
 /** A logged round's row label — `Round 1`. */

@@ -205,6 +205,11 @@ export const ICON_SIZES = {
   'icon/small': 18,
   'icon/inline': 17,
   'icon/glyph': 16,
+  /**
+   * A mark inside a `type/caption` chip — the type chip under the Exercise screen's title (canvas 4.6).
+   * No taller than the caption's line, so the chip stays the height of the chips beside it.
+   */
+  'icon/chip': 14,
 } as const;
 
 export type IconSizeToken = keyof typeof ICON_SIZES;

@@ -1,6 +1,8 @@
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { RoundLog, SetLog } from '@domain/execution';
 import {
   exerciseLogRows,
+  exerciseSettingsRows,
   formatRoundTail,
   powerLoadOf,
   formatBestSet,
@@ -131,5 +133,44 @@ describe('a logged round row', () => {
     const rows = exerciseLogRows({ setLogs: [setLog()], roundLogs: [roundLog()] });
 
     expect(rows.map((row) => row.label)).toEqual(['Set 1', 'Round 1']);
+  });
+});
+
+describe('exerciseSettingsRows', () => {
+  const power = (load: PowerLoad, noHeavierAvailable = false) =>
+    exerciseSettingsRows({ type: 'power', config: { type: 'power', load, noHeavierAvailable } });
+
+  test.each([
+    ['weight', 'Kg'],
+    ['level', 'Level'],
+    ['none', 'None'],
+  ] as const)('a power load of %s reads %s, as in the New exercise sheet', (load, value) => {
+    expect(power(load)).toEqual([{ key: 'load', label: 'Load', value }]);
+  });
+
+  test('No heavier available shows only while it is on', () => {
+    expect(power('weight', true)).toEqual([
+      { key: 'load', label: 'Load', value: 'Kg' },
+      { key: 'noHeavier', label: 'No heavier available', value: 'On' },
+    ]);
+  });
+
+  test('on a level load the flag reads as the workout note words it', () => {
+    expect(power('level', true)[1]).toEqual({
+      key: 'noHeavier',
+      label: 'No higher level available',
+      value: 'On',
+    });
+  });
+
+  test('a power exercise stored without a config reads as the default load', () => {
+    expect(exerciseSettingsRows({ type: 'power' })).toEqual([
+      { key: 'load', label: 'Load', value: 'Kg' },
+    ]);
+  });
+
+  test('strength has nothing to set', () => {
+    expect(exerciseSettingsRows({})).toEqual([]);
+    expect(exerciseSettingsRows({ type: 'strength' })).toEqual([]);
   });
 });
