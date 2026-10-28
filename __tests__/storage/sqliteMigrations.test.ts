@@ -12,28 +12,12 @@ import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 
 import { makeSession, makeSessionExercise, makeSetLog } from '../contracts/fixtures';
-import { openTestDatabase, readMigrationBundle } from '../fixtures/sqliteDatabase';
-
-/** How many migrations come before `tag` — `bundleUpTo` of it is the build just before that one. */
-function migrationIndex(bundle: MigrationBundle, tag: string): number {
-  const index = bundle.journal.entries.findIndex((entry) => entry.tag === tag);
-  if (index < 0) throw new Error(`No migration "${tag}".`);
-  return index;
-}
-
-/** `bundle` as the build that shipped with its first `count` migrations carried it. */
-function bundleUpTo(bundle: MigrationBundle, count: number): MigrationBundle {
-  const entries = bundle.journal.entries.slice(0, count);
-  return {
-    journal: { entries },
-    migrations: Object.fromEntries(
-      entries.map((entry) => {
-        const key = `m${entry.idx.toString().padStart(4, '0')}`;
-        return [key, bundle.migrations[key]!];
-      }),
-    ),
-  };
-}
+import {
+  bundleUpTo,
+  migrationIndex,
+  openTestDatabase,
+  readMigrationBundle,
+} from '../fixtures/sqliteDatabase';
 
 // Task 069 · the schema is versioned and migrations run at startup (07 · Persistence Layer
 // Contract, rule 7).
