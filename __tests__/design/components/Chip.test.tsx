@@ -47,10 +47,10 @@ describe('Chip', () => {
 
   test('an active action chip takes the accent wash, never the solid accent fill', () => {
     render(
-      <Chip variant="action" label="Filters · 2" icon={SlidersIcon} active onPress={jest.fn()} />,
+      <Chip variant="action" label="Filters (9)" icon={SlidersIcon} active onPress={jest.fn()} />,
     );
 
-    const label = screen.getByText('Filters · 2');
+    const label = screen.getByText('Filters (9)');
 
     expect(StyleSheet.flatten(label.props.style).color).toBe(COLORS.accent);
     expect(boxOf(label)).toMatchObject({
@@ -68,11 +68,6 @@ describe('Chip', () => {
   test('renders the static variant with a group dot', () => {
     render(<Chip variant="static" label="Chest" dotColor="#F0A537" />);
     expect(screen.getByText('Chest')).toBeTruthy();
-  });
-
-  test('renders the counter variant with its count', () => {
-    render(<Chip variant="counter" label="Exercises" count={12} />);
-    expect(screen.getByText('Exercises 12')).toBeTruthy();
   });
 
   // 08.11: the first-weight ladder's rep counts carry the accent tint.

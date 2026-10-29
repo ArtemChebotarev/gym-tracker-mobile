@@ -214,7 +214,7 @@ describe('ExerciseLibraryScreen', () => {
     expect(screen.getByText('Chest')).toBeTruthy();
     expect(screen.getByText('Custom')).toBeTruthy();
     expect(screen.getByText('Performed only')).toBeTruthy();
-    expect(screen.getByText('Exercises 1')).toBeTruthy();
+    expect(screen.getByText('Filters (1)')).toBeTruthy();
   });
 
   test('a Reset chip at the end of the filter row resets filters without opening the sheet', () => {

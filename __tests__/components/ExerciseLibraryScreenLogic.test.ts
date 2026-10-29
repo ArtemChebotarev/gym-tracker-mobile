@@ -51,17 +51,15 @@ describe('hasActiveFilters', () => {
 });
 
 describe('filtersButtonLabel', () => {
-  test('DoD 150: `Filters` with nothing on, `Filters · N` with N values on', () => {
-    expect(filtersButtonLabel({})).toBe('Filters');
-    expect(filtersButtonLabel({ muscleGroups: ['chest'] })).toBe('Filters · 1');
-    expect(
-      filtersButtonLabel({
-        muscleGroups: ['chest', 'back'],
-        types: ['power'],
-        sources: ['custom'],
-        performedOnly: true,
-      }),
-    ).toBe('Filters · 5');
+  test('DoD 150: `Filters` with nothing on — the unfiltered total is not shown', () => {
+    expect(filtersButtonLabel({}, 99)).toBe('Filters');
+  });
+
+  test('DoD 150: with a filter on, how many exercises it leaves', () => {
+    expect(filtersButtonLabel({ muscleGroups: ['glutes'] }, 9)).toBe('Filters (9)');
+    expect(filtersButtonLabel({ muscleGroups: ['chest'], performedOnly: true }, 0)).toBe(
+      'Filters (0)',
+    );
   });
 });
 

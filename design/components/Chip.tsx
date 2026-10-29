@@ -1,6 +1,5 @@
-// Chip — see 08.0 · Design SDK, "Компоненты": three variants with different data needs (action
-// takes `active`/`onPress` and an icon, static takes an optional group dot, counter takes a
-// count), so they're modeled as a discriminated union on `variant` rather than one component
+// Chip — see 08.0 · Design SDK, "Компоненты": two variants with different data needs (action
+// takes `active`/`onPress` and an icon, static takes an optional group dot), so they're modeled as a discriminated union on `variant` rather than one component
 // with a pile of optional props. Uses `type/caption`, the same scale as Badge, for the same
 // sentence-case reason (see design/components/Badge.tsx). `dotColor` is supplied by the caller
 // (e.g. a muscle-group category color) — this file has no literal color of its own for it.
@@ -62,13 +61,7 @@ type StaticChipProps = {
   accent?: boolean;
 };
 
-type CounterChipProps = {
-  variant: 'counter';
-  label: string;
-  count: number;
-};
-
-export type ChipProps = ActionChipProps | StaticChipProps | CounterChipProps;
+export type ChipProps = ActionChipProps | StaticChipProps;
 
 export function Chip(props: ChipProps) {
   if (props.variant === 'action') {
@@ -81,6 +74,7 @@ export function Chip(props: ChipProps) {
         hitSlop={tapTargetSlop(SIZES['size/chip'])}
         style={({ pressed }) => [
           styles.container,
+          styles.action,
           props.active ? styles.accentTint : styles.tonal,
           pressed && styles.pressed,
         ]}
@@ -96,31 +90,21 @@ export function Chip(props: ChipProps) {
     );
   }
 
-  if (props.variant === 'static') {
-    return (
-      <View
-        style={[
-          styles.container,
-          props.compact && styles.compact,
-          props.accent ? styles.accentTint : styles.unselected,
-          props.width !== undefined && { width: props.width, justifyContent: 'center' },
-        ]}
-      >
-        {props.icon}
-        {props.dotColor !== undefined && (
-          <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
-        )}
-        <Text style={[styles.label, props.accent ? styles.accentLabel : styles.unselectedLabel]}>
-          {props.label}
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={[styles.container, styles.unselected]}>
-      <Text style={[styles.label, styles.unselectedLabel]}>
-        {props.label} {props.count}
+    <View
+      style={[
+        styles.container,
+        props.compact && styles.compact,
+        props.accent ? styles.accentTint : styles.unselected,
+        props.width !== undefined && { width: props.width, justifyContent: 'center' },
+      ]}
+    >
+      {props.icon}
+      {props.dotColor !== undefined && (
+        <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
+      )}
+      <Text style={[styles.label, props.accent ? styles.accentLabel : styles.unselectedLabel]}>
+        {props.label}
       </Text>
     </View>
   );
@@ -131,8 +115,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    // Every variant is `size/chip` tall, so a static chip lines up with a selectable one — and a
-    // selectable one reaches the 44pt tap target through `tapTargetSlop`.
+    // Every variant is `size/chip` tall, so a static chip lines up with an action one — and an
+    // action one reaches the 44pt tap target through `tapTargetSlop`.
     minHeight: SIZES['size/chip'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderRadius: RADII['radius/pill'],
@@ -143,6 +127,10 @@ const styles = StyleSheet.create({
   compact: {
     minHeight: 0,
     paddingVertical: SPACING['space/chip-y'],
+  },
+  // Wider than the tags beside it: a button you press, with an icon to fit, not one more label.
+  action: {
+    paddingHorizontal: SPACING['space/md'],
   },
   // A step lighter than `surface/card`, like the IconButton on a card, with no outline of its own.
   tonal: {

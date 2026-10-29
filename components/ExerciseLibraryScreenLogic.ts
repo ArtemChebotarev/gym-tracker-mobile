@@ -27,24 +27,21 @@ export type ExerciseSection = {
 
 const NEVER_PERFORMED = 'Never performed';
 
-/** How many filter values are on — each muscle group, type and source counts, and Performed only. */
-export function activeFilterCount(filters: ExerciseLibraryFilters): number {
-  return (
-    (filters.muscleGroups?.length ?? 0) +
-    (filters.types?.length ?? 0) +
-    (filters.sources?.length ?? 0) +
-    (filters.performedOnly ? 1 : 0)
+export function hasActiveFilters(filters: ExerciseLibraryFilters): boolean {
+  return Boolean(
+    filters.muscleGroups?.length ||
+    filters.types?.length ||
+    filters.sources?.length ||
+    filters.performedOnly,
   );
 }
 
-export function hasActiveFilters(filters: ExerciseLibraryFilters): boolean {
-  return activeFilterCount(filters) > 0;
-}
-
-/** The Filters button's label: `Filters`, or `Filters · 2` with two values on (GT-150). */
-export function filtersButtonLabel(filters: ExerciseLibraryFilters): string {
-  const count = activeFilterCount(filters);
-  return count === 0 ? 'Filters' : `Filters · ${count}`;
+/**
+ * The Filters button's label (GT-150): `Filters`, and with a filter on, how many exercises it
+ * leaves — `Filters (9)`. The unfiltered total isn't worth showing.
+ */
+export function filtersButtonLabel(filters: ExerciseLibraryFilters, resultCount: number): string {
+  return hasActiveFilters(filters) ? `Filters (${resultCount})` : 'Filters';
 }
 
 export function countEntries(groups: ExerciseListGroup[]): number {
