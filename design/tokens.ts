@@ -220,6 +220,11 @@ export const ICON_STROKE_WIDTH = 1.8;
 export const BORDER_WIDTHS = {
   /** Outlines of fields, chips, cards, list and card dividers. */
   'border/default': 1,
+  /**
+   * The line under a link that must not outshout its own text — a workout card's exercise name
+   * (GT-178). The text's native underline is as thick as its font makes it; this one is drawn.
+   */
+  'border/hairline': 0.5,
   /** The accent outline marking the open cell of the mesocycle overview grid (08.7, task 127). */
   'border/emphasis': 2,
   /** A timer's progress ring, track and arc alike (TimerCapsule, 10.1 FR-5). */

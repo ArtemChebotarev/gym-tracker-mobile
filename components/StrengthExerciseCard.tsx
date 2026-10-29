@@ -69,6 +69,7 @@ export function StrengthExerciseCard({
   chip,
   position = 0,
   onOpenHistory,
+  onOpenOverview,
   menuItems,
   isSaving,
   sets,
@@ -102,6 +103,7 @@ export function StrengthExerciseCard({
       {...(chip !== undefined ? { chip } : {})}
       position={position}
       onOpenHistory={onOpenHistory}
+      onOpenOverview={onOpenOverview}
       menuItems={menuItems}
       menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
       badges={

@@ -2,7 +2,7 @@
 // Тренировка, "Карточка упражнения"; 10.1 FR-14. The chip above the card (the muscle group, or the
 // type for a power, interval or mobility card), the outlined card itself — dimmed when the exercise
 // is skipped or abandoned — and its title row: the name, the equipment line, the type's badges, the
-// history button and, in live mode, `⋯`. Under the title the type's card puts its own content; the
+// history button and, in live mode, `⋯`. The name links to the exercise's Overview (GT-178). Under the title the type's card puts its own content; the
 // frame closes with the `Not programmed yet` plate in preview, or the one `Skipped` / `Abandoned`
 // line of an exercise closed with nothing logged.
 //
@@ -10,7 +10,7 @@
 // knows nothing about sets, rounds or RIR.
 
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
 import { IconButton } from '@design/components/IconButton';
@@ -40,6 +40,8 @@ export type ExerciseCardFrameProps = {
   /** The type's badges, between the title and the history button (`N RIR`, `Deload`). */
   badges?: ReactNode;
   onOpenHistory: () => void;
+  /** The name is a link to the exercise's own screen, on Overview (GT-178). */
+  onOpenOverview: () => void;
   menuItems: ActionMenuItem[];
   /** The `⋯` sheet's subtitle — each type counts its own rows (`2 sets planned · 1 logged`). */
   menuSubtitle: string;
@@ -57,6 +59,7 @@ export function ExerciseCardFrame({
   position,
   badges,
   onOpenHistory,
+  onOpenOverview,
   menuItems,
   menuSubtitle,
   children,
@@ -72,7 +75,18 @@ export function ExerciseCardFrame({
       >
         <View style={styles.titleRow}>
           <View style={styles.titleBlock}>
-            <Text style={styles.name}>{exercise.name}</Text>
+            {/* Only the name is the link, marked by an accent `›` — the chevron the app's other
+                links to a screen carry — so the equipment line under it stays plain text
+                (GT-178). */}
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`${exercise.name} details`}
+              onPress={onOpenOverview}
+              style={({ pressed }) => [styles.nameLink, pressed && styles.pressed]}
+            >
+              <Text style={[styles.name, styles.nameText]}>{exercise.name}</Text>
+              <Text style={[styles.name, styles.nameChevron]}>{' ›'}</Text>
+            </Pressable>
             {equipmentLabel !== undefined && (
               <Text style={styles.equipment}>{equipmentLabel}</Text>
             )}

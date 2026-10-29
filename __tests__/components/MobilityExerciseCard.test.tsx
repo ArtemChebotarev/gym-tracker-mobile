@@ -51,6 +51,7 @@ function renderCard(exercise = makeMobility(), mode: WorkoutExerciseCardProps['m
       mode={mode}
       chip={{ kind: 'type', type: 'mobility' }}
       onOpenHistory={jest.fn()}
+      onOpenOverview={jest.fn()}
       menuItems={[]}
       isSaving={false}
       sets={{ onLogSet: jest.fn(), onUnlogSet: jest.fn() }}

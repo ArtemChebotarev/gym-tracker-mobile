@@ -10,7 +10,7 @@
 // them ever arrives.
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { exerciseHistoryHref } from '@components/historyRoutes';
+import { exerciseDetailHref, exerciseHistoryHref } from '@components/historyRoutes';
 import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import { InfoIcon } from '@design/icons/InfoIcon';
@@ -41,6 +41,7 @@ export default function HistorySessionRoute() {
         stopMesocycle: inert,
       }}
       onOpenExerciseHistory={(exercise) => router.push(exerciseHistoryHref(exercise.exerciseId))}
+      onOpenExercise={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
       onExerciseMenuAction={inert}
       onLogSet={inert}
       onUnlogSet={inert}
