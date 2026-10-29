@@ -145,7 +145,7 @@ describe('ExercisePickerSheet', () => {
       expect(onRequestFilters).toHaveBeenCalledTimes(1);
     });
 
-    test('renders a chip per active filter plus the result counter', () => {
+    test('renders a chip per active filter, the result count on the Filters button', () => {
       renderSheet({
         ...BASE_MULTI_PROPS,
         filters: { muscleGroups: ['back'], sources: ['custom'], performedOnly: true },
@@ -154,7 +154,7 @@ describe('ExercisePickerSheet', () => {
       expect(screen.getByText('Back')).toBeTruthy();
       expect(screen.getByText('Custom')).toBeTruthy();
       expect(screen.getByText('Performed only')).toBeTruthy();
-      expect(screen.getByText('Exercises 2')).toBeTruthy();
+      expect(screen.getByText('Filters (2)')).toBeTruthy();
     });
 
     test('a Reset chip resets filters without opening the Filters sheet', () => {

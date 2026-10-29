@@ -107,7 +107,7 @@ export function ExerciseLibraryScreen({
         </IconButton>
       }
     >
-      <SearchField value={search} onChangeText={onSearchChange} placeholder="Search exercises" />
+      <SearchField value={search} onChangeText={onSearchChange} placeholder="Search by name" />
 
       <ExerciseFilterRow
         filters={filters}

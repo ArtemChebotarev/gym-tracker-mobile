@@ -7,6 +7,7 @@ import {
   buildSections,
   countEntries,
   equipmentSuffix,
+  filtersButtonLabel,
   formatSubtitle,
   hasActiveFilters,
   rowSubtitle,
@@ -46,6 +47,19 @@ describe('hasActiveFilters', () => {
     ['performedOnly', { performedOnly: true }],
   ])('true when %s is set', (_label, filters) => {
     expect(hasActiveFilters(filters)).toBe(true);
+  });
+});
+
+describe('filtersButtonLabel', () => {
+  test('DoD 150: `Filters` with nothing on — the unfiltered total is not shown', () => {
+    expect(filtersButtonLabel({}, 99)).toBe('Filters');
+  });
+
+  test('DoD 150: with a filter on, how many exercises it leaves', () => {
+    expect(filtersButtonLabel({ muscleGroups: ['glutes'] }, 9)).toBe('Filters (9)');
+    expect(filtersButtonLabel({ muscleGroups: ['chest'], performedOnly: true }, 0)).toBe(
+      'Filters (0)',
+    );
   });
 });
 

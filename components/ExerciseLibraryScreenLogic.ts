@@ -36,6 +36,14 @@ export function hasActiveFilters(filters: ExerciseLibraryFilters): boolean {
   );
 }
 
+/**
+ * The Filters button's label (GT-150): `Filters`, and with a filter on, how many exercises it
+ * leaves — `Filters (9)`. The unfiltered total isn't worth showing.
+ */
+export function filtersButtonLabel(filters: ExerciseLibraryFilters, resultCount: number): string {
+  return hasActiveFilters(filters) ? `Filters (${resultCount})` : 'Filters';
+}
+
 export function countEntries(groups: ExerciseListGroup[]): number {
   return groups.reduce((total, group) => total + group.entries.length, 0);
 }

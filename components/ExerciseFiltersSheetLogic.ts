@@ -1,8 +1,23 @@
 // Pure, non-JSX logic behind ExerciseFiltersSheet.tsx — see the code-style skill, "Screens keep
 // the same split, one level up".
 
-import type { ExerciseSource, ExerciseType, MuscleGroup } from '@domain/catalog';
+import {
+  MUSCLE_GROUPS,
+  type ExerciseSource,
+  type ExerciseType,
+  type MuscleGroup,
+} from '@domain/catalog';
+import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
+
+/**
+ * The sheet's muscle-group chips, alphabetical by label (GT-150): `MUSCLE_GROUPS` is in body-region
+ * order with later groups appended, which read as random here. `MUSCLE_GROUPS` itself stays as it
+ * is — the exercise list and the cycle summary are ordered by it.
+ */
+export const FILTER_MUSCLE_GROUPS: readonly MuscleGroup[] = [...MUSCLE_GROUPS].sort((a, b) =>
+  getMuscleGroupLabel(a).localeCompare(getMuscleGroupLabel(b)),
+);
 
 // Deselecting the last value clears the field to `undefined` rather than leaving `[]` — matches
 // `ExerciseListQuery`'s own contract ("empty or omitted means every group/source") so an empty
