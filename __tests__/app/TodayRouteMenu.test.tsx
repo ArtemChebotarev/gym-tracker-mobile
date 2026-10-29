@@ -309,7 +309,14 @@ describe('Today tab — header menu', () => {
     await screen.findByText('Week 1 Day 3');
 
     fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
-    expect(await screen.findByRole('button', { name: 'Finish workout' })).toBeTruthy();
+    // Not `findByRole('Finish workout')`: the locked Finish (GT-48) is on screen before the log
+    // lands, so it resolved at once and the menu was checked a render early (GT-161). Once Finish
+    // is enabled the log has reached the model, and the menu is drawn from that same model.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Finish workout' }).props.accessibilityState.disabled,
+      ).toBe(false),
+    );
 
     expect(menuItem('skipWorkout')).toBeNull();
     expect(menuItem('addExercise')).toBeTruthy();
