@@ -181,6 +181,7 @@ exports[`MesocycleDetailScreen Active: the Active badge and the week by workouts
         testID="action-menu"
       >
         <ViewManagerAdapter_ExpoUI
+          ignoreSafeArea="all"
           layoutDirection="leftToRight"
           style={
             {
@@ -1264,6 +1265,7 @@ exports[`MesocycleDetailScreen Completed: no badge, both denominators, the weekl
         testID="action-menu"
       >
         <ViewManagerAdapter_ExpoUI
+          ignoreSafeArea="all"
           layoutDirection="leftToRight"
           style={
             {
@@ -3499,6 +3501,7 @@ exports[`MesocycleDetailScreen Stopped: the Stopped badge and no workouts denomi
         testID="action-menu"
       >
         <ViewManagerAdapter_ExpoUI
+          ignoreSafeArea="all"
           layoutDirection="leftToRight"
           style={
             {

@@ -754,6 +754,7 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                       testID="mesocycle-menu-completed"
                     >
                       <ViewManagerAdapter_ExpoUI
+                        ignoreSafeArea="all"
                         layoutDirection="leftToRight"
                         style={
                           {
@@ -1251,6 +1252,7 @@ exports[`MesocyclesScreen snapshots Planned group 1`] = `
                       testID="mesocycle-menu-planned"
                     >
                       <ViewManagerAdapter_ExpoUI
+                        ignoreSafeArea="all"
                         layoutDirection="leftToRight"
                         style={
                           {
@@ -1964,6 +1966,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       testID="mesocycle-menu-planned"
                     >
                       <ViewManagerAdapter_ExpoUI
+                        ignoreSafeArea="all"
                         layoutDirection="leftToRight"
                         style={
                           {
@@ -2193,6 +2196,7 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       testID="mesocycle-menu-completed"
                     >
                       <ViewManagerAdapter_ExpoUI
+                        ignoreSafeArea="all"
                         layoutDirection="leftToRight"
                         style={
                           {

@@ -408,6 +408,7 @@ exports[`Mobility card (GT-107) matches the live snapshot 1`] = `
           testID="exercise-menu-session-exercise-cooldown"
         >
           <ViewManagerAdapter_ExpoUI
+            ignoreSafeArea="all"
             layoutDirection="leftToRight"
             style={
               {
