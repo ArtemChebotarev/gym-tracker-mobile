@@ -90,17 +90,84 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           }
         }
       >
-        <Text
-          style={
+        <View
+          accessibilityLabel="Bench press details"
+          accessibilityRole="link"
+          accessibilityState={
             {
-              "color": "#F5F5F4",
-              "fontSize": 17,
-              "fontWeight": "500",
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "flexDirection": "row",
+              },
+              false,
+            ]
+          }
         >
-          Bench press
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "borderBottomColor": "#6B7076",
+                  "borderBottomWidth": 0.5,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            Bench press
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "color": "#CDFF57",
+                },
+              ]
+            }
+          >
+             ›
+          </Text>
+        </View>
         <Text
           style={
             {
@@ -1332,17 +1399,84 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
           }
         }
       >
-        <Text
-          style={
+        <View
+          accessibilityLabel="Bench press details"
+          accessibilityRole="link"
+          accessibilityState={
             {
-              "color": "#F5F5F4",
-              "fontSize": 17,
-              "fontWeight": "500",
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "flexDirection": "row",
+              },
+              false,
+            ]
+          }
         >
-          Bench press
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "borderBottomColor": "#6B7076",
+                  "borderBottomWidth": 0.5,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            Bench press
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "color": "#CDFF57",
+                },
+              ]
+            }
+          >
+             ›
+          </Text>
+        </View>
         <Text
           style={
             {
@@ -1725,17 +1859,84 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
           }
         }
       >
-        <Text
-          style={
+        <View
+          accessibilityLabel="Bench press details"
+          accessibilityRole="link"
+          accessibilityState={
             {
-              "color": "#F5F5F4",
-              "fontSize": 17,
-              "fontWeight": "500",
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "flexDirection": "row",
+              },
+              false,
+            ]
+          }
         >
-          Bench press
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "borderBottomColor": "#6B7076",
+                  "borderBottomWidth": 0.5,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            Bench press
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "color": "#CDFF57",
+                },
+              ]
+            }
+          >
+             ›
+          </Text>
+        </View>
         <Text
           style={
             {
@@ -2790,17 +2991,84 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
           }
         }
       >
-        <Text
-          style={
+        <View
+          accessibilityLabel="Bench press details"
+          accessibilityRole="link"
+          accessibilityState={
             {
-              "color": "#F5F5F4",
-              "fontSize": 17,
-              "fontWeight": "500",
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "flexDirection": "row",
+              },
+              false,
+            ]
+          }
         >
-          Bench press
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "borderBottomColor": "#6B7076",
+                  "borderBottomWidth": 0.5,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            Bench press
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "color": "#CDFF57",
+                },
+              ]
+            }
+          >
+             ›
+          </Text>
+        </View>
         <Text
           style={
             {
@@ -3173,17 +3441,84 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           }
         }
       >
-        <Text
-          style={
+        <View
+          accessibilityLabel="Bench press details"
+          accessibilityRole="link"
+          accessibilityState={
             {
-              "color": "#F5F5F4",
-              "fontSize": 17,
-              "fontWeight": "500",
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
             }
           }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "flexDirection": "row",
+              },
+              false,
+            ]
+          }
         >
-          Bench press
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "borderBottomColor": "#6B7076",
+                  "borderBottomWidth": 0.5,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            Bench press
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#F5F5F4",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                },
+                {
+                  "color": "#CDFF57",
+                },
+              ]
+            }
+          >
+             ›
+          </Text>
+        </View>
         <Text
           style={
             {

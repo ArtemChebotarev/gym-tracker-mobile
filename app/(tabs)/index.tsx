@@ -75,7 +75,7 @@ import {
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
 import { useHandoffSheet } from '@components/useHandoffSheet';
-import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
+import { exerciseDetailHref, exerciseHistoryHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
   exerciseLogCounts,
@@ -487,7 +487,8 @@ export default function TodayScreen() {
         // The card's history button opens the exercise's own screen, on Overview — 08.6 asks
         // for exactly that from a workout: its last-session block is the quick check you came
         // for, and History is one tap further in from there.
-        onOpenExerciseHistory={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
+        onOpenExerciseHistory={(exercise) => router.push(exerciseHistoryHref(exercise.exerciseId))}
+        onOpenExercise={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
         onExerciseMenuAction={runExerciseMenuAction}
         isSaving={
           logSet.isPending || unlogSet.isPending || logRound.isPending || unlogRound.isPending

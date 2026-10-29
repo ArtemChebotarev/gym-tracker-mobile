@@ -51,6 +51,7 @@ export function PowerExerciseCard({
   chip,
   position = 0,
   onOpenHistory,
+  onOpenOverview,
   menuItems,
   isSaving,
   sets,
@@ -88,6 +89,7 @@ export function PowerExerciseCard({
       {...(chip !== undefined ? { chip } : {})}
       position={position}
       onOpenHistory={onOpenHistory}
+      onOpenOverview={onOpenOverview}
       menuItems={menuItems}
       menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
       badges={

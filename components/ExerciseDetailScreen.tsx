@@ -12,13 +12,12 @@
 // Sessions themselves are on the History tab only (ExerciseHistoryTab, task 108): Overview used to
 // repeat the last one, and dropped it (GT-195).
 //
-// The switcher is the only way into History (08.6: "Единственная точка входа — переключатель
-// Overview / History на самом экране Exercise"), and Overview always opens first, from wherever
-// the screen was entered. So the tab is this component's own state rather than a prop: the screen
-// deliberately doesn't remember it ("Экран не запоминает, на какой вкладке был в прошлый раз"),
-// and leaving and re-entering remounts it back on Overview. `onTabChange` only reports the switch
-// outward, so the route can start loading the history the first time it's actually asked for —
-// the tab still belongs to this component.
+// The screen opens on Overview, except from a workout card's history button, which opens it on
+// History (`initialTab`, GT-177). After that the tab is this component's own state rather than a
+// prop: the screen deliberately doesn't remember it ("Экран не запоминает, на какой вкладке был в
+// прошлый раз"), and leaving and re-entering remounts it on the tab its entry point asks for.
+// `onTabChange` only reports a switch outward, so the route can start loading the history the
+// first time it's actually asked for — the tab still belongs to this component.
 //
 // Presentational otherwise: the overview model and what back, `⋯` and the how-to link do come in as props from
 // app/exercise/[id]/index.tsx. JSX/rendering only — styles live in ExerciseDetailScreenStyles.ts
@@ -89,6 +88,8 @@ export type ExerciseDetailScreenProps = {
    * itself (117), so the screen holds the actions rather than an `onOpenMenu` that raised a sheet.
    */
   menuItems: ActionMenuItem[];
+  /** The tab the screen opens on — History from a workout card, Overview otherwise. */
+  initialTab?: ExerciseDetailTab;
   /** The tab was switched — the caller loads the history the first time it's History. */
   onTabChange?: (tab: ExerciseDetailTab) => void;
   /** `Watch how to perform exercise` was pressed — the caller opens the search (task 153). */
@@ -103,10 +104,11 @@ export function ExerciseDetailScreen({
   isHistoryPending,
   onBack,
   menuItems,
+  initialTab = 'overview',
   onTabChange,
   onWatchHowTo,
 }: ExerciseDetailScreenProps) {
-  const [tab, setTab] = useState<ExerciseDetailTab>('overview');
+  const [tab, setTab] = useState<ExerciseDetailTab>(initialTab);
 
   function openTab(next: ExerciseDetailTab) {
     setTab(next);

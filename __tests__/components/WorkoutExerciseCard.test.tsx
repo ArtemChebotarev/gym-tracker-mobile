@@ -119,6 +119,7 @@ function makeProps({
     mode: 'live',
     chip: { kind: 'group', muscleGroup: 'chest' },
     onOpenHistory: jest.fn(),
+    onOpenOverview: jest.fn(),
     menuItems: [],
     isSaving: false,
     sets: { bodyWeight, onBodyWeightChange, onRequestBodyWeight, onLogSet, onUnlogSet },
@@ -169,6 +170,18 @@ describe('WorkoutExerciseCard', () => {
       fireEvent.press(screen.getByRole('button', { name: 'Bench press history' }));
 
       expect(onOpenHistory).toHaveBeenCalledTimes(1);
+      unmount();
+    }
+  });
+
+  test("the exercise's name links to its Overview in every mode", () => {
+    for (const mode of ['live', 'readonly', 'preview'] as const) {
+      const onOpenOverview = jest.fn();
+      const { unmount } = render(<WorkoutExerciseCard {...makeProps({ mode, onOpenOverview })} />);
+
+      fireEvent.press(screen.getByRole('link', { name: 'Bench press details' }));
+
+      expect(onOpenOverview).toHaveBeenCalledTimes(1);
       unmount();
     }
   });

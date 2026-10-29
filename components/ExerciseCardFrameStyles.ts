@@ -60,10 +60,30 @@ export const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
   },
+  // The name is the link to Overview (GT-178): pressable only as wide as its text, so a tap on the
+  // empty part of the row or on the equipment line below does nothing.
+  nameLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  pressed: {
+    opacity: OPACITY['opacity/pressed'],
+  },
   name: {
     fontSize: TYPOGRAPHY['type/card-title'].fontSize,
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
     color: COLORS['text/primary'],
+  },
+  // A thin grey line, drawn rather than the text's own underline: that one, as thick as the font and
+  // in the name's white, drew the eye before the name did (Artem, GT-178).
+  nameText: {
+    flexShrink: 1,
+    borderBottomWidth: BORDER_WIDTHS['border/hairline'],
+    borderBottomColor: COLORS['text/faint'],
+  },
+  nameChevron: {
+    color: COLORS.accent,
   },
   equipment: {
     fontSize: META_FONT_SIZE,
