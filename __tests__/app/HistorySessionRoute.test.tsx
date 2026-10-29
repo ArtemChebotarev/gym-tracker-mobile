@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import HistorySessionRoute from '@app/session/[id]';
-import { exerciseDetailHref } from '@components/historyRoutes';
+import { exerciseHistoryHref } from '@components/historyRoutes';
 
 import { seedWorkoutFixture, WORKOUT_FIXTURE_IDS } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
@@ -77,13 +77,13 @@ describe('History session route', () => {
     expect(mockBack).toHaveBeenCalled();
   });
 
-  test("an exercise's history button still opens its own screen", async () => {
+  test("an exercise's history button opens its screen on History", async () => {
     renderRoute();
     await screen.findByText('Week 1 Day 1');
 
     fireEvent.press(screen.getByLabelText('Bench Press history'));
 
-    expect(mockPush).toHaveBeenCalledWith(exerciseDetailHref('bench-press-barbell'));
+    expect(mockPush).toHaveBeenCalledWith(exerciseHistoryHref('bench-press-barbell'));
   });
 
   test('a missing session: the fallback leads back', async () => {
