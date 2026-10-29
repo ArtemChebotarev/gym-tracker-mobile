@@ -33,10 +33,10 @@
 // behavior already handles this, so no `behavior` is set there.
 // `keyboardShouldPersistTaps="handled"` on the content ScrollView lets a tap on another field or
 // a Dropdown option register in the same gesture instead of only dismissing the keyboard first;
-// a tap on the sheet's header or a drag of the content closes it (GT-21). A search sheet wants the
-// opposite (`keyboardTaps="dismiss"`, GT-151): while the keyboard is up, a tap anywhere outside it
-// only closes it — on a row, on the footer's button, on the empty space under it — and the next
-// tap does what it says.
+// a tap on the sheet's header or a drag of the content closes it (GT-21). A search sheet also
+// closes the keyboard on every tap (`keyboardTaps="through"`, GT-151): a row is picked or the
+// footer's button pressed, and the keyboard goes down in the same tap, so the list it was hiding
+// is back.
 //
 // While the keyboard is up, the bottom padding drops `bottomClearance` and the home-indicator
 // inset: the tab bar and the indicator are behind the keyboard then, and KeyboardAvoidingView has
@@ -109,10 +109,11 @@ export type BottomSheetProps = {
   bottomClearance?: number;
   /**
    * What a tap does while the keyboard is up. 'handled' (default) — it reaches what it lands on and
-   * the keyboard stays, for a form where the next tap is often another field. 'dismiss' — it only
-   * closes the keyboard, anywhere in the sheet, for a search sheet (GT-151).
+   * the keyboard stays, for a form where the next tap is often another field. 'through' — it
+   * reaches what it lands on *and* closes the keyboard, in the same tap, for a search sheet
+   * (GT-151).
    */
-  keyboardTaps?: 'handled' | 'dismiss';
+  keyboardTaps?: 'handled' | 'through';
 };
 
 export function BottomSheet({
@@ -132,9 +133,6 @@ export function BottomSheet({
   const dragStartY = useRef<number | null>(null);
   const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
   const keyboardVisible = useKeyboardVisible();
-  const dismissOnTap = keyboardTaps === 'dismiss';
-  // A tap that should only close the keyboard doesn't reach the footer's buttons.
-  const footerBlocked = dismissOnTap && keyboardVisible;
 
   function handleGrabberGrant(event: GestureResponderEvent) {
     dragStartY.current = event.nativeEvent.pageY;
@@ -150,16 +148,6 @@ export function BottomSheet({
 
   const sheetBody = (
     <>
-      {dismissOnTap && (
-        // Under everything else, so it takes only the taps nothing else does — the sheet's bottom
-        // padding, the gaps around the footer.
-        <Pressable
-          testID="bottom-sheet-empty-space"
-          accessible={false}
-          style={StyleSheet.absoluteFill}
-          onPress={Keyboard.dismiss}
-        />
-      )}
       <View
         testID="bottom-sheet-grabber-area"
         style={styles.grabberArea}
@@ -178,7 +166,7 @@ export function BottomSheet({
       </Pressable>
       <ScrollView
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps={dismissOnTap ? 'never' : 'handled'}
+        keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
         // iOS lets a ScrollView be dragged and spring back even when everything fits; in a sheet
@@ -187,19 +175,13 @@ export function BottomSheet({
       >
         {children}
       </ScrollView>
-      {footer !== undefined && (
-        <Pressable
-          testID="bottom-sheet-footer"
-          accessible={false}
-          style={styles.footer}
-          pointerEvents={footerBlocked ? 'box-only' : 'auto'}
-          onPress={footerBlocked ? Keyboard.dismiss : undefined}
-        >
-          {footer}
-        </Pressable>
-      )}
+      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
     </>
   );
+
+  // 'through': every tap that ends in the sheet also closes the keyboard — after it has reached
+  // its row or button. A tap in a SearchField stops this on its way up, so the field keeps it.
+  const onSheetTouchEnd = keyboardTaps === 'through' ? () => Keyboard.dismiss() : undefined;
 
   const sheetStyle = [
     styles.sheet,
@@ -212,7 +194,13 @@ export function BottomSheet({
 
   if (presentation === 'overlay') {
     return (
-      <OverlaySheet visible={visible} onClose={onClose} animated={animated} sheetStyle={sheetStyle}>
+      <OverlaySheet
+        visible={visible}
+        onClose={onClose}
+        animated={animated}
+        sheetStyle={sheetStyle}
+        onSheetTouchEnd={onSheetTouchEnd}
+      >
         {sheetBody}
       </OverlaySheet>
     );
@@ -235,7 +223,7 @@ export function BottomSheet({
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View testID="bottom-sheet" style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle} onTouchEnd={onSheetTouchEnd}>
           {sheetBody}
         </View>
       </KeyboardAvoidingView>
@@ -250,6 +238,7 @@ type OverlaySheetProps = {
   onClose: () => void;
   animated: boolean;
   sheetStyle: StyleProp<ViewStyle>;
+  onSheetTouchEnd: (() => void) | undefined;
   children: ReactNode;
 };
 
@@ -261,7 +250,14 @@ type OverlaySheetProps = {
 // `useState(() => new Animated.Value(...))` rather than `useRef(...).current`, since a plain ref
 // read during render trips this codebase's react-hooks/refs rule; same reasoning as
 // components/MesoEditorDaysStep.tsx's own `dragY`, see its comment on the same pattern.
-function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: OverlaySheetProps) {
+function OverlaySheet({
+  visible,
+  onClose,
+  animated,
+  sheetStyle,
+  onSheetTouchEnd,
+  children,
+}: OverlaySheetProps) {
   const [mounted, setMounted] = useState(visible);
   const [progress] = useState(() => new Animated.Value(visible ? 1 : 0));
 
@@ -310,7 +306,7 @@ function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: Over
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View testID="bottom-sheet" style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle} onTouchEnd={onSheetTouchEnd}>
           {children}
         </View>
       </KeyboardAvoidingView>

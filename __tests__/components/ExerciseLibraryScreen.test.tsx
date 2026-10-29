@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { SectionList } from 'react-native';
+import { Keyboard } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { toExerciseId, type Exercise } from '@domain/catalog';
@@ -77,11 +77,13 @@ describe('ExerciseLibraryScreen', () => {
     expect(onRequestCreate).toHaveBeenCalledWith();
   });
 
-  // GT-151: with the keyboard up, the first tap on a row only closes it (and blurs the search, so
-  // Back from an exercise doesn't bring the keyboard back) — React Native's own `never`, which the
-  // test renderer doesn't run, so the setting is what's checked here.
-  test('DoD 151: the list lets no tap through while the keyboard is up', () => {
+  // GT-151: a tap on a row opens it and closes the keyboard in the same tap — which also blurs the
+  // search, so Back from the exercise doesn't bring the keyboard back.
+  test('DoD 151: a tap on a row opens it and closes the keyboard', () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+    const onOpenExercise = jest.fn();
     renderScreen({
+      onOpenExercise,
       groups: [
         {
           muscleGroup: 'chest',
@@ -98,7 +100,13 @@ describe('ExerciseLibraryScreen', () => {
       ],
     });
 
-    expect(screen.UNSAFE_getByType(SectionList).props.keyboardShouldPersistTaps).toBe('never');
+    const row = screen.getByText('Bench Press');
+    fireEvent.press(row);
+    fireEvent(row, 'touchEnd');
+
+    expect(onOpenExercise).toHaveBeenCalledTimes(1);
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    dismiss.mockRestore();
   });
 
   test('typing in the search field calls onSearchChange', () => {

@@ -255,17 +255,7 @@ describe('BottomSheet', () => {
       expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('handled');
     });
 
-    test('DoD 151: keyboardTaps="dismiss" — the list never lets a tap through with the keyboard up', () => {
-      render(
-        <BottomSheet visible onClose={() => {}} title="Replace" keyboardTaps="dismiss">
-          <Text>Content</Text>
-        </BottomSheet>,
-      );
-
-      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('never');
-    });
-
-    test('DoD 151: keyboardTaps="dismiss" — with the keyboard up the footer only closes it; once it is down, the button presses', () => {
+    test('DoD 151: keyboardTaps="through" — a tap reaches its button and closes the keyboard in the same tap', () => {
       const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
       const onConfirm = jest.fn();
       render(
@@ -273,7 +263,7 @@ describe('BottomSheet', () => {
           visible
           onClose={() => {}}
           title="Replace exercise"
-          keyboardTaps="dismiss"
+          keyboardTaps="through"
           footer={<Text onPress={onConfirm}>Confirm</Text>}
         >
           <Text>Content</Text>
@@ -281,27 +271,26 @@ describe('BottomSheet', () => {
       );
       emit('keyboardWillShow');
 
-      // The tap lands on the footer itself, not on the button inside it.
-      fireEvent.press(screen.getByText('Confirm'));
-      expect(onConfirm).not.toHaveBeenCalled();
-      expect(dismiss).toHaveBeenCalledTimes(1);
+      const confirm = screen.getByText('Confirm');
+      fireEvent.press(confirm);
+      fireEvent(confirm, 'touchEnd');
 
-      emit('keyboardWillHide');
-      fireEvent.press(screen.getByText('Confirm'));
       expect(onConfirm).toHaveBeenCalledTimes(1);
+      expect(dismiss).toHaveBeenCalledTimes(1);
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('handled');
     });
 
-    test('DoD 151: keyboardTaps="dismiss" — a tap on the empty space at the bottom closes the keyboard', () => {
+    test('by default the sheet leaves the keyboard alone on a tap', () => {
       const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
       render(
-        <BottomSheet visible onClose={() => {}} title="Replace" keyboardTaps="dismiss">
+        <BottomSheet visible onClose={() => {}} title="New exercise">
           <Text>Content</Text>
         </BottomSheet>,
       );
 
-      fireEvent.press(screen.getByTestId('bottom-sheet-empty-space'));
+      fireEvent(screen.getByText('Content'), 'touchEnd');
 
-      expect(dismiss).toHaveBeenCalledTimes(1);
+      expect(dismiss).not.toHaveBeenCalled();
     });
   });
 });

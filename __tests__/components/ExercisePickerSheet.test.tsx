@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { Keyboard, ScrollView, StyleSheet } from 'react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
@@ -287,44 +287,34 @@ describe('ExercisePickerSheet', () => {
     });
   });
 
-  // GT-151: a search sheet — with the keyboard up, a tap only closes it.
+  // GT-151: a search sheet — a tap reaches what it lands on and closes the keyboard in the same tap.
   describe('with the keyboard up', () => {
-    let showKeyboard: () => void;
-
-    beforeEach(() => {
-      jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
-      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
-        event: string,
-        handler: () => void,
-      ) => {
-        if (event === 'keyboardWillShow') {
-          showKeyboard = () => act(handler);
-        }
-        return { remove: jest.fn() };
-      }) as unknown as typeof Keyboard.addListener);
-    });
-
-    afterEach(() => jest.restoreAllMocks());
-
-    test('DoD 151: a tap on a row only closes the keyboard (the list is on `never`)', () => {
-      renderSheet(BASE_SINGLE_PROPS);
-
-      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('never');
-    });
-
     test.each([
-      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }],
-      ['Add 1 exercise', { ...BASE_MULTI_PROPS, selectedIds: [BENCH_PRESS.id] }],
-    ] as const)('DoD 151: the first tap on %s only closes the keyboard', (label, props) => {
+      ['a row', BASE_SINGLE_PROPS, 'Bench Press'],
+      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }, 'Replace'],
+    ] as const)('DoD 151: a tap on %s works and closes the keyboard', (_name, props, text) => {
       const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
       const onConfirm = jest.fn();
-      renderSheet({ ...props, onConfirm });
-      showKeyboard();
+      const onChangeSelectedId = jest.fn();
+      renderSheet({ ...props, onConfirm, onChangeSelectedId });
 
-      fireEvent.press(screen.getByRole('button', { name: label }));
+      const target = screen.getByText(text);
+      fireEvent.press(target);
+      fireEvent(target, 'touchEnd');
 
-      expect(onConfirm).not.toHaveBeenCalled();
+      expect(onConfirm.mock.calls.length + onChangeSelectedId.mock.calls.length).toBe(1);
       expect(dismiss).toHaveBeenCalledTimes(1);
+      dismiss.mockRestore();
+    });
+
+    test('DoD 151: a tap in the search field keeps the keyboard', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      renderSheet(BASE_SINGLE_PROPS);
+
+      fireEvent(screen.getByLabelText('Search'), 'touchEnd', { stopPropagation: () => {} });
+
+      expect(dismiss).not.toHaveBeenCalled();
+      dismiss.mockRestore();
     });
   });
 });

@@ -15,7 +15,7 @@
 // ExerciseLibraryScreenLogic.ts, per AGENTS.md's "Code organization".
 
 import { useMemo } from 'react';
-import { SectionList, Text } from 'react-native';
+import { Keyboard, SectionList, Text } from 'react-native';
 
 import type {
   ExerciseListEntry,
@@ -145,9 +145,10 @@ export function ExerciseLibraryScreen({
       {showList && (
         <SectionList<ExerciseListEntry, ExerciseSection>
           showsVerticalScrollIndicator={false}
-          // A search screen: with the keyboard up, the first tap on a row only closes it, and the
+          // A search screen: a tap on a row opens it and closes the keyboard in the same tap, and the
           // search field loses focus — so coming Back from an exercise doesn't bring it back (GT-151).
-          keyboardShouldPersistTaps="never"
+          keyboardShouldPersistTaps="handled"
+          onTouchEnd={() => Keyboard.dismiss()}
           keyboardDismissMode="on-drag"
           style={LIST_BLEED.style}
           contentContainerStyle={[LIST_BLEED.content, { paddingBottom: tabBarClearance }]}
