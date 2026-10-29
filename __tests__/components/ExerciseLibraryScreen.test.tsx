@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Keyboard } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { toExerciseId, type Exercise } from '@domain/catalog';
@@ -74,6 +75,38 @@ describe('ExerciseLibraryScreen', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
     expect(onRequestCreate).toHaveBeenCalledWith();
+  });
+
+  // GT-151: a tap on a row opens it and closes the keyboard in the same tap — which also blurs the
+  // search, so Back from the exercise doesn't bring the keyboard back.
+  test('DoD 151: a tap on a row opens it and closes the keyboard', () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+    const onOpenExercise = jest.fn();
+    renderScreen({
+      onOpenExercise,
+      groups: [
+        {
+          muscleGroup: 'chest',
+          entries: [
+            entry(
+              exercise({
+                id: toExerciseId('bench-press'),
+                name: 'Bench Press',
+                muscleGroup: 'chest',
+              }),
+            ),
+          ],
+        },
+      ],
+    });
+
+    const row = screen.getByText('Bench Press');
+    fireEvent.press(row);
+    fireEvent(row, 'touchEnd');
+
+    expect(onOpenExercise).toHaveBeenCalledTimes(1);
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    dismiss.mockRestore();
   });
 
   test('typing in the search field calls onSearchChange', () => {

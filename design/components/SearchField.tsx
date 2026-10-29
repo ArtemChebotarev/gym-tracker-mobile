@@ -17,7 +17,9 @@ export type SearchFieldProps = {
 
 export function SearchField({ value, onChangeText, icon, placeholder }: SearchFieldProps) {
   return (
-    <View style={styles.container}>
+    // A tap in the field is not a tap away from the keyboard: it stops here, before a sheet that
+    // closes the keyboard on every other tap (BottomSheet `keyboardTaps="through"`) sees it.
+    <View style={styles.container} onTouchEnd={(event) => event.stopPropagation()}>
       {icon}
       <TextInput
         accessibilityLabel="Search"

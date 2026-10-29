@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
@@ -200,7 +200,9 @@ describe('ExercisePickerSheet', () => {
       ).toEqual({
         checked: true,
       });
-      expect(screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState).toEqual({
+      expect(
+        screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState,
+      ).toEqual({
         checked: false,
       });
     });
@@ -255,11 +257,12 @@ describe('ExercisePickerSheet', () => {
     test('rows show checkboxes, with only the selected one checked', () => {
       renderSheet({ ...BASE_SINGLE_PROPS, selectedId: SQUAT.id });
 
-      expect(screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState.checked).toBe(
-        true,
-      );
       expect(
-        screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState.checked,
+        screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState.checked,
+      ).toBe(true);
+      expect(
+        screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState
+          .checked,
       ).toBe(false);
     });
 
@@ -344,6 +347,47 @@ describe('ExercisePickerSheet', () => {
 
       expect(screen.getByRole('button', { name: 'Add exercise' })).toBeTruthy();
       expect(screen.queryByRole('button', { name: 'Replace' })).toBeNull();
+    });
+  });
+
+  // GT-151: a search sheet — a tap reaches what it lands on and closes the keyboard in the same tap.
+  describe('with the keyboard up', () => {
+    // GT-179: a tap on the row opens the preview, a tap on its checkbox selects; either way the
+    // keyboard goes in the same tap.
+    test.each([
+      ['a row', BASE_SINGLE_PROPS, 'button', 'Bench Press'],
+      ['a checkbox', BASE_SINGLE_PROPS, 'checkbox', 'Select Bench Press'],
+      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }, 'button', 'Replace'],
+    ] as const)(
+      'DoD 151: a tap on %s works and closes the keyboard',
+      (_name, props, role, name) => {
+        const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+        const onConfirm = jest.fn();
+        const onChangeSelectedId = jest.fn();
+        renderSheet({ ...props, onConfirm, onChangeSelectedId });
+
+        const target = screen.getByRole(role, { name });
+        fireEvent.press(target);
+        fireEvent(target, 'touchEnd');
+
+        expect(
+          onConfirm.mock.calls.length +
+            onChangeSelectedId.mock.calls.length +
+            mockPush.mock.calls.length,
+        ).toBe(1);
+        expect(dismiss).toHaveBeenCalledTimes(1);
+        dismiss.mockRestore();
+      },
+    );
+
+    test('DoD 151: a tap in the search field keeps the keyboard', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      renderSheet(BASE_SINGLE_PROPS);
+
+      fireEvent(screen.getByLabelText('Search'), 'touchEnd', { stopPropagation: () => {} });
+
+      expect(dismiss).not.toHaveBeenCalled();
+      dismiss.mockRestore();
     });
   });
 });

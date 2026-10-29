@@ -33,7 +33,15 @@
 // behavior already handles this, so no `behavior` is set there.
 // `keyboardShouldPersistTaps="handled"` on the content ScrollView lets a tap on another field or
 // a Dropdown option register in the same gesture instead of only dismissing the keyboard first;
-// a tap on the sheet's header or a drag of the content closes it (GT-21).
+// a tap on the sheet's header or a drag of the content closes it (GT-21). A search sheet also
+// closes the keyboard on every tap (`keyboardTaps="through"`, GT-151): a row is picked or the
+// footer's button pressed, and the keyboard goes down in the same tap, so the list it was hiding
+// is back.
+//
+// While the keyboard is up, the bottom padding drops `bottomClearance` and the home-indicator
+// inset: the tab bar and the indicator are behind the keyboard then, and KeyboardAvoidingView has
+// already lifted the sheet clear of it. Kept, the ~100pt of a tab bar's clearance came out of a
+// fixed-height sheet's list, leaving room for one row (GT-151).
 
 import type { ReactNode } from 'react';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -54,6 +62,7 @@ import {
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { COLORS, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { capsule } from '../shapes';
+import { useKeyboardVisible } from '../useKeyboardVisible';
 
 const DISMISS_DISTANCE = 60;
 // 'overlay' presentation's own slide, standing in for Modal's native `animationType="slide"`.
@@ -98,6 +107,13 @@ export type BottomSheetProps = {
    * home-indicator inset the sheet already respects.
    */
   bottomClearance?: number;
+  /**
+   * What a tap does while the keyboard is up. 'handled' (default) — it reaches what it lands on and
+   * the keyboard stays, for a form where the next tap is often another field. 'through' — it
+   * reaches what it lands on *and* closes the keyboard, in the same tap, for a search sheet
+   * (GT-151).
+   */
+  keyboardTaps?: 'handled' | 'through';
 };
 
 export function BottomSheet({
@@ -112,9 +128,11 @@ export function BottomSheet({
   presentation = 'modal',
   height = 'content',
   bottomClearance = 0,
+  keyboardTaps = 'handled',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
   const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+  const keyboardVisible = useKeyboardVisible();
 
   function handleGrabberGrant(event: GestureResponderEvent) {
     dragStartY.current = event.nativeEvent.pageY;
@@ -161,15 +179,28 @@ export function BottomSheet({
     </>
   );
 
+  // 'through': every tap that ends in the sheet also closes the keyboard — after it has reached
+  // its row or button. A tap in a SearchField stops this on its way up, so the field keeps it.
+  const onSheetTouchEnd = keyboardTaps === 'through' ? () => Keyboard.dismiss() : undefined;
+
   const sheetStyle = [
     styles.sheet,
     height === 'fixed' && styles.sheetFixed,
-    { paddingBottom: SPACING['space/sheet'] + Math.max(bottomInset, bottomClearance) },
+    {
+      paddingBottom:
+        SPACING['space/sheet'] + (keyboardVisible ? 0 : Math.max(bottomInset, bottomClearance)),
+    },
   ];
 
   if (presentation === 'overlay') {
     return (
-      <OverlaySheet visible={visible} onClose={onClose} animated={animated} sheetStyle={sheetStyle}>
+      <OverlaySheet
+        visible={visible}
+        onClose={onClose}
+        animated={animated}
+        sheetStyle={sheetStyle}
+        onSheetTouchEnd={onSheetTouchEnd}
+      >
         {sheetBody}
       </OverlaySheet>
     );
@@ -192,7 +223,7 @@ export function BottomSheet({
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View testID="bottom-sheet" style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle} onTouchEnd={onSheetTouchEnd}>
           {sheetBody}
         </View>
       </KeyboardAvoidingView>
@@ -207,6 +238,7 @@ type OverlaySheetProps = {
   onClose: () => void;
   animated: boolean;
   sheetStyle: StyleProp<ViewStyle>;
+  onSheetTouchEnd: (() => void) | undefined;
   children: ReactNode;
 };
 
@@ -218,7 +250,14 @@ type OverlaySheetProps = {
 // `useState(() => new Animated.Value(...))` rather than `useRef(...).current`, since a plain ref
 // read during render trips this codebase's react-hooks/refs rule; same reasoning as
 // components/MesoEditorDaysStep.tsx's own `dragY`, see its comment on the same pattern.
-function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: OverlaySheetProps) {
+function OverlaySheet({
+  visible,
+  onClose,
+  animated,
+  sheetStyle,
+  onSheetTouchEnd,
+  children,
+}: OverlaySheetProps) {
   const [mounted, setMounted] = useState(visible);
   const [progress] = useState(() => new Animated.Value(visible ? 1 : 0));
 
@@ -267,7 +306,7 @@ function OverlaySheet({ visible, onClose, animated, sheetStyle, children }: Over
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View testID="bottom-sheet" style={sheetStyle}>
+        <View testID="bottom-sheet" style={sheetStyle} onTouchEnd={onSheetTouchEnd}>
           {children}
         </View>
       </KeyboardAvoidingView>
