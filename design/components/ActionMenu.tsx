@@ -16,6 +16,11 @@
 //   `matchContents` collapses the host and nothing opens at all.
 // - `menuStyle('button')` + `buttonStyle('plain')` + `menuIndicator('hidden')` render the label as
 //   the whole trigger, with no button chrome and no disclosure chevron around the dots.
+// - the Host ignores the safe area (`ignoreSafeArea="all"`, GT-202). Its UIHostingController insets
+//   the SwiftUI content by whatever part of the screen's safe area the 36pt square overlaps when it
+//   is laid out — the status bar, the home indicator, the keyboard — so a card's `⋯` laid out near
+//   an edge drew its dots half a button off, over the RIR badge or the `Log` column, until a tab
+//   switch laid it out again. A button this size never needs safe-area insets.
 //
 // `@expo/ui` is pinned to an exact 57.0.13 in package.json, not a `~` range: 57.0.19 calls
 // `ShadowNodeProxy.clearContentOrigin`, which expo-modules-core only grows in a later SDK patch
@@ -114,7 +119,7 @@ export function ActionMenu({
   if (Platform.OS === 'ios') {
     return (
       <View testID={testID} accessibilityLabel={accessibilityLabel} style={iconButtonFrame()}>
-        <Host style={styles.host}>
+        <Host style={styles.host} ignoreSafeArea="all">
           <Menu
             label={
               // A native SwiftUI Image, never an RN glyph hosted back inside SwiftUI: a hosted

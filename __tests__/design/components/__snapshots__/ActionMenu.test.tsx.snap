@@ -31,6 +31,7 @@ exports[`ActionMenu — iOS DoD: the trigger is the native menu, one native butt
     testID="action-menu"
   >
     <ViewManagerAdapter_ExpoUI
+      ignoreSafeArea="all"
       layoutDirection="leftToRight"
       style={
         {

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { Platform } from 'react-native';
+import { Host } from '@expo/ui/swift-ui';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
@@ -57,6 +58,14 @@ describe('ActionMenu — iOS', () => {
     expect(screen.getByTestId('action-menu')).toBeTruthy();
     expect(screen.getByTestId('action-menu-add').props.label).toBe('Add exercise');
     expect(tree.toJSON()).toMatchSnapshot();
+  });
+
+  // GT-202: insetting a 36pt button by the screen's safe area drew a card's `⋯` half a button off
+  // whenever it was laid out near an edge.
+  test('the native host ignores the safe area', () => {
+    renderMenu();
+
+    expect(screen.UNSAFE_getByType(Host).props.ignoreSafeArea).toBe('all');
   });
 
   test('a destructive action is destructive to iOS, the rest are not', () => {

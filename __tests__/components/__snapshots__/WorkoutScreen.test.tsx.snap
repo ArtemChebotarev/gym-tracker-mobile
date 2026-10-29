@@ -399,6 +399,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
             testID="action-menu"
           >
             <ViewManagerAdapter_ExpoUI
+              ignoreSafeArea="all"
               layoutDirection="leftToRight"
               style={
                 {
@@ -1979,6 +1980,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
             testID="action-menu"
           >
             <ViewManagerAdapter_ExpoUI
+              ignoreSafeArea="all"
               layoutDirection="leftToRight"
               style={
                 {
@@ -2563,6 +2565,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                     testID="exercise-menu-session-exercise-1"
                   >
                     <ViewManagerAdapter_ExpoUI
+                      ignoreSafeArea="all"
                       layoutDirection="leftToRight"
                       style={
                         {
@@ -3025,6 +3028,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
             testID="action-menu"
           >
             <ViewManagerAdapter_ExpoUI
+              ignoreSafeArea="all"
               layoutDirection="leftToRight"
               style={
                 {
