@@ -1017,7 +1017,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "textAlign": "center",
             },
             false,
-            false,
           ]
         }
         value=""
@@ -1165,7 +1164,6 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
               "fontSize": 20,
               "textAlign": "center",
             },
-            false,
             false,
           ]
         }

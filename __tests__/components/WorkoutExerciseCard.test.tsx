@@ -698,7 +698,7 @@ describe('WorkoutExerciseCard — another weight (task 121)', () => {
     expect(screen.getByTestId('inline-note')).toHaveTextContent(
       '20 kg is too heavy for 5+ reps. Up to 17.5 kg keeps a rep target.',
     );
-    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('2 RIR');
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('–');
   });
 
   test('a close weight needs no explaining — it reads as an ordinary target', () => {
@@ -891,7 +891,10 @@ describe('RIR badge popover', () => {
     fireEvent.press(badge());
 
     // LIVE_EXERCISE: targetRir 2, and its next set has target reps.
-    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+    expect(screen.getByText('2 RIR: stop 2 reps before failure')).toBeTruthy();
+    // The popover is the reminder (GT-149): what goes into Reps, not how the weeks go.
+    expect(screen.getByText('In Reps, log what you actually did.')).toBeTruthy();
+    expect(screen.queryByText(/Every week gets closer/)).toBeNull();
   });
 
   test('on a deload week the Deload badge takes its place, with the deload text', () => {
@@ -915,7 +918,7 @@ describe('RIR badge popover', () => {
 
     fireEvent.press(badge());
 
-    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+    expect(screen.getByText('2 RIR: stop 2 reps before failure')).toBeTruthy();
   });
 
   test('a power card says Load and Fast reps, with no RIR badge and no hit indicator', () => {

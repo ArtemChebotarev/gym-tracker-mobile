@@ -46,7 +46,7 @@ export type SetLoggingProps = {
 
 export type WorkoutSetRowsProps = SetLoggingProps & {
   rows: readonly WorkoutSetRowModel[];
-  /** The exercise's target RIR — the Reps placeholder of a set with no other, and the note's effort. */
+  /** The exercise's target RIR — the effort the estimate note asks for. */
   targetRir: number | undefined;
   /**
    * What the weight means — not always the equipment printed under the name: a power exercise that
@@ -112,7 +112,6 @@ export function WorkoutSetRows({
         <WorkoutSetRow
           key={row.setNumber}
           row={row}
-          targetRir={targetRir}
           equipment={loadEquipment}
           bodyWeight={bodyWeight}
           guided={guided}

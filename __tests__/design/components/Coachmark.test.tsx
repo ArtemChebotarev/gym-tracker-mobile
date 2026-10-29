@@ -12,7 +12,7 @@ function props(overrides: Partial<CoachmarkProps> = {}): CoachmarkProps {
     anchor: ANCHOR,
     step: 1,
     total: 4,
-    title: '3 RIR means 3 reps in reserve',
+    title: '3 RIR: stop 3 reps before failure',
     paragraphs: ['Stop a set when you could do about 3 more.', 'Week 1 has no rep target.'],
     onNext: jest.fn(),
     onSkip: jest.fn(),
@@ -25,7 +25,7 @@ describe('Coachmark', () => {
     render(<Coachmark {...props()} />);
 
     expect(screen.getByText('1 of 4')).toBeTruthy();
-    expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
+    expect(screen.getByText('3 RIR: stop 3 reps before failure')).toBeTruthy();
     expect(screen.getByText('Stop a set when you could do about 3 more.')).toBeTruthy();
     expect(screen.getByText('Week 1 has no rep target.')).toBeTruthy();
   });

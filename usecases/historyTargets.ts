@@ -43,7 +43,7 @@ export type HistoryTargetsQuery = {
  * - Otherwise the exercise's performances logged no earlier than `now − historyLookbackDays` go
  *   to the reference resolver with the session's slot: a reference in the exercise's own slot
  *   gives targets (reps + 1), one from another day or block an estimate (priced by where it came
- *   from — the type's policy), and none leaves the rows empty — the screen shows `N RIR`.
+ *   from — the type's policy), and none leaves the rows empty — the Reps fields show `–`, and the card's `N RIR` chip is the guide.
  */
 export async function targetsFromHistory(
   query: HistoryTargetsQuery,

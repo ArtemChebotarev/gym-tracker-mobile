@@ -75,60 +75,93 @@ describe('rirTrack', () => {
 });
 
 describe('rirExplanation', () => {
-  test('says what N RIR means, with the exercise’s own number, in two theses', () => {
-    const text = rirExplanation({ targetRir: 3, isDeload: false });
+  const LOG = { said: 'In Reps, log what you actually did.', strong: ['Reps'] };
 
-    expect(text.title).toBe('3 RIR means 3 reps in reserve');
+  test('DoD 149: the coachmark introduces it — the aim, what goes into Reps, how the weeks go', () => {
+    const text = rirExplanation({ targetRir: 3, isDeload: false, variant: 'intro' });
+
+    expect(text.title).toBe('3 RIR: stop 3 reps before failure');
     expect(text.rows.map((row) => readRow(row.text))).toEqual([
-      { said: 'Stop a set when about 3 reps are left.', strong: ['about 3 reps are left'] },
-      { said: 'It drops each week; the last one is failure.', strong: ['failure'] },
+      {
+        said: 'Your target for every set of this exercise: stop with about 3 reps left.',
+        strong: ['3 reps left'],
+      },
+      LOG,
+      {
+        said: 'Every week gets closer to failure. The last one is a lighter deload.',
+        strong: ['deload'],
+      },
     ]);
     expect(text.track.marker).toBe(rirTrack(3).marker);
   });
 
-  // It explains the fact of RIR; how rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
-  test('never mentions rep targets, whatever week it is', () => {
-    for (const targetRir of [3, 2, 1, 0]) {
-      const text = rirExplanation({ targetRir, isDeload: false });
-      const said = text.rows.map((row) => readRow(row.text).said).join(' ');
+  test('DoD 149: the popover only reminds — same title and track, one row about Reps', () => {
+    const intro = rirExplanation({ targetRir: 3, isDeload: false, variant: 'intro' });
+    const reminder = rirExplanation({ targetRir: 3, isDeload: false, variant: 'reminder' });
 
-      expect(text.rows.length).toBeLessThanOrEqual(2);
-      expect(said).not.toMatch(/target/i);
+    expect(reminder.title).toBe(intro.title);
+    expect(reminder.track).toEqual(intro.track);
+    expect(reminder.rows.map((row) => readRow(row.text))).toEqual([LOG]);
+  });
+
+  // It explains RIR; how rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
+  test('never explains rep targets, whatever week it is', () => {
+    for (const variant of ['intro', 'reminder'] as const) {
+      for (const targetRir of [3, 2, 1, 0]) {
+        const said = rirExplanation({ targetRir, isDeload: false, variant })
+          .rows.map((row) => readRow(row.text).said)
+          .join(' ');
+
+        expect(said).not.toMatch(/target reps|rep target/i);
+      }
     }
   });
 
-  test('the number follows the week: 2 RIR, 1 RIR in the singular, 0 RIR at the last', () => {
-    expect(rirExplanation({ targetRir: 2, isDeload: false }).title).toBe(
-      '2 RIR means 2 reps in reserve',
+  test('the number follows the week: 2 RIR, 1 RIR in the singular', () => {
+    expect(rirExplanation({ targetRir: 2, isDeload: false, variant: 'intro' }).title).toBe(
+      '2 RIR: stop 2 reps before failure',
     );
-    expect(rirExplanation({ targetRir: 1, isDeload: false }).title).toBe(
-      '1 RIR means 1 rep in reserve',
-    );
-    const last = rirExplanation({ targetRir: 0, isDeload: false });
-    expect(last.title).toBe('0 RIR means no reps in reserve');
-    expect(readRow(last.rows[0]!.text).said).toContain("can't do another rep");
-    expect(last.track.labels).toHaveLength(1);
+    const one = rirExplanation({ targetRir: 1, isDeload: false, variant: 'intro' });
+    expect(one.title).toBe('1 RIR: stop 1 rep before failure');
+    expect(readRow(one.rows[0]!.text).strong).toEqual(['1 rep left']);
   });
 
-  test('DoD: a deload week gets its own, shorter text with its own RIR, on the same track', () => {
-    const text = rirExplanation({ targetRir: 8, isDeload: true });
+  test('DoD 149: 0 RIR goes to failure, in either variant', () => {
+    const intro = rirExplanation({ targetRir: 0, isDeload: false, variant: 'intro' });
+    expect(intro.title).toBe('0 RIR: go to failure');
+    expect(readRow(intro.rows[0]!.text).said).toBe(
+      "Your target for every set of this exercise: go until you can't do another rep.",
+    );
+    expect(intro.rows).toHaveLength(3);
+    expect(intro.track.labels).toHaveLength(1);
 
-    expect(text.title).toBe('Deload week');
-    expect(text.rows.map((row) => readRow(row.text))).toEqual([
-      {
-        said: "Don't push: aim to finish each set with about 8 reps left.",
-        strong: ['about 8 reps left'],
-      },
-    ]);
-    // A deload's long reserve is drawn long.
-    expect(text.track.outer.max).toBeGreaterThan(rirTrack(3).outer.max);
+    const reminder = rirExplanation({ targetRir: 0, isDeload: false, variant: 'reminder' });
+    expect(reminder.title).toBe('0 RIR: go to failure');
+    expect(reminder.rows.map((row) => readRow(row.text))).toEqual([LOG]);
+  });
+
+  test('DoD 149: a deload week says not to push and what goes into Reps, on the same track', () => {
+    for (const variant of ['intro', 'reminder'] as const) {
+      const text = rirExplanation({ targetRir: 8, isDeload: true, variant });
+
+      expect(text.title).toBe('Deload week');
+      expect(text.rows.map((row) => readRow(row.text))).toEqual([
+        {
+          said: "Don't push: aim to finish each set with about 8 reps left.",
+          strong: ['about 8 reps left'],
+        },
+        LOG,
+      ]);
+      // A deload's long reserve is drawn long.
+      expect(text.track.outer.max).toBeGreaterThan(rirTrack(3).outer.max);
+    }
   });
 });
 
 describe('deloadExplanation', () => {
   test('a strength exercise keeps the RIR plate of the deload week', () => {
     expect(deloadExplanation({ targetRir: 8 })).toEqual(
-      rirExplanation({ targetRir: 8, isDeload: true }),
+      rirExplanation({ targetRir: 8, isDeload: true, variant: 'reminder' }),
     );
     expect(deloadExplanation({ type: 'strength' }).track).toBeDefined();
   });

@@ -7,7 +7,6 @@ import { validateSetEntry } from '@domain/executionValidators';
 import type { NotDoneStatus } from '@domain/sessionExerciseStatus';
 import type { WeightSwapEvaluation } from '@domain/weightSwap';
 import { evaluateWeightSwap } from '@domain/weightSwapRules';
-import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 /**
@@ -105,8 +104,8 @@ export type PlaceholderReps = { reps: number; isEstimate: boolean };
 
 /**
  * The rep count the Reps field suggests, which is also the one a one-tap Log records (task 104).
- * `undefined` when there is no number to suggest — the placeholder falls back to `N RIR` and Log
- * waits for typed reps.
+ * `undefined` when there is no number to suggest — the placeholder is a bare `–` and Log waits for
+ * typed reps.
  *
  * With a weight in the field that isn't the one the target was issued for, the number is what
  * *that* weight is worth (08.7.1): a close weight reads as an ordinary target, a far one as an
@@ -138,31 +137,19 @@ export function placeholderReps(
 
 /**
  * The Reps field's placeholder — the field itself starts empty (08.7, "Строка подхода"): the reps
- * to aim for, `~` in front when they are an estimate, and the exercise's target RIR when there is
- * no number to aim for.
+ * to aim for, `~` in front when they are an estimate, and `–` when there is no number to aim for,
+ * as on Weight. Never the target RIR: a field called Reps that shows `2 RIR` reads as "type 2 here"
+ * (GT-149) — the card's RIR chip is where the target RIR is shown.
  */
 export function repsPlaceholder(
   row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
-  targetRir: number | undefined,
   evaluation?: WeightSwapEvaluation,
 ): string {
   const placeholder = placeholderReps(row, evaluation);
-  if (placeholder !== undefined) {
-    return placeholder.isEstimate ? `~${placeholder.reps}` : String(placeholder.reps);
+  if (placeholder === undefined) {
+    return '–';
   }
-  return targetRir !== undefined ? formatRir(targetRir) : '–';
-}
-
-/**
- * Whether the Reps placeholder is the `N RIR` fallback — it's set smaller than a number so it fits
- * the field.
- */
-export function isRirPlaceholder(
-  row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
-  targetRir: number | undefined,
-  evaluation?: WeightSwapEvaluation,
-): boolean {
-  return placeholderReps(row, evaluation) === undefined && targetRir !== undefined;
+  return placeholder.isEstimate ? `~${placeholder.reps}` : String(placeholder.reps);
 }
 
 /** On target or over it reads a step brighter than under it (08.7 mockup) — both neutral text. */
@@ -203,8 +190,8 @@ export function parseReps(text: string): number | null {
  * what was typed; an empty Reps field takes whatever number the placeholder shows — the set's
  * `targetReps`, or in a deload last week's `referenceReps` (task 104). Either way a row left as
  * recommended logs with one tap, on every week alike; type your own if you did something else.
- * `N RIR` is the exception: it isn't a rep count, so with that placeholder an empty field keeps Log
- * inactive — which now also covers a weight the rep corridor doesn't reach (08.7.1, zone `out`).
+ * With no number behind the placeholder (`–`) an empty field keeps Log inactive — which also covers
+ * a weight the rep corridor doesn't reach (08.7.1, zone `out`).
  * The rules for a valid entry are the domain's (`validateSetEntry`), not repeated here.
  */
 export function resolveSetEntry(
