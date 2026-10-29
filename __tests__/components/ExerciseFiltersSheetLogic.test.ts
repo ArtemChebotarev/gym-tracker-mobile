@@ -1,10 +1,13 @@
 import type { ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
 import {
   applyButtonLabel,
+  FILTER_MUSCLE_GROUPS,
   toggleMuscleGroup,
   toggleSource,
   toggleType,
 } from '@components/ExerciseFiltersSheetLogic';
+import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
+import { MUSCLE_GROUPS } from '@domain/catalog';
 
 describe('toggleMuscleGroup', () => {
   test('adds a muscle group that is not yet selected', () => {
@@ -74,5 +77,30 @@ describe('toggleType', () => {
 
   test('deselecting the last type clears the field — an empty selection means every type', () => {
     expect(toggleType({ types: ['mobility'] }, 'mobility')).toEqual({ types: undefined });
+  });
+});
+
+describe('FILTER_MUSCLE_GROUPS', () => {
+  test('DoD 150: the sheet offers the muscle groups alphabetically', () => {
+    expect(FILTER_MUSCLE_GROUPS.map(getMuscleGroupLabel)).toEqual([
+      'Abs',
+      'Back',
+      'Biceps',
+      'Calves',
+      'Chest',
+      'Forearms',
+      'Glutes',
+      'Hamstrings',
+      'Quads',
+      'Shoulders',
+      'Traps',
+      'Triceps',
+    ]);
+  });
+
+  test('DoD 150: MUSCLE_GROUPS keeps its own order — the exercise list and the cycle summary use it', () => {
+    expect(MUSCLE_GROUPS[0]).toBe('chest');
+    expect(MUSCLE_GROUPS[MUSCLE_GROUPS.length - 1]).toBe('traps');
+    expect([...FILTER_MUSCLE_GROUPS].sort()).toEqual([...MUSCLE_GROUPS].sort());
   });
 });

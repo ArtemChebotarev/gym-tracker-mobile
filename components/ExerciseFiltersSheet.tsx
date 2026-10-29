@@ -22,7 +22,6 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   EXERCISE_TYPES,
-  MUSCLE_GROUPS,
   type ExerciseSource,
   type ExerciseType,
   type MuscleGroup,
@@ -41,6 +40,7 @@ import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { sourceLabel } from './ExerciseLibraryScreenLogic';
 import {
   applyButtonLabel,
+  FILTER_MUSCLE_GROUPS,
   toggleMuscleGroup,
   toggleSource,
   toggleType,
@@ -109,7 +109,7 @@ export function ExerciseFiltersSheet({
       <View style={styles.section}>
         <Text style={fieldStyles.label}>Muscle group</Text>
         <View style={styles.chipRow}>
-          {MUSCLE_GROUPS.map((muscleGroup) => (
+          {FILTER_MUSCLE_GROUPS.map((muscleGroup) => (
             <MuscleGroupChip
               key={muscleGroup}
               muscleGroup={muscleGroup}

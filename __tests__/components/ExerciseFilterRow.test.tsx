@@ -25,6 +25,24 @@ describe('ExerciseFilterRow', () => {
     expect(onRequestFilters).toHaveBeenCalledTimes(1);
   });
 
+  test('DoD 150: with no filter on, the Filters button is in its neutral form', () => {
+    renderRow({ filters: {} });
+
+    expect(screen.getByRole('button', { name: 'Filters' })).toHaveProp('accessibilityState', {
+      selected: false,
+    });
+  });
+
+  test('DoD 150: with N values on, it is in its accent form and says N', () => {
+    const onRequestFilters = jest.fn();
+    renderRow({ filters: { muscleGroups: ['chest'], performedOnly: true }, onRequestFilters });
+
+    const button = screen.getByRole('button', { name: 'Filters · 2' });
+    expect(button).toHaveProp('accessibilityState', { selected: true });
+    fireEvent.press(button);
+    expect(onRequestFilters).toHaveBeenCalledTimes(1);
+  });
+
   test('renders a chip for each active filter plus the result counter', () => {
     renderRow({
       filters: { muscleGroups: ['chest'], sources: ['custom'], performedOnly: true },

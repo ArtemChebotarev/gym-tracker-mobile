@@ -18,6 +18,7 @@ import { PlayIcon } from '@design/icons/PlayIcon';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { PulseIcon } from '@design/icons/PulseIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
+import { SlidersIcon } from '@design/icons/SlidersIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
@@ -42,6 +43,7 @@ const ICONS: [string, IconComponent][] = [
   ['plus', PlusIcon],
   ['minus', MinusIcon],
   ['skip', SkipIcon],
+  ['sliders', SlidersIcon],
   ['play', PlayIcon],
   ['copy', CopyIcon],
   ['archive', ArchiveIcon],

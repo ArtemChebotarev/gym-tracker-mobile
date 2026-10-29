@@ -7,6 +7,7 @@ import {
   buildSections,
   countEntries,
   equipmentSuffix,
+  filtersButtonLabel,
   formatSubtitle,
   hasActiveFilters,
   rowSubtitle,
@@ -46,6 +47,21 @@ describe('hasActiveFilters', () => {
     ['performedOnly', { performedOnly: true }],
   ])('true when %s is set', (_label, filters) => {
     expect(hasActiveFilters(filters)).toBe(true);
+  });
+});
+
+describe('filtersButtonLabel', () => {
+  test('DoD 150: `Filters` with nothing on, `Filters · N` with N values on', () => {
+    expect(filtersButtonLabel({})).toBe('Filters');
+    expect(filtersButtonLabel({ muscleGroups: ['chest'] })).toBe('Filters · 1');
+    expect(
+      filtersButtonLabel({
+        muscleGroups: ['chest', 'back'],
+        types: ['power'],
+        sources: ['custom'],
+        performedOnly: true,
+      }),
+    ).toBe('Filters · 5');
   });
 });
 

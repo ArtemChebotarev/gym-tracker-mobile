@@ -226,7 +226,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
               <TextInput
                 accessibilityLabel="Search"
                 onChangeText={[MockFunction]}
-                placeholder="Search exercises"
+                placeholder="Search by name"
                 placeholderTextColor="#6B7076"
                 style={
                   {
@@ -303,13 +303,104 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                       "paddingVertical": 8,
                     },
                     {
-                      "backgroundColor": "#1A1C1F",
-                      "borderColor": "#2A2D31",
+                      "backgroundColor": "#2C3036",
+                      "borderColor": "#2C3036",
                     },
                     false,
                   ]
                 }
               >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={14}
+                  bbWidth={14}
+                  focusable={false}
+                  height={14}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 14,
+                        "width": 14,
+                      },
+                    ]
+                  }
+                  vbHeight={24}
+                  vbWidth={24}
+                  width={14}
+                >
+                  <RNSVGGroup
+                    fill={
+                      {
+                        "payload": 4278190080,
+                        "type": 0,
+                      }
+                    }
+                  >
+                    <RNSVGGroup
+                      fill={null}
+                      propList={
+                        [
+                          "fill",
+                          "stroke",
+                          "strokeWidth",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4294309364,
+                          "type": 0,
+                        }
+                      }
+                      strokeWidth={1.8}
+                    >
+                      <RNSVGPath
+                        d="M4 8h5M13 8h7M4 16h9M17 16h3"
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        propList={
+                          [
+                            "strokeLinecap",
+                          ]
+                        }
+                        strokeLinecap={1}
+                      />
+                      <RNSVGCircle
+                        cx={11}
+                        cy={8}
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        r={2}
+                      />
+                      <RNSVGCircle
+                        cx={15}
+                        cy={16}
+                        fill={
+                          {
+                            "payload": 4278190080,
+                            "type": 0,
+                          }
+                        }
+                        r={2}
+                      />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
                 <Text
                   style={
                     [
@@ -318,7 +409,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                         "fontWeight": "400",
                       },
                       {
-                        "color": "#C9CDD2",
+                        "color": "#F5F5F4",
                       },
                     ]
                   }

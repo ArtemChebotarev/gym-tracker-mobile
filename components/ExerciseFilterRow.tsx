@@ -1,6 +1,7 @@
 // The Filters chip row — see 08.6 · Библиотека упражнений, "Exercises — список", "Строка
-// фильтров": a `Filters` chip, one static chip per active filter value, a result-count chip, and
-// a `Reset` action shown only while a filter is active.
+// фильтров": a `Filters` button (an action chip with the sliders icon, `Filters · N` in the accent
+// wash once N values are on — GT-150), one static chip per active filter value, a result-count
+// chip, and a `Reset` action shown only while a filter is active.
 //
 // Extracted out of ExerciseLibraryScreen.tsx (task 079 · Рефакторинг: общий Exercise picker) so
 // the same row — same chips, same Reset behavior — is shared with ExercisePickerSheet.tsx rather
@@ -17,12 +18,18 @@ import { Pressable, Text, View } from 'react-native';
 
 import { Chip } from '@design/components/Chip';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import { SlidersIcon } from '@design/icons/SlidersIcon';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
-import { hasActiveFilters, sectionDotColor, sourceLabel } from './ExerciseLibraryScreenLogic';
+import {
+  filtersButtonLabel,
+  hasActiveFilters,
+  sectionDotColor,
+  sourceLabel,
+} from './ExerciseLibraryScreenLogic';
 import { styles } from './ExerciseFilterRowStyles';
 
 export type ExerciseFilterRowProps = {
@@ -43,9 +50,10 @@ export function ExerciseFilterRow({
   return (
     <View style={styles.filterRow}>
       <Chip
-        variant="selectable"
-        label="Filters"
-        selected={filtersActive}
+        variant="action"
+        label={filtersButtonLabel(filters)}
+        icon={SlidersIcon}
+        active={filtersActive}
         onPress={onRequestFilters}
       />
       {filters.muscleGroups?.map((muscleGroup) => (

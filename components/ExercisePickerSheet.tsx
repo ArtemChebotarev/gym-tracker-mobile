@@ -131,7 +131,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       {caption !== undefined && <Text style={styles.caption}>{caption}</Text>}
 
       <View style={styles.searchField}>
-        <SearchField value={search} onChangeText={onSearchChange} placeholder="Search exercises" />
+        <SearchField value={search} onChangeText={onSearchChange} placeholder="Search by name" />
       </View>
 
       <View style={styles.filterRow}>

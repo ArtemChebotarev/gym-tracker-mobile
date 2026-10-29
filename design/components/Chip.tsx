@@ -1,26 +1,39 @@
-// Chip — see 08.0 · Design SDK, "Компоненты": three variants with different data needs
-// (selectable takes `selected`/`onPress`, static takes an optional group dot, counter takes a
+// Chip — see 08.0 · Design SDK, "Компоненты": three variants with different data needs (action
+// takes `active`/`onPress` and an icon, static takes an optional group dot, counter takes a
 // count), so they're modeled as a discriminated union on `variant` rather than one component
-// with a pile of optional props. Selectable is for multi-select only ("Selectable — только для
-// мультивыбора"); static carries the group dot. Uses `type/caption`, the same scale as Badge,
-// for the same sentence-case reason (see design/components/Badge.tsx). `dotColor` is supplied
-// by the caller (e.g. a muscle-group category color) — this file has no literal color of its
-// own for it. Selected is a solid accent fill (same weight as the accent IconButton) — its only
-// current caller is the list's "Filters" chip, which is exactly that: a single filled indicator,
-// not one of several equally-weighted options. A muscle-group filter's own selected chip needs a
-// per-family tint instead (a different treatment for a different meaning — "this option is
-// picked" vs. "this is the one thing to press"), so it's composed locally in
-// ExerciseFiltersSheet.tsx rather than folded into this component as another prop.
+// with a pile of optional props. Uses `type/caption`, the same scale as Badge, for the same
+// sentence-case reason (see design/components/Badge.tsx). `dotColor` is supplied by the caller
+// (e.g. a muscle-group category color) — this file has no literal color of its own for it.
+//
+// Action is a chip that opens something — the exercise list's `Filters` (GT-150). It must not
+// read as one more tag in the row, so it is tonal (a step lighter than the chips beside it, text
+// at full strength, an icon in front) rather than outlined; `active` turns it into the accent wash,
+// for "something is applied behind this". Never the solid accent fill: that is the screen's main
+// action (`Log`, `Start`). A muscle-group filter's own selected chip needs a per-family tint
+// instead, so it's composed locally in ExerciseFiltersSheet.tsx rather than folded in here.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import type { IconComponent } from '../icons/IconFrame';
+import {
+  BORDER_WIDTHS,
+  COLORS,
+  ICON_SIZES,
+  OPACITY,
+  RADII,
+  SIZES,
+  SPACING,
+  TYPOGRAPHY,
+} from '../tokens';
 import { circle, tapTargetSlop } from '../shapes';
 
-type SelectableChipProps = {
-  variant: 'selectable';
+type ActionChipProps = {
+  variant: 'action';
   label: string;
-  selected: boolean;
+  /** Drawn before the label, in the label's color. */
+  icon: IconComponent;
+  /** Something is applied behind the chip — it takes the accent wash. */
+  active: boolean;
   onPress: () => void;
 };
 
@@ -55,23 +68,28 @@ type CounterChipProps = {
   count: number;
 };
 
-export type ChipProps = SelectableChipProps | StaticChipProps | CounterChipProps;
+export type ChipProps = ActionChipProps | StaticChipProps | CounterChipProps;
 
 export function Chip(props: ChipProps) {
-  if (props.variant === 'selectable') {
+  if (props.variant === 'action') {
+    const Icon = props.icon;
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ selected: props.selected }}
+        accessibilityState={{ selected: props.active }}
         onPress={props.onPress}
         hitSlop={tapTargetSlop(SIZES['size/chip'])}
         style={({ pressed }) => [
           styles.container,
-          props.selected ? styles.selected : styles.unselected,
+          props.active ? styles.accentTint : styles.tonal,
           pressed && styles.pressed,
         ]}
       >
-        <Text style={[styles.label, props.selected ? styles.selectedLabel : styles.unselectedLabel]}>
+        <Icon
+          size={ICON_SIZES['icon/chip']}
+          color={props.active ? COLORS.accent : COLORS['text/primary']}
+        />
+        <Text style={[styles.label, props.active ? styles.accentLabel : styles.tonalLabel]}>
           {props.label}
         </Text>
       </Pressable>
@@ -126,11 +144,13 @@ const styles = StyleSheet.create({
     minHeight: 0,
     paddingVertical: SPACING['space/chip-y'],
   },
-  // Solid accent fill — the same treatment as the accent IconButton (e.g. the list's "+" and
-  // "Filters" chip), not the muted accent/bg + accent/border pair used for a muscle-group tint.
-  selected: {
-    backgroundColor: COLORS.accent,
-    borderColor: COLORS.accent,
+  // A step lighter than `surface/card`, like the IconButton on a card, with no outline of its own.
+  tonal: {
+    backgroundColor: COLORS['surface/control-active'],
+    borderColor: COLORS['surface/control-active'],
+  },
+  tonalLabel: {
+    color: COLORS['text/primary'],
   },
   unselected: {
     backgroundColor: COLORS['surface/card'],
@@ -146,9 +166,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
-  },
-  selectedLabel: {
-    color: COLORS['accent/on'],
   },
   unselectedLabel: {
     color: COLORS['text/secondary'],
