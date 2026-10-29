@@ -5,7 +5,7 @@ import { RirBadge } from '@components/RirBadge';
 import { rirExplanation } from '@components/RirExplanationLogic';
 import { SIZES } from '@design/tokens';
 
-const EXPLANATION = rirExplanation({ targetRir: 3, isDeload: false, variant: 'reminder' });
+const EXPLANATION = rirExplanation({ targetRir: 3, isDeload: false });
 
 describe('RirBadge', () => {
   test('shows the chip as a button, and the plate only after a tap', () => {
@@ -17,11 +17,11 @@ describe('RirBadge', () => {
     fireEvent.press(screen.getByRole('button', { name: '3 RIR, what is RIR?' }));
 
     expect(screen.getByText('3 RIR: stop 3 reps before failure')).toBeTruthy();
-    // The picture and its two labels, then the reminder — not a paragraph.
+    // The picture and its two labels, then the theses — not a paragraph.
     expect(screen.getByTestId('range-track')).toBeTruthy();
     expect(screen.getByText('Stop here')).toBeTruthy();
     expect(screen.getByText('Failure')).toBeTruthy();
-    expect(screen.getByText('In Reps, log what you actually did.')).toBeTruthy();
+    expect(screen.getByText(/Your target for every set/)).toBeTruthy();
   });
 
   test('a tap outside closes the plate', () => {

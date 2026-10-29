@@ -1,12 +1,10 @@
 // What `N RIR` means, in the words 08.11 · Onboarding gives it — the one explanation behind the RIR
-// badge's popover (GT-40) and the first coachmark of the first workout (GT-42). Both share the title
-// and the track, so those cannot drift apart; only the rows differ (GT-149). The coachmark is the
-// introduction: what to aim for, what to type into Reps, how the weeks go. The popover is a reminder
-// for someone who already knows the idea: what to type into Reps, and nothing more.
+// badge's popover (GT-40) and the first coachmark of the first workout (GT-42), so the two cannot
+// drift apart. Reworded in GT-149 to say what to do, not only what the term means.
 //
 // It is a picture and a few short theses rather than a paragraph (Artem, 06.10.2026): a track that
 // shows the reserve — the set you do, then the reps you leave in the tank, up to failure — and a
-// few rows under it.
+// row or two under it with what to aim for and how the weeks go.
 
 import type { PlateTextPart } from '@design/components/PlateRow';
 import type { ExerciseType } from '@domain/catalog';
@@ -14,7 +12,6 @@ import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
-import { EditIcon } from '@design/icons/EditIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { StopIcon } from '@design/icons/StopIcon';
 
@@ -79,11 +76,6 @@ export type RirExplanationInput = {
   targetRir: number;
   /** A deload session: lighter on purpose, so the text says not to push rather than what RIR is. */
   isDeload: boolean;
-  /**
-   * `intro` — the first workout's coachmark, for someone meeting RIR for the first time; `reminder`
-   * — the RIR badge's popover, for someone who already has.
-   */
-  variant: 'intro' | 'reminder';
 };
 
 export type DeloadExplanationInput = {
@@ -109,7 +101,6 @@ export function deloadExplanation({
     return rirExplanation({
       targetRir: targetRir ?? defaultProgressionSettings.deloadRir,
       isDeload: true,
-      variant: 'reminder',
     });
   }
   const load: RirRow['text'] =
@@ -130,21 +121,11 @@ export function deloadExplanation({
   };
 }
 
-// What Reps is for, said in every variant: the field once read as the place for the RIR (GT-149).
-const LOG_ROW: RirRow = {
-  icon: EditIcon,
-  text: ['In ', { strong: 'Reps' }, ', log what you actually did.'],
-};
-
 function repsLeft(reserve: number): string {
   return `${reserve} ${reserve === 1 ? 'rep' : 'reps'}`;
 }
 
-export function rirExplanation({
-  targetRir,
-  isDeload,
-  variant,
-}: RirExplanationInput): RirExplanation {
+export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
 
   if (isDeload) {
@@ -160,22 +141,12 @@ export function rirExplanation({
             '.',
           ],
         },
-        LOG_ROW,
       ],
     };
   }
 
-  const title =
-    targetRir === 0
-      ? '0 RIR: go to failure'
-      : `${targetRir} RIR: stop ${repsLeft(targetRir)} before failure`;
-
-  if (variant === 'reminder') {
-    return { title, track, rows: [LOG_ROW] };
-  }
-
-  // This explains RIR and what to do with it, not the engine around it — how rep targets work is
-  // the Reps ⓘ's to say (Artem, 06.10.2026).
+  // Two theses, and no more: this explains RIR and what to aim for, not the engine around it — how
+  // rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
   const aim: RirRow['text'] =
     targetRir === 0
       ? [
@@ -189,11 +160,13 @@ export function rirExplanation({
           '.',
         ];
   return {
-    title,
+    title:
+      targetRir === 0
+        ? '0 RIR: go to failure'
+        : `${targetRir} RIR: stop ${repsLeft(targetRir)} before failure`,
     track,
     rows: [
       { icon: StopIcon, text: aim },
-      LOG_ROW,
       {
         icon: ArrowDownIcon,
         text: [

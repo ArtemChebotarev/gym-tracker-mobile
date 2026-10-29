@@ -31,13 +31,7 @@ export const WEIGHT_STEP = {
 export const REPS_STEP = {
   title: 'Want to change the weight?',
   paragraphs: [
-    [
-      'Tap ',
-      { icon: InfoIcon },
-      ' to see ',
-      { strong: 'how many reps to aim for' },
-      ' at another weight.',
-    ],
+    ['Tap ', { icon: InfoIcon }, ' to see ', { strong: 'how many reps to aim for' }, ' at another weight.'],
   ] as PlateTextPart[][],
 };
 
@@ -99,7 +93,7 @@ export function workoutCoachmarks({
       steps.push({ target: 'reps', ...REPS_STEP });
     }
     if (targets.rir && targetRir !== undefined) {
-      const explanation = rirExplanation({ targetRir, isDeload, variant: 'intro' });
+      const explanation = rirExplanation({ targetRir, isDeload });
       steps.push({ target: 'rir', title: explanation.title, explanation });
     }
   }

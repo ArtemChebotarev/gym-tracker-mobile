@@ -892,9 +892,7 @@ describe('RIR badge popover', () => {
 
     // LIVE_EXERCISE: targetRir 2, and its next set has target reps.
     expect(screen.getByText('2 RIR: stop 2 reps before failure')).toBeTruthy();
-    // The popover is the reminder (GT-149): what goes into Reps, not how the weeks go.
-    expect(screen.getByText('In Reps, log what you actually did.')).toBeTruthy();
-    expect(screen.queryByText(/Every week gets closer/)).toBeNull();
+    expect(screen.getByText(/Your target for every set of this exercise/)).toBeTruthy();
   });
 
   test('on a deload week the Deload badge takes its place, with the deload text', () => {

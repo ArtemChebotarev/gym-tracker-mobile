@@ -71,14 +71,12 @@ describe('workoutCoachmarks', () => {
     expect(targets(steps)).toEqual(['weight', 'reps', 'rir', 'grid']);
   });
 
-  test('the words are the spec’s, and the RIR step is the introduction to it (GT-149)', () => {
+  test('the words are the spec’s, and the RIR step’s are the badge popover’s', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
     expect(steps[1]).toMatchObject({ title: '3 RIR: stop 3 reps before failure' });
-    // The RIR step explains with the track and its intro rows; the others with a paragraph.
-    expect(steps[1]?.explanation).toEqual(
-      rirExplanation({ targetRir: 3, isDeload: false, variant: 'intro' }),
-    );
+    // The RIR step explains with the track and two theses; the others with a paragraph.
+    expect(steps[1]?.explanation).toEqual(rirExplanation({ targetRir: 3, isDeload: false }));
     expect(steps[1]?.paragraphs).toBeUndefined();
     expect(steps[0]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
