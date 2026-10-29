@@ -24,6 +24,7 @@ import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
 import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { TabSettingsIcon } from '@design/icons/TabSettingsIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import { TargetIcon } from '@design/icons/TargetIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 import { render } from '@testing-library/react-native';
@@ -47,6 +48,7 @@ const ICONS: [string, IconComponent][] = [
   ['trash', TrashIcon],
   ['edit', EditIcon],
   ['stop', StopIcon],
+  ['target', TargetIcon],
   ['info', InfoIcon],
   ['arrow-up', ArrowUpIcon],
   ['arrow-down', ArrowDownIcon],

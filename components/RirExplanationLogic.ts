@@ -14,6 +14,7 @@ import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeT
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { StopIcon } from '@design/icons/StopIcon';
+import { TargetIcon } from '@design/icons/TargetIcon';
 
 /** The track: the set you do (solid), what is left in the tank (dashes), and where you stop. */
 export type RirTrack = {
@@ -166,7 +167,7 @@ export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): Ri
         : `${targetRir} RIR: stop ${repsLeft(targetRir)} before failure`,
     track,
     rows: [
-      { icon: StopIcon, text: aim },
+      { icon: TargetIcon, text: aim },
       {
         icon: ArrowDownIcon,
         text: [
