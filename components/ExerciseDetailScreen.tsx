@@ -82,12 +82,14 @@ export type ExerciseDetailScreenProps = {
   history: ExerciseHistoryMesocycle[] | undefined;
   isHistoryPending: boolean;
   onBack: () => void;
-  /** Opens the `⋯` menu (08.6, "Меню и действия"). */
   /**
    * What the screen's `⋯` offers (08.6, "Меню и действия"). The menu opens out of the button
    * itself (117), so the screen holds the actions rather than an `onOpenMenu` that raised a sheet.
+   * Left out, there is no `⋯` — the preview from the Add/Replace picker (GT-179).
    */
-  menuItems: ActionMenuItem[];
+  menuItems?: ActionMenuItem[];
+  /** Pinned under the content — the picker's confirm button in its preview (GT-179). */
+  footer?: ReactNode;
   /** The tab the screen opens on — History from a workout card, Overview otherwise. */
   initialTab?: ExerciseDetailTab;
   /** The tab was switched — the caller loads the history the first time it's History. */
@@ -104,6 +106,7 @@ export function ExerciseDetailScreen({
   isHistoryPending,
   onBack,
   menuItems,
+  footer,
   initialTab = 'overview',
   onTabChange,
   onWatchHowTo,
@@ -143,12 +146,14 @@ export function ExerciseDetailScreen({
   const { exercise, stats } = overview;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={footer !== undefined ? ['top', 'bottom'] : ['top']}>
       <View style={styles.header}>
         <IconButton accessibilityLabel="Back" onPress={onBack}>
           <BackIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
         </IconButton>
-        <ActionMenu accessibilityLabel="Exercise menu" title={exercise.name} items={menuItems} />
+        {menuItems !== undefined && (
+          <ActionMenu accessibilityLabel="Exercise menu" title={exercise.name} items={menuItems} />
+        )}
       </View>
 
       <View style={styles.heading}>
@@ -189,6 +194,7 @@ export function ExerciseDetailScreen({
           powerLoad={powerLoadOf(exercise)}
         />
       )}
+      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
     </SafeAreaView>
   );
 }

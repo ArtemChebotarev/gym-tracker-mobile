@@ -6,10 +6,17 @@
 //
 // - `multi` (task 077's "Add exercise" sheet, 08.5 "Шаг 2a"): checkboxes accumulate a selection,
 //   confirmed via a footer button captioned with the running count.
-// - `single` ("Replace exercise", 05 · Workout Execution & Logging, "Заменить упражнение"; 047):
-//   the same checkboxes, but a tap moves the one check to that row, like a radio button. A swap
-//   is not undone by a second tap, so a mis-tap must cost nothing: it is confirmed by a `Replace`
-//   button in the footer, disabled until a row is checked.
+// - `single` ("Replace exercise", 05 · Workout Execution & Logging, "Заменить упражнение"; 047,
+//   and the workout's own Add exercise since GT-179): the same checkboxes, but a tap moves the one
+//   check to that row, like a radio button. A pick is not undone by a second tap, so a mis-tap
+//   must cost nothing: it is confirmed by a footer button (`confirmLabel` — `Replace` or `Add
+//   exercise`), disabled until a row is checked.
+//
+// Only the checkbox selects (GT-179). A tap on the rest of the row, which carries a chevron the
+// way the library's rows do, opens that exercise's own screen over the sheet as a preview — the
+// library's Overview and History, without `⋯`, and with one button at the bottom: `single` mode's
+// own `confirmLabel`, or `Add exercise` in `multi`. Either picks that exercise alone, straight away
+// — `multi` ignores what is checked here. Back returns to the sheet as it was. See state/exercisePickStore.ts.
 //
 // Renders each group as a plain View + .map() rather than a SectionList — BottomSheet already
 // wraps its children in a ScrollView, and nesting a virtualized list inside a plain ScrollView
@@ -27,6 +34,7 @@
 // ExercisePickerSheetLogic.ts, per the code-style skill.
 
 import { Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import type { ExerciseId } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
@@ -35,8 +43,10 @@ import { Button } from '@design/components/Button';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
 import { SectionHeader } from '@design/components/SectionHeader';
+import { useExercisePickStore } from '@state/exercisePickStore';
 
 import { ExerciseFilterRow } from './ExerciseFilterRow';
+import { exercisePickHref } from './historyRoutes';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import {
   countEntries,
@@ -45,7 +55,10 @@ import {
   rowSubtitle,
   sectionDotColor,
 } from './ExerciseLibraryScreenLogic';
-import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
+import {
+  confirmButtonLabel,
+  toggleExerciseSelection,
+} from './ExercisePickerSheetLogic';
 import { styles } from './ExercisePickerSheetStyles';
 
 type ExercisePickerSelection =
@@ -53,13 +66,18 @@ type ExercisePickerSelection =
       mode: 'single';
       selectedId: ExerciseId | undefined;
       onChangeSelectedId: (id: ExerciseId) => void;
-      onConfirm: () => void;
+      /** The confirm button's copy, here and on the preview — `Replace`, or the workout's `Add
+       * exercise` (GT-179). */
+      confirmLabel: string;
+      /** The picked exercise — the checked one, or the one previewed (GT-179). */
+      onConfirm: (exerciseId: ExerciseId) => void;
     }
   | {
       mode: 'multi';
       selectedIds: readonly ExerciseId[];
       onChangeSelectedIds: (ids: ExerciseId[]) => void;
-      onConfirm: () => void;
+      /** The exercises to add — the checked ones, or the one previewed alone (GT-179). */
+      onConfirm: (exerciseIds: ExerciseId[]) => void;
     };
 
 export type ExercisePickerSheetProps = {
@@ -98,6 +116,20 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
     bottomClearance,
   } = props;
   const resultCount = countEntries(groups ?? []);
+  const router = useRouter();
+  const startPick = useExercisePickStore((s) => s.start);
+
+  /** Opens the exercise's preview with one button under it that picks just that exercise — Add
+   * ignores what is checked here, like Replace (GT-179). */
+  function openPreview(exerciseId: ExerciseId) {
+    if (props.mode === 'multi') {
+      const onConfirm = props.onConfirm;
+      startPick({ label: 'Add exercise', onPick: (id) => onConfirm([id]) });
+    } else {
+      startPick({ label: props.confirmLabel, onPick: props.onConfirm });
+    }
+    router.push(exercisePickHref(exerciseId));
+  }
 
   return (
     <BottomSheet
@@ -117,13 +149,13 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
           {props.mode === 'multi' ? (
             <Button
               label={confirmButtonLabel(props.selectedIds.length)}
-              onPress={props.onConfirm}
+              onPress={() => props.onConfirm([...props.selectedIds])}
               disabled={props.selectedIds.length === 0}
             />
           ) : (
             <Button
-              label="Replace"
-              onPress={props.onConfirm}
+              label={props.confirmLabel}
+              onPress={() => props.selectedId !== undefined && props.onConfirm(props.selectedId)}
               disabled={props.selectedId === undefined}
             />
           )}
@@ -168,14 +200,15 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
                     props.mode === 'multi'
                       ? props.selectedIds.includes(entry.exercise.id)
                       : props.selectedId === entry.exercise.id,
+                  onPress: () =>
+                    props.mode === 'multi'
+                      ? props.onChangeSelectedIds(
+                          toggleExerciseSelection(props.selectedIds, entry.exercise.id),
+                        )
+                      : props.onChangeSelectedId(entry.exercise.id),
                 }}
-                onPress={() =>
-                  props.mode === 'multi'
-                    ? props.onChangeSelectedIds(
-                        toggleExerciseSelection(props.selectedIds, entry.exercise.id),
-                      )
-                    : props.onChangeSelectedId(entry.exercise.id)
-                }
+                trailing={{ type: 'chevron' }}
+                onPress={() => openPreview(entry.exercise.id)}
               />
             ))}
           </View>

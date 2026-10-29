@@ -188,13 +188,17 @@ export function MesoEditorScreen({
     setIsAddExerciseFiltersSheetOpen(false);
   }
 
-  function handleConfirmAddExercise() {
+  /** `exerciseIds` is the checked list, or — from an exercise's preview — that list plus it. */
+  function handleConfirmAddExercise(exerciseIds: ExerciseId[]) {
     if (addExerciseDay === null) {
       return;
     }
-    setDraft(
-      addExercisesToDraft(draft, addExerciseDay, selectedExerciseIds, selectedExerciseRecords),
+    const records = rememberSelectedExercises(
+      selectedExerciseRecords,
+      addExerciseQuery.data,
+      exerciseIds,
     );
+    setDraft(addExercisesToDraft(draft, addExerciseDay, exerciseIds, records));
     setAddExerciseDay(null);
   }
 

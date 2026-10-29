@@ -8,7 +8,18 @@ import {
   ExercisePickerSheet,
   type ExercisePickerSheetProps,
 } from '@components/ExercisePickerSheet';
+import { useExercisePickStore } from '@state/exercisePickStore';
 import { STAMPS } from '../fixtures/stamps';
+
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+beforeEach(() => {
+  mockPush.mockClear();
+  useExercisePickStore.getState().clear();
+});
 
 const BENCH_PRESS: Exercise = {
   ...STAMPS,
@@ -57,6 +68,7 @@ const BASE_MULTI_PROPS: ExercisePickerSheetProps = {
 
 const BASE_SINGLE_PROPS: ExercisePickerSheetProps = {
   mode: 'single',
+  confirmLabel: 'Replace',
   visible: true,
   title: 'Replace exercise',
   groups: GROUPS,
@@ -184,27 +196,29 @@ describe('ExercisePickerSheet', () => {
       renderSheet({ ...BASE_MULTI_PROPS, selectedIds: [BENCH_PRESS.id] });
 
       expect(
-        screen.getByRole('checkbox', { name: 'Bench Press' }).props.accessibilityState,
+        screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState,
       ).toEqual({
         checked: true,
       });
-      expect(screen.getByRole('checkbox', { name: 'Squat' }).props.accessibilityState).toEqual({
+      expect(
+        screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState,
+      ).toEqual({
         checked: false,
       });
     });
 
-    test('pressing an unselected row adds it to the selection instead of closing the sheet', () => {
+    test('pressing an unselected checkbox adds it to the selection instead of closing the sheet', () => {
       const onChangeSelectedIds = jest.fn();
       const onClose = jest.fn();
       renderSheet({ ...BASE_MULTI_PROPS, selectedIds: [SQUAT.id], onChangeSelectedIds, onClose });
 
-      fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Select Bench Press' }));
 
       expect(onChangeSelectedIds).toHaveBeenCalledWith([SQUAT.id, BENCH_PRESS.id]);
       expect(onClose).not.toHaveBeenCalled();
     });
 
-    test('pressing a selected row removes it from the selection', () => {
+    test('pressing a selected checkbox removes it from the selection', () => {
       const onChangeSelectedIds = jest.fn();
       renderSheet({
         ...BASE_MULTI_PROPS,
@@ -212,7 +226,7 @@ describe('ExercisePickerSheet', () => {
         onChangeSelectedIds,
       });
 
-      fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Select Bench Press' }));
 
       expect(onChangeSelectedIds).toHaveBeenCalledWith([SQUAT.id]);
     });
@@ -243,21 +257,22 @@ describe('ExercisePickerSheet', () => {
     test('rows show checkboxes, with only the selected one checked', () => {
       renderSheet({ ...BASE_SINGLE_PROPS, selectedId: SQUAT.id });
 
-      expect(screen.getByRole('checkbox', { name: 'Squat' }).props.accessibilityState.checked).toBe(
-        true,
-      );
       expect(
-        screen.getByRole('checkbox', { name: 'Bench Press' }).props.accessibilityState.checked,
+        screen.getByRole('checkbox', { name: 'Select Squat' }).props.accessibilityState.checked,
+      ).toBe(true);
+      expect(
+        screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState
+          .checked,
       ).toBe(false);
     });
 
-    test('tapping a row only selects it: nothing is applied and the sheet stays open', () => {
+    test('tapping a checkbox only selects it: nothing is applied and the sheet stays open', () => {
       const onChangeSelectedId = jest.fn();
       const onConfirm = jest.fn();
       const onClose = jest.fn();
       renderSheet({ ...BASE_SINGLE_PROPS, onChangeSelectedId, onConfirm, onClose });
 
-      fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Select Bench Press' }));
 
       expect(onChangeSelectedId).toHaveBeenCalledWith(BENCH_PRESS.id);
       expect(onConfirm).not.toHaveBeenCalled();
@@ -287,25 +302,83 @@ describe('ExercisePickerSheet', () => {
     });
   });
 
+  // GT-179: only the checkbox selects; the rest of the row opens the exercise's own screen as a
+  // preview, whose one button picks that exercise alone.
+  describe('preview (GT-179)', () => {
+    test('a tap on the row opens the exercise in pick mode, selecting nothing', () => {
+      const onChangeSelectedIds = jest.fn();
+      renderSheet({ ...BASE_MULTI_PROPS, onChangeSelectedIds });
+
+      fireEvent.press(screen.getByRole('button', { name: 'Bench Press' }));
+
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/exercise/[id]',
+        params: { id: BENCH_PRESS.id, pick: '1' },
+      });
+      expect(onChangeSelectedIds).not.toHaveBeenCalled();
+    });
+
+    test('in multi mode the preview adds just that exercise, whatever is checked', () => {
+      const onConfirm = jest.fn();
+      renderSheet({ ...BASE_MULTI_PROPS, selectedIds: [SQUAT.id], onConfirm });
+
+      fireEvent.press(screen.getByRole('button', { name: 'Bench Press' }));
+      const pick = useExercisePickStore.getState().pick;
+      expect(pick?.label).toBe('Add exercise');
+      pick?.onPick(BENCH_PRESS.id);
+
+      expect(onConfirm).toHaveBeenCalledWith([BENCH_PRESS.id]);
+    });
+
+    test("in single mode the preview's button carries the sheet's own confirm label", () => {
+      const onConfirm = jest.fn();
+      renderSheet({ ...BASE_SINGLE_PROPS, confirmLabel: 'Add exercise', onConfirm });
+
+      fireEvent.press(screen.getByRole('button', { name: 'Squat' }));
+      const pick = useExercisePickStore.getState().pick;
+      expect(pick?.label).toBe('Add exercise');
+      pick?.onPick(SQUAT.id);
+
+      expect(onConfirm).toHaveBeenCalledWith(SQUAT.id);
+    });
+
+    test('the single-mode footer button carries confirmLabel', () => {
+      renderSheet({ ...BASE_SINGLE_PROPS, confirmLabel: 'Add exercise', selectedId: SQUAT.id });
+
+      expect(screen.getByRole('button', { name: 'Add exercise' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Replace' })).toBeNull();
+    });
+  });
+
   // GT-151: a search sheet — a tap reaches what it lands on and closes the keyboard in the same tap.
   describe('with the keyboard up', () => {
+    // GT-179: a tap on the row opens the preview, a tap on its checkbox selects; either way the
+    // keyboard goes in the same tap.
     test.each([
-      ['a row', BASE_SINGLE_PROPS, 'Bench Press'],
-      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }, 'Replace'],
-    ] as const)('DoD 151: a tap on %s works and closes the keyboard', (_name, props, text) => {
-      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
-      const onConfirm = jest.fn();
-      const onChangeSelectedId = jest.fn();
-      renderSheet({ ...props, onConfirm, onChangeSelectedId });
+      ['a row', BASE_SINGLE_PROPS, 'button', 'Bench Press'],
+      ['a checkbox', BASE_SINGLE_PROPS, 'checkbox', 'Select Bench Press'],
+      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }, 'button', 'Replace'],
+    ] as const)(
+      'DoD 151: a tap on %s works and closes the keyboard',
+      (_name, props, role, name) => {
+        const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+        const onConfirm = jest.fn();
+        const onChangeSelectedId = jest.fn();
+        renderSheet({ ...props, onConfirm, onChangeSelectedId });
 
-      const target = screen.getByText(text);
-      fireEvent.press(target);
-      fireEvent(target, 'touchEnd');
+        const target = screen.getByRole(role, { name });
+        fireEvent.press(target);
+        fireEvent(target, 'touchEnd');
 
-      expect(onConfirm.mock.calls.length + onChangeSelectedId.mock.calls.length).toBe(1);
-      expect(dismiss).toHaveBeenCalledTimes(1);
-      dismiss.mockRestore();
-    });
+        expect(
+          onConfirm.mock.calls.length +
+            onChangeSelectedId.mock.calls.length +
+            mockPush.mock.calls.length,
+        ).toBe(1);
+        expect(dismiss).toHaveBeenCalledTimes(1);
+        dismiss.mockRestore();
+      },
+    );
 
     test('DoD 151: a tap in the search field keeps the keyboard', () => {
       const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});

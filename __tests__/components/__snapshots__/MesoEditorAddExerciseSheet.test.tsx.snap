@@ -493,45 +493,11 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
               </Text>
             </View>
             <View
-              accessibilityLabel="Bench Press"
-              accessibilityRole="checkbox"
-              accessibilityState={
-                {
-                  "busy": undefined,
-                  "checked": false,
-                  "disabled": undefined,
-                  "expanded": undefined,
-                  "selected": undefined,
-                }
-              }
-              accessibilityValue={
-                {
-                  "max": undefined,
-                  "min": undefined,
-                  "now": undefined,
-                  "text": undefined,
-                }
-              }
-              accessible={true}
-              collapsable={false}
-              focusable={true}
-              onBlur={[Function]}
-              onClick={[Function]}
-              onFocus={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
               style={
-                [
-                  {
-                    "borderBottomColor": "#1E2125",
-                    "borderBottomWidth": 1,
-                  },
-                  false,
-                ]
+                {
+                  "borderBottomColor": "#1E2125",
+                  "borderBottomWidth": 1,
+                }
               }
             >
               <View
@@ -545,61 +511,151 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                 }
               >
                 <View
+                  accessibilityLabel="Select Bench Press"
+                  accessibilityRole="checkbox"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": false,
+                      "disabled": undefined,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  hitSlop={12}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
+                >
+                  <View
+                    style={
+                      [
+                        {
+                          "alignItems": "center",
+                          "borderColor": "#2A2D31",
+                          "borderRadius": 4,
+                          "borderWidth": 1,
+                          "height": 24,
+                          "justifyContent": "center",
+                          "width": 24,
+                        },
+                        false,
+                      ]
+                    }
+                  />
+                </View>
+                <View
+                  accessibilityLabel="Bench Press"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": undefined,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
                   style={
                     [
                       {
                         "alignItems": "center",
-                        "borderColor": "#2A2D31",
-                        "borderRadius": 4,
-                        "borderWidth": 1,
-                        "height": 24,
-                        "justifyContent": "center",
-                        "width": 24,
+                        "flex": 1,
+                        "flexDirection": "row",
+                        "gap": 8,
                       },
                       false,
                     ]
-                  }
-                />
-                <View
-                  style={
-                    {
-                      "flex": 1,
-                    }
                   }
                 >
                   <View
                     style={
                       {
-                        "alignItems": "baseline",
-                        "flexDirection": "row",
+                        "flex": 1,
                       }
                     }
                   >
+                    <View
+                      style={
+                        {
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
+                        }
+                      }
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 17,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Bench Press
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "flexShrink": 1,
-                          "fontSize": 17,
+                          "color": "#6B7076",
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
                     >
-                      Bench Press
+                      Never performed
                     </Text>
                   </View>
                   <Text
-                    numberOfLines={1}
                     style={
                       {
                         "color": "#6B7076",
-                        "fontSize": 15,
-                        "fontWeight": "400",
+                        "fontSize": 20,
                       }
                     }
                   >
-                    Never performed
+                    ›
                   </Text>
                 </View>
               </View>
@@ -674,45 +730,11 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
               </Text>
             </View>
             <View
-              accessibilityLabel="Squat"
-              accessibilityRole="checkbox"
-              accessibilityState={
-                {
-                  "busy": undefined,
-                  "checked": false,
-                  "disabled": undefined,
-                  "expanded": undefined,
-                  "selected": undefined,
-                }
-              }
-              accessibilityValue={
-                {
-                  "max": undefined,
-                  "min": undefined,
-                  "now": undefined,
-                  "text": undefined,
-                }
-              }
-              accessible={true}
-              collapsable={false}
-              focusable={true}
-              onBlur={[Function]}
-              onClick={[Function]}
-              onFocus={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
               style={
-                [
-                  {
-                    "borderBottomColor": "#1E2125",
-                    "borderBottomWidth": 1,
-                  },
-                  false,
-                ]
+                {
+                  "borderBottomColor": "#1E2125",
+                  "borderBottomWidth": 1,
+                }
               }
             >
               <View
@@ -726,61 +748,151 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                 }
               >
                 <View
+                  accessibilityLabel="Select Squat"
+                  accessibilityRole="checkbox"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": false,
+                      "disabled": undefined,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  hitSlop={12}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
+                >
+                  <View
+                    style={
+                      [
+                        {
+                          "alignItems": "center",
+                          "borderColor": "#2A2D31",
+                          "borderRadius": 4,
+                          "borderWidth": 1,
+                          "height": 24,
+                          "justifyContent": "center",
+                          "width": 24,
+                        },
+                        false,
+                      ]
+                    }
+                  />
+                </View>
+                <View
+                  accessibilityLabel="Squat"
+                  accessibilityRole="button"
+                  accessibilityState={
+                    {
+                      "busy": undefined,
+                      "checked": undefined,
+                      "disabled": undefined,
+                      "expanded": undefined,
+                      "selected": undefined,
+                    }
+                  }
+                  accessibilityValue={
+                    {
+                      "max": undefined,
+                      "min": undefined,
+                      "now": undefined,
+                      "text": undefined,
+                    }
+                  }
+                  accessible={true}
+                  collapsable={false}
+                  focusable={true}
+                  onBlur={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onResponderGrant={[Function]}
+                  onResponderMove={[Function]}
+                  onResponderRelease={[Function]}
+                  onResponderTerminate={[Function]}
+                  onResponderTerminationRequest={[Function]}
+                  onStartShouldSetResponder={[Function]}
                   style={
                     [
                       {
                         "alignItems": "center",
-                        "borderColor": "#2A2D31",
-                        "borderRadius": 4,
-                        "borderWidth": 1,
-                        "height": 24,
-                        "justifyContent": "center",
-                        "width": 24,
+                        "flex": 1,
+                        "flexDirection": "row",
+                        "gap": 8,
                       },
                       false,
                     ]
-                  }
-                />
-                <View
-                  style={
-                    {
-                      "flex": 1,
-                    }
                   }
                 >
                   <View
                     style={
                       {
-                        "alignItems": "baseline",
-                        "flexDirection": "row",
+                        "flex": 1,
                       }
                     }
                   >
+                    <View
+                      style={
+                        {
+                          "alignItems": "baseline",
+                          "flexDirection": "row",
+                        }
+                      }
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "#F5F5F4",
+                            "flexShrink": 1,
+                            "fontSize": 17,
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                        Squat
+                      </Text>
+                    </View>
                     <Text
                       numberOfLines={1}
                       style={
                         {
-                          "color": "#F5F5F4",
-                          "flexShrink": 1,
-                          "fontSize": 17,
+                          "color": "#6B7076",
+                          "fontSize": 15,
                           "fontWeight": "400",
                         }
                       }
                     >
-                      Squat
+                      Never performed
                     </Text>
                   </View>
                   <Text
-                    numberOfLines={1}
                     style={
                       {
                         "color": "#6B7076",
-                        "fontSize": 15,
-                        "fontWeight": "400",
+                        "fontSize": 20,
                       }
                     }
                   >
-                    Never performed
+                    ›
                   </Text>
                 </View>
               </View>

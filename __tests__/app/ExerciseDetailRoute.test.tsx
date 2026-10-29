@@ -3,6 +3,7 @@ import { Alert, type AlertButton } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import ExerciseDetailRoute from '@app/exercise/[id]/index';
+import { useExercisePickStore } from '@state/exercisePickStore';
 import { createCustomExercise } from '@usecases/exerciseLibrary';
 
 import { seedWorkoutFixture } from '../fixtures/workoutFixture';
@@ -42,6 +43,7 @@ beforeEach(async () => {
   mockParams = {};
   mockBack.mockClear();
   mockOpenURL.mockReset();
+  useExercisePickStore.getState().clear();
 });
 
 function renderRoute() {
@@ -59,6 +61,44 @@ function confirmAlert(spy: jest.SpyInstance, label: string) {
 }
 
 describe('Exercise screen route', () => {
+  // GT-179: opened from a picker row, the screen is a preview — no menu, and the picker's button
+  // at the bottom.
+  describe('as a picker preview (pick=1)', () => {
+    test("shows the picker's button instead of the menu; the button goes back and picks", async () => {
+      const onPick = jest.fn();
+      useExercisePickStore.getState().start({ label: 'Add exercise', onPick });
+      mockParams = { id: 'bench-press-barbell', pick: '1' };
+      renderRoute();
+      await screen.findByText('Bench Press');
+
+      expect(screen.queryByTestId('action-menu-hide')).toBeNull();
+      fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
+
+      expect(mockBack).toHaveBeenCalledTimes(1);
+      expect(onPick).toHaveBeenCalledWith('bench-press-barbell');
+    });
+
+    test('leaving the preview clears the pick', async () => {
+      useExercisePickStore.getState().start({ label: 'Replace', onPick: jest.fn() });
+      mockParams = { id: 'bench-press-barbell', pick: '1' };
+      const { unmount } = renderRoute();
+      await screen.findByText('Bench Press');
+
+      unmount();
+
+      expect(useExercisePickStore.getState().pick).toBeNull();
+    });
+
+    test('without a pick waiting (a stale link) there is no button and no menu', async () => {
+      mockParams = { id: 'bench-press-barbell', pick: '1' };
+      renderRoute();
+      await screen.findByText('Bench Press');
+
+      expect(screen.queryByRole('button', { name: 'Add exercise' })).toBeNull();
+      expect(screen.queryByTestId('action-menu-hide')).toBeNull();
+    });
+  });
+
   test('opens on Overview with the exercise the id names', async () => {
     mockParams = { id: 'bench-press-barbell' };
     renderRoute();

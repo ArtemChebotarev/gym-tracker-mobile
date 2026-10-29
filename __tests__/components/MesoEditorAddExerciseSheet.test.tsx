@@ -83,7 +83,7 @@ describe('MesoEditorAddExerciseSheet', () => {
   test('rows read as unchecked when their id is not in the selection', () => {
     renderSheet({ selectedIds: [] });
 
-    expect(screen.getByRole('checkbox', { name: 'Bench Press' }).props.accessibilityState).toEqual({
+    expect(screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState).toEqual({
       checked: false,
     });
   });
@@ -91,25 +91,25 @@ describe('MesoEditorAddExerciseSheet', () => {
   test('rows read as checked when their id is in the selection', () => {
     renderSheet({ selectedIds: [BENCH_PRESS.id] });
 
-    expect(screen.getByRole('checkbox', { name: 'Bench Press' }).props.accessibilityState).toEqual({
+    expect(screen.getByRole('checkbox', { name: 'Select Bench Press' }).props.accessibilityState).toEqual({
       checked: true,
     });
   });
 
-  test('pressing an unselected row adds it to the selection', () => {
+  test('pressing an unselected checkbox adds it to the selection', () => {
     const onChangeSelectedIds = jest.fn();
     renderSheet({ selectedIds: [SQUAT.id], onChangeSelectedIds });
 
-    fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Select Bench Press' }));
 
     expect(onChangeSelectedIds).toHaveBeenCalledWith([SQUAT.id, BENCH_PRESS.id]);
   });
 
-  test('pressing a selected row removes it from the selection', () => {
+  test('pressing a selected checkbox removes it from the selection', () => {
     const onChangeSelectedIds = jest.fn();
     renderSheet({ selectedIds: [SQUAT.id, BENCH_PRESS.id], onChangeSelectedIds });
 
-    fireEvent.press(screen.getByRole('checkbox', { name: 'Bench Press' }));
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Select Bench Press' }));
 
     expect(onChangeSelectedIds).toHaveBeenCalledWith([SQUAT.id]);
   });

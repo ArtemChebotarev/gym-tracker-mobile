@@ -23,6 +23,14 @@ export function exerciseHistoryHref(exerciseId: string): Href {
   return { pathname: '/exercise/[id]', params: { id: exerciseId, tab: 'history' } };
 }
 
+/**
+ * The same screen as a preview from the Add/Replace picker (GT-179): no `⋯`, and the picker's
+ * confirm button at the bottom — see state/exercisePickStore.ts.
+ */
+export function exercisePickHref(exerciseId: string): Href {
+  return { pathname: '/exercise/[id]', params: { id: exerciseId, pick: '1' } };
+}
+
 /** "Мезоцикл (деталь)" for `mesoId` — `app/meso/[id].tsx`. */
 export function mesocycleDetailHref(mesoId: string): Href {
   return { pathname: '/meso/[id]', params: { id: mesoId } };

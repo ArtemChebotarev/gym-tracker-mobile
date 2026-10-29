@@ -30,7 +30,8 @@ export type MesoEditorAddExerciseSheetProps = {
   onResetFilters: () => void;
   selectedIds: readonly ExerciseId[];
   onChangeSelectedIds: (ids: ExerciseId[]) => void;
-  onConfirm: () => void;
+  /** The exercises to add — see ExercisePickerSheet's own `onConfirm`. */
+  onConfirm: (exerciseIds: ExerciseId[]) => void;
   onClose: () => void;
 };
 

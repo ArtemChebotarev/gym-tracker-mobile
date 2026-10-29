@@ -11,7 +11,9 @@
 // future second leading accessory slots in the same way rather than this becoming a bag of
 // unrelated boolean props. A checkbox row's whole row is the tap target and toggles via the same
 // `onPress` chevron rows use for navigation — only the accessibility role/state differs, since a
-// checkbox row selects rather than navigates. No component for this exists yet in 08.0's table
+// checkbox row selects rather than navigates. Unless the checkbox has its own `onPress` (GT-179,
+// the Add/Replace picker): then the checkbox alone selects and sits outside the row's tap target,
+// which navigates — the same split as an `actions` row below. No component for this exists yet in 08.0's table
 // (it predates task 077), so this stays a leading accessory on ListRow rather than a new
 // `Checkbox` design/components file.
 //
@@ -65,7 +67,12 @@ export type ListRowTrailing =
   | { type: 'value'; value: string }
   | { type: 'actions'; action?: ListRowAction; menu?: ListRowMenu };
 
-export type ListRowLeading = { type: 'checkbox'; checked: boolean };
+export type ListRowLeading = {
+  type: 'checkbox';
+  checked: boolean;
+  /** The checkbox selects on its own; the row's `onPress` then does something else (GT-179). */
+  onPress?: () => void;
+};
 
 export type ListRowBadge = { label: string; variant?: BadgeVariant };
 
@@ -88,9 +95,11 @@ export function ListRow({
   trailing,
   onPress,
 }: ListRowProps) {
+  // A checkbox with its own press sits outside the row's tap target — see the note at the top.
+  const isLeadingApart = leading?.onPress !== undefined;
   const body = (
     <>
-      {leading !== undefined && <Leading leading={leading} />}
+      {leading !== undefined && !isLeadingApart && <Leading leading={leading} />}
       <View style={styles.main}>
         <View style={styles.titleLine}>
           <Text style={styles.title} numberOfLines={1}>
@@ -119,11 +128,40 @@ export function ListRow({
     </>
   );
 
+  const isCheckboxRow = leading?.type === 'checkbox' && !isLeadingApart;
   const accessibility = {
-    accessibilityRole: leading?.type === 'checkbox' ? ('checkbox' as const) : ('button' as const),
+    accessibilityRole: isCheckboxRow ? ('checkbox' as const) : ('button' as const),
     accessibilityLabel: title,
-    accessibilityState: leading?.type === 'checkbox' ? { checked: leading.checked } : undefined,
+    accessibilityState: isCheckboxRow ? { checked: leading?.checked } : undefined,
   };
+
+  if (leading?.onPress !== undefined) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.row}>
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityLabel={`Select ${title}`}
+            accessibilityState={{ checked: leading.checked }}
+            onPress={leading.onPress}
+            hitSlop={SPACING['space/row']}
+          >
+            <Leading leading={leading} />
+          </Pressable>
+          <Pressable
+            {...accessibility}
+            onPress={onPress}
+            style={({ pressed }) => [styles.body, pressed && styles.pressed]}
+          >
+            {body}
+            {trailing !== undefined && trailing.type !== 'actions' && (
+              <Trailing title={title} trailing={trailing} />
+            )}
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   // An actions row keeps its accessories out of the tap target — see the note at the top.
   if (trailing?.type === 'actions') {

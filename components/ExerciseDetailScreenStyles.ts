@@ -79,6 +79,10 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
   },
+  // The picker's confirm button in the preview (GT-179), over the bottom inset like a sheet's.
+  footer: {
+    paddingVertical: SPACING['space/gap-tight'],
+  },
   content: {
     gap: SPACING['space/xl'],
     paddingBottom: SPACING['space/section'],

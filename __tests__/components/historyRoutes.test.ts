@@ -1,6 +1,7 @@
 import {
   exerciseDetailHref,
   exerciseHistoryHref,
+  exercisePickHref,
   mesocycleDetailHref,
 } from '@components/historyRoutes';
 
@@ -16,6 +17,13 @@ describe('historyRoutes', () => {
     expect(exerciseHistoryHref('exercise-bench-press')).toEqual({
       pathname: '/exercise/[id]',
       params: { id: 'exercise-bench-press', tab: 'history' },
+    });
+  });
+
+  test('exercisePickHref points at the same screen, as a picker preview (GT-179)', () => {
+    expect(exercisePickHref('exercise-bench-press')).toEqual({
+      pathname: '/exercise/[id]',
+      params: { id: 'exercise-bench-press', pick: '1' },
     });
   });
 
