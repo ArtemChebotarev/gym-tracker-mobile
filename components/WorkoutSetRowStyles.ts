@@ -59,10 +59,6 @@ export const styles = StyleSheet.create({
     fontSize: VALUE_FONT_SIZE,
     color: COLORS['text/disabled'],
   },
-  // `N RIR` doesn't fit at the value size.
-  placeholderRir: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-  },
   // A skipped row's `Skipped` spans the Weight and Reps columns, at the fields' height so the row
   // lines up with the logged ones around it.
   skippedValues: {

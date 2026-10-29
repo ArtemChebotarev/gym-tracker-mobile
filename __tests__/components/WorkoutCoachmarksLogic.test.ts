@@ -1,4 +1,10 @@
-import { GRID_STEP, REPS_STEP, WEIGHT_STEP, workoutCoachmarks } from '@components/WorkoutCoachmarksLogic';
+import {
+  GRID_STEP,
+  REPS_STEP,
+  WEIGHT_STEP,
+  workoutCoachmarks,
+} from '@components/WorkoutCoachmarksLogic';
+import { rirExplanation } from '@components/RirExplanationLogic';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import type {
   SetExerciseActions,
@@ -68,9 +74,9 @@ describe('workoutCoachmarks', () => {
   test('the words are the spec’s, and the RIR step’s are the badge popover’s', () => {
     const steps = workoutCoachmarks({ exercise: makeExercise(), mode: 'live', isDeload: false });
 
-    expect(steps[1]).toMatchObject({ title: '3 RIR means 3 reps in reserve' });
+    expect(steps[1]).toMatchObject({ title: '3 RIR: stop 3 reps before failure' });
     // The RIR step explains with the track and two theses; the others with a paragraph.
-    expect(steps[1]?.explanation?.rows).toHaveLength(2);
+    expect(steps[1]?.explanation).toEqual(rirExplanation({ targetRir: 3, isDeload: false }));
     expect(steps[1]?.paragraphs).toBeUndefined();
     expect(steps[0]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
@@ -80,7 +86,9 @@ describe('workoutCoachmarks', () => {
   // The ⓘ character is a thin outline that cannot be made heavier: the line carries the real icon.
   test('the Weight and Reps steps point at the button by its own icon, not by the ⓘ character', () => {
     for (const step of [WEIGHT_STEP, REPS_STEP]) {
-      const parts = step.paragraphs[0] as readonly (string | { strong: string } | { icon: unknown })[];
+      const parts = step.paragraphs[0] as readonly (
+        string | { strong: string } | { icon: unknown }
+      )[];
 
       expect(parts).toContainEqual({ icon: InfoIcon });
       expect(parts.filter((part) => typeof part === 'string').join('')).not.toContain('ⓘ');

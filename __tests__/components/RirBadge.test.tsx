@@ -16,12 +16,12 @@ describe('RirBadge', () => {
 
     fireEvent.press(screen.getByRole('button', { name: '3 RIR, what is RIR?' }));
 
-    expect(screen.getByText('3 RIR means 3 reps in reserve')).toBeTruthy();
+    expect(screen.getByText('3 RIR: stop 3 reps before failure')).toBeTruthy();
     // The picture and its two labels, then the theses — not a paragraph.
     expect(screen.getByTestId('range-track')).toBeTruthy();
     expect(screen.getByText('Stop here')).toBeTruthy();
     expect(screen.getByText('Failure')).toBeTruthy();
-    expect(screen.getByText(/Stop a set when/)).toBeTruthy();
+    expect(screen.getByText(/Your target for every set/)).toBeTruthy();
   });
 
   test('a tap outside closes the plate', () => {

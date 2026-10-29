@@ -90,8 +90,7 @@ export function exerciseCardView(
 }
 
 /**
- * The week's target RIR as the card shows it — the `N RIR` badge and the Reps placeholder of a set
- * with no other. A strength exercise's, except on a resistance band: a band isn't dosed precisely
+ * The week's target RIR as the card shows it — the `N RIR` badge. A strength exercise's, except on a resistance band: a band isn't dosed precisely
  * enough for a reserve to mean anything (10.1 FR-15). Power has none on screen either (10.2 P5),
  * and an interval or a mobility block none at all.
  * The RIR stays in the data all the same.

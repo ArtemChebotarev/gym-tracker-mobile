@@ -1,10 +1,10 @@
 // What `N RIR` means, in the words 08.11 · Onboarding gives it — the one explanation behind the RIR
 // badge's popover (GT-40) and the first coachmark of the first workout (GT-42), so the two cannot
-// drift apart. Working text, reworded after the TestFlight feedback.
+// drift apart. Reworded in GT-149 to say what to do, not only what the term means.
 //
 // It is a picture and a few short theses rather than a paragraph (Artem, 06.10.2026): a track that
 // shows the reserve — the set you do, then the reps you leave in the tank, up to failure — and a
-// row or two under it with the one thing to do and the one thing that changes.
+// row or two under it with what to aim for and how the weeks go.
 
 import type { PlateTextPart } from '@design/components/PlateRow';
 import type { ExerciseType } from '@domain/catalog';
@@ -14,6 +14,7 @@ import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeT
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { StopIcon } from '@design/icons/StopIcon';
+import { TargetIcon } from '@design/icons/TargetIcon';
 
 /** The track: the set you do (solid), what is left in the tank (dashes), and where you stop. */
 export type RirTrack = {
@@ -121,6 +122,10 @@ export function deloadExplanation({
   };
 }
 
+function repsLeft(reserve: number): string {
+  return `${reserve} ${reserve === 1 ? 'rep' : 'reps'}`;
+}
+
 export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
 
@@ -133,7 +138,7 @@ export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): Ri
           icon: StopIcon,
           text: [
             "Don't push: aim to finish each set with ",
-            { strong: `about ${targetRir} reps left` },
+            { strong: `about ${repsLeft(targetRir)} left` },
             '.',
           ],
         },
@@ -141,36 +146,36 @@ export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): Ri
     };
   }
 
-  // Two theses, and no more: this explains the fact of RIR, not the engine around it — how rep
-  // targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
-  const rows: RirRow[] =
+  // Two theses, and no more: this explains RIR and what to aim for, not the engine around it — how
+  // rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
+  const aim: RirRow['text'] =
     targetRir === 0
       ? [
-          {
-            icon: StopIcon,
-            text: ['Stop a set when ', { strong: "you can't do another rep" }, '.'],
-          },
-          {
-            icon: ArrowDownIcon,
-            text: ['The number drops each week, and this is the ', { strong: 'last' }, ' one.'],
-          },
+          'Your target for every set of this exercise: go until you ',
+          { strong: "can't do another rep" },
+          '.',
         ]
       : [
-          {
-            icon: StopIcon,
-            text: ['Stop a set when ', { strong: `about ${targetRir} reps are left` }, '.'],
-          },
-          {
-            icon: ArrowDownIcon,
-            text: ['It drops each week; the last one is ', { strong: 'failure' }, '.'],
-          },
+          'Your target for every set of this exercise: stop with about ',
+          { strong: `${repsLeft(targetRir)} left` },
+          '.',
         ];
   return {
     title:
       targetRir === 0
-        ? '0 RIR means no reps in reserve'
-        : `${targetRir} RIR means ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'} in reserve`,
+        ? '0 RIR: go to failure'
+        : `${targetRir} RIR: stop ${repsLeft(targetRir)} before failure`,
     track,
-    rows,
+    rows: [
+      { icon: TargetIcon, text: aim },
+      {
+        icon: ArrowDownIcon,
+        text: [
+          'Every week gets closer to failure. The last one is a lighter ',
+          { strong: 'deload' },
+          '.',
+        ],
+      },
+    ],
   };
 }

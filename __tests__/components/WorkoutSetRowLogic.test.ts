@@ -6,7 +6,6 @@ import {
   formatNotDone,
   formatRowWeight,
   initialWeightText,
-  isRirPlaceholder,
   isStrongIndicator,
   parseReps,
   parseWeight,
@@ -32,23 +31,20 @@ describe('formatRowWeight', () => {
 
 describe('repsPlaceholder', () => {
   test('the target reps when the set has them', () => {
-    expect(repsPlaceholder({ targetReps: 10 }, 2)).toBe('10');
+    expect(repsPlaceholder({ targetReps: 10 })).toBe('10');
   });
 
   test("in a deload, last week's actual reps when the set has no target reps", () => {
-    expect(repsPlaceholder({ referenceReps: 8 }, 8)).toBe('8');
+    expect(repsPlaceholder({ referenceReps: 8 })).toBe('8');
   });
 
   test('target reps win over the deload reference', () => {
-    expect(repsPlaceholder({ targetReps: 10, referenceReps: 8 }, 2)).toBe('10');
+    expect(repsPlaceholder({ targetReps: 10, referenceReps: 8 })).toBe('10');
   });
 
-  test("the exercise's target RIR when the set has no target reps", () => {
-    expect(repsPlaceholder({}, 3)).toBe('3 RIR');
-  });
-
-  test('a dash with neither', () => {
-    expect(repsPlaceholder({}, undefined)).toBe('–');
+  // GT-149: `2 RIR` in a field called Reps read as "type 2 here" — the RIR lives on the card's chip.
+  test('DoD 149: a dash with neither, as on Weight — never the target RIR', () => {
+    expect(repsPlaceholder({})).toBe('–');
   });
 });
 
@@ -63,13 +59,13 @@ describe('a set with an estimate', () => {
   });
 
   test('the placeholder carries the ~', () => {
-    expect(repsPlaceholder(row, 2)).toBe('~15');
+    expect(repsPlaceholder(row)).toBe('~15');
   });
 
   test('stays an estimate at its own weight and at a close one', () => {
     const withSwap = { ...row, weightSwap: swap };
-    expect(repsPlaceholder(row, 2, rowEvaluation(withSwap, '4.5'))).toBe('~15');
-    expect(repsPlaceholder(row, 2, rowEvaluation(withSwap, '5'))).toMatch(/^~\d+$/);
+    expect(repsPlaceholder(row, rowEvaluation(withSwap, '4.5'))).toBe('~15');
+    expect(repsPlaceholder(row, rowEvaluation(withSwap, '5'))).toMatch(/^~\d+$/);
   });
 
   test('a one-tap Log records the estimated reps', () => {
@@ -151,7 +147,7 @@ describe('resolveSetEntry', () => {
     expect(resolveSetEntry('30', '7', { referenceReps: 9 })).toEqual({ weight: 30, reps: 7 });
   });
 
-  test('DoD 104: with neither, an empty Reps field keeps Log inactive — `N RIR` is not a rep count', () => {
+  test('DoD 104: with neither, an empty Reps field keeps Log inactive — `–` is not a rep count', () => {
     expect(resolveSetEntry('62.5', '', {})).toBeNull();
   });
 
@@ -167,15 +163,6 @@ describe('resolveSetEntry', () => {
   test("the domain's rules decide what's valid: 0 kg is fine, 0 reps isn't", () => {
     expect(resolveSetEntry('0', '12', {})).toEqual({ weight: 0, reps: 12 });
     expect(resolveSetEntry('60', '0', TARGETED)).toBeNull();
-  });
-});
-
-describe('isRirPlaceholder', () => {
-  test('only when the placeholder falls back to `N RIR`', () => {
-    expect(isRirPlaceholder({}, 2)).toBe(true);
-    expect(isRirPlaceholder({ targetReps: 10 }, 2)).toBe(false);
-    expect(isRirPlaceholder({ referenceReps: 8 }, 8)).toBe(false);
-    expect(isRirPlaceholder({}, undefined)).toBe(false);
   });
 });
 
@@ -251,26 +238,24 @@ describe('the row at another weight', () => {
   }
 
   test('the target weight leaves the placeholder as the target', () => {
-    expect(repsPlaceholder(row, 2, evaluationAt('15'))).toBe('10');
+    expect(repsPlaceholder(row, evaluationAt('15'))).toBe('10');
   });
 
   test('a close weight reads as an ordinary target of its own', () => {
-    expect(repsPlaceholder(row, 2, evaluationAt('14'))).toBe('12');
-    expect(isRirPlaceholder(row, 2, evaluationAt('14'))).toBe(false);
+    expect(repsPlaceholder(row, evaluationAt('14'))).toBe('12');
   });
 
   test('a far weight is marked as an estimate', () => {
-    expect(repsPlaceholder(row, 2, evaluationAt('10'))).toBe('~19');
+    expect(repsPlaceholder(row, evaluationAt('10'))).toBe('~19');
   });
 
-  test('past the rep corridor there is no target — the placeholder falls back to RIR', () => {
-    expect(repsPlaceholder(row, 2, evaluationAt('20'))).toBe('2 RIR');
-    expect(isRirPlaceholder(row, 2, evaluationAt('20'))).toBe(true);
+  test('past the rep corridor there is no target — the placeholder is a dash', () => {
+    expect(repsPlaceholder(row, evaluationAt('20'))).toBe('–');
   });
 
   test('an empty Weight field leaves the placeholder where it was', () => {
     expect(evaluationAt('')).toBeUndefined();
-    expect(repsPlaceholder(row, 2, evaluationAt(''))).toBe('10');
+    expect(repsPlaceholder(row, evaluationAt(''))).toBe('10');
   });
 
   test('one tap logs what the placeholder shows, estimate included', () => {
@@ -291,7 +276,7 @@ describe('the row at another weight', () => {
     const plain = { targetReps: 10, suggestedWeight: 15, weightSwap: undefined };
 
     expect(rowEvaluation(plain, '10')).toBeUndefined();
-    expect(repsPlaceholder(plain, 2, rowEvaluation(plain, '10'))).toBe('10');
+    expect(repsPlaceholder(plain, rowEvaluation(plain, '10'))).toBe('10');
   });
 
   test('a weighted bodyweight row reads the added weight it types in', () => {
@@ -306,7 +291,7 @@ describe('the row at another weight', () => {
       }),
     };
 
-    expect(repsPlaceholder(dip, 2, rowEvaluation(dip, '10'))).toBe('9');
+    expect(repsPlaceholder(dip, rowEvaluation(dip, '10'))).toBe('9');
   });
 });
 
@@ -316,7 +301,7 @@ describe('rowAtWeight', () => {
 
   test('a weight above the planned one takes the floor', () => {
     expect(rowAtWeight(row, '5', 2).targetReps).toBe(2);
-    expect(repsPlaceholder(rowAtWeight(row, '5', 2), undefined)).toBe('2');
+    expect(repsPlaceholder(rowAtWeight(row, '5', 2))).toBe('2');
   });
 
   test('the planned weight, a lighter one, or none keep the target', () => {

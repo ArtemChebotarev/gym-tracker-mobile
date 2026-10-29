@@ -33,7 +33,6 @@ function logged(reps: number, overrides: Partial<WorkoutSetRowModel> = {}): Work
 function makeProps(overrides: Partial<WorkoutSetRowProps> = {}): WorkoutSetRowProps {
   return {
     row: UNLOGGED,
-    targetRir: 2,
     weightText: '',
     onChangeWeight: jest.fn(),
     onBlurWeight: jest.fn(),
@@ -87,12 +86,12 @@ describe('WorkoutSetRow — unlogged', () => {
     expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('10');
   });
 
-  test('Weight is empty with a `–` placeholder when there is no suggested weight', () => {
+  test('DoD 149: with no suggested weight and no target reps, Weight and Reps both read `–`', () => {
     renderRow({ row: { setNumber: 1, isFirstUnlogged: false } });
 
     expect(screen.getByLabelText('Set 1 weight').props.value).toBe('');
     expect(screen.getByLabelText('Set 1 weight').props.placeholder).toBe('–');
-    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('2 RIR');
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('–');
   });
 
   test('a deload row shows last week’s actual reps as the placeholder', () => {
@@ -146,7 +145,7 @@ describe('WorkoutSetRow — unlogged', () => {
     expect(screen.getByLabelText('Set 1 reps').props.value).toBe('9');
   });
 
-  test('DoD 104: with only the `N RIR` placeholder, Log still waits for typed reps', () => {
+  test('DoD 104: with only the `–` placeholder, Log still waits for typed reps', () => {
     const onLog = jest.fn();
     renderRow({ row: { setNumber: 1, suggestedWeight: 30, isFirstUnlogged: true }, onLog });
 

@@ -6,10 +6,10 @@
 //   a weight carried over from an earlier set — task 106; else empty, `–` placeholder, decimal
 //   keyboard); Reps starts empty with a placeholder (`repsPlaceholder`, number keyboard). A weight
 //   other than the one the target was issued for moves that placeholder onto what *this* weight is
-//   worth — `12`, `~19`, or `N RIR` once it is past the rep corridor (08.7.1, rule 7).
+//   worth — `12`, `~19`, or `–` once it is past the rep corridor (08.7.1, rule 7).
 //   Log carries the accent outline on the exercise's first unlogged row. It logs what the fields
 //   hold, an empty Reps taking the number the placeholder shows (`resolveSetEntry`) — so a row left
-//   as recommended logs with one tap. With only `N RIR` to fall back on, Log waits for typed reps.
+//   as recommended logs with one tap. With only `–` there, Log waits for typed reps.
 // - logged — plain numbers, the `✓ / +N / −N` indicator (only for a set with `targetReps`), and a
 //   filled Log box. Tapping it un-logs the set, and the fields come back holding the logged values.
 // Anything else (read-only, preview has no rows, a skipped exercise's logged rows) shows the same
@@ -40,7 +40,6 @@ import {
   formatIndicator,
   formatLoggedWeight,
   formatNotDone,
-  isRirPlaceholder,
   isStrongIndicator,
   repsPlaceholder,
   resolveSetEntry,
@@ -51,8 +50,6 @@ import { PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
 
 export type WorkoutSetRowProps = {
   row: WorkoutSetRowModel;
-  /** The exercise's target RIR — the Reps placeholder when the set has no other. */
-  targetRir: number | undefined;
   /** Decides what the Weight column means here — see `domain/bodyWeightLoad.ts` (task 105). */
   equipment?: Equipment;
   /** The block's body weight, added onto a `bodyweight-weighted` set's total when it's logged. */
@@ -85,7 +82,6 @@ export type WorkoutSetRowProps = {
 
 export function WorkoutSetRow({
   row,
-  targetRir,
   equipment,
   bodyWeight,
   onRequestBodyWeight,
@@ -106,8 +102,7 @@ export function WorkoutSetRow({
   // placeholder, and the number a one-tap Log records, both follow it.
   const evaluation = rowEvaluation(row, weightText);
   const targetRow = rowAtWeight(row, weightText, raisedWeightReps);
-  const placeholder = repsPlaceholder(targetRow, targetRir, evaluation);
-  const rirPlaceholder = isRirPlaceholder(targetRow, targetRir, evaluation);
+  const placeholder = repsPlaceholder(targetRow, evaluation);
 
   function handleUnlog(logged: { weight: number; reps: number }) {
     // The row goes back to editable fields holding what was logged (05, "Снять отметку") — the
@@ -186,9 +181,7 @@ export function WorkoutSetRow({
           )}
         </View>
         <View style={styles.field}>
-          <Text style={[styles.placeholder, rirPlaceholder && styles.placeholderRir]}>
-            {placeholder}
-          </Text>
+          <Text style={styles.placeholder}>{placeholder}</Text>
         </View>
         <Text style={styles.indicator} />
         <View style={styles.logColumn}>
@@ -246,8 +239,6 @@ export function WorkoutSetRow({
           styles.field,
           styles.fieldEditable,
           styles.input,
-          // A placeholder can't be sized on its own, so the empty field takes the smaller size.
-          repsText === '' && rirPlaceholder && styles.placeholderRir,
           focused === 'reps' && styles.fieldFocused,
         ]}
       />
