@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
@@ -284,6 +284,37 @@ describe('ExercisePickerSheet', () => {
       );
       fireEvent.press(screen.getByRole('button', { name: 'Replace' }));
       expect(onConfirm).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // GT-151: a search sheet — a tap reaches what it lands on and closes the keyboard in the same tap.
+  describe('with the keyboard up', () => {
+    test.each([
+      ['a row', BASE_SINGLE_PROPS, 'Bench Press'],
+      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }, 'Replace'],
+    ] as const)('DoD 151: a tap on %s works and closes the keyboard', (_name, props, text) => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      const onConfirm = jest.fn();
+      const onChangeSelectedId = jest.fn();
+      renderSheet({ ...props, onConfirm, onChangeSelectedId });
+
+      const target = screen.getByText(text);
+      fireEvent.press(target);
+      fireEvent(target, 'touchEnd');
+
+      expect(onConfirm.mock.calls.length + onChangeSelectedId.mock.calls.length).toBe(1);
+      expect(dismiss).toHaveBeenCalledTimes(1);
+      dismiss.mockRestore();
+    });
+
+    test('DoD 151: a tap in the search field keeps the keyboard', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      renderSheet(BASE_SINGLE_PROPS);
+
+      fireEvent(screen.getByLabelText('Search'), 'touchEnd', { stopPropagation: () => {} });
+
+      expect(dismiss).not.toHaveBeenCalled();
+      dismiss.mockRestore();
     });
   });
 });

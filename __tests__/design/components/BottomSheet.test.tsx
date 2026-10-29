@@ -1,6 +1,6 @@
 import { BottomSheet } from '@design/components/BottomSheet';
-import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Keyboard, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { SPACING } from '@design/tokens';
@@ -191,4 +191,106 @@ describe('BottomSheet', () => {
       expect(style.height).toBe('80%');
     },
   );
+
+  // GT-151: the keyboard's own events, captured so a test can raise and lower it.
+  describe('with the keyboard', () => {
+    let listeners: Record<string, (() => void)[]>;
+
+    beforeEach(() => {
+      listeners = {};
+      jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
+      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
+        event: string,
+        handler: () => void,
+      ) => {
+        (listeners[event] ??= []).push(handler);
+        return { remove: jest.fn() };
+      }) as unknown as typeof Keyboard.addListener);
+    });
+
+    afterEach(() => jest.restoreAllMocks());
+
+    function emit(event: 'keyboardWillShow' | 'keyboardWillHide') {
+      act(() => listeners[event]?.forEach((handler) => handler()));
+    }
+
+    function bottomPadding() {
+      return StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style).paddingBottom;
+    }
+
+    test('DoD 151: while it is up, the bottom padding drops the tab bar clearance and the inset', () => {
+      render(
+        <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+          <BottomSheet visible onClose={() => {}} title="Replace" bottomClearance={100}>
+            <Text>Content</Text>
+          </BottomSheet>
+        </SafeAreaProvider>,
+      );
+      expect(bottomPadding()).toBe(SPACING['space/sheet'] + 100);
+
+      emit('keyboardWillShow');
+      expect(bottomPadding()).toBe(SPACING['space/sheet']);
+
+      emit('keyboardWillHide');
+      expect(bottomPadding()).toBe(SPACING['space/sheet'] + 100);
+    });
+
+    test('by default a tap reaches the footer with the keyboard up — a form sheet is unchanged', () => {
+      const onApply = jest.fn();
+      render(
+        <BottomSheet
+          visible
+          onClose={() => {}}
+          title="New exercise"
+          footer={<Text onPress={onApply}>Create</Text>}
+        >
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+      emit('keyboardWillShow');
+
+      fireEvent.press(screen.getByText('Create'));
+
+      expect(onApply).toHaveBeenCalledTimes(1);
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('handled');
+    });
+
+    test('DoD 151: keyboardTaps="through" — a tap reaches its button and closes the keyboard in the same tap', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      const onConfirm = jest.fn();
+      render(
+        <BottomSheet
+          visible
+          onClose={() => {}}
+          title="Replace exercise"
+          keyboardTaps="through"
+          footer={<Text onPress={onConfirm}>Confirm</Text>}
+        >
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+      emit('keyboardWillShow');
+
+      const confirm = screen.getByText('Confirm');
+      fireEvent.press(confirm);
+      fireEvent(confirm, 'touchEnd');
+
+      expect(onConfirm).toHaveBeenCalledTimes(1);
+      expect(dismiss).toHaveBeenCalledTimes(1);
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('handled');
+    });
+
+    test('by default the sheet leaves the keyboard alone on a tap', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      render(
+        <BottomSheet visible onClose={() => {}} title="New exercise">
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+
+      fireEvent(screen.getByText('Content'), 'touchEnd');
+
+      expect(dismiss).not.toHaveBeenCalled();
+    });
+  });
 });

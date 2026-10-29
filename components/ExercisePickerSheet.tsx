@@ -110,6 +110,8 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       // Fixed height: live search shrinks the list on every keystroke, and a content-sized sheet
       // would jump with it (task 082) — short results leave empty space below instead.
       height="fixed"
+      // A search sheet: a tap anywhere reaches what it lands on and closes the keyboard (GT-151).
+      keyboardTaps="through"
       footer={
         <View style={styles.footerButton}>
           {props.mode === 'multi' ? (
