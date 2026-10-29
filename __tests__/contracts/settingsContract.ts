@@ -17,6 +17,12 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   startCycleSeen: false,
 };
 
+// The rest timer as it ships (10.1 FR-5, GT-87): on, 2:00. Get ready (FR-6, GT-188): 0:05.
+const DEFAULT_REST_BETWEEN_SETS: Settings['restBetweenSets'] = { enabled: true, restSec: 120 };
+const DEFAULT_GET_READY_SEC = 5;
+// The signals (GT-172): sound and vibration, both on.
+const DEFAULT_SIGNALS: Settings['signals'] = { sound: true, vibration: true };
+
 export function describeSettingsContract(harness: RepositoryHarness): void {
   describe('SettingsRepository', () => {
     const repositories = useRepositories(harness);
@@ -27,6 +33,9 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
       expect(settings.defaultProgressionSettings).toEqual(defaultProgressionSettings);
       expect(settings.weightUnit).toBe('kg');
       expect(settings.onboarding).toEqual(DEFAULT_ONBOARDING);
+      expect(settings.restBetweenSets).toEqual(DEFAULT_REST_BETWEEN_SETS);
+      expect(settings.getReadySec).toBe(DEFAULT_GET_READY_SEC);
+      expect(settings.signals).toEqual(DEFAULT_SIGNALS);
     });
 
     test('write persists settings that a later read returns', async () => {
@@ -40,6 +49,9 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           deloadIntroSeen: true,
           startCycleSeen: false,
         },
+        restBetweenSets: { enabled: false, restSec: 90 },
+        getReadySec: 8,
+        signals: { sound: false, vibration: true },
       };
 
       await settingsRepo.write(written);
@@ -53,17 +65,25 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
         onboarding: { ...DEFAULT_ONBOARDING },
+        restBetweenSets: { ...DEFAULT_REST_BETWEEN_SETS },
+        getReadySec: DEFAULT_GET_READY_SEC,
+        signals: { ...DEFAULT_SIGNALS },
       };
 
       await settingsRepo.write(written);
       written.weightUnit = 'lb';
       written.onboarding.welcomeSeen = true;
       written.defaultProgressionSettings.minReps = 999;
+      written.restBetweenSets.restSec = 5;
+      written.signals.sound = false;
 
       await expect(settingsRepo.read()).resolves.toEqual({
         defaultProgressionSettings: { ...defaultProgressionSettings },
         weightUnit: 'kg',
         onboarding: DEFAULT_ONBOARDING,
+        restBetweenSets: DEFAULT_REST_BETWEEN_SETS,
+        getReadySec: DEFAULT_GET_READY_SEC,
+        signals: DEFAULT_SIGNALS,
       });
     });
 
@@ -77,6 +97,9 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           legacyProgressionSettings as Settings['defaultProgressionSettings'],
         weightUnit: 'kg',
         onboarding: DEFAULT_ONBOARDING,
+        restBetweenSets: DEFAULT_REST_BETWEEN_SETS,
+        getReadySec: DEFAULT_GET_READY_SEC,
+        signals: DEFAULT_SIGNALS,
       });
 
       const settings = await settingsRepo.read();
@@ -102,6 +125,30 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           deloadIntroSeen: false,
           startCycleSeen: false,
         },
+      });
+    });
+
+    test('settings without the rest timer — a backup from before it — write it as it ships', async () => {
+      const { settingsRepo } = repositories();
+      const { restBetweenSets: _omitted, ...legacy } = await settingsRepo.read();
+
+      await settingsRepo.write({ ...legacy, weightUnit: 'lb' } as Settings);
+
+      await expect(settingsRepo.read()).resolves.toMatchObject({
+        weightUnit: 'lb',
+        restBetweenSets: DEFAULT_REST_BETWEEN_SETS,
+      });
+    });
+
+    test('settings without the signals — a backup from before them — write them as they ship', async () => {
+      const { settingsRepo } = repositories();
+      const { signals: _omitted, ...legacy } = await settingsRepo.read();
+
+      await settingsRepo.write({ ...legacy, getReadySec: 3 } as Settings);
+
+      await expect(settingsRepo.read()).resolves.toMatchObject({
+        getReadySec: 3,
+        signals: DEFAULT_SIGNALS,
       });
     });
   });

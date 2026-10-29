@@ -82,7 +82,7 @@ describe('Mesocycle detail route', () => {
     expect(screen.getByText('1 / 20')).toBeTruthy();
     expect(screen.getByText('8')).toBeTruthy();
     expect(screen.getByText('2 / 5')).toBeTruthy();
-    expect(screen.getByTestId('weekly-sets')).toBeTruthy();
+    expect(screen.getByTestId('weekly-strength')).toBeTruthy();
     expect(screen.getByText('Chest')).toBeTruthy();
     expect(screen.getByText('Back')).toBeTruthy();
   });

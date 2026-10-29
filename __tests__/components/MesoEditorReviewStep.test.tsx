@@ -5,6 +5,7 @@ import {
   MesoEditorReviewStep,
   type MesoEditorReviewStepProps,
 } from '@components/MesoEditorReviewStep';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -64,5 +65,35 @@ describe('MesoEditorReviewStep', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Edit Day 2' }));
 
     expect(onEditDay).toHaveBeenCalledWith(2);
+  });
+
+  test('shows sets, an interval’s rounds, and nothing for mobility (GT-157, GT-190)', () => {
+    render(
+      <MesoEditorReviewStep
+        {...BASE_PROPS}
+        daysPerWeek={1}
+        exercisesByDay={{
+          1: [
+            { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 },
+            { exerciseId: MEDBALL_THROW.id, order: 1, sets: 3 },
+            { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+            { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+          ],
+        }}
+        exercisesById={{
+          [BENCH_PRESS.id]: BENCH_PRESS,
+          [MEDBALL_THROW.id]: MEDBALL_THROW,
+          [HEAVY_BAG.id]: HEAVY_BAG,
+          [COOLDOWN.id]: COOLDOWN,
+        }}
+      />,
+    );
+
+    // Bench press and the medball throw alike: a power exercise has only its sets (GT-188).
+    expect(screen.getAllByText('3 sets')).toHaveLength(2);
+    // The heavy bag's two rounds on the day (GT-190).
+    expect(screen.getByText('2 rounds')).toBeTruthy();
+    // Cooldown, a mobility exercise, shows nothing: no length is planned (GT-191).
+    expect(screen.queryByText('10:00')).toBeNull();
   });
 });

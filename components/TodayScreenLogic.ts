@@ -6,8 +6,13 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { TabTodayIcon } from '@design/icons/TabTodayIcon';
+import type { IntervalTimerRound } from '@domain/intervalTimer';
+import type { RestNext } from '@domain/restTimer';
+import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
+import { hasRounds, type WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
+import type { FinishedIntervalBlock, IntervalTimerExercise } from '@state/intervalTimerStore';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -86,7 +91,7 @@ export function todayEmptyCopy(
  * so the confirmation says where it goes rather than warning.
  */
 export const FINISH_MESOCYCLE_CONFIRMATION =
-  "Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.";
+  'Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.';
 
 /**
  * Whether the first-workout coachmark tour shows over the Today tab (08.11, GT-42): once, on the
@@ -126,4 +131,166 @@ export function shouldShowDeloadIntro(
     session.mode === 'live' &&
     session.isDeload
   );
+}
+
+/** What a logged set does to the rest timer (10.1 FR-5, GT-86). */
+export type RestAfterLog =
+  /** The rest before the next set starts — replacing whatever rest there was. */
+  | {
+      kind: 'start';
+      rest: { sessionExerciseId: string; next: RestNext; durationSec: number };
+    }
+  /** No rest follows — the workout has nothing left, or the exercise has no rest: any rest left is over. */
+  | { kind: 'stop' }
+  /** A correction, not the next set done: the rest that is running carries on untouched. */
+  | { kind: 'keep' };
+
+/** The key a set is remembered by among those already logged in this workout. */
+export function loggedSetKey(sessionExerciseId: string, setNumber: number): string {
+  return `${sessionExerciseId}:${setNumber}`;
+}
+
+/** An exercise's rows as the rest timer reads them — its sets, or an interval's rounds. */
+function restRowsOf(exercise: WorkoutExercise): RestSetRow[] {
+  const rows: readonly { number: number; log?: unknown; notDone?: unknown }[] =
+    hasRounds(exercise)
+      ? exercise.rounds.map((round) => ({ ...round, number: round.roundNumber }))
+      : exercise.rows.map((row) => ({ ...row, number: row.setNumber }));
+  return rows.map((row) => ({
+    setNumber: row.number,
+    open: row.log === undefined && row.notDone === undefined,
+  }));
+}
+
+/** Whether `exercise` still has a set or a round to do — logged neither nor closed as not done. */
+function hasWorkLeft(exercise: WorkoutExercise): boolean {
+  return restRowsOf(exercise).some((row) => row.open);
+}
+
+/**
+ * The rest after row `rowNumber` of `exercise`: the exercise's own rest for a set (Settings for
+ * strength, its field for power), the round's own rest for an interval round (FR-6) — the one it
+ * was logged with when given (`loggedRestSec`), since its Rest field may hold a time picked in the
+ * workout that the model's plan doesn't have yet (GT-90).
+ */
+function restSecAfter(
+  exercise: WorkoutExercise,
+  rowNumber: number,
+  loggedRestSec: number | undefined,
+): number | undefined {
+  const restSec =
+    exercise.type === 'interval'
+      ? (loggedRestSec ?? exercise.rounds.find((round) => round.roundNumber === rowNumber)?.restSec)
+      : exercise.restSec;
+  return restSec !== undefined && restSec > 0 ? restSec : undefined;
+}
+
+/**
+ * The exercise the rest after the last set of card `index` is before: the first one below it with
+ * work left, else the first one above — the workout may be done out of order. `undefined` when the
+ * workout has nothing left to do.
+ */
+function nextExerciseWithWorkLeft(
+  exercises: readonly WorkoutExercise[],
+  index: number,
+): WorkoutExercise | undefined {
+  const others = [...exercises.slice(index + 1), ...exercises.slice(0, index)];
+  return others.find(hasWorkLeft);
+}
+
+/**
+ * What logging row `setNumber` of `exercise` — a set, or an interval's round logged by hand
+ * (GT-89) — does to the rest timer (10.1 FR-5, FR-6, GT-86; Artem, 18.10.2026). A log is a
+ * correction, and leaves the timer alone, when an exercise further down the workout has been
+ * started already — this one is being fixed or caught up on, the work is below — or when this very
+ * row was logged before in this workout and is logged again. Otherwise the rest before the next
+ * row still to do starts — and after the exercise's last row, the rest before the next exercise
+ * with work left, unless the workout has none (Artem, 19.10.2026): n rows, n rests, but none at the
+ * very end.
+ *
+ * `exercises` is the workout's cards in order; `alreadyLogged` the keys (`loggedSetKey`) of the
+ * rows logged so far in it; `loggedRestSec` the rest a round was just logged with.
+ */
+export function restAfterLog(
+  exercises: readonly WorkoutExercise[],
+  exercise: WorkoutExercise,
+  setNumber: number,
+  alreadyLogged: ReadonlySet<string>,
+  loggedRestSec?: number,
+): RestAfterLog {
+  const index = exercises.findIndex(
+    (each) => each.sessionExerciseId === exercise.sessionExerciseId,
+  );
+  const startedBelow = exercises.slice(index + 1).some((each) => each.hasLoggedSets);
+  if (startedBelow || alreadyLogged.has(loggedSetKey(exercise.sessionExerciseId, setNumber))) {
+    return { kind: 'keep' };
+  }
+  const durationSec = restSecAfter(exercise, setNumber, loggedRestSec);
+  if (durationSec === undefined) return { kind: 'stop' };
+  const nextRowNumber = nextSetAfter(restRowsOf(exercise), setNumber);
+  let next: RestNext;
+  if (nextRowNumber !== undefined) {
+    next =
+      exercise.type === 'interval'
+        ? { kind: 'round', roundNumber: nextRowNumber }
+        : { kind: 'set', setNumber: nextRowNumber };
+  } else {
+    const nextExercise = nextExerciseWithWorkLeft(exercises, index);
+    if (nextExercise === undefined) return { kind: 'stop' };
+    next = { kind: 'exercise', name: nextExercise.name };
+  }
+  return {
+    kind: 'start',
+    rest: { sessionExerciseId: exercise.sessionExerciseId, next, durationSec },
+  };
+}
+
+/**
+ * What Start timer on an interval card starts the timer with (10.1 FR-6, GT-96): the exercise as
+ * the timer screen names it, its rounds from the first unlogged one, and its Get ready. A mobility
+ * card's play starts the same timer over its one block (GT-107). `undefined` for any other card, or
+ * when no round is left to run.
+ */
+export function intervalTimerStartOf(
+  sessionId: string,
+  exercise: WorkoutExercise,
+  rounds: readonly IntervalTimerRound[],
+):
+  | { exercise: IntervalTimerExercise; rounds: readonly IntervalTimerRound[]; getReadySec: number }
+  | undefined {
+  if (!hasRounds(exercise) || rounds.length === 0) {
+    return undefined;
+  }
+  return {
+    exercise: {
+      ...(exercise.type === 'mobility' ? { type: 'mobility' as const } : {}),
+      sessionId,
+      sessionExerciseId: exercise.sessionExerciseId,
+      name: exercise.name,
+      totalRounds: exercise.rounds.length,
+      loggedRoundNumbers: exercise.rounds
+        .filter((round) => round.log !== undefined)
+        .map((round) => round.roundNumber),
+    },
+    rounds,
+    getReadySec: exercise.getReadySec,
+  };
+}
+
+/**
+ * What a block the interval timer ran to its end does to the rest timer, once its summary is put
+ * away (10.1 FR-6): the rest before the next exercise with work left, for the rest the last round
+ * was logged with — or none when the workout has nothing left. The timer's rounds are no
+ * corrections, so nothing logged before holds the rest back. `undefined` when the exercise is no
+ * longer in the workout.
+ */
+export function restAfterIntervalBlock(
+  exercises: readonly WorkoutExercise[],
+  finished: FinishedIntervalBlock,
+): RestAfterLog | undefined {
+  const exercise = exercises.find((each) => each.sessionExerciseId === finished.sessionExerciseId);
+  if (exercise === undefined) {
+    return undefined;
+  }
+  return restAfterLog(exercises, exercise, finished.roundNumber, new Set(), finished.restSec);
 }

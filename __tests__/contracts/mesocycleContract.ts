@@ -2,6 +2,7 @@ import { NotFoundError } from '@domain/errors';
 
 import {
   makeMesocycle,
+  makeRoundLog,
   makeSession,
   makeSessionExercise,
   makeSetLog,
@@ -41,6 +42,30 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
 
       expect(created.archivedAt).toBe(archivedAt);
       await expect(mesocycleRepo.getById('meso-archived')).resolves.toEqual(created);
+    });
+
+    test("round-trips a block's own exercise settings, and drops them on update when cleared", async () => {
+      const { mesocycleRepo } = repositories();
+      const exerciseSettings = {
+        'exercise-heavy-bag': {
+          type: 'interval' as const,
+          rounds: 4,
+          workSec: 120,
+          restSec: 45,
+          getReadySec: 5,
+          lever: 'rest' as const,
+          stepSec: 10 as const,
+        },
+      };
+
+      const created = await mesocycleRepo.create(makeMesocycle({ id: 'meso-hybrid', exerciseSettings }));
+
+      expect(created.exerciseSettings).toEqual(exerciseSettings);
+      await expect(mesocycleRepo.getById('meso-hybrid')).resolves.toEqual(created);
+      const { exerciseSettings: _removed, ...without } = created;
+      const cleared = await mesocycleRepo.update(without);
+      expect(cleared).not.toHaveProperty('exerciseSettings');
+      expect(await mesocycleRepo.getById('meso-hybrid')).not.toHaveProperty('exerciseSettings');
     });
 
     test('getActive returns the single active mesocycle, or null when none is active', async () => {
@@ -90,6 +115,18 @@ export function describeMesocycleContract(harness: RepositoryHarness): void {
 
       await expect(mesocycleRepo.getById('meso-b')).resolves.toEqual(otherMesocycle);
       await expect(sessionRepo.getById('session-2')).resolves.toEqual(otherSession);
+    });
+
+    test('deleteWithChildren also removes the interval rounds logged under the mesocycle', async () => {
+      const { mesocycleRepo, sessionRepo, sessionExerciseRepo, roundLogRepo } = repositories();
+      await mesocycleRepo.create(makeMesocycle());
+      await sessionRepo.create(makeSession({ status: 'completed' }));
+      await sessionExerciseRepo.create(makeSessionExercise());
+      await roundLogRepo.create(makeRoundLog({ exerciseId: 'exercise-bench-press' }));
+
+      await mesocycleRepo.deleteWithChildren('meso-a');
+
+      await expect(roundLogRepo.listBySessionExerciseId('session-exercise-1')).resolves.toEqual([]);
     });
 
     test('deleteWithChildren rejects with NotFoundError for a mesocycle that does not exist', async () => {

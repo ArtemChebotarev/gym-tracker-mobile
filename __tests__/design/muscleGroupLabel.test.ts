@@ -8,6 +8,10 @@ describe('getMuscleGroupLabel', () => {
     expect(getMuscleGroupLabel('abs')).toBe('Abs');
   });
 
+  test('label fullBody, which is not one of the twelve', () => {
+    expect(getMuscleGroupLabel('fullBody')).toBe('Full body');
+  });
+
   test('covers all twelve muscle groups with no gaps', () => {
     for (const group of MUSCLE_GROUPS) {
       expect(getMuscleGroupLabel(group)).toBeTruthy();

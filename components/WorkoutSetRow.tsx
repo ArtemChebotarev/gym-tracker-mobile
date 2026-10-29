@@ -44,6 +44,7 @@ import {
   isStrongIndicator,
   repsPlaceholder,
   resolveSetEntry,
+  rowAtWeight,
   rowEvaluation,
 } from './WorkoutSetRowLogic';
 import { PLACEHOLDER_COLOR, styles } from './WorkoutSetRowStyles';
@@ -62,6 +63,13 @@ export type WorkoutSetRowProps = {
    * can be entered here until it's answered — the load is the body weight.
    */
   onRequestBodyWeight?: () => void;
+  /**
+   * A guided row (power, a band — 10.2 P11): no hit indicator — its column stays, empty, so the
+   * rows of every card line up (Artem's review, 18.10.2026) — and, with `raisedWeightReps`,
+   * a weight above the planned one drops the Reps placeholder to that floor (P10).
+   */
+  guided?: boolean;
+  raisedWeightReps?: number;
   /** What the Weight field holds — the card owns it, so it can carry into the later sets (106). */
   weightText: string;
   onChangeWeight: (text: string) => void;
@@ -81,6 +89,8 @@ export function WorkoutSetRow({
   equipment,
   bodyWeight,
   onRequestBodyWeight,
+  guided = false,
+  raisedWeightReps,
   weightText,
   onChangeWeight,
   onBlurWeight,
@@ -95,8 +105,9 @@ export function WorkoutSetRow({
   // What the weight now in the field is worth against this set's target (03, rule 7): the Reps
   // placeholder, and the number a one-tap Log records, both follow it.
   const evaluation = rowEvaluation(row, weightText);
-  const placeholder = repsPlaceholder(row, targetRir, evaluation);
-  const rirPlaceholder = isRirPlaceholder(row, targetRir, evaluation);
+  const targetRow = rowAtWeight(row, weightText, raisedWeightReps);
+  const placeholder = repsPlaceholder(targetRow, targetRir, evaluation);
+  const rirPlaceholder = isRirPlaceholder(targetRow, targetRir, evaluation);
 
   function handleUnlog(logged: { weight: number; reps: number }) {
     // The row goes back to editable fields holding what was logged (05, "Снять отметку") — the
@@ -129,12 +140,13 @@ export function WorkoutSetRow({
         <Text
           style={[
             styles.indicator,
-            row.indicator !== undefined &&
+            !guided &&
+              row.indicator !== undefined &&
               isStrongIndicator(row.indicator) &&
               styles.indicatorStrong,
           ]}
         >
-          {row.indicator !== undefined ? formatIndicator(row.indicator) : ''}
+          {!guided && row.indicator !== undefined ? formatIndicator(row.indicator) : ''}
         </Text>
         <View style={styles.logColumn}>
           {editable ? (
@@ -186,7 +198,7 @@ export function WorkoutSetRow({
     );
   }
 
-  const entry = resolveSetEntry(weightText, repsText, row, evaluation);
+  const entry = resolveSetEntry(weightText, repsText, targetRow, evaluation);
   const canLog = entry !== null && !isSaving;
 
   return (
@@ -216,11 +228,7 @@ export function WorkoutSetRow({
           accessibilityRole="button"
           accessibilityLabel="Set your body weight"
           onPress={onRequestBodyWeight}
-          style={({ pressed }) => [
-            styles.field,
-            styles.fieldEditable,
-            pressed && styles.pressed,
-          ]}
+          style={({ pressed }) => [styles.field, styles.fieldEditable, pressed && styles.pressed]}
         >
           <Text style={styles.placeholder}>–</Text>
         </Pressable>

@@ -11,6 +11,7 @@ function historySession(overrides: Partial<ExerciseHistorySession> = {}): Exerci
     weekNumber: 3,
     dayNumber: 1,
     completedAt: '2026-08-10T12:00:00.000Z',
+    roundLogs: [],
     setLogs: [],
     ...overrides,
   };

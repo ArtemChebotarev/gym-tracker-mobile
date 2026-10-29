@@ -1,5 +1,5 @@
 import { type Exercise, toExerciseId } from '@domain/catalog';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { MesoTemplate } from '@domain/plan';
 
@@ -60,6 +60,22 @@ export function makeSetLog(overrides: Partial<Unsaved<SetLog>> = {}): Unsaved<Se
     setNumber: 1,
     weight: 60,
     reps: 8,
+    completedAt: '2026-08-26T08:00:00.000Z',
+    ...overrides,
+  };
+}
+
+/** One logged interval round: 30 s of work and 60 s of rest, done. */
+export function makeRoundLog(overrides: Partial<Unsaved<RoundLog>> = {}): Unsaved<RoundLog> {
+  return {
+    id: 'round-log-1',
+    sessionExerciseId: 'session-exercise-1',
+    exerciseId: 'exercise-heavy-bag',
+    roundNumber: 1,
+    workSec: 30,
+    restSec: 60,
+    restSkipped: false,
+    completed: true,
     completedAt: '2026-08-26T08:00:00.000Z',
     ...overrides,
   };

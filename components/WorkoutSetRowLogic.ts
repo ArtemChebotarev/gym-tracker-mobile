@@ -58,9 +58,7 @@ export function formatLoggedWeight(
     return formatRowWeight(log.weight);
   }
   const added = `(+${formatRowWeight(log.weight)})`;
-  return log.bodyWeight === undefined
-    ? added
-    : `${formatRowWeight(log.bodyWeight)} ${added}`;
+  return log.bodyWeight === undefined ? added : `${formatRowWeight(log.bodyWeight)} ${added}`;
 }
 
 /**
@@ -77,6 +75,29 @@ export function rowEvaluation(
 ): WeightSwapEvaluation | undefined {
   const weight = parseWeight(weightText);
   return weight === null ? undefined : evaluateWeightSwap(row.weightSwap, weight);
+}
+
+/**
+ * The row as it reads at the weight now in the field, for a guided row (10.2 P10, GT-82): a weight
+ * above the planned one means the reps drop, so the placeholder falls to `floorReps` — the corridor's
+ * minimum — with no mark and no "lighter" hint. `row` itself when nothing is raised, there is no
+ * planned weight to compare with, or the row has no floor.
+ */
+export function rowAtWeight<R extends Pick<WorkoutSetRow, 'suggestedWeight' | 'targetReps'>>(
+  row: R,
+  weightText: string,
+  floorReps: number | undefined,
+): R {
+  const weight = parseWeight(weightText);
+  if (
+    floorReps === undefined ||
+    row.suggestedWeight === undefined ||
+    weight === null ||
+    weight <= row.suggestedWeight
+  ) {
+    return row;
+  }
+  return { ...row, targetReps: floorReps };
 }
 
 /** The number the Reps placeholder shows, and whether it is only an estimate (`~19`). */
@@ -193,9 +214,7 @@ export function resolveSetEntry(
   evaluation?: WeightSwapEvaluation,
 ): { weight: number; reps: number } | null {
   const reps =
-    repsText.trim() === ''
-      ? (placeholderReps(row, evaluation)?.reps ?? null)
-      : parseReps(repsText);
+    repsText.trim() === '' ? (placeholderReps(row, evaluation)?.reps ?? null) : parseReps(repsText);
   const entry = { weight: parseWeight(weightText), reps };
   try {
     validateSetEntry(entry);

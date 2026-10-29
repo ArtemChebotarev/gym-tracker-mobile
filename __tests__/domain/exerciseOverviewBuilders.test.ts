@@ -53,23 +53,51 @@ function performance(
 ): ExercisePerformance {
   return {
     session: session(sessionOverrides),
+    roundLogs: [],
     setLogs: setLogs.map((overrides) => setLog(overrides)),
   };
 }
 
 describe('buildExerciseOverview', () => {
-  test('has no stats and no last session when nothing was ever logged', () => {
+  test('has no stats when nothing was ever logged', () => {
     const overview = buildExerciseOverview(exercise(), []);
 
     expect(overview.stats).toBeNull();
-    expect(overview.lastSession).toBeNull();
+  });
+
+  test('counts and dates an interval exercise by its rounds, with no best set', () => {
+    const round = {
+      ...STAMPS,
+      id: 'round-1',
+      sessionExerciseId: 'session-exercise-1',
+      exerciseId: EXERCISE_ID,
+      workSec: 120,
+      restSec: 60,
+      restSkipped: false,
+      completed: true,
+    };
+    const overview = buildExerciseOverview(exercise(), [
+      {
+        session: session({ id: 's1' }),
+        setLogs: [],
+        roundLogs: [
+          { ...round, id: 'round-2', roundNumber: 2, completedAt: '2026-09-10T12:05:00.000Z' },
+          { ...round, roundNumber: 1, completedAt: '2026-09-10T12:02:00.000Z' },
+        ],
+      },
+    ]);
+
+    expect(overview.stats).toEqual({
+      bestSet: null,
+      sessionCount: 1,
+      lastDoneAt: '2026-09-10T12:05:00.000Z',
+    });
   });
 
   test('ignores a performance that carries no set logs', () => {
     const overview = buildExerciseOverview(exercise(), [performance({}, [])]);
 
     expect(overview.stats).toBeNull();
-    expect(overview.lastSession).toBeNull();
   });
 
   test('best set is the heaviest, ties broken by reps', () => {
@@ -109,58 +137,22 @@ describe('buildExerciseOverview', () => {
     expect(overview.stats?.lastDoneAt).toBe('2026-09-17T11:30:00.000Z');
   });
 
-  test('last session is the most recently completed one, with its sets in set order', () => {
-    const overview = buildExerciseOverview(exercise(), [
-      performance({ id: 'session-1', weekNumber: 1, dayNumber: 2 }, [{ id: 'a' }]),
-      performance(
-        {
-          id: 'session-2',
-          weekNumber: 3,
-          dayNumber: 1,
-          completedAt: '2026-09-17T12:00:00.000Z',
-        },
-        [
-          { id: 'c', setNumber: 2, weight: 85, reps: 7 },
-          { id: 'b', setNumber: 1, weight: 85, reps: 8 },
-        ],
-      ),
-    ]);
-
-    expect(overview.lastSession?.weekNumber).toBe(3);
-    expect(overview.lastSession?.dayNumber).toBe(1);
-    expect(overview.lastSession?.completedAt).toBe('2026-09-17T12:00:00.000Z');
-    expect(overview.lastSession?.setLogs.map((log) => log.setNumber)).toEqual([1, 2]);
-  });
-
-  test('a session still in progress is not the last session, but still counts in the tiles', () => {
+  test('a session still in progress counts in the tiles', () => {
     const overview = buildExerciseOverview(exercise(), [
       performance({ id: 'session-1', status: 'in_progress', completedAt: undefined }, [
         { id: 'a' },
       ]),
     ]);
 
-    expect(overview.lastSession).toBeNull();
     expect(overview.stats?.sessionCount).toBe(1);
   });
 });
 
-describe('buildExerciseOverview — the last session among several', () => {
-  test('is the newest completed one, and the older ones are not part of the model', () => {
-    const sessions = [3, 1, 2].map((week) =>
-      performance(
-        {
-          id: `session-${week}`,
-          weekNumber: week,
-          completedAt: `2026-09-${String(week).padStart(2, '0')}T12:00:00.000Z`,
-        },
-        [{ id: `log-${week}` }],
-      ),
-    );
+describe('buildExerciseOverview — sessions one by one', () => {
+  test('are not part of the model — the History tab lists them (GT-195)', () => {
+    const overview = buildExerciseOverview(exercise(), [performance({}, [{ id: 'a' }])]);
 
-    const overview = buildExerciseOverview(exercise(), sessions);
-
-    expect(overview.lastSession?.weekNumber).toBe(3);
-    expect(overview.stats?.sessionCount).toBe(3);
+    expect(overview).not.toHaveProperty('lastSession');
     expect(overview).not.toHaveProperty('earlierSessions');
   });
 });

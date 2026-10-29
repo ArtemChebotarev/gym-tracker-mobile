@@ -11,7 +11,12 @@
 // one workout until the app was restarted; see `unpinDay`.
 //
 // Set rows log and un-log through `useLogSet` / `useUnlogSet` (093). If another session is already
-// `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05).
+// `in_progress`, nothing is logged and an alert names it, with `Open` to go there (05). A logged
+// set starts the rest before the next one — after an exercise's last set, before the next exercise
+// (10.1 FR-5, GT-86, `restAfterLog`); finishing or skipping the workout drops whatever rest is left.
+// An interval's rounds log and un-log by hand the same way, through `useLogRound` / `useUnlogRound`
+// (10.1 FR-7, GT-89), and rest for the round's own rest. A time picked in a round is saved as the
+// plan of the rounds it fills through `useSetRoundTime` (10.1 FR-9, GT-187).
 //
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
@@ -61,24 +66,26 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  intervalTimerStartOf,
+  restAfterIntervalBlock,
+  loggedSetKey,
+  restAfterLog,
   shouldShowDeloadIntro,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
-import { useMesoCreationMethodSheet } from '@components/useMesoCreationMethodSheet';
+import { useHandoffSheet } from '@components/useHandoffSheet';
 import { exerciseDetailHref, mesocycleDetailHref } from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
+  exerciseLogCounts,
   formatDeleteExerciseWarning,
   formatReplaceExerciseWarning,
   formatSkipExerciseWarning,
   type ExerciseMenuItem,
 } from '@components/WorkoutExerciseMenuLogic';
 import { WorkoutExercisePickerSheet } from '@components/WorkoutExercisePickerSheet';
-import {
-  formatWorkoutMenuTitle,
-  SKIP_WORKOUT_WARNING,
-} from '@components/WorkoutHeaderMenuLogic';
+import { formatWorkoutMenuTitle, SKIP_WORKOUT_WARNING } from '@components/WorkoutHeaderMenuLogic';
 import { WorkoutScreen } from '@components/WorkoutScreen';
 import {
   mesoGridCellHref,
@@ -86,6 +93,7 @@ import {
   workoutPickFromParams,
   type WorkoutRouteParams,
 } from '@components/workoutRoutes';
+import { toExerciseId } from '@domain/catalog';
 import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
 import { useAddExercises } from '@state/useAddExercises';
 import {
@@ -94,16 +102,23 @@ import {
   type ExerciseCommand,
 } from '@state/useExerciseCommand';
 import { useFinishSession } from '@state/useFinishSession';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
+import { useRestTimerStore } from '@state/restTimerStore';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
+import { useHideCeilingTip } from '@state/useHideCeilingTip';
+import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
+import { useLogRound, useSetRoundTime, useUnlogRound } from '@state/useRoundLogging';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import { loadErrorOf } from '@state/loadError';
+import type { LogRoundResult } from '@usecases/roundLogging';
+import type { LogSetResult } from '@usecases/setLogging';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
 /**
@@ -123,7 +138,17 @@ export default function TodayScreen() {
   const query = useTodayWorkout(workoutPickFromParams(params));
   const logSet = useLogSet();
   const unlogSet = useUnlogSet();
+  const logRound = useLogRound();
+  const unlogRound = useUnlogRound();
+  const setRoundTime = useSetRoundTime();
+  const setNoHeavierAvailable = useSetNoHeavierAvailable();
+  const hideCeilingTip = useHideCeilingTip();
   const finishSession = useFinishSession();
+  const startRest = useRestTimerStore((s) => s.start);
+  const stopRest = useRestTimerStore((s) => s.stop);
+  const noteLogged = useRestTimerStore((s) => s.noteLogged);
+  const clearRest = useRestTimerStore((s) => s.clear);
+  const finishedBlock = useIntervalTimerStore((s) => s.finished);
   const skipWorkout = useSkipWorkout();
   const addExercises = useAddExercises();
   const exerciseCommand = useExerciseCommand();
@@ -135,7 +160,7 @@ export default function TodayScreen() {
   // For the creation-method sheet's second row — whether there is anything to copy at all — and for
   // the empty Today's wording: `first` rather than `next` cycle when there has never been one.
   const mesocycles = useMesocycles();
-  const methodSheet = useMesoCreationMethodSheet();
+  const methodSheet = useHandoffSheet();
   // The Welcome dialog (GT-37, 08.11): up until `Got it` has been written, not merely tapped, and
   // never before the flags have been read — a dialog that flashed and went would be worse than one
   // that waits a frame.
@@ -232,7 +257,6 @@ export default function TodayScreen() {
     }
   }
 
-
   /**
    * Skip workout (049), from the header menu. It can't be undone and skips every unfinished
    * exercise, dropping whatever wasn't logged in them, so it warns about that first — the same way
@@ -250,6 +274,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           skipWorkout.mutate(currentSessionId, {
+            onSuccess: clearRest,
             onError: () => Alert.alert("Couldn't skip the workout", 'Try again.'),
           });
         },
@@ -274,6 +299,56 @@ export default function TodayScreen() {
       },
     ]);
   }
+
+  /**
+   * What a logged row — a set, or an interval's round (GT-89) — does next. The rest before the
+   * next row starts by itself (GT-86) — after the last row, before the next exercise; once the
+   * workout has nothing left none does and any rest left is over; a correction leaves it be. A
+   * conflict with another session in progress names it, with Open to go there.
+   */
+  function afterLog(
+    exercise: WorkoutExercise,
+    rowNumber: number,
+    result: LogSetResult | LogRoundResult,
+  ) {
+    if (result.kind === 'logged') {
+      // A round rests for the rest it was logged with — its field may hold a picked time (GT-90).
+      const rest = restAfterLog(
+        model?.exercises ?? [],
+        exercise,
+        rowNumber,
+        useRestTimerStore.getState().loggedSets,
+        'roundLog' in result ? result.roundLog.restSec : undefined,
+      );
+      noteLogged(loggedSetKey(exercise.sessionExerciseId, rowNumber));
+      if (rest.kind === 'start') {
+        startRest(rest.rest);
+      } else if (rest.kind === 'stop') {
+        stopRest();
+      }
+      return;
+    }
+    Alert.alert(formatInProgressConflict(result), undefined, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Open', onPress: () => router.navigate(workoutHref(result.inProgressSessionId)) },
+    ]);
+  }
+
+  // The interval timer's summary was put away after its last round: the rest before the next
+  // exercise starts, as after a round logged by hand (10.1 FR-6, GT-98).
+  useEffect(() => {
+    if (finishedBlock === null || model === undefined) {
+      return;
+    }
+    useIntervalTimerStore.getState().clearFinished();
+    const rest = restAfterIntervalBlock(model.exercises, finishedBlock);
+    noteLogged(loggedSetKey(finishedBlock.sessionExerciseId, finishedBlock.roundNumber));
+    if (rest?.kind === 'start') {
+      startRest(rest.rest);
+    } else if (rest?.kind === 'stop') {
+      stopRest();
+    }
+  }, [finishedBlock, model, noteLogged, startRest, stopRest]);
 
   function showSaveError() {
     Alert.alert("Couldn't save the set", 'Try again.');
@@ -328,20 +403,20 @@ export default function TodayScreen() {
         }
         confirm(
           'Replace exercise?',
-          formatReplaceExerciseWarning(exercise.name, exercise.loggedSetCount),
+          formatReplaceExerciseWarning(exercise.name, exerciseLogCounts(exercise)),
           { text: 'Replace', destructive: true, onPress: openPicker },
         );
         return;
       }
       case 'skip':
-        confirm(
-          'Skip exercise?',
-          formatSkipExerciseWarning(exercise.plannedSetCount, exercise.loggedSetCount),
-          { text: 'Skip', destructive: false, onPress: () => runCommand('skip') },
-        );
+        confirm('Skip exercise?', formatSkipExerciseWarning(exerciseLogCounts(exercise)), {
+          text: 'Skip',
+          destructive: false,
+          onPress: () => runCommand('skip'),
+        });
         return;
       case 'delete':
-        confirm('Delete exercise?', formatDeleteExerciseWarning(exercise.loggedSetCount), {
+        confirm('Delete exercise?', formatDeleteExerciseWarning(exerciseLogCounts(exercise)), {
           text: 'Delete',
           destructive: true,
           onPress: () => runCommand('delete'),
@@ -414,7 +489,9 @@ export default function TodayScreen() {
         // for, and History is one tap further in from there.
         onOpenExerciseHistory={(exercise) => router.push(exerciseDetailHref(exercise.exerciseId))}
         onExerciseMenuAction={runExerciseMenuAction}
-        isSaving={logSet.isPending || unlogSet.isPending}
+        isSaving={
+          logSet.isPending || unlogSet.isPending || logRound.isPending || unlogRound.isPending
+        }
         onBodyWeightChange={saveBodyWeight}
         onRequestBodyWeight={() => setIsBodyWeightOpen(true)}
         onLogSet={(exercise, setNumber, entry) => {
@@ -431,21 +508,69 @@ export default function TodayScreen() {
               entry,
             },
             {
-              onSuccess: (result) => {
-                if (result.kind === 'conflict') {
-                  Alert.alert(formatInProgressConflict(result), undefined, [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Open',
-                      onPress: () => router.navigate(workoutHref(result.inProgressSessionId)),
-                    },
-                  ]);
-                }
-              },
+              onSuccess: (result) => afterLog(exercise, setNumber, result),
               onError: showSaveError,
             },
           );
         }}
+        onLogRound={(exercise, roundNumber, entry) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          logRound.mutate(
+            {
+              ref: {
+                sessionId: currentSessionId,
+                sessionExerciseId: exercise.sessionExerciseId,
+                roundNumber,
+              },
+              entry,
+            },
+            {
+              onSuccess: (result) => afterLog(exercise, roundNumber, result),
+              onError: showSaveError,
+            },
+          );
+        }}
+        onUnlogRound={(exercise, roundNumber) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          unlogRound.mutate(
+            {
+              sessionId: currentSessionId,
+              sessionExerciseId: exercise.sessionExerciseId,
+              roundNumber,
+            },
+            { onError: showSaveError },
+          );
+        }}
+        onSetRoundTime={(exercise, column, roundNumbers, sec) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          setRoundTime.mutate(
+            {
+              ref: { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId },
+              column,
+              roundNumbers,
+              sec,
+            },
+            { onError: showSaveError },
+          );
+        }}
+        onStartIntervalTimer={(exercise, rounds) => {
+          if (currentSessionId === undefined) {
+            return;
+          }
+          const start = intervalTimerStartOf(currentSessionId, exercise, rounds);
+          if (start === undefined) {
+            return;
+          }
+          useIntervalTimerStore.getState().start(start);
+          router.push('/interval-timer');
+        }}
+        onOpenIntervalTimer={() => router.push('/interval-timer')}
         onUnlogSet={(exercise, setNumber) => {
           if (currentSessionId === undefined) {
             return;
@@ -459,6 +584,15 @@ export default function TodayScreen() {
             { onError: showSaveError },
           );
         }}
+        onSetNoHeavierAvailable={(exercise) =>
+          setNoHeavierAvailable.mutate(
+            { id: toExerciseId(exercise.exerciseId), value: true },
+            { onError: showSaveError },
+          )
+        }
+        onHideCeilingTip={(exercise) =>
+          hideCeilingTip.mutate(toExerciseId(exercise.exerciseId), { onError: showSaveError })
+        }
         isFinishing={finishSession.isPending}
         onFinish={() => {
           if (currentSessionId === undefined) {
@@ -466,6 +600,7 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           finishSession.mutate(currentSessionId, {
+            onSuccess: clearRest,
             onError: () => Alert.alert("Couldn't finish the workout", 'Try again.'),
           });
         }}

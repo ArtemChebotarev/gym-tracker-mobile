@@ -71,6 +71,7 @@ describe('loadExerciseOverview', () => {
               status: 'completed',
               completedAt: '2026-09-10T12:00:00.000Z',
             },
+            roundLogs: [],
             setLogs: [
               {
                 ...STAMPS,
@@ -93,6 +94,5 @@ describe('loadExerciseOverview', () => {
       sessionCount: 1,
       lastDoneAt: '2026-09-10T11:30:00.000Z',
     });
-    expect(overview?.lastSession?.weekNumber).toBe(2);
   });
 });

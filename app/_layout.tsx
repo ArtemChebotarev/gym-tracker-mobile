@@ -51,6 +51,17 @@ export default function RootLayout() {
                 name="meso-editor/edit/[id]"
                 options={{ headerShown: false, presentation: 'fullScreenModal' }}
               />
+              {/* New exercise, after the type sheet (10.1 FR-11) — a full-screen modal like the
+              mesocycle editor's steps. */}
+              <Stack.Screen
+                name="exercise/new"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
+              {/* Edit exercise (10.1 FR-11) — the same full-screen modal as New exercise. */}
+              <Stack.Screen
+                name="exercise/[id]/edit"
+                options={{ headerShown: false, presentation: 'fullScreenModal' }}
+              />
               {/* The Exercise screen (08.6, task 065) — pushed from the library and from a workout's
               exercise card, with its own back button in the header. */}
               <Stack.Screen name="exercise/[id]/index" options={{ headerShown: false }} />
@@ -59,6 +70,16 @@ export default function RootLayout() {
               {/* A day of a closed block (08.9, task 130) — pushed from the detail screen's grid, in
               History mode, with its own back button. */}
               <Stack.Screen name="session/[id]" options={{ headerShown: false }} />
+              {/* The interval timer (10.1 FR-6, GT-96) — full screen over the workout. No swipe down:
+              the timer is put away with Back to workout or End early, never by accident. */}
+              <Stack.Screen
+                name="interval-timer"
+                options={{
+                  headerShown: false,
+                  presentation: 'fullScreenModal',
+                  gestureEnabled: false,
+                }}
+              />
               {/* The developer door (task 070) — no link leads here, five taps on the Library title do. */}
               <Stack.Screen name="debug" options={{ headerShown: false, presentation: 'modal' }} />
             </Stack>

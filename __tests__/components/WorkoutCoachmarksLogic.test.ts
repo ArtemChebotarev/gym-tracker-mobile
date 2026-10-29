@@ -1,8 +1,12 @@
 import { GRID_STEP, REPS_STEP, WEIGHT_STEP, workoutCoachmarks } from '@components/WorkoutCoachmarksLogic';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type {
+  SetExerciseActions,
+  StrengthWorkoutExercise,
+  WorkoutSetRow,
+} from '@usecases/workoutSession';
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,
@@ -16,7 +20,7 @@ const NO_ACTIONS: WorkoutExercise['actions'] = {
 // A week-1 set: no target reps, no weight swap. Its card has the RIR badge and the Weight ⓘ.
 const WEEK_1_ROW: WorkoutSetRow = { setNumber: 1, isFirstUnlogged: true };
 
-function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
+function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): StrengthWorkoutExercise {
   return {
     sessionExerciseId: 'se-1',
     exerciseId: 'exercise-squat',

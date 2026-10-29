@@ -20,8 +20,8 @@
 // The list is one exercise card per exercise (WorkoutExerciseCard, task 092) with its set rows
 // (WorkoutSetRow, 093). Under the last card, the primary `Finish workout` button (094) — active when
 // the model's `showFinish` says every exercise is `completed` or `skipped`; before that it is there
-// inactive, with a line on what to do first (`showFinishLocked`, GT-48), so a newcomer sees that
-// finishing exists. The moment it turns active the list scrolls down to it. Finishing needs no confirmation: the screen stays put and re-reads
+// inactive, with a line on what to do first (`showFinishLocked`, GT-48; worded for every type, as an
+// interval or a mobility block has no sets — GT-108), so a newcomer sees that finishing exists. The moment it turns active the list scrolls down to it. Finishing needs no confirmation: the screen stays put and re-reads
 // the session, which is then read-only — the cards drop `⋯`, the rows stop being editable, and the
 // header gets its check. All of that follows from the model's `mode`, so nothing here tracks it.
 // A read-only session shows a secondary `Next workout` button in the same place when the model has
@@ -54,12 +54,15 @@ import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
+import type { RoundEntry } from '@domain/executionValidators';
+import type { IntervalTimerRound } from '@domain/intervalTimer';
+import type { RoundTimeColumn } from '@domain/roundTimes';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
-import { showsGroupChip } from './WorkoutExerciseCardLogic';
+import { cardChip } from './WorkoutExerciseCardLogic';
 import { RirExplanationContent } from './RirExplanationContent';
 import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
@@ -103,6 +106,28 @@ export type WorkoutScreenProps = {
   ) => void;
   /** Un-logs a logged set row (05, "Снять отметку"). Live only. */
   onUnlogSet: (exercise: WorkoutExercise, setNumber: number) => void;
+  /** Logs an interval round by hand with the times in its fields (10.1 FR-7). Live only. */
+  onLogRound: (exercise: WorkoutExercise, roundNumber: number, entry: RoundEntry) => void;
+  /** Un-logs a logged round. Live only. */
+  onUnlogRound: (exercise: WorkoutExercise, roundNumber: number) => void;
+  /**
+   * Start timer on an interval card, with the rounds it runs (10.1 FR-6, GT-96) — or on a mobility
+   * card, with its block (GT-107). Live only.
+   */
+  onStartIntervalTimer?: (exercise: WorkoutExercise, rounds: IntervalTimerRound[]) => void;
+  /** Opens the running interval timer's screen — from a mobility card while its block runs. Live only. */
+  onOpenIntervalTimer?: () => void;
+  /** A time picked in an interval round, saved as the plan of the rounds it fills (FR-9, GT-187). Live only. */
+  onSetRoundTime?: (
+    exercise: WorkoutExercise,
+    column: RoundTimeColumn,
+    roundNumbers: number[],
+    sec: number,
+  ) => void;
+  /** The user said a power exercise has nothing heavier to take (10.2 P9). Live only. */
+  onSetNoHeavierAvailable: (exercise: WorkoutExercise) => void;
+  /** The user closed a power exercise's ceiling note for good (GT-81). Live only. */
+  onHideCeilingTip: (exercise: WorkoutExercise) => void;
   /** The Weight field of a pure bodyweight exercise was edited — it's the block's body weight (105). */
   onBodyWeightChange?: (bodyWeight: number) => void;
   /** A bodyweight exercise's Weight cell was tapped while the block has no body weight yet (105). */
@@ -156,6 +181,13 @@ export function WorkoutScreen({
   onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
+  onLogRound,
+  onUnlogRound,
+  onStartIntervalTimer,
+  onOpenIntervalTimer,
+  onSetRoundTime,
+  onSetNoHeavierAvailable,
+  onHideCeilingTip,
   onBodyWeightChange,
   onRequestBodyWeight,
   isSaving,
@@ -290,18 +322,39 @@ export function WorkoutScreen({
               {...(index === 0
                 ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
                 : {})}
-              showGroupChip={showsGroupChip(model.exercises, index)}
+              chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
-              menuItems={workoutExerciseMenuActions(exercise.actions, (item) =>
+              menuItems={workoutExerciseMenuActions(exercise, (item) =>
                 onExerciseMenuAction(exercise, item),
               )}
               isSaving={isSaving}
-              bodyWeight={model.bodyWeight}
-              onBodyWeightChange={onBodyWeightChange}
-              onRequestBodyWeight={onRequestBodyWeight}
-              onLogSet={(setNumber, entry) => onLogSet(exercise, setNumber, entry)}
-              onUnlogSet={(setNumber) => onUnlogSet(exercise, setNumber)}
+              sets={{
+                bodyWeight: model.bodyWeight,
+                onBodyWeightChange,
+                onRequestBodyWeight,
+                onLogSet: (setNumber, entry) => onLogSet(exercise, setNumber, entry),
+                onUnlogSet: (setNumber) => onUnlogSet(exercise, setNumber),
+              }}
+              rounds={{
+                onLogRound: (roundNumber, entry) => onLogRound(exercise, roundNumber, entry),
+                onUnlogRound: (roundNumber) => onUnlogRound(exercise, roundNumber),
+                ...(onStartIntervalTimer !== undefined
+                  ? { onStartTimer: (rounds) => onStartIntervalTimer(exercise, rounds) }
+                  : {}),
+                ...(onSetRoundTime !== undefined
+                  ? {
+                      onSetRoundTime: (column, roundNumbers, sec) =>
+                        onSetRoundTime(exercise, column, roundNumbers, sec),
+                    }
+                  : {}),
+                ...(onOpenIntervalTimer !== undefined ? { onOpenTimer: onOpenIntervalTimer } : {}),
+              }}
+              ceiling={{
+                onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),
+                onReplaceExercise: () => onExerciseMenuAction(exercise, 'replace'),
+                onHideCeilingTip: () => onHideCeilingTip(exercise),
+              }}
             />
           ))}
           {model.showFinish && (
@@ -312,7 +365,7 @@ export function WorkoutScreen({
           {model.showFinishLocked && (
             <View style={styles.finish}>
               <Button label="Finish workout" onPress={onFinish} disabled />
-              <Text style={styles.finishHint}>Log all sets first to finish the workout.</Text>
+              <Text style={styles.finishHint}>Log or skip every exercise to finish the workout.</Text>
             </View>
           )}
           {nextSessionId !== undefined && (

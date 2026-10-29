@@ -7,7 +7,7 @@
 // the library's job as "точка входа в историю" (08.6).
 //
 // The "+" button and the search-empty state's "Create" action open 066 · New/Edit exercise (see
-// ExerciseFormSheet.tsx); `onRequestFilters` opens 064 · Filters (see ExerciseFiltersSheet.tsx).
+// ExerciseFormScreen.tsx); `onRequestFilters` opens 064 · Filters (see ExerciseFiltersSheet.tsx).
 // The caller composes both sheets as siblings rather than this component rendering them
 // directly, keeping this screen fully controlled and testable with plain props.
 //
@@ -37,7 +37,7 @@ import {
   buildSections,
   countEntries,
   equipmentSuffix,
-  formatSubtitle,
+  rowSubtitle,
   hasActiveFilters,
   sectionDotColor,
   type ExerciseSection,
@@ -163,7 +163,7 @@ export function ExerciseLibraryScreen({
             <ListRow
               title={item.exercise.name}
               titleSuffix={equipmentSuffix(item.exercise)}
-              subtitle={formatSubtitle(item.lastSetLog)}
+              subtitle={rowSubtitle(item)}
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}
               onPress={() => onOpenExercise(item)}

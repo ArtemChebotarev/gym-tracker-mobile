@@ -1,5 +1,6 @@
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SessionRepository } from '@repositories/session';
 import type { SessionExerciseRepository } from '@repositories/sessionExercise';
 import type { SetLogRepository } from '@repositories/setLogRepository';
@@ -15,12 +16,13 @@ export type BackupRepositories = {
   sessionRepo: SessionRepository;
   sessionExerciseRepo: SessionExerciseRepository;
   setLogRepo: SetLogRepository;
+  roundLogRepo: RoundLogRepository;
   settingsRepo: SettingsRepository;
 };
 
 /**
  * Those repositories plus a way to run a whole restore atomically (07 · Persistence Layer
- * Contract, rule 6). A restore touches six collections that reference each other, and a half-
+ * Contract, rule 6). A restore touches seven collections that reference each other, and a half-
  * restored backup is worse than none: it looks like data. So it lands whole or not at all.
  *
  * Same shape as `WorkoutStore` and `MesocycleStartStore`: `transaction` hands `work` repositories

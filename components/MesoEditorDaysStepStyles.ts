@@ -55,6 +55,9 @@ export const styles = StyleSheet.create({
     textTransform: TYPOGRAPHY['type/label'].textTransform,
     color: COLORS['text/muted'],
   },
+  planSlot: {
+    width: SIZES['size/sets-column'],
+  },
   columnHeaderSets: {
     width: SIZES['size/sets-column'],
     textAlign: 'center',
@@ -90,6 +93,14 @@ export const styles = StyleSheet.create({
   },
   dot: {
     ...circle(SIZES['size/dot-large']),
+  },
+  // A `fullBody` hybrid exercise's type icon in place of the dot (GT-157). It overflows the dot's
+  // column rather than widening it, so the names of every row still start at one edge.
+  typeIcon: {
+    width: SIZES['size/dot-large'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
   },
   exerciseMain: {
     flex: 1,

@@ -15,15 +15,18 @@ describe('InfoGlyphButton', () => {
   });
 
   // Apple's Human Interface Guidelines: a control's touch area is at least 44 × 44 pt. The glyph is
-  // drawn small (a 24pt disc); the button around it is what the finger meets, so it is the button
-  // that has to be that big — and nothing in it may be smaller than the tap target.
+  // drawn small (a 24pt disc); what the finger meets is the button plus its slop. The button is as
+  // tall as the tap target and as wide as the disc, so it sits right after its label (Artem's
+  // review, 18.10.2026), and the slop either side makes up the width.
   test('its touch area is at least 44 × 44 pt, Apple’s minimum', () => {
     render(<InfoGlyphButton accessibilityLabel="Finding your weight" open={false} onPress={() => {}} />);
 
-    const style = StyleSheet.flatten(screen.getByRole('button').props.style);
+    const button = screen.getByRole('button');
+    const style = StyleSheet.flatten(button.props.style);
+    const slop = button.props.hitSlop as { left: number; right: number };
 
     expect(SIZES['size/tap-target']).toBeGreaterThanOrEqual(44);
-    expect(style.width).toBeGreaterThanOrEqual(44);
+    expect(style.width + slop.left + slop.right).toBeGreaterThanOrEqual(44);
     expect(style.height).toBeGreaterThanOrEqual(44);
   });
 

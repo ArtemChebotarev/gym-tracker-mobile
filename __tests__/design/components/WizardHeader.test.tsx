@@ -9,6 +9,13 @@ describe('WizardHeader', () => {
     expect(screen.getByText('Step 1 of 3')).toBeTruthy();
   });
 
+  test('a flow of one step shows no counter and no progress bar', () => {
+    render(<WizardHeader title="New exercise" currentStep={1} totalSteps={1} onClose={jest.fn()} />);
+
+    expect(screen.queryByText(/^Step /)).toBeNull();
+    expect(screen.getByText('New exercise')).toBeTruthy();
+  });
+
   test('shows Close and calls onClose when given onClose', () => {
     const onClose = jest.fn();
     render(<WizardHeader title="New mesocycle" currentStep={1} totalSteps={3} onClose={onClose} />);

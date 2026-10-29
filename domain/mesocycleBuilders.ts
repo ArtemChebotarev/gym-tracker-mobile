@@ -5,6 +5,12 @@
 
 import { ConflictError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
+import type { Exercise } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import {
+  exerciseSettingsFor,
+  type ExerciseSettingsById,
+} from '@domain/exerciseSettingsBuilders';
 import { generateId } from '@domain/id';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
@@ -21,6 +27,7 @@ import { materializeWeekPlan, type SessionWithExercises } from '@domain/planConv
 import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
+import { materializeSetTargets } from '@domain/weekPlanMaterializers';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -43,7 +50,23 @@ export type ScratchMesocycleDraftInput = {
    * (04 · Meso Creation Flows, "Почему целевые повторы появляются только в Flow C").
    */
   weekPlan: WeekPlan;
+  /**
+   * The cycle's own copy of its power, interval and mobility exercises' configs, by exercise id
+   * (10.1 FR-9, GT-158) — made when an exercise is added in the editor and edited there. Saved
+   * with the cycle as `Mesocycle.exerciseSettings`; absent or empty for a cycle of strength only.
+   */
+  exerciseSettings?: ExerciseSettingsById;
 };
+
+/**
+ * `exerciseSettings` as the mesocycle stores it: present only when there is something in it, so a
+ * cycle of strength exercises keeps the field absent (`Mesocycle.exerciseSettings`).
+ */
+function exerciseSettingsField(
+  settings: ExerciseSettingsById | undefined,
+): Pick<Mesocycle, 'exerciseSettings'> {
+  return settings && Object.keys(settings).length > 0 ? { exerciseSettings: { ...settings } } : {};
+}
 
 /** The draft every flow builds, differing only in `origin`. */
 function buildMesocycleDraft(
@@ -64,6 +87,7 @@ function buildMesocycleDraft(
     origin,
     progressionSettings: { ...progressionSettings },
     weekPlan: input.weekPlan,
+    ...exerciseSettingsField(input.exerciseSettings),
   };
 }
 
@@ -148,8 +172,8 @@ export function buildCopyWeekMesocycleDraft(
  * Applies an editor draft to an existing planned mesocycle — task 072. Pure: returns the updated
  * `Mesocycle` without saving it. A planned mesocycle is fully editable until Start (04 · Meso
  * Creation Flows, "Сохранение при подтверждении (Confirm)": "дни, упражнения, `startSets` можно
- * менять как угодно"), so `name`, `lengthWeeks`, `daysPerWeek`, and `weekPlan` all come from
- * `input`. 02 · Domain Model's "`lengthWeeks` and `daysPerWeek` are immutable after Start"
+ * менять как угодно"), so `name`, `lengthWeeks`, `daysPerWeek`, `weekPlan` and `exerciseSettings`
+ * all come from `input`. 02 · Domain Model's "`lengthWeeks` and `daysPerWeek` are immutable after Start"
  * (`validateMesocycleImmutableFields`) only kicks in once the mesocycle is started. `id`, `origin`, `progressionSettings`, `status`, and `createdAt` are kept as they were.
  *
  * Throws `ConflictError` if `current` isn't `planned` — active and completed mesocycles can't go
@@ -169,12 +193,16 @@ export function applyPlannedMesocycleEdit(
   validateMesocycleDaysPerWeek(input.daysPerWeek);
   validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
 
+  // The edit's settings replace the stored ones whole: an exercise the edit removed takes its copy
+  // with it, and a cycle left with strength only goes back to having none.
+  const { exerciseSettings: _previous, ...rest } = current;
   return {
-    ...current,
+    ...rest,
     name: input.name,
     lengthWeeks: input.lengthWeeks,
     daysPerWeek: input.daysPerWeek,
     weekPlan: input.weekPlan,
+    ...exerciseSettingsField(input.exerciseSettings),
   };
 }
 
@@ -206,9 +234,9 @@ export function weekPlanSlotKey(dayNumber: number, exerciseId: string): string {
  * own `sets` decides how many rows it prices.
  *
  * Only a `copyWeek` block has any: the user already trained these exercises, so week 1's reps and
- * weights are computed from each one's reference performance (04 · Meso Creation Flows, "Расчёт
- * startReps"). Flow A and B hand over nothing and their rows show `N RIR` instead — as does a
- * copied exercise with no reference to price it from, which is simply a slot missing from the map.
+ * weights — and an interval's work and rest (GT-185) — are computed from each one's reference
+ * performance (04 · Meso Creation Flows, "Расчёт startReps"). Flow A and B hand over nothing and
+ * their rows show `N RIR` instead — as does a copied exercise with no reference to price it from, which is simply a slot missing from the map.
  *
  * The lookup behind it is asynchronous and belongs to the use case (`startMesocycle`, task 122),
  * the same split as rule 6 in 047/048; what arrives here is already decided.
@@ -234,6 +262,14 @@ export type MesocycleStart = {
  * (05 · Workout Execution & Logging, see `renumbered`). Weeks 2+ aren't created — each day of the
  * next week is generated when the same day of this one is finished.
  *
+ * Each exercise's rows come from the materializer of its type (GT-160,
+ * `domain/weekPlanMaterializers.ts`): the day's sets for strength and power and as rounds for an
+ * interval one (GT-190), one block for a mobility one — with no times: those are history's (10.1
+ * FR-9). The type comes from `exercisesById`, and a mobility one's block from the cycle's settings
+ * (`exerciseSettings`, the library's where the cycle has none). An exercise `exercisesById` lacks
+ * is materialized as strength. `weekOneTargets` prices sets, an interval's rounds (GT-185) and a
+ * mobility block's length (GT-107).
+ *
  * Throws `ConflictError` — through `validateMesocycleCanStart`, which Start asks first, before
  * doing any work — if `mesocycle` isn't `planned`, has no week plan, or another mesocycle is
  * already running.
@@ -243,16 +279,32 @@ export function buildMesocycleStart(
   active: Mesocycle | null,
   now: string,
   weekOneTargets?: WeekOneTargets,
+  exercisesById: ReadonlyMap<string, Exercise> = new Map(),
 ): MesocycleStart {
   validateMesocycleCanStart(mesocycle, active);
   const { weekPlan, ...rest } = mesocycle;
+  const cycleSettings = mesocycle.exerciseSettings ?? {};
+  const typeOf = (exerciseId: string) => {
+    const exercise = exercisesById.get(exerciseId);
+    return exercise ? exerciseTypeOf(exercise) : 'strength';
+  };
 
-  const week = materializeWeekPlan(weekPlan, {
-    mesoId: mesocycle.id,
-    weekNumber: 1,
-    isDeload: false,
-    targetRir: targetRir(mesocycle.lengthWeeks, 1),
-  }).map(({ session, exercises }) => ({
+  const week = materializeWeekPlan(
+    weekPlan,
+    {
+      mesoId: mesocycle.id,
+      weekNumber: 1,
+      isDeload: false,
+      targetRir: targetRir(mesocycle.lengthWeeks, 1),
+    },
+    (entry) => {
+      const exercise = exercisesById.get(entry.exerciseId);
+      return materializeSetTargets(typeOf(entry.exerciseId), {
+        entry,
+        settings: exercise && exerciseSettingsFor(cycleSettings, exercise),
+      });
+    },
+  ).map(({ session, exercises }) => ({
     session,
     exercises: renumbered(
       exercises.map((exercise) => {

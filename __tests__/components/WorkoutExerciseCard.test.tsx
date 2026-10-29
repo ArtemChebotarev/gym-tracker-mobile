@@ -1,15 +1,22 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import {
+  type CeilingActions,
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import type { SetLoggingProps } from '@components/WorkoutSetRows';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { buildWeightSwap } from '@domain/weightSwapRules';
-import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
+import type {
+  PowerWorkoutExercise,
+  SetExerciseActions,
+  StrengthWorkoutExercise,
+  WorkoutSetRow,
+} from '@usecases/workoutSession';
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,
@@ -35,7 +42,7 @@ function unloggedRow(setNumber: number, isFirstUnlogged = false): WorkoutSetRow 
   return { setNumber, targetReps: 10, suggestedWeight: 62.5, isFirstUnlogged };
 }
 
-function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
+function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): StrengthWorkoutExercise {
   return {
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',
@@ -51,6 +58,11 @@ function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise
     actions: NO_ACTIONS,
     ...overrides,
   };
+}
+
+function makePowerExercise(overrides: Partial<PowerWorkoutExercise> = {}): PowerWorkoutExercise {
+  const { targetRir: _targetRir, weightHints: _weightHints, type: _type, ...base } = makeExercise();
+  return { ...base, type: 'power', powerLoad: 'weight', ...overrides };
 }
 
 const LIVE_EXERCISE = makeExercise();
@@ -86,22 +98,37 @@ const PREVIEW_EXERCISE = makeExercise({
   hasLoggedSets: false,
 });
 
-function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutExerciseCardProps {
+/** The card's props, with the set and ceiling handlers given flat and put in their groups here. */
+type CardPropsOverrides = Partial<Omit<WorkoutExerciseCardProps, 'sets' | 'ceiling'>> &
+  Partial<SetLoggingProps> &
+  CeilingActions;
+
+function makeProps({
+  bodyWeight,
+  onBodyWeightChange,
+  onRequestBodyWeight,
+  onLogSet = jest.fn(),
+  onUnlogSet = jest.fn(),
+  onSetNoHeavierAvailable,
+  onReplaceExercise,
+  onHideCeilingTip,
+  ...overrides
+}: CardPropsOverrides = {}): WorkoutExerciseCardProps {
   return {
     exercise: LIVE_EXERCISE,
     mode: 'live',
-    showGroupChip: true,
+    chip: { kind: 'group', muscleGroup: 'chest' },
     onOpenHistory: jest.fn(),
     menuItems: [],
     isSaving: false,
-    onLogSet: jest.fn(),
-    onUnlogSet: jest.fn(),
+    sets: { bodyWeight, onBodyWeightChange, onRequestBodyWeight, onLogSet, onUnlogSet },
+    ceiling: { onSetNoHeavierAvailable, onReplaceExercise, onHideCeilingTip },
     ...overrides,
   };
 }
 
 describe('WorkoutExerciseCard variants', () => {
-  test.each<[string, Partial<WorkoutExerciseCardProps>]>([
+  test.each<[string, CardPropsOverrides]>([
     ['live', { mode: 'live', exercise: LIVE_EXERCISE }],
     ['read-only', { mode: 'readonly', exercise: COMPLETED_EXERCISE }],
     ['skipped', { mode: 'readonly', exercise: SKIPPED_NOTHING_LOGGED }],
@@ -169,11 +196,13 @@ describe('WorkoutExerciseCard', () => {
   });
 
   test('the group chip shows only when asked for', () => {
-    render(<WorkoutExerciseCard {...makeProps({ showGroupChip: true })} />);
+    render(
+      <WorkoutExerciseCard {...makeProps({ chip: { kind: 'group', muscleGroup: 'chest' } })} />,
+    );
     expect(screen.getByTestId('exercise-group-chip')).toBeTruthy();
     expect(screen.getByText('Chest')).toBeTruthy();
 
-    screen.rerender(<WorkoutExerciseCard {...makeProps({ showGroupChip: false })} />);
+    screen.rerender(<WorkoutExerciseCard {...makeProps({ chip: undefined })} />);
     expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
   });
 
@@ -802,7 +831,9 @@ describe('Weight ⓘ — finding your weight', () => {
 
   test('a pure bodyweight exercise has none — its Weight field is the body weight', () => {
     render(
-      <WorkoutExerciseCard {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight' }) })} />,
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: makeExercise({ equipment: 'bodyweight' }) })}
+      />,
     );
 
     expect(info()).toBeNull();
@@ -863,11 +894,13 @@ describe('RIR badge popover', () => {
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
   });
 
-  test('DoD: it works on a deload week too, with the deload text', () => {
+  test('on a deload week the Deload badge takes its place, with the deload text', () => {
     const deload = makeExercise({ targetRir: 8 });
     render(<WorkoutExerciseCard {...makeProps({ exercise: deload, isDeload: true })} />);
 
-    fireEvent.press(badge());
+    expect(screen.queryByTestId('exercise-rir')).toBeNull();
+    expect(screen.getByTestId('exercise-deload')).toHaveTextContent('Deload');
+    fireEvent.press(screen.getByTestId('exercise-deload'));
 
     expect(screen.getByText('Deload week')).toBeTruthy();
     expect(
@@ -883,5 +916,190 @@ describe('RIR badge popover', () => {
     fireEvent.press(badge());
 
     expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+  });
+
+  test('a power card says Load and Fast reps, with no RIR badge and no hit indicator', () => {
+    const power = makePowerExercise({
+      name: 'Medball throw',
+      isGuided: true,
+      equipment: undefined,
+      rows: [{ setNumber: 1, targetReps: 5, suggestedWeight: 4, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power })} />);
+
+    expect(screen.getByText('Load, kg')).toBeTruthy();
+    expect(screen.getByText('Fast reps')).toBeTruthy();
+    expect(screen.getByLabelText('About fast reps')).toBeTruthy();
+    expect(screen.queryByText(/RIR/)).toBeNull();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
+  test('a power card at the top of its corridor says so, and the flag action is offered', () => {
+    const onSetNoHeavierAvailable = jest.fn();
+    const power = makePowerExercise({
+      isGuided: true,
+      equipment: undefined,
+      ceilingHint: { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onSetNoHeavierAvailable })} />);
+
+    expect(screen.getByText('Try heavier or add a set.', { exact: false })).toBeTruthy();
+    expect(screen.getByText(/You did 6\+ fast reps on every set last week/)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'No heavier available' }));
+    expect(onSetNoHeavierAvailable).toHaveBeenCalledTimes(1);
+  });
+
+  test('no flag action when the exercise cannot take it', () => {
+    const power = makePowerExercise({
+      isGuided: true,
+      ceilingHint: { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
+    });
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: power, onSetNoHeavierAvailable: jest.fn() })}
+      />,
+    );
+
+    expect(screen.getByText('Add a set.', { exact: false })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'No heavier available' })).toBeNull();
+  });
+
+  test('after "No heavier available" the note offers a harder variation and Replace exercise', () => {
+    const onReplaceExercise = jest.fn();
+    const power = makePowerExercise({
+      isGuided: true,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onReplaceExercise })} />);
+
+    expect(screen.getByText(/Try a harder variation\./)).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Replace exercise' }));
+    expect(onReplaceExercise).toHaveBeenCalledTimes(1);
+  });
+
+  test('the harder-variation note can be closed for good', () => {
+    const onHideCeilingTip = jest.fn();
+    const power = makePowerExercise({
+      isGuided: true,
+      ceilingHint: { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: power, onHideCeilingTip })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Hide this tip' }));
+    expect(onHideCeilingTip).toHaveBeenCalledTimes(1);
+  });
+
+  test('a power card carries the Power chip, not the muscle group', () => {
+    render(<WorkoutExerciseCard {...makeProps({ chip: { kind: 'type', type: 'power' } })} />);
+
+    expect(screen.getByTestId('exercise-type-chip')).toHaveTextContent('Power');
+    expect(screen.queryByTestId('exercise-group-chip')).toBeNull();
+  });
+
+  test.each([
+    ['weight', 'About half your usual load, two sets at most.'],
+    ['level', 'Same level, two sets at most.'],
+    ['none', 'Same body weight, two sets at most.'],
+  ] as const)(
+    'a power card on a deload week says what changes for a %s load',
+    (powerLoad, line) => {
+      const power = makePowerExercise({
+        isGuided: true,
+        powerLoad,
+      });
+      render(<WorkoutExerciseCard {...makeProps({ exercise: power, isDeload: true })} />);
+
+      expect(screen.getByTestId('exercise-deload')).toBeTruthy();
+      fireEvent.press(screen.getByTestId('exercise-deload'));
+      expect(screen.getByText('Stop each set well before the speed drops.')).toBeTruthy();
+      expect(screen.getByText(line)).toBeTruthy();
+    },
+  );
+
+  test('a power exercise that is its own load fills the Load field with the body weight', () => {
+    const jump = makePowerExercise({
+      name: 'Box jump',
+      isGuided: true,
+      powerLoad: 'none',
+      equipment: 'plyo-box',
+      loadEquipment: 'bodyweight',
+      rows: [{ setNumber: 1, targetReps: 5, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: jump, bodyWeight: 83 })} />);
+
+    expect(screen.getByLabelText('Set 1 weight').props.value).toBe('83');
+    expect(screen.getByText('Plyo box')).toBeTruthy();
+    expect(screen.getByText('Bodyweight, kg')).toBeTruthy();
+  });
+});
+
+// Artem's review (18.10.2026): a level has no load to find, and its levels are the user's own.
+describe('WorkoutExerciseCard — power by level', () => {
+  test('the Level ⓘ opens a plate about finding a level', () => {
+    const box = makePowerExercise({
+      name: 'Box jump',
+      isGuided: true,
+      powerLoad: 'level',
+      equipment: 'plyo-box',
+      rows: [{ setNumber: 1, targetReps: 3, suggestedWeight: 1, isFirstUnlogged: true }],
+      plannedSetCount: 1,
+      loggedSetCount: 0,
+      hasLoggedSets: false,
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: box })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Finding your level' }));
+
+    expect(screen.getByText('Finding your level')).toBeTruthy();
+    expect(screen.getByText(/^Levels are your own/)).toBeTruthy();
+  });
+});
+
+// 10.1 FR-15 and Artem's review (18.10.2026): a band keeps the strength card, with its own parts.
+describe('WorkoutExerciseCard — a resistance band', () => {
+  const band = makeExercise({
+    name: 'Band pull-apart',
+    equipment: 'resistance-band',
+    isGuided: true,
+    targetRir: 2,
+    rows: [{ setNumber: 1, isFirstUnlogged: true }],
+    plannedSetCount: 1,
+    loggedSetCount: 0,
+    hasLoggedSets: false,
+  });
+
+  test('has no RIR — neither the badge nor the Reps placeholder', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    expect(screen.queryByText(/RIR/)).toBeNull();
+    expect(screen.getByLabelText('Set 1 reps').props.placeholder).toBe('–');
+  });
+
+  test('names its equipment plainly and says Bodyweight over the column', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    expect(screen.getByText('Resistance band')).toBeTruthy();
+    expect(screen.getByText('Bodyweight, kg')).toBeTruthy();
+    expect(screen.queryByText('Weight, kg')).toBeNull();
+  });
+
+  test('its Reps ⓘ explains the 5–30 corridor with a band', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
+
+    fireEvent.press(screen.getByLabelText('About reps with a band'));
+
+    expect(screen.getByText('Reps with a band')).toBeTruthy();
+  });
+
+  test('a deload week still has the Deload badge', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: band, isDeload: true })} />);
+
+    expect(screen.getByTestId('exercise-deload')).toBeTruthy();
   });
 });

@@ -13,28 +13,37 @@ import { tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 import { RirExplanationContent } from './RirExplanationContent';
-import { type RirExplanation } from './RirExplanationLogic';
+import { type BadgeExplanation } from './RirExplanationLogic';
 import { styles } from './RirBadgeStyles';
 import { usePopoverAnchor } from './usePopoverAnchor';
 
 export type RirBadgeProps = {
-  /** `2 RIR` */
+  /** `2 RIR`, or `Deload` on a deload week */
   label: string;
-  explanation: RirExplanation;
+  /** What the badge is for a screen reader and a test — the RIR badge by default. */
+  accessibilityLabel?: string;
+  testID?: string;
+  explanation: BadgeExplanation;
   /** The chip itself, without the touch area around it — what a coachmark's ring hugs (08.11). */
   chipRef?: Ref<View>;
 };
 
-export function RirBadge({ label, explanation, chipRef }: RirBadgeProps) {
+export function RirBadge({
+  label,
+  explanation,
+  chipRef,
+  accessibilityLabel = `${label}, what is RIR?`,
+  testID = 'exercise-rir',
+}: RirBadgeProps) {
   const { ref, visible, anchor, open, close } = usePopoverAnchor();
 
   return (
     <>
       <Pressable
         ref={ref}
-        testID="exercise-rir"
+        testID={testID}
         accessibilityRole="button"
-        accessibilityLabel={`${label}, what is RIR?`}
+        accessibilityLabel={accessibilityLabel}
         accessibilityState={{ expanded: visible }}
         onPress={open}
         hitSlop={tapTargetSlop(SIZES['size/icon-button'])}
@@ -44,12 +53,7 @@ export function RirBadge({ label, explanation, chipRef }: RirBadgeProps) {
           <Chip variant="static" label={label} compact />
         </View>
       </Pressable>
-      <Popover
-        visible={visible}
-        onClose={close}
-        anchor={anchor}
-        title={explanation.title}
-      >
+      <Popover visible={visible} onClose={close} anchor={anchor} title={explanation.title}>
         <RirExplanationContent explanation={explanation} />
       </Popover>
     </>

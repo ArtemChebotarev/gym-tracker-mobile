@@ -25,13 +25,15 @@ migrated database per test, in a fraction of a millisecond, with the foreign key
 The five files directly in this directory are what both engines shared and `sqlite/` still uses:
 `async.ts` (rule 1's artificial asynchrony), `errors.ts` (the domain error types), `timestamps.ts`
 (rule: the adapter stamps), `settingsDefaults.ts`, and `muscleGroupRepository.ts` — a fixed enum
-with nothing stored, so no engine can differ about it.
+with nothing stored, so no engine can differ about it. `fileLogSink.ts` and `expoLogFiles.ts` are
+not an engine at all: the log is two JSONL files rather than a table, because it matters most when
+the database did not open (task 141.1).
 
 What belongs where inside `sqlite/`: `schema.ts` is the tables, `mappers.ts` the entity ↔ row
 translation (the one place `NULL` and an absent field meet), `errors.ts` the normalization of
 driver failures, `transaction.ts` the BEGIN/COMMIT/ROLLBACK that rule 6 needs — Drizzle's own
 `transaction()` cannot be used because it commits when a synchronous callback returns, and every
-repository method is async. `repositories.ts` wires all fourteen over one database handle.
+repository method is async. `repositories.ts` wires all fifteen over one database handle.
 
 ## Migrations and the schema version (task 069)
 
@@ -63,6 +65,21 @@ applied it will not apply it again. `0000_initial_schema.sql` was edited by hand
 111, to drop a `catalog_version` column nobody read — the last moment that was safe, since no
 build had yet run on a device and so no database had ever applied it.
 
+**A migration that recreates a table other tables point at does not run as generated.** Changing
+a column's type or nullability in SQLite is a table recreation, and drizzle-kit writes it as
+`PRAGMA foreign_keys=OFF`, copy, `DROP TABLE`, rename. But the migrator runs every pending
+migration inside one transaction, where that pragma does nothing — so with the app's foreign keys
+on, dropping a parent that `set_log` or `round_log` reference fails with `FOREIGN KEY constraint
+failed`. The transaction rolls back and no data is lost, but the migration fails on every launch
+and the app does not open. Found on 28.10.2026 with `session_exercise.target_rir` (GT-184); such a
+migration first needs `migrations.ts` to turn the foreign keys off around the migrator and check
+them with `PRAGMA foreign_key_check` afterwards.
+
+**Proof that a migration keeps the user's data** is a test, never a look at the phone's database.
+`__tests__/storage/sqliteMigrationFromMain.test.ts` fills a database the way the build before the
+hybrid migrations wrote it, applies everything after it at once, and compares every column that
+existed before, row for row (GT-73).
+
 ### JSON columns the code fills in itself
 
 A column holding a document the code defaults on read — `settings.onboarding` is the one — has
@@ -84,6 +101,27 @@ default in SQLite *is* a table recreation, so this cannot be undone cheaply late
   then nothing to keep in step with the constant.
 - `__tests__/storage/settingsDefaults.test.ts` fails when the constant loses a key the shipped
   DDL default names, or when the schema's default stops matching the migration.
+
+## Exercise types — the hybrid migrations (GT-53)
+
+`0006`–`0008` bring training other than strength (10 · Hybrid Exercises). They only add — a
+table, and columns with defaults — so a database from the build before them keeps every row as it
+was:
+
+- `exercise.type` — `strength` for every exercise that predates it, the user's own included.
+  `exercise.config` is the parameters of a power, interval or mobility exercise, JSON, null for
+  strength.
+- `mesocycle.exercise_settings` — the block's own copy of those parameters, by exercise id, so an
+  edit moves this block and not every block that uses the exercise. JSON, null until a block has
+  such an exercise.
+- `round_log` — the fact of an interval or mobility exercise: one row per round (a mobility block
+  is round 1), beside `set_log` and under the same session exercise. A record of its own rather
+  than a set log with weight and reps made optional, so every strength query stays as it was.
+  `rest_sec` is null where there was no rest to take. The history of these exercises is read from
+  these rows alone, which is why the backup carries them (GT-72).
+- `settings` — the rest timer between strength sets (`strength_rest_timer_*`), Get ready
+  (`get_ready_seconds`) and the signals (`signal_sound`, `signal_vibration`). Plain columns: their
+  DDL default is exactly what the settings row already on a phone gets.
 
 ## The exercise catalog (task 067(2))
 
@@ -123,6 +161,7 @@ cannot load in Node. Same engine, same SQL, same schema and migrations — only 
 the database differs from the app's. The database is `:memory:` and built fresh per test, so there
 is nothing to clean up between tests and no shared state to leak. What a Node driver cannot prove
 is how the native binding behaves on a phone; that stays a manual check on a device. The one line
-that differs there is `sqlite/expoDatabase.ts`, which opens the app's own database file. `__tests__/storage/sqliteToolchain.test.ts` is the standing proof that this toolchain works
-under Jest.
+that differs there is `sqlite/expoDatabase.ts`, which opens the app's own database file.
+`__tests__/storage/sqliteToolchain.test.ts` is the standing proof that this toolchain works under
+Jest.
 

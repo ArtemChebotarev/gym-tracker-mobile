@@ -8,6 +8,7 @@ import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import type { SessionRepository } from '@repositories/session';
 import type { WorkoutStore } from '@repositories/workout';
 import { finishSession, type SessionFinishDeps } from '@usecases/sessionFinish';
+import { HEAVY_BAG } from '../fixtures/hybridExercises';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -77,9 +78,11 @@ function logFor(sessionExercise: SessionExercise): SetLog {
 
 const LIBRARY = ['bench', 'row'];
 
-async function setUp(
-  options: { session?: Session; exercises: SessionExercise[]; logs?: SetLog[] },
-): Promise<SessionFinishDeps> {
+async function setUp(options: {
+  session?: Session;
+  exercises: SessionExercise[];
+  logs?: SetLog[];
+}): Promise<SessionFinishDeps> {
   const store = db();
   const workout = createSqliteWorkoutStore(store);
   const mesocycleRepo = new SqliteMesocycleRepository(store);
@@ -224,6 +227,43 @@ describe('finishSession', () => {
     const result = await finishSession('session-w2', deps, NOW);
 
     expect(result.session).toMatchObject({ status: 'completed', completedAt: NOW });
+  });
+
+  // A day of only intervals is trained, not skipped: its rounds are its work. Skipped, the next
+  // week would plan from week 1 again and the lever would never step twice.
+  test('a session with only logged rounds is completed, and next week steps from it', async () => {
+    const bag: SessionExercise = {
+      ...makeExercise(HEAVY_BAG.id, 1, 'completed'),
+      setTargets: [
+        { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+      ],
+    };
+    await new SqliteExerciseRepository(db()).createCustom(HEAVY_BAG);
+    const deps = await setUp({ exercises: [bag] });
+    for (const roundNumber of [1, 2]) {
+      await deps.workout.repos.roundLogRepo.create({
+        ...STAMPS,
+        id: `round-${roundNumber}`,
+        sessionExerciseId: bag.id,
+        exerciseId: bag.exerciseId,
+        roundNumber,
+        workSec: 120,
+        restSec: 45,
+        restSkipped: false,
+        completed: true,
+        completedAt: '2026-09-18T10:30:00.000Z',
+      });
+    }
+
+    const result = await finishSession('session-w2', deps, NOW);
+
+    expect(result.session).toMatchObject({ status: 'completed', completedAt: NOW });
+    const [planned] = await deps.workout.repos.sessionExerciseRepo.listBySessionId(
+      result.nextSession!.id,
+    );
+    // HEAVY_BAG's lever: rest, by 15 s.
+    expect(planned?.setTargets.map((round) => round.targetRestSec)).toEqual([30, 30]);
   });
 
   test('DoD: finishing a deload session generates nothing', async () => {

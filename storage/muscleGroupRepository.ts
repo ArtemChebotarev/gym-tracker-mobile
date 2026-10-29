@@ -1,4 +1,4 @@
-import { MUSCLE_GROUPS } from '@domain/catalog';
+import { isCatalogMuscleGroup, MUSCLE_GROUPS } from '@domain/catalog';
 import type { MuscleGroup } from '@domain/catalog';
 import type { MuscleGroupRepository } from '@repositories/catalog';
 
@@ -17,6 +17,6 @@ export class MuscleGroupCatalogRepository implements MuscleGroupRepository {
   }
 
   async getById(id: MuscleGroup): Promise<MuscleGroup | null> {
-    return runAsync(() => (MUSCLE_GROUPS.includes(id) ? id : null));
+    return runAsync(() => (isCatalogMuscleGroup(id) ? id : null));
   }
 }

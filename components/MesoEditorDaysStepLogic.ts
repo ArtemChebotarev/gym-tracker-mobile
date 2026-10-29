@@ -5,9 +5,13 @@
 
 import type { Animated } from 'react-native';
 
-import type { Exercise } from '@domain/catalog';
+import { FULL_BODY, type Exercise } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import type { WeekPlanExercise } from '@domain/plan';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
+import type { IconComponent } from '@design/icons/IconFrame';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
@@ -27,8 +31,9 @@ export function getDayExercises(exercisesByDay: ExercisesByDay, dayNumber: numbe
 }
 
 /**
- * Appends `exerciseId` to `dayNumber` with the mockup's default sets (08.5, "Шаг 2": "степпер
- * sets с дефолтом 2") and the next `order`. Called once per selected exercise by
+ * Appends `exerciseId` to `dayNumber` with `sets` — the mockup's default (08.5, "Шаг 2": "степпер
+ * sets с дефолтом 2") unless the caller says otherwise, as for an interval's one round — and the
+ * next `order`. Called once per selected exercise by
  * app/meso-editor/new.tsx when task 077's "Add exercise" sheet confirms a (possibly multi-)
  * selection.
  */
@@ -36,10 +41,11 @@ export function addExerciseToDay(
   exercisesByDay: ExercisesByDay,
   dayNumber: number,
   exerciseId: string,
+  sets: number = DEFAULT_EXERCISE_SETS,
 ): ExercisesByDay {
   const existing = getDayExercises(exercisesByDay, dayNumber);
   const order = existing.reduce((highest, exercise) => Math.max(highest, exercise.order), -1) + 1;
-  const next: WeekPlanExercise = { exerciseId, order, sets: DEFAULT_EXERCISE_SETS };
+  const next: WeekPlanExercise = { exerciseId, order, sets };
   return { ...exercisesByDay, [dayNumber]: [...existing, next] };
 }
 
@@ -171,9 +177,56 @@ export function exerciseDotColor(exercisesById: ExercisesById, exerciseId: strin
   return category ? getCategoryColor(category) : undefined;
 }
 
+/**
+ * The line under the name: the muscle group, or — for an exercise without one (`fullBody`) — its
+ * type, the way the library files it (10.1 FR-1): `Power`, `Timed work`, `Mobility`.
+ */
 export function exerciseSubtitle(exercisesById: ExercisesById, exerciseId: string): string {
-  const muscleGroup = exercisesById[exerciseId]?.muscleGroup;
-  return muscleGroup ? getMuscleGroupLabel(muscleGroup) : '';
+  const exercise = exercisesById[exerciseId];
+  if (!exercise) {
+    return '';
+  }
+  return exercise.muscleGroup === FULL_BODY
+    ? getExerciseTypeLabel(exerciseTypeOf(exercise))
+    : getMuscleGroupLabel(exercise.muscleGroup);
+}
+
+/**
+ * What stands in for the group dot of an exercise that has no group colour — a `fullBody` hybrid
+ * one: the icon of its type (canvas 7.2). `undefined` wherever the dot has a colour to show.
+ */
+export function exerciseTypeIcon(exercisesById: ExercisesById, exerciseId: string): IconComponent | undefined {
+  const exercise = exercisesById[exerciseId];
+  if (!exercise || exerciseTypeOf(exercise) === 'strength' || exerciseDotColor(exercisesById, exerciseId)) {
+    return undefined;
+  }
+  return getExerciseTypeIcon(exerciseTypeOf(exercise));
+}
+
+/** 08.5, "Шаг 3": `N sets`. */
+export function formatSetCount(sets: number): string {
+  return `${sets} ${sets === 1 ? 'set' : 'sets'}`;
+}
+
+/** 08.5, "Шаг 3", for an interval: `N rounds`. */
+export function formatRoundCount(rounds: number): string {
+  return `${rounds} ${rounds === 1 ? 'round' : 'rounds'}`;
+}
+
+/**
+ * Whether the row has a stepper: strength and power for their sets, an interval for its rounds
+ * (GT-190). A mobility one is a single block with nothing to set (GT-191). The cycle editor sets
+ * nothing else (Artem, 27.10.2026).
+ */
+export function hasSetsStepper(exercisesById: ExercisesById, exerciseId: string): boolean {
+  const exercise = exercisesById[exerciseId];
+  return exercise === undefined || exerciseTypeOf(exercise) !== 'mobility';
+}
+
+/** What the row's stepper counts: an interval's rounds, every other exercise's sets. */
+export function stepperNoun(exercisesById: ExercisesById, exerciseId: string): 'rounds' | 'sets' {
+  const exercise = exercisesById[exerciseId];
+  return exercise !== undefined && exerciseTypeOf(exercise) === 'interval' ? 'rounds' : 'sets';
 }
 
 export function exerciseTitle(exercisesById: ExercisesById, exerciseId: string): string {

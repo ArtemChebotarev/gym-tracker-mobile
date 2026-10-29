@@ -1,11 +1,15 @@
-import { rirExplanation, rirTrack } from '@components/RirExplanationLogic';
+import { deloadExplanation, rirExplanation, rirTrack } from '@components/RirExplanationLogic';
 import type { PlateTextPart } from '@design/components/PlateRow';
 
 /** A row's text with its strong words kept apart, so a test reads both what it says and what it stresses. */
 function readRow(text: readonly PlateTextPart[]): { said: string; strong: string[] } {
   return {
-    said: text.map((part) => (typeof part === 'string' ? part : 'strong' in part ? part.strong : '')).join(''),
-    strong: text.flatMap((part) => (typeof part !== 'string' && 'strong' in part ? [part.strong] : [])),
+    said: text
+      .map((part) => (typeof part === 'string' ? part : 'strong' in part ? part.strong : ''))
+      .join(''),
+    strong: text.flatMap((part) =>
+      typeof part !== 'string' && 'strong' in part ? [part.strong] : [],
+    ),
   };
 }
 
@@ -118,5 +122,28 @@ describe('rirExplanation', () => {
     ]);
     // A deload's long reserve is drawn long.
     expect(text.track.outer.max).toBeGreaterThan(rirTrack(3).outer.max);
+  });
+});
+
+describe('deloadExplanation', () => {
+  test('a strength exercise keeps the RIR plate of the deload week', () => {
+    expect(deloadExplanation({ targetRir: 8 })).toEqual(
+      rirExplanation({ targetRir: 8, isDeload: true }),
+    );
+    expect(deloadExplanation({ type: 'strength' }).track).toBeDefined();
+  });
+
+  test('a power exercise has no RIR to draw, and says what changes by its load', () => {
+    const rows = (powerLoad?: 'weight' | 'level' | 'none') =>
+      deloadExplanation({
+        type: 'power',
+        ...(powerLoad === undefined ? {} : { powerLoad }),
+      }).rows.map((row) => readRow(row.text).said);
+
+    expect(deloadExplanation({ type: 'power' }).track).toBeUndefined();
+    expect(rows('weight')[1]).toBe('About half your usual load, two sets at most.');
+    expect(rows()[1]).toBe('About half your usual load, two sets at most.');
+    expect(rows('level')[1]).toBe('Same level, two sets at most.');
+    expect(rows('none')[1]).toBe('Same body weight, two sets at most.');
   });
 });

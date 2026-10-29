@@ -2,6 +2,7 @@ import {
   makeCatalogExercise,
   makeMesocycle,
   makeSession,
+  makeRoundLog,
   makeSessionExercise,
   makeSetLog,
 } from './fixtures';
@@ -9,15 +10,21 @@ import { type RepositoryHarness, type RepositorySet, useRepositories } from './h
 
 // SessionTreeRepository — a whole session as one tree, the shape the workout screen is built
 // from (08.7 · Тренировка). Session → Mesocycle, Session → SessionExercise → Exercise and
-// SessionExercise → SetLog are all assembled inside the repository (07 · Persistence Layer
+// SessionExercise → SetLog / RoundLog are all assembled inside the repository (07 · Persistence Layer
 // Contract, rules 2 and 4), so the use case layer only maps the result.
 
 const FIRST_EXERCISE = 'exercise-bench-press';
 const SECOND_EXERCISE = 'exercise-row';
 
 async function seedSession(repositories: RepositorySet): Promise<void> {
-  const { mesocycleRepo, exerciseRepo, sessionRepo, sessionExerciseRepo, setLogRepo } =
-    repositories;
+  const {
+    mesocycleRepo,
+    exerciseRepo,
+    sessionRepo,
+    sessionExerciseRepo,
+    setLogRepo,
+    roundLogRepo,
+  } = repositories;
   await mesocycleRepo.create(makeMesocycle({ name: 'Upper/lower' }));
   await exerciseRepo.seedCatalog([
     makeCatalogExercise(FIRST_EXERCISE),
@@ -45,6 +52,23 @@ async function seedSession(repositories: RepositorySet): Promise<void> {
       exerciseId: FIRST_EXERCISE,
     }),
   );
+  // An interval's rounds, also out of order.
+  await roundLogRepo.create(
+    makeRoundLog({
+      id: 'round-2',
+      sessionExerciseId: 'se-second',
+      roundNumber: 2,
+      exerciseId: SECOND_EXERCISE,
+    }),
+  );
+  await roundLogRepo.create(
+    makeRoundLog({
+      id: 'round-1',
+      sessionExerciseId: 'se-second',
+      roundNumber: 1,
+      exerciseId: SECOND_EXERCISE,
+    }),
+  );
 }
 
 export function describeSessionTreeContract(harness: RepositoryHarness): void {
@@ -70,6 +94,13 @@ export function describeSessionTreeContract(harness: RepositoryHarness): void {
       ]);
       expect(tree?.exercises[0]?.setLogs.map((setLog) => setLog.setNumber)).toEqual([1, 2]);
       expect(tree?.exercises[1]?.setLogs).toEqual([]);
+    });
+
+    test("carries each exercise's round logs, sorted by round", async () => {
+      const tree = await repositories().sessionTreeRepo.getBySessionId('session-1');
+
+      expect(tree?.exercises[0]?.roundLogs).toEqual([]);
+      expect(tree?.exercises[1]?.roundLogs.map((log) => log.roundNumber)).toEqual([1, 2]);
     });
 
     test('resolves null for a session that does not exist', async () => {

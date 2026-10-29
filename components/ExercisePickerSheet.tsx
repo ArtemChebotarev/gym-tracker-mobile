@@ -35,14 +35,14 @@ import { Button } from '@design/components/Button';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
 import { SectionHeader } from '@design/components/SectionHeader';
-import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 
 import { ExerciseFilterRow } from './ExerciseFilterRow';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import {
   countEntries,
   equipmentSuffix,
-  formatSubtitle,
+  buildSections,
+  rowSubtitle,
   sectionDotColor,
 } from './ExerciseLibraryScreenLogic';
 import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
@@ -146,20 +146,20 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       {isPending && <Text style={styles.status}>Loading…</Text>}
 
       {!isPending &&
-        (groups ?? []).map((group) => (
-          <View key={group.muscleGroup}>
+        buildSections(groups ?? []).map((section) => (
+          <View key={section.key}>
             <SectionHeader
-              title={getMuscleGroupLabel(group.muscleGroup)}
-              count={group.entries.length}
-              dotColor={sectionDotColor(group.muscleGroup)}
+              title={section.title}
+              count={section.data.length}
+              dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
             />
-            {group.entries.map((entry) => (
+            {section.data.map((entry) => (
               <ListRow
                 key={entry.exercise.id}
                 title={entry.exercise.name}
                 titleSuffix={equipmentSuffix(entry.exercise)}
-                subtitle={formatSubtitle(entry.lastSetLog)}
+                subtitle={rowSubtitle(entry)}
                 leading={{
                   type: 'checkbox',
                   checked:

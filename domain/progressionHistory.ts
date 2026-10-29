@@ -11,7 +11,7 @@ import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
 import { nextTargetReps, startTargetReps } from '@domain/progressionReps';
-import { weightHintForReps } from '@domain/progressionWeightHint';
+import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
@@ -36,7 +36,7 @@ export function referenceSetAt(
  * - another block: + 1 and the RIR gap, as Flow C carries a block over (`startTargetReps`);
  * - the current week: reps as they were — a parallel performance, not a previous one.
  */
-function estimatedReps(
+export function estimatedReps(
   reference: SetLog,
   resolution: Extract<ReferenceResolution, { kind: 'estimate' }>,
   weekRir: number,
@@ -103,16 +103,16 @@ export function prescribeFromHistory(
       estimate.estimate = resolution.reason;
       return estimate;
     }
-    const target: SetTarget = {
-      setNumber,
-      targetReps: nextTargetReps(reference.reps, settings),
-    };
+    const hint = hintForReps(reference.reps, settings, equipment);
+    const target: SetTarget = { setNumber };
+    if (!bandAtCeiling(hint, equipment)) {
+      target.targetReps = nextTargetReps(reference.reps, settings);
+    }
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;
-      const hint = weightHintForReps(reference.reps, settings);
-      if (hint !== undefined) {
-        target.weightHint = hint;
-      }
+    }
+    if (hint !== undefined) {
+      target.weightHint = hint;
     }
     return target;
   });

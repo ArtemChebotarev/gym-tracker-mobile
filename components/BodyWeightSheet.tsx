@@ -8,7 +8,7 @@
 // version popped up on opening the session and one stray tap on the backdrop retired the question
 // for good).
 //
-// Fully controlled, like ExerciseFormSheet: the caller owns the in-progress text and the save.
+// Fully controlled, like ExerciseFormScreen: the caller owns the in-progress text and the save.
 // JSX/rendering only — styles live in BodyWeightSheetStyles.ts and pure helpers in
 // BodyWeightSheetLogic.ts, per the code-style skill.
 

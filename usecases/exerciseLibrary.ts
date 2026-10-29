@@ -7,6 +7,7 @@ import {
   type Equipment,
   type Exercise,
   type ExerciseId,
+  type ExerciseType,
   type MuscleGroup,
 } from '@domain/catalog';
 import {
@@ -16,24 +17,38 @@ import {
 } from '@domain/catalogListing';
 import {
   normalizeExerciseName,
+  validateEquipmentForType,
   validateExerciseEquipment,
-  validateExerciseMuscleGroup,
 } from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
-import type { SetLog } from '@domain/execution';
+import type { RoundLog, SetLog } from '@domain/execution';
+import type { ExerciseConfig, PowerConfig } from '@domain/exerciseConfig';
+import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import {
+  assertTypeUnchanged,
+  validateExerciseConfig,
+  validateExerciseMuscleGroupFor,
+  validateExerciseType,
+} from '@domain/exerciseConfigValidators';
 import { generateId } from '@domain/id';
 import type { ExerciseRepository } from '@repositories/catalog';
+import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 
 export type ExerciseLibraryDeps = {
   exerciseRepo: ExerciseRepository;
   setLogRepo: SetLogRepository;
+  roundLogRepo: RoundLogRepository;
 };
 
 export type CreateCustomExerciseInput = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  /** Absent means `strength`. */
+  type?: ExerciseType;
+  /** Absent means the type's system defaults (`defaultExerciseConfig`). */
+  config?: ExerciseConfig;
 };
 
 export type UpdateCustomExerciseInput = {
@@ -41,7 +56,22 @@ export type UpdateCustomExerciseInput = {
   name: string;
   muscleGroup: MuscleGroup;
   equipment?: Equipment;
+  /** Absent leaves the exercise's type as it is. */
+  type?: ExerciseType;
+  /** Absent leaves the config as it is — or, if the type changes, takes the new type's defaults. */
+  config?: ExerciseConfig;
 };
+
+/**
+ * `type` and `config` as they go onto an exercise: a strength exercise carries neither key, so
+ * what is stored for one is exactly what was stored before the hybrid types existed.
+ */
+function typeFields(
+  type: ExerciseType,
+  config: ExerciseConfig | undefined,
+): Pick<Exercise, 'type' | 'config'> {
+  return type === 'strength' ? {} : { type, config };
+}
 
 /** Creates a custom exercise (08.6, "New exercise — лист"). */
 export async function createCustomExercise(
@@ -49,8 +79,13 @@ export async function createCustomExercise(
   deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
 ): Promise<Exercise> {
   const name = normalizeExerciseName(input.name);
-  validateExerciseMuscleGroup(input.muscleGroup);
+  const type = input.type ?? 'strength';
+  validateExerciseType(type);
+  validateExerciseMuscleGroupFor(type, input.muscleGroup);
   validateExerciseEquipment(input.equipment);
+  validateEquipmentForType(type, input.equipment);
+  const config = input.config ?? defaultExerciseConfig(type);
+  validateExerciseConfig(type, config);
 
   return deps.exerciseRepo.createCustom({
     id: toExerciseId(generateId()),
@@ -59,17 +94,19 @@ export async function createCustomExercise(
     source: 'custom',
     equipment: input.equipment,
     isHidden: false,
+    ...typeFields(type, config),
   });
 }
 
 /**
  * Edits an existing custom exercise. Rejects with `NotFoundError` if `input.id` doesn't exist,
  * or `ConflictError` if it isn't a custom exercise (08.6: "Каталожное упражнение открыть в этом
- * листе нельзя").
+ * листе нельзя") or if its type is being changed while anything — a set or a round — has been
+ * logged for it (10 · Hybrid Exercises).
  */
 export async function updateCustomExercise(
   input: UpdateCustomExerciseInput,
-  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+  deps: ExerciseLibraryDeps,
 ): Promise<Exercise> {
   const existing = await deps.exerciseRepo.getById(input.id);
   if (!existing) {
@@ -80,14 +117,33 @@ export async function updateCustomExercise(
   }
 
   const name = normalizeExerciseName(input.name);
-  validateExerciseMuscleGroup(input.muscleGroup);
+  const currentType = exerciseTypeOf(existing);
+  const type = input.type ?? currentType;
+  validateExerciseType(type);
+  if (type !== currentType) {
+    // Only asked when the type is actually changing — a rename shouldn't cost two reads.
+    const [lastSet, lastRound] = await Promise.all([
+      deps.setLogRepo.getLastByExerciseId(existing.id),
+      deps.roundLogRepo.getLastByExerciseId(existing.id),
+    ]);
+    assertTypeUnchanged(currentType, type, lastSet !== null || lastRound !== null);
+  }
+  validateExerciseMuscleGroupFor(type, input.muscleGroup);
   validateExerciseEquipment(input.equipment);
+  validateEquipmentForType(type, input.equipment);
+  // A changed type brings its own defaults — the old config is the old type's. An unchanged one
+  // keeps what it has unless the caller sends a new one.
+  const config =
+    input.config ?? (type === currentType ? existing.config : defaultExerciseConfig(type));
+  validateExerciseConfig(type, config);
 
+  const { type: _type, config: _config, ...rest } = existing;
   return deps.exerciseRepo.updateCustom({
-    ...existing,
+    ...rest,
     name,
     muscleGroup: input.muscleGroup,
     equipment: input.equipment,
+    ...typeFields(type, config),
   });
 }
 
@@ -111,6 +167,54 @@ export async function hideExercise(
 }
 
 /**
+ * Sets the power flag "No heavier available" (10.2 P9, GT-81): the user said there is nothing
+ * heavier to take, so the hint at the top of the corridor offers a harder variation instead.
+ * Only the flag changes, nothing else of the exercise. It is a custom exercise's own field; a
+ * catalog exercise is read-only (02 · Domain Model: only hiding it is the user's), so asking it
+ * is a conflict, and so is asking an exercise that is not power.
+ */
+export async function setNoHeavierAvailable(
+  id: ExerciseId,
+  value: boolean,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  return updatePowerConfig(id, { noHeavierAvailable: value }, deps);
+}
+
+/**
+ * Closes the note at the top of a power exercise's corridor for good (GT-81). Same rules as the
+ * flag above — a custom power exercise's own field, one part of its config changed and nothing
+ * else — and there is no way back yet.
+ */
+export async function hideCeilingTip(
+  id: ExerciseId,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  return updatePowerConfig(id, { ceilingTipHidden: true }, deps);
+}
+
+async function updatePowerConfig(
+  id: ExerciseId,
+  patch: Partial<PowerConfig>,
+  deps: Pick<ExerciseLibraryDeps, 'exerciseRepo'>,
+): Promise<Exercise> {
+  const existing = await deps.exerciseRepo.getById(id);
+  if (!existing) {
+    throw new NotFoundError(`Exercise "${id}" does not exist.`);
+  }
+  if (existing.source !== 'custom') {
+    throw new ConflictError(`Exercise "${id}" is a catalog exercise; only hiding it can change.`);
+  }
+  if (existing.config?.type !== 'power') {
+    throw new ConflictError(`Exercise "${id}" is not a power exercise.`);
+  }
+  return deps.exerciseRepo.updateCustom({
+    ...existing,
+    config: { ...existing.config, ...patch },
+  });
+}
+
+/**
  * Resolves a set of exercise ids to their `Exercise` records — e.g. the mesocycle editor's Days
  * & exercises step (08.5, "Шаг 2") rendering each `WeekPlanExercise.exerciseId` it holds as a
  * name/muscle-group row. Ids that don't resolve are silently omitted, same as
@@ -130,12 +234,18 @@ export async function listExerciseGroups(
 ): Promise<ExerciseListGroup[]> {
   const exercises = await deps.exerciseRepo.getAll();
 
-  const lastSetLogEntries = await Promise.all(
-    exercises.map(async (exercise): Promise<[string, SetLog | null]> => {
-      const lastSetLog = await deps.setLogRepo.getLastByExerciseId(exercise.id);
-      return [exercise.id, lastSetLog];
-    }),
+  const lastLogEntries = await Promise.all(
+    exercises.map(async (exercise): Promise<[string, SetLog | null, RoundLog | null]> => [
+      exercise.id,
+      await deps.setLogRepo.getLastByExerciseId(exercise.id),
+      await deps.roundLogRepo.getLastByExerciseId(exercise.id),
+    ]),
   );
 
-  return buildExerciseListGroups(exercises, new Map(lastSetLogEntries), query);
+  return buildExerciseListGroups(
+    exercises,
+    new Map(lastLogEntries.map(([id, setLog]) => [id, setLog])),
+    query,
+    new Map(lastLogEntries.map(([id, , roundLog]) => [id, roundLog])),
+  );
 }

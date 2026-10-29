@@ -2,7 +2,14 @@
 // "Preview непосчитанного дня") and 05 · Workout Execution & Logging. Pure: the use case layer reads
 // the session tree and maps it with these.
 
-import type { Session, SessionExercise, SetLog, SetTarget, WeightHint } from '@domain/execution';
+import type {
+  RoundLog,
+  Session,
+  SessionExercise,
+  SetLog,
+  SetTarget,
+  WeightHint,
+} from '@domain/execution';
 import type { Mesocycle, ProgressionSettings } from '@domain/mesocycle';
 import { isFinalMesocycle } from '@domain/mesocycleLifecycle';
 import { isNotDone } from '@domain/sessionExerciseStatus';
@@ -45,10 +52,13 @@ export function sessionDisplayDate(
 export type ProgressExercise = {
   sessionExercise: Pick<SessionExercise, 'setTargets' | 'status'>;
   setLogs: readonly Pick<SetLog, 'setNumber'>[];
+  /** An interval's logged rounds — rows like sets, by round number. */
+  roundLogs?: readonly Pick<RoundLog, 'roundNumber'>[];
 };
 
 /**
- * Share of the session's set rows that are done, 0..1 (08.7, "Шапка", progress bar): logged rows
+ * Share of the session's rows — sets and an interval's rounds — that are done, 0..1 (08.7, "Шапка",
+ * progress bar): logged rows
  * plus every row of a skipped or abandoned exercise (`isNotDone`), over all rows. A completed session is always 1; a session
  * with no rows is 0.
  */
@@ -61,13 +71,16 @@ export function sessionProgress(
   }
   let total = 0;
   let done = 0;
-  for (const { sessionExercise, setLogs } of exercises) {
+  for (const { sessionExercise, setLogs, roundLogs = [] } of exercises) {
     const rows = sessionExercise.setTargets.length;
     total += rows;
     if (isNotDone(sessionExercise.status)) {
       done += rows;
     } else {
-      const logged = new Set(setLogs.map((log) => log.setNumber));
+      const logged = new Set([
+        ...setLogs.map((log) => log.setNumber),
+        ...roundLogs.map((log) => log.roundNumber),
+      ]);
       done += sessionExercise.setTargets.filter((target) => logged.has(target.setNumber)).length;
     }
   }

@@ -4,13 +4,14 @@
 // факта"). Orchestration only — targets come from rule 6 (`targetsFromHistory`), the week's RIR
 // from rule 4.
 
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId, type Equipment } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
 import { targetRir } from '@domain/progressionRir';
 import { nextOrder } from '@domain/sessionExerciseOrder';
-import { ADDED_EXERCISE_SET_COUNT } from '@domain/sessionExerciseSets';
+import { addedExerciseRowCount } from '@domain/sessionExerciseSets';
 import { nowAsUtcIso } from '@domain/time';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
@@ -34,9 +35,9 @@ export type ExerciseAdditionInput = {
 
 /**
  * Appends one session exercise per `exerciseIds` entry to the end of the session, in one
- * transaction: 2 set rows with rule 6 targets from the exercise's last performance (none → the
- * screen shows `N RIR`), the week's `targetRir`, status `planned`. Resolves to the new session
- * exercises, in order.
+ * transaction: its rows (`addedExerciseRowCount` — 2 sets or rounds, one mobility block) with
+ * rule 6 targets from the exercise's last performance (none → the screen shows `N RIR`), the
+ * week's `targetRir`, status `planned`. Resolves to the new session exercises, in order.
  *
  * Rejects with `ConflictError` in a deload session (03, rule 6: nothing can be added there) and in
  * a final or `awaiting_source` one, and with `NotFoundError` if the session or its mesocycle
@@ -61,8 +62,9 @@ export async function addExercises(
 
     const catalog = await deps.exerciseRepo.listByIds(input.exerciseIds.map(toExerciseId));
     const equipmentById = new Map<string, Equipment | undefined>(
-      catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
+      catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
     );
+    const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
     const added: Unsaved<SessionExercise>[] = [];
@@ -76,10 +78,11 @@ export async function addExercises(
           {
             exerciseId,
             session,
-            rowCount: ADDED_EXERCISE_SET_COUNT,
+            rowCount: addedExerciseRowCount(typeById.get(exerciseId)),
             weekRir,
             settings: mesocycle.progressionSettings,
             equipment: equipmentById.get(exerciseId),
+            type: typeById.get(exerciseId),
             now,
           },
           repos.setLogRepo,

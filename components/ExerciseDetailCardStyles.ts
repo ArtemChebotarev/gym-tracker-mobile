@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
   block: {
     gap: SPACING['space/gap-tight'],
   },
-  /** `LAST SESSION` on the left, `Week 3 · Day 1 · 10 Aug` on the right. */
+  /** The label on the left, its meta (a History session's date) on the right. */
   // Inset by the card's own padding: the label and its date start and end where the text inside
   // the card does, not at the card's edge.
   labelRow: {
@@ -40,6 +40,12 @@ export const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
+    color: COLORS['text/muted'],
+  },
+  // Inset like the label row, so it starts where the text inside the card does.
+  footnote: {
+    paddingHorizontal: SPACING['space/row'],
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/muted'],
   },
   // No border of its own: rows are separated by hairlines inside it (08.0: "Разделитель между

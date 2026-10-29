@@ -7,11 +7,13 @@
 // is the primitive, and the Overview tab (domain/exerciseOverview.ts) is a narrowing of it, not
 // the other way round.
 
-import type { Session, SetLog } from './execution';
+import type { RoundLog, Session, SetLog } from './execution';
 import type { Mesocycle } from './mesocycle';
 
 /**
- * One performance of an exercise: a session and the sets logged for that exercise in it. It's
+ * One performance of an exercise: a session and the sets or rounds logged for that exercise in
+ * it. A strength or power exercise logs sets, an interval or mobility one rounds (10.1 FR-7); a
+ * performance holds whichever its exercise has and the other list is empty. It's
  * defined here rather than in the repository that reads it — `repositories/exerciseHistory.ts`
  * reuses this type, since the domain can't depend on a repository but a repository can depend on
  * the domain.
@@ -23,6 +25,8 @@ export type ExercisePerformance = {
   session: Session;
   /** The sets logged in that session for this exercise, sorted by `setNumber`. */
   setLogs: SetLog[];
+  /** The rounds logged in that session for this exercise, sorted by `roundNumber`. */
+  roundLogs: RoundLog[];
 };
 
 /**
@@ -37,7 +41,8 @@ export type ExerciseHistoryPerformance = ExercisePerformance & {
 export type ExerciseHistorySession = {
   /**
    * Unique per row, not per session: one session can hold two performances of the same exercise,
-   * and both are listed. Taken from the row's first set log, which every listed row has.
+   * and both are listed. Taken from the row's first set or round log, one of which every listed
+   * row has.
    */
   id: string;
   weekNumber: number;
@@ -46,6 +51,8 @@ export type ExerciseHistorySession = {
   completedAt: string;
   /** Every set of this exercise in that session, ascending by `setNumber`. */
   setLogs: SetLog[];
+  /** Every round of this exercise in that session, ascending by `roundNumber` (10.1 FR-12). */
+  roundLogs: RoundLog[];
 };
 
 /** One section of the history list: a mesocycle and what was done in it. */

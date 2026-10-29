@@ -1,5 +1,5 @@
 // Pure helpers behind an exercise card's `⋯` menu (08.7, "Меню упражнения") — see the code-style
-// skill. The menu itself is `ActionMenu` (117), rendered by components/WorkoutExerciseCard.tsx;
+// skill. The menu itself is `ActionMenu` (117), rendered by components/ExerciseCardFrame.tsx;
 // this only decides which actions an exercise offers and how each one reads.
 
 import type { ActionMenuItem } from '@design/components/ActionMenu';
@@ -13,7 +13,12 @@ import { SwapIcon } from '@design/icons/SwapIcon';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ExerciseCommand } from '@state/useExerciseCommand';
-import type { WorkoutExerciseActions } from '@usecases/workoutSession';
+import type {
+  RoundExerciseActions,
+  SetExerciseActions,
+  WorkoutExercise,
+  WorkoutExerciseActions,
+} from '@usecases/workoutSession';
 
 /** The exercise menu's actions (08.7, "Меню упражнения"): Replace plus the one-tap commands. */
 export type ExerciseMenuItem = 'replace' | ExerciseCommand;
@@ -33,6 +38,8 @@ export const EXERCISE_MENU_ACTIONS: Record<
   },
   addSet: { label: 'Add set', icon: PlusIcon, systemImage: 'plus' },
   removeLastSet: { label: 'Remove last set', icon: MinusIcon, systemImage: 'minus' },
+  addRound: { label: 'Add round', icon: PlusIcon, systemImage: 'plus' },
+  removeLastRound: { label: 'Remove last round', icon: MinusIcon, systemImage: 'minus' },
   moveUp: { label: 'Move up', icon: ArrowUpIcon, systemImage: 'arrow.up' },
   moveDown: { label: 'Move down', icon: ArrowDownIcon, systemImage: 'arrow.down' },
   skip: { label: 'Skip exercise', icon: SkipIcon, systemImage: 'forward.end' },
@@ -46,34 +53,96 @@ export type ExerciseMenuRow = {
   disabledReason?: string;
 };
 
+function menuRow(item: ExerciseMenuItem, available: boolean, reason: string): ExerciseMenuRow {
+  return available ? { item } : { item, disabledReason: reason };
+}
+
 /**
- * The rows of an exercise's menu, in the 08.7 order. Remove last set and the moves stay listed
- * when they're not available, disabled with the reason (`Only one set`, `Already first`, `Already
- * last`); Skip and Unskip take turns in one place. Replace, Add set, Skip and Delete are always
- * available, logged sets or not — 088 works all of it out from the exercise.
+ * The rows of an exercise's menu, in the 08.7 order: Replace, then the type's own rows
+ * (`typeMenuRows`), then what every type has. The moves stay listed when they're not available,
+ * disabled with the reason (`Already first`, `Already last`); Skip and Unskip take turns in one
+ * place. Replace, Skip and Delete are always available, logged sets or not — 088 works all of it
+ * out from the exercise.
  */
-export function exerciseMenuRows(actions: WorkoutExerciseActions): ExerciseMenuRow[] {
-  const row = (item: ExerciseMenuItem, available: boolean, reason: string): ExerciseMenuRow =>
-    available ? { item } : { item, disabledReason: reason };
+export function exerciseMenuRows(
+  actions: WorkoutExerciseActions,
+  typeRows: readonly ExerciseMenuRow[],
+): ExerciseMenuRow[] {
   return [
     { item: 'replace' },
-    { item: 'addSet' },
-    row('removeLastSet', actions.canRemoveLastSet, 'Only one set'),
-    row('moveUp', actions.canMoveUp, 'Already first'),
-    row('moveDown', actions.canMoveDown, 'Already last'),
+    ...typeRows,
+    menuRow('moveUp', actions.canMoveUp, 'Already first'),
+    menuRow('moveDown', actions.canMoveDown, 'Already last'),
     { item: actions.canUnskip ? 'unskip' : 'skip' },
     { item: 'delete' },
   ];
 }
 
-function formatSetCount(count: number, qualifier?: string): string {
-  const noun = `set${count === 1 ? '' : 's'}`;
+/**
+ * The set rows' own menu rows: Add set, always available, and Remove last set, which stays listed
+ * with a single row, disabled with `Only one set`.
+ */
+export function setMenuRows(actions: SetExerciseActions): ExerciseMenuRow[] {
+  return [{ item: 'addSet' }, menuRow('removeLastSet', actions.canRemoveLastSet, 'Only one set')];
+}
+
+/**
+ * An interval card's own menu rows (GT-91; 10.1, "Меню ⋯ — как у силовых"): Add round, always
+ * available, and Remove last round, which stays listed with a single round, disabled with
+ * `Only one round`.
+ */
+export function roundMenuRows(actions: RoundExerciseActions): ExerciseMenuRow[] {
+  return [
+    { item: 'addRound' },
+    menuRow('removeLastRound', actions.canRemoveLastRound, 'Only one round'),
+  ];
+}
+
+/**
+ * The rows a card's type puts into its menu: a card of set rows Add set and Remove last set, an
+ * interval card Add round and Remove last round, a mobility card none — it is one block (FR-1).
+ */
+export function typeMenuRows(exercise: WorkoutExercise): ExerciseMenuRow[] {
+  switch (exercise.type) {
+    case 'interval':
+      return roundMenuRows(exercise.actions);
+    case 'mobility':
+      return [];
+    default:
+      return setMenuRows(exercise.actions);
+  }
+}
+
+/**
+ * What an exercise has planned and logged, in its own unit — sets, an interval's rounds or a
+ * mobility block. The
+ * menu's subtitle and the Skip / Delete / Replace confirmations count in it.
+ */
+export type ExerciseLogCounts = {
+  unit: 'set' | 'round' | 'block';
+  planned: number;
+  logged: number;
+};
+
+export function exerciseLogCounts(exercise: WorkoutExercise): ExerciseLogCounts {
+  switch (exercise.type) {
+    case 'interval':
+      return { unit: 'round', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+    case 'mobility':
+      return { unit: 'block', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+    default:
+      return { unit: 'set', planned: exercise.plannedSetCount, logged: exercise.loggedSetCount };
+  }
+}
+
+function formatCount(count: number, unit: ExerciseLogCounts['unit'], qualifier?: string): string {
+  const noun = `${unit}${count === 1 ? '' : 's'}`;
   return qualifier === undefined ? `${count} ${noun}` : `${count} ${qualifier} ${noun}`;
 }
 
 /** The sheet's subtitle (08.7, "Меню упражнения"): `2 sets planned · 1 logged`. */
-export function formatExerciseMenuSubtitle(plannedSetCount: number, loggedSetCount: number) {
-  return `${formatSetCount(plannedSetCount)} planned · ${loggedSetCount} logged`;
+export function formatExerciseMenuSubtitle({ unit, planned, logged }: ExerciseLogCounts) {
+  return `${formatCount(planned, unit)} planned · ${logged} logged`;
 }
 
 /**
@@ -81,8 +150,8 @@ export function formatExerciseMenuSubtitle(plannedSetCount: number, loggedSetCou
  * the exercise — its logged sets. By the app's own logic there are never none here (Artem,
  * 29.09.2026), so there is no wording for none.
  */
-export function formatDeleteExerciseWarning(loggedSetCount: number): string {
-  return `Delete exercise with ${formatSetCount(loggedSetCount, 'logged')}?`;
+export function formatDeleteExerciseWarning({ unit, logged }: ExerciseLogCounts): string {
+  return `Delete exercise with ${formatCount(logged, unit, 'logged')}?`;
 }
 
 /**
@@ -90,19 +159,20 @@ export function formatDeleteExerciseWarning(loggedSetCount: number): string {
  * takes — the sets not logged yet. Logged sets stay either way. By the app's own logic there are
  * never none left here (Artem, 29.09.2026), so there is no wording for none.
  */
-export function formatSkipExerciseWarning(plannedSetCount: number, loggedSetCount: number) {
-  const unlogged = plannedSetCount - loggedSetCount;
-  return `Skip the exercise with ${formatSetCount(unlogged, 'unlogged')}?`;
+export function formatSkipExerciseWarning({ unit, planned, logged }: ExerciseLogCounts) {
+  return `Skip the exercise with ${formatCount(planned - logged, unit, 'unlogged')}?`;
 }
 
 /**
  * The Replace exercise danger confirmation's message (05, "Заменить упражнение"), shown before the
  * picker opens and only when the exercise has logged sets: they're deleted by the swap.
  */
-export function formatReplaceExerciseWarning(exerciseName: string, loggedSetCount: number) {
-  return `The ${formatSetCount(loggedSetCount)} logged for ${exerciseName} will be deleted.`;
+export function formatReplaceExerciseWarning(
+  exerciseName: string,
+  { unit, logged }: ExerciseLogCounts,
+) {
+  return `The ${formatCount(logged, unit)} logged for ${exerciseName} will be deleted.`;
 }
-
 
 /**
  * An exercise's menu as `ActionMenu` takes it: the rows above, each carrying the handler the card
@@ -110,13 +180,15 @@ export function formatReplaceExerciseWarning(exerciseName: string, loggedSetCoun
  * it rather than hiding it, so the reason is what explains the gap.
  */
 export function workoutExerciseMenuActions(
-  actions: WorkoutExerciseActions,
+  exercise: WorkoutExercise,
   onAction: (item: ExerciseMenuItem) => void,
 ): ActionMenuItem[] {
-  return exerciseMenuRows(actions).map(({ item, disabledReason }) => ({
-    key: item,
-    ...EXERCISE_MENU_ACTIONS[item],
-    disabledReason,
-    onPress: () => onAction(item),
-  }));
+  return exerciseMenuRows(exercise.actions, typeMenuRows(exercise)).map(
+    ({ item, disabledReason }) => ({
+      key: item,
+      ...EXERCISE_MENU_ACTIONS[item],
+      disabledReason,
+      onPress: () => onAction(item),
+    }),
+  );
 }

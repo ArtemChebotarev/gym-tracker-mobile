@@ -247,8 +247,10 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
                     },
                     {
                       "$type": "foregroundStyle",
-                      "color": "#C9CDD2",
-                      "styleType": "color",
+                      "style": {
+                        "color": "#C9CDD2",
+                        "type": "color",
+                      },
                     },
                   ]
                 }

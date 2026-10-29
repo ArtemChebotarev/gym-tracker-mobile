@@ -35,6 +35,8 @@ export type WizardScreenProps = {
   totalSteps: number;
   /** Passed through to WizardHeader — see `WizardTitlePlacement`. Defaults to `heading`. */
   titlePlacement?: WizardTitlePlacement;
+  /** Passed through to WizardHeader — see `titleAccessory` there. */
+  titleAccessory?: ReactNode;
   /**
    * The step's action bar, under a divider. Absent on a step that moves on some other way — Flow B's
    * template list, where a template is picked in its own sheet — so no empty bar is drawn there.
@@ -48,6 +50,7 @@ export function WizardScreen({
   currentStep,
   totalSteps,
   titlePlacement,
+  titleAccessory,
   footer,
   children,
   onClose,
@@ -62,6 +65,7 @@ export function WizardScreen({
             currentStep={currentStep}
             totalSteps={totalSteps}
             titlePlacement={titlePlacement}
+            titleAccessory={titleAccessory}
             onClose={onClose}
           />
         ) : (
@@ -70,6 +74,7 @@ export function WizardScreen({
             currentStep={currentStep}
             totalSteps={totalSteps}
             titlePlacement={titlePlacement}
+            titleAccessory={titleAccessory}
             onBack={onBack!}
           />
         )}

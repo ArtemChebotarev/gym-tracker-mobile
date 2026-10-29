@@ -5,7 +5,8 @@
 // stay in `domain/`; this reads the history window they are priced from, the part that needs
 // storage.
 
-import { toExerciseId, type Equipment } from '@domain/catalog';
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
+import { toExerciseId, type Equipment, type Exercise } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
 import type { Mesocycle, MesocycleOrigin } from '@domain/mesocycle';
@@ -15,9 +16,10 @@ import {
   type WeekOneTargets,
 } from '@domain/mesocycleBuilders';
 import { validateMesocycleCanStart, type StartableMesocycle } from '@domain/mesocycleValidators';
+import type { WeekPlan } from '@domain/plan';
 import type { ExercisePerformance } from '@domain/progression';
 import { resolveReference } from '@domain/progressionReference';
-import { prescribeBlockStart } from '@domain/progressionStartReps';
+import { policyFor } from '@domain/progressionPolicies';
 import { targetRir } from '@domain/progressionRir';
 import { daysBefore, nowAsUtcIso } from '@domain/time';
 import type { MesocycleStartRepositories, MesocycleStartStore } from '@repositories/mesocycleStart';
@@ -29,11 +31,19 @@ export type MesocycleStartDeps = {
 /** Week 1 of a mesocycle is never the deload one — a block is at least 3 weeks long. */
 const FIRST_WEEK = 1;
 
+/** Each exercise of `plan` once, whichever days it is on. */
+function planExerciseIds(plan: WeekPlan): string[] {
+  return [
+    ...new Set(plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
+  ];
+}
+
 /**
- * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"): per
+ * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"; an
+ * interval's rounds too, 10.1 FR-9 and GT-185): per
  * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
  * that day (`resolveReference`, task 134.2) among the exercise's performances inside
- * `historyLookbackDays`, re-priced for this block's starting RIR by `prescribeBlockStart`.
+ * `historyLookbackDays`, re-priced for this block's starting RIR by the exercise type's policy (`prescribeBlockStart`).
  *
  * The source week gave the structure and nothing else. The numbers come from history because
  * copying rarely happens the day the block ended: between that week and this Start the user kept
@@ -54,13 +64,12 @@ const FIRST_WEEK = 1;
  */
 async function weekOneTargetsFromHistory(
   mesocycle: StartableMesocycle & { origin: Extract<MesocycleOrigin, { type: 'copyWeek' }> },
+  catalog: readonly Exercise[],
   repos: MesocycleStartRepositories,
   now: string,
 ): Promise<WeekOneTargets> {
   const plan = mesocycle.weekPlan;
-  const exerciseIds = [
-    ...new Set(plan.days.flatMap((day) => day.exercises.map((exercise) => exercise.exerciseId))),
-  ];
+  const exerciseIds = planExerciseIds(plan);
   const settings = mesocycle.progressionSettings;
   const since = daysBefore(now, settings.historyLookbackDays);
 
@@ -72,10 +81,10 @@ async function weekOneTargetsFromHistory(
       ),
     ),
   );
-  const catalog = await repos.exerciseRepo.listByIds(exerciseIds.map(toExerciseId));
   const equipmentById = new Map<string, Equipment | undefined>(
-    catalog.map((exercise) => [exercise.id as string, exercise.equipment]),
+    catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
   );
+  const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
 
   const startRir = targetRir(mesocycle.lengthWeeks, FIRST_WEEK);
   const targets = new Map<string, (rowCount: number) => SetTarget[]>();
@@ -93,8 +102,15 @@ async function weekOneTargetsFromHistory(
         continue;
       }
       const equipment = equipmentById.get(exercise.exerciseId);
+      const policy = policyFor({ type: typeById.get(exercise.exerciseId) });
       targets.set(slot, (rowCount) =>
-        prescribeBlockStart(resolution, startRir, rowCount, settings, equipment),
+        policy.prescribeBlockStart({
+          resolution,
+          startRir,
+          rowCount,
+          settings,
+          ...(equipment === undefined ? {} : { equipment }),
+        }),
       );
     }
   }
@@ -108,7 +124,10 @@ async function weekOneTargetsFromHistory(
  * it active without its sessions.
  *
  * A `copyWeek` block's week 1 gets its reps and weights here, from each exercise's own history —
- * this is the only place Start reads history, and Flow A and B don't reach it at all.
+ * this is the only place Start reads history, and Flow A and B don't reach it at all — an interval's
+ * work and rest included (GT-185), so theirs start empty and are picked on the card (GT-187). Every
+ * flow reads the plan's exercise records, though: an interval's rounds and a mobility block are laid
+ * out by type (GT-160).
  *
  * Whether the launch may happen at all is settled first, by `validateMesocycleCanStart`: the
  * history read that follows is one query per exercise, and a Start that was going to be refused
@@ -130,12 +149,22 @@ export async function startMesocycle(
     const active = await repos.mesocycleRepo.getActive();
     validateMesocycleCanStart(mesocycle, active);
 
+    // Every flow reads the plan's exercises: their types decide what week 1's rows are (GT-160).
+    const catalog = await repos.exerciseRepo.listByIds(
+      planExerciseIds(mesocycle.weekPlan).map(toExerciseId),
+    );
     const { origin } = mesocycle;
     const weekOneTargets =
       origin.type === 'copyWeek'
-        ? await weekOneTargetsFromHistory({ ...mesocycle, origin }, repos, now)
+        ? await weekOneTargetsFromHistory({ ...mesocycle, origin }, catalog, repos, now)
         : undefined;
-    const start = buildMesocycleStart(mesocycle, active, now, weekOneTargets);
+    const start = buildMesocycleStart(
+      mesocycle,
+      active,
+      now,
+      weekOneTargets,
+      new Map(catalog.map((exercise) => [exercise.id as string, exercise])),
+    );
 
     await repos.sessionRepo.createMany(start.week.map(({ session }) => session));
     await repos.sessionExerciseRepo.createMany(start.week.flatMap(({ exercises }) => exercises));

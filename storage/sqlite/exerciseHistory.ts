@@ -1,16 +1,19 @@
-import type { Session, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SetLog, SetTarget } from '@domain/execution';
 import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import { and, asc, eq, inArray, ne } from 'drizzle-orm';
 
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
-import { rowToMesocycle, rowToSession, rowToSetLog } from './mappers';
-import { mesocycles, sessionExercises, sessions, setLogs } from './schema';
+import { rowToMesocycle, rowToRoundLog, rowToSession, rowToSetLog } from './mappers';
+import { mesocycles, roundLogs, sessionExercises, sessions, setLogs } from './schema';
 
 /**
- * One performance as the database returns it: the set logs of a single session exercise, and the
- * session they belong to.
+ * One performance as the database returns it: the set logs and rounds of a single session
+ * exercise, and the session they belong to.
+ *
+ * A strength or power exercise has set logs and no rounds, an interval or mobility one the
+ * reverse; the performance is one of them either way.
  *
  * `session` is not optional: the join is an inner one over enforced foreign keys, so a set log
  * whose session exercise no longer resolves is not a state the database can be in, and the type
@@ -28,6 +31,13 @@ export type StoredExercisePerformance = {
   targetRir: number;
   /** Sorted by `setNumber`. */
   setLogs: SetLog[];
+  /** Sorted by `roundNumber`. */
+  roundLogs: RoundLog[];
+  /**
+   * The session exercise's planned rounds (`setTargets`), read with its rounds — empty when it has
+   * none logged. A round reference reads its plan beside its log (GT-185).
+   */
+  roundTargets: SetTarget[];
 };
 
 /**
@@ -60,26 +70,64 @@ export async function readExercisePerformances(
       .all(),
   );
 
+  // The rounds of the same exercise, through the same two hops. An exercise logs sets or rounds
+  // (10 · Hybrid Exercises), so the two result sets rarely share a session exercise, but a
+  // performance is keyed by it either way and nothing here assumes they don't.
+  const roundRows = await runQuery(() =>
+    db
+      .select({
+        roundLog: roundLogs,
+        session: sessions,
+        targetRir: sessionExercises.targetRir,
+        setTargets: sessionExercises.setTargets,
+      })
+      .from(roundLogs)
+      .innerJoin(sessionExercises, eq(roundLogs.sessionExerciseId, sessionExercises.id))
+      .innerJoin(sessions, eq(sessionExercises.sessionId, sessions.id))
+      .where(
+        excluded === undefined
+          ? eq(roundLogs.exerciseId, exerciseId)
+          : and(eq(roundLogs.exerciseId, exerciseId), ne(roundLogs.sessionExerciseId, excluded)),
+      )
+      .orderBy(asc(roundLogs.sessionExerciseId), asc(roundLogs.roundNumber))
+      .all(),
+  );
+
   const performances = new Map<string, StoredExercisePerformance>();
-  for (const { setLog, session, targetRir } of rows) {
-    const performance = performances.get(setLog.sessionExerciseId) ?? {
-      sessionExerciseId: setLog.sessionExerciseId,
+  const performanceOf = (
+    sessionExerciseId: string,
+    session: typeof sessions.$inferSelect,
+    targetRir: number,
+  ): StoredExercisePerformance => {
+    const existing = performances.get(sessionExerciseId) ?? {
+      sessionExerciseId,
       session: rowToSession(session),
       targetRir,
       setLogs: [],
+      roundLogs: [],
+      roundTargets: [],
     };
-    performance.setLogs.push(rowToSetLog(setLog));
-    performances.set(performance.sessionExerciseId, performance);
+    performances.set(sessionExerciseId, existing);
+    return existing;
+  };
+  for (const { setLog, session, targetRir } of rows) {
+    performanceOf(setLog.sessionExerciseId, session, targetRir).setLogs.push(rowToSetLog(setLog));
+  }
+  for (const { roundLog, session, targetRir, setTargets } of roundRows) {
+    const performance = performanceOf(roundLog.sessionExerciseId, session, targetRir);
+    performance.roundLogs.push(rowToRoundLog(roundLog));
+    performance.roundTargets = setTargets;
   }
   return [...performances.values()];
 }
 
-/** When a performance happened: the last set of it that was logged. */
+/** When a performance happened: the last set or round of it that was logged. */
 export function performedAt(performance: StoredExercisePerformance): string {
-  return performance.setLogs.reduce(
-    (latest, setLog) => (setLog.completedAt > latest ? setLog.completedAt : latest),
-    '',
-  );
+  const completions = [
+    ...performance.setLogs.map((setLog) => setLog.completedAt),
+    ...performance.roundLogs.map((roundLog) => roundLog.completedAt),
+  ];
+  return completions.reduce((latest, at) => (at > latest ? at : latest), '');
 }
 
 // See repositories/exerciseHistory.ts for the contract. The set-log side is
@@ -99,9 +147,11 @@ export class SqliteExerciseHistoryRepository implements ExerciseHistoryRepositor
     );
     const byId = new Map(rows.map((row) => [row.id, rowToMesocycle(row)]));
 
-    return performances.flatMap(({ session, setLogs: logs }) => {
+    // A performance made of rounds (interval, mobility) is listed like one made of sets: the
+    // History tab shows what was done whatever the type (10.1, FR-12).
+    return performances.flatMap(({ session, setLogs: logs, roundLogs: rounds }) => {
       const mesocycle = byId.get(session.mesoId);
-      return mesocycle ? [{ session, mesocycle, setLogs: logs }] : [];
+      return mesocycle ? [{ session, mesocycle, setLogs: logs, roundLogs: rounds }] : [];
     });
   }
 }

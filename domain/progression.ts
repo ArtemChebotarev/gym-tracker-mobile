@@ -1,8 +1,10 @@
 // Progression engine input/output shapes shared across its rules — see 03 · Progression
 // Engine. Types only; the rules live in `domain/progression<Rule>.ts`.
 
-import type { Equipment, MuscleGroup } from '@domain/catalog';
-import type { SessionExercise, SetLog, SetTarget } from '@domain/execution';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
+import type { RoundLog, SessionExercise, SetLog, SetTarget } from '@domain/execution';
+import type { IntervalProgression } from '@domain/progressionLeverInterval';
 
 /**
  * One exercise of the source session, plus the facts about it that the session itself doesn't
@@ -14,11 +16,28 @@ export type SourceExercise = {
   sessionExercise: Pick<SessionExercise, 'id' | 'exerciseId' | 'order' | 'setTargets'>;
   muscleGroup: MuscleGroup;
   /**
+   * Picks the progression policy that plans the exercise (`domain/progressionPolicies.ts`).
+   * Absent means `strength`, as on `Exercise.type`.
+   */
+  type?: ExerciseType;
+  /**
    * Decides what the exercise's weight means, and whether it has one to progress at all — a pure
    * `bodyweight` exercise gets no weight target (task 105, `domain/bodyWeightLoad.ts`). Absent
    * for an exercise whose catalog entry names no equipment.
    */
   equipment?: Equipment;
+  /**
+   * A power exercise's load — kilograms, a level, or none (10.1 FR-2). The power policy reads it
+   * where kilograms behave differently from a level (the deload halves one and keeps the other).
+   * Absent for every other type, and for a power exercise whose config says nothing — kilograms.
+   */
+  powerLoad?: PowerLoad;
+  /**
+   * An interval exercise's lever and step in its cycle (10.1 FR-8) — the cycle's own copy, or the
+   * library's defaults where the cycle has none. Absent for every other type; an interval without
+   * it repeats its plan.
+   */
+  intervalProgression?: IntervalProgression;
 };
 
 /** The engine's plan for one exercise of the next session. */
@@ -46,6 +65,19 @@ export type ExercisePerformance = {
   performedAt: string;
   /** Sorted by `setNumber`. A performance with none logged isn't one — see the resolver. */
   setLogs: SetLog[];
+  /**
+   * The rounds logged in it, sorted by `roundNumber` — empty for a strength or power exercise, and
+   * the only fact of an interval or mobility one, whose `setLogs` are then empty (10 · Hybrid
+   * Exercises). The strength rules read `setLogs` alone, so a performance of rounds is never a
+   * reference for them.
+   */
+  roundLogs: RoundLog[];
+  /**
+   * The rounds as planned in it (`SessionExercise.setTargets`) — empty when it has no rounds logged.
+   * A round hands on its plan where the log isn't a new plan: a skipped rest, a round ended early
+   * (`roundTimesOf`), so a round reference needs both (GT-185).
+   */
+  roundTargets: SetTarget[];
 };
 
 /** A training week: a (mesocycle, week number) pair, not a calendar week. */

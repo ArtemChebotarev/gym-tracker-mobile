@@ -14,6 +14,7 @@ import {
   makeCatalogExercise,
   makeCustomExercise,
   makeMesocycle,
+  makeRoundLog,
   makeSession,
   makeSessionExercise,
   makeSetLog,
@@ -36,11 +37,27 @@ const restoredDb = withTestDatabase();
 
 const SCHEMA_VERSION = 1789938887567;
 
+const HEAVY_BAG_SETTINGS = {
+  'exercise-heavy-bag': {
+    type: 'interval' as const,
+    rounds: 2,
+    workSec: 120,
+    restSec: 45,
+    getReadySec: 5,
+    lever: 'rest' as const,
+    stepSec: 10 as const,
+  },
+};
+
 function makeDeps(database: () => SqliteDatabase): BackupDeps {
   return { store: createSqliteBackupStore(database()), schemaVersion: SCHEMA_VERSION };
 }
 
-/** A store with one of everything, including a hidden catalog exercise and a custom one. */
+/**
+ * A store with one of everything, including a hidden catalog exercise and a custom one, and the
+ * hybrid side of it: an interval exercise with the block's own settings for it, its rounds, and
+ * Get ready and the signals changed from what ships (GT-72).
+ */
 async function fill(deps: BackupDeps): Promise<void> {
   const {
     exerciseRepo,
@@ -49,23 +66,50 @@ async function fill(deps: BackupDeps): Promise<void> {
     sessionRepo,
     sessionExerciseRepo,
     setLogRepo,
+    roundLogRepo,
     settingsRepo,
   } = deps.store.repos;
 
   await exerciseRepo.seedCatalog([
     makeCatalogExercise('exercise-bench-press'),
     makeCatalogExercise('exercise-squat'),
+    makeCatalogExercise('exercise-heavy-bag', { muscleGroup: 'fullBody', type: 'interval' }),
   ]);
   await exerciseRepo.toggleHidden(makeCatalogExercise('exercise-squat').id);
   await exerciseRepo.createCustom(makeCustomExercise('exercise-my-own'));
   await templateRepo.create(makeTemplate());
-  await mesocycleRepo.create(makeMesocycle());
+  await mesocycleRepo.create(makeMesocycle({ exerciseSettings: HEAVY_BAG_SETTINGS }));
   await sessionRepo.create(makeSession());
   await sessionExerciseRepo.create(makeSessionExercise());
   await setLogRepo.create(makeSetLog());
+  await sessionExerciseRepo.create(
+    makeSessionExercise({
+      id: 'session-exercise-bag',
+      exerciseId: 'exercise-heavy-bag',
+      order: 2,
+      setTargets: [
+        { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+        { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+      ],
+    }),
+  );
+  await roundLogRepo.create(
+    makeRoundLog({ id: 'round-log-1', sessionExerciseId: 'session-exercise-bag', roundNumber: 1 }),
+  );
+  // The last round has no rest after it — the absent rest and the skipped flag both travel.
+  const { restSec: _noRest, ...lastRound } = makeRoundLog({
+    id: 'round-log-2',
+    sessionExerciseId: 'session-exercise-bag',
+    roundNumber: 2,
+    restSkipped: true,
+    completedAt: '2026-08-26T08:03:00.000Z',
+  });
+  await roundLogRepo.create(lastRound);
   await settingsRepo.write({
-    defaultProgressionSettings: (await settingsRepo.read()).defaultProgressionSettings,
+    ...(await settingsRepo.read()),
     weightUnit: 'lb',
+    getReadySec: 10,
+    signals: { sound: false, vibration: true },
     onboarding: {
       welcomeSeen: true,
       coachmarksSeen: true,
@@ -94,6 +138,7 @@ describe('exportBackup', () => {
     expect(file.data.exercises).toEqual([]);
     expect(file.data.mesocycles).toEqual([]);
     expect(file.data.setLogs).toEqual([]);
+    expect(file.data.roundLogs).toEqual([]);
   });
 });
 
@@ -107,6 +152,26 @@ describe('export → import round trip', () => {
     await importBackup(exported, restored);
 
     await expect(exportBackup(restored, exported.exportedAt)).resolves.toEqual(exported);
+  });
+
+  test('interval rounds, the block\'s exercise settings and the hybrid settings come back', async () => {
+    const source = makeDeps(sourceDb);
+    await fill(source);
+    const exported = await exportBackup(source);
+    expect(exported.data.roundLogs.map((round) => round.id)).toEqual(['round-log-1', 'round-log-2']);
+
+    const restored = makeDeps(restoredDb);
+    await importBackup(exported, restored);
+
+    const { roundLogRepo, mesocycleRepo, settingsRepo } = restored.store.repos;
+    await expect(roundLogRepo.listBySessionExerciseId('session-exercise-bag')).resolves.toEqual(
+      exported.data.roundLogs,
+    );
+    const [mesocycle] = await mesocycleRepo.getAll();
+    expect(mesocycle!.exerciseSettings).toEqual(HEAVY_BAG_SETTINGS);
+    const settings = await settingsRepo.read();
+    expect(settings.getReadySec).toBe(10);
+    expect(settings.signals).toEqual({ sound: false, vibration: true });
   });
 
   test('records keep the stamps they were written with, not the moment of the restore', async () => {

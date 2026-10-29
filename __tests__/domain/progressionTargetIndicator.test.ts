@@ -1,6 +1,10 @@
 import type { TargetIndicator } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
-import { targetIndicator, targetIndicatorAtWeight } from '@domain/progressionTargetIndicator';
+import {
+  targetIndicator,
+  targetIndicatorAtWeight,
+  usesTargetIndicator,
+} from '@domain/progressionTargetIndicator';
 import { buildWeightSwap } from '@domain/weightSwapRules';
 
 describe('targetIndicator', () => {
@@ -104,5 +108,24 @@ describe('targetIndicatorAtWeight', () => {
     expect(
       targetIndicatorAtWeight({ targetReps: 7 }, { reps: 9, weight: 10, bodyWeight: 90 }, dip),
     ).toEqual<TargetIndicator>({ kind: 'over', diff: 2 });
+  });
+});
+
+// GT-82, 10.2 P11: power and a band are guided by their target, not scored against it.
+describe('usesTargetIndicator', () => {
+  test('strength is scored, whatever its equipment', () => {
+    expect(usesTargetIndicator(undefined, undefined)).toBe(true);
+    expect(usesTargetIndicator('strength', 'barbell')).toBe(true);
+    expect(usesTargetIndicator('strength', 'bodyweight')).toBe(true);
+  });
+
+  test('power is guided', () => {
+    expect(usesTargetIndicator('power', undefined)).toBe(false);
+    expect(usesTargetIndicator('power', 'medicine-ball')).toBe(false);
+  });
+
+  test('a resistance band is guided', () => {
+    expect(usesTargetIndicator('strength', 'resistance-band')).toBe(false);
+    expect(usesTargetIndicator(undefined, 'resistance-band')).toBe(false);
   });
 });

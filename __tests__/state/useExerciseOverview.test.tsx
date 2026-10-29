@@ -38,7 +38,6 @@ describe('useExerciseOverview', () => {
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     expect(result.current.data?.stats).toBeNull();
-    expect(result.current.data?.lastSession).toBeNull();
   });
 
   test('resolves to null for an id no exercise carries', async () => {

@@ -10,8 +10,8 @@ import type { WorkoutStore } from '@repositories/workout';
 import { openSessionExercise, type SessionExerciseRef } from '@usecases/openSession';
 
 /**
- * Removes the exercise `ref` points at from its session, in one transaction: its set logs in this
- * session (if it was started — the screen has warned about that in its danger confirmation), the
+ * Removes the exercise `ref` points at from its session, in one transaction: its set logs and
+ * rounds in this session (if it was started — the screen has warned about that in its danger confirmation), the
  * session exercise itself, and a renumbering of the remaining exercises' `order` with no gaps. Past
  * weeks' set logs of the same exercise belong to other session exercises and are untouched.
  *
@@ -29,6 +29,10 @@ export async function removeExercise(
     const logs = await repos.setLogRepo.listBySessionExerciseId(sessionExercise.id);
     for (const log of logs) {
       await repos.setLogRepo.deleteById(log.id);
+    }
+    const rounds = await repos.roundLogRepo.listBySessionExerciseId(sessionExercise.id);
+    for (const round of rounds) {
+      await repos.roundLogRepo.deleteById(round.id);
     }
     await repos.sessionExerciseRepo.deleteById(sessionExercise.id);
 

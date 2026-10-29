@@ -1,3 +1,4 @@
+import type { SetTarget } from '@domain/execution';
 import { isConflictError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@domain/mesocycleBuilders';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeekPlan } from '@domain/plan';
+import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'generated-id-1' }));
@@ -619,6 +621,144 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
       { setNumber: 2 },
       { setNumber: 1 },
       { setNumber: 1 },
+    ]);
+  });
+});
+
+describe('exerciseSettings on the draft (GT-158)', () => {
+  const settings = {
+    'heavy-bag': {
+      type: 'interval' as const,
+      workSec: 120,
+      restSec: 45,
+      getReadySec: 5,
+      lever: 'rest' as const,
+      stepSec: 15 as const,
+      rounds: 3,
+    },
+  };
+  const input = { name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
+
+  test('every flow saves the cycle’s own copy with it', () => {
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }).exerciseSettings).toEqual(settings);
+    expect(
+      buildTemplateMesocycleDraft({ ...input, exerciseSettings: settings, templateId: 't' }).exerciseSettings,
+    ).toEqual(settings);
+    expect(
+      buildCopyWeekMesocycleDraft(
+        { ...input, exerciseSettings: settings, sourceWeekNumber: 1 },
+        { id: 'source', lengthWeeks: 6 },
+      ).exerciseSettings,
+    ).toEqual(settings);
+  });
+
+  test('a cycle with nothing to keep has no exerciseSettings at all', () => {
+    expect(buildScratchMesocycleDraft(input)).not.toHaveProperty('exerciseSettings');
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: {} })).not.toHaveProperty('exerciseSettings');
+  });
+
+  test('the saved settings are a copy of the input, not the same object', () => {
+    const draft = buildScratchMesocycleDraft({ ...input, exerciseSettings: settings });
+
+    expect(draft.exerciseSettings).not.toBe(settings);
+  });
+
+  test('an edit replaces the stored settings, and one left with none drops the field', () => {
+    const planned: Mesocycle = {
+      ...STAMPS,
+      ...buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }),
+    };
+    const edited = { 'heavy-bag': { ...settings['heavy-bag'], restSec: 30 } };
+
+    expect(applyPlannedMesocycleEdit(planned, { ...input, exerciseSettings: edited }).exerciseSettings).toEqual(
+      edited,
+    );
+    expect(applyPlannedMesocycleEdit(planned, input)).not.toHaveProperty('exerciseSettings');
+  });
+});
+
+describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
+  const mixed: Mesocycle = {
+    ...STAMPS,
+    id: 'meso-hybrid',
+    name: 'Hybrid',
+    lengthWeeks: 4,
+    daysPerWeek: 1,
+    status: 'planned',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    weekPlan: {
+      days: [
+        {
+          dayNumber: 1,
+          name: '',
+          exercises: [
+            { exerciseId: 'bench', order: 0, sets: 3 },
+            { exerciseId: MEDBALL_THROW.id, order: 1, sets: 3 },
+            { exerciseId: HEAVY_BAG.id, order: 2, sets: 2 },
+            { exerciseId: COOLDOWN.id, order: 3, sets: 2 },
+          ],
+        },
+      ],
+    },
+    // The cycle's own interval plan; Cooldown has no copy and takes the library's length.
+    exerciseSettings: { [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' } },
+    createdAt: '2026-09-01T12:00:00.000Z',
+  };
+  const exercisesById = new Map([
+    [MEDBALL_THROW.id as string, MEDBALL_THROW],
+    [HEAVY_BAG.id as string, HEAVY_BAG],
+    [COOLDOWN.id as string, COOLDOWN],
+  ]);
+
+  function rowsOf(weekOneTargets?: Parameters<typeof buildMesocycleStart>[3]) {
+    const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z', weekOneTargets, exercisesById);
+    return new Map(week[0]!.exercises.map((exercise) => [exercise.exerciseId, exercise]));
+  }
+
+  test('each type gets its own rows; every one carries the week’s RIR', () => {
+    const rows = rowsOf();
+
+    expect(rows.get('bench')?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
+    expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(3);
+    // The cycle's rounds, not its times: those are history's (GT-185).
+    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1 }]);
+    const rirs = new Set([...rows.values()].map((exercise) => exercise.targetRir));
+    expect(rirs.size).toBe(1);
+  });
+
+  test('a copied block’s history prices sets, an interval’s rounds and a mobility block (GT-185, GT-107)', () => {
+    const priced = () => [{ setNumber: 1, targetReps: 8, suggestedWeight: 40 }];
+    const timed = (rowCount: number) =>
+      Array.from({ length: rowCount }, (_, index) => ({
+        setNumber: index + 1,
+        targetWorkSec: 75,
+        targetRestSec: 20,
+      }));
+    const length = (rowCount: number) =>
+      Array.from({ length: rowCount }, (_, index) => ({ setNumber: index + 1, targetWorkSec: 600 }));
+    const rows = rowsOf(
+      new Map<string, (rowCount: number) => SetTarget[]>([
+        [weekPlanSlotKey(1, MEDBALL_THROW.id), priced],
+        [weekPlanSlotKey(1, HEAVY_BAG.id), timed],
+        [weekPlanSlotKey(1, COOLDOWN.id), length],
+      ]),
+    );
+
+    expect(rows.get(MEDBALL_THROW.id)?.setTargets).toEqual(priced());
+    // As many rounds as the cycle plans, priced by history.
+    expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual(timed(2));
+    // One block, with the length history gives it.
+    expect(rows.get(COOLDOWN.id)?.setTargets).toEqual([{ setNumber: 1, targetWorkSec: 600 }]);
+  });
+
+  test('without exercise records every exercise is laid out as sets, as before', () => {
+    const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z');
+
+    expect(week[0]!.exercises.find((exercise) => exercise.exerciseId === HEAVY_BAG.id)?.setTargets).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
     ]);
   });
 });

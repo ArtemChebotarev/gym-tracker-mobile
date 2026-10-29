@@ -62,6 +62,16 @@ export const styles = StyleSheet.create({
     paddingHorizontal: SPACING['space/gap'],
     paddingVertical: SPACING['space/gap-tight'],
   },
+  // An outline, not a border: it draws over the box instead of growing it, so the outlined chips
+  // stay the height of the tinted group chip and the badge beside them.
+  outlinedChip: {
+    outlineWidth: BORDER_WIDTHS['border/default'],
+    outlineColor: COLORS['border/default'],
+    outlineOffset: -BORDER_WIDTHS['border/default'],
+  },
+  outlinedLabel: {
+    color: COLORS['text/secondary'],
+  },
   groupDot: {
     ...circle(SIZES['size/dot']),
   },

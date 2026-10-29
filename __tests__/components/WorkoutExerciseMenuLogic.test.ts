@@ -1,16 +1,25 @@
 import {
   EXERCISE_MENU_ACTIONS,
   exerciseMenuRows,
+  exerciseLogCounts,
   formatDeleteExerciseWarning,
   formatExerciseMenuSubtitle,
   formatReplaceExerciseWarning,
   formatSkipExerciseWarning,
+  setMenuRows,
+  typeMenuRows,
   workoutExerciseMenuActions,
 } from '@components/WorkoutExerciseMenuLogic';
-import type { WorkoutExerciseActions } from '@usecases/workoutSession';
+import type {
+  RoundExerciseActions,
+  IntervalWorkoutExercise,
+  SetExerciseActions,
+  StrengthWorkoutExercise,
+  WorkoutExercise,
+} from '@usecases/workoutSession';
 
 // A live, planned exercise in the middle of the list with several rows: everything available.
-const ALL: WorkoutExerciseActions = {
+const ALL: SetExerciseActions = {
   canReplace: true,
   canAddSet: true,
   canRemoveLastSet: true,
@@ -21,9 +30,70 @@ const ALL: WorkoutExerciseActions = {
   canDelete: true,
 };
 
+// The same for an interval with several rounds.
+const ALL_ROUNDS: RoundExerciseActions = {
+  canReplace: true,
+  canAddRound: true,
+  canRemoveLastRound: true,
+  canMoveUp: true,
+  canMoveDown: true,
+  canSkip: true,
+  canUnskip: false,
+  canDelete: true,
+};
+
+function strengthCard(actions: SetExerciseActions = ALL): StrengthWorkoutExercise {
+  return {
+    sessionExerciseId: 'se-1',
+    exerciseId: 'bench',
+    name: 'Bench press',
+    muscleGroup: 'chest',
+    status: 'planned',
+    rows: [],
+    plannedSetCount: 3,
+    loggedSetCount: 1,
+    hasLoggedSets: true,
+    actions,
+  };
+}
+
+function intervalCard(actions: RoundExerciseActions = ALL_ROUNDS): IntervalWorkoutExercise {
+  return {
+    sessionExerciseId: 'se-2',
+    exerciseId: 'heavy-bag',
+    name: 'Heavy bag',
+    muscleGroup: 'fullBody',
+    type: 'interval',
+    status: 'planned',
+    rounds: [],
+    plannedRoundCount: 3,
+    loggedRoundCount: 1,
+    hasLoggedSets: true,
+    getReadySec: 5,
+    actions,
+  };
+}
+
+function mobilityCard(): WorkoutExercise {
+  return {
+    sessionExerciseId: 'se-3',
+    exerciseId: 'cooldown',
+    name: 'Cooldown',
+    muscleGroup: 'fullBody',
+    type: 'mobility',
+    status: 'planned',
+    rounds: [],
+    plannedRoundCount: 1,
+    loggedRoundCount: 0,
+    hasLoggedSets: false,
+    getReadySec: 5,
+    actions: ALL,
+  };
+}
+
 describe('exerciseMenuRows', () => {
   test('lists every action in the 08.7 order, all available', () => {
-    expect(exerciseMenuRows(ALL)).toEqual([
+    expect(exerciseMenuRows(ALL, setMenuRows(ALL))).toEqual([
       { item: 'replace' },
       { item: 'addSet' },
       { item: 'removeLastSet' },
@@ -35,12 +105,8 @@ describe('exerciseMenuRows', () => {
   });
 
   test('keeps what is not available listed, disabled with the reason', () => {
-    const rows = exerciseMenuRows({
-      ...ALL,
-      canRemoveLastSet: false,
-      canMoveUp: false,
-      canMoveDown: false,
-    });
+    const actions = { ...ALL, canRemoveLastSet: false, canMoveUp: false, canMoveDown: false };
+    const rows = exerciseMenuRows(actions, setMenuRows(actions));
 
     expect(rows.filter((row) => row.disabledReason !== undefined)).toEqual([
       { item: 'removeLastSet', disabledReason: 'Only one set' },
@@ -50,13 +116,57 @@ describe('exerciseMenuRows', () => {
   });
 
   test('a skipped exercise gets Unskip in place of Skip', () => {
-    const items = exerciseMenuRows({ ...ALL, canSkip: false, canUnskip: true }).map(
-      (row) => row.item,
-    );
+    const actions = { ...ALL, canSkip: false, canUnskip: true };
+    const items = exerciseMenuRows(actions, setMenuRows(actions)).map((row) => row.item);
 
     expect(items).toContain('unskip');
     expect(items).not.toContain('skip');
     expect(items.indexOf('unskip')).toBe(5);
+  });
+
+  test('the type’s own rows go right after Replace', () => {
+    expect(exerciseMenuRows(ALL, []).map((row) => row.item)).toEqual([
+      'replace',
+      'moveUp',
+      'moveDown',
+      'skip',
+      'delete',
+    ]);
+  });
+});
+
+describe('typeMenuRows', () => {
+  test('a card of set rows offers Add set and Remove last set', () => {
+    expect(typeMenuRows(strengthCard())).toEqual(setMenuRows(ALL));
+  });
+
+  test('an interval card offers Add round and Remove last round', () => {
+    expect(typeMenuRows(intervalCard())).toEqual([
+      { item: 'addRound' },
+      { item: 'removeLastRound' },
+    ]);
+  });
+
+  test('a mobility card has none of its own — it is one block (GT-107)', () => {
+    expect(typeMenuRows(mobilityCard())).toEqual([]);
+  });
+
+  test('an interval with a single round keeps Remove last round listed, disabled', () => {
+    expect(typeMenuRows(intervalCard({ ...ALL_ROUNDS, canRemoveLastRound: false }))).toEqual([
+      { item: 'addRound' },
+      { item: 'removeLastRound', disabledReason: 'Only one round' },
+    ]);
+  });
+});
+
+describe('exerciseLogCounts', () => {
+  test('a card of set rows counts sets, an interval card rounds, a mobility card its block', () => {
+    expect(exerciseLogCounts(strengthCard())).toEqual({ unit: 'set', planned: 3, logged: 1 });
+    expect(exerciseLogCounts(intervalCard())).toEqual({ unit: 'round', planned: 3, logged: 1 });
+    expect(exerciseLogCounts(mobilityCard())).toEqual({ unit: 'block', planned: 1, logged: 0 });
+    expect(formatExerciseMenuSubtitle(exerciseLogCounts(mobilityCard()))).toBe(
+      '1 block planned · 0 logged',
+    );
   });
 });
 
@@ -80,7 +190,7 @@ describe('workoutExerciseMenuActions', () => {
   test('keeps an unavailable action listed, disabled with its reason', () => {
     const onAction = jest.fn();
     const items = workoutExerciseMenuActions(
-      { ...ALL, canMoveUp: false, canRemoveLastSet: false },
+      strengthCard({ ...ALL, canMoveUp: false, canRemoveLastSet: false }),
       onAction,
     );
 
@@ -93,7 +203,7 @@ describe('workoutExerciseMenuActions', () => {
 
   test('each item calls back with its own action', () => {
     const onAction = jest.fn();
-    const items = workoutExerciseMenuActions(ALL, onAction);
+    const items = workoutExerciseMenuActions(strengthCard(), onAction);
 
     items.find((item) => item.key === 'delete')?.onPress();
 
@@ -103,29 +213,47 @@ describe('workoutExerciseMenuActions', () => {
 
 describe('formatExerciseMenuSubtitle', () => {
   test('counts the planned and logged sets', () => {
-    expect(formatExerciseMenuSubtitle(2, 1)).toBe('2 sets planned · 1 logged');
-    expect(formatExerciseMenuSubtitle(1, 0)).toBe('1 set planned · 0 logged');
+    expect(formatExerciseMenuSubtitle({ unit: 'set', planned: 2, logged: 1 })).toBe(
+      '2 sets planned · 1 logged',
+    );
+    expect(formatExerciseMenuSubtitle({ unit: 'set', planned: 1, logged: 0 })).toBe(
+      '1 set planned · 0 logged',
+    );
+  });
+
+  test('an interval card counts rounds', () => {
+    expect(formatExerciseMenuSubtitle({ unit: 'round', planned: 3, logged: 1 })).toBe(
+      '3 rounds planned · 1 logged',
+    );
   });
 });
 
 describe('formatDeleteExerciseWarning', () => {
   test('names how many logged sets go with the exercise', () => {
-    expect(formatDeleteExerciseWarning(1)).toBe('Delete exercise with 1 logged set?');
-    expect(formatDeleteExerciseWarning(2)).toBe('Delete exercise with 2 logged sets?');
+    expect(formatDeleteExerciseWarning({ unit: 'set', planned: 3, logged: 1 })).toBe(
+      'Delete exercise with 1 logged set?',
+    );
+    expect(formatDeleteExerciseWarning({ unit: 'round', planned: 3, logged: 2 })).toBe(
+      'Delete exercise with 2 logged rounds?',
+    );
   });
 });
 
 describe('formatSkipExerciseWarning', () => {
   test('names how many sets are still unlogged', () => {
-    expect(formatSkipExerciseWarning(3, 0)).toBe('Skip the exercise with 3 unlogged sets?');
-    expect(formatSkipExerciseWarning(3, 2)).toBe('Skip the exercise with 1 unlogged set?');
+    expect(formatSkipExerciseWarning({ unit: 'set', planned: 3, logged: 0 })).toBe(
+      'Skip the exercise with 3 unlogged sets?',
+    );
+    expect(formatSkipExerciseWarning({ unit: 'set', planned: 3, logged: 2 })).toBe(
+      'Skip the exercise with 1 unlogged set?',
+    );
   });
 });
 
 describe('formatReplaceExerciseWarning', () => {
   test('names the exercise and how many logged sets go', () => {
-    expect(formatReplaceExerciseWarning('Bench Press', 2)).toBe(
-      'The 2 sets logged for Bench Press will be deleted.',
-    );
+    expect(
+      formatReplaceExerciseWarning('Bench Press', { unit: 'set', planned: 3, logged: 2 }),
+    ).toBe('The 2 sets logged for Bench Press will be deleted.');
   });
 });

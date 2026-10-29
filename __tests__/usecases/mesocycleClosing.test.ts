@@ -169,6 +169,32 @@ describe('stopMesocycle', () => {
     await expect(deps.store.repos.mesocycleRepo.getActive()).resolves.toBeNull();
   });
 
+  test('a session in progress with only a logged round is completed, not abandoned', async () => {
+    const deps = await setUp({
+      sessions: [makeSession({ id: 'live', status: 'in_progress', startedAt: NOW })],
+      exercises: [makeExercise({ id: 'live-bag', sessionId: 'live', status: 'completed' })],
+    });
+    await deps.store.repos.roundLogRepo.create({
+      ...STAMPS,
+      id: 'round-1',
+      sessionExerciseId: 'live-bag',
+      exerciseId: 'bench',
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 45,
+      restSkipped: false,
+      completed: true,
+      completedAt: '2026-09-28T17:30:00.000Z',
+    });
+
+    await stopMesocycle('meso', deps, NOW);
+
+    await expect(deps.store.repos.sessionRepo.getById('live')).resolves.toMatchObject({
+      status: 'completed',
+      completedAt: NOW,
+    });
+  });
+
   test('DoD: the session in progress with a logged set is completed, its unfinished exercises abandoned, its logs kept', async () => {
     const deps = await setUp({
       sessions: [

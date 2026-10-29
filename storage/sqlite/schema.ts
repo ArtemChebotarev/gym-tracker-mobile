@@ -2,6 +2,7 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-or
 
 import type { Exercise } from '@domain/catalog';
 import type { Session, SessionExercise, SetTarget } from '@domain/execution';
+import type { ExerciseConfig, ExerciseSettings } from '@domain/exerciseConfig';
 import type { Mesocycle, MesocycleOrigin, ProgressionSettings } from '@domain/mesocycle';
 import type { MesoTemplate, WeekPlan } from '@domain/plan';
 import type { Settings } from '@repositories/settings';
@@ -38,6 +39,14 @@ export const exercises = sqliteTable(
     source: text('source').notNull().$type<Exercise['source']>(),
     equipment: text('equipment').$type<NonNullable<Exercise['equipment']>>(),
     isHidden: integer('is_hidden', { mode: 'boolean' }).notNull(),
+    // `strength` | `power` | `interval` | `mobility` (10 · Hybrid Exercises). The column's own
+    // default is what every exercise already on a device becomes when the migration adds it —
+    // they were all strength.
+    type: text('type').notNull().default('strength').$type<NonNullable<Exercise['type']>>(),
+    // Defaults that belong to the exercise's type — power load kind and rest, interval work /
+    // rest / get-ready and lever, the "no heavier" flag, mobility length. Null for
+    // strength, which has none. A value object read and written whole, so JSON like `weekPlan`.
+    config: text('config', { mode: 'json' }).$type<ExerciseConfig>(),
     ...timestamps,
   },
   (table) => [index('exercise_muscle_group').on(table.muscleGroup)],
@@ -72,6 +81,11 @@ export const mesocycles = sqliteTable(
     completedAt: text('completed_at'),
     // Set when the block is put out of sight; the row and everything under it stay (soft delete).
     archivedAt: text('archived_at'),
+    // Per-exercise plan parameters of this cycle — interval rounds (only here) / work / rest / get-ready,
+    // progression lever and step (10.1, FR-9). Null while the cycle has only strength exercises.
+    exerciseSettings: text('exercise_settings', { mode: 'json' }).$type<
+      Record<string, ExerciseSettings>
+    >(),
     ...timestamps,
   },
   (table) => [index('mesocycle_status').on(table.status)],
@@ -158,6 +172,41 @@ export const setLogs = sqliteTable(
 );
 
 /**
+ * One logged interval round, or one mobility block (10 · Hybrid Exercises). Not a nullable-`weight` /
+ * `reps` variant of `set_log`: a round's metrics are other fields entirely, and keeping them apart
+ * leaves every strength query and constraint as it was.
+ */
+export const roundLogs = sqliteTable(
+  'round_log',
+  {
+    id: text('id').primaryKey(),
+    sessionExerciseId: text('session_exercise_id')
+      .notNull()
+      .references(() => sessionExercises.id),
+    // Denormalized for the same reason as on `set_log`: one exercise's history is a single scan.
+    exerciseId: text('exercise_id')
+      .notNull()
+      .references(() => exercises.id),
+    roundNumber: integer('round_number').notNull(),
+    // Actual work time, seconds. For a mobility block, the time it took.
+    workSec: integer('work_sec').notNull(),
+    // Actual rest taken after the round, seconds; null where there was none to take.
+    restSec: integer('rest_sec'),
+    // The rest was skipped on the spot — a one-off, which never moves the plan (FR-6, FR-8).
+    restSkipped: integer('rest_skipped', { mode: 'boolean' }).notNull().default(false),
+    // False for a round cut short by "End early": logged with the time it ran, counted as not
+    // done, so the plan repeats (FR-6).
+    completed: integer('completed', { mode: 'boolean' }).notNull(),
+    completedAt: text('completed_at').notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index('round_log_exercise_completed').on(table.exerciseId, table.completedAt),
+    index('round_log_session_exercise').on(table.sessionExerciseId, table.roundNumber),
+  ],
+);
+
+/**
  * Settings is one document, not a table of records (07 · Persistence Layer Contract), so this
  * table holds a single row, always at {@link SETTINGS_ROW_ID}, and carries no timestamps — the
  * repository is the only writer and never inserts a second one.
@@ -181,6 +230,21 @@ export const settings = sqliteTable('settings', {
       coachmarksSeen: false,
       deloadIntroSeen: false,
     } as Settings['onboarding']),
+  // The rest timer between sets (10.1, FR-5): one global setting, on by default, 2:00. Named for
+  // strength, which it was first; power uses it too since GT-188 (`Settings.restBetweenSets`) —
+  // renaming a column is a migration for a name nothing shows. Not part of progression. Defaults
+  // are what the existing row gets when the migration adds the columns.
+  strengthRestTimerEnabled: integer('strength_rest_timer_enabled', { mode: 'boolean' })
+    .notNull()
+    .default(true),
+  strengthRestTimerSeconds: integer('strength_rest_timer_seconds').notNull().default(120),
+  // Get ready before an interval round (10.1 FR-6, GT-188), seconds: a setting rather than a field
+  // of each exercise. 5 is `DEFAULT_GET_READY_SEC`, what the existing row gets.
+  getReadySeconds: integer('get_ready_seconds').notNull().default(5),
+  // The signals of the timers (10.1 FR-5, FR-6, GT-172): the sound and the vibration, each on or
+  // off, both on by default — what the existing row gets.
+  signalSound: integer('signal_sound', { mode: 'boolean' }).notNull().default(true),
+  signalVibration: integer('signal_vibration', { mode: 'boolean' }).notNull().default(true),
 });
 
 /** The single settings row's id — see `settings`. */

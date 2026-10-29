@@ -14,9 +14,10 @@ import { renderWithRepositories, withRepositories } from '../fixtures/renderWith
 // historyRoutes.test.ts.
 let mockParams: Record<string, string | undefined> = {};
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({ back: mockBack, push: mockPush }),
   useLocalSearchParams: () => mockParams,
 }));
 
@@ -67,11 +68,16 @@ describe('Exercise screen route', () => {
     expect(screen.getByText('Best set')).toBeTruthy();
   });
 
-  test('shows the last completed session the fixture logged', async () => {
+  test('Overview repeats no session the fixture logged — History lists it', async () => {
     mockParams = { id: 'bench-press-barbell' };
     renderRoute();
+    await screen.findByText('Bench Press');
 
-    expect(await screen.findByTestId('exercise-last-session')).toBeTruthy();
+    expect(screen.queryByText('Week 1 · Day 1')).toBeNull();
+
+    fireEvent.press(screen.getByText('History'));
+
+    expect(await screen.findByText('Week 1 · Day 1')).toBeTruthy();
   });
 
   test('an exercise that was never performed shows the empty state instead of tiles', async () => {
@@ -114,6 +120,11 @@ describe('Exercise screen route', () => {
     await screen.findByText('Route Test Cable Fly');
 
     expect(screen.getByTestId('action-menu-edit')).toBeTruthy();
+    fireEvent(screen.getByTestId('action-menu-edit'), 'buttonPress');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/exercise/[id]/edit',
+      params: { id: custom.id },
+    });
 
     fireEvent(screen.getByTestId('action-menu-hide'), 'buttonPress');
     confirmAlert(alert, 'Hide');

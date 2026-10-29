@@ -30,6 +30,7 @@ const EXPECTED_COLOR_TOKENS = [
   'border/divider',
   'border/divider-subtle',
   'brand/orange',
+  'timer/track',
   'border/cell-quiet',
   'text/primary',
   'text/secondary',
@@ -60,9 +61,12 @@ const EXPECTED_TYPOGRAPHY_TOKENS = [
   'type/body',
   'type/value',
   'type/meta',
+  'type/footnote',
   'type/set-value',
   'type/label',
   'type/caption',
+  'type/timer-clock',
+  'type/activity-clock',
 ];
 
 const EXPECTED_RADIUS_TOKENS = [

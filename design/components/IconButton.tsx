@@ -12,7 +12,11 @@ import { Pressable, StyleSheet, type StyleProp, type View, type ViewStyle } from
 import { COLORS, OPACITY, SIZES } from '../tokens';
 import { circle, tapTargetSlop } from '../shapes';
 
-export type IconButtonVariant = 'accent' | 'neutral';
+/**
+ * `neutral` sits on the page, `onCard` on a card — a step lighter than `surface/card`, or it would
+ * vanish into it (the mobility card's play button, GT-107).
+ */
+export type IconButtonVariant = 'accent' | 'neutral' | 'onCard';
 
 export type IconButtonProps = {
   accessibilityLabel: string;
@@ -56,6 +60,7 @@ export function IconButton({
 const VARIANT_STYLE = {
   accent: { backgroundColor: COLORS.accent },
   neutral: { backgroundColor: COLORS['surface/card'] },
+  onCard: { backgroundColor: COLORS['surface/control-active'] },
 } as const;
 
 /** The circle an icon button draws, in a given variant — for anything that has to match one. */

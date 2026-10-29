@@ -19,6 +19,7 @@ const LABEL_BY_MUSCLE_GROUP: Record<MuscleGroup, string> = {
   calves: 'Calves',
   abs: 'Abs',
   traps: 'Traps',
+  fullBody: 'Full body',
 };
 
 export function getMuscleGroupLabel(muscleGroup: MuscleGroup): string {

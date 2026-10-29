@@ -1,0 +1,61 @@
+import {
+  hasMinutesWheel,
+  clampSeconds,
+  joinSeconds,
+  minuteOptions,
+  secondOptions,
+  splitSeconds,
+} from '@design/timePickerLogic';
+
+describe('splitSeconds', () => {
+  test('splits into whole minutes and the seconds past them', () => {
+    expect(splitSeconds(0)).toEqual({ minutes: 0, seconds: 0 });
+    expect(splitSeconds(135)).toEqual({ minutes: 2, seconds: 15 });
+    expect(splitSeconds(600)).toEqual({ minutes: 10, seconds: 0 });
+  });
+});
+
+describe('options', () => {
+  test('minutes run from 0 to the whole minutes the maximum holds', () => {
+    expect(minuteOptions(30)).toEqual([0]);
+    expect(minuteOptions(600)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  });
+
+  test('minutes start at the minute the minimum falls in', () => {
+    expect(minuteOptions(300, 60)).toEqual([1, 2, 3, 4, 5]);
+    expect(minuteOptions(600, 5)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  });
+
+  test('at a minute, seconds are only those that keep the time within the bounds', () => {
+    expect(secondOptions(15, { minutes: 5, minSec: 60, maxSec: 300 })).toEqual([0]);
+    expect(secondOptions(15, { minutes: 0, minSec: 5, maxSec: 600 })).toEqual([15, 30, 45]);
+    expect(secondOptions(15, { minutes: 2, minSec: 60, maxSec: 300 })).toEqual([0, 15, 30, 45]);
+  });
+
+  test('seconds step by the given step below a minute', () => {
+    expect(secondOptions(15)).toEqual([0, 15, 30, 45]);
+    expect(secondOptions(5)).toHaveLength(12);
+    expect(secondOptions(5).at(-1)).toBe(55);
+  });
+});
+
+describe('hasMinutesWheel', () => {
+  test('a field under a minute — Get ready, 0–10 s — has the seconds wheel alone (GT-176)', () => {
+    expect(hasMinutesWheel(10)).toBe(false);
+    expect(hasMinutesWheel(59)).toBe(false);
+    expect(hasMinutesWheel(60)).toBe(true);
+    expect(hasMinutesWheel(600)).toBe(true);
+  });
+});
+
+describe('joinSeconds / clampSeconds', () => {
+  test('joins the wheels into seconds', () => {
+    expect(joinSeconds(1, 30, 0, 600)).toBe(90);
+  });
+
+  test('holds the result within the bounds', () => {
+    expect(joinSeconds(0, 0, 5, 600)).toBe(5);
+    expect(joinSeconds(10, 30, 0, 600)).toBe(600);
+    expect(clampSeconds(-3, 0, 10)).toBe(0);
+  });
+});

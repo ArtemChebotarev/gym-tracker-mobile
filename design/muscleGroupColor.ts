@@ -17,7 +17,9 @@ export const MUSCLE_GROUP_COLOR_CATEGORIES = [
 ] as const;
 export type MuscleGroupColorCategory = (typeof MUSCLE_GROUP_COLOR_CATEGORIES)[number];
 
-const CATEGORY_BY_MUSCLE_GROUP: Record<MuscleGroup, MuscleGroupColorCategory> = {
+// `fullBody` has no entry on purpose: it spans every category, so it gets none and reads as
+// "no color" like any group without one (`getMuscleGroupCategory` answers `undefined`).
+const CATEGORY_BY_MUSCLE_GROUP: Partial<Record<MuscleGroup, MuscleGroupColorCategory>> = {
   chest: 'chest',
   back: 'back',
   traps: 'back',
@@ -105,6 +107,17 @@ export function getCategoryVolumeFill(category: MuscleGroupColorCategory, share:
   const max = OPACITY['opacity/volume-max'];
   const clamped = Math.max(0, Math.min(1, share));
   return blendOver(COLORS['surface/card'], CATEGORY_COLOR[category], min + (max - min) * clamped);
+}
+
+/**
+ * The same scale for a row with no category — a hybrid exercise without a muscle group (GT-113):
+ * the secondary text color, so the cell reads as filled without claiming any group's color.
+ */
+export function getNeutralVolumeFill(share: number): string {
+  const min = OPACITY['opacity/volume-min'];
+  const max = OPACITY['opacity/volume-max'];
+  const clamped = Math.max(0, Math.min(1, share));
+  return blendOver(COLORS['surface/card'], COLORS['text/secondary'], min + (max - min) * clamped);
 }
 
 // --- color math, private to this module -------------------------------------------------

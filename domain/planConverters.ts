@@ -3,10 +3,11 @@
 // `domain/plan.ts` (types only) per the single-responsibility rule in
 // AGENTS.md.
 
-import type { Session, SessionExercise } from '@domain/execution';
+import type { Session, SessionExercise, SetTarget } from '@domain/execution';
 import { generateId } from '@domain/id';
 import type { WeekPlan, WeekPlanDay, WeekPlanExercise } from '@domain/plan';
 import type { Unsaved } from '@domain/timestamps';
+import { setRows } from '@domain/weekPlanMaterializers';
 
 /**
  * A `Session` paired with the `SessionExercise`s planned within it, before either has been
@@ -31,10 +32,15 @@ export type SessionWithExercises = {
  * `targetReps`: a `WeekPlan` holds no reps in any flow, and where week 1 does get them
  * (Flow C) they are computed at Start from the exercise's history, not carried in the
  * plan (04 · Meso Creation Flows, "Расчёт startReps"; task 041).
+ *
+ * `setTargetsFor` replaces that default where an exercise plans something other than sets —
+ * Start passes the per-type materializers (`domain/weekPlanMaterializers.ts`, GT-160): an
+ * interval's rounds and a mobility block, timed from the cycle's settings.
  */
 export function materializeWeekPlan(
   plan: WeekPlan,
   params: { mesoId: string; weekNumber: number; isDeload: boolean; targetRir: number },
+  setTargetsFor: (exercise: WeekPlanExercise) => SetTarget[] = (entry) => setRows({ entry }),
 ): SessionWithExercises[] {
   return plan.days.map((day) => {
     const session: Unsaved<Session> = {
@@ -53,9 +59,7 @@ export function materializeWeekPlan(
       sessionId: session.id,
       exerciseId: exercise.exerciseId,
       order: exercise.order,
-      setTargets: Array.from({ length: exercise.sets }, (_, index) => ({
-        setNumber: index + 1,
-      })),
+      setTargets: setTargetsFor(exercise),
       targetRir: params.targetRir,
       status: 'planned',
     }));

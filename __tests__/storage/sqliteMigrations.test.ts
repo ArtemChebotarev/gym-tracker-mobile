@@ -12,21 +12,12 @@ import { SqliteSetLogRepository } from '@storage/sqlite/setLogRepository';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 
 import { makeSession, makeSessionExercise, makeSetLog } from '../contracts/fixtures';
-import { openTestDatabase, readMigrationBundle } from '../fixtures/sqliteDatabase';
-
-/** `bundle` as the build that shipped with its first `count` migrations carried it. */
-function bundleUpTo(bundle: MigrationBundle, count: number): MigrationBundle {
-  const entries = bundle.journal.entries.slice(0, count);
-  return {
-    journal: { entries },
-    migrations: Object.fromEntries(
-      entries.map((entry) => {
-        const key = `m${entry.idx.toString().padStart(4, '0')}`;
-        return [key, bundle.migrations[key]!];
-      }),
-    ),
-  };
-}
+import {
+  bundleUpTo,
+  migrationIndex,
+  openTestDatabase,
+  readMigrationBundle,
+} from '../fixtures/sqliteDatabase';
 
 // Task 069 · the schema is versioned and migrations run at startup (07 · Persistence Layer
 // Contract, rule 7).
@@ -162,6 +153,7 @@ describe('the app’s own migrations', () => {
       'exercise',
       'meso_template',
       'mesocycle',
+      'round_log',
       'session',
       'session_exercise',
       'set_log',
@@ -205,6 +197,9 @@ describe('the app’s own migrations', () => {
       '0003_onboarding_flags': 1791215245344,
       '0004_template_description': 1791899270911,
       '0005_seed_catalog_templates': 1791909901083,
+      '0006_hybrid_exercise_types': 1791988803753,
+      '0007_settings_get_ready': 1793097297644,
+      '0008_settings_signals': 1793108004948,
     });
   });
 
@@ -307,7 +302,117 @@ describe('the app’s own migrations', () => {
         defaultProgressionSettings,
         weightUnit: 'lb',
         onboarding: DEFAULT_ONBOARDING,
+        // The columns of migration 0006 bring the rest timer as it ships (GT-87), 0007 Get ready.
+        restBetweenSets: { enabled: true, restSec: 120 },
+        getReadySec: 5,
+        // 0008 the signals, sound and vibration both on (GT-172).
+        signals: { sound: true, vibration: true },
       });
+    } finally {
+      close();
+    }
+  });
+
+  // GT-69: the hybrid exercise types arrive as columns with defaults and one new table. What the
+  // phone already holds must come through as it was — every exercise a strength one, the settings
+  // row with the rest timer on at 2:00, no mesocycle given parameters it never had.
+  test('give what the build before 0006 holds the strength type and the default rest timer', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(
+        db,
+        bundleUpTo(full, migrationIndex(full, '0006_hybrid_exercise_types')),
+      );
+      const before = await db.values<[string, string, string]>(
+        sql`SELECT id, name, muscle_group FROM exercise ORDER BY id`,
+      );
+      await db.run(sql`
+        INSERT INTO settings (id, default_progression_settings, weight_unit)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg')
+      `);
+      await db.run(sql`
+        INSERT INTO mesocycle
+          (id, name, length_weeks, days_per_week, status, origin, progression_settings,
+           created_at, updated_at)
+        VALUES
+          ('meso-a', 'Upper Lower', 4, 4, 'planned', '{"type":"scratch"}',
+           ${JSON.stringify(defaultProgressionSettings)},
+           '2026-01-05T10:00:00.000Z', '2026-01-05T10:00:00.000Z')
+      `);
+
+      await migrateToLatest(db, full);
+
+      // The catalog is the whole `exercise` table here; no row lost, none changed but the new two.
+      expect(
+        await db.values<[string, string, string]>(
+          sql`SELECT id, name, muscle_group FROM exercise ORDER BY id`,
+        ),
+      ).toEqual(before);
+      expect(before.length).toBeGreaterThan(0);
+      expect(
+        await db.values<[number]>(
+          sql`SELECT COUNT(*) FROM exercise WHERE type <> 'strength' OR config IS NOT NULL`,
+        ),
+      ).toEqual([[0]]);
+      expect(
+        await db.values<[number, number]>(
+          sql`SELECT strength_rest_timer_enabled, strength_rest_timer_seconds FROM settings`,
+        ),
+      ).toEqual([[1, 120]]);
+      expect(
+        await db.values<[string | null]>(sql`SELECT exercise_settings FROM mesocycle`),
+      ).toEqual([[null]]);
+      expect(await db.values<[number]>(sql`SELECT COUNT(*) FROM round_log`)).toEqual([[0]]);
+    } finally {
+      close();
+    }
+  });
+
+  // GT-188: Get ready becomes a setting. The settings row already on the device keeps its rest
+  // timer as the user set it and gets Get ready as it ships, 0:05.
+  test('give the settings row before 0007 Get ready 0:05 and keep its rest timer', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0007_settings_get_ready')));
+      await db.run(sql`
+        INSERT INTO settings
+          (id, default_progression_settings, weight_unit, strength_rest_timer_enabled,
+           strength_rest_timer_seconds)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg', 0, 90)
+      `);
+
+      await migrateToLatest(db, full);
+
+      const settings = await new SqliteSettingsRepository(db).read();
+      expect(settings.restBetweenSets).toEqual({ enabled: false, restSec: 90 });
+      expect(settings.getReadySec).toBe(5);
+    } finally {
+      close();
+    }
+  });
+
+  // GT-172: the signals become settings. The settings row already on the device keeps what the
+  // user set and gets both signals on, as the rest timer gave them before.
+  test('give the settings row before 0008 both signals on and keep its timers', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0008_settings_signals')));
+      await db.run(sql`
+        INSERT INTO settings
+          (id, default_progression_settings, weight_unit, strength_rest_timer_enabled,
+           strength_rest_timer_seconds, get_ready_seconds)
+        VALUES (1, ${JSON.stringify(defaultProgressionSettings)}, 'kg', 0, 90, 3)
+      `);
+
+      await migrateToLatest(db, full);
+
+      const settings = await new SqliteSettingsRepository(db).read();
+      expect(settings.restBetweenSets).toEqual({ enabled: false, restSec: 90 });
+      expect(settings.getReadySec).toBe(3);
+      expect(settings.signals).toEqual({ sound: true, vibration: true });
     } finally {
       close();
     }

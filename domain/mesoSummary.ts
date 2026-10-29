@@ -5,16 +5,18 @@
 //
 // There is no tonnage: a number for the sake of a number (Artem's call, 25.09.2026).
 
-import type { MuscleGroup } from './catalog';
-import type { Session, SetLog } from './execution';
+import type { ExerciseType, MuscleGroup } from './catalog';
+import type { RoundLog, Session, SetLog } from './execution';
 
 /**
- * A session of the mesocycle and every set logged in it. The aggregation's raw input: the use case
- * layer reads the sessions and their set logs, and the domain counts.
+ * A session of the mesocycle and every set and round logged in it. The aggregation's raw input:
+ * the use case layer reads the sessions and their logs, and the domain counts.
  */
 export type MesoSessionLog = {
   session: Session;
   setLogs: readonly SetLog[];
+  /** The rounds of its interval and mobility exercises (10.1 FR-7). */
+  roundLogs: readonly RoundLog[];
 };
 
 /** A tile's `value / total`. `total` is absent where the tile shows no denominator. */
@@ -30,6 +32,33 @@ export type MesoWeeklySetsRow = {
   sets: number[];
 };
 
+/** The types that get a table of their own beside the strength one (GT-113). */
+export type MesoHybridType = Exclude<ExerciseType, 'strength'>;
+
+/** One row of a type's table: an exercise across the block's weeks. */
+export type MesoWeeklyExerciseRow = {
+  exerciseId: string;
+  name: string;
+  /** For the row's dot, when the exercise has a group of its own. */
+  muscleGroup: MuscleGroup;
+  /**
+   * One per week, index 0 is week 1: what the type logs — a power exercise's sets, an interval's
+   * rounds, a mobility block's times done. `0` is a week without it.
+   */
+  counts: number[];
+};
+
+/**
+ * A type's table (GT-113, Artem, 27.10.2026): the exercises of one hybrid type, by week. Hybrid
+ * exercises have no one group to sum under, and there are few of them in a block, so the row is
+ * the exercise itself.
+ */
+export type MesoHybridTable = {
+  type: MesoHybridType;
+  /** Alphabetical. Only the exercises logged in the block at least once. */
+  rows: MesoWeeklyExerciseRow[];
+};
+
 export type MesoSummary = {
   /**
    * `Workouts`: `completed` sessions (a skipped one doesn't count) out of `lengthWeeks ×
@@ -38,9 +67,9 @@ export type MesoSummary = {
    */
   workouts: MesoSummaryCount;
   /**
-   * `Sets`: every `SetLog` of the block. Named strength sets because the model only knows strength
-   * work so far; hybrid exercises will come as a type of their own with their own log (08.9,
-   * "Hybrid-тренировки"), and this count must never pass for the block's whole training volume.
+   * `Sets`: every `SetLog` of a `strength` exercise in the block. A power set is a set too, but not
+   * hypertrophy volume: it is counted in the Power table, never here (GT-113). This count must
+   * never pass for the block's whole training volume.
    */
   strengthSets: number;
   /**
@@ -51,8 +80,10 @@ export type MesoSummary = {
    */
   weeks: Required<MesoSummaryCount>;
   /**
-   * The weekly sets card: only the muscle groups with at least one set in the block, in the
-   * catalog's order. Empty for a block without a single set — the screen shows its empty state.
+   * The Strength card: sets of `strength` exercises per muscle group, only the groups with at least
+   * one set in the block, in the catalog's order. Empty for a block without a strength set.
    */
   weeklySets: MesoWeeklySetsRow[];
+  /** Power, Timed work, Mobility in that order — only the types logged in the block. */
+  hybridTables: MesoHybridTable[];
 };

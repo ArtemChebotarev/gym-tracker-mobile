@@ -1,13 +1,14 @@
 // Folds an exercise's performances into the Overview tab's model — see 08.6 · Библиотека
-// упражнений, "Определение плиток" and "Последняя сессия", and its mockup 02-exercise-detail.html.
+// упражнений, "Определение плиток". Sessions one by one are the History tab's
+// (exerciseHistoryBuilders.ts), not this model's (GT-195).
 // Pure: everything comes from the arguments, nothing is read or formatted here (the screen turns
 // `lastDoneAt` into `3 d`).
 
 import type { Exercise } from './catalog';
 import type { SetLog } from './execution';
+import { hasLogs } from './exerciseHistoryBuilders';
 import type {
   ExerciseBestSet,
-  ExerciseLastSession,
   ExerciseOverview,
   ExerciseOverviewAction,
   ExerciseOverviewStats,
@@ -17,20 +18,16 @@ import type {
 /**
  * The Overview model for `exercise` over every performance of it, in any order.
  *
- * With no set logged at all there are no tiles and no sessions — the screen shows the empty state
- * instead (08.6, "Пустое состояние").
+ * With nothing logged at all, no set and no round, there are no tiles — the screen shows the empty
+ * state instead (08.6, "Пустое состояние").
  */
 export function buildExerciseOverview(
   exercise: Exercise,
   performances: readonly ExercisePerformance[],
 ): ExerciseOverview {
-  const performed = performances.filter((performance) => performance.setLogs.length > 0);
-  const [last] = completedNewestFirst(performed);
-
   return {
     exercise,
-    stats: buildExerciseOverviewStats(performed),
-    lastSession: last ? toLastSession(last) : null,
+    stats: buildExerciseOverviewStats(performances.filter(hasLogs)),
     actions: exerciseOverviewActions(exercise),
   };
 }
@@ -47,42 +44,19 @@ export function exerciseOverviewActions(exercise: Exercise): ExerciseOverviewAct
 function buildExerciseOverviewStats(
   performances: readonly ExercisePerformance[],
 ): ExerciseOverviewStats | null {
-  const setLogs = performances.flatMap((performance) => performance.setLogs);
-  const bestSet = findBestSet(setLogs);
-  if (!bestSet) {
+  const completions = performances.flatMap((performance) => [
+    ...performance.setLogs.map((log) => log.completedAt),
+    ...performance.roundLogs.map((log) => log.completedAt),
+  ]);
+  const [first] = completions;
+  if (first === undefined) {
     return null;
   }
 
   return {
-    bestSet,
+    bestSet: findBestSet(performances.flatMap((performance) => performance.setLogs)),
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
-    lastDoneAt: setLogs.reduce(
-      (latest, log) => (log.completedAt > latest ? log.completedAt : latest),
-      setLogs[0]?.completedAt ?? '',
-    ),
-  };
-}
-
-/**
- * The completed sessions holding a set of the exercise, most recent first (08.6: "Берётся
- * последняя завершённая сессия"). A session still in progress — the one being trained right now —
- * is not among them: these blocks exist to recall what was already done.
- */
-function completedNewestFirst(performances: readonly ExercisePerformance[]): ExercisePerformance[] {
-  return performances
-    .filter(
-      (performance) =>
-        performance.session.status === 'completed' && performance.session.completedAt !== undefined,
-    )
-    .sort((a, b) => completionOf(b).localeCompare(completionOf(a)));
-}
-
-function toLastSession(performance: ExercisePerformance): ExerciseLastSession {
-  return {
-    weekNumber: performance.session.weekNumber,
-    dayNumber: performance.session.dayNumber,
-    completedAt: completionOf(performance),
-    setLogs: [...performance.setLogs].sort((a, b) => a.setNumber - b.setNumber),
+    lastDoneAt: completions.reduce((latest, at) => (at > latest ? at : latest), first),
   };
 }
 
@@ -102,8 +76,4 @@ function findBestSet(setLogs: readonly SetLog[]): ExerciseBestSet | null {
     return log.weight === current.weight && log.reps > current.reps ? log : current;
   }, null);
   return best ? { weight: best.weight, reps: best.reps } : null;
-}
-
-function completionOf(performance: ExercisePerformance): string {
-  return performance.session.completedAt ?? '';
 }

@@ -8,14 +8,20 @@ import {
   exerciseDotColor,
   exerciseSubtitle,
   exerciseTitle,
+  exerciseTypeIcon,
+  formatRoundCount,
+  hasSetsStepper,
+  formatSetCount,
   getDayExercises,
   getDayNumbers,
   moveIndex,
   removeExerciseFromDay,
   reorderDayExercises,
+  stepperNoun,
   updateExerciseSets,
   type ExercisesByDay,
 } from '@components/MesoEditorDaysStepLogic';
+import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 const BENCH_PRESS: Exercise = {
@@ -240,5 +246,74 @@ describe('exercise display helpers', () => {
   test('exerciseDotColor returns the category color, undefined when unresolved', () => {
     expect(exerciseDotColor(exercisesById, BENCH_PRESS.id)).toBeDefined();
     expect(exerciseDotColor(exercisesById, 'missing')).toBeUndefined();
+  });
+});
+
+describe('hybrid rows (GT-157)', () => {
+  const exercisesById = {
+    [BENCH_PRESS.id]: BENCH_PRESS,
+    [MEDBALL_THROW.id]: MEDBALL_THROW,
+    [HEAVY_BAG.id]: HEAVY_BAG,
+    [COOLDOWN.id]: COOLDOWN,
+  };
+  test('formatSetCount pluralizes sets', () => {
+    expect(formatSetCount(1)).toBe('1 set');
+    expect(formatSetCount(3)).toBe('3 sets');
+  });
+
+  test('formatRoundCount pluralizes rounds', () => {
+    expect(formatRoundCount(1)).toBe('1 round');
+    expect(formatRoundCount(3)).toBe('3 rounds');
+  });
+
+  test('every row has a stepper but a mobility one: sets, or an interval\'s rounds (GT-190, GT-191)', () => {
+    expect(hasSetsStepper(exercisesById, BENCH_PRESS.id)).toBe(true);
+    expect(hasSetsStepper(exercisesById, MEDBALL_THROW.id)).toBe(true);
+    expect(hasSetsStepper(exercisesById, HEAVY_BAG.id)).toBe(true);
+    expect(hasSetsStepper(exercisesById, COOLDOWN.id)).toBe(false);
+    expect(hasSetsStepper(exercisesById, 'missing')).toBe(true);
+  });
+
+  test('an interval\'s stepper counts rounds, every other one sets', () => {
+    expect(stepperNoun(exercisesById, HEAVY_BAG.id)).toBe('rounds');
+    expect(stepperNoun(exercisesById, MEDBALL_THROW.id)).toBe('sets');
+    expect(stepperNoun(exercisesById, BENCH_PRESS.id)).toBe('sets');
+  });
+
+  test('exerciseSubtitle shows the type of an exercise without a muscle group', () => {
+    expect(exerciseSubtitle(exercisesById, MEDBALL_THROW.id)).toBe('Power');
+    expect(exerciseSubtitle(exercisesById, HEAVY_BAG.id)).toBe('Timed work');
+    expect(exerciseSubtitle(exercisesById, COOLDOWN.id)).toBe('Mobility');
+  });
+
+  test('exerciseSubtitle keeps the muscle group of a hybrid exercise that has one', () => {
+    const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
+    expect(exerciseSubtitle({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBe('Shoulders');
+  });
+
+  test('exerciseTypeIcon stands in for the dot only where there is no group colour', () => {
+    expect(exerciseTypeIcon(exercisesById, HEAVY_BAG.id)).toBeDefined();
+    expect(exerciseTypeIcon(exercisesById, BENCH_PRESS.id)).toBeUndefined();
+    const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
+    expect(exerciseTypeIcon({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBeUndefined();
+    expect(exerciseTypeIcon(exercisesById, 'missing')).toBeUndefined();
+  });
+
+  test('a hybrid row is added, reordered and removed like a strength one', () => {
+    let byDay: ExercisesByDay = {};
+    byDay = addExerciseToDay(byDay, 1, BENCH_PRESS.id);
+    byDay = addExerciseToDay(byDay, 1, HEAVY_BAG.id);
+    byDay = addExerciseToDay(byDay, 1, COOLDOWN.id);
+    byDay = reorderDayExercises(byDay, 1, [2, 0, 1]);
+    expect(getDayExercises(byDay, 1).map((e) => [e.exerciseId, e.order])).toEqual([
+      [COOLDOWN.id, 0],
+      [BENCH_PRESS.id, 1],
+      [HEAVY_BAG.id, 2],
+    ]);
+    byDay = removeExerciseFromDay(byDay, 1, 0);
+    expect(getDayExercises(byDay, 1).map((e) => [e.exerciseId, e.order])).toEqual([
+      [BENCH_PRESS.id, 0],
+      [HEAVY_BAG.id, 1],
+    ]);
   });
 });

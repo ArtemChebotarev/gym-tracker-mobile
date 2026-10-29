@@ -40,6 +40,17 @@ export type StepperProps = {
   caption?: string;
   /** `field` (default): bordered card row with a label above. `inline`: centered, no card chrome. */
   variant?: StepperVariant;
+  /**
+   * `inline` only: a fixed width for the value (a `SIZES` token), so the buttons of several
+   * steppers in a column line up whatever the value's own width.
+   */
+  valueWidth?: number;
+  /**
+   * `inline` only: makes the value a button — a tap on it is a way to set it directly (a time
+   * picker) where `−` / `+` by `step` is too many taps. The value is then drawn as a pill so that
+   * it reads as something to press; `−` / `+` stay.
+   */
+  onValuePress?: () => void;
 };
 
 
@@ -53,6 +64,8 @@ export function Stepper({
   formatValue,
   caption,
   variant = 'field',
+  valueWidth,
+  onValuePress,
 }: StepperProps) {
   const decrementDisabled = value <= min;
   const incrementDisabled = value >= max;
@@ -84,10 +97,25 @@ export function Stepper({
     return (
       <View style={styles.inlineRow}>
         {decrementButton}
-        <View>
-          <Text style={styles.valueInline}>{displayValue}</Text>
-          {caption !== undefined && <Text style={styles.captionInline}>{caption}</Text>}
-        </View>
+        {onValuePress === undefined ? (
+          <View style={valueWidth === undefined ? undefined : { width: valueWidth }}>
+            <Text style={styles.valueInline}>{displayValue}</Text>
+            {caption !== undefined && <Text style={styles.captionInline}>{caption}</Text>}
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Set ${label}`}
+            onPress={onValuePress}
+            style={({ pressed }) => [
+              styles.valuePill,
+              valueWidth !== undefined && { width: valueWidth },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.valueInline}>{displayValue}</Text>
+          </Pressable>
+        )}
         {incrementButton}
       </View>
     );
@@ -202,6 +230,15 @@ const styles = StyleSheet.create({
     color: COLORS['text/primary'],
     textAlign: 'center',
   },
+  // A shade lighter than the card it sits on (Artem, 18.10.2026: on `surface/card` the pill read as
+  // plain text, not as something that opens a picker), the same fill a selected segment has.
+  valuePill: {
+    minHeight: SIZES['size/control-inline'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS['surface/control-active'],
+    borderRadius: RADII['radius/pill'],
+  },
   captionInline: {
     fontSize: TYPOGRAPHY['type/caption'].fontSize,
     color: COLORS['text/faint'],
@@ -212,7 +249,10 @@ const styles = StyleSheet.create({
     ...circle(SIZES['size/control-inline']),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS['surface/control-active'],
+    // No fill, an outline: the inline stepper sits in a list row, among text, and a filled disc
+    // weighs more than the value between its buttons.
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
   },
   glyphInline: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,

@@ -1,8 +1,14 @@
 import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
+import type { RestBetweenSets } from '@domain/restTimer';
+import { DEFAULT_SIGNALS, type Signals } from '@domain/signals';
 import type { Settings, SettingsRepository } from '@repositories/settings';
 import { eq } from 'drizzle-orm';
 
-import { DEFAULT_ONBOARDING, DEFAULT_SETTINGS } from '../settingsDefaults';
+import {
+  DEFAULT_ONBOARDING,
+  DEFAULT_REST_BETWEEN_SETS,
+  DEFAULT_SETTINGS,
+} from '../settingsDefaults';
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 import { SETTINGS_ROW_ID, settings } from './schema';
@@ -26,6 +32,12 @@ export class SqliteSettingsRepository implements SettingsRepository {
           defaultProgressionSettings: row.defaultProgressionSettings,
           weightUnit: row.weightUnit,
           onboarding: row.onboarding,
+          restBetweenSets: {
+            enabled: row.strengthRestTimerEnabled,
+            restSec: row.strengthRestTimerSeconds,
+          },
+          getReadySec: row.getReadySeconds,
+          signals: { sound: row.signalSound, vibration: row.signalVibration },
         }
       : DEFAULT_SETTINGS;
     return {
@@ -38,7 +50,22 @@ export class SqliteSettingsRepository implements SettingsRepository {
   }
 
   async write(current: Settings): Promise<Settings> {
-    const row = { id: SETTINGS_ROW_ID, ...current };
+    const { restBetweenSets, getReadySec, signals, ...rest } = current;
+    // A backup exported before GT-87 has no rest timer, though its schema stamp is this build's:
+    // restored, it gets the setting as it ships rather than a write the columns refuse.
+    const timer: RestBetweenSets =
+      (restBetweenSets as RestBetweenSets | undefined) ?? DEFAULT_REST_BETWEEN_SETS;
+    // The same for one exported before GT-172, which has no signals.
+    const { sound, vibration } = (signals as Signals | undefined) ?? DEFAULT_SIGNALS;
+    const row = {
+      id: SETTINGS_ROW_ID,
+      ...rest,
+      strengthRestTimerEnabled: timer.enabled,
+      strengthRestTimerSeconds: timer.restSec,
+      getReadySeconds: getReadySec,
+      signalSound: sound,
+      signalVibration: vibration,
+    };
     await runQuery(() =>
       this.db
         .insert(settings)

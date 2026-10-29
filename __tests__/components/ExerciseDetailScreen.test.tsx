@@ -53,12 +53,6 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
       sessionCount: 14,
       lastDoneAt: '2026-09-17T11:30:00.000Z',
     },
-    lastSession: {
-      weekNumber: 3,
-      dayNumber: 2,
-      completedAt: '2026-09-17T12:00:00.000Z',
-      setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
-    },
     actions: ['hide'],
     ...overrides,
   };
@@ -74,7 +68,8 @@ const HISTORY: ExerciseHistoryMesocycle[] = [
         weekNumber: 3,
         dayNumber: 2,
         completedAt: '2026-09-17T12:00:00.000Z',
-        setLogs: [setLog({ rir: 2 })],
+        roundLogs: [],
+        setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
       },
     ],
   },
@@ -124,15 +119,115 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Last done')).toBeTruthy();
   });
 
-  test("labels the last session's block with its week, day and date", () => {
+  test('a strength exercise has no type chip and no settings, as on canvas 4.5', () => {
     renderScreen();
 
-    expect(screen.getByText('Last session')).toBeTruthy();
-    expect(screen.getByText('Week 3 · Day 2 · 17 Sep')).toBeTruthy();
+    expect(screen.queryByText('Strength')).toBeNull();
+    expect(screen.queryByText('Settings')).toBeNull();
   });
 
-  test("lists the last session's sets, each with its RIR", () => {
+  test('a non-strength exercise names its type between the group and the equipment', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          name: 'Medball slam',
+          muscleGroup: 'fullBody',
+          type: 'power',
+          config: { type: 'power', load: 'weight', noHeavierAvailable: false },
+          equipment: 'medicine-ball',
+        }),
+      }),
+    });
+
+    const rendered = JSON.stringify(screen.toJSON());
+    const order = ['Full body', 'Power', 'Medicine ball', 'Catalog'].map((label) =>
+      rendered.indexOf(`"${label}"`),
+    );
+    expect(order.every((index) => index > -1)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  test('a power exercise shows its Settings, labelled as values for new cycles', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'power',
+          config: { type: 'power', load: 'level', noHeavierAvailable: true },
+        }),
+      }),
+    });
+
+    expect(screen.getByText('Settings')).toBeTruthy();
+    expect(screen.getByText('Used in new cycles')).toBeTruthy();
+    expect(screen.getByText('Load')).toBeTruthy();
+    expect(screen.getByText('Level')).toBeTruthy();
+    expect(screen.getByText('No higher level available')).toBeTruthy();
+    expect(screen.getByText('On')).toBeTruthy();
+  });
+
+  test('a power exercise with no history still shows its Settings under How to perform', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'power',
+          config: { type: 'power', load: 'weight', noHeavierAvailable: false },
+        }),
+        stats: null,
+      }),
+      history: [],
+    });
+
+    const rendered = JSON.stringify(screen.toJSON());
+    expect(rendered.indexOf('No sets logged yet')).toBeGreaterThan(-1);
+    expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
+      rendered.indexOf('Settings'),
+    );
+    expect(screen.getByText('Kg')).toBeTruthy();
+    expect(screen.queryByText('No heavier available')).toBeNull();
+  });
+
+  test('a timed work exercise with no history: no rounds yet, then its lever in Settings', () => {
+    renderScreen({
+      overview: overview({
+        exercise: exercise({
+          type: 'interval',
+          config: { type: 'interval', lever: 'rest', stepSec: 5 },
+        }),
+        stats: null,
+      }),
+      history: [],
+    });
+
+    expect(screen.getByText('No rounds logged yet')).toBeTruthy();
+    expect(screen.getByText('Timed work')).toBeTruthy();
+    expect(screen.getByText('Progress by')).toBeTruthy();
+    expect(screen.getByText('Less rest')).toBeTruthy();
+    expect(screen.getByText('5 s')).toBeTruthy();
+    expect(
+      screen.getByText("Finish every round and next week's rest is 5 s shorter."),
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByText('History'));
+    expect(screen.getByText('No rounds logged yet')).toBeTruthy();
+  });
+
+  test('the equipment chip shows for every type with equipment, and only then', () => {
+    renderScreen({ overview: overview({ exercise: exercise({ equipment: 'barbell' }) }) });
+    expect(screen.getByText('Barbell')).toBeTruthy();
+  });
+
+  test("does not repeat any session — Last session and Earlier are History's now", () => {
     renderScreen();
+
+    expect(screen.queryByText('Last session')).toBeNull();
+    expect(screen.queryByText('Earlier')).toBeNull();
+    expect(screen.queryByText('Set 1')).toBeNull();
+  });
+
+  test('History keeps what Last session showed: every set with its RIR', () => {
+    renderScreen();
+
+    fireEvent.press(screen.getByText('History'));
 
     expect(screen.getByText('Set 1')).toBeTruthy();
     expect(screen.getByText('Set 2')).toBeTruthy();
@@ -141,58 +236,37 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('85 kg × 7 · 1 RIR')).toBeTruthy();
   });
 
-  test('does not repeat the earlier sessions — History has them', () => {
-    renderScreen();
-
-    expect(screen.queryByText('Earlier')).toBeNull();
-    expect(screen.queryByTestId('exercise-earlier-sessions')).toBeNull();
-    expect(screen.getByTestId('exercise-last-session')).toBeTruthy();
-  });
-
-  test('a set with no RIR renders without the tail', () => {
+  test('an interval exercise drops the Best set tile', () => {
     renderScreen({
       overview: overview({
-        lastSession: {
-          weekNumber: 1,
-          dayNumber: 1,
-          completedAt: '2026-09-17T12:00:00.000Z',
-          setLogs: [setLog()],
-        },
+        exercise: exercise({ type: 'interval' }),
+        stats: { bestSet: null, sessionCount: 2, lastDoneAt: '2026-09-17T11:30:00.000Z' },
       }),
     });
 
-    expect(screen.getByText('85 kg × 8')).toBeTruthy();
-    expect(screen.queryByText(/RIR/)).toBeNull();
+    expect(screen.queryByText('Best set')).toBeNull();
+    expect(screen.getByText('Sessions')).toBeTruthy();
+    expect(screen.getByText('Last done')).toBeTruthy();
   });
 
-  test('with nothing logged, the tiles and the last session give way to the empty state', () => {
-    renderScreen({
-      overview: overview({ stats: null, lastSession: null }),
-      history: [],
-    });
+  test('with nothing logged, the tiles give way to the framed empty state', () => {
+    renderScreen({ overview: overview({ stats: null }), history: [] });
 
     expect(screen.getByText('No sets logged yet')).toBeTruthy();
+    expect(screen.getByText('Highlights show up after your first workout.')).toBeTruthy();
     expect(screen.queryByText('Best set')).toBeNull();
     expect(screen.queryByText('Sessions')).toBeNull();
-    expect(screen.queryByTestId('exercise-last-session')).toBeNull();
   });
 
   test('the empty state answers the History tab too — no sets means no history', () => {
     renderScreen({
-      overview: overview({ stats: null, lastSession: null }),
+      overview: overview({ stats: null }),
       history: [],
     });
 
     fireEvent.press(screen.getByText('History'));
 
     expect(screen.getByText('No sets logged yet')).toBeTruthy();
-  });
-
-  test('hides the last-session block when no completed session holds a set', () => {
-    renderScreen({ overview: overview({ lastSession: null }) });
-
-    expect(screen.queryByTestId('exercise-last-session')).toBeNull();
-    expect(screen.getByText('Best set')).toBeTruthy();
   });
 
   test('opens on Overview and switches to History on the segmented control', () => {
@@ -281,7 +355,7 @@ describe('ExerciseDetailScreen', () => {
 
   test('offers Watch how to perform exercise on the empty state too', () => {
     const { props } = renderScreen({
-      overview: overview({ stats: null, lastSession: null }),
+      overview: overview({ stats: null }),
       history: [],
     });
 
@@ -290,14 +364,15 @@ describe('ExerciseDetailScreen', () => {
     expect(props.onWatchHowTo).toHaveBeenCalledTimes(1);
   });
 
-  test('on the empty state the how-to card comes first, above the note', () => {
-    renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
+  test("on the empty state the note keeps the tiles' place, How to perform under it", () => {
+    renderScreen({ overview: overview({ stats: null }), history: [] });
 
     const rendered = JSON.stringify(screen.toJSON());
 
-    expect(rendered.indexOf('Watch how to perform exercise')).toBeGreaterThan(-1);
-    expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
-      rendered.indexOf('No sets logged yet'),
+    expect(rendered.indexOf('No sets logged yet')).toBeGreaterThan(-1);
+    expect(rendered.indexOf('No sets logged yet')).toBeLessThan(rendered.indexOf('How to perform'));
+    expect(rendered.indexOf('How to perform')).toBeLessThan(
+      rendered.indexOf('Watch how to perform exercise'),
     );
   });
 
@@ -307,7 +382,7 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
     populated.view.unmount();
 
-    renderScreen({ overview: overview({ stats: null, lastSession: null }), history: [] });
+    renderScreen({ overview: overview({ stats: null }), history: [] });
     fireEvent.press(screen.getByText('History'));
     expect(screen.queryByText('Watch how to perform exercise')).toBeNull();
   });

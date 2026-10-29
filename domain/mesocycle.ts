@@ -1,3 +1,4 @@
+import type { ExerciseSettings } from './exerciseConfig';
 import type { Timestamps } from './timestamps';
 
 // Mesocycle — a training block. See 02 · Domain Model ("Mesocycle") and
@@ -103,6 +104,13 @@ export type Mesocycle = Timestamps & {
    * is `active`.
    */
   weekPlan?: WeekPlan;
+  /**
+   * The block's own copy of an exercise's hybrid config, by exercise id (10.1, FR-9): the library
+   * holds only the starting values, and what the user changes in the editor or in Cycle settings
+   * lives here, so an edit moves this block and not every block that uses the exercise. Absent
+   * until a block has a power, interval or mobility exercise.
+   */
+  exerciseSettings?: Record<string, ExerciseSettings>;
   completedAt?: string;
   /**
    * When the block was archived — put out of sight without being deleted. Absent for every block

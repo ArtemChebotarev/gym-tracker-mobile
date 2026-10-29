@@ -8,8 +8,12 @@
 import { toExerciseId } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
+import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import type { SourceExercise } from '@domain/progression';
+import { policyFor } from '@domain/progressionPolicies';
 import { prescribeNextSession } from '@domain/progressionPlan';
 import { resolveBaseSession } from '@domain/progressionSource';
 import type { ExerciseRepository } from '@repositories/catalog';
@@ -75,11 +79,18 @@ export async function generateNextSession(
     }
     // `equipment` rides along with `muscleGroup`: the engine needs it to tell a pure bodyweight
     // exercise, which gets no weight target at all, from everything else (task 105).
-    const source: SourceExercise = { sessionExercise, muscleGroup: exercise.muscleGroup };
-    if (exercise.equipment !== undefined) {
-      source.equipment = exercise.equipment;
+    const source: SourceExercise = {
+      sessionExercise,
+      muscleGroup: exercise.muscleGroup,
+      type: exerciseTypeOf(exercise),
+    };
+    const loadEquipment = loadEquipmentOf(exercise);
+    if (loadEquipment !== undefined) {
+      source.equipment = loadEquipment;
     }
-    return source;
+    // What else the type plans by is its policy's to read, from the cycle's settings (FR-9).
+    const settings = exerciseSettingsFor(mesocycle.exerciseSettings ?? {}, exercise);
+    return { ...source, ...policyFor(source).sourceFacts(settings) };
   });
 
   const draft = buildNextSession({
@@ -90,6 +101,7 @@ export async function generateNextSession(
     prescriptions: prescribeNextSession({
       exercises,
       logs: await repos.setLogRepo.listBySessionId(base.id),
+      roundLogs: await repos.roundLogRepo.listBySessionId(base.id),
       weekNumber,
       lengthWeeks: mesocycle.lengthWeeks,
       settings: mesocycle.progressionSettings,

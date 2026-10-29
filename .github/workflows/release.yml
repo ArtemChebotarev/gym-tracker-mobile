@@ -29,8 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # A tag on a task branch would ship unreviewed code, and `hybrid` must never
-      # reach the real bundle ID. For the button, the same rule is: run it on main.
+      # A tag on a task branch would ship unreviewed code. For the button, the same
+      # rule is: run it on main.
       - name: Release commit must be on main
         run: |
           git fetch origin main

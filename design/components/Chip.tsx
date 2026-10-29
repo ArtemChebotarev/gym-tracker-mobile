@@ -12,6 +12,7 @@
 // picked" vs. "this is the one thing to press"), so it's composed locally in
 // ExerciseFiltersSheet.tsx rather than folded into this component as another prop.
 
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { circle, tapTargetSlop } from '../shapes';
@@ -27,6 +28,8 @@ type StaticChipProps = {
   variant: 'static';
   label: string;
   dotColor?: string;
+  /** A glyph before the label (the type chip in a page's header). Rendered as given. */
+  icon?: ReactNode;
   /**
    * Drops the `size/chip` height for the tighter padding of the workout's group chip. A static chip
    * is never tapped, so it needs no tap target — for a lone mark like the workout card's RIR, not
@@ -85,6 +88,7 @@ export function Chip(props: ChipProps) {
           props.width !== undefined && { width: props.width, justifyContent: 'center' },
         ]}
       >
+        {props.icon}
         {props.dotColor !== undefined && (
           <View style={[styles.dot, { backgroundColor: props.dotColor }]} />
         )}

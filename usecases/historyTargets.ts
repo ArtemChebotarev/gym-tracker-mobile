@@ -1,12 +1,12 @@
 // Rule 6 targets for an exercise that has no source session — shared by swapping an exercise
 // (047) and adding one mid-session (048). See 03 · Progression Engine, "Правило 6": reading the
 // history window is the use case layer's job; which performance to build on is the reference
-// resolver's (`resolveReference`, task 134.1), and the targets are `prescribeFromHistory`'s.
+// resolver's (`resolveReference`, task 134.1), and the targets are the exercise type's policy's (`prescribeFromReference`).
 
-import type { Equipment } from '@domain/catalog';
+import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { Session, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
-import { prescribeFromHistory } from '@domain/progressionHistory';
+import { policyFor } from '@domain/progressionPolicies';
 import { resolveReference } from '@domain/progressionReference';
 import { daysBefore } from '@domain/time';
 import type { SetLogRepository } from '@repositories/setLogRepository';
@@ -30,6 +30,8 @@ export type HistoryTargetsQuery = {
    * reps but no weight target (task 105) — the engine decides, this only carries the fact.
    */
   equipment?: Equipment;
+  /** Picks the policy that prices the rows (`domain/progressionPolicies.ts`). Absent is `strength`. */
+  type?: ExerciseType;
   now: string;
 };
 
@@ -41,16 +43,31 @@ export type HistoryTargetsQuery = {
  * - Otherwise the exercise's performances logged no earlier than `now − historyLookbackDays` go
  *   to the reference resolver with the session's slot: a reference in the exercise's own slot
  *   gives targets (reps + 1), one from another day or block an estimate (priced by where it came
- *   from — `prescribeFromHistory`), and none leaves the rows empty — the screen shows `N RIR`.
+ *   from — the type's policy), and none leaves the rows empty — the screen shows `N RIR`.
  */
 export async function targetsFromHistory(
   query: HistoryTargetsQuery,
   setLogRepo: SetLogRepository,
 ): Promise<SetTarget[]> {
-  const { exerciseId, session, rowCount, weekRir, sessionExerciseId, settings, equipment, now } =
-    query;
+  const {
+    exerciseId,
+    session,
+    rowCount,
+    weekRir,
+    sessionExerciseId,
+    settings,
+    equipment,
+    type,
+    now,
+  } = query;
   if (session.isDeload) {
-    return prescribeFromHistory({ kind: 'none' }, rowCount, weekRir, settings, equipment);
+    return policyFor({ type }).prescribeFromReference({
+      resolution: { kind: 'none' },
+      rowCount,
+      weekRir,
+      settings,
+      ...(equipment === undefined ? {} : { equipment }),
+    });
   }
   const performances = await setLogRepo.listPerformances({
     exerciseId,
@@ -62,5 +79,11 @@ export async function targetsFromHistory(
     dayNumber: session.dayNumber,
     currentWeek: { mesoId: session.mesoId, weekNumber: session.weekNumber },
   });
-  return prescribeFromHistory(resolution, rowCount, weekRir, settings, equipment);
+  return policyFor({ type }).prescribeFromReference({
+    resolution,
+    rowCount,
+    weekRir,
+    settings,
+    ...(equipment === undefined ? {} : { equipment }),
+  });
 }

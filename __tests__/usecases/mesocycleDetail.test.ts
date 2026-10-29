@@ -15,6 +15,7 @@ async function seeded() {
     mesocycleRepo: repositories.mesocycleRepo,
     sessionRepo: repositories.sessionRepo,
     setLogRepo: repositories.setLogRepo,
+    roundLogRepo: repositories.roundLogRepo,
     exerciseRepo: repositories.exerciseRepo,
   };
   return { repositories, deps };
@@ -44,6 +45,7 @@ describe('loadMesocycleDetail', () => {
         { muscleGroup: 'chest', sets: [3, 2, 0, 0, 0] },
         { muscleGroup: 'back', sets: [3, 0, 0, 0, 0] },
       ],
+      hybridTables: [],
     });
   });
 

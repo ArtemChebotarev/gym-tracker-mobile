@@ -1,7 +1,9 @@
 // "Мезоцикл (деталь)" — 08.9, task 129, laid out after its mockup 08.9-meso-detail.html. A pushed
 // screen: back and `⋯` in the header, then the block's name with its `Active` / `Stopped` badge,
-// the subtitle for its status, three tiles (Workouts, Sets, Weeks) and the `WEEKLY SETS` card —
-// sets per muscle group per week, on the group's category color.
+// the subtitle for its status, three tiles (Workouts, Sets, Weeks) and the weekly cards: `STRENGTH`
+// — sets per muscle group per week, on the group's category color — then `POWER`, `TIMED WORK`,
+// `MOBILITY` for the types logged in the block, a row per exercise (GT-113). Sets counts strength
+// only: a power set or a round is not hypertrophy volume.
 //
 // There is no tonnage anywhere (Artem's call, 25.09.2026). `Weeks` always carries its denominator,
 // a finished block included: `7 / 7` is the motivation to get there (26.09.2026). `Workouts` of a
@@ -36,7 +38,6 @@ import { MesoGrid } from './MesoGrid';
 import { BackIcon } from '@design/icons/BackIcon';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-import type { MesoWeeklySetsRow } from '@domain/mesoSummary';
 import type { MesocycleDetail } from '@usecases/mesocycleDetail';
 import type { LoadError } from '@state/loadError';
 
@@ -46,7 +47,8 @@ import {
   mesocycleDetailBadge,
   showsWorkoutGrid,
   weekColumnLabels,
-  weeklySetsRowViews,
+  weeklyTableViews,
+  type WeeklyTableRowView,
 } from './MesocycleDetailScreenLogic';
 import { styles } from './MesocycleDetailScreenStyles';
 
@@ -125,16 +127,22 @@ export function MesocycleDetailScreen({
           <StatTile label="Weeks" {...formatSummaryCount(summary.weeks)} />
         </View>
 
-        <View style={styles.block}>
-          <Text style={styles.blockLabel}>Weekly sets</Text>
-          {summary.weeklySets.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No sets logged in this cycle</Text>
-            </View>
-          ) : (
-            <WeeklySetsCard rows={summary.weeklySets} lengthWeeks={mesocycle.lengthWeeks} />
-          )}
-        </View>
+        {weeklyTableViews(summary).map((table) => (
+          <View key={table.key} style={styles.block}>
+            <Text style={styles.blockLabel}>{table.title}</Text>
+            {table.rows.length === 0 ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>No sets logged in this cycle</Text>
+              </View>
+            ) : (
+              <WeeklyTableCard
+                testID={`weekly-${table.key}`}
+                rows={table.rows}
+                lengthWeeks={mesocycle.lengthWeeks}
+              />
+            )}
+          </View>
+        ))}
 
         {showsWorkoutGrid(mesocycle.status) && (
           <View style={styles.block}>
@@ -158,15 +166,17 @@ export function MesocycleDetailScreen({
   );
 }
 
-function WeeklySetsCard({
+function WeeklyTableCard({
+  testID,
   rows,
   lengthWeeks,
 }: {
-  rows: readonly MesoWeeklySetsRow[];
+  testID: string;
+  rows: readonly WeeklyTableRowView[];
   lengthWeeks: number;
 }) {
   return (
-    <View testID="weekly-sets" style={styles.card}>
+    <View testID={testID} style={styles.card}>
       <View style={styles.volumeRow}>
         <View style={styles.groupColumn} />
         {weekColumnLabels(lengthWeeks).map((label) => (
@@ -175,8 +185,8 @@ function WeeklySetsCard({
           </Text>
         ))}
       </View>
-      {weeklySetsRowViews(rows).map((row) => (
-        <View key={row.muscleGroup} style={styles.volumeRow}>
+      {rows.map((row) => (
+        <View key={row.key} style={styles.volumeRow}>
           <View style={[styles.groupColumn, styles.group]}>
             {row.dotColor !== undefined && (
               <View style={[styles.groupDot, { backgroundColor: row.dotColor }]} />

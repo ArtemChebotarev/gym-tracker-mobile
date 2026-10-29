@@ -3,6 +3,7 @@ import {
   applyButtonLabel,
   toggleMuscleGroup,
   toggleSource,
+  toggleType,
 } from '@components/ExerciseFiltersSheetLogic';
 
 describe('toggleMuscleGroup', () => {
@@ -62,5 +63,16 @@ describe('applyButtonLabel', () => {
 
   test('plural phrasing for more than one result', () => {
     expect(applyButtonLabel(12)).toBe('Show 12 exercises');
+  });
+});
+
+describe('toggleType', () => {
+  test('adds a type that is not yet selected, and removes one that is', () => {
+    expect(toggleType({}, 'power')).toEqual({ types: ['power'] });
+    expect(toggleType({ types: ['power', 'interval'] }, 'power')).toEqual({ types: ['interval'] });
+  });
+
+  test('deselecting the last type clears the field — an empty selection means every type', () => {
+    expect(toggleType({ types: ['mobility'] }, 'mobility')).toEqual({ types: undefined });
   });
 });

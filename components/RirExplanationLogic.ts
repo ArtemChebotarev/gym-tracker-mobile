@@ -7,6 +7,9 @@
 // row or two under it with the one thing to do and the one thing that changes.
 
 import type { PlateTextPart } from '@design/components/PlateRow';
+import type { ExerciseType } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
@@ -28,6 +31,12 @@ export type RirExplanation = {
   track: RirTrack;
   rows: RirRow[];
 };
+
+/**
+ * What a badge's popover shows: the RIR explanation, or — with no track — the plate of an exercise
+ * that has no RIR to draw, a power exercise on a deload week.
+ */
+export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrack };
 
 // How long the set you do is drawn, in the track's own units — arbitrary, but the reserve is drawn
 // to the same scale, so the picture is honest: 3 RIR leaves a bit under a quarter of the track in
@@ -69,6 +78,49 @@ export type RirExplanationInput = {
   isDeload: boolean;
 };
 
+export type DeloadExplanationInput = {
+  type?: ExerciseType;
+  powerLoad?: PowerLoad;
+  /** The deload week's target RIR, when the exercise has one on screen. */
+  targetRir?: number;
+};
+
+/**
+ * What the Deload badge says (the badge that takes the RIR badge's place on a deload week, for
+ * every type): a strength exercise keeps the RIR plate it always had; a power exercise has no RIR,
+ * so it says what actually changes for it — stop well before the speed drops, and by its load:
+ * kilograms halve, a level and the body stay, and never more than two sets. Interval comes with
+ * its own rule (GT-100).
+ */
+export function deloadExplanation({
+  type,
+  powerLoad,
+  targetRir,
+}: DeloadExplanationInput): BadgeExplanation {
+  if (type !== 'power') {
+    return rirExplanation({
+      targetRir: targetRir ?? defaultProgressionSettings.deloadRir,
+      isDeload: true,
+    });
+  }
+  const load: RirRow['text'] =
+    powerLoad === 'level'
+      ? ['Same level, ', { strong: 'two sets' }, ' at most.']
+      : powerLoad === 'none'
+        ? ['Same body weight, ', { strong: 'two sets' }, ' at most.']
+        : ['About ', { strong: 'half your usual load' }, ', two sets at most.'];
+  return {
+    title: 'Deload week',
+    rows: [
+      {
+        icon: StopIcon,
+        text: ['Stop each set ', { strong: 'well before the speed drops' }, '.'],
+      },
+      { icon: ArrowDownIcon, text: load },
+    ],
+  };
+}
+
 export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
 
@@ -79,7 +131,11 @@ export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): Ri
       rows: [
         {
           icon: StopIcon,
-          text: ["Don't push: aim to finish each set with ", { strong: `about ${targetRir} reps left` }, '.'],
+          text: [
+            "Don't push: aim to finish each set with ",
+            { strong: `about ${targetRir} reps left` },
+            '.',
+          ],
         },
       ],
     };
@@ -90,14 +146,20 @@ export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): Ri
   const rows: RirRow[] =
     targetRir === 0
       ? [
-          { icon: StopIcon, text: ['Stop a set when ', { strong: "you can't do another rep" }, '.'] },
+          {
+            icon: StopIcon,
+            text: ['Stop a set when ', { strong: "you can't do another rep" }, '.'],
+          },
           {
             icon: ArrowDownIcon,
             text: ['The number drops each week, and this is the ', { strong: 'last' }, ' one.'],
           },
         ]
       : [
-          { icon: StopIcon, text: ['Stop a set when ', { strong: `about ${targetRir} reps are left` }, '.'] },
+          {
+            icon: StopIcon,
+            text: ['Stop a set when ', { strong: `about ${targetRir} reps are left` }, '.'],
+          },
           {
             icon: ArrowDownIcon,
             text: ['It drops each week; the last one is ', { strong: 'failure' }, '.'],

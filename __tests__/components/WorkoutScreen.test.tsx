@@ -4,7 +4,11 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { WorkoutScreen, type WorkoutScreenProps } from '@components/WorkoutScreen';
 import { InfoIcon } from '@design/icons/InfoIcon';
-import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
+import type {
+  SetExerciseActions,
+  StrengthWorkoutExercise,
+  WorkoutSessionModel,
+} from '@usecases/workoutSession';
 
 // SafeAreaView (used by RootScreen) throws without a SafeAreaProvider ancestor — same fixture
 // RootScreen.test.tsx uses.
@@ -20,7 +24,7 @@ function renderWithSafeArea(ui: ReactElement) {
 // Local noon, so the snapshot's weekday doesn't depend on the test machine's time zone.
 const STARTED_AT = new Date(2026, 8, 15, 12).toISOString();
 
-const NO_ACTIONS: WorkoutExercise['actions'] = {
+const NO_ACTIONS: SetExerciseActions = {
   canReplace: false,
   canAddSet: false,
   canRemoveLastSet: false,
@@ -31,7 +35,7 @@ const NO_ACTIONS: WorkoutExercise['actions'] = {
   canDelete: false,
 };
 
-function makeExercise(overrides: Partial<WorkoutExercise> = {}): WorkoutExercise {
+function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): StrengthWorkoutExercise {
   return {
     sessionExerciseId: 'session-exercise-1',
     exerciseId: 'exercise-bench-press',
@@ -122,6 +126,10 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
     onExerciseMenuAction: jest.fn(),
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
+    onLogRound: jest.fn(),
+    onUnlogRound: jest.fn(),
+    onSetNoHeavierAvailable: jest.fn(),
+    onHideCeilingTip: jest.fn(),
     isSaving: false,
     onFinish: jest.fn(),
     isFinishing: false,
@@ -188,7 +196,7 @@ describe('WorkoutScreen header', () => {
       header: { ...COMPLETED.header, isDeload: true },
     };
     renderWithSafeArea(<WorkoutScreen {...makeProps({ model: deload })} />);
-    expect(screen.getByText('Deload')).toBeTruthy();
+    expect(screen.getByTestId('workout-deload-badge')).toHaveTextContent('Deload');
     expect(screen.getByTestId('workout-completed-check')).toBeTruthy();
 
     screen.rerender(
@@ -335,14 +343,14 @@ describe('WorkoutScreen Finish workout', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Finish workout' }));
 
     expect(onFinish).not.toHaveBeenCalled();
-    expect(screen.getByText('Log all sets first to finish the workout.')).toBeTruthy();
+    expect(screen.getByText('Log or skip every exercise to finish the workout.')).toBeTruthy();
   });
 
   test('without a live session (or with the button active) there is no locked hint', () => {
     renderWithSafeArea(<WorkoutScreen {...makeProps()} />);
 
     expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
-    expect(screen.queryByText(/Log all sets first/)).toBeNull();
+    expect(screen.queryByText(/Log or skip every exercise/)).toBeNull();
   });
 
   test('shows the button once every exercise is completed or skipped, and finishes on press', () => {

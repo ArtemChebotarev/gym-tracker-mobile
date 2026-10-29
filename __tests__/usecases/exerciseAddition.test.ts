@@ -5,6 +5,7 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { addExercises, type ExerciseAdditionDeps } from '@usecases/exerciseAddition';
+import { COOLDOWN, HEAVY_BAG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -147,6 +148,21 @@ describe('addExercises', () => {
     expect(added.every((exercise) => exercise.setTargets.length === 2)).toBe(true);
     const stored = await deps.workout.repos.sessionExerciseRepo.listBySessionId('session-w2');
     expect(stored).toHaveLength(3);
+  });
+
+  test('a mobility exercise comes with one block — an interval with two rounds (GT-109)', async () => {
+    const deps = await setUp();
+    await deps.exerciseRepo.createCustom(COOLDOWN);
+    await deps.exerciseRepo.createCustom(HEAVY_BAG);
+
+    const [cooldown, bag] = await addExercises(
+      { sessionId: 'session-w2', exerciseIds: [COOLDOWN.id, HEAVY_BAG.id] },
+      deps,
+      NOW,
+    );
+
+    expect(cooldown?.setTargets).toEqual([{ setNumber: 1 }]);
+    expect(bag?.setTargets).toHaveLength(2);
   });
 
   test('DoD: last week’s same day in this mesocycle → reps + 1 and its weight', async () => {

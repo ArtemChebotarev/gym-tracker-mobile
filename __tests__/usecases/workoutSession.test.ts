@@ -1,6 +1,6 @@
 import { type Equipment, type MuscleGroup, toExerciseId } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
-import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
 import type { WeightSwap } from '@domain/weightSwap';
 import { buildWeightSwap } from '@domain/weightSwapRules';
@@ -9,6 +9,7 @@ import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
 import { SqliteSessionTreeRepository } from '@storage/sqlite/sessionTree';
+import { SqliteSettingsRepository } from '@storage/sqlite/settings';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { skipExercise } from '@usecases/exerciseSkipping';
 import { moveExercise } from '@usecases/exerciseReorder';
@@ -17,10 +18,17 @@ import { addSet } from '@usecases/setRows';
 import {
   getWorkoutSession,
   getWorkoutSlot,
+  type IntervalWorkoutExercise,
+  type MobilityWorkoutExercise,
+  type PowerWorkoutExercise,
+  type StrengthWorkoutExercise,
+  type WorkoutExercise,
   type WorkoutSessionDeps,
 } from '@usecases/workoutSession';
+import { HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
+import { rowsOf } from '../fixtures/workoutCards';
 
 const db = withTestDatabase();
 
@@ -51,7 +59,20 @@ const CATALOG: [string, string, MuscleGroup, Equipment | undefined][] = [
   ['curl', 'Leg curl', 'hamstrings', undefined],
   ['dip', 'Dip', 'chest', 'bodyweight-weighted'],
   ['pullup', 'Pull-up', 'back', 'bodyweight'],
+  ['medball', 'Medball throw', 'fullBody', 'medicine-ball'],
+  ['boxjump', 'Box jump', 'quads', 'plyo-box'],
+  ['bag', 'Heavy bag', 'fullBody', undefined],
+  ['cooldown', 'Cooldown', 'fullBody', undefined],
 ];
+
+/** The catalog ids that are power exercises — the rest are strength, but for `INTERVAL_IDS`. */
+const POWER_IDS = new Set(['medball', 'boxjump']);
+
+/** The catalog ids that are interval exercises, on `HEAVY_BAG_CONFIG`: 2:00 work, 0:45 rest. */
+const INTERVAL_IDS = new Set(['bag']);
+
+/** The catalog ids that are mobility exercises — one block each, its length from history. */
+const MOBILITY_IDS = new Set(['cooldown']);
 
 function slotSession(week: number, day: number, overrides: Partial<Session> = {}): Session {
   return {
@@ -136,11 +157,17 @@ const row = planned('w2d1', 'row', 2, [undefined, undefined]);
 const w2Squat = planned('w2d2', 'squat', 1, [9]);
 const w2Curl = planned('w2d2', 'curl', 2, [12, 12]);
 
-type Setup = { sessions?: Session[]; exercises?: SessionExercise[]; logs?: SetLog[] };
+type Setup = {
+  sessions?: Session[];
+  exercises?: SessionExercise[];
+  logs?: SetLog[];
+  roundLogs?: RoundLog[];
+  mesocycle?: Mesocycle;
+};
 
 async function setUp(setup: Setup = {}) {
   const store = db();
-  await new SqliteMesocycleRepository(store).create(mesocycle);
+  await new SqliteMesocycleRepository(store).create(setup.mesocycle ?? mesocycle);
   const catalog = new SqliteExerciseRepository(store);
   for (const [id, name, muscleGroup, equipment] of CATALOG) {
     await catalog.createCustom({
@@ -150,6 +177,20 @@ async function setUp(setup: Setup = {}) {
       source: 'catalog',
       isHidden: false,
       ...(equipment ? { equipment } : {}),
+      ...(POWER_IDS.has(id)
+        ? {
+            type: 'power' as const,
+            config: {
+              type: 'power' as const,
+              load: id === 'boxjump' ? ('none' as const) : ('weight' as const),
+              noHeavierAvailable: false,
+            },
+          }
+        : {}),
+      ...(INTERVAL_IDS.has(id) ? { type: 'interval' as const, config: HEAVY_BAG_CONFIG } : {}),
+      ...(MOBILITY_IDS.has(id)
+        ? { type: 'mobility' as const, config: { type: 'mobility' as const } }
+        : {}),
     });
   }
   const workout = createSqliteWorkoutStore(store);
@@ -163,6 +204,9 @@ async function setUp(setup: Setup = {}) {
   );
   for (const log of logs) {
     await workout.repos.setLogRepo.create(log);
+  }
+  for (const log of setup.roundLogs ?? []) {
+    await workout.repos.roundLogRepo.create(log);
   }
   return { store, workout, deps: depsOver(store) };
 }
@@ -189,6 +233,7 @@ function depsOver(store: SqliteDatabase): WorkoutSessionDeps {
   return {
     sessionTreeRepo: new SqliteSessionTreeRepository(store),
     sessionRepo: new SqliteSessionRepository(store),
+    settingsRepo: new SqliteSettingsRepository(store),
   };
 }
 
@@ -231,7 +276,7 @@ describe('getWorkoutSession — live', () => {
       loggedSetCount: 2,
       hasLoggedSets: true,
     });
-    expect(benchCard?.rows).toEqual([
+    expect(rowsOf(benchCard)).toEqual([
       {
         setNumber: 1,
         targetReps: 11,
@@ -259,13 +304,13 @@ describe('getWorkoutSession — live', () => {
       },
     ]);
     expect(rowCard?.equipment).toBe('cable');
-    expect(rowCard?.rows[0]).toEqual({
+    expect(rowsOf(rowCard)[0]).toEqual({
       setNumber: 1,
       suggestedWeight: 60,
       weightSwap: { unavailable: 'no_history' },
       isFirstUnlogged: true,
     });
-    expect(rowCard?.rows[1]?.isFirstUnlogged).toBe(false);
+    expect(rowsOf(rowCard)[1]?.isFirstUnlogged).toBe(false);
   });
 
   test('exercise menu flags follow position and row count', async () => {
@@ -310,12 +355,12 @@ describe('getWorkoutSession — live', () => {
 
     const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(benchCard?.rows.map((setRow) => [setRow.setNumber, setRow.notDone ?? false])).toEqual([
+    expect(rowsOf(benchCard).map((setRow) => [setRow.setNumber, setRow.notDone ?? false])).toEqual([
       [1, false],
       [2, 'skipped'],
       [3, 'skipped'],
     ]);
-    expect(benchCard?.rows.some((setRow) => setRow.isFirstUnlogged)).toBe(false);
+    expect(rowsOf(benchCard).some((setRow) => setRow.isFirstUnlogged)).toBe(false);
     expect(benchCard?.actions).toMatchObject({ canSkip: false, canUnskip: true, canDelete: true });
   });
 
@@ -327,8 +372,8 @@ describe('getWorkoutSession — live', () => {
 
     const [rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(rowCard?.rows).toHaveLength(2);
-    expect(rowCard?.rows.some((setRow) => setRow.notDone !== undefined)).toBe(false);
+    expect(rowsOf(rowCard)).toHaveLength(2);
+    expect(rowsOf(rowCard).some((setRow) => setRow.notDone !== undefined)).toBe(false);
   });
 
   test('a ready session not started yet has no date and can be skipped', async () => {
@@ -373,9 +418,9 @@ describe('getWorkoutSession — live', () => {
     const [benchModel, curlModel] = (await getWorkoutSession('w4d1', deps)).exercises;
 
     // Set 2 wasn't logged last week — no guide for it rather than a guess.
-    expect(benchModel?.rows.map((r) => r.referenceReps)).toEqual([11, undefined]);
+    expect(rowsOf(benchModel).map((r) => r.referenceReps)).toEqual([11, undefined]);
     // The curl wasn't in last week's session at all.
-    expect(curlModel?.rows.map((r) => r.referenceReps)).toEqual([undefined]);
+    expect(rowsOf(curlModel).map((r) => r.referenceReps)).toEqual([undefined]);
   });
 
   test('rows of a session that is not a deload carry no reference reps', async () => {
@@ -383,7 +428,7 @@ describe('getWorkoutSession — live', () => {
 
     const model = await getWorkoutSession('w2d1', deps);
 
-    expect(model.exercises.flatMap((e) => e.rows).some((r) => 'referenceReps' in r)).toBe(false);
+    expect(model.exercises.flatMap((e) => rowsOf(e)).some((r) => 'referenceReps' in r)).toBe(false);
   });
 });
 
@@ -521,7 +566,7 @@ describe('getWorkoutSession — read-only', () => {
       canUnskip: false,
       canDelete: false,
     });
-    expect(model.exercises[0]?.rows.every((setRow) => !setRow.isFirstUnlogged)).toBe(true);
+    expect(rowsOf(model.exercises[0]).every((setRow) => !setRow.isFirstUnlogged)).toBe(true);
   });
 
   test('points Next workout at the session in progress', async () => {
@@ -621,9 +666,9 @@ describe('getWorkoutSession — history', () => {
       isCompleted: true,
     });
     expect(model.progress).toBe(1);
-    expect(model.exercises[0]?.rows).toHaveLength(2);
-    expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 60, reps: 10 });
-    expect(model.exercises[0]?.targetRir).toBe(2);
+    expect(rowsOf(model.exercises[0])).toHaveLength(2);
+    expect(rowsOf(model.exercises[0])[0]?.log).toEqual({ weight: 60, reps: 10 });
+    expect((model.exercises[0] as StrengthWorkoutExercise | undefined)?.targetRir).toBe(2);
   });
 
   test('a session of a still-running block is never history, whatever its own status', async () => {
@@ -684,7 +729,7 @@ describe('getWorkoutSession — preview', () => {
       hasLoggedSets: false,
       actions: expect.objectContaining({ canSkip: false, canDelete: false }),
     });
-    expect(squat?.targetRir).toBeUndefined();
+    expect((squat as StrengthWorkoutExercise | undefined)?.targetRir).toBeUndefined();
     expect(curl?.equipment).toBeUndefined();
   });
 });
@@ -764,15 +809,15 @@ describe('storage is the source of truth', () => {
     ]);
     const [rowCard, benchCard] = after.exercises;
     expect(rowCard).toMatchObject({ status: 'skipped', loggedSetCount: 1 });
-    expect(rowCard?.rows.map((setRow) => setRow.notDone ?? false)).toEqual([false, 'skipped']);
-    expect(benchCard?.plannedSetCount).toBe(4);
-    expect(benchCard?.rows.map((setRow) => setRow.log?.weight)).toEqual([
+    expect(rowsOf(rowCard).map((setRow) => setRow.notDone ?? false)).toEqual([false, 'skipped']);
+    expect(benchCard).toMatchObject({ plannedSetCount: 4 });
+    expect(rowsOf(benchCard).map((setRow) => setRow.log?.weight)).toEqual([
       62.5,
       undefined,
       undefined,
       undefined,
     ]);
-    expect(benchCard?.rows.find((setRow) => setRow.isFirstUnlogged)?.setNumber).toBe(2);
+    expect(rowsOf(benchCard).find((setRow) => setRow.isFirstUnlogged)?.setNumber).toBe(2);
     expect(after.progress).toBeCloseTo((1 + 2) / 6);
   });
 });
@@ -793,7 +838,7 @@ describe('getWorkoutSession — weight hints', () => {
 
     const model = await getWorkoutSession('w2d1', deps);
 
-    expect(model.exercises[0]?.weightHints).toEqual([
+    expect((model.exercises[0] as StrengthWorkoutExercise | undefined)?.weightHints).toEqual([
       { direction: 'increase', reps: defaultProgressionSettings.maxReps },
       { direction: 'decrease', reps: defaultProgressionSettings.minReps },
     ]);
@@ -843,7 +888,7 @@ describe('the block body weight on the workout model (task 105)', () => {
 
     const model = await getWorkoutSession('w2d1', deps);
 
-    expect(model.exercises[0]?.rows[0]?.log).toEqual({ weight: 10, reps: 12, bodyWeight: 80 });
+    expect(rowsOf(model.exercises[0])[0]?.log).toEqual({ weight: 10, reps: 12, bodyWeight: 80 });
   });
 });
 
@@ -855,7 +900,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     // Targets 11 / 10 / 9 at the same weight are three different swaps — the same weight in hand
     // is worth different reps in the third set than in the first.
-    expect(benchCard?.rows.map((row) => row.weightSwap)).toEqual([
+    expect(rowsOf(benchCard).map((row) => row.weightSwap)).toEqual([
       swapOf(11, 'barbell'),
       swapOf(10, 'barbell'),
       swapOf(9, 'barbell'),
@@ -867,7 +912,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [, rowCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(rowCard?.rows.map((row) => row.weightSwap)).toEqual([
+    expect(rowsOf(rowCard).map((row) => row.weightSwap)).toEqual([
       { unavailable: 'no_history' },
       { unavailable: 'no_history' },
     ]);
@@ -882,7 +927,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [benchCard] = (await getWorkoutSession('w4d1', deps)).exercises;
 
-    expect(benchCard?.rows[0]).not.toHaveProperty('weightSwap');
+    expect(rowsOf(benchCard)[0]).not.toHaveProperty('weightSwap');
   });
 
   test('no swap on a pure bodyweight set — there is no weight to change', async () => {
@@ -893,7 +938,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [pullupCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(pullupCard?.rows[0]).not.toHaveProperty('weightSwap');
+    expect(rowsOf(pullupCard)[0]).not.toHaveProperty('weightSwap');
   });
 
   test('a weighted bodyweight set swaps on the full load', async () => {
@@ -905,8 +950,8 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [dipCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(dipCard?.rows[0]?.weightSwap).toEqual(swapOf(7, 'bodyweight-weighted', 83));
-    expect(dipCard?.rows[0]?.weightSwap).toMatchObject({ baseWeight: 143, bodyWeight: 83 });
+    expect(rowsOf(dipCard)[0]?.weightSwap).toEqual(swapOf(7, 'bodyweight-weighted', 83));
+    expect(rowsOf(dipCard)[0]?.weightSwap).toMatchObject({ baseWeight: 143, bodyWeight: 83 });
   });
 
   test('no swap on a weighted bodyweight set until the block knows the body weight', async () => {
@@ -917,7 +962,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [dipCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(dipCard?.rows[0]).not.toHaveProperty('weightSwap');
+    expect(rowsOf(dipCard)[0]).not.toHaveProperty('weightSwap');
   });
 
   test('a set logged at another weight is marked against what that weight was worth', async () => {
@@ -927,7 +972,7 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(benchCard?.rows[0]?.indicator).toEqual({ kind: 'hit' });
+    expect(rowsOf(benchCard)[0]?.indicator).toEqual({ kind: 'hit' });
   });
 
   test('no marker once the weight is far enough to be an estimate', async () => {
@@ -935,8 +980,8 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(benchCard?.rows[0]?.log).toEqual({ weight: 40, reps: 20 });
-    expect(benchCard?.rows[0]).not.toHaveProperty('indicator');
+    expect(rowsOf(benchCard)[0]?.log).toEqual({ weight: 40, reps: 20 });
+    expect(rowsOf(benchCard)[0]).not.toHaveProperty('indicator');
   });
 
   // Task 134.1: the 26.09.2026 case — 15 done against an estimate of 15 × 4.5 is not a −1.
@@ -955,7 +1000,423 @@ describe('weight swap on the workout data (task 120)', () => {
 
     const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
 
-    expect(card?.rows[0]).not.toHaveProperty('indicator');
-    expect(card?.rows.map((candidate) => candidate.estimate)).toEqual(['other_slot', 'other_slot']);
+    expect(rowsOf(card)[0]).not.toHaveProperty('indicator');
+    expect(rowsOf(card).map((candidate) => candidate.estimate)).toEqual([
+      'other_slot',
+      'other_slot',
+    ]);
+  });
+
+  // GT-82, 10.2 P11: a power exercise's rows are guided by the target, never scored against it.
+  test('a power exercise is guided: no indicator, no weight swap', async () => {
+    const medball = planned('w2d1', 'medball', 1, [6, 6]);
+    const { deps } = await setUp({
+      exercises: [medball],
+      logs: [{ ...logOf(medball, 1, 3), weight: 5 }],
+    });
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', isGuided: true, powerLoad: 'weight' });
+    expect(card).not.toHaveProperty('targetRir');
+    expect(rowsOf(card)[0]?.log).toEqual({ weight: 5, reps: 3 });
+    expect(rowsOf(card)[0]).not.toHaveProperty('indicator');
+    expect(rowsOf(card)[1]).not.toHaveProperty('weightSwap');
+  });
+
+  // GT-189, 10.1 FR-8: the card shows the load the cycle plans by — its own copy — not the
+  // library's, which may have changed since the exercise joined the cycle.
+  test("a power card's load is the cycle's copy, not the library's", async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const { deps } = await setUp({
+      exercises: [medball],
+      logs: [],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          medball: { type: 'power', load: 'level', noHeavierAvailable: false },
+        },
+      },
+    });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', powerLoad: 'level' });
+  });
+
+  test('a power card of a cycle with no copy shows the library load', async () => {
+    const boxjump = planned('w2d1', 'boxjump', 2, [3, 3]);
+    const { deps } = await setUp({ exercises: [boxjump], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ type: 'power', powerLoad: 'none' });
+  });
+
+  // GT-86, GT-188, 10.1 FR-5: the rest the timer runs after a set is logged — one from Settings,
+  // strength and power alike; a power exercise keeps no rest of its own.
+  test('a live card carries the rest from Settings: strength and power alike, 2:00', async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const boxjump = planned('w2d1', 'boxjump', 3, [3, 3]);
+    const { deps } = await setUp({ exercises: [bench, medball, boxjump], logs: [] });
+
+    const cards = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(cards.map((card) => card.restSec)).toEqual([120, 120, 120]);
+  });
+
+  test('the rest is the one in Settings, and there is none while its timer is off', async () => {
+    const medball = planned('w2d1', 'medball', 2, [6, 6]);
+    const { store, deps } = await setUp({ exercises: [bench, medball], logs: [] });
+    const settingsRepo = new SqliteSettingsRepository(store);
+    const settings = await settingsRepo.read();
+
+    await settingsRepo.write({ ...settings, restBetweenSets: { enabled: true, restSec: 90 } });
+    const on = (await getWorkoutSession('w2d1', deps)).exercises;
+    await settingsRepo.write({ ...settings, restBetweenSets: { enabled: false, restSec: 90 } });
+    const off = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(on.map((card) => card.restSec)).toEqual([90, 90]);
+    expect(off.map((card) => card.restSec)).toEqual([undefined, undefined]);
+  });
+
+  test('a session that is not live carries no rest', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const cards = (await getWorkoutSession('w1d1', deps)).exercises;
+
+    expect(cards.every((card) => card.restSec === undefined)).toBe(true);
+  });
+
+  test('a strength exercise is not guided', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard).not.toHaveProperty('isGuided');
+  });
+
+  test('power at the top of the corridor carries the ceiling hint; a catalog exercise cannot take the flag', async () => {
+    const atTop: SessionExercise = {
+      ...planned('w2d1', 'medball', 1, [7, 7]),
+      setTargets: [
+        { setNumber: 1, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+        { setNumber: 2, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+      ],
+    };
+    const { deps } = await setUp({ exercises: [atTop], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect((card as PowerWorkoutExercise | undefined)?.ceilingHint).toEqual({
+      options: ['heavier', 'add-set'],
+      canFlagNoHeavier: false,
+      canHideTip: false,
+    });
+    // Strength's "Go heavier — 30+ reps" is not for power.
+    expect(card).not.toHaveProperty('weightHints');
+  });
+
+  test('no ceiling hint while a set still grows', async () => {
+    const growing: SessionExercise = {
+      ...planned('w2d1', 'medball', 1, [7, 4]),
+      setTargets: [
+        { setNumber: 1, targetReps: 7, suggestedWeight: 5, weightHint: 'increase' },
+        { setNumber: 2, targetReps: 4, suggestedWeight: 5 },
+      ],
+    };
+    const { deps } = await setUp({ exercises: [growing], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).not.toHaveProperty('ceilingHint');
+  });
+
+  // GT-83: a power exercise that is its own load reads as a bodyweight one on the card.
+  test('a power exercise whose load is none reads bodyweight, and keeps its own equipment label', async () => {
+    const jump = planned('w2d1', 'boxjump', 1, [undefined, undefined]);
+    const { deps } = await setUp({ exercises: [jump], logs: [] });
+
+    const [card] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(card).toMatchObject({ equipment: 'plyo-box', loadEquipment: 'bodyweight' });
+  });
+
+  test('an exercise whose weight means what its equipment says carries no loadEquipment', async () => {
+    const { deps } = await setUp({ logs: [] });
+
+    const [benchCard] = (await getWorkoutSession('w2d1', deps)).exercises;
+
+    expect(benchCard).not.toHaveProperty('loadEquipment');
+  });
+});
+
+describe('getWorkoutSession — interval rounds (GT-88)', () => {
+  // Three rounds of 2:00 with 0:45 after each. The last target has no rest of its own, as a week
+  // planned before 19.10.2026 has: the cycle's 0:45 fills it — the rest before the next exercise.
+  const bag = planned('w2d1', 'bag', 3, [], {
+    setTargets: [
+      { setNumber: 1, targetWorkSec: 120, targetRestSec: 45 },
+      { setNumber: 2, targetWorkSec: 120, targetRestSec: 45 },
+      { setNumber: 3, targetWorkSec: 120 },
+    ],
+  });
+
+  function roundLog(roundNumber: number, overrides: Partial<RoundLog> = {}): RoundLog {
+    return {
+      ...STAMPS,
+      id: `bag-round-${roundNumber}`,
+      sessionExerciseId: bag.id,
+      exerciseId: bag.exerciseId,
+      roundNumber,
+      workSec: 120,
+      restSec: 50,
+      restSkipped: false,
+      completed: true,
+      completedAt: NOW,
+      ...overrides,
+    };
+  }
+
+  function intervalCard(model: { exercises: readonly { type?: string }[] }) {
+    return model.exercises.find(
+      (exercise): exercise is IntervalWorkoutExercise => exercise.type === 'interval',
+    );
+  }
+
+  test('a mixed workout gives the interval its own card: rounds, their times, the lever', async () => {
+    const { deps } = await setUp({ exercises: [bench, row, bag], logs: [] });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.exercises.map((exercise) => exercise.type)).toEqual([
+      undefined,
+      undefined,
+      'interval',
+    ]);
+    const card = intervalCard(model);
+    expect(card).toMatchObject({
+      name: 'Heavy bag',
+      type: 'interval',
+      plannedRoundCount: 3,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      // `HEAVY_BAG_CONFIG` moves the rest by 15 s a week.
+      progression: { column: 'rest', stepSec: 15 },
+      // The timer's countdown before a round started by a tap (FR-6), from Settings (GT-188).
+      getReadySec: 5,
+    });
+    expect(card?.rounds).toEqual([
+      { roundNumber: 1, workSec: 120, restSec: 45, isFirstUnlogged: true },
+      { roundNumber: 2, workSec: 120, restSec: 45, isFirstUnlogged: false },
+      // Round 3's target has no rest: the field is empty, not the cycle's 0:45 (GT-187).
+      { roundNumber: 3, workSec: 120, isFirstUnlogged: false },
+    ]);
+    // An interval has no rest timer between sets and no set rows.
+    expect(card).not.toHaveProperty('restSec');
+    expect(card).not.toHaveProperty('rows');
+  });
+
+  test('the Get ready is the one in Settings (GT-188)', async () => {
+    const { store, deps } = await setUp({ exercises: [bag], logs: [] });
+    const settingsRepo = new SqliteSettingsRepository(store);
+    await settingsRepo.write({ ...(await settingsRepo.read()), getReadySec: 8 });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.getReadySec).toBe(8);
+  });
+
+  test('live: the menu adds a round and removes the last one (GT-91)', async () => {
+    const { deps } = await setUp({ exercises: [bag], logs: [] });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.actions).toMatchObject({ canAddRound: true, canRemoveLastRound: true });
+    // An interval has no set rows to add or remove.
+    expect(card?.actions).not.toHaveProperty('canAddSet');
+  });
+
+  test('live: a single round can’t be removed', async () => {
+    const single = { ...bag, setTargets: [{ setNumber: 1, targetWorkSec: 120 }] };
+    const { deps } = await setUp({ exercises: [single], logs: [] });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.actions).toMatchObject({ canAddRound: true, canRemoveLastRound: false });
+  });
+
+  test('a logged round shows what was done; the next one takes the accent', async () => {
+    const { deps } = await setUp({
+      exercises: [bench, bag],
+      logs: [],
+      roundLogs: [roundLog(1, { restSec: undefined, restSkipped: true })],
+    });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).toMatchObject({ loggedRoundCount: 1, hasLoggedSets: true });
+    expect(card?.rounds[0]).toEqual({
+      roundNumber: 1,
+      workSec: 120,
+      restSec: 45,
+      log: { workSec: 120, restSkipped: true, completed: true },
+      isFirstUnlogged: false,
+    });
+    expect(card?.rounds[1]?.isFirstUnlogged).toBe(true);
+  });
+
+  test('a round without times stays empty — not 0, not the cycle’s plan (GT-187); the lever still applies', async () => {
+    const timeless = {
+      ...bag,
+      setTargets: [{ setNumber: 1 }, { setNumber: 2 }],
+    };
+    const { deps } = await setUp({
+      exercises: [timeless],
+      logs: [],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          [toExerciseId('bag')]: {
+            ...HEAVY_BAG_CONFIG,
+            lever: 'workTime',
+            stepSec: 5,
+          },
+        },
+      },
+    });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.rounds).toEqual([
+      { roundNumber: 1, isFirstUnlogged: true },
+      { roundNumber: 2, isFirstUnlogged: false },
+    ]);
+    expect(card?.progression).toEqual({ column: 'work', stepSec: 5 });
+  });
+
+  test('the rounds and none levers move no column', async () => {
+    const { deps } = await setUp({
+      exercises: [bag],
+      logs: [],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          [toExerciseId('bag')]: { ...HEAVY_BAG_CONFIG, lever: 'rounds' },
+        },
+      },
+    });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).not.toHaveProperty('progression');
+  });
+
+  test('a skipped interval keeps its logged rounds; the rest read Skipped', async () => {
+    const { deps } = await setUp({
+      exercises: [{ ...bag, status: 'skipped' }],
+      logs: [],
+      roundLogs: [roundLog(1)],
+    });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.rounds.map((round) => round.notDone ?? false)).toEqual([
+      false,
+      'skipped',
+      'skipped',
+    ]);
+    expect(card?.rounds.some((round) => round.isFirstUnlogged)).toBe(false);
+  });
+
+  test('a preview keeps the interval’s type, with no rounds', async () => {
+    const { deps } = await setUp({ exercises: [bench, bag], logs: [] });
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 1 }, deps);
+
+    expect(model.mode).toBe('preview');
+    expect(intervalCard(model)).toMatchObject({
+      type: 'interval',
+      rounds: [],
+      plannedRoundCount: 0,
+    });
+  });
+
+  test('read-only: no accent and no actions', async () => {
+    const { deps } = await setUp({
+      sessions: [{ ...w2d1, status: 'completed', completedAt: NOW }],
+      exercises: [bag],
+      logs: [],
+    });
+
+    const card = intervalCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card?.rounds.some((round) => round.isFirstUnlogged)).toBe(false);
+    expect(Object.values(card?.actions ?? {}).some(Boolean)).toBe(false);
+  });
+});
+
+describe('getWorkoutSession — a mobility block (GT-107)', () => {
+  const cooldown = planned('w2d1', 'cooldown', 1, [], {
+    setTargets: [{ setNumber: 1, targetWorkSec: 600 }],
+  });
+
+  function mobilityCard(model: { exercises: readonly WorkoutExercise[] }) {
+    return model.exercises.find(
+      (exercise): exercise is MobilityWorkoutExercise => exercise.type === 'mobility',
+    );
+  }
+
+  test('its own card: one block with its length, no RIR, no rest, nothing for the menu to add', async () => {
+    const { deps } = await setUp({ exercises: [bench, cooldown], logs: [] });
+
+    const card = mobilityCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).toMatchObject({
+      name: 'Cooldown',
+      type: 'mobility',
+      plannedRoundCount: 1,
+      loggedRoundCount: 0,
+      hasLoggedSets: false,
+      getReadySec: 5,
+    });
+    expect(card?.rounds).toEqual([{ roundNumber: 1, workSec: 600, isFirstUnlogged: true }]);
+    expect(card).not.toHaveProperty('restSec');
+    expect(card).not.toHaveProperty('rows');
+    expect(card).not.toHaveProperty('targetRir');
+    expect(card?.actions).not.toHaveProperty('canAddSet');
+    expect(card?.actions).not.toHaveProperty('canAddRound');
+  });
+
+  test('logged, by the timer or by hand: the block carries its log and the card counts it', async () => {
+    const { deps } = await setUp({
+      exercises: [cooldown],
+      logs: [],
+      roundLogs: [
+        {
+          ...STAMPS,
+          id: 'cooldown-block',
+          sessionExerciseId: cooldown.id,
+          exerciseId: cooldown.exerciseId,
+          roundNumber: 1,
+          workSec: 540,
+          restSkipped: false,
+          completed: true,
+          completedAt: NOW,
+        },
+      ],
+    });
+
+    const card = mobilityCard(await getWorkoutSession('w2d1', deps));
+
+    expect(card).toMatchObject({ loggedRoundCount: 1, hasLoggedSets: true });
+    expect(card?.rounds[0]?.log).toEqual({ workSec: 540, restSkipped: false, completed: true });
+  });
+
+  test('a preview keeps its type, with no block', async () => {
+    const { deps } = await setUp({ exercises: [bench, cooldown], logs: [] });
+
+    const model = await getWorkoutSlot({ mesoId: 'meso', weekNumber: 3, dayNumber: 1 }, deps);
+
+    expect(mobilityCard(model)).toMatchObject({ type: 'mobility', rounds: [] });
   });
 });

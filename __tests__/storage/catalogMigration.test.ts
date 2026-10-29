@@ -46,6 +46,20 @@ describe('the catalog the migrations put in the database', () => {
   });
 });
 
+describe('what a re-seed may overwrite on an exercise that is already there', () => {
+  // `type` and `config` are the exercise's own state once it is in a database (a custom power
+  // exercise carries the user's "No heavier available" in its config): a later release of the
+  // catalog must not touch them (GT-81).
+  test('is name, muscle group, equipment and the stamp — never type, config or isHidden', () => {
+    const sql = catalogUpsertSql([EXERCISE_CATALOG[0]!], '2026-10-17T00:00:00.000Z');
+    const update = sql.slice(sql.indexOf('DO UPDATE SET'));
+
+    expect(update).toContain('`name` = excluded.`name`');
+    expect(update).toContain('`equipment` = excluded.`equipment`');
+    expect(update).not.toMatch(/`type`|`config`|`is_hidden`/);
+  });
+});
+
 describe('a later release of the catalog', () => {
   const FIRST = EXERCISE_CATALOG[0]!;
 

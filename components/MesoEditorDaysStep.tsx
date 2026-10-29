@@ -54,6 +54,12 @@
 // reason: iOS's elastic overscroll made the whole content area visibly "stretch" on any
 // touch-drag inside it, including over rows with no handle at all (e.g. "Add exercise").
 //
+// The step sets exercises and their sets, nothing else (10.1 FR-9, Artem, 27.10.2026): strength
+// and power have the sets stepper, an interval the same stepper for its rounds (GT-190), and a
+// mobility exercise none — it is one block with nothing to set (GT-191), and its column stays
+// empty. An exercise without a muscle group (GT-157) shows its type's icon where the group dot
+// would be, and its type under the name. Drag, remove and order are the same for every type.
+//
 // JSX/rendering only — styles live in MesoEditorDaysStepStyles.ts and pure helpers in
 // MesoEditorDaysStepLogic.ts, per the code-style skill.
 
@@ -73,13 +79,16 @@ import { MAX_EXERCISE_SETS, MIN_EXERCISE_SETS } from '@domain/planValidators';
 import { IconButton } from '@design/components/IconButton';
 import { Stepper } from '@design/components/Stepper';
 import { tapTargetSlop } from '@design/shapes';
-import { SIZES } from '@design/tokens';
+import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 
 import {
   dragTargetIndex,
   exerciseDotColor,
+  hasSetsStepper,
+  stepperNoun,
   exerciseSubtitle,
   exerciseTitle,
+  exerciseTypeIcon,
   getDayExercises,
   getDayNumbers,
   moveIndex,
@@ -269,6 +278,7 @@ export function MesoEditorDaysStep({
 
         {activeDayExercises.map((exercise, index) => {
           const title = exerciseTitle(exercisesById, exercise.exerciseId);
+          const TypeIcon = exerciseTypeIcon(exercisesById, exercise.exerciseId);
           const isDragging = draggingIndex === index;
           const rowShift = rowShiftAnimations[index];
           return (
@@ -290,9 +300,15 @@ export function MesoEditorDaysStep({
               >
                 <Text style={styles.dragHandleGlyph}>≡</Text>
               </View>
-              <View
-                style={[styles.dot, { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) }]}
-              />
+              {TypeIcon ? (
+                <View style={styles.typeIcon}>
+                  <TypeIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/secondary']} />
+                </View>
+              ) : (
+                <View
+                  style={[styles.dot, { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) }]}
+                />
+              )}
               <View style={styles.exerciseMain}>
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {title}
@@ -301,14 +317,20 @@ export function MesoEditorDaysStep({
                   {exerciseSubtitle(exercisesById, exercise.exerciseId)}
                 </Text>
               </View>
-              <Stepper
-                label={`${title} sets`}
-                variant="inline"
-                value={exercise.sets}
-                onChange={(sets) => onChangeSets(activeDay, index, sets)}
-                min={MIN_EXERCISE_SETS}
-                max={MAX_EXERCISE_SETS}
-              />
+              {hasSetsStepper(exercisesById, exercise.exerciseId) ? (
+                <Stepper
+                  label={`${title} ${stepperNoun(exercisesById, exercise.exerciseId)}`}
+                  variant="inline"
+                  value={exercise.sets}
+                  onChange={(sets) => onChangeSets(activeDay, index, sets)}
+                  min={MIN_EXERCISE_SETS}
+                  max={MAX_EXERCISE_SETS}
+                  valueWidth={SIZES['size/sets-value']}
+                />
+              ) : (
+                // A mobility exercise is one block with nothing to set (GT-191).
+                <View style={styles.planSlot} />
+              )}
               <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>
                 <Text style={styles.removeIcon}>✕</Text>
               </IconButton>

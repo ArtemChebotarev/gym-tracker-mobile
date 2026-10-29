@@ -41,10 +41,13 @@ export const COLORS = {
   'accent/border': '#4A5A20',
 
   /**
-   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a UI colour: the SDK keeps one
-   * accent per screen, so this is used by the wordmark and nothing else.
+   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a general UI colour — the SDK
+   * keeps one accent per screen. Besides the wordmark it marks one thing only: time that is running
+   * — a timer's progress ring (10.1 FR-5, FR-6). Never text, icons or chips.
    */
   'brand/orange': '#FF5B23',
+  /** The unfilled part of a timer's progress ring — the TimerCapsule (10.1 FR-5, GT-85). */
+  'timer/track': '#3A3F46',
 
   danger: '#E2574C',
   'danger/border': '#5C2320',
@@ -99,6 +102,8 @@ export const TYPOGRAPHY = {
   'type/body': { fontSize: 17, fontWeight: '400' },
   'type/value': { fontSize: 20, fontWeight: '400' },
   'type/meta': { fontSize: 15, fontWeight: '400' },
+  /** A short line under a value that already carries the weight — the TimerCapsule's caption (iOS Footnote). */
+  'type/footnote': { fontSize: 13, fontWeight: '400' },
   'type/set-value': { fontSize: 20, fontWeight: '400' },
   'type/label': {
     fontSize: 13,
@@ -107,6 +112,10 @@ export const TYPOGRAPHY = {
     textTransform: 'uppercase',
   },
   'type/caption': { fontSize: 12, fontWeight: '400' },
+  /** The time left on the interval timer's screen, in its dial (10.1 FR-6; canvas 2.x). */
+  'type/timer-clock': { fontSize: 72, fontWeight: '400' },
+  /** The time left on the interval timer's Live Activity, on the lock screen (canvas 2.6, GT-99). */
+  'type/activity-clock': { fontSize: 40, fontWeight: '400' },
 } as const satisfies Record<string, TypographyValue>;
 
 export type TypographyToken = keyof typeof TYPOGRAPHY;
@@ -196,6 +205,11 @@ export const ICON_SIZES = {
   'icon/small': 18,
   'icon/inline': 17,
   'icon/glyph': 16,
+  /**
+   * A mark inside a `type/caption` chip — the type chip under the Exercise screen's title (canvas 4.6).
+   * No taller than the caption's line, so the chip stays the height of the chips beside it.
+   */
+  'icon/chip': 14,
 } as const;
 
 export type IconSizeToken = keyof typeof ICON_SIZES;
@@ -208,6 +222,10 @@ export const BORDER_WIDTHS = {
   'border/default': 1,
   /** The accent outline marking the open cell of the mesocycle overview grid (08.7, task 127). */
   'border/emphasis': 2,
+  /** A timer's progress ring, track and arc alike (TimerCapsule, 10.1 FR-5). */
+  'border/timer-ring': 3,
+  /** The interval timer screen's dial, track and arc alike (10.1 FR-6; canvas 2.x). */
+  'border/timer-dial': 12,
 } as const;
 
 export type BorderWidthToken = keyof typeof BORDER_WIDTHS;
@@ -244,6 +262,33 @@ export const SIZES = {
   'size/brand-mark': 52,
   /** The floating tab bar's height, padding included (08.0, "Таб-бар", task 151). */
   'size/tabbar': 64,
+  /**
+   * The floating timer capsule over the tab bar — rest between sets and a minimised interval
+   * timer (TimerCapsule, 10.1 FR-5/FR-6, GT-85): its height, and the progress ring inside it.
+   */
+  'size/timer-capsule': 60,
+  'size/timer-ring': 40,
+  /**
+   * The interval timer's full screen (10.1 FR-6; canvas 2.x, GT-96): the dial with the time in
+   * it, the round control under it (Pause / Resume), and one bar per round across the top.
+   */
+  'size/timer-dial': 280,
+  'size/timer-button': 72,
+  'size/round-segment': 4,
+  /**
+   * The time on the interval timer's Live Activity: a fixed width, right-aligned, wide enough for
+   * `10:00` in `type/activity-clock` (canvas 2.6, GT-99). A live timer takes all the width it may
+   * need and plain text only its own, so without it the layout jumped between running and paused.
+   */
+  'size/activity-clock': 120,
+  /**
+   * The bar on the interval timer's Live Activity, running or paused. Fixed: the running bar (a
+   * system timer) stood 6 pt taller than the paused one, and the activity sprang between the two
+   * heights on every Pause and Resume (measured frame by frame on the simulator, GT-99).
+   */
+  'size/activity-bar': 4,
+  /** The app's icon on the interval timer's Live Activity (canvas 2.6, GT-99). */
+  'size/activity-icon': 28,
   /** How hard the tab bar's glass blurs what scrolls under it (expo-blur `intensity`, 1–100). */
   'size/glass-blur': 40,
   /** Muscle-group dot in chips, section headers and filter options. */
@@ -258,12 +303,36 @@ export const SIZES = {
   'size/badge-compact': 20,
   /** Stepper's inline round buttons; the editor's drag handle. */
   'size/control-inline': 32,
+  /**
+   * The width a StepperRow gives its value, so the `−` / `+` buttons of rows with `3`, `2:00` and
+   * `0:05` stand in two straight columns instead of following the width of the text.
+   */
+  'size/stepper-value': 64,
+  /** TimePickerSheet: the height of the wheels, and the width of each of the two columns. */
+  'size/time-wheel-height': 200,
+  'size/time-wheel-column': 90,
+  /** TimePickerSheet's fallback wheel: one row of a column (the native wheel sizes its own). */
+  'size/time-wheel-row': 36,
+  /** The padding above the first and below the last row, so either can reach the middle. */
+  'size/time-wheel-inset': 82,
+  /** A StepperRow's height — the same with a caption under the label as without one. */
+  'size/stepper-row': 58,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
   'size/chip': 36,
   /** ListRow's action pill (Start, Copy) — drawn smaller, 44pt to the touch. */
   'size/pill': 32,
   /** Round IconButton and Stepper buttons (08.0: "Размер 36", tap area 44). */
   'size/icon-button': 36,
+  /**
+   * OptionCard's height — one for every card, so a list of them does not change size with what
+   * each says: room for the title and two lines of explanation, which is the most a card holds.
+   */
+  'size/option-card': 92,
+  /** OptionCard: the round icon well on its left (canvas 4.1, "New exercise · pick type"). */
+  'size/option-icon': 36,
+  /** OptionCard: the radio ring on its right, and the dot inside it when selected. */
+  'size/radio': 22,
+  'size/radio-dot': 12,
   /** Set row: the target indicator column. */
   'size/indicator-column': 24,
   /** Template preview row: the slot's number column (08.10, `1 • Chest`). */
@@ -292,6 +361,12 @@ export const SIZES = {
   'size/exercise-row': 68,
   /** Mesocycle editor: the Sets column — Stepper's inline width. */
   'size/sets-column': 104,
+  /**
+   * Mesocycle editor: the value of the inline sets stepper, fixed so the stepper is exactly
+   * `size/sets-column` wide (two `size/control-inline` buttons, two `space/gap-tight` gaps, this),
+   * whatever the digit.
+   */
+  'size/sets-value': 24,
   /** Bottom sheet grabber. */
   'size/grabber-width': 36,
   'size/grabber-height': 5,

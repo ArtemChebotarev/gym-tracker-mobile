@@ -4,9 +4,16 @@ import {
   mesocycleDetailBadge,
   mesocycleDetailMenuItems,
   weekColumnLabels,
+  weeklyExerciseRowViews,
   weeklySetsRowViews,
+  weeklyTableViews,
 } from '@components/MesocycleDetailScreenLogic';
-import { getCategoryColor, getCategoryVolumeFill } from '@design/muscleGroupColor';
+import {
+  getCategoryColor,
+  getCategoryVolumeFill,
+  getNeutralVolumeFill,
+} from '@design/muscleGroupColor';
+import type { MesoSummary } from '@domain/mesoSummary';
 
 // Midday UTC, so the dates read the same in any time zone the tests run in.
 const START = '2026-08-03T12:00:00.000Z';
@@ -80,7 +87,7 @@ describe('weeklySetsRowViews', () => {
     ]);
 
     expect(chest).toEqual({
-      muscleGroup: 'chest',
+      key: 'chest',
       label: 'Chest',
       dotColor: getCategoryColor('chest'),
       cells: [
@@ -94,6 +101,67 @@ describe('weeklySetsRowViews', () => {
       label: '2',
       fill: getCategoryVolumeFill('back', 0.2),
     });
+  });
+});
+
+describe('weeklyExerciseRowViews', () => {
+  test('names the exercise; one without a group is drawn in the neutral fill', () => {
+    const [slam, throwRow] = weeklyExerciseRowViews([
+      { exerciseId: 'slam', name: 'Medball slam', muscleGroup: 'fullBody', counts: [2, 4, 0] },
+      { exerciseId: 'throw', name: 'Medball throw', muscleGroup: 'chest', counts: [4, 0, 0] },
+    ]);
+
+    expect(slam).toEqual({
+      key: 'slam',
+      label: 'Medball slam',
+      dotColor: undefined,
+      cells: [
+        { weekNumber: 1, label: '2', fill: getNeutralVolumeFill(0.5) },
+        { weekNumber: 2, label: '4', fill: getNeutralVolumeFill(1) },
+        { weekNumber: 3, label: '–' },
+      ],
+    });
+    expect(throwRow?.dotColor).toBe(getCategoryColor('chest'));
+    expect(throwRow?.cells[0]?.fill).toBe(getCategoryVolumeFill('chest', 1));
+  });
+});
+
+describe('weeklyTableViews', () => {
+  const base: MesoSummary = {
+    workouts: { value: 1, total: 8 },
+    strengthSets: 0,
+    weeks: { value: 1, total: 4 },
+    weeklySets: [],
+    hybridTables: [],
+  };
+  const bag = {
+    exerciseId: 'bag',
+    name: 'Heavy bag',
+    muscleGroup: 'fullBody',
+    counts: [3],
+  } as const;
+
+  test('Strength first, then a card per hybrid type, titled by the type', () => {
+    const tables = weeklyTableViews({
+      ...base,
+      weeklySets: [{ muscleGroup: 'chest', sets: [3] }],
+      hybridTables: [{ type: 'interval', rows: [{ ...bag, counts: [...bag.counts] }] }],
+    });
+
+    expect(tables.map((table) => table.title)).toEqual(['Strength', 'Timed work']);
+  });
+
+  test('a block of hybrid work only has no Strength card', () => {
+    const tables = weeklyTableViews({
+      ...base,
+      hybridTables: [{ type: 'interval', rows: [{ ...bag, counts: [...bag.counts] }] }],
+    });
+
+    expect(tables.map((table) => table.title)).toEqual(['Timed work']);
+  });
+
+  test('a block with nothing logged keeps an empty Strength card for its empty-state line', () => {
+    expect(weeklyTableViews(base)).toEqual([{ key: 'strength', title: 'Strength', rows: [] }]);
   });
 });
 

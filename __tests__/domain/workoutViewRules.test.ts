@@ -136,6 +136,15 @@ describe('sessionProgress', () => {
   test('a session with no rows is empty', () => {
     expect(sessionProgress(session(), [])).toBe(0);
   });
+
+  test('an interval’s logged rounds count as its rows (GT-89)', () => {
+    const progress = sessionProgress(session({ status: 'in_progress' }), [
+      exercise(2, 'planned', [1]),
+      { ...exercise(3, 'planned'), roundLogs: [{ roundNumber: 1 }, { roundNumber: 2 }] },
+    ]);
+
+    expect(progress).toBeCloseTo(3 / 5);
+  });
 });
 
 describe('canFinishSession', () => {

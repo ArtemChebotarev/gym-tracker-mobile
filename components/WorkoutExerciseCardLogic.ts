@@ -1,24 +1,19 @@
-// Pure helpers behind components/WorkoutExerciseCard.tsx — see the code-style skill.
+// Pure helpers every exercise card shares — components/WorkoutExerciseCard.tsx and the cards it
+// picks, ExerciseCardFrame among them. A type's own words live in its card's Logic file
+// (StrengthExerciseCardLogic.ts, PowerExerciseCardLogic.ts); the set rows' in WorkoutSetRowsLogic.ts
+// and the weight swap's in WeightSwapLogic.ts. See the code-style skill.
 
-import type { Equipment } from '@domain/catalog';
-import { isNotDone } from '@domain/sessionExerciseStatus';
+import { isResistanceBand } from '@domain/bodyWeightLoad';
+import type { Equipment, ExerciseType, MuscleGroup } from '@domain/catalog';
+import type { SessionExerciseStatus } from '@domain/execution';
+import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import type { WorkoutMode } from '@domain/workoutView';
-import type { ExerciseWeightHint } from '@domain/workoutViewRules';
-import type { PlateTextPart } from '@design/components/PlateRow';
-import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
-import { defaultProgressionSettings } from '@domain/mesocycle';
-import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
-import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
-import {
-  formatNotDone,
-  formatRowWeight,
-  initialWeightText,
-  parseWeight,
-  rowEvaluation,
-} from './WorkoutSetRowLogic';
+import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
+import { weightSwapPopover } from './WeightSwapLogic';
+import { formatNotDone } from './WorkoutSetRowLogic';
 
 /**
  * What a card shows (08.7, "Карточка упражнения"). The four variants come from the screen mode
@@ -34,142 +29,126 @@ import {
  */
 export type ExerciseCardView = {
   showMenu: boolean;
-  /** `2 RIR`, or `undefined` when the badge isn't shown. */
+  /** `2 RIR`, or `undefined` when the badge isn't shown — and on a deload week, which has its own. */
   rirLabel: string | undefined;
+  /** `Deload` on a deload week, in the RIR badge's place, for every type of exercise. */
+  deloadLabel: string | undefined;
   /** Skipped or abandoned: the card is dimmed and nothing in it is editable. */
   isNotDone: boolean;
   /**
-   * The column header and set rows — everything but preview and a not-done card with nothing
-   * logged.
+   * The column header and the type's rows (sets, rounds) — everything but preview and a not-done
+   * card with nothing logged.
    */
-  showSets: boolean;
+  showRows: boolean;
   /** Not done with nothing logged: this one line (`Skipped` / `Abandoned`) instead of the rows. */
   notDoneNote: string | undefined;
   showNotProgrammed: boolean;
 };
 
+/**
+ * What `exerciseCardView` needs of a card's rows, whatever they are — set rows, rounds: how many
+ * there are, and whether every one of them is closed unlogged (`Skipped` / `Abandoned`).
+ */
+export type CardRows = { count: number; allNotDone: boolean };
+
+export function cardRowsOf(rows: readonly { notDone?: NotDoneStatus }[]): CardRows {
+  return {
+    count: rows.length,
+    allNotDone: rows.every((row) => row.notDone !== undefined),
+  };
+}
+
+/**
+ * The set rows of a card made of them — strength and power — or `undefined` for a type whose card
+ * has none. The one place that says which cards have sets, so nothing shared has to assume it.
+ */
+export function setRowsOf(exercise: WorkoutExercise): readonly WorkoutSetRow[] | undefined {
+  return 'rows' in exercise ? exercise.rows : undefined;
+}
+
 export function exerciseCardView(
   mode: WorkoutMode,
-  exercise: Pick<WorkoutExercise, 'status' | 'targetRir' | 'rows'>,
+  exercise: { status: SessionExerciseStatus; targetRir?: number | undefined },
+  rows: CardRows,
+  isDeload = false,
 ): ExerciseCardView {
   const isPreview = mode === 'preview';
   const notDone = !isPreview && isNotDone(exercise.status) ? exercise.status : undefined;
-  const notDoneWhole =
-    notDone !== undefined && exercise.rows.every((row) => row.notDone !== undefined);
+  const notDoneWhole = notDone !== undefined && rows.allNotDone;
   return {
     showMenu: mode === 'live',
     rirLabel:
-      !isPreview && exercise.targetRir !== undefined ? formatRir(exercise.targetRir) : undefined,
+      !isPreview && !isDeload && exercise.targetRir !== undefined
+        ? formatRir(exercise.targetRir)
+        : undefined,
+    deloadLabel: !isPreview && isDeload ? 'Deload' : undefined,
     isNotDone: notDone !== undefined,
-    showSets: !isPreview && !notDoneWhole && exercise.rows.length > 0,
+    showRows: !isPreview && !notDoneWhole && rows.count > 0,
     notDoneNote: notDoneWhole ? formatNotDone(notDone) : undefined,
     showNotProgrammed: isPreview,
   };
 }
 
 /**
- * The group chip sits above a card only when its muscle group differs from the previous card's
- * (08.7, "Список упражнений") — so the first card always gets one.
+ * The week's target RIR as the card shows it — the `N RIR` badge and the Reps placeholder of a set
+ * with no other. A strength exercise's, except on a resistance band: a band isn't dosed precisely
+ * enough for a reserve to mean anything (10.1 FR-15). Power has none on screen either (10.2 P5),
+ * and an interval or a mobility block none at all.
+ * The RIR stays in the data all the same.
  */
-export function showsGroupChip(
-  exercises: readonly Pick<WorkoutExercise, 'muscleGroup'>[],
+export function targetRirOf(exercise: WorkoutExercise): number | undefined {
+  return exercise.type === 'power' ||
+    exercise.type === 'interval' ||
+    exercise.type === 'mobility' ||
+    isResistanceBand(exercise.equipment)
+    ? undefined
+    : exercise.targetRir;
+}
+
+/**
+ * What the exercise's weight means — the equipment printed under the name, except for a power
+ * exercise that is its own load, which weighs what you weigh (`loadEquipmentOf`).
+ */
+export function cardLoadEquipment(exercise: WorkoutExercise): Equipment | undefined {
+  return exercise.type === 'power'
+    ? (exercise.loadEquipment ?? exercise.equipment)
+    : exercise.equipment;
+}
+
+/**
+ * The chip above a card: the muscle group for a strength exercise, the exercise's type for any
+ * other (10.1 FR-14) — a power card is told apart by "Power", not by the muscle it happens to hit,
+ * which is secondary there (Artem, 18.10.2026).
+ */
+export type CardChip =
+  { kind: 'group'; muscleGroup: MuscleGroup } | { kind: 'type'; type: ExerciseType };
+
+/**
+ * Which chip, if any, sits above card `index` (08.7, "Список упражнений"): only when what it names
+ * changes from the previous card, so the first card always gets one. A strength card names its
+ * muscle group, and also when it follows a card of another type — the run of strength starts over.
+ * A power, interval or mobility card names its type, once for a run of the same type.
+ */
+export function cardChip(
+  exercises: readonly Pick<WorkoutExercise, 'muscleGroup' | 'type'>[],
   index: number,
-): boolean {
+): CardChip | undefined {
   const current = exercises[index];
   if (current === undefined) {
-    return false;
+    return undefined;
   }
-  return index === 0 || exercises[index - 1]?.muscleGroup !== current.muscleGroup;
-}
-
-/** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */
-export function formatWeightHint(hint: ExerciseWeightHint): string {
-  return hint.direction === 'increase'
-    ? `Go heavier — ${hint.reps}+ reps last week`
-    : `Go lighter — under ${hint.reps} reps last week`;
-}
-
-/**
- * One Weight field of an exercise while nothing has been logged from it yet (task 106).
- * `isManual` marks a value the user put there themselves — by typing, or by un-logging a set, which
- * brings the logged weight back. Carry-over leaves those alone and only replaces what it or
- * `suggestedWeight` had supplied.
- */
-export type WeightField = {
-  text: string;
-  isManual: boolean;
-};
-
-/**
- * What the exercise's Weight fields hold, keyed by set number. A set with no entry hasn't been
- * touched: its field shows its own `suggestedWeight` (`weightFieldText`) and carry-over may replace
- * it. Typed-but-unlogged values are never saved (05, "Сохранение данных") — this lives in the card
- * for as long as it's mounted, and a replaced exercise starts over with empty edits.
- */
-export type WeightEdits = Readonly<Record<number, WeightField>>;
-
-/**
- * The text a row's Weight field shows: the edit made to it, else what the row starts with —
- * its suggested weight, or the block's body weight on a pure bodyweight exercise (task 105).
- */
-export function weightFieldText(
-  edits: WeightEdits,
-  row: Pick<WorkoutSetRow, 'setNumber' | 'suggestedWeight'>,
-  equipment?: Equipment,
-  bodyWeight?: number,
-): string {
-  return edits[row.setNumber]?.text ?? initialWeightText(row, equipment, bodyWeight);
-}
-
-/** Typing in a Weight field — the value becomes the user's own, so later carry-overs skip it. */
-export function editWeightText(edits: WeightEdits, setNumber: number, text: string): WeightEdits {
-  return { ...edits, [setNumber]: { text, isManual: true } };
-}
-
-/**
- * Un-logging a set brings the logged weight back into its field (05, "Снять отметку") — as a value
- * the user stands behind, so carry-over won't overwrite it either.
- */
-export function holdLoggedWeight(
-  edits: WeightEdits,
-  setNumber: number,
-  weight: number,
-): WeightEdits {
-  return { ...edits, [setNumber]: { text: formatRowWeight(weight), isManual: true } };
-}
-
-/**
- * The weight entered in one set carries into the rest of the exercise (task 106): when the cursor
- * leaves a Weight field the user typed in, its text fills every **later** set that is still
- * unlogged and still holds what `suggestedWeight` or an earlier carry-over put there. Logged sets
- * never change ("История неизменяема"), and neither does a field the user typed in themselves —
- * correcting set 2 leaves a set 3 you already set by hand alone.
- *
- * Leaving a field nobody typed in changes nothing, so tabbing through the rows carries nothing.
- */
-export function carryWeightForward(
-  edits: WeightEdits,
-  rows: readonly Pick<WorkoutSetRow, 'setNumber' | 'suggestedWeight' | 'log'>[],
-  setNumber: number,
-): WeightEdits {
-  const index = rows.findIndex((row) => row.setNumber === setNumber);
-  if (index === -1 || edits[setNumber]?.isManual !== true) {
-    return edits;
+  const type = current.type ?? 'strength';
+  const previous = exercises[index - 1];
+  const previousType = previous === undefined ? undefined : (previous.type ?? 'strength');
+  if (type !== 'strength') {
+    return previousType === type ? undefined : { kind: 'type', type };
   }
-  const { text } = edits[setNumber];
-  const carried: Record<number, WeightField> = {};
-  for (const row of rows.slice(index + 1)) {
-    if (row.log === undefined && edits[row.setNumber]?.isManual !== true) {
-      carried[row.setNumber] = { text, isManual: false };
-    }
-  }
-  return { ...edits, ...carried };
+  const changed =
+    previous === undefined ||
+    previousType !== 'strength' ||
+    previous.muscleGroup !== current.muscleGroup;
+  return changed ? { kind: 'group', muscleGroup: current.muscleGroup } : undefined;
 }
-
-// ---------------------------------------------------------------------------------------------
-// Weight swap — 08.7.1 · Другой вес. Everything below reads what `evaluateWeightSwap` and the
-// row's own `weightSwap` already worked out (03, rule 7; task 120) and turns it into the strings
-// and spans the ⓘ popover and the card's InlineNote show. Nothing here computes reps or ranges.
 
 /** The set the ⓘ and the note speak for: the one whose Log box carries the accent. */
 export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow | undefined {
@@ -183,275 +162,32 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
  */
 export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
 
+/**
+ * `setRows` is the card's set rows, or `undefined` on a card without them (`setRowsOf`) — which
+ * then has neither ⓘ: both are a set row's.
+ */
 export function cardInfoTargets(
-  exercise: Pick<WorkoutExercise, 'targetRir' | 'rows' | 'equipment' | 'status'>,
+  exercise: {
+    status: SessionExerciseStatus;
+    targetRir?: number | undefined;
+    equipment?: Equipment;
+    loadEquipment?: Equipment;
+  },
+  setRows: readonly WorkoutSetRow[] | undefined,
   mode: WorkoutMode,
   isDeload: boolean,
 ): CardInfoTargets {
-  const view = exerciseCardView(mode, exercise);
+  const view = exerciseCardView(mode, exercise, cardRowsOf(setRows ?? []), isDeload);
+  // Both ⓘ sit in the column header, which is only there with the set rows.
+  const showsSets = setRows !== undefined && view.showRows;
   return {
     rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
-    // Both ⓘ sit in the column header, which is only there with the set rows.
-    weight: view.showSets && showsFirstWeightInfo(mode, isDeload, exercise.equipment),
+    weight:
+      showsSets &&
+      showsFirstWeightInfo(mode, isDeload, exercise.loadEquipment ?? exercise.equipment),
     reps:
-      view.showSets &&
+      showsSets &&
       mode === 'live' &&
-      weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.targetRir) !== undefined,
-  };
-}
-
-/** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
-function formatSwapWeight(weight: number, added: boolean): string {
-  return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
-}
-
-function formatSwapSpans(spans: readonly WeightRange[], added: boolean): string {
-  const parts = spans.map((span) =>
-    added
-      ? `${formatSwapWeight(span.min, true)} to ${formatSwapWeight(span.max, true)}`
-      : `${formatRowWeight(span.min)}–${formatRowWeight(span.max)}`,
-  );
-  return `${parts.join(' and ')} kg`;
-}
-
-/** `15 kg × 10`, or `+16 kg × 7` on a weighted bodyweight exercise. */
-function formatSwapTarget(swap: WeightSwapTarget): string {
-  const added = swap.bodyWeight !== undefined;
-  return `${formatSwapWeight(targetWeightOf(swap), added)} kg × ${swap.baseReps}`;
-}
-
-/**
- * The target's weight in the units the set row types in: the added weight on a weighted bodyweight
- * exercise, where `baseWeight` is the full load the formula works on (03, rule 7).
- */
-function targetWeightOf(swap: WeightSwapTarget): number {
-  return swap.bodyWeight === undefined ? swap.baseWeight : swap.baseWeight - swap.bodyWeight;
-}
-
-/** The parts of the full span that lie outside the close one — one side, or both. */
-function estimateSpans(swap: WeightSwapTarget): WeightRange[] {
-  const spans: WeightRange[] = [];
-  if (swap.estimateRange.min < swap.closeRange.min) {
-    spans.push({ min: swap.estimateRange.min, max: swap.closeRange.min });
-  }
-  if (swap.closeRange.max < swap.estimateRange.max) {
-    spans.push({ min: swap.closeRange.max, max: swap.estimateRange.max });
-  }
-  return spans;
-}
-
-/**
- * How close two labels may sit, as a share of the track, before they run into each other. Not a
- * design value — it is about the numbers, not about how they are drawn.
- */
-const LABEL_CLEARANCE = 0.08;
-
-/**
- * The values the track is labelled at: its four bounds, each once, plus the target — unless the
- * target sits so near a bound that the two would collide. The dot marks it either way, and the
- * popover's subtitle spells it out, so the bound is the one worth keeping.
- */
-function trackLabels(swap: WeightSwapTarget, marker: number): number[] {
-  const bounds = [
-    swap.estimateRange.min,
-    swap.closeRange.min,
-    swap.closeRange.max,
-    swap.estimateRange.max,
-  ];
-  const span = swap.estimateRange.max - swap.estimateRange.min;
-  const crowded =
-    span > 0 && bounds.some((bound) => Math.abs(bound - marker) / span < LABEL_CLEARANCE);
-  return [...new Set(crowded ? bounds : [...bounds, marker])].sort((a, b) => a - b);
-}
-
-export type WeightSwapLegendRow = {
-  /** Which span of the track the line names — it carries that span's own swatch. */
-  span: 'inner' | 'outer';
-  label: string;
-  value: string;
-};
-
-/**
- * What the ⓘ popover shows for the exercise's first unlogged set — always from that set's
- * **original** target, never from whatever weight is in the field right now (08.7.1).
- */
-export type WeightSwapPopover =
-  | {
-      kind: 'ranges';
-      title: string;
-      subtitle: string;
-      outer: WeightRange;
-      inner: WeightRange;
-      marker: number;
-      labels: { value: number; text: string }[];
-      legend: WeightSwapLegendRow[];
-    }
-  | {
-      kind: 'no-history';
-      title: string;
-      /** The corridor a set has to land in, drawn as the Reps plate always draws a span: dashes with the accent bar over the part to aim for. */
-      corridor: {
-        outer: RangeTrackRange;
-        inner: RangeTrackRange;
-        labels: RangeTrackLabel[];
-        /** Said by assistive technology; nothing is written under the track. */
-        accessibilityLabel: string;
-      };
-      steps: PlateTextPart[][];
-    };
-
-export function weightSwapPopover(
-  row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
-  targetRir: number | undefined,
-): WeightSwapPopover | undefined {
-  if (row === undefined || row.weightSwap === undefined) {
-    return undefined;
-  }
-  const swap = row.weightSwap;
-  if ('unavailable' in swap) {
-    // How hard to take the set: the reserve the week asks for, and at the last week's 0 RIR there
-    // is none to name — it is failure.
-    const effortStep: PlateTextPart[] =
-      targetRir === 0
-        ? ['Take each set ', { strong: 'to failure' }, '.']
-        : [
-            'Stop each set with ',
-            { strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'}`} in reserve` },
-            '.',
-          ];
-    // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
-    // and the corridor a set has to land in — the engine builds its rep targets and weight ranges
-    // on it (03) — how hard to take it, then what the app does for you next time.
-    const { minReps, maxReps } = defaultProgressionSettings;
-    return {
-      kind: 'no-history',
-      title: 'Not enough history yet',
-      // Dashes a corridor-width of margin either side, so the accent bar reads as a stretch inside
-      // a longer scale and its two ends have room for their numbers.
-      corridor: {
-        outer: { min: 0, max: minReps + maxReps },
-        inner: { min: minReps, max: maxReps },
-        labels: [
-          { value: minReps, text: `${minReps}` },
-          { value: maxReps, text: `${maxReps}` },
-        ],
-        accessibilityLabel: `Reps per set: ${minReps} to ${maxReps}`,
-      },
-      steps: [
-        ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],
-        effortStep,
-        ['Log this workout.'],
-        ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
-      ],
-    };
-  }
-  const added = swap.bodyWeight !== undefined;
-  const marker = targetWeightOf(swap);
-  const spans = estimateSpans(swap);
-  const legend: WeightSwapLegendRow[] = [
-    {
-      span: 'inner',
-      label: 'Recommended weight',
-      value: formatSwapSpans([swap.closeRange], added),
-    },
-  ];
-  if (spans.length > 0) {
-    legend.push({
-      span: 'outer',
-      label: 'Not ideal, but acceptable',
-      value: formatSwapSpans(spans, added),
-    });
-  }
-  return {
-    kind: 'ranges',
-    // The target leads and the instruction sits under it: the number you are anchored to is what
-    // you scan first, and the line under it says what may be done about it. The instruction is
-    // the whole of it, so the plate needs no closing line (Artem's wording).
-    // An estimate (task 134.1) says so here too: it is what the ranges are worked out from.
-    title: `Current set ${row.estimate === undefined ? 'target' : 'estimate'}: ${formatSwapTarget(swap)}`,
-    subtitle: 'Pick another weight and the reps update.',
-    outer: swap.estimateRange,
-    inner: swap.closeRange,
-    marker,
-    labels: trackLabels(swap, marker).map((value) => ({
-      value,
-      text: formatSwapWeight(value, added),
-    })),
-    legend,
-  };
-}
-
-/** The card's one InlineNote (08.7.1) — the lead phrase, then the way out of it. */
-export type EstimateNote = { lead: string; text: string };
-
-/**
- * The note under the set rows. It speaks for the first unlogged set, and only while that set's
- * numbers aren't a target to hit — by reason (03, "Оценка"):
- *
- * - the weight in its field has taken the target out of reach (rule 7, 08.7.1) — an `estimate`,
- *   or off the rep corridor entirely. That one comes first: it is about the weight in hand now;
- * - the set's own numbers are an estimate from another day or block (`other_slot`, task 134.1).
- *
- * A close weight on an ordinary target needs no explaining, and neither does a card with nothing
- * typed into it.
- */
-export function estimateNote(
-  row: Pick<WorkoutSetRow, 'weightSwap' | 'estimate'> | undefined,
-  weightText: string,
-  targetRir: number | undefined,
-): EstimateNote | undefined {
-  if (row === undefined) {
-    return undefined;
-  }
-  const effort = targetRir === undefined ? 'the effort' : formatRir(targetRir);
-  const otherWeight = otherWeightNote(row, weightText, effort);
-  if (otherWeight !== undefined) {
-    return otherWeight;
-  }
-  if (row.estimate === 'other_slot') {
-    // Artem's wording: where the number comes from, and what to go by instead.
-    return {
-      lead: 'Approximate estimation based on your previous activity.',
-      text: `Stop at ${effort}.`,
-    };
-  }
-  return undefined;
-}
-
-/** Rule 7's half of `estimateNote` — the weight in the field against the set's own numbers. */
-function otherWeightNote(
-  row: Pick<WorkoutSetRow, 'weightSwap'>,
-  weightText: string,
-  effort: string,
-): EstimateNote | undefined {
-  if (row.weightSwap === undefined || 'unavailable' in row.weightSwap) {
-    return undefined;
-  }
-  const swap = row.weightSwap;
-  const evaluation = rowEvaluation(row, weightText);
-  if (evaluation === undefined) {
-    return undefined;
-  }
-  const added = swap.bodyWeight !== undefined;
-  if (evaluation.zone === 'out') {
-    const weight = formatSwapWeight(parseWeight(weightText) ?? 0, added);
-    const bound = formatSwapWeight(evaluation.bound, added);
-    return evaluation.direction === 'tooHeavy'
-      ? {
-          lead: `${weight} kg is too heavy for ${swap.corridor.minReps}+ reps.`,
-          text: `Up to ${bound} kg keeps a rep target.`,
-        }
-      : {
-          lead: `${weight} kg is too light for ${swap.corridor.maxReps} reps.`,
-          text: `From ${bound} kg keeps a rep target.`,
-        };
-  }
-  if (evaluation.zone !== 'estimate') {
-    // `target` and `close` read as the set's own numbers — there is nothing to explain.
-    return undefined;
-  }
-  return {
-    lead: `~ Estimated from ${formatSwapTarget(swap)}.`,
-    text: `Stop at ${effort}, not at the number.`,
+      weightSwapPopover(firstUnloggedRow(setRows), exercise.targetRir) !== undefined,
   };
 }
