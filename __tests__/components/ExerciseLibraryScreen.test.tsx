@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { SectionList } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { toExerciseId, type Exercise } from '@domain/catalog';
@@ -74,6 +75,30 @@ describe('ExerciseLibraryScreen', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
     expect(onRequestCreate).toHaveBeenCalledWith();
+  });
+
+  // GT-151: with the keyboard up, the first tap on a row only closes it (and blurs the search, so
+  // Back from an exercise doesn't bring the keyboard back) — React Native's own `never`, which the
+  // test renderer doesn't run, so the setting is what's checked here.
+  test('DoD 151: the list lets no tap through while the keyboard is up', () => {
+    renderScreen({
+      groups: [
+        {
+          muscleGroup: 'chest',
+          entries: [
+            entry(
+              exercise({
+                id: toExerciseId('bench-press'),
+                name: 'Bench Press',
+                muscleGroup: 'chest',
+              }),
+            ),
+          ],
+        },
+      ],
+    });
+
+    expect(screen.UNSAFE_getByType(SectionList).props.keyboardShouldPersistTaps).toBe('never');
   });
 
   test('typing in the search field calls onSearchChange', () => {

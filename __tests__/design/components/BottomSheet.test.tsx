@@ -1,6 +1,6 @@
 import { BottomSheet } from '@design/components/BottomSheet';
-import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Keyboard, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { SPACING } from '@design/tokens';
@@ -191,4 +191,117 @@ describe('BottomSheet', () => {
       expect(style.height).toBe('80%');
     },
   );
+
+  // GT-151: the keyboard's own events, captured so a test can raise and lower it.
+  describe('with the keyboard', () => {
+    let listeners: Record<string, (() => void)[]>;
+
+    beforeEach(() => {
+      listeners = {};
+      jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
+      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
+        event: string,
+        handler: () => void,
+      ) => {
+        (listeners[event] ??= []).push(handler);
+        return { remove: jest.fn() };
+      }) as unknown as typeof Keyboard.addListener);
+    });
+
+    afterEach(() => jest.restoreAllMocks());
+
+    function emit(event: 'keyboardWillShow' | 'keyboardWillHide') {
+      act(() => listeners[event]?.forEach((handler) => handler()));
+    }
+
+    function bottomPadding() {
+      return StyleSheet.flatten(screen.getByTestId('bottom-sheet').props.style).paddingBottom;
+    }
+
+    test('DoD 151: while it is up, the bottom padding drops the tab bar clearance and the inset', () => {
+      render(
+        <SafeAreaProvider initialMetrics={TEST_SAFE_AREA_METRICS}>
+          <BottomSheet visible onClose={() => {}} title="Replace" bottomClearance={100}>
+            <Text>Content</Text>
+          </BottomSheet>
+        </SafeAreaProvider>,
+      );
+      expect(bottomPadding()).toBe(SPACING['space/sheet'] + 100);
+
+      emit('keyboardWillShow');
+      expect(bottomPadding()).toBe(SPACING['space/sheet']);
+
+      emit('keyboardWillHide');
+      expect(bottomPadding()).toBe(SPACING['space/sheet'] + 100);
+    });
+
+    test('by default a tap reaches the footer with the keyboard up — a form sheet is unchanged', () => {
+      const onApply = jest.fn();
+      render(
+        <BottomSheet
+          visible
+          onClose={() => {}}
+          title="New exercise"
+          footer={<Text onPress={onApply}>Create</Text>}
+        >
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+      emit('keyboardWillShow');
+
+      fireEvent.press(screen.getByText('Create'));
+
+      expect(onApply).toHaveBeenCalledTimes(1);
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('handled');
+    });
+
+    test('DoD 151: keyboardTaps="dismiss" — the list never lets a tap through with the keyboard up', () => {
+      render(
+        <BottomSheet visible onClose={() => {}} title="Replace" keyboardTaps="dismiss">
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('never');
+    });
+
+    test('DoD 151: keyboardTaps="dismiss" — with the keyboard up the footer only closes it; once it is down, the button presses', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      const onConfirm = jest.fn();
+      render(
+        <BottomSheet
+          visible
+          onClose={() => {}}
+          title="Replace exercise"
+          keyboardTaps="dismiss"
+          footer={<Text onPress={onConfirm}>Confirm</Text>}
+        >
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+      emit('keyboardWillShow');
+
+      // The tap lands on the footer itself, not on the button inside it.
+      fireEvent.press(screen.getByText('Confirm'));
+      expect(onConfirm).not.toHaveBeenCalled();
+      expect(dismiss).toHaveBeenCalledTimes(1);
+
+      emit('keyboardWillHide');
+      fireEvent.press(screen.getByText('Confirm'));
+      expect(onConfirm).toHaveBeenCalledTimes(1);
+    });
+
+    test('DoD 151: keyboardTaps="dismiss" — a tap on the empty space at the bottom closes the keyboard', () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      render(
+        <BottomSheet visible onClose={() => {}} title="Replace" keyboardTaps="dismiss">
+          <Text>Content</Text>
+        </BottomSheet>,
+      );
+
+      fireEvent.press(screen.getByTestId('bottom-sheet-empty-space'));
+
+      expect(dismiss).toHaveBeenCalledTimes(1);
+    });
+  });
 });

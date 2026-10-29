@@ -145,7 +145,9 @@ export function ExerciseLibraryScreen({
       {showList && (
         <SectionList<ExerciseListEntry, ExerciseSection>
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          // A search screen: with the keyboard up, the first tap on a row only closes it, and the
+          // search field loses focus — so coming Back from an exercise doesn't bring it back (GT-151).
+          keyboardShouldPersistTaps="never"
           keyboardDismissMode="on-drag"
           style={LIST_BLEED.style}
           contentContainerStyle={[LIST_BLEED.content, { paddingBottom: tabBarClearance }]}

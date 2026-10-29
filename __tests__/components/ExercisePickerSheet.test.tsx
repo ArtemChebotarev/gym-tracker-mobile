@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Keyboard, ScrollView, StyleSheet } from 'react-native';
 
 import { toExerciseId } from '@domain/catalog';
 import type { Exercise } from '@domain/catalog';
@@ -284,6 +284,47 @@ describe('ExercisePickerSheet', () => {
       );
       fireEvent.press(screen.getByRole('button', { name: 'Replace' }));
       expect(onConfirm).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // GT-151: a search sheet — with the keyboard up, a tap only closes it.
+  describe('with the keyboard up', () => {
+    let showKeyboard: () => void;
+
+    beforeEach(() => {
+      jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
+      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
+        event: string,
+        handler: () => void,
+      ) => {
+        if (event === 'keyboardWillShow') {
+          showKeyboard = () => act(handler);
+        }
+        return { remove: jest.fn() };
+      }) as unknown as typeof Keyboard.addListener);
+    });
+
+    afterEach(() => jest.restoreAllMocks());
+
+    test('DoD 151: a tap on a row only closes the keyboard (the list is on `never`)', () => {
+      renderSheet(BASE_SINGLE_PROPS);
+
+      expect(screen.UNSAFE_getByType(ScrollView).props.keyboardShouldPersistTaps).toBe('never');
+    });
+
+    test.each([
+      ['Replace', { ...BASE_SINGLE_PROPS, selectedId: BENCH_PRESS.id }],
+      ['Add 1 exercise', { ...BASE_MULTI_PROPS, selectedIds: [BENCH_PRESS.id] }],
+    ] as const)('DoD 151: the first tap on %s only closes the keyboard', (label, props) => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+      const onConfirm = jest.fn();
+      renderSheet({ ...props, onConfirm });
+      showKeyboard();
+
+      fireEvent.press(screen.getByRole('button', { name: label }));
+
+      expect(onConfirm).not.toHaveBeenCalled();
+      expect(dismiss).toHaveBeenCalledTimes(1);
     });
   });
 });

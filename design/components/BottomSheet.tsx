@@ -33,7 +33,15 @@
 // behavior already handles this, so no `behavior` is set there.
 // `keyboardShouldPersistTaps="handled"` on the content ScrollView lets a tap on another field or
 // a Dropdown option register in the same gesture instead of only dismissing the keyboard first;
-// a tap on the sheet's header or a drag of the content closes it (GT-21).
+// a tap on the sheet's header or a drag of the content closes it (GT-21). A search sheet wants the
+// opposite (`keyboardTaps="dismiss"`, GT-151): while the keyboard is up, a tap anywhere outside it
+// only closes it — on a row, on the footer's button, on the empty space under it — and the next
+// tap does what it says.
+//
+// While the keyboard is up, the bottom padding drops `bottomClearance` and the home-indicator
+// inset: the tab bar and the indicator are behind the keyboard then, and KeyboardAvoidingView has
+// already lifted the sheet clear of it. Kept, the ~100pt of a tab bar's clearance came out of a
+// fixed-height sheet's list, leaving room for one row (GT-151).
 
 import type { ReactNode } from 'react';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -54,6 +62,7 @@ import {
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { COLORS, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { capsule } from '../shapes';
+import { useKeyboardVisible } from '../useKeyboardVisible';
 
 const DISMISS_DISTANCE = 60;
 // 'overlay' presentation's own slide, standing in for Modal's native `animationType="slide"`.
@@ -98,6 +107,12 @@ export type BottomSheetProps = {
    * home-indicator inset the sheet already respects.
    */
   bottomClearance?: number;
+  /**
+   * What a tap does while the keyboard is up. 'handled' (default) — it reaches what it lands on and
+   * the keyboard stays, for a form where the next tap is often another field. 'dismiss' — it only
+   * closes the keyboard, anywhere in the sheet, for a search sheet (GT-151).
+   */
+  keyboardTaps?: 'handled' | 'dismiss';
 };
 
 export function BottomSheet({
@@ -112,9 +127,14 @@ export function BottomSheet({
   presentation = 'modal',
   height = 'content',
   bottomClearance = 0,
+  keyboardTaps = 'handled',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
   const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+  const keyboardVisible = useKeyboardVisible();
+  const dismissOnTap = keyboardTaps === 'dismiss';
+  // A tap that should only close the keyboard doesn't reach the footer's buttons.
+  const footerBlocked = dismissOnTap && keyboardVisible;
 
   function handleGrabberGrant(event: GestureResponderEvent) {
     dragStartY.current = event.nativeEvent.pageY;
@@ -130,6 +150,16 @@ export function BottomSheet({
 
   const sheetBody = (
     <>
+      {dismissOnTap && (
+        // Under everything else, so it takes only the taps nothing else does — the sheet's bottom
+        // padding, the gaps around the footer.
+        <Pressable
+          testID="bottom-sheet-empty-space"
+          accessible={false}
+          style={StyleSheet.absoluteFill}
+          onPress={Keyboard.dismiss}
+        />
+      )}
       <View
         testID="bottom-sheet-grabber-area"
         style={styles.grabberArea}
@@ -148,7 +178,7 @@ export function BottomSheet({
       </Pressable>
       <ScrollView
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps={dismissOnTap ? 'never' : 'handled'}
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
         // iOS lets a ScrollView be dragged and spring back even when everything fits; in a sheet
@@ -157,14 +187,27 @@ export function BottomSheet({
       >
         {children}
       </ScrollView>
-      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
+      {footer !== undefined && (
+        <Pressable
+          testID="bottom-sheet-footer"
+          accessible={false}
+          style={styles.footer}
+          pointerEvents={footerBlocked ? 'box-only' : 'auto'}
+          onPress={footerBlocked ? Keyboard.dismiss : undefined}
+        >
+          {footer}
+        </Pressable>
+      )}
     </>
   );
 
   const sheetStyle = [
     styles.sheet,
     height === 'fixed' && styles.sheetFixed,
-    { paddingBottom: SPACING['space/sheet'] + Math.max(bottomInset, bottomClearance) },
+    {
+      paddingBottom:
+        SPACING['space/sheet'] + (keyboardVisible ? 0 : Math.max(bottomInset, bottomClearance)),
+    },
   ];
 
   if (presentation === 'overlay') {
