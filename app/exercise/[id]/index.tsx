@@ -1,12 +1,12 @@
 // The Exercise screen (08.6 · Библиотека упражнений, task 065). The `[id]` segment is the
-// `exerciseId`; every entry point — the library list and a workout's exercise card — lands here,
-// on Overview (08.6: "Overview всегда открывается первой, независимо от точки входа").
+// `exerciseId`; the library list lands here on Overview, a workout card's history button on History
+// (`tab=history`, GT-177 — see exerciseHistoryHref).
 //
 // The `⋯` menu's `Edit` opens the Edit exercise page (exercise/[id]/edit) for a custom exercise.
 // Hiding pops the screen — a hidden exercise is gone from the library that got you here.
 //
-// The screen opens on Overview every time, so the History tab's own read (108) waits until that
-// tab is first picked and then stays loaded — switching back and forth doesn't re-read.
+// The History tab's own read (108) waits until that tab is first shown and then stays loaded —
+// switching back and forth doesn't re-read.
 //
 // `Watch how to perform exercise` (task 153) hands over to a YouTube Shorts search built from the exercise's
 // name and equipment — the app ships no technique media of its own in v1.
@@ -30,10 +30,11 @@ import { useHideExercise } from '@state/useHideExercise';
 
 export default function ExerciseDetailRoute() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, tab } = useLocalSearchParams<{ id: string; tab?: string }>();
   const exerciseId = toExerciseId(id);
+  const initialTab = tab === 'history' ? 'history' : 'overview';
 
-  const [isHistoryOpened, setIsHistoryOpened] = useState(false);
+  const [isHistoryOpened, setIsHistoryOpened] = useState(initialTab === 'history');
 
   const query = useExerciseOverview(exerciseId);
   const historyQuery = useExerciseHistory(exerciseId, { enabled: isHistoryOpened });
@@ -91,8 +92,9 @@ export default function ExerciseDetailRoute() {
       menuItems={exerciseOverviewMenuActions(query.data?.actions ?? [], (action) =>
         action === 'edit' ? handleEdit() : confirmHide(),
       )}
-      onTabChange={(tab) => {
-        if (tab === 'history') {
+      initialTab={initialTab}
+      onTabChange={(next) => {
+        if (next === 'history') {
           setIsHistoryOpened(true);
         }
       }}

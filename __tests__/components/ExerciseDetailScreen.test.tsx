@@ -280,6 +280,17 @@ describe('ExerciseDetailScreen', () => {
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
   });
 
+  test('initialTab history opens straight on History, and Overview is a tap away', () => {
+    renderScreen({ initialTab: 'history' });
+
+    expect(screen.queryByText('Best set')).toBeNull();
+    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Overview'));
+
+    expect(screen.getByText('Best set')).toBeTruthy();
+  });
+
   test('has no See full history link — the History tab is right there', () => {
     renderScreen();
 

@@ -7,15 +7,20 @@
 import type { Href } from 'expo-router';
 
 /**
- * The Exercise screen for `exerciseId` — `app/exercise/[id]/index.tsx`.
- *
- * It opens on Overview wherever it's entered from, and its History tab is reachable only through
- * the switcher on the screen itself (08.6: "Прямого перехода в History с других экранов нет,
- * включая экран тренировки") — so the workout card's history button comes here too, where the
- * last-session block is what it was really after.
+ * The Exercise screen for `exerciseId` — `app/exercise/[id]/index.tsx` — on Overview, as the
+ * library opens it.
  */
 export function exerciseDetailHref(exerciseId: string): Href {
   return { pathname: '/exercise/[id]', params: { id: exerciseId } };
+}
+
+/**
+ * The same screen, opened on its History tab — where a workout card's history button lands, every
+ * time (GT-177). Overview no longer repeats the last session (GT-195), so landing there left the
+ * button showing history only when the exercise happened to need none.
+ */
+export function exerciseHistoryHref(exerciseId: string): Href {
+  return { pathname: '/exercise/[id]', params: { id: exerciseId, tab: 'history' } };
 }
 
 /** "Мезоцикл (деталь)" for `mesoId` — `app/meso/[id].tsx`. */

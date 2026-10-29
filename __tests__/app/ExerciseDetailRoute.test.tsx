@@ -68,6 +68,14 @@ describe('Exercise screen route', () => {
     expect(screen.getByText('Best set')).toBeTruthy();
   });
 
+  test('tab=history opens on History, with the session already read', async () => {
+    mockParams = { id: 'bench-press-barbell', tab: 'history' };
+    renderRoute();
+
+    expect(await screen.findByText('Week 1 · Day 1')).toBeTruthy();
+    expect(screen.queryByText('Best set')).toBeNull();
+  });
+
   test('Overview repeats no session the fixture logged — History lists it', async () => {
     mockParams = { id: 'bench-press-barbell' };
     renderRoute();
