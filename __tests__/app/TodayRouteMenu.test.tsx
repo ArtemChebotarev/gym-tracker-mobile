@@ -211,14 +211,17 @@ describe('Today tab — header menu', () => {
     expect(screen.getByText('Week 1 Day 1')).toBeTruthy();
   });
 
-  test('Add exercise adds the picked exercises to the end of the session', async () => {
+  // GT-179: one exercise at a time, the way Replace picks — a tap checks a row, Add exercise adds it.
+  test('Add exercise adds the picked exercise to the end of the session', async () => {
     renderToday();
     await screen.findByText('Week 2 Day 1');
 
     pickMenuItem('addExercise');
     expect(await screen.findByText('Squat')).toBeTruthy();
-    fireEvent.press(screen.getByRole('checkbox', { name: 'Squat' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Add 1 exercise' }));
+    const addButton = screen.getByRole('button', { name: 'Add exercise' });
+    expect(addButton.props.accessibilityState.disabled).toBe(true);
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Select Squat' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
 
     await waitFor(async () => {
       const exercises = await repositories().workoutStore.repos.sessionExerciseRepo.listBySessionId(

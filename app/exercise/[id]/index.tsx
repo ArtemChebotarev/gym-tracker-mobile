@@ -2,6 +2,11 @@
 // `exerciseId`; the library list lands here on Overview, a workout card's history button on History
 // (`tab=history`, GT-177 — see exerciseHistoryHref).
 //
+// From the Add/Replace picker it opens as a preview (`pick=1`, GT-179 — see exercisePickHref):
+// no `⋯`, and the picker's confirm button at the bottom, which picks this exercise and goes back.
+// The picker left that button's label and action in state/exercisePickStore.ts; the screen clears
+// it on the way out, so a later visit never shows a stale one.
+//
 // The `⋯` menu's `Edit` opens the Edit exercise page (exercise/[id]/edit) for a custom exercise.
 // Hiding pops the screen — a hidden exercise is gone from the library that got you here.
 //
@@ -10,18 +15,20 @@
 //
 // `Watch how to perform exercise` (task 153) hands over to a YouTube Shorts search built from the exercise's
 // name and equipment — the app ships no technique media of its own in v1.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { ExerciseDetailScreen } from '@components/ExerciseDetailScreen';
+import { Button } from '@design/components/Button';
 import {
   exerciseOverviewMenuActions,
   formatHideExerciseWarning,
 } from '@components/ExerciseMenuLogic';
 import { toExerciseId } from '@domain/catalog';
 import { buildHowToUrl } from '@domain/exerciseHowTo';
+import { useExercisePickStore } from '@state/exercisePickStore';
 import { useExerciseHistory } from '@state/useExerciseHistory';
 import { loadErrorOf } from '@state/loadError';
 import { logger } from '@state/logger';
@@ -30,9 +37,18 @@ import { useHideExercise } from '@state/useHideExercise';
 
 export default function ExerciseDetailRoute() {
   const router = useRouter();
-  const { id, tab } = useLocalSearchParams<{ id: string; tab?: string }>();
+  const { id, tab, pick: pickParam } = useLocalSearchParams<{
+    id: string;
+    tab?: string;
+    pick?: string;
+  }>();
   const exerciseId = toExerciseId(id);
   const initialTab = tab === 'history' ? 'history' : 'overview';
+  const isPreview = pickParam === '1';
+  const pick = useExercisePickStore((s) => s.pick);
+  const clearPick = useExercisePickStore((s) => s.clear);
+
+  useEffect(() => (isPreview ? clearPick : undefined), [isPreview, clearPick]);
 
   const [isHistoryOpened, setIsHistoryOpened] = useState(initialTab === 'history');
 
@@ -89,9 +105,24 @@ export default function ExerciseDetailRoute() {
       history={historyQuery.data}
       isHistoryPending={historyQuery.isPending}
       onBack={() => router.back()}
-      menuItems={exerciseOverviewMenuActions(query.data?.actions ?? [], (action) =>
-        action === 'edit' ? handleEdit() : confirmHide(),
-      )}
+      menuItems={
+        isPreview
+          ? undefined
+          : exerciseOverviewMenuActions(query.data?.actions ?? [], (action) =>
+              action === 'edit' ? handleEdit() : confirmHide(),
+            )
+      }
+      footer={
+        isPreview && pick !== null && exercise ? (
+          <Button
+            label={pick.label}
+            onPress={() => {
+              router.back();
+              pick.onPick(exerciseId);
+            }}
+          />
+        ) : undefined
+      }
       initialTab={initialTab}
       onTabChange={(next) => {
         if (next === 'history') {

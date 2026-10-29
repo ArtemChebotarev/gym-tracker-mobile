@@ -1,11 +1,14 @@
 // The workout screen's exercise picker — 08.7 · Тренировка: the shared ExercisePickerSheet (079)
 // plus its Filters sheet, for both ways the workout screen picks exercises:
 //
-// - `multi` — "Меню шапки" → Add exercise (096): checkboxes and a confirm button; the caller adds
-//   the picked exercises, in the order they were checked, to the end of the session (048).
-// - `single` — "Меню упражнения" → Replace exercise (097): a tap checks the exercise (one at a time),
-//   and a `Replace` button applies it and closes the sheet; the caller swaps the exercise to it
-//   (047). A swap can't be taken back, so a tap alone doesn't make it.
+// - `add` — "Меню шапки" → Add exercise (096): one exercise at a time since GT-179, the same way as
+//   Replace — a tap checks it, and an `Add exercise` button applies it and closes the sheet; the
+//   caller adds it to the end of the session (048).
+// - `replace` — "Меню упражнения" → Replace exercise (097): a tap checks the exercise (one at a
+//   time), and a `Replace` button applies it and closes the sheet; the caller swaps the exercise to
+//   it (047). A swap can't be taken back, so a tap alone doesn't make it.
+//
+// Both are the picker's `single` mode; only the button's copy differs.
 //
 // Unlike step 2a's MesoEditorAddExerciseSheet, this one owns the picker's state — search text,
 // applied and draft filters, the selection — and its library queries: nothing else on the workout
@@ -26,26 +29,30 @@ import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 import { countEntries } from './ExerciseLibraryScreenLogic';
 import { ExercisePickerSheet } from './ExercisePickerSheet';
 
-type WorkoutExercisePickerSelection =
-  /** The picked exercises, in the order they were checked. The sheet has already closed. */
-  | { mode: 'multi'; onConfirm: (exerciseIds: ExerciseId[]) => void }
-  /** The tapped exercise. The sheet has already closed. */
-  | { mode: 'single'; onSelect: (exerciseId: ExerciseId) => void };
+export type WorkoutExercisePickerMode = 'add' | 'replace';
+
+const CONFIRM_LABELS: Record<WorkoutExercisePickerMode, string> = {
+  add: 'Add exercise',
+  replace: 'Replace',
+};
 
 export type WorkoutExercisePickerSheetProps = {
   visible: boolean;
   title: string;
   /** Under the title — the session's day for Add, the exercise being replaced for Replace. */
   caption: string;
+  mode: WorkoutExercisePickerMode;
+  /** The picked exercise. The sheet has already closed. */
+  onSelect: (exerciseId: ExerciseId) => void;
   onClose: () => void;
-} & WorkoutExercisePickerSelection;
+};
 
 export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProps) {
-  const { visible, title, caption, onClose } = props;
+  const { visible, title, caption, mode, onSelect, onClose } = props;
   // The sheet is drawn over the floating tab bar, which would cover the list's last row (GT-47).
   const tabBarClearance = useTabBarClearance();
   const [search, setSearch] = useState('');
-  const [selectedIds, setSelectedIds] = useState<ExerciseId[]>([]);
+  const [selectedId, setSelectedId] = useState<ExerciseId | undefined>(undefined);
   const [filters, setFilters] = useState<ExerciseLibraryFilters>({});
   const [draftFilters, setDraftFilters] = useState<ExerciseLibraryFilters>({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -57,7 +64,7 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
 
   function reset() {
     setSearch('');
-    setSelectedIds([]);
+    setSelectedId(undefined);
     setFilters({});
   }
 
@@ -87,34 +94,17 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
 
   return (
     <>
-      {props.mode === 'multi' ? (
-        <ExercisePickerSheet
-          {...shared}
-          mode="multi"
-          selectedIds={selectedIds}
-          onChangeSelectedIds={setSelectedIds}
-          onConfirm={() => {
-            const picked = selectedIds;
-            handleClose();
-            props.onConfirm(picked);
-          }}
-        />
-      ) : (
-        <ExercisePickerSheet
-          {...shared}
-          mode="single"
-          selectedId={selectedIds[0]}
-          onChangeSelectedId={(exerciseId) => setSelectedIds([exerciseId])}
-          onConfirm={() => {
-            const [picked] = selectedIds;
-            if (picked === undefined) {
-              return;
-            }
-            handleClose();
-            props.onSelect(picked);
-          }}
-        />
-      )}
+      <ExercisePickerSheet
+        {...shared}
+        mode="single"
+        selectedId={selectedId}
+        onChangeSelectedId={setSelectedId}
+        confirmLabel={CONFIRM_LABELS[mode]}
+        onConfirm={(picked) => {
+          handleClose();
+          onSelect(picked);
+        }}
+      />
       <ExerciseFiltersSheet
         visible={isFiltersOpen}
         filters={draftFilters}

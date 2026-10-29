@@ -29,14 +29,14 @@
 //
 // The header `⋯` opens the header menu (096) — a native menu out of the button itself (117), so
 // its actions are wired here rather than raised as a sheet. Add exercise opens the exercise
-// picker (`WorkoutExercisePickerSheet`, `multi`) and adds the picked exercises to the end of the
-// session (`useAddExercises`, 048). Skip workout, once confirmed, skips every unfinished
+// picker (`WorkoutExercisePickerSheet`, `add` — one exercise at a time, GT-179) and adds the picked
+// exercise to the end of the session (`useAddExercises`, 048). Skip workout, once confirmed, skips every unfinished
 // exercise and closes the session (`useSkipWorkout`, 049) and, like Finish, pins the tab to it,
 // now read-only. Mesocycle history opens the mesocycle detail screen (08.9, 129).
 //
 // An exercise card's `⋯` opens the exercise menu (097, `WorkoutExerciseMenuSheet`) for that
 // exercise. Its one-tap actions — add or remove a set, move, skip or unskip, delete — run through
-// `useExerciseCommand`; Replace exercise opens the picker in `single` mode, and the pick swaps the
+// `useExerciseCommand`; Replace exercise opens the picker in `replace` mode, and the pick swaps the
 // exercise (`useSwapExercise`, 047). Delete, Skip and — with logged sets — Replace are confirmed in
 // the menu first.
 //
@@ -698,19 +698,19 @@ export default function TodayScreen() {
         isSaving={renameMesocycle.isPending}
       />
       <WorkoutExercisePickerSheet
-        mode="multi"
+        mode="add"
         visible={isAddExerciseOpen}
         title="Add exercise"
         caption={model ? formatWorkoutMenuTitle(model.header) : ''}
         onClose={() => setIsAddExerciseOpen(false)}
-        onConfirm={(exerciseIds) => {
+        onSelect={(exerciseId) => {
           if (currentSessionId === undefined) {
             return;
           }
           addExercises.mutate(
-            { sessionId: currentSessionId, exerciseIds },
+            { sessionId: currentSessionId, exerciseIds: [exerciseId] },
             {
-              onError: () => Alert.alert("Couldn't add the exercises", 'Try again.'),
+              onError: () => Alert.alert("Couldn't add the exercise", 'Try again.'),
             },
           );
         }}
@@ -728,7 +728,7 @@ export default function TodayScreen() {
         isSaving={setBodyWeight.isPending}
       />
       <WorkoutExercisePickerSheet
-        mode="single"
+        mode="replace"
         visible={isReplaceOpen}
         title="Replace exercise"
         caption={menuExercise?.name ?? ''}

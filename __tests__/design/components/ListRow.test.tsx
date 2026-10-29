@@ -207,4 +207,29 @@ describe('ListRow', () => {
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  // GT-179: a checkbox with its own onPress is a target of its own; the rest of the row is a
+  // plain button that runs the row's onPress.
+  test('a checkbox with its own onPress toggles apart from the row', () => {
+    const onToggle = jest.fn();
+    const onPress = jest.fn();
+    render(
+      <ListRow
+        title="Bench press"
+        leading={{ type: 'checkbox', checked: true, onPress: onToggle }}
+        trailing={{ type: 'chevron' }}
+        onPress={onPress}
+      />,
+    );
+
+    const checkbox = screen.getByRole('checkbox', { name: 'Select Bench press' });
+    expect(checkbox.props.accessibilityState).toEqual({ checked: true });
+    fireEvent.press(checkbox);
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(onPress).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Bench press' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onToggle).toHaveBeenCalledTimes(1);
+  });
 });
