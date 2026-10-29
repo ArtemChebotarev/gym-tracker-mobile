@@ -123,6 +123,7 @@ function makeProps(overrides: Partial<WorkoutScreenProps> = {}): WorkoutScreenPr
       stopMesocycle: jest.fn(),
     },
     onOpenExerciseHistory: jest.fn(),
+    onOpenExercise: jest.fn(),
     onExerciseMenuAction: jest.fn(),
     onLogSet: jest.fn(),
     onUnlogSet: jest.fn(),
@@ -309,6 +310,15 @@ describe('WorkoutScreen list', () => {
 
     expect(onOpenExerciseHistory).toHaveBeenCalledWith(LIVE.exercises[0]);
     expect(onExerciseMenuAction).toHaveBeenCalledWith(LIVE.exercises[0], 'delete');
+  });
+
+  test("hands the pressed card's exercise to the Overview handler from its name", () => {
+    const onOpenExercise = jest.fn();
+    renderWithSafeArea(<WorkoutScreen {...makeProps({ onOpenExercise })} />);
+
+    fireEvent.press(screen.getByRole('link', { name: 'Bench press details' }));
+
+    expect(onOpenExercise).toHaveBeenCalledWith(LIVE.exercises[0]);
   });
 
   test('a preview names the session that unlocks it', () => {

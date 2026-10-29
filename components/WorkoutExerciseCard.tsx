@@ -54,6 +54,8 @@ export type ExerciseCardCommonProps = {
   position?: number;
   /** Opens "История упражнения" (06). */
   onOpenHistory: () => void;
+  /** Opens the exercise's own screen on Overview — its name is the link (GT-178). */
+  onOpenOverview: () => void;
   /**
    * What the card's `⋯` offers (08.7, "Меню упражнения") — the menu opens out of the button
    * itself (117), so the card holds the actions rather than an `onOpenMenu` that raised a sheet

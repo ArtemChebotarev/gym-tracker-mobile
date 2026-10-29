@@ -92,6 +92,8 @@ export type WorkoutScreenProps = {
   menuActions: Record<WorkoutMenuItem, () => void>;
   /** Opens an exercise's history (06), from its card. */
   onOpenExerciseHistory: (exercise: WorkoutExercise) => void;
+  /** Opens an exercise's own screen on Overview, from the name on its card (GT-178). */
+  onOpenExercise: (exercise: WorkoutExercise) => void;
   /**
    * An action picked in an exercise card's `⋯` menu (08.7, "Меню упражнения"). Live only. The
    * menu opens out of the card's own button (117), so the screen builds each card's items from
@@ -178,6 +180,7 @@ export function WorkoutScreen({
   onOpenGrid,
   menuActions,
   onOpenExerciseHistory,
+  onOpenExercise,
   onExerciseMenuAction,
   onLogSet,
   onUnlogSet,
@@ -325,6 +328,7 @@ export function WorkoutScreen({
               chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
+              onOpenOverview={() => onOpenExercise(exercise)}
               menuItems={workoutExerciseMenuActions(exercise, (item) =>
                 onExerciseMenuAction(exercise, item),
               )}

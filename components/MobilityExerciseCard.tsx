@@ -28,6 +28,7 @@ export function MobilityExerciseCard({
   chip,
   position = 0,
   onOpenHistory,
+  onOpenOverview,
   menuItems,
   isSaving,
   rounds,
@@ -46,6 +47,7 @@ export function MobilityExerciseCard({
       {...(chip !== undefined ? { chip } : {})}
       position={position}
       onOpenHistory={onOpenHistory}
+      onOpenOverview={onOpenOverview}
       menuItems={menuItems}
       menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
     >

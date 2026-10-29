@@ -49,6 +49,7 @@ function makeProps(overrides: Partial<WorkoutExerciseCardProps> = {}): WorkoutEx
     mode: 'live',
     chip: { kind: 'type', type: 'interval' },
     onOpenHistory: jest.fn(),
+    onOpenOverview: jest.fn(),
     menuItems: [],
     isSaving: false,
     sets: { onLogSet: jest.fn(), onUnlogSet: jest.fn() },
