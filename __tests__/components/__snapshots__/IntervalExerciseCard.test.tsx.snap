@@ -419,6 +419,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
           testID="exercise-menu-session-exercise-bag"
         >
           <ViewManagerAdapter_ExpoUI
+            ignoreSafeArea="all"
             layoutDirection="leftToRight"
             style={
               {

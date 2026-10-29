@@ -198,6 +198,7 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
         testID="action-menu"
       >
         <ViewManagerAdapter_ExpoUI
+          ignoreSafeArea="all"
           layoutDirection="leftToRight"
           style={
             {

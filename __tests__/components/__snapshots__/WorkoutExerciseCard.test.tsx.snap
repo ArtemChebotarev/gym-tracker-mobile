@@ -449,6 +449,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
           testID="exercise-menu-session-exercise-1"
         >
           <ViewManagerAdapter_ExpoUI
+            ignoreSafeArea="all"
             layoutDirection="leftToRight"
             style={
               {
@@ -3800,6 +3801,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
           testID="exercise-menu-session-exercise-1"
         >
           <ViewManagerAdapter_ExpoUI
+            ignoreSafeArea="all"
             layoutDirection="leftToRight"
             style={
               {
