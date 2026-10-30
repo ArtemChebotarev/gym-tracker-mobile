@@ -66,6 +66,23 @@ jest.mock('expo-audio', () => ({
   setAudioModeAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// expo-notifications has no native side in jest, and the rest's signal (state/restSignal.ts, GT-203)
+// is kept by the tab bar. Notifications allowed and nothing delivered stand in for every test; a
+// test about the signal itself asserts on these mocks.
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: { HIGH: 5 },
+  PermissionStatus: { GRANTED: 'granted', DENIED: 'denied', UNDETERMINED: 'undetermined' },
+  SchedulableTriggerInputTypes: { DATE: 'date' },
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  dismissNotificationAsync: jest.fn(() => Promise.resolve()),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('rest-over')),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  setNotificationHandler: jest.fn(),
+}));
+
 // expo-widgets talks to ActivityKit through a native module jest doesn't have; the interval timer's
 // Live Activity (GT-99) is started from the tab bar's overlay. An activity that does nothing stands
 // in for every test; state/intervalLiveActivity's own test mocks it in more detail.

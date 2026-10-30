@@ -152,7 +152,7 @@ describe('restAfterLog', () => {
       kind: 'start',
       rest: {
         sessionExerciseId: 'a',
-        next: { kind: 'set', setNumber: 2 },
+        next: { kind: 'set', name: 'a', setNumber: 2 },
         durationSec: 60,
       },
     });
@@ -256,7 +256,11 @@ describe('restAfterLog', () => {
 
     expect(restAfterLog([bag, after], bag, 1, NONE)).toEqual({
       kind: 'start',
-      rest: { sessionExerciseId: 'bag', next: { kind: 'round', roundNumber: 2 }, durationSec: 45 },
+      rest: {
+        sessionExerciseId: 'bag',
+        next: { kind: 'round', name: 'Heavy bag', roundNumber: 2 },
+        durationSec: 45,
+      },
     });
     // The last round: its own rest, before the next exercise.
     const lastLeft: WorkoutExercise = {

@@ -31,7 +31,7 @@ describe('intervalTimerStore', () => {
   test('starts with Get ready, and drops a rest that was running — one timer at a time', () => {
     useRestTimerStore.getState().start({
       sessionExerciseId: 'press',
-      next: { kind: 'set', setNumber: 2 },
+      next: { kind: 'set', name: 'Press', setNumber: 2 },
       durationSec: 90,
     });
 

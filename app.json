@@ -40,6 +40,12 @@
       ],
       "expo-sharing",
       [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/rest-over.wav"]
+        }
+      ],
+      [
         "expo-audio",
         {
           "microphonePermission": false,

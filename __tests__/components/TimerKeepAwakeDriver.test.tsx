@@ -21,7 +21,7 @@ jest.mock('expo-keep-awake', () => ({
 
 const REST = {
   sessionExerciseId: 'se',
-  next: { kind: 'set' as const, setNumber: 2 },
+  next: { kind: 'set' as const, name: 'Press', setNumber: 2 },
   durationSec: 60,
 };
 const BLOCK = {

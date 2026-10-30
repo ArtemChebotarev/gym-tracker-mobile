@@ -16,7 +16,7 @@ import {
 const T0 = 1_000_000;
 const REST = {
   sessionExerciseId: 'se',
-  next: { kind: 'set' as const, setNumber: 2 },
+  next: { kind: 'set' as const, name: 'Press', setNumber: 2 },
   durationSec: 60,
 };
 

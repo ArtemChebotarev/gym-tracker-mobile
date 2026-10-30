@@ -31,11 +31,11 @@ export const REST_BETWEEN_SETS_RANGE_SEC = { min: 60, max: 5 * 60 } as const;
 /**
  * What the rest is before: the exercise's next set — or an interval's next round, logged by hand
  * (GT-89) — or, after the last of them, the next exercise with work left in the workout (Artem,
- * 19.10.2026). The capsule says it; nothing starts by itself.
+ * 19.10.2026). `name` is the exercise it is in. The capsule says it; nothing starts by itself.
  */
 export type RestNext =
-  | { kind: 'set'; setNumber: number }
-  | { kind: 'round'; roundNumber: number }
+  | { kind: 'set'; name: string; setNumber: number }
+  | { kind: 'round'; name: string; roundNumber: number }
   | { kind: 'exercise'; name: string };
 
 /** A rest that is counting down, or paused part way. Exactly one of `endsAt` / `remainingMs` is set. */

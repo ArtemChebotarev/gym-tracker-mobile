@@ -4,7 +4,7 @@ import { pauseRestTimer, startRestTimer } from '@domain/restTimerRules';
 const T0 = 1_000_000;
 const ACTIONS = { skip: jest.fn(), pause: jest.fn(), resume: jest.fn(), dismiss: jest.fn() };
 const timer = startRestTimer(
-  { sessionExerciseId: 'se', next: { kind: 'set', setNumber: 3 }, durationSec: 120 },
+  { sessionExerciseId: 'se', next: { kind: 'set', name: 'Press', setNumber: 3 }, durationSec: 120 },
   T0,
 );
 
@@ -38,7 +38,7 @@ describe('restCapsule', () => {
       restCapsule(
         {
           timer: null,
-          finished: { sessionExerciseId: 'se', next: { kind: 'set', setNumber: 3 } },
+          finished: { sessionExerciseId: 'se', next: { kind: 'set', name: 'Press', setNumber: 3 } },
         },
         T0,
         ACTIONS,
@@ -46,14 +46,18 @@ describe('restCapsule', () => {
     ).toMatchObject({
       state: 'finished',
       title: 'Rest is over',
-      caption: 'Set 3 next',
+      caption: 'Press · Set 3 next',
       onDismiss: ACTIONS.dismiss,
     });
   });
 
   test('a rest between rounds names the round', () => {
     const toRound = startRestTimer(
-      { sessionExerciseId: 'se', next: { kind: 'round', roundNumber: 2 }, durationSec: 45 },
+      {
+        sessionExerciseId: 'se',
+        next: { kind: 'round', name: 'Press', roundNumber: 2 },
+        durationSec: 45,
+      },
       T0,
     );
     expect(restCapsule({ timer: toRound, finished: null }, T0, ACTIONS)).toMatchObject({
@@ -63,12 +67,15 @@ describe('restCapsule', () => {
       restCapsule(
         {
           timer: null,
-          finished: { sessionExerciseId: 'se', next: { kind: 'round', roundNumber: 2 } },
+          finished: {
+            sessionExerciseId: 'se',
+            next: { kind: 'round', name: 'Press', roundNumber: 2 },
+          },
         },
         T0,
         ACTIONS,
       ),
-    ).toMatchObject({ caption: 'Round 2 next' });
+    ).toMatchObject({ caption: 'Press · Round 2 next' });
   });
 
   test('a rest before the next exercise names it', () => {
