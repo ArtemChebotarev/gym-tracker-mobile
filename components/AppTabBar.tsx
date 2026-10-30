@@ -4,6 +4,7 @@ import { AppTabBarStyles as styles } from './AppTabBarStyles';
 import { IntervalLockScreenDriver } from './IntervalLockScreenDriver';
 import { IntervalTimerDriver } from './IntervalTimerDriver';
 import { RestTimerDriver } from './RestTimerDriver';
+import { TimerKeepAwakeDriver } from './TimerKeepAwakeDriver';
 import { TimerCapsuleHost } from './TimerCapsuleHost';
 import { useTabBarLift } from './useTabBarClearance';
 import { TabBar, type TabBarItem } from '@design/components/TabBar';
@@ -62,6 +63,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
       <IntervalTimerDriver />
       <IntervalLockScreenDriver />
       {/* The Live Activity is parked (GT-180): <IntervalLiveActivityDriver /> brings it back. */}
+      <TimerKeepAwakeDriver />
       <TimerCapsuleHost />
       <TabBar items={TABS} activeKey={activeKey} onChange={handlePress} />
     </View>
