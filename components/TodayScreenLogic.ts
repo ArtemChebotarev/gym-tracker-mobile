@@ -232,8 +232,8 @@ export function restAfterLog(
   if (nextRowNumber !== undefined) {
     next =
       exercise.type === 'interval'
-        ? { kind: 'round', roundNumber: nextRowNumber }
-        : { kind: 'set', setNumber: nextRowNumber };
+        ? { kind: 'round', name: exercise.name, roundNumber: nextRowNumber }
+        : { kind: 'set', name: exercise.name, setNumber: nextRowNumber };
   } else {
     const nextExercise = nextExerciseWithWorkLeft(exercises, index);
     if (nextExercise === undefined) return { kind: 'stop' };

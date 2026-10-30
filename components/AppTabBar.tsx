@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { AppTabBarStyles as styles } from './AppTabBarStyles';
 import { IntervalLockScreenDriver } from './IntervalLockScreenDriver';
 import { IntervalTimerDriver } from './IntervalTimerDriver';
+import { RestSignalDriver } from './RestSignalDriver';
 import { RestTimerDriver } from './RestTimerDriver';
 import { TimerKeepAwakeDriver } from './TimerKeepAwakeDriver';
 import { TimerCapsuleHost } from './TimerCapsuleHost';
@@ -60,6 +61,7 @@ export function AppTabBar({ state, navigation }: AppTabBarProps) {
   return (
     <View pointerEvents="box-none" style={[styles.overlay, { paddingBottom: lift }]}>
       <RestTimerDriver />
+      <RestSignalDriver />
       <IntervalTimerDriver />
       <IntervalLockScreenDriver />
       {/* The Live Activity is parked (GT-180): <IntervalLiveActivityDriver /> brings it back. */}

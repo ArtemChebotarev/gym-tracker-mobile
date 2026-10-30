@@ -1,7 +1,7 @@
 import type { AudioPlayer } from 'expo-audio';
 
-// Playing a kept player again from a given point — what every signal sound in the app does: the
-// rest timer's (state/restSignal.ts) and the interval timer's (state/intervalSignal.ts).
+// Playing a kept player again from a given point — what the interval timer's signal sounds do
+// (state/intervalSignal.ts).
 //
 // The seek has to finish before `play()`. A player that has played to its end sits there; asked to
 // play while its seek back is still on the way, it plays from the end — nothing at all — and the

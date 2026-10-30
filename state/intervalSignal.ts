@@ -20,8 +20,8 @@ import { playFrom } from './soundPlayer';
 //   audio. Background audio is on for this (`expo-audio`'s `enableBackgroundPlayback`, app.json).
 //   It mixes with the user's music, never stops it.
 // - So the session plays in silent mode too: the background audio category that keeps the app
-//   awake is the one that ignores the silent switch. The rest timer alone follows the switch
-//   (state/restSignal.ts) — while an interval runs, the last mode set wins.
+//   awake is the one that ignores the silent switch. The rest timer's signal follows the switch: it
+//   is a notification (state/restSignal.ts).
 // - **Sound off in Settings (GT-172) silences the countdown**, asked at the moment it is due to
 //   sound, so a change made while a phase runs counts for that phase. The silent loop plays on: it
 //   is not heard, and the app still has to stay awake.

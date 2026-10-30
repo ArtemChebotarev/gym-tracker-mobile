@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hybro",
     "slug": "gym-tracker-mobile",
-    "version": "0.10.1",
+    "version": "0.10.2",
     "scheme": "gymtracker",
     "orientation": "portrait",
     "icon": "./assets/hybro-icon-1024.png",
@@ -39,6 +39,12 @@
         }
       ],
       "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/rest-over.wav"]
+        }
+      ],
       [
         "expo-audio",
         {

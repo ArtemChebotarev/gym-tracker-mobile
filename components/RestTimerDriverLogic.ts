@@ -34,6 +34,19 @@ function capitalized(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** The title the end of a rest goes by, in the capsule and on the lock screen. */
+export const REST_OVER_TITLE = 'Rest is over';
+
+/**
+ * The line under `Rest is over`, in the capsule and on the lock screen (GT-203): the exercise, then
+ * what comes next in it, or the next exercise on its own.
+ */
+export function restOverCaption(next: RestNext): string {
+  return next.kind === 'exercise'
+    ? `${next.name} next`
+    : `${next.name} · ${capitalized(`${nextLabel(next)} next`)}`;
+}
+
 /** The capsule for the rest in `timer` or `finished` at `now`; `null` when there is neither. */
 export function restCapsule(
   rest: { timer: RestTimer | null; finished: FinishedRest | null },
@@ -61,12 +74,8 @@ export function restCapsule(
     return {
       state: 'finished',
       icon: HourglassIcon,
-      title: 'Rest is over',
-      // A set or a round starts the line with a capital; an exercise keeps its name as it is.
-      caption:
-        finished.next.kind === 'exercise'
-          ? `${finished.next.name} next`
-          : capitalized(`${nextLabel(finished.next)} next`),
+      title: REST_OVER_TITLE,
+      caption: restOverCaption(finished.next),
       progress: 0,
       onDismiss: actions.dismiss,
     };
