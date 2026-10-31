@@ -2,8 +2,8 @@
 // Opened by the accent `+` in the Mesocycles header, which used to go straight to Flow A; there
 // are several ways to build a block now, so a choice stands between them.
 //
-// The same shape as New exercise's type sheet (GT-152): a card only selects, and moving on is Next
-// in the footer. `From template` (Flow B, 08.10, GT-6) comes first and is selected on every
+// An OptionSheet, like New exercise's type sheet (GT-152): a card only selects, and moving on is
+// Next in the footer. `From template` (Flow B, 08.10, GT-6) comes first and is selected on every
 // opening: it is the way in for a new user, who has nothing to copy and no week of their own to
 // build yet. No `New` label on it (08.10).
 //
@@ -17,32 +17,20 @@
 // and a slide-down under a screen pushing in reads as a stutter rather than one deliberate motion
 // (the same reason ExercisePickerSheet's Filters handoff turns it off, task 079).
 // JSX/rendering only — pure helpers live in MesoCreationMethodSheetLogic.ts, per the code-style
-// skill. No styles of its own: BottomSheet and OptionCard carry the whole layout.
+// skill. No styles of its own: OptionSheet carries the whole layout.
 
 import { useState } from 'react';
 
-import { BottomSheet } from '@design/components/BottomSheet';
-import { CancelNextFooter } from '@design/components/CancelNextFooter';
-import { OptionCard, OptionCardGroup } from '@design/components/OptionCard';
+import { OptionSheet, type OptionSheetOption } from '@design/components/OptionSheet';
 import { CopyIcon } from '@design/icons/CopyIcon';
 import { GridIcon } from '@design/icons/GridIcon';
-import type { IconComponent } from '@design/icons/IconFrame';
 import { PlusIcon } from '@design/icons/PlusIcon';
-import { COLORS, ICON_SIZES } from '@design/tokens';
 
 import {
   copyMethodCaption,
   DEFAULT_CREATION_METHOD,
   type CreationMethod,
 } from './MesoCreationMethodSheetLogic';
-
-type MethodCard = {
-  value: CreationMethod;
-  title: string;
-  description: string;
-  Icon: IconComponent;
-  disabled?: boolean;
-};
 
 export type MesoCreationMethodSheetProps = {
   visible: boolean;
@@ -84,58 +72,39 @@ export function MesoCreationMethodSheet({
     copy: onCopyMesocycle,
   };
 
-  const cards: MethodCard[] = [
+  const options: OptionSheetOption<CreationMethod>[] = [
     {
       value: 'template',
       title: 'From template',
       description: 'Start from a ready-made split',
-      Icon: GridIcon,
+      icon: GridIcon,
     },
     {
       value: 'scratch',
       title: 'From scratch',
       description: 'Build the week yourself',
-      Icon: PlusIcon,
+      icon: PlusIcon,
     },
     {
       value: 'copy',
       title: 'Copy a cycle',
       description: copyMethodCaption(canCopy),
-      Icon: CopyIcon,
+      icon: CopyIcon,
       disabled: !canCopy,
     },
   ];
 
   return (
-    <BottomSheet
+    <OptionSheet
       visible={visible}
-      onClose={onClose}
       title="New cycle"
       subtitle="How do you want to start?"
+      options={options}
+      selected={method}
+      onSelect={setMethod}
+      onNext={() => destinations[method]()}
+      onClose={onClose}
       animated={animated}
-      footer={<CancelNextFooter onCancel={onClose} onNext={() => destinations[method]()} />}
-    >
-      <OptionCardGroup>
-        {cards.map((card) => {
-          const selected = card.value === method;
-          return (
-            <OptionCard
-              key={card.value}
-              title={card.title}
-              description={card.description}
-              selected={selected}
-              disabled={card.disabled}
-              onPress={() => setMethod(card.value)}
-              icon={
-                <card.Icon
-                  size={ICON_SIZES['icon/button']}
-                  color={selected ? COLORS.accent : COLORS['text/secondary']}
-                />
-              }
-            />
-          );
-        })}
-      </OptionCardGroup>
-    </BottomSheet>
+    />
   );
 }

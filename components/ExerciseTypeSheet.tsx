@@ -5,12 +5,16 @@
 // Controlled: the caller owns the picked type.
 
 import { EXERCISE_TYPES, type ExerciseType } from '@domain/catalog';
-import { BottomSheet } from '@design/components/BottomSheet';
-import { CancelNextFooter } from '@design/components/CancelNextFooter';
-import { OptionCard, OptionCardGroup } from '@design/components/OptionCard';
+import { OptionSheet, type OptionSheetOption } from '@design/components/OptionSheet';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
-import { COLORS, ICON_SIZES } from '@design/tokens';
+
+const OPTIONS: OptionSheetOption<ExerciseType>[] = EXERCISE_TYPES.map((type) => ({
+  value: type,
+  title: getExerciseTypeLabel(type),
+  description: getExerciseTypeDescription(type),
+  icon: getExerciseTypeIcon(type),
+}));
 
 export type ExerciseTypeSheetProps = {
   visible: boolean;
@@ -31,35 +35,16 @@ export function ExerciseTypeSheet({
   animated,
 }: ExerciseTypeSheetProps) {
   return (
-    <BottomSheet
+    <OptionSheet
       visible={visible}
-      onClose={onClose}
-      animated={animated}
       title="New exercise"
       subtitle="What kind of work is it? You can't change this after the first logged set."
-      footer={<CancelNextFooter onCancel={onClose} onNext={onNext} />}
-    >
-      <OptionCardGroup>
-        {EXERCISE_TYPES.map((option) => {
-          const Icon = getExerciseTypeIcon(option);
-          const selected = option === type;
-          return (
-            <OptionCard
-              key={option}
-              title={getExerciseTypeLabel(option)}
-              description={getExerciseTypeDescription(option)}
-              selected={selected}
-              onPress={() => onChangeType(option)}
-              icon={
-                <Icon
-                  size={ICON_SIZES['icon/button']}
-                  color={selected ? COLORS.accent : COLORS['text/secondary']}
-                />
-              }
-            />
-          );
-        })}
-      </OptionCardGroup>
-    </BottomSheet>
+      options={OPTIONS}
+      selected={type}
+      onSelect={onChangeType}
+      onNext={onNext}
+      onClose={onClose}
+      animated={animated}
+    />
   );
 }
