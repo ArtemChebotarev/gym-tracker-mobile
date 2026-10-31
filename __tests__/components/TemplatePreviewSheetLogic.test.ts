@@ -1,6 +1,8 @@
 import { buildPreviewRows, templateDayNumbers } from '@components/TemplatePreviewSheetLogic';
 import { toExerciseId, type Exercise, type MuscleGroup } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
+import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
+import { COOLDOWN, HEAVY_BAG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
 function exercise(
@@ -69,6 +71,53 @@ describe('buildPreviewRows', () => {
 
   test('a group dot comes with the group', () => {
     expect(buildPreviewRows(template, 1, library)[0]!.dotColor).toEqual(expect.any(String));
+  });
+
+  test('a hybrid exercise without a group shows its type icon instead of a dot', () => {
+    const hybrid: Pick<MesoTemplate, 'weekPlan'> = {
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [
+              { exerciseId: HEAVY_BAG.id, order: 1, sets: 3 },
+              { exerciseId: 'bench', order: 2, sets: 2 },
+            ],
+          },
+        ],
+      },
+    };
+
+    const [bag, bench] = buildPreviewRows(hybrid, 1, [...library, HEAVY_BAG]);
+
+    expect(bag).toMatchObject({
+      dotColor: undefined,
+      typeIcon: getExerciseTypeIcon('interval'),
+    });
+    expect(bench!.typeIcon).toBeUndefined();
+  });
+
+  test('counts an interval in rounds and a mobility exercise not at all, as Review does', () => {
+    const hybrid: Pick<MesoTemplate, 'weekPlan'> = {
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [
+              { exerciseId: HEAVY_BAG.id, order: 1, sets: 3 },
+              { exerciseId: COOLDOWN.id, order: 2, sets: 1 },
+            ],
+          },
+        ],
+      },
+    };
+
+    expect(buildPreviewRows(hybrid, 1, [HEAVY_BAG, COOLDOWN]).map(({ sets }) => sets)).toEqual([
+      '3 rounds',
+      '',
+    ]);
   });
 
   test('an exercise without equipment is shown by name alone, and one set reads "1 set"', () => {

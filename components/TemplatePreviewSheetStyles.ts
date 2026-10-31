@@ -35,6 +35,13 @@ export const styles = StyleSheet.create({
   dot: {
     ...circle(SIZES['size/dot-large']),
   },
+  // The type icon of a `fullBody` hybrid exercise, in the dot's column (GT-157).
+  typeIcon: {
+    width: SIZES['size/dot-large'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
   main: {
     flex: 1,
   },

@@ -20,6 +20,7 @@ import { Text, View } from 'react-native';
 
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
+import { COLORS, ICON_SIZES } from '@design/tokens';
 import type { Exercise } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
 
@@ -78,9 +79,15 @@ export function TemplatePreviewSheet({
       {rows.map((row, index) => (
         <View key={row.key} style={[styles.row, index === rows.length - 1 && styles.lastRow]}>
           <Text style={styles.number}>{row.number}</Text>
-          <View
-            style={[styles.dot, row.dotColor !== undefined && { backgroundColor: row.dotColor }]}
-          />
+          {row.typeIcon ? (
+            <View style={styles.typeIcon}>
+              <row.typeIcon size={ICON_SIZES['icon/glyph']} color={COLORS['text/secondary']} />
+            </View>
+          ) : (
+            <View
+              style={[styles.dot, row.dotColor !== undefined && { backgroundColor: row.dotColor }]}
+            />
+          )}
           <View style={styles.main}>
             <Text style={styles.group}>{row.muscleGroup}</Text>
             <Text style={styles.exercise} numberOfLines={1}>
