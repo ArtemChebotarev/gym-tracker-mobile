@@ -4,7 +4,11 @@ import type { Exercise } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { getCategoryColor, getMuscleGroupCategory } from '@design/muscleGroupColor';
+import type { IconComponent } from '@design/icons/IconFrame';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
+
+import { exerciseTypeIcon } from './MesoEditorDaysStepLogic';
+import { formatReviewCount } from './MesoEditorReviewStepLogic';
 
 /** One line of a day in the preview: the muscle group up front, the exercise as its suggestion. */
 export type TemplatePreviewRow = {
@@ -12,7 +16,10 @@ export type TemplatePreviewRow = {
   number: number;
   muscleGroup: string;
   dotColor: string | undefined;
+  /** The type's icon in the dot's place, on an exercise with no group colour (GT-157). */
+  typeIcon: IconComponent | undefined;
   exerciseName: string;
+  /** What the row counts, as Review writes it: sets, an interval's rounds, nothing for mobility. */
   sets: string;
 };
 
@@ -46,16 +53,18 @@ export function buildPreviewRows(
     })
     .map(({ slot, exercise }, index) => {
       const category = getMuscleGroupCategory(exercise.muscleGroup);
+      const exercisesById = { [slot.exerciseId]: exercise };
       return {
         key: `${slot.order}-${slot.exerciseId}`,
         number: index + 1,
         muscleGroup: getMuscleGroupLabel(exercise.muscleGroup),
         dotColor: category ? getCategoryColor(category) : undefined,
+        typeIcon: exerciseTypeIcon(exercisesById, slot.exerciseId),
         exerciseName:
           exercise.equipment === undefined
             ? exercise.name
             : `${exercise.name} · ${getEquipmentLabel(exercise.equipment)}`,
-        sets: slot.sets === 1 ? '1 set' : `${slot.sets} sets`,
+        sets: formatReviewCount(exercisesById, slot),
       };
     });
 }

@@ -64,6 +64,13 @@
       "when": 1793108004948,
       "tag": "0008_settings_signals",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1793456789584,
+      "tag": "0009_hybrid_catalog",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,11 @@
 import { MUSCLE_GROUPS } from '@domain/catalog';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import {
+  validateExerciseConfig,
+  validateExerciseMuscleGroupFor,
+} from '@domain/exerciseConfigValidators';
+import { equipmentOptionsFor } from '@domain/exerciseEquipment';
 
 describe('EXERCISE_CATALOG', () => {
   test('every exercise has a unique id', () => {
@@ -7,9 +13,23 @@ describe('EXERCISE_CATALOG', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  test('every exercise references an existing muscle group', () => {
+  test('every exercise has a muscle group its type allows', () => {
     for (const exercise of EXERCISE_CATALOG) {
-      expect(MUSCLE_GROUPS).toContain(exercise.muscleGroup);
+      expect(() =>
+        validateExerciseMuscleGroupFor(exerciseTypeOf(exercise), exercise.muscleGroup),
+      ).not.toThrow();
+    }
+  });
+
+  test('every exercise carries the config of its type', () => {
+    for (const exercise of EXERCISE_CATALOG) {
+      expect(() => validateExerciseConfig(exerciseTypeOf(exercise), exercise.config)).not.toThrow();
+    }
+  });
+
+  test('every exercise has equipment its type offers', () => {
+    for (const exercise of EXERCISE_CATALOG) {
+      expect(equipmentOptionsFor(exerciseTypeOf(exercise))).toContain(exercise.equipment);
     }
   });
 

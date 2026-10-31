@@ -12,7 +12,13 @@ import {
   catalogUpsertSql,
   templateUpsertSql,
 } from '../../scripts/catalogMigration';
-import { migratedTestDatabase, readMigrationBundle } from '../fixtures/sqliteDatabase';
+import {
+  bundleUpTo,
+  migratedTestDatabase,
+  migrationIndex,
+  openTestDatabase,
+  readMigrationBundle,
+} from '../fixtures/sqliteDatabase';
 import { withoutStamps } from '../fixtures/stamps';
 
 // Task 067(2) · the exercise catalog ships as a migration rather than as a step at startup, so
@@ -57,6 +63,33 @@ describe('what a re-seed may overwrite on an exercise that is already there', ()
     expect(update).toContain('`name` = excluded.`name`');
     expect(update).toContain('`equipment` = excluded.`equipment`');
     expect(update).not.toMatch(/`type`|`config`|`is_hidden`/);
+  });
+});
+
+describe('the hybrid catalog (0009)', () => {
+  test('reaches a database with hidden entries and leaves them hidden', async () => {
+    const full = readMigrationBundle();
+    const { db, close } = openTestDatabase();
+    try {
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0009_hybrid_catalog')));
+      const { exerciseRepo, templateRepo } = createSqliteRepositories(db);
+      await exerciseRepo.toggleHidden(EXERCISE_CATALOG[0]!.id);
+
+      await migrateToLatest(db, full);
+
+      await expect(exerciseRepo.getById(EXERCISE_CATALOG[0]!.id)).resolves.toMatchObject({
+        isHidden: true,
+      });
+      await expect(exerciseRepo.getById(toExerciseId('heavy-bag'))).resolves.toMatchObject({
+        type: 'interval',
+        config: { type: 'interval', lever: 'rest', stepSec: 5 },
+      });
+      await expect(templateRepo.getById('hybrid-home-workout')).resolves.toMatchObject({
+        name: 'Hybrid Home Workout',
+      });
+    } finally {
+      close();
+    }
   });
 });
 
@@ -113,6 +146,41 @@ describe('a later release of the catalog', () => {
     expect(withoutStamps((await exerciseRepo.getById(added.id))!)).toEqual(added);
     await expect(exerciseRepo.getById(FIRST.id)).resolves.toEqual(untouched);
     await expect(exerciseRepo.getAll()).resolves.toHaveLength(EXERCISE_CATALOG.length + 1);
+    close();
+  });
+
+  test('brings a new hybrid exercise in with its type and config', async () => {
+    const { db, close } = await migratedTestDatabase();
+    const { exerciseRepo } = createSqliteRepositories(db);
+
+    const added: Unsaved<Exercise> = {
+      id: toExerciseId('sled-sprint'),
+      name: 'Sled Sprint',
+      muscleGroup: 'fullBody',
+      source: 'catalog',
+      equipment: 'other',
+      isHidden: false,
+      type: 'interval',
+      config: { type: 'interval', lever: 'workTime', stepSec: 5 },
+    };
+    await db.run(sql.raw(catalogUpsertSql([added], '2026-10-01T00:00:00.000Z')));
+
+    expect(withoutStamps((await exerciseRepo.getById(added.id))!)).toEqual(added);
+    close();
+  });
+
+  test('leaves the config an exercise already has alone', async () => {
+    const { db, close } = await migratedTestDatabase();
+    const { exerciseRepo } = createSqliteRepositories(db);
+    const shipped = EXERCISE_CATALOG.find((exercise) => exercise.type === 'power')!;
+    const settled = { type: 'power', load: 'weight', noHeavierAvailable: true } as const;
+    await db.run(
+      sql`UPDATE exercise SET config = ${JSON.stringify(settled)} WHERE id = ${shipped.id}`,
+    );
+
+    await db.run(sql.raw(catalogUpsertSql([shipped], '2026-11-01T00:00:00.000Z')));
+
+    await expect(exerciseRepo.getById(shipped.id)).resolves.toMatchObject({ config: settled });
     close();
   });
 

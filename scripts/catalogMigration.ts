@@ -1,4 +1,5 @@
 import type { Exercise } from '../domain/catalog';
+import { exerciseTypeOf } from '../domain/exerciseConfigBuilders';
 import type { MesoTemplate } from '../domain/plan';
 import type { Unsaved } from '../domain/timestamps';
 
@@ -27,6 +28,8 @@ const COLUMNS = [
   'source',
   'equipment',
   'is_hidden',
+  'type',
+  'config',
   'created_at',
   'updated_at',
 ] as const;
@@ -35,9 +38,12 @@ const COLUMNS = [
  * What a re-seed is allowed to overwrite on a row that already exists.
  *
  * `is_hidden` is the user's — hiding an exercise must survive every future release, and that is
- * the whole reason this is an upsert rather than a delete-and-insert. `created_at` is when the
- * row first arrived and does not move. `id` and `source` identify the row. Everything else is
- * the catalog's to correct: a renamed exercise, a fixed muscle group, equipment that was wrong.
+ * the whole reason this is an upsert rather than a delete-and-insert. `type` and `config` arrive
+ * with a new row and are the exercise's own from then on: the config holds what the user settled
+ * (a lever, "No heavier available"), and a type never changes once a set is logged (GT-81,
+ * GT-201). `created_at` is when the row first arrived and does not move. `id` and `source`
+ * identify the row. Everything else is the catalog's to correct: a renamed exercise, a fixed
+ * muscle group, equipment that was wrong.
  */
 const OVERWRITTEN = ['name', 'muscle_group', 'equipment', 'updated_at'] as const;
 
@@ -53,6 +59,8 @@ function valuesOf(exercise: Unsaved<Exercise>, stampedAt: string): string {
     quote(exercise.source),
     exercise.equipment === undefined ? 'NULL' : quote(exercise.equipment),
     exercise.isHidden ? '1' : '0',
+    quote(exerciseTypeOf(exercise)),
+    exercise.config === undefined ? 'NULL' : quote(JSON.stringify(exercise.config)),
     quote(stampedAt),
     quote(stampedAt),
   ].join(', ');

@@ -4,6 +4,7 @@
 // sessions rather than out of a template.
 
 import type { Exercise } from '@domain/catalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import {
   weekPlanExerciseSettings,
   type ExerciseSettingsById,
@@ -52,7 +53,8 @@ function resolveSuggestion(exerciseId: string, exercises: readonly Exercise[]): 
     (exercise) =>
       exercise.source === 'catalog' &&
       !exercise.isHidden &&
-      exercise.muscleGroup === suggested.muscleGroup,
+      exercise.muscleGroup === suggested.muscleGroup &&
+      exerciseTypeOf(exercise) === exerciseTypeOf(suggested),
   )?.id;
 }
 
