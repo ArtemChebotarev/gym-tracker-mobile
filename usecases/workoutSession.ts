@@ -248,7 +248,7 @@ export type PowerWorkoutExercise = SetRowsWorkoutExercise & {
  */
 export type IntervalProgression = { column: 'rest' | 'work'; stepSec: IntervalStepSec };
 
-/** An interval exercise's card (10.1 FR-14): Round · Work · Rest · Log, and Start timer under it. */
+/** An interval exercise's card (10.1 FR-14): Work · Rest · Log, and Start timer under it. */
 export type IntervalWorkoutExercise = WorkoutExerciseBase & {
   type: 'interval';
   /** Every round — in a skipped or abandoned exercise the unlogged ones carry `notDone`; none in preview. */

@@ -88,6 +88,7 @@ const EXPECTED_SPACING_TOKENS = [
   'space/gap-tight',
   'space/gap',
   'space/row',
+  'space/icon-drop',
   'space/xxs',
   'space/chip-y',
   'space/set-row-y',

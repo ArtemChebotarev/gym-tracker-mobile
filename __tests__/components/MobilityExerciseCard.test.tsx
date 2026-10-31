@@ -73,15 +73,16 @@ describe('Mobility card (GT-107)', () => {
     expect(screen.toJSON()).toMatchSnapshot();
   });
 
-  test('one row: the length, a round play button and Done — no header, no set rows', () => {
+  test('Length · Log over one row, the timer action under it — no set rows', () => {
     renderCard();
 
-    expect(screen.getByLabelText('Length, 10:00')).toBeTruthy();
+    expect(screen.getByLabelText('Duration, 10:00')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Start timer' })).toBeTruthy();
     expect(screen.getByRole('checkbox', { name: 'Mark done' })).toBeTruthy();
-    for (const label of ['Length', 'Log', 'Reps', 'Round']) {
-      expect(screen.queryByText(label)).toBeNull();
-    }
+    expect(screen.getByText('Duration')).toBeTruthy();
+    expect(screen.getByText('Log')).toBeTruthy();
+    expect(screen.getByText('Start timer')).toBeTruthy();
+    expect(screen.queryByText('Reps')).toBeNull();
   });
 
   test('Done logs the block with its length and no rest; a second tap un-logs it', () => {
@@ -102,7 +103,7 @@ describe('Mobility card (GT-107)', () => {
       }),
     );
     // What was done, with no play button left.
-    expect(screen.getByLabelText('Length, 9:00')).toBeDisabled();
+    expect(screen.getByLabelText('Duration, 9:00')).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Start timer' })).toBeNull();
     fireEvent.press(screen.getByRole('checkbox', { name: 'Done' }));
     expect(logged.onUnlogRound).toHaveBeenCalledWith(1);
@@ -121,8 +122,8 @@ describe('Mobility card (GT-107)', () => {
     test('the field is empty, a line says why, and Done and play wait', () => {
       const rounds = renderCard(empty());
 
-      expect(screen.getByLabelText('Length, not set')).toBeTruthy();
-      expect(screen.getByText('Pick a length to mark it done or start the timer.')).toBeTruthy();
+      expect(screen.getByLabelText('Duration, not set')).toBeTruthy();
+      expect(screen.getByText('Pick a duration to mark it done or start the timer.')).toBeTruthy();
       expect(screen.getByRole('checkbox', { name: 'Mark done' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Start timer' })).toBeDisabled();
       fireEvent.press(screen.getByRole('button', { name: 'Start timer' }));
@@ -132,14 +133,14 @@ describe('Mobility card (GT-107)', () => {
     test('a picked length is saved as the plan, and then Done and play work', () => {
       const rounds = renderCard(empty());
 
-      fireEvent.press(screen.getByLabelText('Length, not set'));
+      fireEvent.press(screen.getByLabelText('Duration, not set'));
       act(() => {
         screen.UNSAFE_getByType(TimePickerSheet).props.onChange(480);
       });
       fireEvent.press(screen.getByRole('button', { name: 'Done' }));
       expect(rounds.onSetRoundTime).toHaveBeenCalledWith('work', [1], 480);
 
-      expect(screen.queryByText(/Pick a length/)).toBeNull();
+      expect(screen.queryByText(/Pick a duration/)).toBeNull();
       fireEvent.press(screen.getByRole('checkbox', { name: 'Mark done' }));
       expect(rounds.onLogRound).toHaveBeenCalledWith(1, { workSec: 480 });
     });
@@ -147,7 +148,7 @@ describe('Mobility card (GT-107)', () => {
     test('closing the wheels unmoved keeps the time they showed', () => {
       const rounds = renderCard(empty());
 
-      fireEvent.press(screen.getByLabelText('Length, not set'));
+      fireEvent.press(screen.getByLabelText('Duration, not set'));
       fireEvent.press(screen.getByRole('button', { name: 'Done' }));
       expect(rounds.onSetRoundTime).toHaveBeenCalledWith('work', [1], 5);
     });
@@ -156,7 +157,7 @@ describe('Mobility card (GT-107)', () => {
   test('an unchanged length is not saved again', () => {
     const rounds = renderCard();
 
-    fireEvent.press(screen.getByLabelText('Length, 10:00'));
+    fireEvent.press(screen.getByLabelText('Duration, 10:00'));
     fireEvent.press(screen.getByRole('button', { name: 'Done' }));
     expect(rounds.onSetRoundTime).not.toHaveBeenCalled();
   });
@@ -186,8 +187,10 @@ describe('Mobility card (GT-107)', () => {
       expect(screen.getByLabelText('10:00 left, open timer')).toBeTruthy();
       expect(screen.getByRole('checkbox', { name: 'Mark done' })).toBeDisabled();
 
+      expect(screen.getByText('Pause timer')).toBeTruthy();
       fireEvent.press(screen.getByRole('button', { name: 'Pause timer' }));
       expect(useIntervalTimerStore.getState().active?.timer.endsAt).toBeUndefined();
+      expect(screen.getByText('Resume timer')).toBeTruthy();
       fireEvent.press(screen.getByRole('button', { name: 'Resume timer' }));
       expect(useIntervalTimerStore.getState().active?.timer.endsAt).toBeDefined();
 
@@ -200,7 +203,7 @@ describe('Mobility card (GT-107)', () => {
       renderCard();
       startTimer('session-exercise-other');
 
-      expect(screen.getByLabelText('Length, 10:00')).toBeTruthy();
+      expect(screen.getByLabelText('Duration, 10:00')).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Start timer' })).toBeTruthy();
     });
   });

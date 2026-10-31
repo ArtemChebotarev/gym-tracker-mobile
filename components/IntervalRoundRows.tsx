@@ -36,6 +36,7 @@ import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
+import { CardTimerAction } from './CardTimerAction';
 import {
   hasRoundTimes,
   lacksRoundTimes,
@@ -169,26 +170,17 @@ export function IntervalRoundRows({
         <Text style={styles.hint}>{PICK_ROUND_TIMES_HINT}</Text>
       )}
       {timerLabel !== undefined && (
-        <Pressable
+        <CardTimerAction
           testID={`start-timer-${sessionExerciseId}`}
-          accessibilityRole="button"
-          accessibilityLabel={timerLabel}
-          accessibilityState={{ disabled: !canStartTimer }}
+          label={timerLabel}
+          icon={PlayIcon}
           disabled={!canStartTimer}
           onPress={() => {
             if (timerRounds !== undefined) {
               actions?.onStartTimer?.(timerRounds);
             }
           }}
-          style={({ pressed }) => [
-            styles.startTimer,
-            !canStartTimer && styles.startTimerDisabled,
-            pressed && styles.pressed,
-          ]}
-        >
-          <PlayIcon size={ICON_SIZES['icon/small']} color={COLORS.accent} />
-          <Text style={styles.startTimerLabel}>{timerLabel}</Text>
-        </Pressable>
+        />
       )}
       {open !== null && (
         <TimePickerSheet
@@ -220,7 +212,7 @@ type RoundRowProps = {
   onUnlog: () => void;
 };
 
-/** One round: its number, Work, Rest, the indicator's empty column and Log. */
+/** One round: Work, Rest, the indicator's empty column and Log. */
 function RoundRow({
   round,
   editable,
@@ -241,9 +233,6 @@ function RoundRow({
 
   return (
     <View testID={`round-row-${round.roundNumber}`} style={rowStyles.row}>
-      <View style={styles.roundCell}>
-        <Text style={styles.roundNumber}>{round.roundNumber}</Text>
-      </View>
       {round.notDone !== undefined ? (
         <View style={rowStyles.skippedValues}>
           <Text style={rowStyles.skippedLabel}>{formatNotDone(round.notDone)}</Text>

@@ -9,14 +9,16 @@ import { intervalPhaseRemainingSec, isIntervalTimerRunning } from '@domain/inter
 import { ROUND_TIME_BOUNDS } from '@domain/roundTimes';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
+export const DURATION_COLUMN = 'Duration';
+
 /** The picker's title. */
-export const LENGTH_PICKER_TITLE = 'Length';
+export const DURATION_PICKER_TITLE = DURATION_COLUMN;
 
 /** The block's length is picked on the work time's wheels — the same field as an interval's Work. */
 export const LENGTH_PICKER = ROUND_TIME_BOUNDS.work;
 
 /** The line under the block while it has no length (FR-9): why Done and the timer wait. */
-export const PICK_LENGTH_HINT = 'Pick a length to mark it done or start the timer.';
+export const PICK_DURATION_HINT = 'Pick a duration to mark it done or start the timer.';
 
 /**
  * The length the field shows: what was logged once it is, else one picked on this visit, else the
@@ -47,14 +49,21 @@ export function timerBlockOf(
 /** Where this block's timer is: not out, counting down, or paused. */
 export type BlockTimerState = 'idle' | 'running' | 'paused';
 
-/** The state of `timer` — this block's, if any — as the round button shows it. Over is idle. */
+/** The state of `timer` — this block's, if any — as the timer action shows it. Over is idle. */
 export function blockTimerState(timer: IntervalTimer | undefined): BlockTimerState {
   if (timer?.phase === undefined) return 'idle';
   return isIntervalTimerRunning(timer) ? 'running' : 'paused';
 }
 
+/** The timer action's words in each state (GT-206). */
+export const BLOCK_TIMER_LABEL: Record<BlockTimerState, string> = {
+  idle: 'Start timer',
+  running: 'Pause timer',
+  paused: 'Resume timer',
+};
+
 /**
- * What the Length field shows while the block's timer is out (canvas 1.x, CooldownStates: the time
+ * What the Duration field shows while the block's timer is out (canvas 1.x, CooldownStates: the time
  * left in the row, no bar — the progress is the timer screen's and the capsule's): the time left of
  * the block, or its whole length during the Get ready before it.
  */

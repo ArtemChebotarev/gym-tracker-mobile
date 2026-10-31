@@ -517,52 +517,6 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             }
           }
         >
-          Round
-        </Text>
-        <View
-          style={
-            [
-              {
-                "alignSelf": "stretch",
-                "flex": 1,
-              },
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "paddingLeft": 6,
-              },
-            ]
-          }
-        />
-      </View>
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "alignSelf": "stretch",
-            "flex": 1,
-            "flexDirection": "row",
-          }
-        }
-      >
-        <View
-          style={
-            {
-              "alignSelf": "stretch",
-              "flex": 1,
-            }
-          }
-        />
-        <Text
-          style={
-            {
-              "color": "#8A9099",
-              "fontSize": 13,
-              "fontWeight": "400",
-              "letterSpacing": 0.5,
-            }
-          }
-        >
           Work
         </Text>
         <View
@@ -813,27 +767,6 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
       testID="round-row-1"
     >
       <View
-        style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "height": 44,
-            "justifyContent": "center",
-          }
-        }
-      >
-        <Text
-          style={
-            {
-              "color": "#C9CDD2",
-              "fontSize": 20,
-            }
-          }
-        >
-          1
-        </Text>
-      </View>
-      <View
         accessibilityLabel="Work, round 1, 2:00"
         accessibilityRole="button"
         accessibilityState={
@@ -1041,27 +974,6 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
       testID="round-row-2"
     >
       <View
-        style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "height": 44,
-            "justifyContent": "center",
-          }
-        }
-      >
-        <Text
-          style={
-            {
-              "color": "#C9CDD2",
-              "fontSize": 20,
-            }
-          }
-        >
-          2
-        </Text>
-      </View>
-      <View
         accessibilityLabel="Work, round 2, 2:00"
         accessibilityRole="button"
         accessibilityState={
@@ -1266,27 +1178,6 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
       }
       testID="round-row-3"
     >
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "height": 44,
-            "justifyContent": "center",
-          }
-        }
-      >
-        <Text
-          style={
-            {
-              "color": "#C9CDD2",
-              "fontSize": 20,
-            }
-          }
-        >
-          3
-        </Text>
-      </View>
       <View
         accessibilityLabel="Work, round 3, 2:00"
         accessibilityRole="button"
@@ -1515,16 +1406,13 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
         [
           {
             "alignItems": "center",
-            "backgroundColor": "#232B0A",
-            "borderColor": "#4A5A20",
-            "borderRadius": 12,
-            "borderWidth": 1,
+            "borderTopColor": "#232629",
+            "borderTopWidth": 1,
             "flexDirection": "row",
             "gap": 8,
+            "height": 44,
             "justifyContent": "center",
-            "marginBottom": 4,
-            "marginTop": 8,
-            "paddingVertical": 15,
+            "marginBottom": -8,
           },
           {
             "opacity": 0.5,
@@ -1534,82 +1422,90 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
       }
       testID="start-timer-session-exercise-bag"
     >
-      <RNSVGSvgView
-        align="xMidYMid"
-        bbHeight={18}
-        bbWidth={18}
-        focusable={false}
-        height={18}
-        meetOrSlice={0}
-        minX={0}
-        minY={0}
+      <View
         style={
-          [
-            {
-              "backgroundColor": "transparent",
-              "borderWidth": 0,
-            },
-            {
-              "flex": 0,
-              "height": 18,
-              "width": 18,
-            },
-          ]
-        }
-        vbHeight={24}
-        vbWidth={24}
-        width={18}
-      >
-        <RNSVGGroup
-          fill={
-            {
-              "payload": 4278190080,
-              "type": 0,
-            }
+          {
+            "top": 1,
           }
+        }
+      >
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={18}
+          bbWidth={18}
+          focusable={false}
+          height={18}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
+          style={
+            [
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 18,
+                "width": 18,
+              },
+            ]
+          }
+          vbHeight={24}
+          vbWidth={24}
+          width={18}
         >
           <RNSVGGroup
-            fill={null}
-            propList={
-              [
-                "fill",
-                "stroke",
-                "strokeWidth",
-              ]
-            }
-            stroke={
+            fill={
               {
-                "payload": 4291690327,
+                "payload": 4278190080,
                 "type": 0,
               }
             }
-            strokeWidth={1.8}
           >
-            <RNSVGPath
-              d="M8 5l11 7-11 7z"
-              fill={
+            <RNSVGGroup
+              fill={null}
+              propList={
+                [
+                  "fill",
+                  "stroke",
+                  "strokeWidth",
+                ]
+              }
+              stroke={
                 {
-                  "payload": 4278190080,
+                  "payload": 4294925091,
                   "type": 0,
                 }
               }
-              propList={
-                [
-                  "strokeLinecap",
-                  "strokeLinejoin",
-                ]
-              }
-              strokeLinecap={1}
-              strokeLinejoin={1}
-            />
+              strokeWidth={1.8}
+            >
+              <RNSVGPath
+                d="M8 5l11 7-11 7z"
+                fill={
+                  {
+                    "payload": 4278190080,
+                    "type": 0,
+                  }
+                }
+                propList={
+                  [
+                    "strokeLinecap",
+                    "strokeLinejoin",
+                  ]
+                }
+                strokeLinecap={1}
+                strokeLinejoin={1}
+              />
+            </RNSVGGroup>
           </RNSVGGroup>
-        </RNSVGGroup>
-      </RNSVGSvgView>
+        </RNSVGSvgView>
+      </View>
       <Text
         style={
           {
-            "color": "#CDFF57",
-            "fontSize": 17,
+            "color": "#FF5B23",
+            "fontSize": 15,
             "fontWeight": "400",
           }
         }

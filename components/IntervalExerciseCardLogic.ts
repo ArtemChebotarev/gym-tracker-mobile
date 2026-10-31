@@ -12,7 +12,6 @@ import type { IntervalProgression, WorkoutRoundRow } from '@usecases/workoutSess
 
 import type { BadgeExplanation } from './RirExplanationLogic';
 
-export const ROUND_COLUMN = 'Round';
 export const WORK_COLUMN = 'Work';
 export const REST_COLUMN = 'Rest';
 

@@ -42,8 +42,9 @@ export const COLORS = {
 
   /**
    * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a general UI colour — the SDK
-   * keeps one accent per screen. Besides the wordmark it marks one thing only: time that is running
-   * — a timer's progress ring (10.1 FR-5, FR-6). Never text, icons or chips.
+   * keeps one accent per screen. Besides the wordmark it marks two things only: time that is running
+   * — a timer's progress ring (10.1 FR-5, FR-6) — and the action that starts a timer, the text and
+   * icon of CardTimerAction (FR-14, GT-206). Nothing else, and never chips.
    */
   'brand/orange': '#FF5B23',
   /** The unfilled part of a timer's progress ring — the TimerCapsule (10.1 FR-5, GT-85). */
@@ -166,6 +167,8 @@ export const SPACING = {
   'space/row': 12,
 
   // A small step scale for the gaps the semantic tokens above don't name.
+  /** How far an icon beside text drops to meet the middle of the text (CardTimerAction, GT-206). */
+  'space/icon-drop': 1,
   'space/xxs': 2,
   'space/chip-y': 4,
   /** Set row: above and below its 44pt fields — kept tight, the fields already carry the height. */

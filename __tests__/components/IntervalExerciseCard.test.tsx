@@ -64,14 +64,15 @@ describe('Interval card (GT-88)', () => {
     expect(screen.toJSON()).toMatchSnapshot();
   });
 
-  test('DoD: Round · Work · Rest · Log, one row per round, the last with its rest too', () => {
+  test('Work · Rest · Log, one row per round, the last with its rest too', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
-    for (const label of ['Round', 'Work', 'Rest', 'Log']) {
+    for (const label of ['Work', 'Rest', 'Log']) {
       expect(screen.getByText(label)).toBeTruthy();
     }
+    expect(screen.queryByText('Round')).toBeNull();
     const first = within(screen.getByTestId('round-row-1'));
-    expect(first.getByText('1')).toBeTruthy();
+    expect(first.getByLabelText('Work, round 1, 2:00')).toBeTruthy();
     expect(first.getByText('2:00')).toBeTruthy();
     expect(first.getByText('0:45')).toBeTruthy();
     const last = within(screen.getByTestId('round-row-3'));
@@ -345,6 +346,6 @@ describe('Interval card (GT-88)', () => {
     );
 
     expect(screen.getByText('Not programmed yet')).toBeTruthy();
-    expect(screen.queryByText('Round')).toBeNull();
+    expect(screen.queryByText('Work')).toBeNull();
   });
 });

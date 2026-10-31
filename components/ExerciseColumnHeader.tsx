@@ -1,7 +1,7 @@
 // The column header over an exercise card's rows — 08.7 · Тренировка, "Карточка упражнения"; 10.1
 // FR-14. One label per value column, each optionally with an ⓘ beside it, then the hit indicator's
 // column, then `Log`. The columns are the type's: `Weight, kg` · `Reps` for strength, `Load, kg` ·
-// `Fast reps` for power, and an interval's `Round` · `Work` · `Rest` later. It sits on the rows'
+// `Fast reps` for power, `Work` · `Rest` for an interval, `Duration` for mobility. It sits on the rows'
 // grid (WorkoutSetRowStyles.ts), so a label stands over its field.
 //
 // It reads the same on every card (Artem's review, 18.10.2026). A label is centred over its field
