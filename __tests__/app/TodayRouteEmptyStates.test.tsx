@@ -91,7 +91,8 @@ describe('Today tab — no session to show', () => {
     // The same sheet the `+` on 08.3 raises, not Flow A directly: no block is running, but
     // finished ones may exist to copy, which is the usual way the next one starts.
     fireEvent.press(await screen.findByRole('button', { name: PLAN_MESOCYCLE_LABEL }));
-    fireEvent.press(await screen.findByRole('button', { name: 'From scratch' }));
+    fireEvent.press(await screen.findByRole('radio', { name: 'From scratch' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
     expect(mockPush).toHaveBeenCalledWith('/meso-editor/new');
     expect(screen.queryByRole('progressbar')).toBeNull();
@@ -132,7 +133,7 @@ describe('Today tab — no session to show', () => {
     expect(screen.queryByText('From scratch')).toBeNull();
   });
 
-  test('the sheet’s second row leads to Flow C when there is a finished block to copy', async () => {
+  test('the sheet’s copy card leads to Flow C when there is a finished block to copy', async () => {
     await seedWorkoutFixture(repositories());
     const mesocycle = await repositories().mesocycleRepo.getById(WORKOUT_FIXTURE_IDS.mesocycle);
     await repositories().mesocycleRepo.update({
@@ -144,9 +145,10 @@ describe('Today tab — no session to show', () => {
     renderToday();
 
     fireEvent.press(await screen.findByRole('button', { name: PLAN_MESOCYCLE_LABEL }));
-    const copy = await screen.findByRole('button', { name: 'Copy a cycle' });
+    const copy = await screen.findByRole('radio', { name: 'Copy a cycle' });
     await waitFor(() => expect(copy).not.toBeDisabled());
     fireEvent.press(copy);
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
     expect(mockPush).toHaveBeenCalledWith('/meso-editor/copy');
   });

@@ -4,17 +4,13 @@
 //
 // Controlled: the caller owns the picked type.
 
-import { View } from 'react-native';
-
 import { EXERCISE_TYPES, type ExerciseType } from '@domain/catalog';
 import { BottomSheet } from '@design/components/BottomSheet';
-import { Button } from '@design/components/Button';
-import { OptionCard } from '@design/components/OptionCard';
+import { CancelNextFooter } from '@design/components/CancelNextFooter';
+import { OptionCard, OptionCardGroup } from '@design/components/OptionCard';
 import { getExerciseTypeIcon } from '@design/exerciseTypeIcon';
 import { getExerciseTypeDescription, getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-
-import { styles } from './ExerciseFormStyles';
 
 export type ExerciseTypeSheetProps = {
   visible: boolean;
@@ -41,18 +37,9 @@ export function ExerciseTypeSheet({
       animated={animated}
       title="New exercise"
       subtitle="What kind of work is it? You can't change this after the first logged set."
-      footer={
-        <View style={styles.buttonRow}>
-          <View style={styles.cancelButton}>
-            <Button label="Cancel" variant="secondary" onPress={onClose} />
-          </View>
-          <View style={styles.confirmButton}>
-            <Button label="Next" onPress={onNext} />
-          </View>
-        </View>
-      }
+      footer={<CancelNextFooter onCancel={onClose} onNext={onNext} />}
     >
-      <View style={styles.typeOptions} accessibilityRole="radiogroup">
+      <OptionCardGroup>
         {EXERCISE_TYPES.map((option) => {
           const Icon = getExerciseTypeIcon(option);
           const selected = option === type;
@@ -72,7 +59,7 @@ export function ExerciseTypeSheet({
             />
           );
         })}
-      </View>
+      </OptionCardGroup>
     </BottomSheet>
   );
 }

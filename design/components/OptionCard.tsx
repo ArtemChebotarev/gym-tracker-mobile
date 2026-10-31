@@ -9,6 +9,10 @@
 //
 // Where a ListRow navigates or toggles a fact, this one *chooses*: tapping selects, and moving on
 // is a separate action in the sheet's footer.
+//
+// A disabled card dims its well, title and radio, and leaves the description at full strength: it
+// is what says why the card is off (08.8, `Copy a cycle` with nothing to copy), and a dimmed reason
+// can't be read on a phone.
 
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -23,14 +27,24 @@ export type OptionCardProps = {
   onPress: () => void;
   /** Rendered inside the round well; the caller colors it for the selected state. Without one, no well. */
   icon?: ReactNode;
+  /** The option exists but can't be chosen now; the description should say why. */
+  disabled?: boolean;
 };
 
-export function OptionCard({ title, description, selected, onPress, icon }: OptionCardProps) {
+export function OptionCard({
+  title,
+  description,
+  selected,
+  onPress,
+  icon,
+  disabled = false,
+}: OptionCardProps) {
   return (
     <Pressable
       accessibilityRole="radio"
       accessibilityLabel={title}
-      accessibilityState={{ selected, checked: selected }}
+      accessibilityState={{ selected, checked: selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
@@ -38,21 +52,39 @@ export function OptionCard({ title, description, selected, onPress, icon }: Opti
         pressed && styles.pressed,
       ]}
     >
-      {icon !== undefined && <View style={styles.iconWell}>{icon}</View>}
+      {icon !== undefined && (
+        <View style={[styles.iconWell, disabled && styles.dimmed]}>{icon}</View>
+      )}
       <View style={styles.text}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, disabled && styles.dimmed]}>{title}</Text>
         <Text style={styles.description} numberOfLines={2}>
           {description}
         </Text>
       </View>
-      <View style={[styles.radio, selected && styles.selectedRadio]}>
+      <View style={[styles.radio, selected && styles.selectedRadio, disabled && styles.dimmed]}>
         {selected && <View style={styles.radioDot} />}
       </View>
     </Pressable>
   );
 }
 
+export type OptionCardGroupProps = {
+  children: ReactNode;
+};
+
+/** A single-select list of OptionCards: the gap between them and the radiogroup role. */
+export function OptionCardGroup({ children }: OptionCardGroupProps) {
+  return (
+    <View style={styles.group} accessibilityRole="radiogroup">
+      {children}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  group: {
+    gap: SPACING['space/gap-tight'],
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -70,6 +102,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],
+  },
+  dimmed: {
+    opacity: OPACITY['opacity/dimmed'],
   },
   iconWell: {
     ...circle(SIZES['size/option-icon']),
