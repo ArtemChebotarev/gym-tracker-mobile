@@ -81,7 +81,8 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
     await renderRoute();
 
     fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Copy a cycle' }));
+    fireEvent.press(screen.getByRole('radio', { name: 'Copy a cycle' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/meso-editor/copy'));
   });
@@ -116,7 +117,8 @@ describe('MesocyclesRoute — entry points into Flow C', () => {
     await renderRoute();
 
     fireEvent.press(screen.getByRole('button', { name: 'New cycle' }));
-    fireEvent.press(screen.getByRole('button', { name: 'From scratch' }));
+    fireEvent.press(screen.getByRole('radio', { name: 'From scratch' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Next' }));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/meso-editor/new'));
   });

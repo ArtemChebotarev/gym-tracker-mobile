@@ -19,7 +19,7 @@ import {
   type IntervalConfig,
   type IntervalLever,
 } from '@domain/exerciseConfig';
-import { OptionCard } from '@design/components/OptionCard';
+import { OptionCard, OptionCardGroup } from '@design/components/OptionCard';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { fieldStyles } from '@design/components/fieldStyles';
 
@@ -42,7 +42,7 @@ export function ExerciseProgressionFields({ config, onChange }: ExerciseProgress
   return (
     <View>
       <Text style={styles.hint}>Miss a round and the plan repeats.</Text>
-      <View style={styles.typeOptions} accessibilityRole="radiogroup">
+      <OptionCardGroup>
         {INTERVAL_LEVERS.map((lever: IntervalLever) => (
           <OptionCard
             key={lever}
@@ -52,7 +52,7 @@ export function ExerciseProgressionFields({ config, onChange }: ExerciseProgress
             onPress={() => onChange({ ...config, lever })}
           />
         ))}
-      </View>
+      </OptionCardGroup>
 
       {leverMovesTime(config.lever) && (
         <View style={styles.progressionStep}>

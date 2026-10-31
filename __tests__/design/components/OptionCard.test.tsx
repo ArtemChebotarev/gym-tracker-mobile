@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { OptionCard } from '@design/components/OptionCard';
+import { OptionCard, OptionCardGroup } from '@design/components/OptionCard';
 
 function renderCard(selected: boolean, onPress = jest.fn()) {
   render(
@@ -45,5 +45,42 @@ describe('OptionCard', () => {
     const card = screen.getByRole('radio', { name: 'Power' });
     const style = Object.assign({}, ...[card.props.style].flat().filter(Boolean));
     expect(style.height).toBe(92);
+  });
+
+  test('a disabled card can not be chosen, and says so to assistive tech', () => {
+    const onPress = jest.fn();
+    render(
+      <OptionCard title="Power" description="Why not." selected={false} onPress={onPress} disabled />,
+    );
+
+    const card = screen.getByRole('radio', { name: 'Power' });
+    expect(card).toBeDisabled();
+
+    fireEvent.press(card);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  test('a disabled card dims its title, not the line that explains it', () => {
+    render(
+      <OptionCard title="Power" description="Why not." selected={false} onPress={jest.fn()} disabled />,
+    );
+
+    const opacityOf = (text: string) =>
+      Object.assign({}, ...[screen.getByText(text).props.style].flat().filter(Boolean)).opacity;
+    expect(opacityOf('Power')).toBe(0.5);
+    expect(opacityOf('Why not.')).toBeUndefined();
+  });
+});
+
+describe('OptionCardGroup', () => {
+  test('holds its cards as one radiogroup', () => {
+    render(
+      <OptionCardGroup>
+        <OptionCard title="Power" description="Explosive." selected onPress={jest.fn()} />
+      </OptionCardGroup>,
+    );
+
+    expect(screen.UNSAFE_getByProps({ accessibilityRole: 'radiogroup' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: 'Power' })).toBeTruthy();
   });
 });
