@@ -63,8 +63,6 @@ export const styles = StyleSheet.create({
   // The name is the link to Overview (GT-178): pressable only as wide as its text, so a tap on the
   // empty part of the row or on the equipment line below does nothing.
   nameLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
     alignSelf: 'flex-start',
   },
   pressed: {
@@ -75,12 +73,11 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
     color: COLORS['text/primary'],
   },
-  // A thin grey line, drawn rather than the text's own underline: that one, as thick as the font and
-  // in the name's white, drew the eye before the name did (Artem, GT-178).
+  // The text's own underline, so a wrapped name is underlined line by line; grey, because in the
+  // name's white it drew the eye before the name did (Artem, GT-178).
   nameText: {
-    flexShrink: 1,
-    borderBottomWidth: BORDER_WIDTHS['border/hairline'],
-    borderBottomColor: COLORS['text/faint'],
+    textDecorationLine: 'underline',
+    textDecorationColor: COLORS['text/faint'],
   },
   nameChevron: {
     color: COLORS.accent,

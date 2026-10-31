@@ -84,8 +84,10 @@ export function ExerciseCardFrame({
               onPress={onOpenOverview}
               style={({ pressed }) => [styles.nameLink, pressed && styles.pressed]}
             >
-              <Text style={[styles.name, styles.nameText]}>{exercise.name}</Text>
-              <Text style={[styles.name, styles.nameChevron]}>{' ›'}</Text>
+              <Text style={styles.name}>
+                <Text style={styles.nameText}>{exercise.name}</Text>
+                <Text style={styles.nameChevron}>{' ›'}</Text>
+              </Text>
             </Pressable>
             {equipmentLabel !== undefined && (
               <Text style={styles.equipment}>{equipmentLabel}</Text>
