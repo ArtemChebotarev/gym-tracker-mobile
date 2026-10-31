@@ -663,9 +663,7 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                     style={
                       [
                         {
-                          "alignItems": "center",
                           "alignSelf": "flex-start",
-                          "flexDirection": "row",
                         },
                         false,
                       ]
@@ -673,37 +671,32 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
                   >
                     <Text
                       style={
-                        [
-                          {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
-                          {
-                            "borderBottomColor": "#6B7076",
-                            "borderBottomWidth": 0.5,
-                            "flexShrink": 1,
-                          },
-                        ]
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 17,
+                          "fontWeight": "500",
+                        }
                       }
                     >
-                      Bench press
-                    </Text>
-                    <Text
-                      style={
-                        [
+                      <Text
+                        style={
                           {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
+                            "textDecorationColor": "#6B7076",
+                            "textDecorationLine": "underline",
+                          }
+                        }
+                      >
+                        Bench press
+                      </Text>
+                      <Text
+                        style={
                           {
                             "color": "#CDFF57",
-                          },
-                        ]
-                      }
-                    >
-                       ›
+                          }
+                        }
+                      >
+                         ›
+                      </Text>
                     </Text>
                   </View>
                 </View>
@@ -1362,9 +1355,7 @@ exports[`WorkoutScreen header matches the history snapshot 1`] = `
                     style={
                       [
                         {
-                          "alignItems": "center",
                           "alignSelf": "flex-start",
-                          "flexDirection": "row",
                         },
                         false,
                       ]
@@ -1372,37 +1363,32 @@ exports[`WorkoutScreen header matches the history snapshot 1`] = `
                   >
                     <Text
                       style={
-                        [
-                          {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
-                          {
-                            "borderBottomColor": "#6B7076",
-                            "borderBottomWidth": 0.5,
-                            "flexShrink": 1,
-                          },
-                        ]
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 17,
+                          "fontWeight": "500",
+                        }
                       }
                     >
-                      Bench press
-                    </Text>
-                    <Text
-                      style={
-                        [
+                      <Text
+                        style={
                           {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
+                            "textDecorationColor": "#6B7076",
+                            "textDecorationLine": "underline",
+                          }
+                        }
+                      >
+                        Bench press
+                      </Text>
+                      <Text
+                        style={
                           {
                             "color": "#CDFF57",
-                          },
-                        ]
-                      }
-                    >
-                       ›
+                          }
+                        }
+                      >
+                         ›
+                      </Text>
                     </Text>
                   </View>
                 </View>
@@ -2251,9 +2237,7 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                     style={
                       [
                         {
-                          "alignItems": "center",
                           "alignSelf": "flex-start",
-                          "flexDirection": "row",
                         },
                         false,
                       ]
@@ -2261,37 +2245,32 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
                   >
                     <Text
                       style={
-                        [
-                          {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
-                          {
-                            "borderBottomColor": "#6B7076",
-                            "borderBottomWidth": 0.5,
-                            "flexShrink": 1,
-                          },
-                        ]
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 17,
+                          "fontWeight": "500",
+                        }
                       }
                     >
-                      Bench press
-                    </Text>
-                    <Text
-                      style={
-                        [
+                      <Text
+                        style={
                           {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
+                            "textDecorationColor": "#6B7076",
+                            "textDecorationLine": "underline",
+                          }
+                        }
+                      >
+                        Bench press
+                      </Text>
+                      <Text
+                        style={
                           {
                             "color": "#CDFF57",
-                          },
-                        ]
-                      }
-                    >
-                       ›
+                          }
+                        }
+                      >
+                         ›
+                      </Text>
                     </Text>
                   </View>
                 </View>
@@ -3292,9 +3271,7 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                     style={
                       [
                         {
-                          "alignItems": "center",
                           "alignSelf": "flex-start",
-                          "flexDirection": "row",
                         },
                         false,
                       ]
@@ -3302,37 +3279,32 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
                   >
                     <Text
                       style={
-                        [
-                          {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
-                          {
-                            "borderBottomColor": "#6B7076",
-                            "borderBottomWidth": 0.5,
-                            "flexShrink": 1,
-                          },
-                        ]
+                        {
+                          "color": "#F5F5F4",
+                          "fontSize": 17,
+                          "fontWeight": "500",
+                        }
                       }
                     >
-                      Bench press
-                    </Text>
-                    <Text
-                      style={
-                        [
+                      <Text
+                        style={
                           {
-                            "color": "#F5F5F4",
-                            "fontSize": 17,
-                            "fontWeight": "500",
-                          },
+                            "textDecorationColor": "#6B7076",
+                            "textDecorationLine": "underline",
+                          }
+                        }
+                      >
+                        Bench press
+                      </Text>
+                      <Text
+                        style={
                           {
                             "color": "#CDFF57",
-                          },
-                        ]
-                      }
-                    >
-                       ›
+                          }
+                        }
+                      >
+                         ›
+                      </Text>
                     </Text>
                   </View>
                 </View>
