@@ -1,5 +1,5 @@
 // Interval card — 10.1 FR-14, "Interval"; canvas 1.4 and 1.6 (GT-88). The rounds are the plan:
-// there is no separate plan block, just Round · Work · Rest · Log, the ⓘ beside whichever column
+// there is no separate plan block, just Work · Rest · Log, the ⓘ beside whichever column
 // the lever moves (FR-8), and Start timer under the rounds. The chip above it says `Timed work` when
 // the type changes (`cardChip`), and the frame, title row and `⋯` are every card's
 // (ExerciseCardFrame). The rounds themselves — their fields, Log and Start timer — are
@@ -19,7 +19,6 @@ import {
   intervalProgressionPlate,
   progressionInfoLabel,
   REST_COLUMN,
-  ROUND_COLUMN,
   WORK_COLUMN,
 } from './IntervalExerciseCardLogic';
 import { IntervalRoundRows, type RoundActions } from './IntervalRoundRows';
@@ -91,7 +90,6 @@ export function IntervalExerciseCard({
       {view.showRows && (
         <ExerciseColumnHeader
           columns={[
-            { label: ROUND_COLUMN },
             {
               label: WORK_COLUMN,
               ...(progression?.column === 'work' && progressionInfo
