@@ -9,6 +9,7 @@ import m0006 from './0006_hybrid_exercise_types.sql';
 import m0007 from './0007_settings_get_ready.sql';
 import m0008 from './0008_settings_signals.sql';
 import m0009 from './0009_hybrid_catalog.sql';
+import m0010 from './0010_push_pull_legs_day_order.sql';
 
   export default {
     journal,
@@ -22,7 +23,8 @@ m0005,
 m0006,
 m0007,
 m0008,
-m0009
+m0009,
+m0010
     }
   }
   

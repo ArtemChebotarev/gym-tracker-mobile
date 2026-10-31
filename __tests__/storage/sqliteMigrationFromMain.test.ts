@@ -24,8 +24,14 @@ import {
 // the fields a test happened to think of — so a migration that rewrites, drops or loses anything
 // the user made fails here, today's and any added later.
 
-/** The tables a catalog migration upserts into: reference data beside what the user made. */
-const CATALOG_TABLES = ['exercise', 'meso_template'];
+/**
+ * The tables a catalog migration upserts into, reference data beside what the user made, with the
+ * columns a release may correct on a catalog row (scripts/catalogMigration.ts).
+ */
+const CATALOG_CORRECTIONS: Record<string, readonly string[]> = {
+  exercise: ['name', 'muscle_group', 'equipment', 'updated_at'],
+  meso_template: ['name', 'description', 'week_plan', 'updated_at'],
+};
 
 /** Every table the app keeps, by name, with the columns it has right now. */
 async function tableColumns(db: SqliteDatabase): Promise<Record<string, string[]>> {
@@ -192,24 +198,25 @@ describe('the main build’s database', () => {
       await migrateToLatest(db, full);
 
       // Every table the main build had is still there, with every row and every value in it. The
-      // two catalog tables also take new rows and a fresh `updated_at` on the catalog's own, and
-      // nothing else: `is_hidden` and the user's rows, stamps included, stay as they were.
+      // catalog tables also take new rows and the corrections a release may make to the catalog's
+      // own, and nothing else: `is_hidden` and the user's rows, stamps included, stay as they were.
       for (const [table, names] of Object.entries(columns)) {
-        if (!CATALOG_TABLES.includes(table)) {
+        const corrected = CATALOG_CORRECTIONS[table];
+        if (!corrected) {
           expect({ table, rows: await rowsOf(db, table, names) }).toEqual({
             table,
             rows: before[table],
           });
           continue;
         }
-        const stamp = names.indexOf('updated_at');
         const source = names.indexOf('source');
         const after = await rowsOf(db, table, names);
-        const unstamped = (row: unknown[]) => row.filter((_, column) => column !== stamp);
+        const kept = (row: unknown[]) =>
+          row.filter((_, column) => !corrected.includes(names[column]!));
         expect(after.filter((row) => row[source] === 'custom')).toEqual(
           before[table]!.filter((row) => row[source] === 'custom'),
         );
-        expect(after.map(unstamped)).toEqual(expect.arrayContaining(before[table]!.map(unstamped)));
+        expect(after.map(kept)).toEqual(expect.arrayContaining(before[table]!.map(kept)));
       }
       // Not a comparison of empty tables: the user's own rows are all in what was compared.
       for (const table of ['mesocycle', 'session', 'session_exercise', 'set_log', 'settings']) {

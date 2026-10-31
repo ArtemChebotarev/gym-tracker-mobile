@@ -113,6 +113,17 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
           dayNumber: 3,
           name: 'Day 3',
           exercises: [
+            { exerciseId: 'smith-squat-machine', order: 1, sets: 2 },
+            { exerciseId: 'leg-extension-machine', order: 2, sets: 2 },
+            { exerciseId: 'lying-leg-curl-machine', order: 3, sets: 2 },
+            { exerciseId: 'standing-calf-raise-machine', order: 4, sets: 3 },
+            { exerciseId: 'hip-adduction-machine', order: 5, sets: 2 },
+          ],
+        },
+        {
+          dayNumber: 4,
+          name: 'Day 4',
+          exercises: [
             { exerciseId: 'smith-incline-bench-press-machine', order: 1, sets: 2 },
             { exerciseId: 'cable-fly-cable', order: 2, sets: 2 },
             { exerciseId: 'lateral-raise-dumbbell', order: 3, sets: 2 },
@@ -121,8 +132,8 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
           ],
         },
         {
-          dayNumber: 4,
-          name: 'Day 4',
+          dayNumber: 5,
+          name: 'Day 5',
           exercises: [
             { exerciseId: 'lat-pulldown-single-arm-cable', order: 1, sets: 2 },
             { exerciseId: 'seated-row-cable', order: 2, sets: 2 },
@@ -130,17 +141,6 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
             { exerciseId: 'bicep-curl-alternating-dumbbell', order: 4, sets: 2 },
             { exerciseId: 'hammer-curl-dumbbell', order: 5, sets: 2 },
             { exerciseId: 'wrist-curl-dumbbell', order: 6, sets: 3 },
-          ],
-        },
-        {
-          dayNumber: 5,
-          name: 'Day 5',
-          exercises: [
-            { exerciseId: 'smith-squat-machine', order: 1, sets: 2 },
-            { exerciseId: 'leg-extension-machine', order: 2, sets: 2 },
-            { exerciseId: 'lying-leg-curl-machine', order: 3, sets: 2 },
-            { exerciseId: 'standing-calf-raise-machine', order: 4, sets: 3 },
-            { exerciseId: 'hip-adduction-machine', order: 5, sets: 2 },
           ],
         },
       ],
