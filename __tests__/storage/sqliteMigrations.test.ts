@@ -200,6 +200,7 @@ describe('the app’s own migrations', () => {
       '0006_hybrid_exercise_types': 1791988803753,
       '0007_settings_get_ready': 1793097297644,
       '0008_settings_signals': 1793108004948,
+      '0009_hybrid_catalog': 1793456789584,
     });
   });
 
@@ -341,7 +342,8 @@ describe('the app’s own migrations', () => {
            '2026-01-05T10:00:00.000Z', '2026-01-05T10:00:00.000Z')
       `);
 
-      await migrateToLatest(db, full);
+      // Up to the catalog that brought the first hybrid exercises in, which has its own test.
+      await migrateToLatest(db, bundleUpTo(full, migrationIndex(full, '0009_hybrid_catalog')));
 
       // The catalog is the whole `exercise` table here; no row lost, none changed but the new two.
       expect(

@@ -1,6 +1,9 @@
 import type { Exercise, MuscleGroup } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
+import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
+import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { MesoTemplate } from '@domain/plan';
+import { TEMPLATE_CATALOG } from '@domain/templateCatalog';
 import { applyTemplate } from '@domain/templateConverters';
 import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
@@ -216,6 +219,49 @@ describe('applyTemplate: hybrid settings (GT-159)', () => {
       [COOLDOWN.id]: COOLDOWN.config,
     });
   });
+
+  test('a hidden suggestion is replaced only by an exercise of its own type', () => {
+    const hiddenCooldown: Exercise = { ...COOLDOWN, source: 'catalog', isHidden: true };
+    const stretch: Exercise = { ...COOLDOWN, id: toExerciseId('stretch'), source: 'catalog' };
+    const bag: Exercise = { ...HEAVY_BAG, source: 'catalog' };
+    const hybridTemplate: MesoTemplate = {
+      ...template,
+      weekPlan: {
+        days: [
+          {
+            dayNumber: 1,
+            name: '',
+            exercises: [{ exerciseId: COOLDOWN.id, order: 1, sets: 1 }],
+          },
+        ],
+      },
+    };
+
+    const draft = applyTemplate(hybridTemplate, [bag, hiddenCooldown, stretch], []);
+
+    expect(draft.weekPlan.days[0]?.exercises[0]?.exerciseId).toBe(stretch.id);
+  });
+
+  test.each(['upper-lower-boxing-hybrid', 'hybrid-home-workout'])(
+    'the shipped template %s carries a config for each of its hybrid exercises',
+    (templateId) => {
+      const shipped = TEMPLATE_CATALOG.find(({ id }) => id === templateId)!;
+      const library = EXERCISE_CATALOG.map((entry) => ({ ...STAMPS, ...entry }));
+      const planned = new Set(
+        shipped.weekPlan.days.flatMap((day) => day.exercises.map((slot) => slot.exerciseId)),
+      );
+      const hybrids = library.filter(
+        ({ id, ...entry }) => planned.has(id) && exerciseTypeOf(entry) !== 'strength',
+      );
+
+      const draft = applyTemplate({ ...shipped, ...STAMPS }, library, []);
+
+      expect(hybrids.length).toBeGreaterThan(0);
+      expect(draft.exerciseSettings).toEqual(
+        Object.fromEntries(hybrids.map(({ id, config }) => [id, config])),
+      );
+    },
+  );
 
   test('a strength-only template has no exerciseSettings', () => {
     expect(applyTemplate(template, library, [])).not.toHaveProperty('exerciseSettings');

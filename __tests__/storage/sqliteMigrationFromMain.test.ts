@@ -24,6 +24,9 @@ import {
 // the fields a test happened to think of — so a migration that rewrites, drops or loses anything
 // the user made fails here, today's and any added later.
 
+/** The tables a catalog migration upserts into: reference data beside what the user made. */
+const CATALOG_TABLES = ['exercise', 'meso_template'];
+
 /** Every table the app keeps, by name, with the columns it has right now. */
 async function tableColumns(db: SqliteDatabase): Promise<Record<string, string[]>> {
   const tables = await db.values<[string]>(sql`
@@ -188,12 +191,25 @@ describe('the main build’s database', () => {
 
       await migrateToLatest(db, full);
 
-      // Every table the main build had is still there, with every row and every value in it.
+      // Every table the main build had is still there, with every row and every value in it. The
+      // two catalog tables also take new rows and a fresh `updated_at` on the catalog's own, and
+      // nothing else: `is_hidden` and the user's rows, stamps included, stay as they were.
       for (const [table, names] of Object.entries(columns)) {
-        expect({ table, rows: await rowsOf(db, table, names) }).toEqual({
-          table,
-          rows: before[table],
-        });
+        if (!CATALOG_TABLES.includes(table)) {
+          expect({ table, rows: await rowsOf(db, table, names) }).toEqual({
+            table,
+            rows: before[table],
+          });
+          continue;
+        }
+        const stamp = names.indexOf('updated_at');
+        const source = names.indexOf('source');
+        const after = await rowsOf(db, table, names);
+        const unstamped = (row: unknown[]) => row.filter((_, column) => column !== stamp);
+        expect(after.filter((row) => row[source] === 'custom')).toEqual(
+          before[table]!.filter((row) => row[source] === 'custom'),
+        );
+        expect(after.map(unstamped)).toEqual(expect.arrayContaining(before[table]!.map(unstamped)));
       }
       // Not a comparison of empty tables: the user's own rows are all in what was compared.
       for (const table of ['mesocycle', 'session', 'session_exercise', 'set_log', 'settings']) {
@@ -208,11 +224,11 @@ describe('the main build’s database', () => {
 
       // What the new columns give the rows that predate them: every exercise — the user's own
       // too — a strength one with no config, no block given exercise settings it never had.
-      expect(
-        await db.values<[number]>(
-          sql`SELECT COUNT(*) FROM exercise WHERE type <> 'strength' OR config IS NOT NULL`,
-        ),
-      ).toEqual([[0]]);
+      const hybridIds = await db.values<[string]>(
+        sql`SELECT id FROM exercise WHERE type <> 'strength' OR config IS NOT NULL`,
+      );
+      const predating = new Set(before.exercise!.map(([id]) => id));
+      expect(hybridIds.filter(([id]) => predating.has(id))).toEqual([]);
       expect(
         await db.values<[number]>(
           sql`SELECT COUNT(*) FROM mesocycle WHERE exercise_settings IS NOT NULL`,

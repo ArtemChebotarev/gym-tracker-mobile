@@ -133,7 +133,8 @@ content, and there is no second version number to keep in step by hand.
 Change `domain/exerciseCatalog.ts`, then run `npm run catalog:migration` — it asks drizzle-kit
 for an empty custom migration and writes the whole catalog into it. `scripts/catalogMigration.ts`
 explains why it emits the entire catalog rather than a difference, and which columns a re-seed is
-allowed to overwrite: never `is_hidden`, which is the user's, and never `created_at`.
+allowed to overwrite: never `is_hidden`, which is the user's, never `type` and `config`, which
+arrive with a new row and are the exercise's own from then on, and never `created_at`.
 
 Drizzle cannot generate this itself — its snapshot models tables and columns and has no notion of
 rows, so `generate` has nothing to diff. `generate --custom` is its supported hook for exactly
