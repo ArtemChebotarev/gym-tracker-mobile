@@ -102,7 +102,11 @@ function deloadLoadText({ type, powerLoad, equipment }: DeloadExplanationInput):
   }
   if (type === 'power') {
     if (powerLoad === 'level') {
-      return ['Same level, ', { strong: 'two sets' }, ' at most.'];
+      return [
+        'About ',
+        { strong: `${percent} of the reps` },
+        ' you did last week, same level, two sets at most.',
+      ];
     }
     return powerLoad === 'none'
       ? ['About ', { strong: `${percent} of the reps` }, ' you did last week, two sets at most.']

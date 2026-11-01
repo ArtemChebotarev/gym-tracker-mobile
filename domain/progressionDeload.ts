@@ -6,6 +6,7 @@ import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment, MuscleGroup } from '@domain/catalog';
 import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { SetLog } from '@domain/execution';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 
@@ -46,16 +47,18 @@ export function deloadWeight(
 }
 
 /**
- * The reps a deload set is guided by, from what that set did last working week. On an exercise
- * where the body is the load, `DELOAD_LOAD_FACTOR` of them, rounded up: cutting the weight can't
- * unload it — a pure bodyweight exercise has none to cut, and half the added weight barely moves
- * 80 + 10 kg — so last week's reps would be last week's effort. Any other exercise keeps them.
+ * The reps a deload set is guided by, from what that set did last working week. Where the load
+ * can't be cut far enough, `DELOAD_LOAD_FACTOR` of them, rounded up: a pure bodyweight exercise has
+ * no weight to cut, half the added weight barely moves 80 + 10 kg, and a power exercise's level has
+ * no half — so last week's reps would be last week's effort. Any other exercise keeps them.
+ * `powerLoad` is the cycle's, the one the card shows (FR-9).
  */
 export function deloadGuideReps(
   lastWeekReps: number,
-  loadEquipment: Equipment | undefined,
+  equipment: Equipment | undefined,
+  powerLoad?: PowerLoad,
 ): number {
-  return isBodyWeightExercise(loadEquipment)
+  return powerLoad === 'level' || powerLoad === 'none' || isBodyWeightExercise(equipment)
     ? Math.ceil(lastWeekReps * DELOAD_LOAD_FACTOR)
     : lastWeekReps;
 }

@@ -1,7 +1,7 @@
 // Rule 5 for `power` — the deload day. See 10.2 · Power progression (P15) and 03, "Правило 5". The
 // week is for recovery, not for progression: fewer sets and, where the load is kilograms, half the
 // weight — and nothing else. No target reps (last week's reps are shown as a guide, as for strength,
-// halved where the body is the load — `deloadGuideReps`), the week's RIR written as for any exercise
+// cut where the load is the body or a level — `deloadGuideReps`), the week's RIR written as for any exercise
 // although a power card doesn't show it.
 //
 // Unlike strength's, it doesn't group by muscle group — that is secondary for power — and it

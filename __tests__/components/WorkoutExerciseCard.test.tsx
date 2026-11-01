@@ -1015,7 +1015,7 @@ describe('RIR badge popover', () => {
 
   test.each([
     ['weight', 'About 50% of your usual load, two sets at most.'],
-    ['level', 'Same level, two sets at most.'],
+    ['level', 'About 50% of the reps you did last week, same level, two sets at most.'],
     ['none', 'About 50% of the reps you did last week, two sets at most.'],
   ] as const)(
     'a power card on a deload week says what changes for a %s load',

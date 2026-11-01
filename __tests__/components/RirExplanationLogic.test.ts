@@ -174,7 +174,9 @@ describe('deloadExplanation', () => {
       'About 50% of your usual load, two sets at most.',
     ]);
     expect(rows({ type: 'power' })[1]).toBe('About 50% of your usual load, two sets at most.');
-    expect(rows({ type: 'power', powerLoad: 'level' })[1]).toBe('Same level, two sets at most.');
+    expect(rows({ type: 'power', powerLoad: 'level' })[1]).toBe(
+      'About 50% of the reps you did last week, same level, two sets at most.',
+    );
     expect(rows({ type: 'power', powerLoad: 'none' })[1]).toBe(
       'About 50% of the reps you did last week, two sets at most.',
     );

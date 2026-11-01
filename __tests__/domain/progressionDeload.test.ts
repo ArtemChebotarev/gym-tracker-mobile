@@ -176,6 +176,14 @@ describe('deloadGuideReps', () => {
     expect(deloadGuideReps(10, 'barbell')).toBe(10);
     expect(deloadGuideReps(10, undefined)).toBe(10);
   });
+
+  test.each([
+    ['level', 3],
+    ['none', 3],
+    ['weight', 6],
+  ] as const)('a power exercise goes by its load: %s', (load, guide) => {
+    expect(deloadGuideReps(6, 'plyo-box', load)).toBe(guide);
+  });
 });
 
 describe('deload and the bodyweight exercises (task 105)', () => {

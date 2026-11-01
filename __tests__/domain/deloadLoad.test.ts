@@ -42,6 +42,7 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
     [{ type: 'strength', equipment: 'bodyweight-weighted' }, '60% of the added weight'],
     [{ type: 'power', powerLoad: 'weight' }, '60% of your usual load'],
     [{ type: 'power', powerLoad: 'none' }, '60% of the reps'],
+    [{ type: 'power', powerLoad: 'level' }, '60% of the reps'],
     [{ type: 'interval' }, '60% of your usual work time'],
   ] as const)('the plate says it as a percent: %j', (input, strong) => {
     const [, load] = deloadExplanation(input).rows;
