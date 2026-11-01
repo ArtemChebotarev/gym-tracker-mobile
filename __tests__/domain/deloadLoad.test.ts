@@ -1,4 +1,4 @@
-import { deloadIntroCopy } from '@components/DeloadIntroDialogLogic';
+import { DELOAD_INTRO_FACTS } from '@components/DeloadIntroDialogLogic';
 import { deloadExplanation } from '@components/RirExplanationLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
@@ -52,7 +52,7 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
   });
 
   test('the first-deload popup’s chip follows it', () => {
-    expect(deloadIntroCopy([{ type: 'strength' }]).facts[0]?.chip).toBe('60% load');
+    expect(DELOAD_INTRO_FACTS[0]?.chip).toBe('60% load');
   });
 
   test('the added weight line says it twice, and no line says half', () => {
