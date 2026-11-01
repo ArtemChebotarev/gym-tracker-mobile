@@ -7,6 +7,8 @@
 
 import type { PlateTextPart } from '@design/components/PlateText';
 
+import { DELOAD_LOAD_PERCENT } from './RirExplanationLogic';
+
 export const DELOAD_INTRO_TITLE = 'Deload week';
 
 export const DELOAD_INTRO_BUTTON_LABEL = 'Got it';
@@ -18,10 +20,11 @@ export const DELOAD_INTRO_LEAD: readonly PlateTextPart[] = [
 
 export type DeloadFact = { chip: string; text: string };
 
+/** One text for every session, like the rule itself: this shows once, so it speaks of every type. */
 export const DELOAD_INTRO_FACTS: readonly DeloadFact[] = [
-  { chip: 'Half weight', text: 'About half of your usual load' },
-  { chip: 'Fewer sets', text: 'Less work to recover from' },
-  { chip: '8 RIR', text: "Don't push: finish each set with about 8 reps left" },
+  { chip: `${DELOAD_LOAD_PERCENT}% load`, text: 'Less weight, fewer reps or shorter work' },
+  { chip: 'Less volume', text: 'Fewer sets and rounds to recover from' },
+  { chip: 'Go easy', text: "Don't push: this week is for recovery" },
 ];
 
-export const DELOAD_INTRO_NOTE = 'Reps shown are what you did last week, as a guide.';
+export const DELOAD_INTRO_NOTE = 'Reps shown are a guide based on last week.';

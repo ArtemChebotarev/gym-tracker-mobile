@@ -9,11 +9,11 @@ describe('DeloadIntroDialog', () => {
     expect(screen.getByText('Deload week')).toBeTruthy();
     expect(screen.getByText('The last week of your cycle.')).toBeTruthy();
     // Three facts, each a chip and one line — not a paragraph.
-    expect(screen.getByText('Half weight')).toBeTruthy();
-    expect(screen.getByText('Fewer sets')).toBeTruthy();
-    expect(screen.getByText('8 RIR')).toBeTruthy();
-    expect(screen.getByText(/finish each set with about 8 reps left/)).toBeTruthy();
-    expect(screen.getByText(/what you did last week/)).toBeTruthy();
+    expect(screen.getByText('50% load')).toBeTruthy();
+    expect(screen.getByText('Less volume')).toBeTruthy();
+    expect(screen.getByText('Go easy')).toBeTruthy();
+    expect(screen.queryByText(/RIR|reps left/)).toBeNull();
+    expect(screen.getByText('Reps shown are a guide based on last week.')).toBeTruthy();
     expect(screen.queryByLabelText('Hybro')).toBeNull();
     expect(screen.getByText('Got it')).toBeTruthy();
   });
