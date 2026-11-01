@@ -28,6 +28,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import { DEFAULT_GET_READY_SEC } from '@domain/intervalTimer';
+import { deloadGuideReps } from '@domain/progressionDeload';
 import { restBetweenSetsSecOf, restSecFor } from '@domain/restTimerRules';
 import { isNotDone, type NotDoneStatus } from '@domain/sessionExerciseStatus';
 import { targetIndicatorAtWeight, usesTargetIndicator } from '@domain/progressionTargetIndicator';
@@ -65,9 +66,10 @@ export type WorkoutSetRow = {
   targetReps?: number;
   suggestedWeight?: number;
   /**
-   * Deload only: the reps actually done in this set last working week — the same exercise and set
-   * number in the session the deload was planned from (05, "Deload-неделя"). The reps placeholder
-   * shows it as a guide; absent when that set wasn't logged there.
+   * Deload only: the reps to aim for, from what this set did last working week — the same exercise
+   * and set number in the session the deload was planned from (05, "Deload-неделя"), halved where
+   * the body is the load (`deloadGuideReps`). The reps placeholder shows it as a guide; absent when
+   * that set wasn't logged there.
    */
   referenceReps?: number;
   /**
@@ -493,7 +495,7 @@ function toRows(
       (candidate) => candidate.setNumber === target.setNumber,
     );
     if (reference) {
-      row.referenceReps = reference.reps;
+      row.referenceReps = deloadGuideReps(reference.reps, loadEquipmentOf(exercise));
     }
     if (log) {
       row.log = { weight: log.weight, reps: log.reps };
