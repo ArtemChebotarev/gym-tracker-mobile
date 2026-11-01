@@ -5,7 +5,7 @@ import {
 } from '@domain/mesocycleConverters';
 
 // A snapshot saved before `historyLookbackDays` existed (task 083).
-const legacyProgressionSettings = { minReps: 6, maxReps: 25, deloadRir: 8, deloadWeightFactor: 0.5 };
+const legacyProgressionSettings = { minReps: 6, maxReps: 25, deloadRir: 8 };
 
 describe('withProgressionSettingsDefaults', () => {
   test('fills a missing historyLookbackDays with the default of 30', () => {

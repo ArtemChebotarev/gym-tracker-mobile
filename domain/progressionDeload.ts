@@ -4,6 +4,7 @@
 
 import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment, MuscleGroup } from '@domain/catalog';
+import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { SetLog } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
@@ -13,7 +14,7 @@ export const DELOAD_SETS_SOLE_EXERCISE = 2;
 /** Sets for each exercise when its muscle group has two or more exercises within the day. */
 export const DELOAD_SETS_SHARED_GROUP = 1;
 
-type DeloadSettings = Pick<ProgressionSettings, 'deloadRir' | 'deloadWeightFactor'>;
+type DeloadSettings = Pick<ProgressionSettings, 'deloadRir'>;
 
 /**
  * 2 sets when the exercise is alone in its muscle group for the day, 1 set each otherwise. No
@@ -24,7 +25,7 @@ export function deloadSetCount(exercisesInGroup: number): number {
 }
 
 /**
- * `deloadWeightFactor` × the weight of the exercise's first set in the last working week: the
+ * `DELOAD_LOAD_FACTOR` × the weight of the exercise's first set in the last working week: the
  * logged weight when set 1 was logged, otherwise set 1's `suggestedWeight` (the last known
  * weight, as for a source exercise with no logged sets — "Граничные случаи"). `undefined` when
  * neither is known.
@@ -32,7 +33,6 @@ export function deloadSetCount(exercisesInGroup: number): number {
 export function deloadWeight(
   source: SourceExercise['sessionExercise'],
   logs: readonly SetLog[],
-  settings: Pick<DeloadSettings, 'deloadWeightFactor'>,
 ): number | undefined {
   const firstTarget = source.setTargets[0];
   if (firstTarget === undefined) {
@@ -42,20 +42,22 @@ export function deloadWeight(
     (log) => log.sessionExerciseId === source.id && log.setNumber === firstTarget.setNumber,
   );
   const baseWeight = firstLog?.weight ?? firstTarget.suggestedWeight;
-  return baseWeight === undefined ? undefined : baseWeight * settings.deloadWeightFactor;
+  return baseWeight === undefined ? undefined : baseWeight * DELOAD_LOAD_FACTOR;
 }
 
 /**
  * The reps a deload set is guided by, from what that set did last working week. On an exercise
- * where the body is the load, half of them, rounded up: halving the weight can't unload it — a
- * pure bodyweight exercise has none to halve, and half the added weight barely moves 80 + 10 kg —
- * so last week's reps would be last week's effort. Any other exercise keeps them.
+ * where the body is the load, `DELOAD_LOAD_FACTOR` of them, rounded up: cutting the weight can't
+ * unload it — a pure bodyweight exercise has none to cut, and half the added weight barely moves
+ * 80 + 10 kg — so last week's reps would be last week's effort. Any other exercise keeps them.
  */
 export function deloadGuideReps(
   lastWeekReps: number,
   loadEquipment: Equipment | undefined,
 ): number {
-  return isBodyWeightExercise(loadEquipment) ? Math.ceil(lastWeekReps / 2) : lastWeekReps;
+  return isBodyWeightExercise(loadEquipment)
+    ? Math.ceil(lastWeekReps * DELOAD_LOAD_FACTOR)
+    : lastWeekReps;
 }
 
 /**
@@ -83,7 +85,7 @@ export function prescribeDeloadDay(
       // is not a weight anyone can load, and the body weight itself hasn't changed.
       const suggestedWeight = isPureBodyWeight(equipment)
         ? undefined
-        : deloadWeight(sessionExercise, logs, settings);
+        : deloadWeight(sessionExercise, logs);
       return {
         exerciseId: sessionExercise.exerciseId,
         order: sessionExercise.order,

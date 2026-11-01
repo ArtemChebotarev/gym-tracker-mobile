@@ -9,6 +9,7 @@
 // keeps its own.
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
+import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
@@ -16,7 +17,7 @@ import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 /** Sets a power exercise keeps on a deload day when it had two or more (17.10.2026). */
 export const POWER_DELOAD_SETS = 2;
 
-type DeloadSettings = Pick<ProgressionSettings, 'deloadRir' | 'deloadWeightFactor'>;
+type DeloadSettings = Pick<ProgressionSettings, 'deloadRir'>;
 
 /** 2 sets for an exercise that had two or more, the single one otherwise. */
 export function powerDeloadSetCount(plannedSets: number): number {
@@ -25,7 +26,7 @@ export function powerDeloadSetCount(plannedSets: number): number {
 
 /**
  * The weight of set `setNumber` on the deload day, from that set's own fact last week — or its own
- * suggested weight when it wasn't logged. Kilograms are cut by `deloadWeightFactor`; a level stays
+ * suggested weight when it wasn't logged. Kilograms are cut by `DELOAD_LOAD_FACTOR`; a level stays
  * the level (it can't be halved), and an exercise that is its own load keeps what it had. `undefined`
  * when the set had no weight at all.
  */
@@ -33,7 +34,6 @@ export function powerDeloadWeight(
   source: SourceExercise,
   setNumber: number,
   logs: readonly SetLog[],
-  settings: Pick<DeloadSettings, 'deloadWeightFactor'>,
 ): number | undefined {
   const { sessionExercise } = source;
   const log = logs.find(
@@ -45,9 +45,7 @@ export function powerDeloadWeight(
   if (weight === undefined) {
     return undefined;
   }
-  return (source.powerLoad ?? 'weight') === 'weight'
-    ? weight * settings.deloadWeightFactor
-    : weight;
+  return (source.powerLoad ?? 'weight') === 'weight' ? weight * DELOAD_LOAD_FACTOR : weight;
 }
 
 /**
@@ -70,7 +68,7 @@ export function prescribePowerDeloadDay(
       const setTargets = rows.map((row, index): SetTarget => {
         const weight = isPureBodyWeight(equipment)
           ? undefined
-          : powerDeloadWeight(source, row.setNumber, logs, settings);
+          : powerDeloadWeight(source, row.setNumber, logs);
         return weight === undefined
           ? { setNumber: index + 1 }
           : { setNumber: index + 1, suggestedWeight: weight };
