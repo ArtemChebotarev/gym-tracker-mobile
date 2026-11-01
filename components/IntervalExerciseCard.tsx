@@ -59,8 +59,7 @@ export function IntervalExerciseCard({
     open: infoAnchor.visible,
     onPress: infoAnchor.open,
   };
-  const plate =
-    progression === undefined ? undefined : intervalProgressionPlate(progression, exercise.rounds);
+  const plate = progression === undefined ? undefined : intervalProgressionPlate(progression);
 
   return (
     <ExerciseCardFrame

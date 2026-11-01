@@ -46,30 +46,22 @@ describe('startTimerLabel', () => {
 });
 
 describe('intervalProgressionPlate', () => {
-  test('the rest lever: the step, what a missed round does, and this week’s rest', () => {
-    const plate = intervalProgressionPlate({ column: 'rest', stepSec: 15 }, ROUNDS);
+  test('the rest lever: the step, and nothing else', () => {
+    const plate = intervalProgressionPlate({ column: 'rest', stepSec: 15 });
 
     expect(plate.title).toBe('Less rest each week');
     expect(plate.rows.map((row) => row.text)).toEqual([
       ['Finish every round: ', 'rest', ' gets ', { strong: '15 s shorter' }, ' next week.'],
-      ['Miss a round: the plan ', { strong: 'repeats' }, '.'],
-      ['This week ', { strong: '0:45' }, '.'],
     ]);
   });
 
-  test('the work lever speaks of the work, and its time', () => {
-    const plate = intervalProgressionPlate({ column: 'work', stepSec: 5 }, ROUNDS);
+  test('the work lever speaks of the work', () => {
+    const plate = intervalProgressionPlate({ column: 'work', stepSec: 5 });
 
     expect(plate.title).toBe('More work each week');
-    expect(plate.rows[0]?.text).toContainEqual({ strong: '5 s longer' });
-    expect(plate.rows[2]?.text).toContainEqual({ strong: '2:00' });
-  });
-
-  test('a week whose rounds have no time yet shows no “This week” (GT-187)', () => {
-    const { restSec: _restSec, ...noRest } = ROUNDS[2]!;
-    const plate = intervalProgressionPlate({ column: 'rest', stepSec: 10 }, [noRest]);
-
-    expect(plate.rows).toHaveLength(2);
+    expect(plate.rows.map((row) => row.text)).toEqual([
+      ['Finish every round: ', 'work', ' gets ', { strong: '5 s longer' }, ' next week.'],
+    ]);
   });
 });
 
