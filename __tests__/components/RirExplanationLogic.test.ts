@@ -160,4 +160,14 @@ describe('deloadExplanation', () => {
     expect(rows('level')[1]).toBe('Same level, two sets at most.');
     expect(rows('none')[1]).toBe('Same body weight, two sets at most.');
   });
+
+  test('an interval exercise has no RIR to draw, and says what changes for its rounds', () => {
+    const explanation = deloadExplanation({ type: 'interval' });
+
+    expect(explanation.track).toBeUndefined();
+    expect(explanation.rows.map((row) => readRow(row.text).said)).toEqual([
+      "Don't push: this week is for recovery.",
+      'About half your usual work time, two rounds at most.',
+    ]);
+  });
 });

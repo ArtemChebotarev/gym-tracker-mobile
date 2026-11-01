@@ -700,7 +700,8 @@ function toIntervalExercise(
       canRemoveLastRound: mode === 'live' && rounds.length > 1,
     },
   };
-  const progression = intervalProgressionOf(plan);
+  // A deload week has no step and no next week for one to land on.
+  const progression = context.isDeload ? undefined : intervalProgressionOf(plan);
   if (progression !== undefined) {
     model.progression = progression;
   }

@@ -3,6 +3,7 @@ import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
 import type { SourceExercise } from '@domain/progression';
 import { deloadGuideReps, deloadWeight, prescribeDeloadDay } from '@domain/progressionDeload';
 import { powerDeloadWeight } from '@domain/progressionDeloadPower';
+import { deloadWorkSec } from '@domain/progressionRoundsInterval';
 
 // A value no rule could be hardcoding: everything below moves only if it reads the constant.
 jest.mock('@domain/deloadLoad', () => ({ DELOAD_LOAD_FACTOR: 0.6 }));
@@ -28,6 +29,10 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
 
   test('the reps guide follows it where the body is the load', () => {
     expect(deloadGuideReps(10, 'bodyweight')).toBe(6);
+  });
+
+  test('an interval round’s work follows it, up to the time picker’s step', () => {
+    expect(deloadWorkSec(120)).toBe(75);
   });
 });
 

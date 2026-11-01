@@ -5,8 +5,11 @@
 // a slot that picks it as its reference — a block's start, or an exercise added or swapped in
 // (GT-185). Pure.
 
+import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
+import { TIME_STEP_SEC } from '@domain/exerciseConfig';
 import type { RoundLog, SessionExercise, SetTarget } from '@domain/execution';
 import type { ExercisePerformance } from '@domain/progression';
+import { powerDeloadSetCount } from '@domain/progressionDeloadPower';
 import { roundTimesOf, type RoundTimes } from '@domain/roundTimes';
 
 /** The first log of each round of `sessionExercise`; logs of other exercises are ignored. */
@@ -32,6 +35,29 @@ export function inheritedIntervalRounds(
     setNumber: round.setNumber,
     ...roundTimesOf(round, logByRound.get(round.setNumber)),
   }));
+}
+
+/** A round's work on a deload day: `DELOAD_LOAD_FACTOR` of it, rounded up to a time one can pick. */
+export function deloadWorkSec(workSec: number): number {
+  return Math.ceil((workSec * DELOAD_LOAD_FACTOR) / TIME_STEP_SEC) * TIME_STEP_SEC;
+}
+
+/**
+ * The deload day's rounds (03, rule 5; GT-105): as many as a power exercise keeps sets, because a
+ * round is a set — that cuts the volume — and the work of each cut as the load, the same rest. Two
+ * rounds of the full 2:00 are still a hard day. A round with no time yet stays with none.
+ */
+export function deloadIntervalRounds(
+  planned: readonly SetTarget[],
+  logByRound: ReadonlyMap<number, RoundLog>,
+): SetTarget[] {
+  return inheritedIntervalRounds(planned, logByRound)
+    .slice(0, powerDeloadSetCount(planned.length))
+    .map(({ targetWorkSec, ...round }) =>
+      targetWorkSec === undefined
+        ? round
+        : { ...round, targetWorkSec: deloadWorkSec(targetWorkSec) },
+    );
 }
 
 /**

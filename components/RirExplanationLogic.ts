@@ -90,14 +90,26 @@ export type DeloadExplanationInput = {
  * What the Deload badge says (the badge that takes the RIR badge's place on a deload week, for
  * every type): a strength exercise keeps the RIR plate it always had; a power exercise has no RIR,
  * so it says what actually changes for it — stop well before the speed drops, and by its load:
- * kilograms halve, a level and the body stay, and never more than two sets. Interval comes with
- * its own rule (GT-100).
+ * kilograms halve, a level and the body stay, and never more than two sets. Interval has no RIR
+ * either, and says the same of its work time and rounds.
  */
 export function deloadExplanation({
   type,
   powerLoad,
   targetRir,
 }: DeloadExplanationInput): BadgeExplanation {
+  if (type === 'interval') {
+    return {
+      title: 'Deload week',
+      rows: [
+        { icon: StopIcon, text: ["Don't push: ", { strong: 'this week is for recovery' }, '.'] },
+        {
+          icon: ArrowDownIcon,
+          text: ['About ', { strong: 'half your usual work time' }, ', two rounds at most.'],
+        },
+      ],
+    };
+  }
   if (type !== 'power') {
     return rirExplanation({
       targetRir: targetRir ?? defaultProgressionSettings.deloadRir,

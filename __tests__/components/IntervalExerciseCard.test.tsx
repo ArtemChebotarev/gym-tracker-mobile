@@ -84,6 +84,14 @@ describe('Interval card (GT-88)', () => {
     expect(screen.queryByTestId('exercise-rir')).toBeNull();
   });
 
+  test('a deload week shows the Deload badge, any other week none', () => {
+    const { rerender } = render(<WorkoutExerciseCard {...makeProps({ isDeload: true })} />);
+    expect(screen.getByTestId('exercise-deload')).toBeTruthy();
+
+    rerender(<WorkoutExerciseCard {...makeProps()} />);
+    expect(screen.queryByTestId('exercise-deload')).toBeNull();
+  });
+
   test('the type chip says Timed work', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 

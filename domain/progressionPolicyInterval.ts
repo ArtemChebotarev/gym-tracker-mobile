@@ -5,7 +5,7 @@
 // - Working week: the rounds the fact leaves (GT-93); every round done → one lever step, otherwise
 //   the plan repeats (GT-100). With no lever given, nothing is recommended (03, "Не уверен — не
 //   рекомендуй") and the plan repeats.
-// - Deload day: the plan repeats, with no step, until the interval's own deload (GT-105).
+// - Deload day: no step, two rounds at most, half the work and the same rest (GT-105).
 // - Rule 6 and a copied block's start: the rounds of the reference the resolver found for the slot
 //   (day + exercise), as they ended — round N from round N, past its last from its last — and no
 //   lever step: a round's times are a plan, not a result to add to (10.1 FR-9; GT-185). With no
@@ -16,6 +16,7 @@ import type { ProgressionPolicy, ReferenceTargetsInput } from '@domain/progressi
 import { targetRir } from '@domain/progressionRir';
 import {
   allIntervalRoundsDone,
+  deloadIntervalRounds,
   inheritedIntervalRounds,
   intervalLogsByRound,
   referenceRounds,
@@ -48,7 +49,7 @@ export const intervalPolicy: ProgressionPolicy = {
     exercises.map(({ sessionExercise }) => ({
       exerciseId: sessionExercise.exerciseId,
       order: sessionExercise.order,
-      setTargets: inheritedIntervalRounds(
+      setTargets: deloadIntervalRounds(
         sessionExercise.setTargets,
         intervalLogsByRound(sessionExercise, roundLogs),
       ),

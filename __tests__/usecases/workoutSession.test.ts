@@ -1332,6 +1332,18 @@ describe('getWorkoutSession — interval rounds (GT-88)', () => {
     expect(card?.progression).toEqual({ column: 'work', stepSec: 5 });
   });
 
+  test('a deload week promises no step: no column carries the lever’s ⓘ (GT-105)', async () => {
+    const { deps } = await setUp({
+      sessions: [slotSession(4, 1, { isDeload: true })],
+      exercises: [planned('w4d1', 'bag', 1, [undefined, undefined])],
+      logs: [],
+    });
+
+    const card = intervalCard(await getWorkoutSession('w4d1', deps));
+
+    expect(card).not.toHaveProperty('progression');
+  });
+
   test('the rounds and none levers move no column', async () => {
     const { deps } = await setUp({
       exercises: [bag],
