@@ -47,8 +47,8 @@ export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrac
 // 'Failure' under the end.
 const SET_UNITS = 10;
 
-// The share as the plate says it, so the copy moves with the rule.
-const DELOAD_LOAD_PERCENT = Math.round(DELOAD_LOAD_FACTOR * 100);
+// The share as the copy says it, so the copy moves with the rule.
+export const DELOAD_LOAD_PERCENT = Math.round(DELOAD_LOAD_FACTOR * 100);
 
 /** The track for a reserve of `reserve` reps: failure at the end, the stop where the reserve begins. */
 export function rirTrack(reserve: number): RirTrack {

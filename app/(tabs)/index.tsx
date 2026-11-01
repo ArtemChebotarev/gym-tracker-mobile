@@ -456,6 +456,7 @@ export default function TodayScreen() {
       />
       <DeloadIntroDialog
         visible={showDeloadIntro}
+        exercises={model?.exercises ?? []}
         onDismiss={() => markOnboardingSeen.mutate('deloadIntroSeen')}
       />
       <WorkoutScreen
