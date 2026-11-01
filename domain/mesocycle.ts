@@ -42,8 +42,6 @@ export type ProgressionSettings = {
   maxReps: number;
   /** Target RIR for the deload week. */
   deloadRir: number;
-  /** Fraction of the last working week's weight used during deload. */
-  deloadWeightFactor: number;
   /**
    * How many days back rule 6 looks for a reference performance outside the current mesocycle
    * (03 · Progression Engine, "Правило 6"). The use case layer turns it into
@@ -57,7 +55,6 @@ export const defaultProgressionSettings: ProgressionSettings = {
   minReps: 5,
   maxReps: 30,
   deloadRir: 8,
-  deloadWeightFactor: 0.5,
   historyLookbackDays: 30,
 };
 

@@ -154,7 +154,7 @@ describe('prescribePowerDeloadDay', () => {
 
 describe('powerDeloadWeight', () => {
   test('is undefined for a set with no fact and no suggested weight', () => {
-    expect(powerDeloadWeight(medball(planned([undefined])), 1, [], settings)).toBeUndefined();
+    expect(powerDeloadWeight(medball(planned([undefined])), 1, [])).toBeUndefined();
   });
 });
 

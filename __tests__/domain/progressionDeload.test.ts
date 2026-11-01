@@ -54,27 +54,22 @@ describe('deloadWeight', () => {
 
   test('is half the logged weight of the first set', () => {
     const logs = [log('bench', 1, 80), log('bench', 2, 70), log('bench', 3, 65)];
-    expect(deloadWeight(bench.sessionExercise, logs, defaultProgressionSettings)).toBe(40);
+    expect(deloadWeight(bench.sessionExercise, logs)).toBe(40);
   });
 
   test('falls back to the first set’s last known weight when set 1 was not logged', () => {
     const logs = [log('bench', 2, 70)];
-    expect(deloadWeight(bench.sessionExercise, logs, defaultProgressionSettings)).toBe(30);
+    expect(deloadWeight(bench.sessionExercise, logs)).toBe(30);
   });
 
   test('ignores logs of other session exercises', () => {
     const logs = [log('row', 1, 100)];
-    expect(deloadWeight(bench.sessionExercise, logs, defaultProgressionSettings)).toBe(30);
+    expect(deloadWeight(bench.sessionExercise, logs)).toBe(30);
   });
 
   test('is unknown when set 1 has neither a log nor a suggested weight', () => {
     const noWeight = sourceExercise('curl', 1, 'biceps', [{ setNumber: 1 }]);
-    expect(deloadWeight(noWeight.sessionExercise, [], defaultProgressionSettings)).toBeUndefined();
-  });
-
-  test('follows the mesocycle’s own weight factor', () => {
-    const logs = [log('bench', 1, 80)];
-    expect(deloadWeight(bench.sessionExercise, logs, { deloadWeightFactor: 0.6 })).toBe(48);
+    expect(deloadWeight(noWeight.sessionExercise, [])).toBeUndefined();
   });
 });
 
@@ -153,7 +148,6 @@ describe('prescribeDeloadDay', () => {
   test('uses the mesocycle’s deload RIR', () => {
     const day = prescribeDeloadDay([sourceExercise('bench', 1, 'chest')], [], {
       deloadRir: 6,
-      deloadWeightFactor: 0.5,
     });
 
     expect(day[0]?.targetRir).toBe(6);
