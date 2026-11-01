@@ -22,7 +22,9 @@ import {
   WORK_COLUMN,
 } from './IntervalExerciseCardLogic';
 import { IntervalRoundRows, type RoundActions } from './IntervalRoundRows';
+import { RirBadge } from './RirBadge';
 import { RirExplanationContent } from './RirExplanationContent';
+import { deloadExplanation } from './RirExplanationLogic';
 import { usePopoverAnchor } from './usePopoverAnchor';
 import type { ExerciseCardCommonProps } from './WorkoutExerciseCard';
 import { cardRowsOf, exerciseCardView } from './WorkoutExerciseCardLogic';
@@ -38,6 +40,7 @@ export type IntervalExerciseCardProps = ExerciseCardCommonProps & {
 export function IntervalExerciseCard({
   exercise,
   mode,
+  isDeload = false,
   chip,
   position = 0,
   onOpenHistory,
@@ -46,9 +49,7 @@ export function IntervalExerciseCard({
   isSaving,
   rounds,
 }: IntervalExerciseCardProps) {
-  // No RIR, and no Deload badge yet: an interval's deload (fewer rounds, FR-13) isn't planned by
-  // the engine until its own task, and a badge would promise it.
-  const view = exerciseCardView(mode, exercise, cardRowsOf(exercise.rounds));
+  const view = exerciseCardView(mode, exercise, cardRowsOf(exercise.rounds), isDeload);
   const editable = mode === 'live' && !view.isNotDone;
   const progression = exercise.progression;
   const infoAnchor = usePopoverAnchor();
@@ -74,6 +75,16 @@ export function IntervalExerciseCard({
       onOpenOverview={onOpenOverview}
       menuItems={menuItems}
       menuSubtitle={formatExerciseMenuSubtitle(exerciseLogCounts(exercise))}
+      badges={
+        view.deloadLabel !== undefined && (
+          <RirBadge
+            testID="exercise-deload"
+            accessibilityLabel="Deload, what changes this week?"
+            label={view.deloadLabel}
+            explanation={deloadExplanation({ type: 'interval' })}
+          />
+        )
+      }
       overlays={
         plate !== undefined && (
           <Popover

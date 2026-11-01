@@ -8,6 +8,7 @@
 
 import type { PlateTextPart } from '@design/components/PlateRow';
 import type { ExerciseType } from '@domain/catalog';
+import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
@@ -46,6 +47,9 @@ export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrac
 // placed to fit the real proportion instead, 'Stop here' ending at its point so it never meets
 // 'Failure' under the end.
 const SET_UNITS = 10;
+
+// The share as the plate says it, so the copy moves with the rule.
+const DELOAD_LOAD_PERCENT = Math.round(DELOAD_LOAD_FACTOR * 100);
 
 /** The track for a reserve of `reserve` reps: failure at the end, the stop where the reserve begins. */
 export function rirTrack(reserve: number): RirTrack {
@@ -90,14 +94,30 @@ export type DeloadExplanationInput = {
  * What the Deload badge says (the badge that takes the RIR badge's place on a deload week, for
  * every type): a strength exercise keeps the RIR plate it always had; a power exercise has no RIR,
  * so it says what actually changes for it — stop well before the speed drops, and by its load:
- * kilograms halve, a level and the body stay, and never more than two sets. Interval comes with
- * its own rule (GT-100).
+ * kilograms halve, a level and the body stay, and never more than two sets. Interval has no RIR
+ * either, and says the same of its work time and rounds.
  */
 export function deloadExplanation({
   type,
   powerLoad,
   targetRir,
 }: DeloadExplanationInput): BadgeExplanation {
+  if (type === 'interval') {
+    return {
+      title: 'Deload week',
+      rows: [
+        { icon: TargetIcon, text: ["Don't push: ", { strong: 'this week is for recovery' }, '.'] },
+        {
+          icon: ArrowDownIcon,
+          text: [
+            'About ',
+            { strong: `${DELOAD_LOAD_PERCENT}% of your usual work time` },
+            ', two rounds at most.',
+          ],
+        },
+      ],
+    };
+  }
   if (type !== 'power') {
     return rirExplanation({
       targetRir: targetRir ?? defaultProgressionSettings.deloadRir,

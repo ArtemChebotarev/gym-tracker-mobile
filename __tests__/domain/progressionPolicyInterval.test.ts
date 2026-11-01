@@ -11,6 +11,8 @@ import { prescribeNextSession } from '@domain/progressionPlan';
 import { intervalPolicy } from '@domain/progressionPolicyInterval';
 import {
   allIntervalRoundsDone as allRoundsDone,
+  deloadIntervalRounds,
+  deloadWorkSec,
   referenceRounds,
   roundsFromReference,
 } from '@domain/progressionRoundsInterval';
@@ -227,8 +229,40 @@ describe('interval working week', () => {
     expect(plan(allDone)).toEqual(rounds);
   });
 
-  test('a deload day repeats the plan with no step, until the interval’s own deload (GT-105)', () => {
-    expect(plan(allDone, { lever: 'rest', stepSec: 15 }, 5)).toEqual(rounds);
+  // GT-105 (03, rule 5): 3 × 2:00 becomes 2 × 1:00. Rounds are the volume, work time the load.
+  describe('a deload day', () => {
+    test('two rounds, half the work, the same rest, and no lever step', () => {
+      expect(plan(allDone, { lever: 'rest', stepSec: 15 }, 5)).toEqual([
+        { setNumber: 1, targetWorkSec: 60, targetRestSec: 60 },
+        { setNumber: 2, targetWorkSec: 60, targetRestSec: 60 },
+      ]);
+    });
+
+    test('the rounds lever adds no round', () => {
+      expect(plan(allDone, { lever: 'rounds', stepSec: 15 }, 5)).toHaveLength(2);
+    });
+
+    test('halves the work the round was done with, not the plan', () => {
+      expect(plan([log(1, { workSec: 180 })], undefined, 5)[0]?.targetWorkSec).toBe(90);
+    });
+
+    test('a single round stays a single round', () => {
+      expect(deloadIntervalRounds(rounds.slice(0, 1), new Map())).toEqual([
+        { setNumber: 1, targetWorkSec: 60, targetRestSec: 60 },
+      ]);
+    });
+
+    test('a round with no times stays with none', () => {
+      expect(deloadIntervalRounds([{ setNumber: 1 }], new Map())).toEqual([{ setNumber: 1 }]);
+    });
+
+    test.each([
+      [45, 25],
+      [90, 45],
+      [5, 5],
+    ])('work of %i s rounds up to a time one can pick: %i s', (workSec, expected) => {
+      expect(deloadWorkSec(workSec)).toBe(expected);
+    });
   });
 });
 
