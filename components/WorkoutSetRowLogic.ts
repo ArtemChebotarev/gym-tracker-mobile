@@ -111,8 +111,8 @@ export type PlaceholderReps = { reps: number; isEstimate: boolean };
  * *that* weight is worth (08.7.1): a close weight reads as an ordinary target, a far one as an
  * estimate, and a weight off the rep corridor has no target at all. A set whose own numbers are an
  * estimate from another day or block (task 134.1) reads as an estimate throughout. Without an
- * evaluation it is the set's own `targetReps`, or — in a deload — last working week's reps as a
- * guide.
+ * evaluation it is the set's own `targetReps`, or — in a deload — the guide taken from last working
+ * week's reps.
  */
 export function placeholderReps(
   row: Pick<WorkoutSetRow, 'targetReps' | 'referenceReps' | 'estimate'>,
@@ -188,7 +188,7 @@ export function parseReps(text: string): number | null {
  * The entry the Log button records, or `null` while it can't be logged — the button is inactive
  * then. Weight is what the field holds (it starts with the suggested weight as a value). Reps are
  * what was typed; an empty Reps field takes whatever number the placeholder shows — the set's
- * `targetReps`, or in a deload last week's `referenceReps` (task 104). Either way a row left as
+ * `targetReps`, or in a deload its `referenceReps` (task 104). Either way a row left as
  * recommended logs with one tap, on every week alike; type your own if you did something else.
  * With no number behind the placeholder (`–`) an empty field keeps Log inactive — which also covers
  * a weight the rep corridor doesn't reach (08.7.1, zone `out`).

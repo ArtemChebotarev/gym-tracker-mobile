@@ -2,7 +2,12 @@ import type { MuscleGroup } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
-import { deloadSetCount, deloadWeight, prescribeDeloadDay } from '@domain/progressionDeload';
+import {
+  deloadGuideReps,
+  deloadSetCount,
+  deloadWeight,
+  prescribeDeloadDay,
+} from '@domain/progressionDeload';
 import { STAMPS } from '../fixtures/stamps';
 
 function sourceExercise(
@@ -152,6 +157,30 @@ describe('prescribeDeloadDay', () => {
     });
 
     expect(day[0]?.targetRir).toBe(6);
+  });
+});
+
+describe('deloadGuideReps', () => {
+  test.each([
+    [10, 5],
+    [9, 5],
+    [7, 4],
+    [1, 1],
+  ])('a pure bodyweight exercise guides by half, rounded up: %i → %i', (reps, guide) => {
+    expect(deloadGuideReps(reps, 'bodyweight')).toBe(guide);
+  });
+
+  test('a band counts as bodyweight', () => {
+    expect(deloadGuideReps(20, 'resistance-band')).toBe(10);
+  });
+
+  test('a weighted bodyweight exercise halves its reps too, whatever the added weight', () => {
+    expect(deloadGuideReps(8, 'bodyweight-weighted')).toBe(4);
+  });
+
+  test('an exercise whose load is a weight keeps last week’s reps', () => {
+    expect(deloadGuideReps(10, 'barbell')).toBe(10);
+    expect(deloadGuideReps(10, undefined)).toBe(10);
   });
 });
 

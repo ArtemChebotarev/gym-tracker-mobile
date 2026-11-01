@@ -423,6 +423,44 @@ describe('getWorkoutSession — live', () => {
     expect(rowsOf(curlModel).map((r) => r.referenceReps)).toEqual([undefined]);
   });
 
+  test('deload rows guide by half last week’s reps where the body is the load', async () => {
+    const w3d1 = slotSession(3, 1, {
+      status: 'completed',
+      completedAt: '2026-09-15T10:00:00.000Z',
+    });
+    const w3Exercises = {
+      pullup: planned('w3d1', 'pullup', 1, [10, 10], { status: 'completed' }),
+      dip: planned('w3d1', 'dip', 2, [8], { status: 'completed' }),
+      boxjump: planned('w3d1', 'boxjump', 3, [5], { status: 'completed' }),
+      bench: planned('w3d1', 'bench', 4, [10], { status: 'completed' }),
+    };
+    const { deps } = await setUp({
+      sessions: [w3d1, slotSession(4, 1, { isDeload: true, sourceSessionId: 'w3d1' })],
+      exercises: [
+        ...Object.values(w3Exercises),
+        planned('w4d1', 'pullup', 1, [undefined, undefined]),
+        planned('w4d1', 'dip', 2, [undefined]),
+        planned('w4d1', 'boxjump', 3, [undefined]),
+        planned('w4d1', 'bench', 4, [undefined]),
+      ],
+      logs: [
+        logOf(w3Exercises.pullup, 1, 10),
+        logOf(w3Exercises.pullup, 2, 7),
+        logOf(w3Exercises.dip, 1, 8),
+        logOf(w3Exercises.boxjump, 1, 5),
+        logOf(w3Exercises.bench, 1, 10),
+      ],
+    });
+
+    const [pullUp, dip, boxJump, benchPress] = (await getWorkoutSession('w4d1', deps)).exercises;
+
+    expect(rowsOf(pullUp).map((r) => r.referenceReps)).toEqual([5, 4]);
+    expect(rowsOf(dip).map((r) => r.referenceReps)).toEqual([4]);
+    // On a plyo box, but a load of `none`: it weighs what you weigh.
+    expect(rowsOf(boxJump).map((r) => r.referenceReps)).toEqual([3]);
+    expect(rowsOf(benchPress).map((r) => r.referenceReps)).toEqual([10]);
+  });
+
   test('rows of a session that is not a deload carry no reference reps', async () => {
     const { deps } = await setUp();
 

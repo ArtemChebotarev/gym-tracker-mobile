@@ -11,6 +11,9 @@
 //   engine progresses. A screen shows the two apart — `83 (+5)`, the body weight and what was
 //   hung on it — rather than their sum: what you want to read back is what you weighed and what
 //   you added, and the sum hides both (Artem's review).
+//   On a deload the added weight is cut like any other and, as on `bodyweight`, the reps guide is
+//   halved too: the body stays on the bar, so half the added weight alone unloads next to nothing
+//   (`deloadGuideReps`).
 // - `resistance-band` — counted as `bodyweight` (10.1 FR-14): a band has no weight of its own to
 //   progress, and the Weight field shows the body weight like it does for a push-up. Only reps
 //   progress.

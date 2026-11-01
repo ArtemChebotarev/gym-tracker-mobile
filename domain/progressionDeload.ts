@@ -2,8 +2,8 @@
 // deload". The last week of a block follows its own rules instead of the general
 // progression: fewer sets, a fraction of the weight, a fixed RIR, and no target reps.
 
-import { isPureBodyWeight } from '@domain/bodyWeightLoad';
-import type { MuscleGroup } from '@domain/catalog';
+import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
+import type { Equipment, MuscleGroup } from '@domain/catalog';
 import type { SetLog } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
@@ -43,6 +43,19 @@ export function deloadWeight(
   );
   const baseWeight = firstLog?.weight ?? firstTarget.suggestedWeight;
   return baseWeight === undefined ? undefined : baseWeight * settings.deloadWeightFactor;
+}
+
+/**
+ * The reps a deload set is guided by, from what that set did last working week. On an exercise
+ * where the body is the load, half of them, rounded up: halving the weight can't unload it — a
+ * pure bodyweight exercise has none to halve, and half the added weight barely moves 80 + 10 kg —
+ * so last week's reps would be last week's effort. Any other exercise keeps them.
+ */
+export function deloadGuideReps(
+  lastWeekReps: number,
+  loadEquipment: Equipment | undefined,
+): number {
+  return isBodyWeightExercise(loadEquipment) ? Math.ceil(lastWeekReps / 2) : lastWeekReps;
 }
 
 /**
