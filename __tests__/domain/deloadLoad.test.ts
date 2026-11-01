@@ -36,10 +36,24 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
     expect(deloadWorkSec(120)).toBe(75);
   });
 
-  test('the interval plate says it as a percent', () => {
-    const [, load] = deloadExplanation({ type: 'interval' }).rows;
+  test.each([
+    [{ type: 'strength', equipment: 'barbell' }, '60% of your usual load'],
+    [{ type: 'strength', equipment: 'bodyweight' }, '60% of the reps'],
+    [{ type: 'strength', equipment: 'bodyweight-weighted' }, '60% of the added weight'],
+    [{ type: 'power', powerLoad: 'weight' }, '60% of your usual load'],
+    [{ type: 'power', powerLoad: 'none' }, '60% of the reps'],
+    [{ type: 'interval' }, '60% of your usual work time'],
+  ] as const)('the plate says it as a percent: %j', (input, strong) => {
+    const [, load] = deloadExplanation(input).rows;
 
-    expect(load?.text).toContainEqual({ strong: '60% of your usual work time' });
+    expect(load?.text).toContainEqual({ strong });
+  });
+
+  test('the added weight line says it twice, and no line says half', () => {
+    const [, load] = deloadExplanation({ type: 'strength', equipment: 'bodyweight-weighted' }).rows;
+
+    expect(load?.text).toContain(' and 60% of the reps, fewer sets.');
+    expect(JSON.stringify(load?.text)).not.toMatch(/half/i);
   });
 });
 

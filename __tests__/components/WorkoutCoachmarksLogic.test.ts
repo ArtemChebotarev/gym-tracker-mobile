@@ -76,7 +76,7 @@ describe('workoutCoachmarks', () => {
 
     expect(steps[1]).toMatchObject({ title: '3 RIR: stop 3 reps before failure' });
     // The RIR step explains with the track and two theses; the others with a paragraph.
-    expect(steps[1]?.explanation).toEqual(rirExplanation({ targetRir: 3, isDeload: false }));
+    expect(steps[1]?.explanation).toEqual(rirExplanation({ targetRir: 3 }));
     expect(steps[1]?.paragraphs).toBeUndefined();
     expect(steps[0]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);

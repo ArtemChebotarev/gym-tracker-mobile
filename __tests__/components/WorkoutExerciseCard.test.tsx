@@ -917,9 +917,9 @@ describe('RIR badge popover', () => {
     fireEvent.press(screen.getByTestId('exercise-deload'));
 
     expect(screen.getByText('Deload week')).toBeTruthy();
-    expect(
-      screen.getByText("Don't push: aim to finish each set with about 8 reps left."),
-    ).toBeTruthy();
+    expect(screen.getByText("Don't push: this week is for recovery.")).toBeTruthy();
+    expect(screen.getByText('About 50% of your usual load, fewer sets.')).toBeTruthy();
+    expect(screen.queryByText(/8 reps left/)).toBeNull();
   });
 
   test('a read-only card still explains its badge', () => {
@@ -1014,9 +1014,9 @@ describe('RIR badge popover', () => {
   });
 
   test.each([
-    ['weight', 'About half your usual load, two sets at most.'],
+    ['weight', 'About 50% of your usual load, two sets at most.'],
     ['level', 'Same level, two sets at most.'],
-    ['none', 'Same body weight, two sets at most.'],
+    ['none', 'About 50% of the reps you did last week, two sets at most.'],
   ] as const)(
     'a power card on a deload week says what changes for a %s load',
     (powerLoad, line) => {
@@ -1111,9 +1111,11 @@ describe('WorkoutExerciseCard — a resistance band', () => {
     expect(screen.getByText('Reps with a band')).toBeTruthy();
   });
 
-  test('a deload week still has the Deload badge', () => {
+  test('a deload week still has the Deload badge, and it cuts the reps', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: band, isDeload: true })} />);
 
-    expect(screen.getByTestId('exercise-deload')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('exercise-deload'));
+
+    expect(screen.getByText('About 50% of the reps you did last week, fewer sets.')).toBeTruthy();
   });
 });

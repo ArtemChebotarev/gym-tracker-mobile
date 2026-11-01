@@ -1,5 +1,11 @@
-import { deloadExplanation, rirExplanation, rirTrack } from '@components/RirExplanationLogic';
+import {
+  deloadExplanation,
+  type DeloadExplanationInput,
+  rirExplanation,
+  rirTrack,
+} from '@components/RirExplanationLogic';
 import type { PlateTextPart } from '@design/components/PlateRow';
+import { TargetIcon } from '@design/icons/TargetIcon';
 
 /** A row's text with its strong words kept apart, so a test reads both what it says and what it stresses. */
 function readRow(text: readonly PlateTextPart[]): { said: string; strong: string[] } {
@@ -77,7 +83,7 @@ describe('rirTrack', () => {
 describe('rirExplanation', () => {
   // GT-149: what to aim for and how the weeks go — the badge's popover and the coachmark say the same.
   test('DoD 149: the aim, with the exercise’s own number, and how the weeks go', () => {
-    const text = rirExplanation({ targetRir: 3, isDeload: false });
+    const text = rirExplanation({ targetRir: 3 });
 
     expect(text.title).toBe('3 RIR: stop 3 reps before failure');
     expect(text.rows.map((row) => readRow(row.text))).toEqual([
@@ -96,7 +102,7 @@ describe('rirExplanation', () => {
   // It explains RIR; how rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
   test('two theses at most, and never about rep targets, whatever week it is', () => {
     for (const targetRir of [3, 2, 1, 0]) {
-      const text = rirExplanation({ targetRir, isDeload: false });
+      const text = rirExplanation({ targetRir });
       const said = text.rows.map((row) => readRow(row.text).said).join(' ');
 
       expect(text.rows.length).toBeLessThanOrEqual(2);
@@ -105,16 +111,16 @@ describe('rirExplanation', () => {
   });
 
   test('the number follows the week: 2 RIR, 1 RIR in the singular', () => {
-    expect(rirExplanation({ targetRir: 2, isDeload: false }).title).toBe(
+    expect(rirExplanation({ targetRir: 2 }).title).toBe(
       '2 RIR: stop 2 reps before failure',
     );
-    const one = rirExplanation({ targetRir: 1, isDeload: false });
+    const one = rirExplanation({ targetRir: 1 });
     expect(one.title).toBe('1 RIR: stop 1 rep before failure');
     expect(readRow(one.rows[0]!.text).strong).toEqual(['1 rep left']);
   });
 
   test('DoD 149: 0 RIR goes to failure', () => {
-    const last = rirExplanation({ targetRir: 0, isDeload: false });
+    const last = rirExplanation({ targetRir: 0 });
 
     expect(last.title).toBe('0 RIR: go to failure');
     expect(readRow(last.rows[0]!.text).said).toBe(
@@ -123,51 +129,67 @@ describe('rirExplanation', () => {
     expect(last.rows).toHaveLength(2);
     expect(last.track.labels).toHaveLength(1);
   });
-
-  test('DoD: a deload week gets its own, shorter text with its own RIR, on the same track', () => {
-    const text = rirExplanation({ targetRir: 8, isDeload: true });
-
-    expect(text.title).toBe('Deload week');
-    expect(text.rows.map((row) => readRow(row.text))).toEqual([
-      {
-        said: "Don't push: aim to finish each set with about 8 reps left.",
-        strong: ['about 8 reps left'],
-      },
-    ]);
-    // A deload's long reserve is drawn long.
-    expect(text.track.outer.max).toBeGreaterThan(rirTrack(3).outer.max);
-  });
 });
 
 describe('deloadExplanation', () => {
-  test('a strength exercise keeps the RIR plate of the deload week', () => {
-    expect(deloadExplanation({ targetRir: 8 })).toEqual(
-      rirExplanation({ targetRir: 8, isDeload: true }),
-    );
-    expect(deloadExplanation({ type: 'strength' }).track).toBeDefined();
-  });
+  const rows = (input: DeloadExplanationInput) =>
+    deloadExplanation(input).rows.map((row) => readRow(row.text).said);
 
-  test('a power exercise has no RIR to draw, and says what changes by its load', () => {
-    const rows = (powerLoad?: 'weight' | 'level' | 'none') =>
-      deloadExplanation({
-        type: 'power',
-        ...(powerLoad === undefined ? {} : { powerLoad }),
-      }).rows.map((row) => readRow(row.text).said);
+  test.each([
+    { type: 'strength' },
+    { type: 'strength', equipment: 'bodyweight' },
+    { type: 'power', powerLoad: 'weight' },
+    { type: 'interval' },
+  ] as const)('no deload plate draws RIR or promises a reserve: %j', (input) => {
+    const explanation = deloadExplanation(input);
 
-    expect(deloadExplanation({ type: 'power' }).track).toBeUndefined();
-    expect(rows('weight')[1]).toBe('About half your usual load, two sets at most.');
-    expect(rows()[1]).toBe('About half your usual load, two sets at most.');
-    expect(rows('level')[1]).toBe('Same level, two sets at most.');
-    expect(rows('none')[1]).toBe('Same body weight, two sets at most.');
-  });
-
-  test('an interval exercise has no RIR to draw, and says what changes for its rounds', () => {
-    const explanation = deloadExplanation({ type: 'interval' });
-
+    expect(explanation.title).toBe('Deload week');
     expect(explanation.track).toBeUndefined();
-    expect(explanation.rows.map((row) => readRow(row.text).said)).toEqual([
+    expect(rows(input).join(' ')).not.toMatch(/RIR|reps left/);
+  });
+
+  test('a strength exercise says what is cut, by what its weight means', () => {
+    expect(rows({ type: 'strength', equipment: 'barbell' })).toEqual([
+      "Don't push: this week is for recovery.",
+      'About 50% of your usual load, fewer sets.',
+    ]);
+    expect(rows({ type: 'strength', equipment: 'bodyweight' })[1]).toBe(
+      'About 50% of the reps you did last week, fewer sets.',
+    );
+    expect(rows({ type: 'strength', equipment: 'resistance-band' })[1]).toBe(
+      'About 50% of the reps you did last week, fewer sets.',
+    );
+    expect(rows({ type: 'strength', equipment: 'bodyweight-weighted' })[1]).toBe(
+      'About 50% of the added weight and 50% of the reps, fewer sets.',
+    );
+  });
+
+  test('with no type or equipment known it is a load like any other', () => {
+    expect(rows({})[1]).toBe('About 50% of your usual load, fewer sets.');
+  });
+
+  test('a power exercise says what changes by its load', () => {
+    expect(rows({ type: 'power', powerLoad: 'weight' })).toEqual([
+      'Stop each set well before the speed drops.',
+      'About 50% of your usual load, two sets at most.',
+    ]);
+    expect(rows({ type: 'power' })[1]).toBe('About 50% of your usual load, two sets at most.');
+    expect(rows({ type: 'power', powerLoad: 'level' })[1]).toBe('Same level, two sets at most.');
+    expect(rows({ type: 'power', powerLoad: 'none' })[1]).toBe(
+      'About 50% of the reps you did last week, two sets at most.',
+    );
+  });
+
+  test('an interval exercise says what changes for its rounds', () => {
+    expect(rows({ type: 'interval' })).toEqual([
       "Don't push: this week is for recovery.",
       'About 50% of your usual work time, two rounds at most.',
     ]);
+  });
+
+  test('every type leads with the target icon', () => {
+    for (const type of ['strength', 'power', 'interval'] as const) {
+      expect(deloadExplanation({ type }).rows[0]?.icon).toBe(TargetIcon);
+    }
   });
 });
