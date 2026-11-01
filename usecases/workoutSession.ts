@@ -67,8 +67,8 @@ export type WorkoutSetRow = {
   suggestedWeight?: number;
   /**
    * Deload only: the reps to aim for, from what this set did last working week — the same exercise
-   * and set number in the session the deload was planned from (05, "Deload-неделя"), halved where
-   * the body is the load (`deloadGuideReps`). The reps placeholder shows it as a guide; absent when
+   * and set number in the session the deload was planned from (05, "Deload-неделя"), cut where the
+   * load itself can't be (`deloadGuideReps`). The reps placeholder shows it as a guide; absent when
    * that set wasn't logged there.
    */
   referenceReps?: number;
@@ -495,7 +495,12 @@ function toRows(
       (candidate) => candidate.setNumber === target.setNumber,
     );
     if (reference) {
-      row.referenceReps = deloadGuideReps(reference.reps, loadEquipmentOf(exercise));
+      const settings = exerciseSettingsFor(context.exerciseSettings, exercise);
+      row.referenceReps = deloadGuideReps(
+        reference.reps,
+        exercise.equipment,
+        settings?.type === 'power' ? settings.load : undefined,
+      );
     }
     if (log) {
       row.log = { weight: log.weight, reps: log.reps };

@@ -461,6 +461,29 @@ describe('getWorkoutSession — live', () => {
     expect(rowsOf(benchPress).map((r) => r.referenceReps)).toEqual([10]);
   });
 
+  test('a deload row goes by the cycle’s power load, the one the card shows', async () => {
+    const w3d1 = slotSession(3, 1, {
+      status: 'completed',
+      completedAt: '2026-09-15T10:00:00.000Z',
+    });
+    const lastWeek = planned('w3d1', 'medball', 1, [6, 6], { status: 'completed' });
+    const { deps } = await setUp({
+      sessions: [w3d1, slotSession(4, 1, { isDeload: true, sourceSessionId: 'w3d1' })],
+      exercises: [lastWeek, planned('w4d1', 'medball', 1, [undefined, undefined])],
+      logs: [logOf(lastWeek, 1, 6), logOf(lastWeek, 2, 5)],
+      mesocycle: {
+        ...mesocycle,
+        exerciseSettings: {
+          medball: { type: 'power', load: 'level', noHeavierAvailable: false },
+        },
+      },
+    });
+
+    const [medball] = (await getWorkoutSession('w4d1', deps)).exercises;
+
+    expect(rowsOf(medball).map((r) => r.referenceReps)).toEqual([3, 3]);
+  });
+
   test('rows of a session that is not a deload carry no reference reps', async () => {
     const { deps } = await setUp();
 

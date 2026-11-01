@@ -93,7 +93,7 @@ export function workoutCoachmarks({
       steps.push({ target: 'reps', ...REPS_STEP });
     }
     if (targets.rir && targetRir !== undefined) {
-      const explanation = rirExplanation({ targetRir, isDeload });
+      const explanation = rirExplanation({ targetRir });
       steps.push({ target: 'rir', title: explanation.title, explanation });
     }
   }

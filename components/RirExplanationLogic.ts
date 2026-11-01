@@ -7,14 +7,13 @@
 // row or two under it with what to aim for and how the weeks go.
 
 import type { PlateTextPart } from '@design/components/PlateRow';
-import type { ExerciseType } from '@domain/catalog';
+import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
+import type { Equipment, ExerciseType } from '@domain/catalog';
 import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { PowerLoad } from '@domain/exerciseConfig';
-import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
-import { StopIcon } from '@design/icons/StopIcon';
 import { TargetIcon } from '@design/icons/TargetIcon';
 
 /** The track: the set you do (solid), what is left in the tank (dashes), and where you stop. */
@@ -35,8 +34,8 @@ export type RirExplanation = {
 };
 
 /**
- * What a badge's popover shows: the RIR explanation, or — with no track — the plate of an exercise
- * that has no RIR to draw, a power exercise on a deload week.
+ * What a badge's popover shows: the RIR explanation, or — with no track — the Deload badge's plate,
+ * which has no RIR to draw.
  */
 export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrack };
 
@@ -79,65 +78,64 @@ export function rirTrack(reserve: number): RirTrack {
 export type RirExplanationInput = {
   /** The exercise's target RIR this week. */
   targetRir: number;
-  /** A deload session: lighter on purpose, so the text says not to push rather than what RIR is. */
-  isDeload: boolean;
 };
 
 export type DeloadExplanationInput = {
   type?: ExerciseType;
   powerLoad?: PowerLoad;
-  /** The deload week's target RIR, when the exercise has one on screen. */
-  targetRir?: number;
+  /** What the exercise's weight means (`cardLoadEquipment`): it decides what a strength deload cuts. */
+  equipment?: Equipment;
 };
+
+const DONT_PUSH: RirRow['text'] = ["Don't push: ", { strong: 'this week is for recovery' }, '.'];
+
+const STOP_BEFORE_SPEED_DROPS: RirRow['text'] = [
+  'Stop each set ',
+  { strong: 'well before the speed drops' },
+  '.',
+];
+
+function deloadLoadText({ type, powerLoad, equipment }: DeloadExplanationInput): RirRow['text'] {
+  const percent = `${DELOAD_LOAD_PERCENT}%`;
+  if (type === 'interval') {
+    return ['About ', { strong: `${percent} of your usual work time` }, ', two rounds at most.'];
+  }
+  if (type === 'power') {
+    if (powerLoad === 'level') {
+      return [
+        'About ',
+        { strong: `${percent} of the reps` },
+        ' you did last week, same level, two sets at most.',
+      ];
+    }
+    return powerLoad === 'none'
+      ? ['About ', { strong: `${percent} of the reps` }, ' you did last week, two sets at most.']
+      : ['About ', { strong: `${percent} of your usual load` }, ', two sets at most.'];
+  }
+  if (usesAddedWeight(equipment)) {
+    return [
+      'About ',
+      { strong: `${percent} of the added weight` },
+      ` and ${percent} of the reps, fewer sets.`,
+    ];
+  }
+  return isPureBodyWeight(equipment)
+    ? ['About ', { strong: `${percent} of the reps` }, ' you did last week, fewer sets.']
+    : ['About ', { strong: `${percent} of your usual load` }, ', fewer sets.'];
+}
 
 /**
  * What the Deload badge says (the badge that takes the RIR badge's place on a deload week, for
- * every type): a strength exercise keeps the RIR plate it always had; a power exercise has no RIR,
- * so it says what actually changes for it — stop well before the speed drops, and by its load:
- * kilograms halve, a level and the body stay, and never more than two sets. Interval has no RIR
- * either, and says the same of its work time and rounds.
+ * every type). No type draws RIR here: the week is set by its load, and the reserve that leaves
+ * varies too much for a number to promise (GT-209). So it says how to take the sets, and what is
+ * cut for this exercise's kind of load.
  */
-export function deloadExplanation({
-  type,
-  powerLoad,
-  targetRir,
-}: DeloadExplanationInput): BadgeExplanation {
-  if (type === 'interval') {
-    return {
-      title: 'Deload week',
-      rows: [
-        { icon: TargetIcon, text: ["Don't push: ", { strong: 'this week is for recovery' }, '.'] },
-        {
-          icon: ArrowDownIcon,
-          text: [
-            'About ',
-            { strong: `${DELOAD_LOAD_PERCENT}% of your usual work time` },
-            ', two rounds at most.',
-          ],
-        },
-      ],
-    };
-  }
-  if (type !== 'power') {
-    return rirExplanation({
-      targetRir: targetRir ?? defaultProgressionSettings.deloadRir,
-      isDeload: true,
-    });
-  }
-  const load: RirRow['text'] =
-    powerLoad === 'level'
-      ? ['Same level, ', { strong: 'two sets' }, ' at most.']
-      : powerLoad === 'none'
-        ? ['Same body weight, ', { strong: 'two sets' }, ' at most.']
-        : ['About ', { strong: 'half your usual load' }, ', two sets at most.'];
+export function deloadExplanation(input: DeloadExplanationInput): BadgeExplanation {
   return {
     title: 'Deload week',
     rows: [
-      {
-        icon: StopIcon,
-        text: ['Stop each set ', { strong: 'well before the speed drops' }, '.'],
-      },
-      { icon: ArrowDownIcon, text: load },
+      { icon: TargetIcon, text: input.type === 'power' ? STOP_BEFORE_SPEED_DROPS : DONT_PUSH },
+      { icon: ArrowDownIcon, text: deloadLoadText(input) },
     ],
   };
 }
@@ -146,25 +144,8 @@ function repsLeft(reserve: number): string {
   return `${reserve} ${reserve === 1 ? 'rep' : 'reps'}`;
 }
 
-export function rirExplanation({ targetRir, isDeload }: RirExplanationInput): RirExplanation {
+export function rirExplanation({ targetRir }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
-
-  if (isDeload) {
-    return {
-      title: 'Deload week',
-      track,
-      rows: [
-        {
-          icon: StopIcon,
-          text: [
-            "Don't push: aim to finish each set with ",
-            { strong: `about ${repsLeft(targetRir)} left` },
-            '.',
-          ],
-        },
-      ],
-    };
-  }
 
   // Two theses, and no more: this explains RIR and what to aim for, not the engine around it — how
   // rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).

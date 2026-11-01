@@ -112,7 +112,7 @@ export function StrengthExerciseCard({
             <RirBadge
               label={view.rirLabel}
               {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
-              explanation={rirExplanation({ targetRir, isDeload })}
+              explanation={rirExplanation({ targetRir })}
             />
           )}
           {view.deloadLabel !== undefined && (
@@ -122,7 +122,7 @@ export function StrengthExerciseCard({
               label={view.deloadLabel}
               explanation={deloadExplanation({
                 ...(exercise.type === undefined ? {} : { type: exercise.type }),
-                ...(targetRir === undefined ? {} : { targetRir }),
+                ...(exercise.equipment === undefined ? {} : { equipment: exercise.equipment }),
               })}
             />
           )}
