@@ -4,9 +4,6 @@
 
 import type { IntervalTimerRound } from '@domain/intervalTimer';
 import { CheckIcon } from '@design/icons/CheckIcon';
-import { MinusIcon } from '@design/icons/MinusIcon';
-import { TrendIcon } from '@design/icons/TrendIcon';
-import { formatClock } from '@design/formatClock';
 import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalProgression, WorkoutRoundRow } from '@usecases/workoutSession';
 
@@ -82,19 +79,13 @@ export function startTimerLabel(rounds: readonly WorkoutRoundRow[]): string | un
 }
 
 /**
- * The plate of the ⓘ beside the column that progresses (FR-8; canvas 1.6, "Tap ⓘ next to Rest"):
- * the step a week of every round done buys, what a missed round does, and this week's value — none
- * on a week whose rounds have no time yet (FR-9).
+ * The plate of the ⓘ beside the column that progresses (FR-8): the step a week of every round done
+ * buys, and nothing else. A missed round and this week's value were here too (GT-104, Artem,
+ * 01.11.2026): the first is implied, the second stands in the column under the ⓘ.
  */
-export function intervalProgressionPlate(
-  progression: IntervalProgression,
-  rounds: readonly WorkoutRoundRow[],
-): BadgeExplanation {
+export function intervalProgressionPlate(progression: IntervalProgression): BadgeExplanation {
   const rest = progression.column === 'rest';
   const step = `${progression.stepSec} s ${rest ? 'shorter' : 'longer'}`;
-  const thisWeek = rest
-    ? rounds.find((round) => round.restSec !== undefined)?.restSec
-    : rounds[0]?.workSec;
   return {
     title: rest ? 'Less rest each week' : 'More work each week',
     rows: [
@@ -108,10 +99,6 @@ export function intervalProgressionPlate(
           ' next week.',
         ],
       },
-      { icon: MinusIcon, text: ['Miss a round: the plan ', { strong: 'repeats' }, '.'] },
-      ...(thisWeek === undefined
-        ? []
-        : [{ icon: TrendIcon, text: ['This week ', { strong: formatClock(thisWeek) }, '.'] }]),
     ],
   };
 }
