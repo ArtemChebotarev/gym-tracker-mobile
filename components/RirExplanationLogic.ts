@@ -8,6 +8,7 @@
 
 import type { PlateTextPart } from '@design/components/PlateRow';
 import type { ExerciseType } from '@domain/catalog';
+import { DELOAD_LOAD_FACTOR } from '@domain/deloadLoad';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';
@@ -46,6 +47,9 @@ export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrac
 // placed to fit the real proportion instead, 'Stop here' ending at its point so it never meets
 // 'Failure' under the end.
 const SET_UNITS = 10;
+
+// The share as the plate says it, so the copy moves with the rule.
+const DELOAD_LOAD_PERCENT = Math.round(DELOAD_LOAD_FACTOR * 100);
 
 /** The track for a reserve of `reserve` reps: failure at the end, the stop where the reserve begins. */
 export function rirTrack(reserve: number): RirTrack {
@@ -102,10 +106,14 @@ export function deloadExplanation({
     return {
       title: 'Deload week',
       rows: [
-        { icon: StopIcon, text: ["Don't push: ", { strong: 'this week is for recovery' }, '.'] },
+        { icon: TargetIcon, text: ["Don't push: ", { strong: 'this week is for recovery' }, '.'] },
         {
           icon: ArrowDownIcon,
-          text: ['About ', { strong: 'half your usual work time' }, ', two rounds at most.'],
+          text: [
+            'About ',
+            { strong: `${DELOAD_LOAD_PERCENT}% of your usual work time` },
+            ', two rounds at most.',
+          ],
         },
       ],
     };

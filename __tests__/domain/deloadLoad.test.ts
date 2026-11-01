@@ -1,3 +1,4 @@
+import { deloadExplanation } from '@components/RirExplanationLogic';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { withProgressionSettingsDefaults } from '@domain/mesocycleConverters';
 import type { SourceExercise } from '@domain/progression';
@@ -33,6 +34,12 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
 
   test('an interval round’s work follows it, up to the time picker’s step', () => {
     expect(deloadWorkSec(120)).toBe(75);
+  });
+
+  test('the interval plate says it as a percent', () => {
+    const [, load] = deloadExplanation({ type: 'interval' }).rows;
+
+    expect(load?.text).toContainEqual({ strong: '60% of your usual work time' });
   });
 });
 

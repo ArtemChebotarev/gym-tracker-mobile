@@ -167,7 +167,7 @@ describe('deloadExplanation', () => {
     expect(explanation.track).toBeUndefined();
     expect(explanation.rows.map((row) => readRow(row.text).said)).toEqual([
       "Don't push: this week is for recovery.",
-      'About half your usual work time, two rounds at most.',
+      'About 50% of your usual work time, two rounds at most.',
     ]);
   });
 });
