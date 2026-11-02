@@ -4,7 +4,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
-import { AppState, Linking } from 'react-native';
+import { AppState, Linking, Platform } from 'react-native';
 
 import {
   type NotificationStatus,
@@ -15,6 +15,15 @@ import { useRestTimerStore } from './restTimerStore';
 import { useOnboardingFlags } from './useOnboardingFlags';
 
 const NOTIFICATION_STATUS_QUERY_KEY = ['notificationStatus'];
+/** `UIApplicationOpenNotificationSettingsURLString`: the app's own page, on its notifications. */
+const IOS_NOTIFICATION_SETTINGS_URL = 'app-settings:notifications';
+
+/** The system's Settings, on this app. The only place to turn notifications on after a refusal. */
+export function openNotificationSettings(): Promise<void> {
+  return Platform.OS === 'ios'
+    ? Linking.openURL(IOS_NOTIFICATION_SETTINGS_URL)
+    : Linking.openSettings();
+}
 
 /** Undefined until it has been read. */
 export function useNotificationStatus(): NotificationStatus | undefined {
@@ -45,7 +54,7 @@ export function useTurnOnNotifications() {
   return useCallback(
     async (status: NotificationStatus | undefined) => {
       if (status !== 'undetermined') {
-        await Linking.openSettings();
+        await openNotificationSettings();
         return;
       }
       const answer = await requestNotificationPermission();

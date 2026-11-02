@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { SettingsScreen, type SettingsScreenProps } from '@components/SettingsScreen';
@@ -163,5 +164,12 @@ describe('Notifications', () => {
     fireEvent.press(screen.getByText('Change'));
 
     expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  test('the last section can be scrolled clear of the tab bar', () => {
+    section('on');
+
+    const list = screen.UNSAFE_getByType(ScrollView);
+    expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingBottom).toBeGreaterThan(0);
   });
 });

@@ -7,6 +7,10 @@ import { fieldStyles } from '@design/components/fieldStyles';
 import { BORDER_WIDTHS, COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  // The gap RootScreen puts between its children, now that the sections sit in a list.
+  content: {
+    gap: SPACING['space/gap'],
+  },
   section: {
     gap: SPACING['space/gap-tight'],
     paddingTop: SPACING['space/section'],
