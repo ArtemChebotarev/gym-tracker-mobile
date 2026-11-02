@@ -144,8 +144,36 @@ describe('deloadExplanation', () => {
     const explanation = deloadExplanation(input);
 
     expect(explanation.title).toBe('Deload week');
-    expect(explanation.track).toBeUndefined();
-    expect(rows(input).join(' ')).not.toMatch(/RIR|reps left/);
+    expect(
+      [...rows(input), explanation.track?.accessibilityLabel ?? ''].join(' '),
+    ).not.toMatch(/RIR|reps left|reps? in reserve/);
+  });
+
+  test.each([
+    {},
+    { type: 'strength', equipment: 'barbell' },
+    { type: 'strength', equipment: 'bodyweight' },
+    { type: 'strength', equipment: 'resistance-band' },
+    { type: 'strength', equipment: 'bodyweight-weighted' },
+  ] as const)('a strength plate draws the share of the load: %j', (input) => {
+    const { track } = deloadExplanation(input);
+
+    expect(track).toMatchObject({
+      outer: { min: 0, max: 100 },
+      inner: { min: 0, max: 50 },
+      marker: 50,
+      labels: [
+        { value: 50, text: 'Stop here', align: 'end' },
+        { value: 100, text: 'Failure' },
+      ],
+    });
+  });
+
+  test.each([
+    { type: 'power', powerLoad: 'weight' },
+    { type: 'interval' },
+  ] as const)('the other types draw no track: %j', (input) => {
+    expect(deloadExplanation(input).track).toBeUndefined();
   });
 
   test('a strength exercise says what is cut, by what its weight means', () => {

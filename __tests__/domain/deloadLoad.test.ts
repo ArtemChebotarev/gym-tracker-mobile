@@ -51,6 +51,15 @@ describe('DELOAD_LOAD_FACTOR is the one number behind every deload rule', () => 
     expect(load?.text).toContainEqual({ strong });
   });
 
+  test('the strength plate’s track follows it', () => {
+    const { track } = deloadExplanation({ type: 'strength', equipment: 'barbell' });
+
+    expect(track?.inner.max).toBe(60);
+    expect(track?.marker).toBe(60);
+    expect(track?.outer.max).toBe(100);
+    expect(track?.labels[0]).toMatchObject({ value: 60, text: 'Stop here' });
+  });
+
   test('the first-deload popup’s chip follows it', () => {
     expect(DELOAD_INTRO_FACTS[0]?.chip).toBe('60% load');
   });
