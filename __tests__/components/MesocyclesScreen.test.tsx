@@ -314,7 +314,7 @@ describe('MesocyclesScreen', () => {
 
       expect(alertSpy).toHaveBeenCalledWith(
         'Start this training cycle?',
-        'Push/Pull/Legs · 6 weeks · 3 days/week. Week 1 starts today.',
+        'Push/Pull/Legs · 6 weeks · 3 days/week. Week 1 Day 1 is next.',
         expect.any(Array),
       );
       expect(onStart).not.toHaveBeenCalled();

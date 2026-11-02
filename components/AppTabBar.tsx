@@ -18,7 +18,7 @@ import { TabTodayIcon } from '@design/icons/TabTodayIcon';
 // ("Cycles"); inside the screens the concept stays "training cycle" (08 · Screens & Navigation).
 // Settings joined with the strength rest timer (GT-87) — TabBar is built for four.
 const TABS: readonly TabBarItem[] = [
-  { key: 'index', label: 'Today', icon: TabTodayIcon },
+  { key: 'index', label: 'Workout', icon: TabTodayIcon },
   { key: 'mesocycles', label: 'Cycles', icon: TabCyclesIcon },
   { key: 'library', label: 'Library', icon: TabLibraryIcon },
   { key: 'settings', label: 'Settings', icon: TabSettingsIcon },
