@@ -58,7 +58,7 @@ export function RestNotificationsSection({
           <View style={styles.rowText}>
             <Text style={styles.rowTitle}>Rest notifications</Text>
             <Text style={styles.rowDescription}>
-              {view === 'on' ? 'On: rest ends with your phone locked too' : 'Off: only in-app signals'}
+              {view === 'on' ? 'On: alerts you outside the app' : 'Off: only in-app signals'}
             </Text>
           </View>
           <Pressable accessibilityRole="button" onPress={view === 'on' ? onChange : onTurnOn}>

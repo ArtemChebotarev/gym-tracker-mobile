@@ -160,7 +160,7 @@ describe('Notifications', () => {
   test('on, Change leads away', () => {
     const { onChange } = section('on');
 
-    expect(screen.getByText('On: rest ends with your phone locked too')).toBeTruthy();
+    expect(screen.getByText('On: alerts you outside the app')).toBeTruthy();
     fireEvent.press(screen.getByText('Change'));
 
     expect(onChange).toHaveBeenCalledTimes(1);
