@@ -94,8 +94,8 @@ export const FINISH_MESOCYCLE_CONFIRMATION =
   'Every workout is done. The cycle moves to Completed — you can start the next one from any of its weeks.';
 
 /**
- * Whether the first-workout coachmark tour shows over the Today tab (08.11, GT-42): once, on the
- * first live workout, and not while the Welcome dialog is still up — two modals at once don't
+ * Whether the first-workout coachmark tour may show over the Today tab (08.11, GT-42): on a live
+ * workout, until it is all behind the user — which steps are left is `workoutCoachmarks`' — and not while the Welcome dialog is still up — two modals at once don't
  * present reliably, and Welcome comes first. A deload session is left to its own popup (GT-43),
  * and the flags must have been read: a tour that flashed and went would be worse than one that
  * waits a frame.

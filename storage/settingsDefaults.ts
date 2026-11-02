@@ -8,6 +8,9 @@ import type { OnboardingFlags, Settings } from '@repositories/settings';
 export const DEFAULT_ONBOARDING: OnboardingFlags = {
   welcomeSeen: false,
   coachmarksSeen: false,
+  tourInfoSeen: false,
+  tourRirSeen: false,
+  tourGridSeen: false,
   deloadIntroSeen: false,
   startCycleSeen: false,
 };

@@ -56,6 +56,9 @@ describe('shouldShowWorkoutCoachmarks', () => {
     coachmarksSeen: false,
     deloadIntroSeen: false,
     startCycleSeen: false,
+    tourInfoSeen: false,
+    tourRirSeen: false,
+    tourGridSeen: false,
   };
   const live = { mode: 'live' as const, isDeload: false };
 
@@ -89,6 +92,9 @@ describe('shouldShowDeloadIntro', () => {
     coachmarksSeen: true,
     deloadIntroSeen: false,
     startCycleSeen: false,
+    tourInfoSeen: false,
+    tourRirSeen: false,
+    tourGridSeen: false,
   };
   const deload = { mode: 'live' as const, isDeload: true };
 

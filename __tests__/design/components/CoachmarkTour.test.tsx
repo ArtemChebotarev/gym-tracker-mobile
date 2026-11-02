@@ -1,5 +1,5 @@
 import { createRef, type RefObject } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { View } from 'react-native';
 
 import { CoachmarkTour, type CoachmarkStep } from '@design/components/CoachmarkTour';
@@ -71,6 +71,22 @@ describe('CoachmarkTour', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
 
     expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith('completed');
+  });
+
+  test('a step that scrolls is revealed first, and measured after', async () => {
+    const { list, first } = steps();
+    const order: string[] = [];
+    const scrolling = { ...list[0]!, scrolls: true };
+    first.measured.mockImplementation(() => order.push('measured'));
+    const reveal = jest.fn(async () => {
+      order.push('revealed');
+    });
+
+    render(<CoachmarkTour visible steps={[scrolling]} onFinish={() => {}} reveal={reveal} />);
+
+    await waitFor(() => expect(order).toEqual(['revealed', 'measured']));
+    expect(reveal).toHaveBeenCalledWith(scrolling.targetRef);
   });
 
   test('DoD: Skip on any step ends the whole tour', () => {

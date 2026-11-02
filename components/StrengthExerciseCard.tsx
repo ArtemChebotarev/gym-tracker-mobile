@@ -110,7 +110,7 @@ export function StrengthExerciseCard({
           {infoTargets.rir && view.rirLabel !== undefined && targetRir !== undefined && (
             <RirBadge
               label={view.rirLabel}
-              {...(coachmarkTargets !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
+              {...(coachmarkTargets?.rir !== undefined ? { chipRef: coachmarkTargets.rir } : {})}
               explanation={rirExplanation({ targetRir })}
             />
           )}
@@ -175,7 +175,7 @@ export function StrengthExerciseCard({
                 ? {
                     info: {
                       buttonRef: infoAnchor.ref,
-                      ...(coachmarkTargets !== undefined
+                      ...(coachmarkTargets?.weight !== undefined
                         ? { discRef: coachmarkTargets.weight }
                         : {}),
                       accessibilityLabel: bandInfo ? 'About reps with a band' : weightInfoLabel,

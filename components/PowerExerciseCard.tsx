@@ -161,7 +161,7 @@ export function PowerExerciseCard({
                 ? {
                     info: {
                       buttonRef: infoAnchor.ref,
-                      ...(coachmarkTargets !== undefined
+                      ...(coachmarkTargets?.weight !== undefined
                         ? { discRef: coachmarkTargets.weight }
                         : {}),
                       accessibilityLabel: target !== undefined ? 'Set target' : loadCopy.title,

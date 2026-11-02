@@ -26,7 +26,8 @@ export function useMarkOnboardingSeen() {
 
   return useMutation({
     meta: { operation: 'markOnboardingSeen' },
-    mutationFn: (flag: OnboardingFlag) => markOnboardingSeen(flag, deps),
+    mutationFn: (flags: OnboardingFlag | readonly OnboardingFlag[]) =>
+      markOnboardingSeen(flags, deps),
     onSuccess: (flags) => queryClient.setQueryData(ONBOARDING_QUERY_KEY, flags),
   });
 }

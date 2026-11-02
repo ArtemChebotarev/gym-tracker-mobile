@@ -166,9 +166,9 @@ export default function TodayScreen() {
   // that waits a frame.
   const onboarding = useOnboardingFlags();
   const markOnboardingSeen = useMarkOnboardingSeen();
-  // The first-workout tour (GT-42, 08.11) — once, after the Welcome dialog, on a live non-deload
-  // session. `Got it` and `Skip` both end it, and the flag is written when it ends, not when it
-  // opens, so an app killed halfway shows it again.
+  // The first-workout tour (GT-42, 08.11) — after the Welcome dialog, on a live non-deload session.
+  // `Got it` and `Skip` both end it, and the flags are written when it ends, not when it opens, so
+  // an app killed halfway shows it again.
   const showCoachmarks = shouldShowWorkoutCoachmarks(
     onboarding.data,
     query.data?.kind === 'session'
@@ -464,7 +464,8 @@ export default function TodayScreen() {
         loadError={loadErrorOf(query)}
         coachmarks={{
           visible: showCoachmarks,
-          onFinish: () => markOnboardingSeen.mutate('coachmarksSeen'),
+          ...(onboarding.data !== undefined ? { seen: onboarding.data } : {}),
+          onFinish: (flags) => markOnboardingSeen.mutate(flags),
         }}
         onOpenGrid={() => setIsGridOpen(true)}
         menuActions={{
