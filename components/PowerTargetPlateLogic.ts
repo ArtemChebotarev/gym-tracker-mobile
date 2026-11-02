@@ -36,7 +36,7 @@ function formatPowerTarget(
 
 const POWER_TARGET_SUBTITLE: Record<PowerLoad, string | undefined> = {
   weight: 'Heavier means fewer fast reps. Stay in the range.',
-  level: 'Higher means fewer fast reps. Stay in the range.',
+  level: 'Higher load means fewer fast reps. Stay in the range.',
   none: undefined,
 };
 

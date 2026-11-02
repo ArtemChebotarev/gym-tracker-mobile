@@ -24,7 +24,7 @@ describe('powerTargetPlate', () => {
   test('a level reads as a level, and goes higher rather than heavier', () => {
     expect(powerTargetPlate({ targetReps: 4, suggestedWeight: 2 }, 'level')).toMatchObject({
       title: 'Current set target: Level 2 × 4',
-      subtitle: 'Higher means fewer fast reps. Stay in the range.',
+      subtitle: 'Higher load means fewer fast reps. Stay in the range.',
     });
   });
 
