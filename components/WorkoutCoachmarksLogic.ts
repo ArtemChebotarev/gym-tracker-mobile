@@ -18,11 +18,13 @@ import { intervalInfo } from './IntervalExerciseCardLogic';
 import { showsPowerInfo } from './PowerExerciseCardLogic';
 import { rirExplanation, type RirExplanation } from './RirExplanationLogic';
 import { showsBandInfo } from './StrengthExerciseCardLogic';
+import { weightSwapPopover } from './WeightSwapLogic';
 import {
   cardInfoTargets,
   cardLoadEquipment,
   cardRowsOf,
   exerciseCardView,
+  firstUnloggedRow,
   setRowsOf,
   targetRirOf,
 } from './WorkoutExerciseCardLogic';
@@ -34,6 +36,19 @@ export const INFO_STEP = {
   title: 'Not sure about the load?',
   paragraphs: [
     ['Tap ', { icon: InfoIcon }, ' to ', { strong: "learn more about this exercise's load" }, '.'],
+  ] as PlateTextPart[][],
+};
+
+export const RANGES_STEP = {
+  title: 'Need a different weight?',
+  paragraphs: [
+    [
+      'Tap ',
+      { icon: InfoIcon },
+      ' to see ',
+      { strong: 'which weights work' },
+      '. Your reps update as you type.',
+    ],
   ] as PlateTextPart[][],
 };
 
@@ -160,6 +175,40 @@ export function workoutCoachmarks({
   }
 
   return steps;
+}
+
+/** Whether a card still has work to log: a set or a round, of an exercise that isn't closed. */
+function hasWorkLeft(exercise: WorkoutExercise): boolean {
+  const rows = setRowsOf(exercise) ?? ('rounds' in exercise ? exercise.rounds : []);
+  return rows.some((row) => row.isFirstUnlogged && row.notDone === undefined);
+}
+
+/**
+ * The card the weight ranges coachmark stands on (08.11, "Коучмарк диапазонов веса"), or `undefined`
+ * while there is none. That is the current card — the first with work left — once its ⓘ shows
+ * ranges, so a day that opens with something else gets to it in its turn, and the words arrive when
+ * they can be used. The trigger is the plate, not a week number.
+ */
+export function rangesCoachmarkIndex(
+  exercises: readonly WorkoutExercise[],
+  mode: WorkoutMode,
+  isDeload: boolean,
+): number | undefined {
+  const index = exercises.findIndex(hasWorkLeft);
+  const exercise = exercises[index];
+  if (exercise === undefined || !('rows' in exercise) || exercise.type === 'power') {
+    return undefined;
+  }
+  const targetRir = targetRirOf(exercise);
+  const showsWeightInfo = cardInfoTargets(
+    { ...exercise, targetRir },
+    exercise.rows,
+    mode,
+    isDeload,
+  ).weight;
+  return showsWeightInfo && weightSwapPopover(firstUnloggedRow(exercise.rows)) !== undefined
+    ? index
+    : undefined;
 }
 
 /**

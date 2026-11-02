@@ -43,6 +43,8 @@ export type ExerciseCardCommonProps = {
    * the first column, on whichever card a step found them. The rest of the tour is the screen's.
    */
   coachmarkTargets?: CardCoachmarkTargets;
+  /** The weight ranges plate was opened — the coachmark about it has nothing left to say (GT-215). */
+  onOpenRanges?: () => void;
   /** The chip above the card — see `cardChip`. */
   chip?: CardChip;
   /**

@@ -67,6 +67,8 @@ import { cardChip } from './WorkoutExerciseCardLogic';
 import { RirExplanationContent } from './RirExplanationContent';
 import {
   NO_TOUR_STEPS_SEEN,
+  RANGES_STEP,
+  rangesCoachmarkIndex,
   type SeenTourSteps,
   tourScrollOffset,
   tourStepsSeen,
@@ -182,6 +184,8 @@ export type WorkoutScreenProps = {
    */
   coachmarks?: {
     visible: boolean;
+    /** The weight ranges coachmark (GT-215) may show; on which card, and when, the screen works out. */
+    rangesVisible?: boolean;
     seen?: SeenTourSteps;
     onFinish: (flags: OnboardingFlag[]) => void;
   };
@@ -241,6 +245,23 @@ export function WorkoutScreen({
     finishWasReady.current = finishReady;
   }, [finishReady, model]);
   const tourDue = useDelayedFlag(coachmarks?.visible === true, TOUR_DELAY_MS);
+  // Worked out from the model, which isn't there on the first frames.
+  const rangesIndex =
+    coachmarks?.rangesVisible === true && model !== undefined
+      ? rangesCoachmarkIndex(model.exercises, model.mode, model.header.isDeload)
+      : undefined;
+  const tourSteps =
+    model === undefined
+      ? []
+      : workoutCoachmarks({
+          exercises: model.exercises,
+          mode: model.mode,
+          isDeload: model.header.isDeload,
+          seen: coachmarks?.seen ?? NO_TOUR_STEPS_SEEN,
+        });
+  const tourPending = coachmarks?.visible === true && tourSteps.length > 0;
+  // Never over the tour, and a beat after whatever brought it on: the set just logged, the tour.
+  const rangesDue = useDelayedFlag(rangesIndex !== undefined && !tourPending, TOUR_DELAY_MS);
   // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
   const tourRir = useRef<View>(null);
   const tourWeight = useRef<View>(null);
@@ -298,13 +319,6 @@ export function WorkoutScreen({
   }
 
   const { header, nextSessionId } = model;
-
-  const tourSteps = workoutCoachmarks({
-    exercises: model.exercises,
-    mode: model.mode,
-    isDeload: model.header.isDeload,
-    seen: coachmarks?.seen ?? NO_TOUR_STEPS_SEEN,
-  });
 
   return (
     <View style={styles.root}>
@@ -386,9 +400,14 @@ export function WorkoutScreen({
                   : {}),
                 ...(tourSteps.some(
                   (step) => step.target === 'weight' && step.exerciseIndex === index,
-                )
+                ) || (!tourPending && rangesIndex === index)
                   ? { weight: tourWeight }
                   : {}),
+              }}
+              onOpenRanges={() => {
+                if (coachmarks?.rangesVisible === true) {
+                  coachmarks.onFinish(['rangesCoachmarkSeen']);
+                }
               }}
               chip={cardChip(model.exercises, index)}
               position={index}
@@ -485,6 +504,22 @@ export function WorkoutScreen({
               : {}),
             targetRef: tourRefs[step.target],
           }))}
+        />
+      )}
+      {coachmarks !== undefined && (
+        <CoachmarkTour
+          key={`ranges-${model.sessionId}`}
+          visible={rangesDue}
+          onFinish={() => coachmarks.onFinish(['rangesCoachmarkSeen'])}
+          reveal={revealTourTarget}
+          steps={[
+            {
+              ringRadius: RADII['radius/capsule'],
+              scrolls: true,
+              targetRef: tourWeight,
+              ...RANGES_STEP,
+            },
+          ]}
         />
       )}
     </View>

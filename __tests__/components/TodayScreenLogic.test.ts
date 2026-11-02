@@ -4,6 +4,7 @@ import {
   intervalTimerStartOf,
   restAfterIntervalBlock,
   shouldShowDeloadIntro,
+  shouldShowRangesCoachmark,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
   loggedSetKey,
@@ -50,6 +51,40 @@ describe('todayEmptyCopy', () => {
   });
 });
 
+describe('shouldShowRangesCoachmark', () => {
+  const flags = {
+    welcomeSeen: true,
+    coachmarksSeen: true,
+    deloadIntroSeen: true,
+    startCycleSeen: true,
+    tourInfoSeen: true,
+    tourRirSeen: true,
+    tourGridSeen: true,
+    rangesCoachmarkSeen: false,
+  };
+  const live = { mode: 'live', isDeload: false } as const;
+
+  test('on a live workout, whether or not the tour has been seen', () => {
+    expect(shouldShowRangesCoachmark(flags, live)).toBe(true);
+    expect(shouldShowRangesCoachmark({ ...flags, coachmarksSeen: false }, live)).toBe(true);
+  });
+
+  test('once per user', () => {
+    expect(shouldShowRangesCoachmark({ ...flags, rangesCoachmarkSeen: true }, live)).toBe(false);
+  });
+
+  test('not on a deload, not outside a live workout', () => {
+    expect(shouldShowRangesCoachmark(flags, { ...live, isDeload: true })).toBe(false);
+    expect(shouldShowRangesCoachmark(flags, { ...live, mode: 'readonly' })).toBe(false);
+  });
+
+  test('not before the flags are read, and not before Welcome', () => {
+    expect(shouldShowRangesCoachmark(undefined, live)).toBe(false);
+    expect(shouldShowRangesCoachmark({ ...flags, welcomeSeen: false }, live)).toBe(false);
+    expect(shouldShowRangesCoachmark(flags, undefined)).toBe(false);
+  });
+});
+
 describe('shouldShowWorkoutCoachmarks', () => {
   const unseen = {
     welcomeSeen: true,
@@ -59,6 +94,7 @@ describe('shouldShowWorkoutCoachmarks', () => {
     tourInfoSeen: false,
     tourRirSeen: false,
     tourGridSeen: false,
+    rangesCoachmarkSeen: false,
   };
   const live = { mode: 'live' as const, isDeload: false };
 
@@ -95,6 +131,7 @@ describe('shouldShowDeloadIntro', () => {
     tourInfoSeen: false,
     tourRirSeen: false,
     tourGridSeen: false,
+    rangesCoachmarkSeen: false,
   };
   const deload = { mode: 'live' as const, isDeload: true };
 

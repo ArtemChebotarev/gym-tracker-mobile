@@ -118,6 +118,7 @@ async function fill(deps: BackupDeps): Promise<void> {
       tourInfoSeen: false,
       tourRirSeen: false,
       tourGridSeen: false,
+      rangesCoachmarkSeen: false,
     },
   });
 }
