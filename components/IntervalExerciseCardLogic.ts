@@ -1,10 +1,12 @@
 // Pure helpers behind components/IntervalExerciseCard.tsx — 10.1 FR-6, FR-8, FR-14. What the card
-// writes: its column labels, a round's times, the Start timer button's label and the ⓘ plate of the
-// column that progresses. See the code-style skill.
+// writes: its column labels, a round's times, the Start timer button's label and the plates of its
+// ⓘ. See the code-style skill.
 
 import type { IntervalTimerRound } from '@domain/intervalTimer';
+import type { PlateTextPart } from '@design/components/PlateText';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import type { RoundEntry } from '@domain/executionValidators';
+import type { WorkoutMode } from '@domain/workoutView';
 import type { IntervalProgression, WorkoutRoundRow } from '@usecases/workoutSession';
 
 import type { BadgeExplanation } from './RirExplanationLogic';
@@ -79,31 +81,66 @@ export function startTimerLabel(rounds: readonly WorkoutRoundRow[]): string | un
 }
 
 /**
- * The plate of the ⓘ beside the column that progresses (FR-8): the step a week of every round done
- * buys, and nothing else. A missed round and this week's value were here too (GT-104, Artem,
- * 01.11.2026): the first is implied, the second stands in the column under the ⓘ.
+ * The step a week of every round done buys, and nothing else. A missed round and this week's value
+ * were here too (GT-104, Artem, 01.11.2026): the first is implied, the second stands in the column.
  */
-export function intervalProgressionPlate(progression: IntervalProgression): BadgeExplanation {
+function progressionLine(progression: IntervalProgression): PlateTextPart[] {
   const rest = progression.column === 'rest';
   const step = `${progression.stepSec} s ${rest ? 'shorter' : 'longer'}`;
+  return ['Finish every round: ', rest ? 'rest' : 'work', ' gets ', { strong: step }, ' next week.'];
+}
+
+/** The ⓘ's plate once the rounds have their times, on a lever that moves one of them (FR-8). */
+export function intervalProgressionPlate(progression: IntervalProgression): BadgeExplanation {
   return {
-    title: rest ? 'Less rest each week' : 'More work each week',
-    rows: [
-      {
-        icon: CheckIcon,
-        text: [
-          'Finish every round: ',
-          rest ? 'rest' : 'work',
-          ' gets ',
-          { strong: step },
-          ' next week.',
-        ],
-      },
-    ],
+    title: progression.column === 'rest' ? 'Less rest each week' : 'More work each week',
+    rows: [{ icon: CheckIcon, text: progressionLine(progression) }],
   };
 }
 
-/** The accessibility label of the progressing column's ⓘ. */
+export const FINDING_TIME_TITLE = 'Finding your time';
+
+/** What to go by in each field. The line about Log and Start timer says what to fill; this, what with. */
+export const FINDING_TIME_ROWS: readonly { chip: string; text: string }[] = [
+  { chip: WORK_COLUMN, text: 'A time you can hold with good form in every round' },
+  { chip: REST_COLUMN, text: 'Enough to start the next round ready' },
+];
+
+/** What the ⓘ opens, or `undefined` when there is none. */
+export type IntervalInfo =
+  | { kind: 'finding-time'; progressionLine?: PlateTextPart[] }
+  | { kind: 'progression'; plate: BadgeExplanation; accessibilityLabel: string };
+
+/**
+ * The first column's ⓘ (08.11, "Timed work: Work ⓘ"): during a live workout, not on a deload. While
+ * a round has no time it says how to pick one, on any lever, with the step on a lever that has one.
+ * After that it is the step, so `rounds` and `none` have no ⓘ: nothing to say about them.
+ */
+export function intervalInfo(
+  rounds: readonly WorkoutRoundRow[],
+  progression: IntervalProgression | undefined,
+  mode: WorkoutMode,
+  isDeload: boolean,
+): IntervalInfo | undefined {
+  if (mode !== 'live' || isDeload) {
+    return undefined;
+  }
+  if (lacksRoundTimes(rounds)) {
+    return {
+      kind: 'finding-time',
+      ...(progression === undefined ? {} : { progressionLine: progressionLine(progression) }),
+    };
+  }
+  return progression === undefined
+    ? undefined
+    : {
+        kind: 'progression',
+        plate: intervalProgressionPlate(progression),
+        accessibilityLabel: progressionInfoLabel(progression),
+      };
+}
+
+/** The accessibility label of the ⓘ while it speaks of the step. */
 export function progressionInfoLabel(progression: IntervalProgression): string {
   return progression.column === 'rest' ? 'How rest progresses' : 'How work progresses';
 }

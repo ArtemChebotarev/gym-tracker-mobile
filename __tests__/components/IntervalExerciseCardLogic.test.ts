@@ -1,5 +1,6 @@
 import {
   hasRoundTimes,
+  intervalInfo,
   intervalProgressionPlate,
   lacksRoundTimes,
   progressionInfoLabel,
@@ -62,6 +63,52 @@ describe('intervalProgressionPlate', () => {
     expect(plate.rows.map((row) => row.text)).toEqual([
       ['Finish every round: ', 'work', ' gets ', { strong: '5 s longer' }, ' next week.'],
     ]);
+  });
+});
+
+// 08.11, "Timed work: Work ⓘ".
+describe('intervalInfo', () => {
+  const timed: WorkoutRoundRow[] = [{ roundNumber: 1, workSec: 60, restSec: 30, isFirstUnlogged: true }];
+  const untimed: WorkoutRoundRow[] = [{ roundNumber: 1, isFirstUnlogged: true }];
+  const rest = { column: 'rest', stepSec: 5 } as const;
+  const work = { column: 'work', stepSec: 10 } as const;
+
+  test('a round with no time says how to pick one, with the step of the lever', () => {
+    expect(intervalInfo(untimed, rest, 'live', false)).toEqual({
+      kind: 'finding-time',
+      progressionLine: ['Finish every round: ', 'rest', ' gets ', { strong: '5 s shorter' }, ' next week.'],
+    });
+    expect(intervalInfo(untimed, work, 'live', false)).toEqual({
+      kind: 'finding-time',
+      progressionLine: ['Finish every round: ', 'work', ' gets ', { strong: '10 s longer' }, ' next week.'],
+    });
+  });
+
+  test('on rounds or none, the same plate with no line about a step', () => {
+    expect(intervalInfo(untimed, undefined, 'live', false)).toEqual({ kind: 'finding-time' });
+  });
+
+  test('only one time of the two is still no time', () => {
+    const noRest: WorkoutRoundRow[] = [{ roundNumber: 1, workSec: 60, isFirstUnlogged: true }];
+    expect(intervalInfo(noRest, rest, 'live', false)?.kind).toBe('finding-time');
+  });
+
+  test('with times, the step and its label', () => {
+    expect(intervalInfo(timed, rest, 'live', false)).toMatchObject({
+      kind: 'progression',
+      plate: { title: 'Less rest each week' },
+      accessibilityLabel: 'How rest progresses',
+    });
+  });
+
+  test('with times on rounds or none there is nothing to say, so no ⓘ', () => {
+    expect(intervalInfo(timed, undefined, 'live', false)).toBeUndefined();
+  });
+
+  test('no ⓘ on a deload or outside a live workout, even with no time', () => {
+    expect(intervalInfo(untimed, rest, 'live', true)).toBeUndefined();
+    expect(intervalInfo(untimed, rest, 'readonly', false)).toBeUndefined();
+    expect(intervalInfo(timed, rest, 'readonly', false)).toBeUndefined();
   });
 });
 
