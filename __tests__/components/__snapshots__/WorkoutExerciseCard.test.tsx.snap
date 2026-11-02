@@ -528,6 +528,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Weight, kg"
       >
         <View
           style={
@@ -720,6 +721,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Reps"
       >
         <View
           style={
@@ -2201,6 +2203,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Weight, kg"
       >
         <View
           style={
@@ -2247,6 +2250,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Reps"
       >
         <View
           style={
@@ -3852,6 +3856,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Weight, kg"
       >
         <View
           style={
@@ -4044,6 +4049,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Reps"
       >
         <View
           style={

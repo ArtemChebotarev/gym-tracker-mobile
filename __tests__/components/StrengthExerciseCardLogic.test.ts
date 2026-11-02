@@ -1,5 +1,6 @@
 import {
   bandRepsPlate,
+  showsBandInfo,
   formatWeightHint,
   strengthWeightColumnLabel,
 } from '@components/StrengthExerciseCardLogic';
@@ -38,13 +39,31 @@ describe('strengthWeightColumnLabel', () => {
   });
 });
 
-// Artem's review (18.10.2026): a band's Reps ⓘ — the strength plate's shape, a band's words.
+// 08.11, "Правило ⓘ": the same rule as the Weight ⓘ, on the band's own condition.
+describe('showsBandInfo', () => {
+  test('a band in a live workout', () => {
+    expect(showsBandInfo('live', false, 'resistance-band')).toBe(true);
+  });
+
+  test('not on a deload, not outside a live workout', () => {
+    expect(showsBandInfo('live', true, 'resistance-band')).toBe(false);
+    expect(showsBandInfo('readonly', false, 'resistance-band')).toBe(false);
+  });
+
+  test('only a band', () => {
+    expect(showsBandInfo('live', false, 'bodyweight')).toBe(false);
+    expect(showsBandInfo('live', false, undefined)).toBe(false);
+  });
+});
+
+// 08.11, "Резина: ⓘ в первой колонке" — the plate behind a band's ⓘ.
 describe('bandRepsPlate', () => {
-  test('the 5–30 corridor, which band to take, and what to do at the top', () => {
+  test('the range to stay in, its 5–30 corridor, and what to do at the top', () => {
     const plate = bandRepsPlate();
 
     expect(plate.corridor.inner).toEqual({ min: 5, max: 30 });
-    expect(plate.steps[0]).toEqual(['Pick a band you can do ', { strong: '5–30 reps' }, ' with.']);
+    expect(plate.steps[0]).toEqual(['Stay in the ', { strong: '5–30 reps' }, ' range.']);
+    expect(plate.steps[1]).toEqual(['Stop each set with ', { strong: 'a few reps in reserve' }, '.']);
     expect(plate.steps[2]).toEqual([
       'At ',
       { strong: '30 reps' },

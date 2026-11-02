@@ -487,6 +487,7 @@ exports[`Mobility card (GT-107) matches the live snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Duration"
       >
         <View
           style={
