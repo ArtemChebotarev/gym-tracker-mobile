@@ -39,8 +39,8 @@
 // JSX/rendering only — styles live in WorkoutScreenStyles.ts and pure helpers in
 // WorkoutScreenLogic.ts, per the code-style skill.
 
-import { useEffect, useRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { type RefObject, useCallback, useEffect, useRef } from 'react';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { ActionMenu } from '@design/components/ActionMenu';
 import { Badge } from '@design/components/Badge';
@@ -57,6 +57,7 @@ import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
 import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalTimerRound } from '@domain/intervalTimer';
 import type { RoundTimeColumn } from '@domain/roundTimes';
+import type { OnboardingFlag } from '@repositories/settings';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
@@ -64,7 +65,13 @@ import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { cardChip } from './WorkoutExerciseCardLogic';
 import { RirExplanationContent } from './RirExplanationContent';
-import { workoutCoachmarks } from './WorkoutCoachmarksLogic';
+import {
+  NO_TOUR_STEPS_SEEN,
+  type SeenTourSteps,
+  tourScrollOffset,
+  tourStepsSeen,
+  workoutCoachmarks,
+} from './WorkoutCoachmarksLogic';
 import { workoutExerciseMenuActions, type ExerciseMenuItem } from './WorkoutExerciseMenuLogic';
 import {
   formatWorkoutMenuTitle,
@@ -82,6 +89,12 @@ import { useTabBarClearance } from './useTabBarClearance';
 
 /** How long the first-workout tour waits after the workout is up. */
 const TOUR_DELAY_MS = 1000;
+
+// How long the tour lets an animated scroll run before it measures where the element landed.
+const TOUR_SCROLL_MS = 450;
+
+// How often the list reports its position to the tour: a frame.
+const SCROLL_EVENT_MS = 16;
 
 export type WorkoutScreenProps = {
   model: WorkoutSessionModel | undefined;
@@ -162,11 +175,16 @@ export type WorkoutScreenProps = {
   /** Set when reading the session failed — shown instead of `fallback`, which would claim there is none. */
   loadError?: LoadError;
   /**
-   * The first-workout coachmark tour (08.11, GT-42): whether it is up, and what happens when it ends
+   * The first-workout coachmark tour (08.11, GT-42): whether it is up, which steps are behind the
+   * user, and what happens when it ends — with the flags to write
    * (`Got it` or `Skip`). The caller decides *whether* — it holds the onboarding flags — and this
    * screen builds the steps from its own header and first card.
    */
-  coachmarks?: { visible: boolean; onFinish: () => void };
+  coachmarks?: {
+    visible: boolean;
+    seen?: SeenTourSteps;
+    onFinish: (flags: OnboardingFlag[]) => void;
+  };
   /**
    * Pushed as a page (`session/[id]`, 08.9, task 130) rather than shown as the Today tab: a back
    * button above the title, in every state, loading and the fallback included.
@@ -228,6 +246,30 @@ export function WorkoutScreen({
   const tourWeight = useRef<View>(null);
   const tourGrid = useRef<View>(null);
   const tourRefs = { rir: tourRir, weight: tourWeight, grid: tourGrid };
+  // Where the list stands: the tour has to scroll to a step's card, and native gives this only by
+  // event.
+  const listMetrics = useRef({ y: 0, contentHeight: 0, viewportHeight: 0 });
+  const { height: windowHeight } = useWindowDimensions();
+  const revealTourTarget = useCallback(
+    (target: RefObject<View | null>) =>
+      new Promise<void>((resolve) => {
+        const node = target.current;
+        if (node === null) {
+          resolve();
+          return;
+        }
+        node.measureInWindow((_x, targetY) => {
+          const y = tourScrollOffset({ ...listMetrics.current, targetY, windowHeight });
+          if (y === undefined) {
+            resolve();
+            return;
+          }
+          scrollRef.current?.scrollTo({ y, animated: true });
+          setTimeout(resolve, TOUR_SCROLL_MS);
+        });
+      }),
+    [windowHeight],
+  );
   if (isPending) {
     return (
       <View style={styles.root}>
@@ -256,6 +298,13 @@ export function WorkoutScreen({
   }
 
   const { header, nextSessionId } = model;
+
+  const tourSteps = workoutCoachmarks({
+    exercises: model.exercises,
+    mode: model.mode,
+    isDeload: model.header.isDeload,
+    seen: coachmarks?.seen ?? NO_TOUR_STEPS_SEEN,
+  });
 
   return (
     <View style={styles.root}>
@@ -314,6 +363,16 @@ export function WorkoutScreen({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets
+          scrollEventThrottle={SCROLL_EVENT_MS}
+          onScroll={(event) => {
+            listMetrics.current.y = event.nativeEvent.contentOffset.y;
+          }}
+          onLayout={(event) => {
+            listMetrics.current.viewportHeight = event.nativeEvent.layout.height;
+          }}
+          onContentSizeChange={(_width, height) => {
+            listMetrics.current.contentHeight = height;
+          }}
         >
           {model.exercises.map((exercise, index) => (
             <WorkoutExerciseCard
@@ -321,9 +380,16 @@ export function WorkoutScreen({
               exercise={exercise}
               mode={model.mode}
               isDeload={model.header.isDeload}
-              {...(index === 0
-                ? { coachmarkTargets: { rir: tourRir, weight: tourWeight } }
-                : {})}
+              coachmarkTargets={{
+                ...(tourSteps.some((step) => step.target === 'rir' && step.exerciseIndex === index)
+                  ? { rir: tourRir }
+                  : {}),
+                ...(tourSteps.some(
+                  (step) => step.target === 'weight' && step.exerciseIndex === index,
+                )
+                  ? { weight: tourWeight }
+                  : {}),
+              }}
               chip={cardChip(model.exercises, index)}
               position={index}
               onOpenHistory={() => onOpenExerciseHistory(exercise)}
@@ -400,17 +466,18 @@ export function WorkoutScreen({
         </ScrollView>
       </RootScreen>
       {coachmarks !== undefined && (
+        // Keyed by the session: a step that waited comes up in the next workout, in a tour of its
+        // own, and a tour shows once per mount.
         <CoachmarkTour
+          key={model.sessionId}
           visible={tourDue}
-          onFinish={coachmarks.onFinish}
-          steps={workoutCoachmarks({
-            exercise: model.exercises[0],
-            mode: model.mode,
-            isDeload: model.header.isDeload,
-          }).map((step) => ({
-            // A capsule ring for all four: a chip, a round disc and a round button each want round
-            // corners, and the ring clamps it to what the element can take.
+          onFinish={(end) => coachmarks.onFinish(tourStepsSeen(tourSteps, end))}
+          reveal={revealTourTarget}
+          steps={tourSteps.map((step) => ({
+            // A capsule ring for all of them: a chip, a round disc and a round button each want
+            // round corners, and the ring clamps it to what the element can take.
             ringRadius: RADII['radius/capsule'],
+            ...(step.exerciseIndex !== undefined ? { scrolls: true } : {}),
             title: step.title,
             ...(step.paragraphs !== undefined ? { paragraphs: step.paragraphs } : {}),
             ...(step.explanation !== undefined

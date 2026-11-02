@@ -19,6 +19,21 @@ describe('onboarding flags', () => {
       coachmarksSeen: false,
       deloadIntroSeen: false,
       startCycleSeen: false,
+      tourInfoSeen: false,
+      tourRirSeen: false,
+      tourGridSeen: false,
+    });
+  });
+
+  test('several flags go in one write, none lost', async () => {
+    const { deps } = setUp();
+
+    await markOnboardingSeen(['tourInfoSeen', 'tourGridSeen'], deps);
+
+    await expect(readOnboardingFlags(deps)).resolves.toMatchObject({
+      tourInfoSeen: true,
+      tourRirSeen: false,
+      tourGridSeen: true,
     });
   });
 
@@ -34,6 +49,9 @@ describe('onboarding flags', () => {
       coachmarksSeen: false,
       deloadIntroSeen: false,
       startCycleSeen: false,
+      tourInfoSeen: false,
+      tourRirSeen: false,
+      tourGridSeen: false,
     });
   });
 
@@ -49,6 +67,9 @@ describe('onboarding flags', () => {
       coachmarksSeen: true,
       deloadIntroSeen: true,
       startCycleSeen: false,
+      tourInfoSeen: false,
+      tourRirSeen: false,
+      tourGridSeen: false,
     });
     expect((await settingsRepo.read()).weightUnit).toBe('lb');
   });

@@ -518,7 +518,7 @@ describe('First-workout coachmarks', () => {
     expect(screen.queryByTestId('coachmark')).toBeNull();
     await waitFor(async () =>
       expect(await repositories().settingsRepo.read()).toMatchObject({
-        onboarding: { coachmarksSeen: true },
+        onboarding: { tourInfoSeen: true, tourRirSeen: true, tourGridSeen: true },
       }),
     );
   });

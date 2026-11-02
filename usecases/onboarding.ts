@@ -13,18 +13,20 @@ export async function readOnboardingFlags(deps: OnboardingDeps): Promise<Onboard
 }
 
 /**
- * Records that the user closed the window `flag` belongs to. Called when it is closed, never when
- * it is shown, so an app killed with the window open shows it again. Idempotent, and leaves every
- * other setting — and the other flags — as they were.
+ * Records that the user closed the window `flags` belong to — several at once for a tour that
+ * showed several steps, in one write so that none is lost to another. Called when it is closed,
+ * never when it is shown, so an app killed with the window open shows it again. Idempotent, and
+ * leaves every other setting — and the other flags — as they were.
  */
 export async function markOnboardingSeen(
-  flag: OnboardingFlag,
+  flags: OnboardingFlag | readonly OnboardingFlag[],
   deps: OnboardingDeps,
 ): Promise<OnboardingFlags> {
   const settings = await deps.settingsRepo.read();
+  const seen = [flags].flat().map((flag) => [flag, true]);
   const written = await deps.settingsRepo.write({
     ...settings,
-    onboarding: { ...settings.onboarding, [flag]: true },
+    onboarding: { ...settings.onboarding, ...Object.fromEntries(seen) },
   });
   return written.onboarding;
 }

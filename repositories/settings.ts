@@ -3,15 +3,24 @@ import type { RestBetweenSets } from '@domain/restTimer';
 import type { Signals } from '@domain/signals';
 
 /**
- * Which of the four first-run windows of 08.11 · Onboarding the user has already closed. Each flag
+ * Which of the first-run windows of 08.11 · Onboarding the user has already closed. Each flag
  * is set when its own window is closed (`Got it`, or `Skip` for the coachmarks), not when it is
  * shown, so an app killed with a window open shows it again.
  */
 export type OnboardingFlags = {
   /** The Welcome dialog over the first Today. */
   welcomeSeen: boolean;
-  /** The four coachmarks on the first live workout. */
+  /**
+   * The whole first-workout tour is behind the user: `Skip`, or the tour as it was before it kept
+   * its steps apart (GT-214), so whoever passed that one is not shown the new one.
+   */
   coachmarksSeen: boolean;
+  /** The tour's step on the ⓘ in a first column. A step with nothing to ring in a day waits. */
+  tourInfoSeen: boolean;
+  /** The tour's step on the `N RIR` badge. */
+  tourRirSeen: boolean;
+  /** The tour's step on the grid button. */
+  tourGridSeen: boolean;
   /** The popup on the first deload session. */
   deloadIntroSeen: boolean;
   /** The one-step coachmark on `Start` of the first Planned cycle (GT-50). */

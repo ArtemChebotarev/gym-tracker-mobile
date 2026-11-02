@@ -49,6 +49,7 @@ export function IntervalExerciseCard({
   exercise,
   mode,
   isDeload = false,
+  coachmarkTargets,
   chip,
   position = 0,
   onOpenHistory,
@@ -119,6 +120,9 @@ export function IntervalExerciseCard({
                 ? {
                     info: {
                       buttonRef: infoAnchor.ref,
+                      ...(coachmarkTargets?.weight !== undefined
+                        ? { discRef: coachmarkTargets.weight }
+                        : {}),
                       accessibilityLabel:
                         info.kind === 'progression' ? info.accessibilityLabel : FINDING_TIME_TITLE,
                       open: infoAnchor.visible,

@@ -536,6 +536,10 @@ exports[`WorkoutScreen header matches the completed snapshot 1`] = `
         }
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onScroll={[Function]}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <View>
@@ -1228,6 +1232,10 @@ exports[`WorkoutScreen header matches the history snapshot 1`] = `
         }
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onScroll={[Function]}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <View>
@@ -2110,6 +2118,10 @@ exports[`WorkoutScreen header matches the live snapshot 1`] = `
         }
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onScroll={[Function]}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <View>
@@ -3144,6 +3156,10 @@ exports[`WorkoutScreen header matches the preview snapshot 1`] = `
         }
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onScroll={[Function]}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <View>

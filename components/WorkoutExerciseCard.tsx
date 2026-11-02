@@ -27,9 +27,10 @@ import { StrengthExerciseCard } from './StrengthExerciseCard';
 import type { CardChip } from './WorkoutExerciseCardLogic';
 import type { SetLoggingProps } from './WorkoutSetRows';
 
+/** What the first-workout tour rings on this card, if anything: each step finds its own card. */
 export type CardCoachmarkTargets = {
-  rir: Ref<View>;
-  weight: Ref<View>;
+  rir?: Ref<View>;
+  weight?: Ref<View>;
 };
 
 /** What every card takes, whatever its type. */
@@ -38,8 +39,8 @@ export type ExerciseCardCommonProps = {
   /** A deload session: the `Deload` chip in place of RIR, and no ⓘ on the Weight header (08.11). */
   isDeload?: boolean;
   /**
-   * The visible parts the first-workout coachmarks point at (GT-42): the RIR chip and the two ⓘ
-   * discs. Only the first card gets them; the rest of the tour is the screen's.
+   * The visible parts the first-workout coachmarks point at (GT-42): the RIR chip and the ⓘ disc of
+   * the first column, on whichever card a step found them. The rest of the tour is the screen's.
    */
   coachmarkTargets?: CardCoachmarkTargets;
   /** The chip above the card — see `cardChip`. */
