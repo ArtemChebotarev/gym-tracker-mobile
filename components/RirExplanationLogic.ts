@@ -34,8 +34,8 @@ export type RirExplanation = {
 };
 
 /**
- * What a badge's popover shows: the RIR explanation, or — with no track — the Deload badge's plate,
- * which has no RIR to draw.
+ * What a badge's popover shows: the RIR explanation, or the Deload badge's plate — with the share of
+ * the load as its track on a strength exercise, and no track on the other types.
  */
 export type BadgeExplanation = Omit<RirExplanation, 'track'> & { track?: RirTrack };
 
@@ -50,6 +50,20 @@ const SET_UNITS = 10;
 // The share as the copy says it, so the copy moves with the rule.
 export const DELOAD_LOAD_PERCENT = Math.round(DELOAD_LOAD_FACTOR * 100);
 
+/** A track from the start of a set to failure at `end`, with the stop at `stop`. */
+function stopTrack(stop: number, end: number, accessibilityLabel: string): RirTrack {
+  return {
+    outer: { min: 0, max: end },
+    inner: { min: 0, max: stop },
+    marker: stop,
+    labels: [
+      { value: stop, text: 'Stop here', align: 'end' },
+      { value: end, text: 'Failure' },
+    ],
+    accessibilityLabel,
+  };
+}
+
 /** The track for a reserve of `reserve` reps: failure at the end, the stop where the reserve begins. */
 export function rirTrack(reserve: number): RirTrack {
   if (reserve <= 0) {
@@ -62,17 +76,23 @@ export function rirTrack(reserve: number): RirTrack {
       accessibilityLabel: 'No reps in reserve: you stop at failure',
     };
   }
-  const end = SET_UNITS + reserve;
-  return {
-    outer: { min: 0, max: end },
-    inner: { min: 0, max: SET_UNITS },
-    marker: SET_UNITS,
-    labels: [
-      { value: SET_UNITS, text: 'Stop here', align: 'end' },
-      { value: end, text: 'Failure' },
-    ],
-    accessibilityLabel: `${reserve} ${reserve === 1 ? 'rep' : 'reps'} in reserve: you stop before failure`,
-  };
+  return stopTrack(
+    SET_UNITS,
+    SET_UNITS + reserve,
+    `${reserve} ${reserve === 1 ? 'rep' : 'reps'} in reserve: you stop before failure`,
+  );
+}
+
+/**
+ * A strength deload's track: filled to the share of the load the week keeps. It draws that share,
+ * not a reserve, so it promises no number of reps left (08.11).
+ */
+function deloadTrack(): RirTrack {
+  return stopTrack(
+    DELOAD_LOAD_PERCENT,
+    100,
+    `About ${DELOAD_LOAD_PERCENT}% of your usual load: you stop well before failure`,
+  );
 }
 
 export type RirExplanationInput = {
@@ -128,11 +148,13 @@ function deloadLoadText({ type, powerLoad, equipment }: DeloadExplanationInput):
  * What the Deload badge says (the badge that takes the RIR badge's place on a deload week, for
  * every type). No type draws RIR here: the week is set by its load, and the reserve that leaves
  * varies too much for a number to promise (GT-209). So it says how to take the sets, and what is
- * cut for this exercise's kind of load.
+ * cut for this exercise's kind of load; a strength exercise also draws that share as a track.
  */
 export function deloadExplanation(input: DeloadExplanationInput): BadgeExplanation {
+  const isStrength = input.type === undefined || input.type === 'strength';
   return {
     title: 'Deload week',
+    ...(isStrength ? { track: deloadTrack() } : {}),
     rows: [
       { icon: TargetIcon, text: input.type === 'power' ? STOP_BEFORE_SPEED_DROPS : DONT_PUSH },
       { icon: ArrowDownIcon, text: deloadLoadText(input) },
