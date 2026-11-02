@@ -2,7 +2,7 @@ import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-aud
 
 import { countdownStart } from '@domain/intervalCountdownRules';
 
-import { playFrom } from './soundPlayer';
+import { playFrom, TIMER_AUDIO_MODE } from './soundPlayer';
 
 // The interval timer's sound (10.1 FR-6), worked out in the GT-94 spike and checked on the phone,
 // screen locked included. Nothing here knows about phases: the timer says when a phase ends, this
@@ -20,8 +20,8 @@ import { playFrom } from './soundPlayer';
 //   audio. Background audio is on for this (`expo-audio`'s `enableBackgroundPlayback`, app.json).
 //   It mixes with the user's music, never stops it.
 // - So the session plays in silent mode too: the background audio category that keeps the app
-//   awake is the one that ignores the silent switch. The rest timer's signal follows the switch: it
-//   is a notification (state/restSignal.ts).
+//   awake is the one that ignores the silent switch. The rest timer's signal plays the same way
+//   with the app open (state/restSignal.ts).
 // - **Sound off in Settings (GT-172) silences the countdown**, asked at the moment it is due to
 //   sound, so a change made while a phase runs counts for that phase. The silent loop plays on: it
 //   is not heard, and the app still has to stay awake.
@@ -45,11 +45,7 @@ function intervalPlayers(): Players {
 
 /** The timer has started or resumed: from now on the app stays awake behind a locked screen. */
 export async function keepAwakeForTimer(): Promise<void> {
-  await setAudioModeAsync({
-    shouldPlayInBackground: true,
-    playsInSilentMode: true,
-    interruptionMode: 'mixWithOthers',
-  });
+  await setAudioModeAsync(TIMER_AUDIO_MODE);
   intervalPlayers().silence.play();
 }
 

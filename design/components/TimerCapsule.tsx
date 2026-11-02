@@ -11,7 +11,7 @@
 // Paused, the ring keeps the phase's icon (Artem's review, 18.10.2026): two bars in it read as a
 // button, while the one control for pausing is the button on the right.
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CheckIcon } from '../icons/CheckIcon';
@@ -59,6 +59,8 @@ export type TimerCapsuleProps = {
   onPress?: () => void;
   /** Read for the body when `onPress` is given — `Open interval timer`. */
   accessibilityLabel?: string;
+  /** What a caller measures to point at the capsule — a coachmark's ring (08.11). */
+  capsuleRef?: Ref<View>;
 };
 
 export function TimerCapsule({
@@ -74,6 +76,7 @@ export function TimerCapsule({
   onDismiss,
   onPress,
   accessibilityLabel,
+  capsuleRef,
 }: TimerCapsuleProps) {
   const finished = state === 'finished';
   const paused = state === 'paused';
@@ -102,6 +105,7 @@ export function TimerCapsule({
   return (
     <View
       accessibilityRole={finished ? 'summary' : 'timer'}
+      ref={capsuleRef}
       style={[styles.capsule, finished && styles.finishedCapsule]}
     >
       {onPress === undefined ? (

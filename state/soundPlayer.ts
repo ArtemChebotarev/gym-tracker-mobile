@@ -1,4 +1,4 @@
-import type { AudioPlayer } from 'expo-audio';
+import type { AudioMode, AudioPlayer } from 'expo-audio';
 
 // Playing a kept player again from a given point — what the interval timer's signal sounds do
 // (state/intervalSignal.ts).
@@ -7,6 +7,16 @@ import type { AudioPlayer } from 'expo-audio';
 // play while its seek back is still on the way, it plays from the end — nothing at all — and the
 // seek lands afterwards. On the phone that dropped every other signal (GT-94, 19.10.2026): the
 // countdown's "3" played, "2" did not, "1" did.
+
+/**
+ * How the timers' sounds play: through the silent switch, mixed with the user's music. Background
+ * playback is what keeps the interval timer awake (state/intervalSignal.ts).
+ */
+export const TIMER_AUDIO_MODE: Partial<AudioMode> = {
+  shouldPlayInBackground: true,
+  playsInSilentMode: true,
+  interruptionMode: 'mixWithOthers',
+};
 
 /** Plays `player` from `positionSec`, once it is really there. */
 export async function playFrom(player: AudioPlayer, positionSec: number): Promise<void> {

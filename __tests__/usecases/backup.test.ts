@@ -119,6 +119,8 @@ async function fill(deps: BackupDeps): Promise<void> {
       tourRirSeen: false,
       tourGridSeen: false,
       rangesCoachmarkSeen: false,
+      restCoachmarkSeen: false,
+      restNotificationsPlateHidden: false,
     },
   });
 }

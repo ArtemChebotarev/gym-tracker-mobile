@@ -1,8 +1,8 @@
 // The Settings tab (08 · Screens & Navigation, "Настройки"). For now it holds the timers (10.1 FR-5,
 // FR-6; canvas 5.x): the rest between sets of strength and power exercises — on or off, and how
-// long (GT-87) — the Get ready of interval rounds (GT-188), and the signals they give, sound and
-// vibration, each on or off (GT-172). Laid out as canvas 5.x draws it: a
-// card of rows under the section's label, a grey note under it.
+// long (GT-87) — the Get ready of interval rounds (GT-188), the signals they give in the app, sound
+// and vibration, each on or off (GT-172), and the notifications outside it (GT-219). Laid out as
+// canvas 5.x draws it: a card of rows under the section's label, a grey note under it.
 //
 // The rest is set with `−` / `+` in 15 s steps, or straight away in the time picker by tapping the
 // value — the same pair every rest in the app is set with — between 1:00 and 5:00
@@ -23,6 +23,10 @@ import type { Signals } from '@domain/signals';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
+import {
+  RestNotificationsSection,
+  type RestNotificationsSectionProps,
+} from './RestNotificationsSection';
 import { styles } from './SettingsScreenStyles';
 import { useTabBarClearance } from './useTabBarClearance';
 
@@ -37,6 +41,8 @@ export type SettingsScreenProps = {
   restBetweenSets?: RestBetweenSets;
   getReadySec?: number;
   signals?: Signals;
+  /** Absent until the permission and the flags have been read. */
+  notifications?: RestNotificationsSectionProps;
   loadError?: LoadError;
   onChangeRestBetweenSets: (setting: RestBetweenSets) => void;
   onChangeGetReadySec: (getReadySec: number) => void;
@@ -47,6 +53,7 @@ export function SettingsScreen({
   restBetweenSets,
   getReadySec,
   signals,
+  notifications,
   loadError,
   onChangeRestBetweenSets,
   onChangeGetReadySec,
@@ -135,7 +142,7 @@ export function SettingsScreen({
       )}
       {signals !== undefined && (
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Signals</Text>
+          <Text style={styles.sectionLabel}>In-app signals</Text>
           <View style={styles.card}>
             <View style={[styles.toggleRow, styles.rowDivider]}>
               <Toggle
@@ -155,6 +162,7 @@ export function SettingsScreen({
           </View>
         </View>
       )}
+      {notifications !== undefined && <RestNotificationsSection {...notifications} />}
     </RootScreen>
   );
 }

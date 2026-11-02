@@ -34,9 +34,13 @@ export type CoachmarkStep = {
   ringRadius?: number;
   /** The element scrolls with its screen: `reveal` runs before it is measured. */
   scrolls?: boolean;
+  /** The last step's button, when it does more than `Got it`. */
+  primaryLabel?: string;
+  /** A second button on the last step, on the left. It ends the walk as `Skip` does. */
+  secondaryLabel?: string;
 };
 
-/** How the walk ended: `Got it` on the last step, or `Skip` on any. */
+/** How the walk ended: the last step's main button, or `Skip` (or that step's second button). */
 export type CoachmarkTourEnd = 'completed' | 'skipped';
 
 export type CoachmarkTourProps = {
@@ -110,6 +114,8 @@ export function CoachmarkTour({ visible, steps, onFinish, reveal }: CoachmarkTou
       title={step.title}
       {...(step.paragraphs !== undefined ? { paragraphs: step.paragraphs } : {})}
       {...(step.content !== undefined ? { content: step.content } : {})}
+      {...(step.primaryLabel !== undefined ? { primaryLabel: step.primaryLabel } : {})}
+      {...(step.secondaryLabel !== undefined ? { secondaryLabel: step.secondaryLabel } : {})}
       onNext={next}
       onSkip={() => finish('skipped')}
     />

@@ -23,6 +23,10 @@ export type OnboardingFlags = {
   tourGridSeen: boolean;
   /** The one-step coachmark on the weight ranges — closed, or the plate found without it (GT-215). */
   rangesCoachmarkSeen: boolean;
+  /** The one-step coachmark on the capsule of the first rest, closed either way (GT-219). */
+  restCoachmarkSeen: boolean;
+  /** The `Rest notifications` plate in Settings, put away for good by its cross (GT-219). */
+  restNotificationsPlateHidden: boolean;
   /** The popup on the first deload session. */
   deloadIntroSeen: boolean;
   /** The one-step coachmark on `Start` of the first Planned cycle (GT-50). */

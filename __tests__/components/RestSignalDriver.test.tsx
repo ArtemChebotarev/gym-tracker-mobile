@@ -1,26 +1,22 @@
-import { act, waitFor } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import { RestSignalDriver } from '@components/RestSignalDriver';
 import type { RestSignal } from '@state/restSignal';
-import { dismissRestSignal, setRestSignal } from '@state/restSignal';
+import { dismissRestSignal, setRestSignal, signalRestOverInApp } from '@state/restSignal';
 import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import { useRestTimerStore } from '@state/restTimerStore';
-import { setSignals } from '@usecases/timerSettings';
 
-import {
-  queryClient,
-  renderWithRepositories,
-  withRepositories,
-} from '../fixtures/renderWithRepositories';
+import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 jest.mock('@state/restSignal', () => ({
   dismissRestSignal: jest.fn(),
-  onRestSignalReceived: jest.fn(() => jest.fn()),
+  readNotificationStatus: jest.fn(() => Promise.resolve('granted')),
   setRestSignal: jest.fn(() => Promise.resolve()),
+  signalRestOverInApp: jest.fn(() => Promise.resolve()),
 }));
 
-const repositories = withRepositories();
+withRepositories();
 
 const NOW = 1_000_000;
 const REST = {
@@ -40,6 +36,7 @@ const clearSignal = () => signal.mockClear();
 
 beforeEach(() => {
   jest.clearAllMocks();
+  AppState.currentState = 'active';
   jest.useFakeTimers({ now: NOW });
 });
 
@@ -62,7 +59,6 @@ describe('RestSignalDriver', () => {
       endsAt: NOW + 60_000,
       title: 'Rest is over',
       body: 'Press · Set 2 next',
-      signals: { sound: true, vibration: true },
     });
   });
 
@@ -137,22 +133,51 @@ describe('RestSignalDriver', () => {
     expect(signal).not.toHaveBeenCalled();
   });
 
-  test('changing the settings during a rest schedules the signal again', async () => {
-    jest.useRealTimers();
+  test('the app gives the signal when a rest runs out on screen', () => {
     renderWithRepositories(<RestSignalDriver />);
     act(() => rest().start(REST));
 
-    await act(async () => {
-      await setSignals(
-        { sound: false, vibration: true },
-        { settingsRepo: repositories().settingsRepo },
-      );
-      await queryClient().invalidateQueries({ queryKey: ['timerSettings'] });
+    act(() => {
+      jest.advanceTimersByTime(60_000);
+      rest().finish();
     });
 
-    await waitFor(() =>
-      expect(lastSignal()).toMatchObject({ signals: { sound: false, vibration: true } }),
-    );
+    expect(signalRestOverInApp).toHaveBeenCalledTimes(1);
+    expect(signalRestOverInApp).toHaveBeenCalledWith({ sound: true, vibration: true });
+  });
+
+  test('a rest that ran out while the app was away is not heard on the way back', () => {
+    renderWithRepositories(<RestSignalDriver />);
+    act(() => rest().start(REST));
+
+    act(() => {
+      jest.advanceTimersByTime(300_000);
+      rest().finish();
+    });
+
+    expect(signalRestOverInApp).not.toHaveBeenCalled();
+  });
+
+  test('with the app in the background the notification is the signal', () => {
+    renderWithRepositories(<RestSignalDriver />);
+    act(() => rest().start(REST));
+    AppState.currentState = 'background';
+
+    act(() => {
+      jest.advanceTimersByTime(60_000);
+      rest().finish();
+    });
+
+    expect(signalRestOverInApp).not.toHaveBeenCalled();
+  });
+
+  test('Skip gives no signal', () => {
+    renderWithRepositories(<RestSignalDriver />);
+    act(() => rest().start(REST));
+
+    act(() => rest().skip());
+
+    expect(signalRestOverInApp).not.toHaveBeenCalled();
   });
 
   test('takes a delivered signal away at launch and when the app comes back', () => {

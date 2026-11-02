@@ -118,6 +118,7 @@ import { useSetBodyWeight } from '@state/useSetBodyWeight';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import { loadErrorOf } from '@state/loadError';
+import { useRestCoachmarkPending } from '@state/useRestNotifications';
 import type { LogRoundResult } from '@usecases/roundLogging';
 import type { LogSetResult } from '@usecases/setLogging';
 import type { WorkoutExercise } from '@usecases/workoutSession';
@@ -177,6 +178,7 @@ export default function TodayScreen() {
   const showCoachmarks = shouldShowWorkoutCoachmarks(onboarding.data, coachmarkSession);
   // The one on the weight ranges (GT-215): a step of its own, once per user.
   const showRangesCoachmark = shouldShowRangesCoachmark(onboarding.data, coachmarkSession);
+  const restCoachmarkPending = useRestCoachmarkPending();
   // The first-deload popup (GT-43, 08.11): the deload session is left out of the tour above, and
   // gets this instead — once, written when `Got it` is tapped, like the others.
   const showDeloadIntro = shouldShowDeloadIntro(
@@ -466,7 +468,7 @@ export default function TodayScreen() {
         loadError={loadErrorOf(query)}
         coachmarks={{
           visible: showCoachmarks,
-          rangesVisible: showRangesCoachmark,
+          rangesVisible: showRangesCoachmark && !restCoachmarkPending,
           ...(onboarding.data !== undefined ? { seen: onboarding.data } : {}),
           onFinish: (flags) => markOnboardingSeen.mutate(flags),
         }}
