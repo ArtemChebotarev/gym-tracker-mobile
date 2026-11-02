@@ -226,9 +226,8 @@ export function WorkoutScreen({
   // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
   const tourRir = useRef<View>(null);
   const tourWeight = useRef<View>(null);
-  const tourReps = useRef<View>(null);
   const tourGrid = useRef<View>(null);
-  const tourRefs = { rir: tourRir, weight: tourWeight, reps: tourReps, grid: tourGrid };
+  const tourRefs = { rir: tourRir, weight: tourWeight, grid: tourGrid };
   if (isPending) {
     return (
       <View style={styles.root}>
@@ -323,7 +322,7 @@ export function WorkoutScreen({
               mode={model.mode}
               isDeload={model.header.isDeload}
               {...(index === 0
-                ? { coachmarkTargets: { rir: tourRir, weight: tourWeight, reps: tourReps } }
+                ? { coachmarkTargets: { rir: tourRir, weight: tourWeight } }
                 : {})}
               chip={cardChip(model.exercises, index)}
               position={index}

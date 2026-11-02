@@ -30,7 +30,6 @@ import type { SetLoggingProps } from './WorkoutSetRows';
 export type CardCoachmarkTargets = {
   rir: Ref<View>;
   weight: Ref<View>;
-  reps: Ref<View>;
 };
 
 /** What every card takes, whatever its type. */

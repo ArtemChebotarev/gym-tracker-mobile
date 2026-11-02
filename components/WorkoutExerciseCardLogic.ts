@@ -12,7 +12,6 @@ import { formatRir } from '@design/formatRir';
 import type { WorkoutExercise, WorkoutSetRow } from '@usecases/workoutSession';
 
 import { showsFirstWeightInfo } from './FirstWeightPopoverLogic';
-import { weightSwapPopover } from './WeightSwapLogic';
 import { formatNotDone } from './WorkoutSetRowLogic';
 
 /**
@@ -155,15 +154,15 @@ export function firstUnloggedRow(rows: readonly WorkoutSetRow[]): WorkoutSetRow 
 }
 
 /**
- * Which of the card's tappable explainers it carries: the `N RIR` badge, the ⓘ beside `Weight, kg`
- * and the one beside `Reps`. The card draws them by this, and the first-workout coachmarks (GT-42)
- * pick their steps by it — so a step can never point at a button that isn't there.
+ * Which of the card's tappable explainers it carries: the `N RIR` badge and the ⓘ beside
+ * `Weight, kg`. The card draws them by this, and the first-workout coachmarks (GT-42) pick their
+ * steps by it — so a step can never point at a button that isn't there.
  */
-export type CardInfoTargets = { rir: boolean; weight: boolean; reps: boolean };
+export type CardInfoTargets = { rir: boolean; weight: boolean };
 
 /**
  * `setRows` is the card's set rows, or `undefined` on a card without them (`setRowsOf`) — which
- * then has neither ⓘ: both are a set row's.
+ * then has no ⓘ: it is a set row's.
  */
 export function cardInfoTargets(
   exercise: {
@@ -177,16 +176,12 @@ export function cardInfoTargets(
   isDeload: boolean,
 ): CardInfoTargets {
   const view = exerciseCardView(mode, exercise, cardRowsOf(setRows ?? []), isDeload);
-  // Both ⓘ sit in the column header, which is only there with the set rows.
+  // The ⓘ sits in the column header, which is only there with the set rows.
   const showsSets = setRows !== undefined && view.showRows;
   return {
     rir: view.rirLabel !== undefined && exercise.targetRir !== undefined,
     weight:
       showsSets &&
       showsFirstWeightInfo(mode, isDeload, exercise.loadEquipment ?? exercise.equipment),
-    reps:
-      showsSets &&
-      mode === 'live' &&
-      weightSwapPopover(firstUnloggedRow(setRows), exercise.targetRir) !== undefined,
   };
 }

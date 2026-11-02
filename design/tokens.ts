@@ -19,10 +19,17 @@ export const COLORS = {
    * darker than the card and the two read as one block (Artem's review on the device).
    */
   'surface/popover': '#262A30',
+  /**
+   * A box inside a Popover's plate (`PlateBox`, 08.11): a tone darker than `surface/popover`, so the
+   * warm-up reads as set into the plate, with `border/plate-box` round it.
+   */
+  'surface/plate-box': '#1F2227',
 
   'border/default': '#2A2D31',
   'border/divider': '#1E2125',
   'border/divider-subtle': '#232629',
+  /** The outline of a `PlateBox` on a Popover's plate (08.11). */
+  'border/plate-box': '#3A3F46',
 
   // The frame of a day still to do, in the mesocycle overview (08.7, task 107). The sheet's own
   // `border/*` greys sit at ~1.3:1 against `surface/sheet`, so a cell drawn in them was invisible

@@ -10,7 +10,6 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 
 import { type CorridorStepsPlate, repCorridorTrack } from './CorridorStepsPlateLogic';
-import type { WeightSwapPopover } from './WeightSwapLogic';
 
 /**
  * The Weight column's header: `Weight, kg`, `Added, kg` on a weighted bodyweight exercise, and
@@ -54,22 +53,4 @@ export function bandRepsPlate(): CorridorStepsPlate {
       ],
     ],
   };
-}
-
-/**
- * What the Reps ⓘ opens on a strength card: the weight swap's plate for the next set (08.7.1) while
- * the card offers it, or — on a band, which has no swap — the band's plate, always.
- */
-export type StrengthRepsInfo =
-  | { kind: 'swap'; popover: WeightSwapPopover }
-  | { kind: 'band'; plate: CorridorStepsPlate };
-
-export function strengthRepsInfo(
-  equipment: Equipment | undefined,
-  swap: WeightSwapPopover | undefined,
-): StrengthRepsInfo | undefined {
-  if (isResistanceBand(equipment)) {
-    return { kind: 'band', plate: bandRepsPlate() };
-  }
-  return swap === undefined ? undefined : { kind: 'swap', popover: swap };
 }

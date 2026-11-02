@@ -1,5 +1,5 @@
 // The first-workout coachmark tour — 08.11 · Onboarding, "3. Коучмарки на первой тренировке" (GT-42):
-// four steps (the ⓘ beside Weight, the ⓘ beside Reps, the RIR badge, the grid button), shown once.
+// three steps (the ⓘ beside Weight, the RIR badge, the grid button), shown once.
 // Working text, reworded after the TestFlight feedback; it lives here so that touches this file.
 //
 // What a step is — the words, and the ref of the element it rings — is built here, from the first
@@ -28,13 +28,6 @@ export const WEIGHT_STEP = {
   ] as PlateTextPart[][],
 };
 
-export const REPS_STEP = {
-  title: 'Want to change the weight?',
-  paragraphs: [
-    ['Tap ', { icon: InfoIcon }, ' to see ', { strong: 'how many reps to aim for' }, ' at another weight.'],
-  ] as PlateTextPart[][],
-};
-
 export const GRID_STEP = {
   title: 'Cycle overview',
   paragraphs: [
@@ -42,8 +35,8 @@ export const GRID_STEP = {
   ] as PlateTextPart[][],
 };
 
-/** What a step points at: either ⓘ disc, the first card's RIR chip, or the header's grid button. */
-export type CoachmarkTargetId = 'rir' | 'weight' | 'reps' | 'grid';
+/** What a step points at: the ⓘ disc, the first card's RIR chip, or the header's grid button. */
+export type CoachmarkTargetId = 'rir' | 'weight' | 'grid';
 
 /** A step without its element: which one it rings, and what it says. The screen holds the refs. */
 export type WorkoutCoachmark = {
@@ -63,7 +56,7 @@ export type WorkoutCoachmarkInput = {
 
 /**
  * The steps this workout's tour has. A step is there only if the thing it points at is: a card
- * without a Reps ⓘ (bodyweight, a deload, a card with no set rows) just has no step for it, and
+ * without a Weight ⓘ (bodyweight, a deload, a card with no set rows) just has no step for it, and
  * the counter says `N of M` with the M that is left. The same `cardInfoTargets` the card draws its buttons by decides it.
  *
  * Refs stay out of this on purpose — it only says which element each step is about, and the screen,
@@ -79,7 +72,7 @@ export function workoutCoachmarks({
 
   if (exercise !== undefined) {
     const targetRir = targetRirOf(exercise);
-    // A first card without set rows (interval, mobility) has no Weight or Reps ⓘ to point at.
+    // A first card without set rows (interval, mobility) has no Weight ⓘ to point at.
     const targets = cardInfoTargets(
       { ...exercise, targetRir, loadEquipment: cardLoadEquipment(exercise) },
       setRowsOf(exercise),
@@ -88,9 +81,6 @@ export function workoutCoachmarks({
     );
     if (targets.weight) {
       steps.push({ target: 'weight', ...WEIGHT_STEP });
-    }
-    if (targets.reps) {
-      steps.push({ target: 'reps', ...REPS_STEP });
     }
     if (targets.rir && targetRir !== undefined) {
       const explanation = rirExplanation({ targetRir });

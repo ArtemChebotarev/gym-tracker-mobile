@@ -655,32 +655,17 @@ describe('WorkoutExerciseCard — another weight (task 121)', () => {
 
   const info = () => screen.queryByRole('button', { name: 'Weight recommendations' });
 
-  test('the ⓘ sits beside Reps when the next set has a swap', () => {
+  test('the card has one ⓘ, and with a swap for the next set it is this one', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: CURL })} />);
 
     expect(info()).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finding your weight' })).toBeNull();
   });
 
-  test('no swap, no ⓘ — a deload set or a pure bodyweight one', () => {
+  test('no swap, no ranges to recommend', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
     expect(info()).toBeNull();
-  });
-
-  test('a set with no history still gets the ⓘ, to say why there are no numbers', () => {
-    render(
-      <WorkoutExerciseCard
-        {...makeProps({
-          exercise: makeExercise({
-            rows: [
-              { setNumber: 1, weightSwap: { unavailable: 'no_history' }, isFirstUnlogged: true },
-            ],
-          }),
-        })}
-      />,
-    );
-
-    expect(info()).toBeTruthy();
   });
 
   test('read-only has nothing to swap a weight for', () => {
@@ -791,7 +776,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
   });
 
-  test('with no history it says why there are no numbers', () => {
+  test('with no history the ⓘ opens "Finding your weight", and the old plate is gone', () => {
     render(
       <WorkoutExerciseCard
         {...makeProps({
@@ -805,22 +790,27 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
       />,
     );
 
-    openInfo();
+    expect(screen.queryByRole('button', { name: 'Weight recommendations' })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Finding your weight' }));
 
-    expect(screen.getByText('Not enough history yet')).toBeTruthy();
-    // The 5–30 corridor as a track — the existing one, accent bar over the part to aim for — with
-    // a number on each end and no dots: it is a span to read, not a value pointed at.
-    expect(screen.getByTestId('range-track')).toBeTruthy();
-    expect(screen.queryAllByTestId('range-track-marker')).toHaveLength(0);
-    // Nothing is written under it — it is described to assistive technology instead.
-    expect(screen.queryByText('Reps per set')).toBeNull();
-    expect(screen.getByLabelText('Reps per set: 5 to 30')).toBeTruthy();
-    // Four numbered steps, not a paragraph (08.11) — the 5–30 rep corridor the engine builds on first.
-    expect(screen.getByText('Pick a weight you can lift for 5–30 reps.')).toBeTruthy();
-    expect(screen.getByText('Stop each set with about 3 reps in reserve.')).toBeTruthy();
-    expect(screen.getByText('Log this workout.')).toBeTruthy();
-    expect(screen.getByText('Next time: reps will be calculated for you.')).toBeTruthy();
-    expect(screen.getAllByTestId('plate-row-mark')).toHaveLength(4);
+    expect(screen.getByText('Finding your weight')).toBeTruthy();
+    expect(screen.queryByText('Not enough history yet')).toBeNull();
+    expect(screen.queryByTestId('range-track')).toBeNull();
+    // The rep corridor went into the working set.
+    expect(screen.getByText('5–30 reps')).toBeTruthy();
+    expect(screen.getByText('stop at 3 RIR')).toBeTruthy();
+  });
+
+  test('a weighted bodyweight exercise has the same one ⓘ, in `Added, kg`', () => {
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: { ...CURL, equipment: 'bodyweight-weighted' } })}
+      />,
+    );
+
+    expect(screen.getByText('Added, kg')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Weight recommendations' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finding your weight' })).toBeNull();
   });
 });
 
@@ -828,8 +818,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
 describe('Weight ⓘ — finding your weight', () => {
   const info = () => screen.queryByRole('button', { name: 'Finding your weight' });
 
-  test('DoD: every live card has it, whether or not a weight swap exists for its next set', () => {
-    // LIVE_EXERCISE has no weightSwap, so it has no Reps ⓘ — the Weight one does not depend on it.
+  test('DoD: a live card with no ranges has it', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
     expect(info()).toBeTruthy();
@@ -882,7 +871,8 @@ describe('Weight ⓘ — finding your weight', () => {
     expect(screen.getByText('12 reps')).toBeTruthy();
     expect(screen.getByText('8 reps')).toBeTruthy();
     expect(screen.getByText('4 reps')).toBeTruthy();
-    expect(screen.getByText('Then your working set')).toBeTruthy();
+    expect(screen.getByText('Working set')).toBeTruthy();
+    expect(screen.getAllByTestId('plate-box')).toHaveLength(2);
     // The card's own target RIR, not a fixed number.
     expect(screen.getByText('stop at 2 RIR')).toBeTruthy();
     expect(screen.getByText('log it')).toBeTruthy();

@@ -209,23 +209,13 @@ describe('cardInfoTargets', () => {
     expect(cardInfoTargets(base, rows, 'live', false)).toEqual({
       rir: true,
       weight: true,
-      reps: false,
     });
-  });
-
-  test('a weight swap on the next set adds the Reps ⓘ', () => {
-    const withSwap: WorkoutSetRow[] = [
-      { setNumber: 1, isFirstUnlogged: true, weightSwap: { unavailable: 'no_history' } },
-    ];
-
-    expect(cardInfoTargets(base, withSwap, 'live', false).reps).toBe(true);
   });
 
   test('a deload card keeps only its badge — the Deload one, not the RIR one', () => {
     expect(cardInfoTargets(base, rows, 'live', true)).toEqual({
       rir: false,
       weight: false,
-      reps: false,
     });
   });
 
@@ -233,7 +223,6 @@ describe('cardInfoTargets', () => {
     expect(cardInfoTargets(base, rows, 'readonly', false)).toEqual({
       rir: true,
       weight: false,
-      reps: false,
     });
   });
 
@@ -245,7 +234,6 @@ describe('cardInfoTargets', () => {
     expect(cardInfoTargets(base, undefined, 'live', false)).toEqual({
       rir: true,
       weight: false,
-      reps: false,
     });
   });
 });
