@@ -27,6 +27,11 @@ export function centerOffset(size: number): number {
   return -size / 2;
 }
 
+/** How far down something `inner` tall sits when it is centred on something `outer` tall. */
+export function centerInset(outer: number, inner: number): number {
+  return (outer - inner) / 2;
+}
+
 /**
  * The `hitSlop` that grows a control of the given size to the minimum tap target
  * (`size/tap-target`, 44pt) — the same on every side, none for a control already that big.

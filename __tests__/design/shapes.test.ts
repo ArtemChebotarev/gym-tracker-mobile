@@ -1,4 +1,4 @@
-import { capsule, circle, ring, roundedBar, square, tapTargetSlop } from '@design/shapes';
+import { capsule, centerInset, circle, ring, roundedBar, square, tapTargetSlop } from '@design/shapes';
 import { SIZES } from '@design/tokens';
 
 describe('shapes', () => {
@@ -32,5 +32,15 @@ describe('shapes', () => {
     expect(center).toBe(20);
     expect(radius).toBe(18.5);
     expect(circumference).toBeCloseTo(2 * Math.PI * 18.5);
+  });
+});
+
+describe('centerInset', () => {
+  test('half of what is left over, on either side', () => {
+    expect(centerInset(28, 21)).toBe(3.5);
+  });
+
+  test('negative when the inner one is the taller', () => {
+    expect(centerInset(20, 21)).toBe(-0.5);
   });
 });

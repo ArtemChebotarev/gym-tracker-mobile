@@ -12,7 +12,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { IconComponent } from '../icons/IconFrame';
-import { circle } from '../shapes';
+import { centerInset, circle } from '../shapes';
 import {
   BORDER_WIDTHS,
   COLORS,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   markCompact: {
     ...circle(SIZES['size/badge-compact']),
     // A pixel shorter than the line: half of that centres it on the line.
-    marginTop: (LINE_HEIGHT - SIZES['size/badge-compact']) / 2,
+    marginTop: centerInset(LINE_HEIGHT, SIZES['size/badge-compact']),
   },
   markBoxed: {
     backgroundColor: COLORS['surface/plate-box'],
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   // Taller than the line, so the line comes down to the mark's centre.
   text: {
     flex: 1,
-    paddingTop: (SIZES['size/badge'] - LINE_HEIGHT) / 2,
+    paddingTop: centerInset(SIZES['size/badge'], LINE_HEIGHT),
   },
   textCompact: {
     flex: 1,
