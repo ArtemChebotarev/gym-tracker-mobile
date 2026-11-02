@@ -1098,7 +1098,7 @@ describe('WorkoutExerciseCard — the power ⓘ', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Finding your level' }));
 
-    expect(screen.getByText(/^Levels are your own/)).toBeTruthy();
+    expect(screen.getByText('1 is your easiest, higher is harder.')).toBeTruthy();
   });
 
   test('a deload has no ⓘ, and neither has a card outside a live workout', () => {

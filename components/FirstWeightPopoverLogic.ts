@@ -121,12 +121,11 @@ const POWER_COPY: Record<PowerLoad, FirstWeightCopy> = {
     workingText: powerWorkingText(" If every rep stayed fast, that's your load."),
   },
   // What each level is was the user's own call: the app only knows the numbers (10.1 FR-2). So the
-  // plate says that first (Artem's review, 18.10.2026).
+  // plate says that first (Artem's review, 18.10.2026), in one line: two read as a wall of text.
   level: {
     ...POWER_COPY_FRAME,
     title: 'Finding your level',
-    intro:
-      'Levels are your own: 1 is the easiest you have, like the lowest box, and each number up is harder.',
+    intro: '1 is your easiest, higher is harder.',
     workingText: powerWorkingText(" If every rep stayed fast, that's your level."),
   },
   // No load, nothing to find: only the set itself.

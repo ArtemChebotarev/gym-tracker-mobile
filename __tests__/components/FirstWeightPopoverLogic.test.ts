@@ -96,7 +96,7 @@ describe('firstWeightCopy', () => {
   test('power by level first says the levels are the user’s own', () => {
     const copy = firstWeightCopy('power', undefined, 'level');
 
-    expect(copy.intro).toMatch(/^Levels are your own/);
+    expect(copy.intro).toBe('1 is your easiest, higher is harder.');
     expect(JSON.stringify(copy)).not.toMatch(/RIR|load|kg/);
   });
 });
