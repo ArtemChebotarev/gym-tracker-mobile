@@ -123,7 +123,7 @@ export function formatCompletedCaption(mesocycle: Mesocycle): string {
 
 /** The short summary under the `Start this training cycle?` confirmation's title. */
 export function formatStartConfirmMessage(mesocycle: Mesocycle): string {
-  return `${mesocycle.name} · ${formatPlannedCaption(mesocycle)}. Week 1 starts today.`;
+  return `${mesocycle.name} · ${formatPlannedCaption(mesocycle)}. Week 1 Day 1 is next.`;
 }
 
 /** Why Start is unavailable while another mesocycle is active (08.3: the message is mandatory). */
