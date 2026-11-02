@@ -7,6 +7,7 @@ import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import { POWER_MAX_REPS, POWER_MIN_REPS } from '@domain/progressionCorridor';
 import type { WorkoutMode } from '@domain/workoutView';
 
 // "Finding your weight", not "…first weight": the ⓘ is on every week's card, and the ladder is how
@@ -83,52 +84,57 @@ export type FirstWeightCopy = {
 };
 
 /**
- * A power exercise's load is found for speed, not for reserve: a lifter's ladder of 12 / 8 / 4
- * reps and a stop at so many RIR belong to a set taken near failure, and a power set isn't
- * (10 · Hybrid Exercises). Same layout, its own words.
+ * A power exercise's load is found for speed, not for reserve: a lifter's ladder and a stop at so
+ * many RIR belong to a set taken near failure, and a power set isn't (10 · Hybrid Exercises).
+ *
+ * One warm-up line for every load, with no ladder: a ladder promises something lighter, and a 4 kg
+ * ball or the first level has nothing below it (Artem, 02.11.2026). The working set is what tells
+ * whether the load is right.
  */
-const POWER_FIRST_WEIGHT_COPY: FirstWeightCopy = {
-  title: 'Finding your load',
+const POWER_WARM_UP_STEPS: readonly PlateTextPart[][] = [
+  ['Warm up with ', { strong: 'a few easy, fast reps' }, '.'],
+];
+
+function powerWorkingText(tail: string): PlateTextPart[] {
+  return [
+    'Do one set of ',
+    { strong: `${POWER_MIN_REPS}–${POWER_MAX_REPS} fast reps` },
+    ', stop when ',
+    { strong: 'the speed drops' },
+    ' and ',
+    { strong: 'log it' },
+    `.${tail}`,
+  ];
+}
+
+const POWER_COPY_FRAME = {
   warmUpLabel: WARM_UP_LABEL,
-  warmUpSteps: [
-    [{ strong: '8–10 reps' }, ', light and fast'],
-    [{ strong: '4–6 reps' }, ', heavier, still fast'],
-  ],
+  warmUpSteps: POWER_WARM_UP_STEPS,
   warmUpNote: WARM_UP_NOTE,
   workingLabel: WORKING_SET_LABEL,
-  workingText: [
-    'Do one set of ',
-    { strong: 'fast reps' },
-    ', stop when the speed drops and ',
-    { strong: 'log it' },
-    ". If every rep stayed fast, that's your load.",
-  ],
 };
 
-/**
- * A power exercise loaded by level — a box's height, a harder variation — has no kilograms to find,
- * and what each level is was the user's own call: the app only knows the numbers (10.1 FR-2). So
- * the plate says that first, then the same warm-up and working set in levels (Artem's review,
- * 18.10.2026).
- */
-const POWER_LEVEL_FIRST_WEIGHT_COPY: FirstWeightCopy = {
-  title: 'Finding your level',
-  intro:
-    'Levels are your own: 1 is the easiest you have, like the lowest box, and each number up is harder.',
-  warmUpLabel: WARM_UP_LABEL,
-  warmUpSteps: [
-    [{ strong: 'A level or two lower' }, ', easy and fast'],
-    [{ strong: 'One level lower' }, ', still fast'],
-  ],
-  warmUpNote: WARM_UP_NOTE,
-  workingLabel: WORKING_SET_LABEL,
-  workingText: [
-    'Do one set of ',
-    { strong: 'fast reps' },
-    ', stop when the speed drops and ',
-    { strong: 'log it' },
-    ". If every rep stayed fast, that's your level.",
-  ],
+const POWER_COPY: Record<PowerLoad, FirstWeightCopy> = {
+  weight: {
+    ...POWER_COPY_FRAME,
+    title: 'Finding your load',
+    workingText: powerWorkingText(" If every rep stayed fast, that's your load."),
+  },
+  // What each level is was the user's own call: the app only knows the numbers (10.1 FR-2). So the
+  // plate says that first (Artem's review, 18.10.2026).
+  level: {
+    ...POWER_COPY_FRAME,
+    title: 'Finding your level',
+    intro:
+      'Levels are your own: 1 is the easiest you have, like the lowest box, and each number up is harder.',
+    workingText: powerWorkingText(" If every rep stayed fast, that's your level."),
+  },
+  // No load, nothing to find: only the set itself.
+  none: {
+    ...POWER_COPY_FRAME,
+    title: 'Fast reps',
+    workingText: powerWorkingText(''),
+  },
 };
 
 /**
@@ -141,7 +147,7 @@ export function firstWeightCopy(
   powerLoad?: PowerLoad,
 ): FirstWeightCopy {
   if (type === 'power') {
-    return powerLoad === 'level' ? POWER_LEVEL_FIRST_WEIGHT_COPY : POWER_FIRST_WEIGHT_COPY;
+    return POWER_COPY[powerLoad ?? 'weight'];
   }
   return {
     title: FIRST_WEIGHT_TITLE,

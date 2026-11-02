@@ -936,7 +936,6 @@ describe('RIR badge popover', () => {
 
     expect(screen.getByText('Load, kg')).toBeTruthy();
     expect(screen.getByText('Fast reps')).toBeTruthy();
-    expect(screen.getByLabelText('About fast reps')).toBeTruthy();
     expect(screen.queryByText(/RIR/)).toBeNull();
     expect(screen.queryByText('Weight, kg')).toBeNull();
   });
@@ -1043,25 +1042,75 @@ describe('RIR badge popover', () => {
   });
 });
 
-// Artem's review (18.10.2026): a level has no load to find, and its levels are the user's own.
-describe('WorkoutExerciseCard — power by level', () => {
-  test('the Level ⓘ opens a plate about finding a level', () => {
-    const box = makePowerExercise({
-      name: 'Box jump',
+// 08.11, "Power: Load ⓘ": one ⓘ, in the first column, for every kind of load.
+describe('WorkoutExerciseCard — the power ⓘ', () => {
+  const powerWith = (
+    powerLoad: 'weight' | 'level' | 'none',
+    row: { targetReps?: number; suggestedWeight?: number },
+  ) =>
+    makePowerExercise({
       isGuided: true,
-      powerLoad: 'level',
-      equipment: 'plyo-box',
-      rows: [{ setNumber: 1, targetReps: 3, suggestedWeight: 1, isFirstUnlogged: true }],
+      powerLoad,
+      ...(powerLoad === 'none' ? { loadEquipment: 'bodyweight' as const } : {}),
+      rows: [{ setNumber: 1, isFirstUnlogged: true, ...row }],
       plannedSetCount: 1,
       loggedSetCount: 0,
       hasLoggedSets: false,
     });
-    render(<WorkoutExerciseCard {...makeProps({ exercise: box })} />);
+
+  test.each([
+    ['weight', 'Load, kg', 'Finding your load'],
+    ['level', 'Level', 'Finding your level'],
+    ['none', 'Bodyweight, kg', 'Fast reps'],
+  ] as const)('with no target a %s load opens how to find it', (load, column, label) => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: powerWith(load, {}) })} />);
+
+    const first = within(screen.getByTestId(`exercise-column-${column}`));
+    fireEvent.press(first.getByRole('button', { name: label }));
+
+    expect(screen.getByText('Warm up with a few easy, fast reps.')).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: label })).toHaveLength(1);
+  });
+
+  test('Fast reps has no ⓘ of its own', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: powerWith('weight', {}) })} />);
+
+    const reps = within(screen.getByTestId('exercise-column-Fast reps'));
+    expect(reps.queryByRole('button')).toBeNull();
+  });
+
+  test.each([
+    ['weight', { targetReps: 4, suggestedWeight: 20 }, 'Current set target: 20 kg × 4'],
+    ['level', { targetReps: 4, suggestedWeight: 2 }, 'Current set target: Level 2 × 4'],
+    ['none', { targetReps: 4 }, 'Current set target: 4 reps'],
+  ] as const)('with a target a %s load opens the corridor', (load, row, title) => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: powerWith(load, row) })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Set target' }));
+
+    expect(screen.getByText(title)).toBeTruthy();
+    expect(screen.getByText('Next time: +1 rep on each set.')).toBeTruthy();
+    expect(screen.queryByText('Warm up with a few easy, fast reps.')).toBeNull();
+  });
+
+  test('a level says first that its levels are the user’s own', () => {
+    render(<WorkoutExerciseCard {...makeProps({ exercise: powerWith('level', {}) })} />);
 
     fireEvent.press(screen.getByRole('button', { name: 'Finding your level' }));
 
-    expect(screen.getByText('Finding your level')).toBeTruthy();
     expect(screen.getByText(/^Levels are your own/)).toBeTruthy();
+  });
+
+  test('a deload has no ⓘ, and neither has a card outside a live workout', () => {
+    const exercise = powerWith('weight', { targetReps: 4, suggestedWeight: 20 });
+    const { rerender } = render(
+      <WorkoutExerciseCard {...makeProps({ exercise, isDeload: true })} />,
+    );
+    expect(screen.queryByRole('button', { name: 'Set target' })).toBeNull();
+
+    rerender(<WorkoutExerciseCard {...makeProps({ exercise, mode: 'readonly' })} />);
+
+    expect(screen.queryByRole('button', { name: 'Set target' })).toBeNull();
   });
 });
 
