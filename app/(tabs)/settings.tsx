@@ -1,14 +1,12 @@
 // Settings tab (08 · Screens & Navigation, "Настройки"; GT-87, GT-188, GT-172). See components/SettingsScreen.tsx.
 
+import { Linking } from 'react-native';
+
 import { restNotificationsView } from '@components/RestNotificationsSectionLogic';
 import { SettingsScreen } from '@components/SettingsScreen';
 import { loadErrorOf } from '@state/loadError';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
-import {
-  openNotificationSettings,
-  useNotificationStatus,
-  useTurnOnNotifications,
-} from '@state/useRestNotifications';
+import { useNotificationStatus, useTurnOnNotifications } from '@state/useRestNotifications';
 import {
   useSetGetReadySec,
   useSetRestBetweenSets,
@@ -36,7 +34,7 @@ export default function SettingsRoute() {
             notifications: {
               view: restNotificationsView(status, flags.restNotificationsPlateHidden),
               onTurnOn: () => void turnOn(status),
-              onChange: () => void openNotificationSettings(),
+              onChange: () => void Linking.openSettings(),
               onHidePlate: () => markSeen.mutate('restNotificationsPlateHidden'),
             },
           }
