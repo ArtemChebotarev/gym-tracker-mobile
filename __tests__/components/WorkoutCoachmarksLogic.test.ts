@@ -1,6 +1,5 @@
 import {
   GRID_STEP,
-  REPS_STEP,
   WEIGHT_STEP,
   workoutCoachmarks,
 } from '@components/WorkoutCoachmarksLogic';
@@ -53,14 +52,13 @@ describe('workoutCoachmarks', () => {
     expect(targets(steps)).toEqual(['weight', 'rir', 'grid']);
   });
 
-  test('with a Reps ⓘ too — its set has a weight swap — all four steps', () => {
+  test('a weight swap on its set adds no step: the card still has its one ⓘ', () => {
     const exercise = makeExercise({
       rows: [
         {
           setNumber: 1,
           targetReps: 10,
           isFirstUnlogged: true,
-          // Any swap makes the Reps ⓘ appear; its numbers don't matter to the tour.
           weightSwap: { unavailable: 'no_history' },
         },
       ],
@@ -68,7 +66,7 @@ describe('workoutCoachmarks', () => {
 
     const steps = workoutCoachmarks({ exercise, mode: 'live', isDeload: false });
 
-    expect(targets(steps)).toEqual(['weight', 'reps', 'rir', 'grid']);
+    expect(targets(steps)).toEqual(['weight', 'rir', 'grid']);
   });
 
   test('the words are the spec’s, and the RIR step’s are the badge popover’s', () => {
@@ -80,19 +78,16 @@ describe('workoutCoachmarks', () => {
     expect(steps[1]?.paragraphs).toBeUndefined();
     expect(steps[0]).toMatchObject(WEIGHT_STEP);
     expect(steps[steps.length - 1]).toMatchObject(GRID_STEP);
-    expect(REPS_STEP.title).toBe('Want to change the weight?');
   });
 
   // The ⓘ character is a thin outline that cannot be made heavier: the line carries the real icon.
-  test('the Weight and Reps steps point at the button by its own icon, not by the ⓘ character', () => {
-    for (const step of [WEIGHT_STEP, REPS_STEP]) {
-      const parts = step.paragraphs[0] as readonly (
-        string | { strong: string } | { icon: unknown }
-      )[];
+  test('the Weight step points at the button by its own icon, not by the ⓘ character', () => {
+    const parts = WEIGHT_STEP.paragraphs[0] as readonly (
+      string | { strong: string } | { icon: unknown }
+    )[];
 
-      expect(parts).toContainEqual({ icon: InfoIcon });
-      expect(parts.filter((part) => typeof part === 'string').join('')).not.toContain('ⓘ');
-    }
+    expect(parts).toContainEqual({ icon: InfoIcon });
+    expect(parts.filter((part) => typeof part === 'string').join('')).not.toContain('ⓘ');
   });
 
   test('a pure bodyweight first card has no Weight ⓘ step — nothing to find', () => {

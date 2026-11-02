@@ -1,17 +1,14 @@
 // Weight swap — 08.7.1 · Другой вес. Everything here reads what `evaluateWeightSwap` and the
 // row's own `weightSwap` already worked out (03, rule 7; task 120) and turns it into the strings
 // and spans the ⓘ popover and the card's InlineNote show. Nothing here computes reps or ranges.
-// The ⓘ beside Reps on a strength card opens the popover; the note sits under the set rows
+// The Weight ⓘ on a strength card opens the popover; the note sits under the set rows
 // (WorkoutSetRows), so a power card — which has no swap — never gets either. See the code-style
 // skill.
 
-import type { PlateTextPart } from '@design/components/PlateRow';
-import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
-import { type CorridorStepsPlate, repCorridorTrack } from './CorridorStepsPlateLogic';
 import { formatRowWeight, parseWeight, rowEvaluation } from './WorkoutSetRowLogic';
 
 /** A weight as the swap states it — the added weight on a weighted bodyweight exercise. */
@@ -86,58 +83,29 @@ export type WeightSwapLegendRow = {
 };
 
 /**
- * What the ⓘ popover shows for the exercise's first unlogged set — always from that set's
+ * The ranges the ⓘ popover shows for the exercise's first unlogged set — always from that set's
  * **original** target, never from whatever weight is in the field right now (08.7.1).
  */
-export type WeightSwapPopover =
-  | {
-      kind: 'ranges';
-      title: string;
-      subtitle: string;
-      outer: WeightRange;
-      inner: WeightRange;
-      marker: number;
-      labels: { value: number; text: string }[];
-      legend: WeightSwapLegendRow[];
-    }
-  | ({ kind: 'no-history' } & CorridorStepsPlate);
+export type WeightSwapPopover = {
+  title: string;
+  subtitle: string;
+  outer: WeightRange;
+  inner: WeightRange;
+  marker: number;
+  labels: { value: number; text: string }[];
+  legend: WeightSwapLegendRow[];
+};
 
+/** `undefined` while there are no ranges to show: the ⓘ then opens "Finding your weight" (08.11). */
 export function weightSwapPopover(
   row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
-  targetRir: number | undefined,
 ): WeightSwapPopover | undefined {
   if (row === undefined || row.weightSwap === undefined) {
     return undefined;
   }
   const swap = row.weightSwap;
   if ('unavailable' in swap) {
-    // How hard to take the set: the reserve the week asks for, and at the last week's 0 RIR there
-    // is none to name — it is failure.
-    const effortStep: PlateTextPart[] =
-      targetRir === 0
-        ? ['Take each set ', { strong: 'to failure' }, '.']
-        : [
-            'Stop each set with ',
-            {
-              strong: `${targetRir === undefined ? 'a few reps' : `about ${targetRir} ${targetRir === 1 ? 'rep' : 'reps'}`} in reserve`,
-            },
-            '.',
-          ];
-    // Four steps rather than a paragraph (08.11, Artem's wording of the last): the weight to pick
-    // and the corridor a set has to land in — the engine builds its rep targets and weight ranges
-    // on it (03) — how hard to take it, then what the app does for you next time.
-    const { minReps, maxReps } = defaultProgressionSettings;
-    return {
-      kind: 'no-history',
-      title: 'Not enough history yet',
-      corridor: repCorridorTrack(minReps, maxReps, `Reps per set: ${minReps} to ${maxReps}`),
-      steps: [
-        ['Pick a weight you can lift for ', { strong: `${minReps}–${maxReps} reps` }, '.'],
-        effortStep,
-        ['Log this workout.'],
-        ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
-      ],
-    };
+    return undefined;
   }
   const added = swap.bodyWeight !== undefined;
   const marker = targetWeightOf(swap);
@@ -157,7 +125,6 @@ export function weightSwapPopover(
     });
   }
   return {
-    kind: 'ranges',
     // The target leads and the instruction sits under it: the number you are anchored to is what
     // you scan first, and the line under it says what may be done about it. The instruction is
     // the whole of it, so the plate needs no closing line (Artem's wording).

@@ -1,10 +1,8 @@
 import {
   bandRepsPlate,
   formatWeightHint,
-  strengthRepsInfo,
   strengthWeightColumnLabel,
 } from '@components/StrengthExerciseCardLogic';
-import { weightSwapPopover } from '@components/WeightSwapLogic';
 
 describe('formatWeightHint on a resistance band', () => {
   test('says tighter band or slower tempo instead of going heavier', () => {
@@ -56,21 +54,5 @@ describe('bandRepsPlate', () => {
 
   test('says nothing about RIR — a band has none (10.1 FR-15)', () => {
     expect(JSON.stringify(bandRepsPlate())).not.toMatch(/RIR/);
-  });
-});
-
-describe('strengthRepsInfo', () => {
-  const swap = weightSwapPopover(
-    { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
-    2,
-  );
-
-  test('a band always has its own plate', () => {
-    expect(strengthRepsInfo('resistance-band', undefined)?.kind).toBe('band');
-  });
-
-  test('any other exercise has the weight swap’s, while the card offers one', () => {
-    expect(strengthRepsInfo('barbell', swap)?.kind).toBe('swap');
-    expect(strengthRepsInfo('barbell', undefined)).toBeUndefined();
   });
 });

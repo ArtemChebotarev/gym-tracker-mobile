@@ -27,12 +27,28 @@ export type PlateRowProps = {
   compact?: boolean;
   /** The accent tint on the mark — the one row of a plate the rest of it leads up to (08.11). */
   accent?: boolean;
+  /** Set in a `PlateBox`: `border/default` is lost on its surface, so the mark is outlined stronger. */
+  boxed?: boolean;
 };
 
-export function PlateRow({ leading, text, compact = false, accent = false }: PlateRowProps) {
+export function PlateRow({
+  leading,
+  text,
+  compact = false,
+  accent = false,
+  boxed = false,
+}: PlateRowProps) {
   return (
     <View style={styles.row}>
-      <View testID="plate-row-mark" style={[styles.mark, compact && styles.markCompact, accent && styles.markAccent]}>
+      <View
+        testID="plate-row-mark"
+        style={[
+          styles.mark,
+          compact && styles.markCompact,
+          boxed && styles.markBoxed,
+          accent && styles.markAccent,
+        ]}
+      >
         {'icon' in leading ? (
           <leading.icon size={ICON_SIZES['icon/small']} color={COLORS['text/secondary']} />
         ) : (
@@ -61,9 +77,13 @@ const styles = StyleSheet.create({
   markCompact: {
     ...circle(SIZES['size/badge-compact']),
   },
+  markBoxed: {
+    backgroundColor: COLORS['surface/plate-box'],
+    borderColor: COLORS['border/cell-quiet'],
+  },
   markAccent: {
     backgroundColor: COLORS['accent/bg'],
-    borderColor: COLORS['accent/border'],
+    borderColor: COLORS.accent,
   },
   numberAccent: {
     color: COLORS.accent,

@@ -32,16 +32,15 @@ describe('the weight swap popover and note', () => {
 
   describe('weightSwapPopover', () => {
     test('an estimate is titled as one (task 134.1)', () => {
-      const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' }, 2);
+      const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' });
       expect(popover?.title).toBe('Current set estimate: 4.5 kg × 15');
     });
 
     test('the ranges of the set, from its own target and never from what is typed', () => {
-      const popover = weightSwapPopover(rowWith(10, 15), 2);
+      const popover = weightSwapPopover(rowWith(10, 15));
 
       expect(popover).toMatchObject({
-        kind: 'ranges',
-        title: 'Current set target: 15 kg × 10',
+                title: 'Current set target: 15 kg × 10',
         subtitle: 'Pick another weight and the reps update.',
         outer: { min: 4, max: 17.5 },
         inner: { min: 12, max: 17.5 },
@@ -50,7 +49,7 @@ describe('the weight swap popover and note', () => {
     });
 
     test('the track is labelled at every bound it has, each value once', () => {
-      expect(weightSwapPopover(rowWith(10, 15), 2)).toMatchObject({
+      expect(weightSwapPopover(rowWith(10, 15))).toMatchObject({
         labels: [
           { value: 4, text: '4' },
           { value: 12, text: '12' },
@@ -61,7 +60,7 @@ describe('the weight swap popover and note', () => {
     });
 
     test('the legend names the close span, and what is left of the full one', () => {
-      expect(weightSwapPopover(rowWith(10, 15), 2)).toMatchObject({
+      expect(weightSwapPopover(rowWith(10, 15))).toMatchObject({
         legend: [
           { span: 'inner', label: 'Recommended weight', value: '12–17.5 kg' },
           { span: 'outer', label: 'Not ideal, but acceptable', value: '4–12 kg' },
@@ -72,7 +71,7 @@ describe('the weight swap popover and note', () => {
     test('a close span that reaches both ends leaves no estimate line to write', () => {
       // A dip's close span runs the whole corridor: the body weight is most of the load, so ±20%
       // of it covers every added weight there is.
-      expect(weightSwapPopover(dipRow, 2)).toMatchObject({
+      expect(weightSwapPopover(dipRow)).toMatchObject({
         title: 'Current set target: +16 kg × 7',
         legend: [{ span: 'inner', label: 'Recommended weight', value: '+0 to +22.5 kg' }],
       });
@@ -80,7 +79,7 @@ describe('the weight swap popover and note', () => {
 
     test('a close span narrower on both sides names both leftovers', () => {
       // 5 kg × 25: ±20% is 4–6 kg, while the rep corridor reaches from 3 to 13.
-      expect(weightSwapPopover(rowWith(25, 5), 2)).toMatchObject({
+      expect(weightSwapPopover(rowWith(25, 5))).toMatchObject({
         legend: [
           { span: 'inner', value: '4–6 kg' },
           { span: 'outer', value: '3–4 and 6–13 kg' },
@@ -88,75 +87,15 @@ describe('the weight swap popover and note', () => {
       });
     });
 
-    test('with no history it says so instead of showing numbers', () => {
+    test('with no history there are no ranges: the ⓘ opens "Finding your weight" instead', () => {
       expect(
-        weightSwapPopover({ setNumber: 1, weightSwap: { unavailable: 'no_history' } }, 3),
-      ).toEqual({
-        kind: 'no-history',
-        title: 'Not enough history yet',
-        // The 5–30 corridor as the Reps plate draws every span: dashes, the accent bar over the
-        // part to aim for, the two ends named.
-        corridor: {
-          outer: { min: 0, max: 35 },
-          inner: { min: 5, max: 30 },
-          labels: [
-            { value: 5, text: '5' },
-            { value: 30, text: '30' },
-          ],
-          accessibilityLabel: 'Reps per set: 5 to 30',
-        },
-        steps: [
-          ['Pick a weight you can lift for ', { strong: '5–30 reps' }, '.'],
-          ['Stop each set with ', { strong: 'about 3 reps in reserve' }, '.'],
-          ['Log this workout.'],
-          ['Next time: ', { strong: 'reps will be calculated' }, ' for you.'],
-        ],
-      });
-    });
-
-    test('with no history at 1 RIR it says "1 rep", not "1 reps"', () => {
-      const popover = weightSwapPopover(
-        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
-        1,
-      );
-
-      expect(popover).toMatchObject({
-        steps: expect.arrayContaining([
-          ['Stop each set with ', { strong: 'about 1 rep in reserve' }, '.'],
-        ]),
-      });
-    });
-
-    test('with no history at the last week’s 0 RIR it says failure, not "about 0 reps in reserve"', () => {
-      const popover = weightSwapPopover(
-        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
-        0,
-      );
-
-      expect(popover).toMatchObject({ kind: 'no-history' });
-      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
-        'Take each set ',
-        { strong: 'to failure' },
-        '.',
-      ]);
-    });
-
-    test('with no history and no recorded RIR it says how hard without a number', () => {
-      const popover = weightSwapPopover(
-        { setNumber: 1, weightSwap: { unavailable: 'no_history' } },
-        undefined,
-      );
-
-      expect(popover?.kind === 'no-history' && popover.steps[1]).toEqual([
-        'Stop each set with ',
-        { strong: 'a few reps in reserve' },
-        '.',
-      ]);
+        weightSwapPopover({ setNumber: 1, weightSwap: { unavailable: 'no_history' } }),
+      ).toBeUndefined();
     });
 
     test('no swap, no popover — a deload set or a pure bodyweight one', () => {
-      expect(weightSwapPopover({ setNumber: 1 }, 2)).toBeUndefined();
-      expect(weightSwapPopover(undefined, 2)).toBeUndefined();
+      expect(weightSwapPopover({ setNumber: 1 })).toBeUndefined();
+      expect(weightSwapPopover(undefined)).toBeUndefined();
     });
   });
 
@@ -235,9 +174,8 @@ describe('the range track labels', () => {
           equipment: 'dumbbell',
         }),
       },
-      2,
     );
-    return popover?.kind === 'ranges' ? popover.labels.map((label) => label.text) : undefined;
+    return popover?.labels.map((label) => label.text);
   }
 
   test('the bounds and the target, when they all have room', () => {

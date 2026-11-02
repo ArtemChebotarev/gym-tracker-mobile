@@ -6,6 +6,7 @@ import type { PlateTextPart } from '@design/components/PlateText';
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment, ExerciseType } from '@domain/catalog';
 import type { PowerLoad } from '@domain/exerciseConfig';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { WorkoutMode } from '@domain/workoutView';
 
 // "Finding your weight", not "…first weight": the ⓘ is on every week's card, and the ladder is how
@@ -25,16 +26,16 @@ export const WARM_UP_STEPS: readonly PlateTextPart[][] = [
 
 export const WARM_UP_NOTE = "Warm-up sets aren't logged here.";
 
-/** The block that is logged, named by its usual name; the line under it says to log it. */
-export const WORKING_SET_LABEL = 'Then your working set';
+/** The box that is logged, named by its usual name; the line in it says to log it. */
+export const WORKING_SET_LABEL = 'Working set';
 
 const WORKING_SET_TAIL = " If it felt right, that's your weight.";
 
 /**
- * The working set's line — the RIR is the exercise's own target, so it's right on any week. A
- * session exercise may have none recorded; the sentence then says it without a number. And at the
- * last week's 0 RIR the target is failure, said as that: "stop at 0 RIR" reads as a typo (Artem,
- * 06.10.2026).
+ * The working set's line — the corridor a set has to land in, which the engine builds its targets
+ * on (03), and the RIR, the exercise's own target, so it's right on any week. A session exercise
+ * may have none recorded; the sentence then says it without a number. And at the last week's 0 RIR
+ * the target is failure, said as that: "stop at 0 RIR" reads as a typo (Artem, 06.10.2026).
  */
 export function workingSetText(targetRir: number | undefined): PlateTextPart[] {
   const stop =
@@ -43,13 +44,23 @@ export function workingSetText(targetRir: number | undefined): PlateTextPart[] {
       : targetRir === 0
         ? 'go to failure'
         : `stop at ${targetRir} RIR`;
-  return ['Do one set, ', { strong: stop }, ' and ', { strong: 'log it' }, `.${WORKING_SET_TAIL}`];
+  const { minReps, maxReps } = defaultProgressionSettings;
+  return [
+    'Do one set of ',
+    { strong: `${minReps}–${maxReps} reps` },
+    ', ',
+    { strong: stop },
+    ' and ',
+    { strong: 'log it' },
+    `.${WORKING_SET_TAIL}`,
+  ];
 }
 
 /**
  * Whether the Weight header gets its ⓘ: on a live workout, any week but a deload — there the weight
- * is already filled in and so is the Reps ⓘ missing, so the two buttons behave alike — and not on
- * a pure bodyweight exercise, whose Weight field is the body weight rather than a load to find.
+ * is already filled in — and not on a pure bodyweight exercise, whose Weight field is the body
+ * weight rather than a load to find. What it opens is `weightSwapPopover`'s ranges, if there are
+ * any, and this plate if not (08.11, "Правило ⓘ").
  */
 export function showsFirstWeightInfo(
   mode: WorkoutMode,

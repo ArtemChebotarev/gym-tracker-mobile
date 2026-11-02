@@ -168,7 +168,6 @@ export function PowerExerciseCard({
               label: 'Fast reps',
               info: {
                 buttonRef: repsAnchor.ref,
-                ...(coachmarkTargets !== undefined ? { discRef: coachmarkTargets.reps } : {}),
                 accessibilityLabel: 'About fast reps',
                 open: repsAnchor.visible,
                 onPress: repsAnchor.open,
