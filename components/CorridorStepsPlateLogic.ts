@@ -1,7 +1,6 @@
-// The shape of a Reps ⓘ plate (08.7.1, "no history"): a few numbered steps with the rep corridor
-// drawn under the first. The strength plate with no history to read a range from
-// (WeightSwapLogic.ts), power's Fast reps plate (FastRepsPlateLogic.ts) and a band's
-// (StrengthExerciseCardLogic.ts) all have it; CorridorStepsPopover draws it.
+// The shape of a band's ⓘ plate (StrengthExerciseCardLogic.ts): a few numbered steps with the rep
+// corridor drawn under the first; CorridorStepsPopover draws it. A power plate's track is the same
+// corridor (PowerTargetPlateLogic.ts).
 
 import type { PlateTextPart } from '@design/components/PlateRow';
 import type { RangeTrackLabel, RangeTrackRange } from '@design/components/RangeTrack';

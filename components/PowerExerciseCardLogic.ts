@@ -3,6 +3,7 @@
 import type { PowerLoad } from '@domain/exerciseConfig';
 import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
 import { POWER_MAX_REPS } from '@domain/progressionCorridor';
+import type { WorkoutMode } from '@domain/workoutView';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 import { powerNoHeavierLabel } from './ExerciseFormLogic';
@@ -17,6 +18,15 @@ export function powerLoadColumnLabel(load: PowerLoad): string {
     case 'weight':
       return 'Load, kg';
   }
+}
+
+/**
+ * The ⓘ follows the first column's rule (08.11, "Правило ⓘ"): during a live workout, and not on a
+ * deload. For every kind of load: unlike a strength exercise's, the one with no load has its ⓘ too,
+ * since the plate is about the fast reps as much as the load.
+ */
+export function showsPowerInfo(mode: WorkoutMode, isDeload: boolean): boolean {
+  return mode === 'live' && !isDeload;
 }
 
 /** The mark the note leads with: the load going up, a variation swap, or one more set. */
@@ -53,8 +63,7 @@ export type CeilingNoteContext = {
 };
 
 /**
- * The top of the corridor is explained once, in the Fast reps ⓘ, so the note doesn't repeat why: it
- * says what to do ("Try heavier or add a set."), what the user did ("You did 6+ fast reps on every
+ * The note doesn't explain the top of the corridor, the ⓘ's plate draws it: it says what to do ("Try heavier or add a set."), what the user did ("You did 6+ fast reps on every
  * set last week."), and — once nothing heavier is left — that they may stay where they are. The
  * actions are links under it.
  */

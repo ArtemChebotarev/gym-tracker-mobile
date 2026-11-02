@@ -5,15 +5,28 @@
 //
 // The text is parts, not a string (`PlateText`), so a screen can mark the words that matter without
 // this component knowing what they are: `['Stop a set when ', { strong: 'about 3 reps are left' }]`.
+//
+// The mark stands level with the text's first line, however many lines follow: a number is read
+// before its sentence, so it sits where the sentence starts (Artem, 02.11.2026).
 
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { IconComponent } from '../icons/IconFrame';
-import { circle } from '../shapes';
-import { BORDER_WIDTHS, COLORS, ICON_SIZES, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { centerInset, circle } from '../shapes';
+import {
+  BORDER_WIDTHS,
+  COLORS,
+  ICON_SIZES,
+  LINE_HEIGHTS,
+  SIZES,
+  SPACING,
+  TYPOGRAPHY,
+} from '../tokens';
 import { PlateText, type PlateTextPart } from './PlateText';
 
 export type { PlateTextPart };
+
+const LINE_HEIGHT = LINE_HEIGHTS['line-height/text'];
 
 export type PlateRowLeading = { icon: IconComponent } | { number: number };
 
@@ -55,7 +68,7 @@ export function PlateRow({
           <Text style={[styles.number, accent && styles.numberAccent]}>{leading.number}</Text>
         )}
       </View>
-      <PlateText parts={text} style={styles.text} />
+      <PlateText parts={text} style={compact ? styles.textCompact : styles.text} />
     </View>
   );
 }
@@ -63,7 +76,7 @@ export function PlateRow({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: SPACING['space/gap'],
   },
   mark: {
@@ -76,6 +89,8 @@ const styles = StyleSheet.create({
   },
   markCompact: {
     ...circle(SIZES['size/badge-compact']),
+    // A pixel shorter than the line: half of that centres it on the line.
+    marginTop: centerInset(LINE_HEIGHT, SIZES['size/badge-compact']),
   },
   markBoxed: {
     backgroundColor: COLORS['surface/plate-box'],
@@ -93,7 +108,12 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/caption'].fontWeight,
     color: COLORS['text/secondary'],
   },
+  // Taller than the line, so the line comes down to the mark's centre.
   text: {
+    flex: 1,
+    paddingTop: centerInset(SIZES['size/badge'], LINE_HEIGHT),
+  },
+  textCompact: {
     flex: 1,
   },
 });

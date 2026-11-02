@@ -1,5 +1,5 @@
-// Styles behind components/PowerExerciseCard.tsx — see the code-style skill. The card's frame, its
-// column header and the Fast reps plate have their own.
+// Styles behind components/PowerExerciseCard.tsx — see the code-style skill. The card's frame and its
+// column header have their own.
 
 import { StyleSheet } from 'react-native';
 
@@ -23,5 +23,10 @@ export const styles = StyleSheet.create({
     fontSize: META_FONT_SIZE,
     color: COLORS['text/secondary'],
     textDecorationLine: 'underline',
+  },
+  // Under the track's labels, spaced as a band's plate spaces its steps (CorridorStepsPopoverStyles).
+  targetRows: {
+    marginTop: SPACING['space/md'],
+    gap: SPACING['space/dots'],
   },
 });

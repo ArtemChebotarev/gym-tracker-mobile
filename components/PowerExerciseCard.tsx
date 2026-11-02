@@ -1,38 +1,49 @@
 // A power exercise's card — 10.2 · Power progression; 10.1 FR-2, FR-3, FR-14. Inside the shared
 // frame (ExerciseCardFrame): no RIR (P5), the `Deload` chip on a deload week, the note at the top of
 // the corridor with its links (P6–P9, GT-81), then `Load, kg` / `Level` / `Bodyweight, kg` and
-// `Fast reps` over guided set rows (P11) — no hit indicator, no weight swap. The Fast reps ⓘ says
-// what a power set is; the Load ⓘ how to find the load (GT-81).
+// `Fast reps` over guided set rows (P11) — no hit indicator, no weight swap. One ⓘ, in the first
+// column (08.11, "Правило ⓘ"): the set's target in the corridor if it has one, and how to find the
+// load if not.
 //
 // Presentational: the exercise, the screen mode, and the button handlers come in as props.
 
 import { Pressable, Text, View } from 'react-native';
 
 import { InlineNote } from '@design/components/InlineNote';
+import { PlateRow } from '@design/components/PlateRow';
+import { Popover } from '@design/components/Popover';
+import { RangeTrack } from '@design/components/RangeTrack';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
+import { CheckIcon } from '@design/icons/CheckIcon';
 import { PlusIcon } from '@design/icons/PlusIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
+import { TargetIcon } from '@design/icons/TargetIcon';
+import type { AnchorRect } from '@design/popoverLayout';
 import { POWER_MIN_REPS } from '@domain/progressionCorridor';
 import type { PowerWorkoutExercise } from '@usecases/workoutSession';
 
-import { CorridorStepsPopover } from './CorridorStepsPopover';
 import { ExerciseCardFrame } from './ExerciseCardFrame';
 import { ExerciseColumnHeader } from './ExerciseColumnHeader';
-import { fastRepsPlate } from './FastRepsPlateLogic';
 import { FirstWeightPopover } from './FirstWeightPopover';
 import { firstWeightCopy } from './FirstWeightPopoverLogic';
-import { formatCeilingNote, powerLoadColumnLabel, topWeightOf } from './PowerExerciseCardLogic';
+import {
+  formatCeilingNote,
+  powerLoadColumnLabel,
+  showsPowerInfo,
+  topWeightOf,
+} from './PowerExerciseCardLogic';
 import { styles } from './PowerExerciseCardStyles';
+import { type PowerTargetPlate, powerTargetPlate } from './PowerTargetPlateLogic';
 import { RirBadge } from './RirBadge';
 import { deloadExplanation } from './RirExplanationLogic';
 import { usePopoverAnchor } from './usePopoverAnchor';
 import type { CeilingActions, ExerciseCardCommonProps } from './WorkoutExerciseCard';
 import {
-  cardInfoTargets,
   cardLoadEquipment,
   cardRowsOf,
   exerciseCardView,
+  firstUnloggedRow,
 } from './WorkoutExerciseCardLogic';
 import { exerciseLogCounts, formatExerciseMenuSubtitle } from './WorkoutExerciseMenuLogic';
 import { type SetLoggingProps, WorkoutSetRows } from './WorkoutSetRows';
@@ -60,12 +71,6 @@ export function PowerExerciseCard({
   const view = exerciseCardView(mode, exercise, cardRowsOf(exercise.rows), isDeload);
   const editable = mode === 'live' && !view.isNotDone;
   const loadEquipment = cardLoadEquipment(exercise);
-  const infoTargets = cardInfoTargets(
-    { ...exercise, loadEquipment },
-    exercise.rows,
-    mode,
-    isDeload,
-  );
   const ceilingNote =
     exercise.ceilingHint === undefined
       ? undefined
@@ -73,11 +78,11 @@ export function PowerExerciseCard({
           load: exercise.powerLoad,
           ...topWeightOf(exercise.rows),
         });
-  // Two ⓘ buttons, each with its own plate: the Load how-to (GT-81) — a level's its own — and what
-  // a fast rep is.
+  const showsInfo = showsPowerInfo(mode, isDeload);
+  // The ⓘ speaks for the set whose Log box carries the accent, as a strength card's does.
+  const target = powerTargetPlate(firstUnloggedRow(exercise.rows), exercise.powerLoad);
   const loadCopy = firstWeightCopy('power', undefined, exercise.powerLoad);
-  const loadAnchor = usePopoverAnchor();
-  const repsAnchor = usePopoverAnchor();
+  const infoAnchor = usePopoverAnchor();
 
   return (
     <ExerciseCardFrame
@@ -104,17 +109,19 @@ export function PowerExerciseCard({
       }
       overlays={
         <>
-          <CorridorStepsPopover
-            plate={fastRepsPlate()}
-            visible={repsAnchor.visible}
-            anchor={repsAnchor.anchor}
-            onClose={repsAnchor.close}
-          />
-          {infoTargets.weight && (
+          {showsInfo && target !== undefined && (
+            <PowerTargetPopover
+              plate={target}
+              visible={infoAnchor.visible}
+              anchor={infoAnchor.anchor}
+              onClose={infoAnchor.close}
+            />
+          )}
+          {showsInfo && target === undefined && (
             <FirstWeightPopover
-              visible={loadAnchor.visible}
-              anchor={loadAnchor.anchor}
-              onClose={loadAnchor.close}
+              visible={infoAnchor.visible}
+              anchor={infoAnchor.anchor}
+              onClose={infoAnchor.close}
               copy={loadCopy}
             />
           )}
@@ -150,29 +157,21 @@ export function PowerExerciseCard({
           columns={[
             {
               label: powerLoadColumnLabel(exercise.powerLoad),
-              ...(infoTargets.weight
+              ...(showsInfo
                 ? {
                     info: {
-                      buttonRef: loadAnchor.ref,
+                      buttonRef: infoAnchor.ref,
                       ...(coachmarkTargets !== undefined
                         ? { discRef: coachmarkTargets.weight }
                         : {}),
-                      accessibilityLabel: loadCopy.title,
-                      open: loadAnchor.visible,
-                      onPress: loadAnchor.open,
+                      accessibilityLabel: target !== undefined ? 'Set target' : loadCopy.title,
+                      open: infoAnchor.visible,
+                      onPress: infoAnchor.open,
                     },
                   }
                 : {}),
             },
-            {
-              label: 'Fast reps',
-              info: {
-                buttonRef: repsAnchor.ref,
-                accessibilityLabel: 'About fast reps',
-                open: repsAnchor.visible,
-                onPress: repsAnchor.open,
-              },
-            },
+            { label: 'Fast reps' },
           ]}
         />
       )}
@@ -196,6 +195,45 @@ export function PowerExerciseCard({
 }
 
 const CEILING_ICONS = { up: ArrowUpIcon, swap: SwapIcon, plus: PlusIcon } as const;
+
+/** One icon per line of the plate, in its order: the rule of a set, then what comes of it. */
+const TARGET_ROW_ICONS = [TargetIcon, CheckIcon] as const;
+
+/** The ⓘ's plate while the set has a target (08.11, "Power: Load ⓘ"). */
+function PowerTargetPopover({
+  plate,
+  visible,
+  anchor,
+  onClose,
+}: {
+  plate: PowerTargetPlate;
+  visible: boolean;
+  anchor: AnchorRect | null;
+  onClose: () => void;
+}) {
+  return (
+    <Popover
+      visible={visible}
+      onClose={onClose}
+      anchor={anchor}
+      title={plate.title}
+      {...(plate.subtitle !== undefined ? { subtitle: plate.subtitle } : {})}
+    >
+      <RangeTrack
+        outer={plate.corridor.outer}
+        inner={plate.corridor.inner}
+        marker={plate.marker}
+        labels={plate.corridor.labels}
+        accessibilityLabel={plate.corridor.accessibilityLabel}
+      />
+      <View style={styles.targetRows}>
+        {TARGET_ROW_ICONS.map((icon, index) => (
+          <PlateRow key={index} leading={{ icon }} text={plate.rows[index] ?? []} />
+        ))}
+      </View>
+    </Popover>
+  );
+}
 
 /** A link in the ceiling note — an action the note leads to, underlined like the mockup's. */
 function CeilingLink({ label, onPress }: { label: string; onPress: () => void }) {

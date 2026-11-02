@@ -1,6 +1,6 @@
 // An ⓘ plate in the corridor-and-steps shape: the first step, the rep corridor drawn under it, then
-// the rest as steps. Power's Fast reps plate and a band's plate draw through it; the words are their
-// Logic's (`CorridorStepsPlate`).
+// the rest as steps. A band's plate draws through it; the words are its Logic's
+// (`CorridorStepsPlate`).
 
 import { View } from 'react-native';
 
