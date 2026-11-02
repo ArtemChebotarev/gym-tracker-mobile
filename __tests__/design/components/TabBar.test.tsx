@@ -9,7 +9,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet, Text } from 'react-native';
 
 const ITEMS: TabBarItem[] = [
-  { key: 'today', label: 'Today', icon: TabTodayIcon },
+  { key: 'today', label: 'Workout', icon: TabTodayIcon },
   { key: 'cycles', label: 'Cycles', icon: TabCyclesIcon },
   { key: 'library', label: 'Library', icon: TabLibraryIcon },
 ];
@@ -24,7 +24,7 @@ describe('TabBar', () => {
   test('renders every tab label', () => {
     render(<TabBar items={ITEMS} activeKey="today" onChange={() => {}} />);
 
-    expect(screen.getByRole('button', { name: 'Today' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Workout' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Cycles' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Library' })).toBeTruthy();
   });
@@ -35,7 +35,7 @@ describe('TabBar', () => {
     expect(screen.getByRole('button', { name: 'Cycles' }).props.accessibilityState).toEqual(
       expect.objectContaining({ selected: true }),
     );
-    expect(screen.getByRole('button', { name: 'Today' }).props.accessibilityState).toEqual(
+    expect(screen.getByRole('button', { name: 'Workout' }).props.accessibilityState).toEqual(
       expect.objectContaining({ selected: false }),
     );
   });
@@ -51,7 +51,7 @@ describe('TabBar', () => {
 
   test('renders each icon at the tab size, in accent when active and text/faint when not', () => {
     const items: TabBarItem[] = [
-      { key: 'today', label: 'Today', icon: ProbeIcon },
+      { key: 'today', label: 'Workout', icon: ProbeIcon },
       { key: 'library', label: 'Library', icon: ProbeIcon },
     ];
     render(<TabBar items={items} activeKey="today" onChange={() => {}} />);

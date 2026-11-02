@@ -70,7 +70,7 @@ exports[`TabBar matches the snapshot with Library active 1`] = `
       }
     >
       <View
-        accessibilityLabel="Today"
+        accessibilityLabel="Workout"
         accessibilityRole="button"
         accessibilityState={
           {
@@ -206,7 +206,7 @@ exports[`TabBar matches the snapshot with Library active 1`] = `
             ]
           }
         >
-          Today
+          Workout
         </Text>
       </View>
       <View
@@ -546,7 +546,7 @@ exports[`TabBar matches the snapshot with Today active 1`] = `
       }
     >
       <View
-        accessibilityLabel="Today"
+        accessibilityLabel="Workout"
         accessibilityRole="button"
         accessibilityState={
           {
@@ -684,7 +684,7 @@ exports[`TabBar matches the snapshot with Today active 1`] = `
             ]
           }
         >
-          Today
+          Workout
         </Text>
       </View>
       <View

@@ -42,11 +42,11 @@ afterEach(() => {
 });
 
 describe('AppTabBar', () => {
-  test('shows Today, Cycles, Library and Settings', () => {
+  test('shows Workout, Cycles, Library and Settings', () => {
     setup(0);
 
     expect(screen.getAllByRole('button').map((b) => b.props.accessibilityLabel)).toEqual([
-      'Today',
+      'Workout',
       'Cycles',
       'Library',
       'Settings',
@@ -77,7 +77,7 @@ describe('AppTabBar', () => {
   test('pressing the focused tab announces tabPress but does not navigate', () => {
     const navigation = setup(0);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Today' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Workout' }));
 
     expect(navigation.emit).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();

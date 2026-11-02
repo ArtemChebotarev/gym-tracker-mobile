@@ -24,7 +24,7 @@ export default function TabLayout() {
       screenListeners={screenListeners}
       tabBar={(props) => <AppTabBar {...props} />}
     >
-      <Tabs.Screen name="index" options={{ title: 'Today' }} />
+      <Tabs.Screen name="index" options={{ title: 'Workout' }} />
       <Tabs.Screen name="mesocycles" options={{ title: 'Cycles' }} />
       <Tabs.Screen name="library" options={{ title: 'Library' }} />
       <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
