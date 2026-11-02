@@ -133,13 +133,52 @@ describe('Interval card (GT-88)', () => {
     expect(screen.getByText('Start timer · 2 rounds left')).toBeTruthy();
   });
 
-  test('the ⓘ sits beside the column the lever moves and explains it', () => {
+  test('the ⓘ stands at Work whichever column the lever moves, and explains it', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
-    fireEvent.press(screen.getByLabelText('How rest progresses'));
+    const first = within(screen.getByTestId('exercise-column-Work'));
+    fireEvent.press(first.getByLabelText('How rest progresses'));
 
     expect(screen.getByText('Less rest each week')).toBeTruthy();
-    expect(screen.queryByLabelText('How work progresses')).toBeNull();
+    expect(within(screen.getByTestId('exercise-column-Rest')).queryByRole('button')).toBeNull();
+  });
+
+  test('a round with no time: how to pick one, and the hint under the rounds stays', () => {
+    const exercise = makeInterval({
+      rounds: [
+        { roundNumber: 1, isFirstUnlogged: true },
+        { roundNumber: 2, isFirstUnlogged: false },
+      ],
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise })} />);
+
+    fireEvent.press(screen.getByLabelText('Finding your time'));
+
+    expect(screen.getByText('A time you can hold with good form in every round')).toBeTruthy();
+    expect(screen.getByText('Enough to start the next round ready')).toBeTruthy();
+    expect(screen.getByText('Finish every round: rest gets 15 s shorter next week.')).toBeTruthy();
+    expect(
+      screen.getByText('Pick work and rest to log a round or start the timer.'),
+    ).toBeTruthy();
+  });
+
+  test('no time on a lever with no step: the plate has no line about it', () => {
+    const { progression: _progression, ...steady } = makeInterval({
+      rounds: [{ roundNumber: 1, isFirstUnlogged: true }],
+    });
+    render(<WorkoutExerciseCard {...makeProps({ exercise: steady })} />);
+
+    fireEvent.press(screen.getByLabelText('Finding your time'));
+
+    expect(screen.getByText('Enough to start the next round ready')).toBeTruthy();
+    expect(screen.queryByText(/Finish every round/)).toBeNull();
+  });
+
+  test('a deload has no ⓘ, even with no time', () => {
+    const exercise = makeInterval({ rounds: [{ roundNumber: 1, isFirstUnlogged: true }] });
+    render(<WorkoutExerciseCard {...makeProps({ exercise, isDeload: true })} />);
+
+    expect(screen.queryByLabelText('Finding your time')).toBeNull();
   });
 
   test('no lever that moves a column, no ⓘ', () => {

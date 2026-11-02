@@ -415,6 +415,8 @@ export const SIZES = {
   'size/wordmark': 190,
   /** The fact chip of the deload popup: one width for `Half weight`, `Fewer sets` and `8 RIR` (08.11). */
   'size/fact-chip': 96,
+  /** The word chip of a plate's list: one width for `Work` and `Rest` (08.11, "Finding your time"). */
+  'size/plate-chip': 56,
   /** The circle behind an EmptyState's icon (08.0.1). */
   'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */

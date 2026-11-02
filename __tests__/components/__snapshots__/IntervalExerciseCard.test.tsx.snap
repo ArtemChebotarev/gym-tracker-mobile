@@ -534,53 +534,6 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
               },
             ]
           }
-        />
-      </View>
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "alignSelf": "stretch",
-            "flex": 1,
-            "flexDirection": "row",
-          }
-        }
-        testID="exercise-column-Rest"
-      >
-        <View
-          style={
-            {
-              "alignSelf": "stretch",
-              "flex": 1,
-            }
-          }
-        />
-        <Text
-          style={
-            {
-              "color": "#8A9099",
-              "fontSize": 13,
-              "fontWeight": "400",
-              "letterSpacing": 0.5,
-            }
-          }
-        >
-          Rest
-        </Text>
-        <View
-          style={
-            [
-              {
-                "alignSelf": "stretch",
-                "flex": 1,
-              },
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "paddingLeft": 6,
-              },
-            ]
-          }
         >
           <View
             accessibilityLabel="How rest progresses"
@@ -728,6 +681,53 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             </View>
           </View>
         </View>
+      </View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flex": 1,
+            "flexDirection": "row",
+          }
+        }
+        testID="exercise-column-Rest"
+      >
+        <View
+          style={
+            {
+              "alignSelf": "stretch",
+              "flex": 1,
+            }
+          }
+        />
+        <Text
+          style={
+            {
+              "color": "#8A9099",
+              "fontSize": 13,
+              "fontWeight": "400",
+              "letterSpacing": 0.5,
+            }
+          }
+        >
+          Rest
+        </Text>
+        <View
+          style={
+            [
+              {
+                "alignSelf": "stretch",
+                "flex": 1,
+              },
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingLeft": 6,
+              },
+            ]
+          }
+        />
       </View>
       <View
         style={
