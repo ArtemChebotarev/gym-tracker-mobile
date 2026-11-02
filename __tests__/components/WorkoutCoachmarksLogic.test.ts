@@ -3,11 +3,15 @@ import {
   hasFirstColumnInfo,
   INFO_STEP,
   NO_TOUR_STEPS_SEEN,
+  RANGES_STEP,
+  rangesCoachmarkIndex,
   tourScrollOffset,
   tourStepsSeen,
   workoutCoachmarks,
 } from '@components/WorkoutCoachmarksLogic';
 import { rirExplanation } from '@components/RirExplanationLogic';
+import { defaultProgressionSettings } from '@domain/mesocycle';
+import { buildWeightSwap } from '@domain/weightSwapRules';
 import { InfoIcon } from '@design/icons/InfoIcon';
 import type {
   IntervalWorkoutExercise,
@@ -252,5 +256,69 @@ describe('tourScrollOffset', () => {
 
   test('a list already at its end stays', () => {
     expect(tourScrollOffset({ ...list, y: 1300, targetY: 900 })).toBeUndefined();
+  });
+});
+
+// 08.11, "Коучмарк диапазонов веса".
+describe('rangesCoachmarkIndex', () => {
+  const rangesRow: WorkoutSetRow = {
+    setNumber: 1,
+    targetReps: 10,
+    suggestedWeight: 15,
+    isFirstUnlogged: true,
+    weightSwap: buildWeightSwap({
+      target: { targetReps: 10, suggestedWeight: 15 },
+      settings: defaultProgressionSettings,
+      isDeload: false,
+      equipment: 'dumbbell',
+    }),
+  };
+  const withRanges = makeExercise({ rows: [rangesRow] });
+  const logged: WorkoutSetRow = {
+    setNumber: 1,
+    isFirstUnlogged: false,
+    log: { weight: 15, reps: 10 },
+  };
+
+  test('the first card, when its ⓘ shows ranges', () => {
+    expect(rangesCoachmarkIndex([withRanges], 'live', false)).toBe(0);
+  });
+
+  test('a card that is not first waits for its turn', () => {
+    expect(rangesCoachmarkIndex([makeInterval(), withRanges], 'live', false)).toBeUndefined();
+  });
+
+  test('it comes up once the cards before it are done', () => {
+    const done = makeExercise({ rows: [logged] });
+
+    expect(rangesCoachmarkIndex([done, withRanges], 'live', false)).toBe(1);
+  });
+
+  test('a skipped card before it does not hold it back', () => {
+    const skipped = makeExercise({ rows: [{ ...WEEK_1_ROW, isFirstUnlogged: false, notDone: 'skipped' }] });
+
+    expect(rangesCoachmarkIndex([skipped, withRanges], 'live', false)).toBe(1);
+  });
+
+  test('a card with no history yet shows no ranges, so no coachmark', () => {
+    expect(rangesCoachmarkIndex([makeExercise()], 'live', false)).toBeUndefined();
+  });
+
+  test('power has no ranges', () => {
+    expect(rangesCoachmarkIndex([makePower({ rows: [rangesRow] })], 'live', false)).toBeUndefined();
+  });
+
+  test('not on a deload, and only in a live workout', () => {
+    expect(rangesCoachmarkIndex([withRanges], 'live', true)).toBeUndefined();
+    expect(rangesCoachmarkIndex([withRanges], 'readonly', false)).toBeUndefined();
+  });
+
+  test('nothing left to do, nothing to say', () => {
+    expect(rangesCoachmarkIndex([makeExercise({ rows: [logged] })], 'live', false)).toBeUndefined();
+    expect(rangesCoachmarkIndex([], 'live', false)).toBeUndefined();
+  });
+
+  test('the words are the spec’s', () => {
+    expect(RANGES_STEP.title).toBe('Need a different weight?');
   });
 });

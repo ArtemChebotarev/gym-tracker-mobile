@@ -71,6 +71,7 @@ import {
   loggedSetKey,
   restAfterLog,
   shouldShowDeloadIntro,
+  shouldShowRangesCoachmark,
   shouldShowWorkoutCoachmarks,
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
@@ -169,12 +170,13 @@ export default function TodayScreen() {
   // The first-workout tour (GT-42, 08.11) — after the Welcome dialog, on a live non-deload session.
   // `Got it` and `Skip` both end it, and the flags are written when it ends, not when it opens, so
   // an app killed halfway shows it again.
-  const showCoachmarks = shouldShowWorkoutCoachmarks(
-    onboarding.data,
+  const coachmarkSession =
     query.data?.kind === 'session'
       ? { mode: query.data.model.mode, isDeload: query.data.model.header.isDeload }
-      : undefined,
-  );
+      : undefined;
+  const showCoachmarks = shouldShowWorkoutCoachmarks(onboarding.data, coachmarkSession);
+  // The one on the weight ranges (GT-215): a step of its own, once per user.
+  const showRangesCoachmark = shouldShowRangesCoachmark(onboarding.data, coachmarkSession);
   // The first-deload popup (GT-43, 08.11): the deload session is left out of the tour above, and
   // gets this instead — once, written when `Got it` is tapped, like the others.
   const showDeloadIntro = shouldShowDeloadIntro(
@@ -464,6 +466,7 @@ export default function TodayScreen() {
         loadError={loadErrorOf(query)}
         coachmarks={{
           visible: showCoachmarks,
+          rangesVisible: showRangesCoachmark,
           ...(onboarding.data !== undefined ? { seen: onboarding.data } : {}),
           onFinish: (flags) => markOnboardingSeen.mutate(flags),
         }}

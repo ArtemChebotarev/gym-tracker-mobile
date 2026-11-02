@@ -776,6 +776,15 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     expect(screen.getByText('Current set target: 15 kg × 10')).toBeTruthy();
   });
 
+  test('opening the ranges tells the screen: the coachmark about them has nothing left to say', () => {
+    const onOpenRanges = jest.fn();
+    render(<WorkoutExerciseCard {...makeProps({ exercise: CURL, onOpenRanges })} />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Weight recommendations' }));
+
+    expect(onOpenRanges).toHaveBeenCalledTimes(1);
+  });
+
   test('with no history the ⓘ opens "Finding your weight", and the old plate is gone', () => {
     render(
       <WorkoutExerciseCard

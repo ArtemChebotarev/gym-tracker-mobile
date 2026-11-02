@@ -21,6 +21,8 @@ export type OnboardingFlags = {
   tourRirSeen: boolean;
   /** The tour's step on the grid button. */
   tourGridSeen: boolean;
+  /** The one-step coachmark on the weight ranges — closed, or the plate found without it (GT-215). */
+  rangesCoachmarkSeen: boolean;
   /** The popup on the first deload session. */
   deloadIntroSeen: boolean;
   /** The one-step coachmark on `Start` of the first Planned cycle (GT-50). */

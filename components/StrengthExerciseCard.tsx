@@ -68,6 +68,7 @@ export function StrengthExerciseCard({
   mode,
   isDeload = false,
   coachmarkTargets,
+  onOpenRanges,
   chip,
   position = 0,
   onOpenHistory,
@@ -180,7 +181,12 @@ export function StrengthExerciseCard({
                         : {}),
                       accessibilityLabel: bandInfo ? 'About reps with a band' : weightInfoLabel,
                       open: infoAnchor.visible,
-                      onPress: infoAnchor.open,
+                      onPress: () => {
+                        infoAnchor.open();
+                        if (ranges !== undefined) {
+                          onOpenRanges?.();
+                        }
+                      },
                     },
                   }
                 : {}),

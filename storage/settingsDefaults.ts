@@ -11,6 +11,7 @@ export const DEFAULT_ONBOARDING: OnboardingFlags = {
   tourInfoSeen: false,
   tourRirSeen: false,
   tourGridSeen: false,
+  rangesCoachmarkSeen: false,
   deloadIntroSeen: false,
   startCycleSeen: false,
 };
