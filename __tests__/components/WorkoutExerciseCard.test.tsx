@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import {
   type CeilingActions,
@@ -1093,12 +1093,25 @@ describe('WorkoutExerciseCard — a resistance band', () => {
     expect(screen.queryByText('Weight, kg')).toBeNull();
   });
 
-  test('its Reps ⓘ explains the 5–30 corridor with a band', () => {
+  test('its ⓘ sits in the first column and opens the plate with a band', () => {
     render(<WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />);
 
-    fireEvent.press(screen.getByLabelText('About reps with a band'));
+    const column = within(screen.getByTestId('exercise-column-Bodyweight, kg'));
+    fireEvent.press(column.getByLabelText('About reps with a band'));
 
     expect(screen.getByText('Reps with a band')).toBeTruthy();
+    expect(within(screen.getByTestId('exercise-column-Reps')).queryByRole('button')).toBeNull();
+  });
+
+  test('the ⓘ is the only one on the card, and a deload has none', () => {
+    const { rerender } = render(
+      <WorkoutExerciseCard {...makeProps({ exercise: band, bodyWeight: 83 })} />,
+    );
+    expect(screen.getAllByLabelText('About reps with a band')).toHaveLength(1);
+
+    rerender(<WorkoutExerciseCard {...makeProps({ exercise: band, isDeload: true })} />);
+
+    expect(screen.queryByLabelText('About reps with a band')).toBeNull();
   });
 
   test('a deload week still has the Deload badge, and it cuts the reps', () => {

@@ -36,7 +36,11 @@ export function ExerciseColumnHeader({ columns }: ExerciseColumnHeaderProps) {
   return (
     <View style={styles.headerRow}>
       {columns.map((column) => (
-        <View key={column.label} style={styles.valueColumn}>
+        <View
+          key={column.label}
+          testID={`exercise-column-${column.label}`}
+          style={styles.valueColumn}
+        >
           <View style={styles.half} />
           <Text style={styles.columnLabel}>{column.label}</Text>
           <View style={[styles.half, styles.infoHalf]}>

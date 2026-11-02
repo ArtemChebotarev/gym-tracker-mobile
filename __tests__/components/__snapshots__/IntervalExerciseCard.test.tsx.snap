@@ -498,6 +498,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Work"
       >
         <View
           style={
@@ -544,6 +545,7 @@ exports[`Interval card (GT-88) matches the live snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="exercise-column-Rest"
       >
         <View
           style={

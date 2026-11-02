@@ -8,10 +8,10 @@
 // off in v1; Artem brought it back: without it, a target clamped at the rep corridor's bound (30
 // again at the same weight) read as a wrong suggestion.
 //
-// One ⓘ, in the Weight column (08.11, "Правило ⓘ"): the weight swap's ranges for the next set
+// One ⓘ, in the first column (08.11, "Правило ⓘ"): the weight swap's ranges for the next set
 // (08.7.1) if there are any, and "Finding your weight" if not. A resistance band keeps this card
 // (10.1 FR-15) with its own differences, worked out in StrengthExerciseCardLogic.ts: no RIR,
-// `Bodyweight, kg`, and a Reps ⓘ of its own.
+// `Bodyweight, kg`, and its own plate behind that ⓘ.
 //
 // The RIR is a static `Chip` (inside `RirBadge`, a button that explains it — GT-40), not the neutral
 // `Badge` 08.7 names: `Badge` neutral fills with `surface/card`, the card's own background, so on
@@ -29,7 +29,6 @@ import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import type { AnchorRect } from '@design/popoverLayout';
 import { COLORS, ICON_SIZES } from '@design/tokens';
-import { isResistanceBand } from '@domain/bodyWeightLoad';
 import type { StrengthWorkoutExercise } from '@usecases/workoutSession';
 
 import { CorridorStepsPopover } from './CorridorStepsPopover';
@@ -42,6 +41,7 @@ import { deloadExplanation, rirExplanation } from './RirExplanationLogic';
 import {
   bandRepsPlate,
   formatWeightHint,
+  showsBandInfo,
   strengthWeightColumnLabel,
 } from './StrengthExerciseCardLogic';
 import { styles } from './StrengthExerciseCardStyles';
@@ -85,12 +85,12 @@ export function StrengthExerciseCard({
   );
   const editable = mode === 'live' && !view.isNotDone;
   const infoTargets = cardInfoTargets({ ...exercise, targetRir }, exercise.rows, mode, isDeload);
-  const band = isResistanceBand(exercise.equipment);
+  const bandInfo = showsBandInfo(mode, isDeload, exercise.equipment);
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
   const ranges = infoTargets.weight ? weightSwapPopover(firstUnloggedRow(exercise.rows)) : undefined;
-  const weightAnchor = usePopoverAnchor();
-  const bandAnchor = usePopoverAnchor();
+  const infoAnchor = usePopoverAnchor();
+  const weightInfoLabel = ranges !== undefined ? 'Weight recommendations' : 'Finding your weight';
 
   return (
     <ExerciseCardFrame
@@ -129,27 +129,27 @@ export function StrengthExerciseCard({
       }
       overlays={
         <>
-          {band && (
+          {bandInfo && (
             <CorridorStepsPopover
               plate={bandRepsPlate()}
-              visible={bandAnchor.visible}
-              anchor={bandAnchor.anchor}
-              onClose={bandAnchor.close}
+              visible={infoAnchor.visible}
+              anchor={infoAnchor.anchor}
+              onClose={infoAnchor.close}
             />
           )}
           {ranges !== undefined && (
             <WeightRangesPopover
               popover={ranges}
-              visible={weightAnchor.visible}
-              anchor={weightAnchor.anchor}
-              onClose={weightAnchor.close}
+              visible={infoAnchor.visible}
+              anchor={infoAnchor.anchor}
+              onClose={infoAnchor.close}
             />
           )}
           {infoTargets.weight && ranges === undefined && (
             <FirstWeightPopover
-              visible={weightAnchor.visible}
-              anchor={weightAnchor.anchor}
-              onClose={weightAnchor.close}
+              visible={infoAnchor.visible}
+              anchor={infoAnchor.anchor}
+              onClose={infoAnchor.close}
               copy={firstWeightCopy(exercise.type, targetRir)}
             />
           )}
@@ -171,34 +171,21 @@ export function StrengthExerciseCard({
           columns={[
             {
               label: strengthWeightColumnLabel(exercise.equipment),
-              ...(infoTargets.weight
+              ...(infoTargets.weight || bandInfo
                 ? {
                     info: {
-                      buttonRef: weightAnchor.ref,
+                      buttonRef: infoAnchor.ref,
                       ...(coachmarkTargets !== undefined
                         ? { discRef: coachmarkTargets.weight }
                         : {}),
-                      accessibilityLabel:
-                        ranges !== undefined ? 'Weight recommendations' : 'Finding your weight',
-                      open: weightAnchor.visible,
-                      onPress: weightAnchor.open,
+                      accessibilityLabel: bandInfo ? 'About reps with a band' : weightInfoLabel,
+                      open: infoAnchor.visible,
+                      onPress: infoAnchor.open,
                     },
                   }
                 : {}),
             },
-            {
-              label: 'Reps',
-              ...(band
-                ? {
-                    info: {
-                      buttonRef: bandAnchor.ref,
-                      accessibilityLabel: 'About reps with a band',
-                      open: bandAnchor.visible,
-                      onPress: bandAnchor.open,
-                    },
-                  }
-                : {}),
-            },
+            { label: 'Reps' },
           ]}
         />
       )}
