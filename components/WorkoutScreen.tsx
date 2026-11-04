@@ -61,6 +61,7 @@ import type { OnboardingFlag } from '@repositories/settings';
 import type { LoadError } from '@state/loadError';
 import type { WorkoutExercise, WorkoutSessionModel } from '@usecases/workoutSession';
 
+import { EDIT_COACHMARK } from './EditCoachmarkLogic';
 import { LoadErrorState } from './LoadErrorState';
 import { WorkoutExerciseCard } from './WorkoutExerciseCard';
 import { cardChip } from './WorkoutExerciseCardLogic';
@@ -91,6 +92,8 @@ import { useTabBarClearance } from './useTabBarClearance';
 
 /** How long the first-workout tour waits after the workout is up. */
 const TOUR_DELAY_MS = 1000;
+/** The edit coachmark comes almost at once: the edit is what it is about (GT-224). */
+const EDIT_DELAY_MS = 400;
 
 // How long the tour lets an animated scroll run before it measures where the element landed.
 const TOUR_SCROLL_MS = 450;
@@ -187,6 +190,11 @@ export type WorkoutScreenProps = {
     /** The weight ranges coachmark (GT-215) may show; on which card, and when, the screen works out. */
     rangesVisible?: boolean;
     seen?: SeenTourSteps;
+    /**
+     * The card the first edit that carries over just changed (GT-224): the edit coachmark rings it.
+     * Set by the caller only while that coachmark may show.
+     */
+    editedCard?: string;
     onFinish: (flags: OnboardingFlag[]) => void;
   };
   /**
@@ -262,6 +270,19 @@ export function WorkoutScreen({
   const tourPending = coachmarks?.visible === true && tourSteps.length > 0;
   // Never over the tour, and a beat after whatever brought it on: the set just logged, the tour.
   const rangesDue = useDelayedFlag(rangesIndex !== undefined && !tourPending, TOUR_DELAY_MS);
+  // The edit coachmark (GT-224) on the card an edit just changed — never over the tour or the
+  // ranges one, and a beat after the edit, once the card has its new rows or its new place.
+  const editIndex =
+    coachmarks?.editedCard === undefined || model === undefined
+      ? -1
+      : model.exercises.findIndex(
+          (exercise) => exercise.sessionExerciseId === coachmarks.editedCard,
+        );
+  const editDue = useDelayedFlag(
+    editIndex !== -1 && !tourPending && rangesIndex === undefined,
+    EDIT_DELAY_MS,
+  );
+  const editCard = useRef<View>(null);
   // The visible parts the tour rings: the first card's RIR chip and ⓘ discs, and the grid button.
   const tourRir = useRef<View>(null);
   const tourWeight = useRef<View>(null);
@@ -400,9 +421,11 @@ export function WorkoutScreen({
                   : {}),
                 ...(tourSteps.some(
                   (step) => step.target === 'weight' && step.exerciseIndex === index,
-                ) || (!tourPending && rangesIndex === index)
+                ) ||
+                (!tourPending && rangesIndex === index)
                   ? { weight: tourWeight }
                   : {}),
+                ...(editIndex === index ? { card: editCard } : {}),
               }}
               onOpenRanges={() => {
                 if (coachmarks?.rangesVisible === true) {
@@ -453,7 +476,9 @@ export function WorkoutScreen({
           {model.showFinishLocked && (
             <View style={styles.finish}>
               <Button label="Finish workout" onPress={onFinish} disabled />
-              <Text style={styles.finishHint}>Log or skip every exercise to finish the workout.</Text>
+              <Text style={styles.finishHint}>
+                Log or skip every exercise to finish the workout.
+              </Text>
             </View>
           )}
           {nextSessionId !== undefined && (
@@ -518,6 +543,23 @@ export function WorkoutScreen({
               scrolls: true,
               targetRef: tourWeight,
               ...RANGES_STEP,
+            },
+          ]}
+        />
+      )}
+      {coachmarks !== undefined && coachmarks.editedCard !== undefined && (
+        <CoachmarkTour
+          key={`edit-${coachmarks.editedCard}`}
+          visible={editDue}
+          onFinish={() => coachmarks.onFinish(['editCoachmarkSeen'])}
+          reveal={revealTourTarget}
+          steps={[
+            {
+              ringRadius: RADII['radius/control'],
+              scrolls: true,
+              targetRef: editCard,
+              title: EDIT_COACHMARK.title,
+              content: <RirExplanationContent explanation={EDIT_COACHMARK} />,
             },
           ]}
         />

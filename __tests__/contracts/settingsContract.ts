@@ -20,6 +20,7 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   tourGridSeen: false,
   rangesCoachmarkSeen: false,
   restCoachmarkSeen: false,
+  editCoachmarkSeen: false,
   restNotificationsPlateHidden: false,
 };
 
@@ -59,6 +60,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           tourGridSeen: false,
           rangesCoachmarkSeen: false,
           restCoachmarkSeen: false,
+          editCoachmarkSeen: false,
           restNotificationsPlateHidden: false,
         },
         restBetweenSets: { enabled: false, restSec: 90 },
@@ -141,6 +143,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           tourGridSeen: false,
           rangesCoachmarkSeen: false,
           restCoachmarkSeen: false,
+          editCoachmarkSeen: false,
           restNotificationsPlateHidden: false,
         },
       });

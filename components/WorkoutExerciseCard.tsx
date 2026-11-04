@@ -31,6 +31,8 @@ import type { SetLoggingProps } from './WorkoutSetRows';
 export type CardCoachmarkTargets = {
   rir?: Ref<View>;
   weight?: Ref<View>;
+  /** The whole card — the edit coachmark's ring, on the card an edit just changed (GT-224). */
+  card?: Ref<View>;
 };
 
 /** What every card takes, whatever its type. */

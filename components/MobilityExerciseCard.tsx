@@ -27,6 +27,7 @@ export type MobilityExerciseCardProps = ExerciseCardCommonProps & {
 export function MobilityExerciseCard({
   exercise,
   mode,
+  coachmarkTargets,
   chip,
   position = 0,
   onOpenHistory,
@@ -41,6 +42,7 @@ export function MobilityExerciseCard({
 
   return (
     <ExerciseCardFrame
+      {...(coachmarkTargets?.card !== undefined ? { cardRef: coachmarkTargets.card } : {})}
       exercise={exercise}
       view={view}
       {...(exercise.equipment !== undefined

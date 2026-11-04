@@ -86,6 +86,7 @@ export function PowerExerciseCard({
 
   return (
     <ExerciseCardFrame
+      {...(coachmarkTargets?.card !== undefined ? { cardRef: coachmarkTargets.card } : {})}
       exercise={exercise}
       view={view}
       {...(exercise.equipment !== undefined

@@ -24,6 +24,7 @@ describe('onboarding flags', () => {
       tourGridSeen: false,
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
+      editCoachmarkSeen: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -39,6 +40,7 @@ describe('onboarding flags', () => {
       tourGridSeen: true,
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
+      editCoachmarkSeen: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -60,6 +62,7 @@ describe('onboarding flags', () => {
       tourGridSeen: false,
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
+      editCoachmarkSeen: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -81,6 +84,7 @@ describe('onboarding flags', () => {
       tourGridSeen: false,
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
+      editCoachmarkSeen: false,
       restNotificationsPlateHidden: false,
     });
     expect((await settingsRepo.read()).weightUnit).toBe('lb');

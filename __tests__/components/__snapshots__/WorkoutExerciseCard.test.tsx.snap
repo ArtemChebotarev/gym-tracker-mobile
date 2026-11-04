@@ -58,6 +58,7 @@ exports[`WorkoutExerciseCard variants matches the live snapshot 1`] = `
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {
@@ -1363,6 +1364,7 @@ exports[`WorkoutExerciseCard variants matches the preview snapshot 1`] = `
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {
@@ -1816,6 +1818,7 @@ exports[`WorkoutExerciseCard variants matches the read-only snapshot 1`] = `
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {
@@ -2941,6 +2944,7 @@ exports[`WorkoutExerciseCard variants matches the skipped snapshot 1`] = `
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {
@@ -3384,6 +3388,7 @@ exports[`WorkoutExerciseCard variants matches the skipped with some sets logged 
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {
