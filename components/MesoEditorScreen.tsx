@@ -129,7 +129,7 @@ export function MesoEditorScreen({
 }: MesoEditorScreenProps) {
   const router = useRouter();
   const draft = useDraftStore((state) => state.mesoBuilder);
-  // The Review step's progression block, until its `Don't show this` (GT-225).
+  // The Review step's progression block, until its cross (GT-225).
   const onboarding = useOnboardingFlags();
   const markOnboardingSeen = useMarkOnboardingSeen();
   const setDraft = useDraftStore((state) => state.setMesoBuilder);

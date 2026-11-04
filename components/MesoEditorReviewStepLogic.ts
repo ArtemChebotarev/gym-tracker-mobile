@@ -46,12 +46,12 @@ export const REVIEW_PROGRESSION_FACTS: readonly (readonly PlateTextPart[])[] = [
   ['The ', { strong: 'last week' }, ' is lighter, so you recover.'],
 ];
 
-/** The link under the block that puts it away for good (GT-225). */
-export const REVIEW_PROGRESSION_HIDE_LABEL = "Don't show this";
+/** The accessibility label of the block's cross, which puts it away for good (GT-225). */
+export const REVIEW_PROGRESSION_HIDE_LABEL = 'Hide how your cycle progresses';
 
 /**
  * Whether the Review step shows the progression block: on every Review, in every flow, until its
- * `Don't show this` is tapped (Artem, 04.11.2026 — replaced "before the first cycle only"). Not
+ * cross is tapped — no confirmation, a closed block stays closed (Artem, 04.11.2026 — replaced "before the first cycle only"). Not
  * while the flags are still being read, so it never flashes for someone who hid it.
  */
 export function showsProgressionBlock(flags: OnboardingFlags | undefined): boolean {

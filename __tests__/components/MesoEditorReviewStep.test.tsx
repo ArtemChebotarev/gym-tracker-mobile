@@ -107,7 +107,7 @@ describe('MesoEditorReviewStep — progression block (GT-225)', () => {
     expect(screen.getByText('Log')).toBeTruthy();
   });
 
-  test("its Don't show this link reports the tap", () => {
+  test('its cross reports the tap', () => {
     const onHideProgression = jest.fn();
     render(
       <MesoEditorReviewStep
@@ -117,7 +117,7 @@ describe('MesoEditorReviewStep — progression block (GT-225)', () => {
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: "Don't show this" }));
+    fireEvent.press(screen.getByRole('button', { name: 'Hide how your cycle progresses' }));
 
     expect(onHideProgression).toHaveBeenCalledTimes(1);
   });

@@ -93,10 +93,10 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     expect(screen.getByText('last week')).toBeTruthy();
   });
 
-  test("GT-225: Don't show this puts the block away for good", async () => {
+  test('GT-225: its cross puts the block away for good', async () => {
     await renderAtReviewStep();
 
-    fireEvent.press(await screen.findByRole('button', { name: "Don't show this" }));
+    fireEvent.press(await screen.findByRole('button', { name: 'Hide how your cycle progresses' }));
 
     await waitFor(() => expect(screen.queryByText('How your cycle progresses')).toBeNull());
     const flags = await readOnboardingFlags({ settingsRepo: repositories().settingsRepo });

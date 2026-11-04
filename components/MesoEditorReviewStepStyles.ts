@@ -49,19 +49,17 @@ export const styles = StyleSheet.create({
   progression: {
     marginTop: -SPACING['space/md'],
   },
+  // Clear of the cross in the corner, so a long point never runs under it.
   progressionRows: {
     gap: SPACING['space/dots'],
+    paddingRight: ICON_SIZES['icon/inline'] + SPACING['space/gap-tight'],
   },
-  // The same quiet underlined link as power's `Hide this tip` (PowerExerciseCardStyles).
+  // The cross in the box's corner, as on Settings' `Rest notifications` plate (GT-219).
   progressionHide: {
-    alignSelf: 'center',
-    marginTop: SPACING['space/gap-tight'],
-    paddingTop: SPACING['space/gap-tight'],
-  },
-  progressionHideText: {
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    color: COLORS['text/secondary'],
-    textDecorationLine: 'underline',
+    position: 'absolute',
+    top: SPACING['space/md'],
+    right: SPACING['space/md'],
+    zIndex: 1,
   },
   sectionLabel: {
     marginBottom: -SPACING['space/gap'],
