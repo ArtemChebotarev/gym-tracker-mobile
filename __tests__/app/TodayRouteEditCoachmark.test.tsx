@@ -92,7 +92,9 @@ describe('Today tab — edit coachmark', () => {
 
     pickMenuItem(BENCH, 'addSet');
 
-    expect(await screen.findByText(EDIT_COACHMARK.title)).toBeTruthy();
+    // The edit lands, the session and the grid are read again, then the coachmark's own beat: more
+    // than findBy's default second on a slow CI runner (it failed there at 1 s).
+    expect(await screen.findByText(EDIT_COACHMARK.title, {}, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByText('Add, remove, replace or move:')).toBeTruthy();
     expect(screen.getByText('Skip:')).toBeTruthy();
     // One step: no counter, no Skip.

@@ -252,10 +252,12 @@ export default function TodayScreen() {
         ? lastWorkingWeekOf(grid.data.weeks)
         : undefined,
     );
+  // Remembered for every carried edit, and ringed only while `editCoachmarkOn` holds — decided at
+  // render, not at the tap: an edit made before the block's grid was read must not be lost.
   const [editedCard, setEditedCard] = useState<string | undefined>(undefined);
-  /** An edit that carries over has landed on this card: ring it, if the coachmark is still due. */
+  /** An edit that carries over has landed on this card. */
   function noteCarriedEdit(sessionExerciseId: string | undefined) {
-    if (editCoachmarkOn && sessionExerciseId !== undefined) {
+    if (sessionExerciseId !== undefined) {
       setEditedCard(sessionExerciseId);
     }
   }
