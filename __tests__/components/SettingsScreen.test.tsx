@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { SettingsScreen, type SettingsScreenProps } from '@components/SettingsScreen';
@@ -98,7 +99,7 @@ describe('SettingsScreen', () => {
   test('shows the signals, sound and vibration both on (GT-172)', () => {
     renderScreen();
 
-    expect(screen.getByText('Signals')).toBeTruthy();
+    expect(screen.getByText('In-app signals')).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Sound' }).props.value).toBe(true);
     expect(screen.getByText('End of rest, start of work and rest')).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Vibration' }).props.value).toBe(true);
@@ -118,5 +119,57 @@ describe('SettingsScreen', () => {
     fireEvent(screen.getByRole('switch', { name: 'Vibration' }), 'valueChange', false);
 
     expect(onChangeSignals).toHaveBeenCalledWith({ sound: false, vibration: false });
+  });
+});
+
+describe('Notifications', () => {
+  const section = (view: 'plate' | 'off' | 'on') => {
+    const handlers = { onTurnOn: jest.fn(), onChange: jest.fn(), onHidePlate: jest.fn() };
+    renderScreen({ notifications: { view, ...handlers } });
+    return handlers;
+  };
+
+  test('the signals section says it is about the app', () => {
+    renderScreen();
+
+    expect(screen.getByText('In-app signals')).toBeTruthy();
+    expect(screen.queryByText('Signals')).toBeNull();
+  });
+
+  test('off, a plate offers them, and its cross puts it away', () => {
+    const { onTurnOn, onHidePlate } = section('plate');
+
+    expect(screen.getByText('Recommended')).toBeTruthy();
+    fireEvent.press(screen.getByText('Turn on'));
+    fireEvent.press(screen.getByRole('button', { name: 'Hide rest notifications' }));
+
+    expect(onTurnOn).toHaveBeenCalledTimes(1);
+    expect(onHidePlate).toHaveBeenCalledTimes(1);
+  });
+
+  test('hidden, a quiet row keeps Turn on', () => {
+    const { onTurnOn } = section('off');
+
+    expect(screen.getByText('Off: only in-app signals')).toBeTruthy();
+    expect(screen.queryByText('Recommended')).toBeNull();
+    fireEvent.press(screen.getByText('Turn on'));
+
+    expect(onTurnOn).toHaveBeenCalledTimes(1);
+  });
+
+  test('on, Change leads away', () => {
+    const { onChange } = section('on');
+
+    expect(screen.getByText('On: alerts you outside the app')).toBeTruthy();
+    fireEvent.press(screen.getByText('Change'));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  test('the last section can be scrolled clear of the tab bar', () => {
+    section('on');
+
+    const list = screen.UNSAFE_getByType(ScrollView);
+    expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingBottom).toBeGreaterThan(0);
   });
 });

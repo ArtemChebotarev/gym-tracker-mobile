@@ -19,6 +19,8 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   tourRirSeen: false,
   tourGridSeen: false,
   rangesCoachmarkSeen: false,
+  restCoachmarkSeen: false,
+  restNotificationsPlateHidden: false,
 };
 
 // The rest timer as it ships (10.1 FR-5, GT-87): on, 2:00. Get ready (FR-6, GT-188): 0:05.
@@ -56,6 +58,8 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           tourRirSeen: false,
           tourGridSeen: false,
           rangesCoachmarkSeen: false,
+          restCoachmarkSeen: false,
+          restNotificationsPlateHidden: false,
         },
         restBetweenSets: { enabled: false, restSec: 90 },
         getReadySec: 8,
@@ -136,6 +140,8 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           tourRirSeen: false,
           tourGridSeen: false,
           rangesCoachmarkSeen: false,
+          restCoachmarkSeen: false,
+          restNotificationsPlateHidden: false,
         },
       });
     });

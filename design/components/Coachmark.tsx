@@ -52,6 +52,10 @@ export type CoachmarkProps = {
    * brings its own space above it, as a `RangeTrack` does.
    */
   content?: ReactNode;
+  /** The last step's button, in place of `Got it`. */
+  primaryLabel?: string;
+  /** A second button on the last step, on the left of the first; it calls `onSkip`. */
+  secondaryLabel?: string;
   /** `Next` — and `Got it` on the last step, which only the caller knows how to finish. */
   onNext: () => void;
   onSkip: () => void;
@@ -66,11 +70,14 @@ export function Coachmark({
   title,
   paragraphs = [],
   content,
+  primaryLabel = 'Got it',
+  secondaryLabel,
   onNext,
   onSkip,
 }: CoachmarkProps) {
   const window = useWindowDimensions();
   const isLast = step >= total;
+  const leftLabel = isLast ? secondaryLabel : 'Skip';
   const ring = anchor === null ? null : ringRect(anchor, SPACING['space/dots']);
 
   return (
@@ -117,7 +124,7 @@ export function Coachmark({
             />
           ))}
           <View style={styles.footer}>
-            {isLast ? (
+            {leftLabel === undefined ? (
               <View />
             ) : (
               <Pressable
@@ -125,7 +132,7 @@ export function Coachmark({
                 onPress={onSkip}
                 style={({ pressed }) => [styles.skip, pressed && styles.pressed]}
               >
-                <Text style={styles.skipLabel}>Skip</Text>
+                <Text style={styles.skipLabel}>{leftLabel}</Text>
               </Pressable>
             )}
             <Pressable
@@ -133,7 +140,7 @@ export function Coachmark({
               onPress={onNext}
               style={({ pressed }) => [styles.next, pressed && styles.pressed]}
             >
-              <Text style={styles.nextLabel}>{isLast ? 'Got it' : 'Next'}</Text>
+              <Text style={styles.nextLabel}>{isLast ? primaryLabel : 'Next'}</Text>
             </Pressable>
           </View>
         </AnchoredPlate>

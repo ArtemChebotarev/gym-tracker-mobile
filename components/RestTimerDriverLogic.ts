@@ -4,11 +4,22 @@
 // exercise's last set the rest is before the next exercise, and the capsule names it instead:
 // `Rest · Heavy bag next`.
 
+import type { AppStateStatus } from 'react-native';
+
 import type { TimerCapsuleProps } from '@design/components/TimerCapsule';
 import { formatClock } from '@design/formatClock';
 import { HourglassIcon } from '@design/icons/HourglassIcon';
 import type { FinishedRest, RestNext, RestTimer } from '@domain/restTimer';
 import { isRunning, restProgress, restRemainingSec } from '@domain/restTimerRules';
+
+// How late the app may still give the signal. A rest that ran out while the app was away is
+// noticed when the app comes back, and by then the notification has said it.
+const SIGNAL_LATE_MS = 2000;
+
+/** Whether the app gives the end of a rest that ended at `endsAt`, noticed at `now`. */
+export function signalsInApp(endsAt: number, now: number, appState: AppStateStatus): boolean {
+  return appState === 'active' && now - endsAt < SIGNAL_LATE_MS;
+}
 
 export type RestCapsuleActions = {
   skip: () => void;
