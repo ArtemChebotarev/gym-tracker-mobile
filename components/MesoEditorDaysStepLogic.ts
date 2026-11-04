@@ -185,7 +185,7 @@ export function exerciseDotColor(
 
 /**
  * The line under the name: the muscle group, or — for an exercise without one (`fullBody`) — its
- * type, the way the library files it (10.1 FR-1): `Power`, `Timed work`, `Mobility`.
+ * type, the way the library files it (10.1 FR-1): `Power`, `Intervals`, `Mobility`.
  */
 export function exerciseSubtitle(exercisesById: ExercisesById, exerciseId: string): string {
   const exercise = exercisesById[exerciseId];

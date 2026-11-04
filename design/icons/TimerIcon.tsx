@@ -1,4 +1,4 @@
-// `timer` — Stopwatch — the Timed work (`interval`) type of an exercise: rounds run by a timer
+// `timer` — Stopwatch — the Intervals (`interval`) type of an exercise: rounds run by a timer
 // (canvas 4.1).
 
 import { Circle, Path } from 'react-native-svg';

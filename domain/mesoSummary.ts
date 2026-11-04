@@ -84,6 +84,6 @@ export type MesoSummary = {
    * one set in the block, in the catalog's order. Empty for a block without a strength set.
    */
   weeklySets: MesoWeeklySetsRow[];
-  /** Power, Timed work, Mobility in that order — only the types logged in the block. */
+  /** Power, Intervals, Mobility in that order — only the types logged in the block. */
   hybridTables: MesoHybridTable[];
 };

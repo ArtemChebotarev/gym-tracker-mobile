@@ -94,14 +94,7 @@ export function sourceLabel(source: Exercise['source']): string {
   return source === 'custom' ? 'Custom' : 'Catalog';
 }
 
-/** What a section of exercises without a group is called (10.1 FR-1): Power, Intervals, Mobility. */
-const TYPE_SECTION_TITLE: Record<ExerciseType, string> = {
-  strength: 'Strength',
-  power: 'Power',
-  interval: 'Intervals',
-  mobility: 'Mobility',
-};
-
+/** A section of exercises without a group is titled by its type's label (10.1 FR-1): Power, Intervals, Mobility. */
 export function buildSections(groups: readonly ExerciseListGroup[]): ExerciseSection[] {
   return groups.map((group) => ({
     key: group.type === undefined ? group.muscleGroup : `type:${group.type}`,
@@ -109,7 +102,7 @@ export function buildSections(groups: readonly ExerciseListGroup[]): ExerciseSec
     title:
       group.type === undefined
         ? getMuscleGroupLabel(group.muscleGroup)
-        : TYPE_SECTION_TITLE[group.type],
+        : getExerciseTypeLabel(group.type),
     data: group.entries,
   }));
 }

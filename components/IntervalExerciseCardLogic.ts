@@ -112,7 +112,7 @@ export type IntervalInfo =
   | { kind: 'progression'; plate: BadgeExplanation; accessibilityLabel: string };
 
 /**
- * The first column's ⓘ (08.11, "Timed work: Work ⓘ"): during a live workout, not on a deload. While
+ * The first column's ⓘ (08.11, "Intervals: Work ⓘ"): during a live workout, not on a deload. While
  * a round has no time it says how to pick one, on any lever, with the step on a lever that has one.
  * After that it is the step, so `rounds` and `none` have no ⓘ: nothing to say about them.
  */

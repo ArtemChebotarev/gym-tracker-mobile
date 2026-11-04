@@ -282,7 +282,7 @@ describe('hybrid rows (GT-157)', () => {
 
   test('exerciseSubtitle shows the type of an exercise without a muscle group', () => {
     expect(exerciseSubtitle(exercisesById, MEDBALL_THROW.id)).toBe('Power');
-    expect(exerciseSubtitle(exercisesById, HEAVY_BAG.id)).toBe('Timed work');
+    expect(exerciseSubtitle(exercisesById, HEAVY_BAG.id)).toBe('Intervals');
     expect(exerciseSubtitle(exercisesById, COOLDOWN.id)).toBe('Mobility');
   });
 

@@ -158,7 +158,7 @@ describe('MesoEditorDaysStep', () => {
       render(<MesoEditorDaysStep {...MIXED_PROPS} />);
 
       expect(screen.getByText('Power')).toBeTruthy();
-      expect(screen.getByText('Timed work')).toBeTruthy();
+      expect(screen.getByText('Intervals')).toBeTruthy();
       expect(screen.getByText('Mobility')).toBeTruthy();
     });
 

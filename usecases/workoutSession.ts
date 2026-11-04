@@ -890,7 +890,7 @@ async function previewOf(
       if (exercise.equipment !== undefined) {
         base.equipment = exercise.equipment;
       }
-      // An interval and a mobility exercise keep their type, so their chips read `Timed work` and
+      // An interval and a mobility exercise keep their type, so their chips read `Intervals` and
       // `Mobility` here too; power has no preview card of its own yet. A preview starts no timer:
       // Get ready is only there for the shape.
       const preview: WorkoutExercise =

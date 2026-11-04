@@ -161,7 +161,7 @@ export function weeklyExerciseRowViews(
 
 /**
  * The cards of the summary, in order: Strength — with an empty-state line when the block has no
- * strength set and nothing else either — then Power, Timed work, Mobility for the types logged.
+ * strength set and nothing else either — then Power, Intervals, Mobility for the types logged.
  * A block of hybrid work only has no Strength card at all.
  */
 export function weeklyTableViews(summary: MesoSummary): WeeklyTableView[] {

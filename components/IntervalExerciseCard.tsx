@@ -1,6 +1,6 @@
 // Interval card — 10.1 FR-14, "Interval"; canvas 1.4 and 1.6 (GT-88). The rounds are the plan:
 // there is no separate plan block, just Work · Rest · Log, the ⓘ always beside Work (08.11, "Timed
-// work: Work ⓘ"), and Start timer under the rounds. The chip above it says `Timed work` when
+// work: Work ⓘ"), and Start timer under the rounds. The chip above it says `Intervals` when
 // the type changes (`cardChip`), and the frame, title row and `⋯` are every card's
 // (ExerciseCardFrame). The rounds themselves — their fields, Log and Start timer — are
 // IntervalRoundRows, keyed by the exercise so a replaced one starts over from its own plan.

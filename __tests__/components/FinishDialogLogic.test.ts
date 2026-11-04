@@ -310,7 +310,7 @@ describe('buildFinishSummary — a day', () => {
     ]);
   });
 
-  test('Timed work: rounds and work, and the lever step — more work, less rest, one round more', () => {
+  test('Intervals: rounds and work, and the lever step — more work, less rest, one round more', () => {
     const done = [
       { workSec: 40, restSec: 20 },
       { workSec: 40, restSec: 20 },

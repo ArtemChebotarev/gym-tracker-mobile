@@ -19,10 +19,10 @@ describe('ExerciseTypeSheet', () => {
   test('offers the four types, the current one selected', () => {
     renderSheet({ type: 'interval' });
 
-    for (const name of ['Strength', 'Power', 'Timed work', 'Mobility']) {
+    for (const name of ['Strength', 'Power', 'Intervals', 'Mobility']) {
       expect(screen.getByRole('radio', { name })).toBeTruthy();
     }
-    expect(screen.getByRole('radio', { name: 'Timed work' }).props.accessibilityState.checked).toBe(true);
+    expect(screen.getByRole('radio', { name: 'Intervals' }).props.accessibilityState.checked).toBe(true);
     expect(screen.getByRole('radio', { name: 'Power' }).props.accessibilityState.checked).toBe(false);
   });
 

@@ -199,7 +199,7 @@ describe('ExerciseDetailScreen', () => {
     });
 
     expect(screen.getByText('No rounds logged yet')).toBeTruthy();
-    expect(screen.getByText('Timed work')).toBeTruthy();
+    expect(screen.getByText('Intervals')).toBeTruthy();
     expect(screen.getByText('Progress by')).toBeTruthy();
     expect(screen.getByText('Less rest')).toBeTruthy();
     expect(screen.getByText('5 s')).toBeTruthy();
