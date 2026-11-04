@@ -7,13 +7,13 @@ import { fieldStyles } from '@design/components/fieldStyles';
 import { BORDER_WIDTHS, COLORS, RADII, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
-  // The gap RootScreen puts between its children, now that the sections sit in a list.
+  // The space between two sections: RootScreen's own gap plus a section's. Only between them —
+  // the first section sits under the title as close as the first group on Cycles does (GT-229).
   content: {
-    gap: SPACING['space/gap'],
+    gap: SPACING['space/gap'] + SPACING['space/section'],
   },
   section: {
     gap: SPACING['space/gap-tight'],
-    paddingTop: SPACING['space/section'],
   },
   sectionLabel: {
     ...fieldStyles.label,
