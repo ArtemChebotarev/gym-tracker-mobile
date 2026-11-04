@@ -63,6 +63,7 @@ describe('shouldShowRangesCoachmark', () => {
     rangesCoachmarkSeen: false,
     restCoachmarkSeen: false,
     editCoachmarkSeen: false,
+    reviewProgressionHidden: false,
     restNotificationsPlateHidden: false,
   };
   const live = { mode: 'live', isDeload: false } as const;
@@ -100,6 +101,7 @@ describe('shouldShowWorkoutCoachmarks', () => {
     rangesCoachmarkSeen: false,
     restCoachmarkSeen: false,
     editCoachmarkSeen: false,
+    reviewProgressionHidden: false,
     restNotificationsPlateHidden: false,
   };
   const live = { mode: 'live' as const, isDeload: false };
@@ -140,6 +142,7 @@ describe('shouldShowDeloadIntro', () => {
     rangesCoachmarkSeen: false,
     restCoachmarkSeen: false,
     editCoachmarkSeen: false,
+    reviewProgressionHidden: false,
     restNotificationsPlateHidden: false,
   };
   const deload = { mode: 'live' as const, isDeload: true };

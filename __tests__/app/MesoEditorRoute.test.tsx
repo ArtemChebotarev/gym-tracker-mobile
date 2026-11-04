@@ -10,6 +10,9 @@ import {
   useDraftStore,
   type MesoBuilderDraft,
 } from '@state/draftStore';
+import { readOnboardingFlags } from '@usecases/onboarding';
+
+import { seedWorkoutFixture } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
@@ -80,6 +83,26 @@ async function renderAtReviewStep() {
 }
 
 describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
+  test('GT-225: Review explains how a cycle progresses, with cycles or without', async () => {
+    await seedWorkoutFixture(repositories());
+    await renderAtReviewStep();
+
+    expect(await screen.findByText('How your cycle progresses')).toBeTruthy();
+    expect(screen.getByText('Log')).toBeTruthy();
+    expect(screen.getByText('Each week')).toBeTruthy();
+    expect(screen.getByText('last week')).toBeTruthy();
+  });
+
+  test('GT-225: its cross puts the block away for good', async () => {
+    await renderAtReviewStep();
+
+    fireEvent.press(await screen.findByRole('button', { name: 'Hide how your cycle progresses' }));
+
+    await waitFor(() => expect(screen.queryByText('How your cycle progresses')).toBeNull());
+    const flags = await readOnboardingFlags({ settingsRepo: repositories().settingsRepo });
+    expect(flags.reviewProgressionHidden).toBe(true);
+  });
+
   test('Save mesocycle saves a planned mesocycle via Confirm, creates no Session, and closes', async () => {
     await renderAtReviewStep();
 

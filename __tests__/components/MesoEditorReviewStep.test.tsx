@@ -97,3 +97,34 @@ describe('MesoEditorReviewStep', () => {
     expect(screen.queryByText('10:00')).toBeNull();
   });
 });
+
+describe('MesoEditorReviewStep — progression block (GT-225)', () => {
+  test('shown when asked for: the label over three numbered points', () => {
+    render(<MesoEditorReviewStep {...BASE_PROPS} showProgression />);
+
+    expect(screen.getByTestId('review-progression')).toBeTruthy();
+    expect(screen.getByText('How your cycle progresses')).toBeTruthy();
+    expect(screen.getByText('Log')).toBeTruthy();
+  });
+
+  test('its cross reports the tap', () => {
+    const onHideProgression = jest.fn();
+    render(
+      <MesoEditorReviewStep
+        {...BASE_PROPS}
+        showProgression
+        onHideProgression={onHideProgression}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Hide how your cycle progresses' }));
+
+    expect(onHideProgression).toHaveBeenCalledTimes(1);
+  });
+
+  test('absent by default', () => {
+    render(<MesoEditorReviewStep {...BASE_PROPS} />);
+
+    expect(screen.queryByTestId('review-progression')).toBeNull();
+  });
+});

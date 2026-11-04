@@ -25,6 +25,7 @@ describe('onboarding flags', () => {
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
       editCoachmarkSeen: false,
+      reviewProgressionHidden: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -41,6 +42,7 @@ describe('onboarding flags', () => {
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
       editCoachmarkSeen: false,
+      reviewProgressionHidden: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -63,6 +65,7 @@ describe('onboarding flags', () => {
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
       editCoachmarkSeen: false,
+      reviewProgressionHidden: false,
       restNotificationsPlateHidden: false,
     });
   });
@@ -85,6 +88,7 @@ describe('onboarding flags', () => {
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
       editCoachmarkSeen: false,
+      reviewProgressionHidden: false,
       restNotificationsPlateHidden: false,
     });
     expect((await settingsRepo.read()).weightUnit).toBe('lb');

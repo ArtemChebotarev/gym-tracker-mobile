@@ -160,8 +160,14 @@ export function MesoEditorDaysStep({
   // native driver.
   useEffect(() => {
     rowShiftAnimations.forEach((animation, index) => {
-      const shift = draggingIndex !== null && hoverIndex !== null ? rowShiftUnits(index, draggingIndex, hoverIndex) : 0;
-      Animated.spring(animation, { toValue: shift * SIZES['size/exercise-row'], useNativeDriver: false }).start();
+      const shift =
+        draggingIndex !== null && hoverIndex !== null
+          ? rowShiftUnits(index, draggingIndex, hoverIndex)
+          : 0;
+      Animated.spring(animation, {
+        toValue: shift * SIZES['size/exercise-row'],
+        useNativeDriver: false,
+      }).start();
     });
   }, [rowShiftAnimations, draggingIndex, hoverIndex]);
 
@@ -214,9 +220,17 @@ export function MesoEditorDaysStep({
           setDraggingIndex(index);
           setHoverIndex(index);
         },
-        onPanResponderMove: (_event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        onPanResponderMove: (
+          _event: GestureResponderEvent,
+          gestureState: PanResponderGestureState,
+        ) => {
           dragY.setValue(gestureState.dy);
-          latestHoverIndex = dragTargetIndex(index, gestureState.dy, exerciseCount, SIZES['size/exercise-row']);
+          latestHoverIndex = dragTargetIndex(
+            index,
+            gestureState.dy,
+            exerciseCount,
+            SIZES['size/exercise-row'],
+          );
           setHoverIndex(latestHoverIndex);
         },
         onPanResponderRelease: () => {
@@ -306,7 +320,10 @@ export function MesoEditorDaysStep({
                 </View>
               ) : (
                 <View
-                  style={[styles.dot, { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) }]}
+                  style={[
+                    styles.dot,
+                    { backgroundColor: exerciseDotColor(exercisesById, exercise.exerciseId) },
+                  ]}
                 />
               )}
               <View style={styles.exerciseMain}>
@@ -331,7 +348,10 @@ export function MesoEditorDaysStep({
                 // A mobility exercise is one block with nothing to set (GT-191).
                 <View style={styles.planSlot} />
               )}
-              <IconButton accessibilityLabel={`Remove ${title}`} onPress={() => onRemoveExercise(activeDay, index)}>
+              <IconButton
+                accessibilityLabel={`Remove ${title}`}
+                onPress={() => onRemoveExercise(activeDay, index)}
+              >
                 <Text style={styles.removeIcon}>✕</Text>
               </IconButton>
             </Animated.View>

@@ -44,6 +44,23 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
   },
+  // PlateBox puts its label `space/md` below whatever stands above it inside a plate; here the
+  // content's own gap already spaces it, so that margin is taken back (GT-225).
+  progression: {
+    marginTop: -SPACING['space/md'],
+  },
+  // Clear of the cross in the corner, so a long point never runs under it.
+  progressionRows: {
+    gap: SPACING['space/dots'],
+    paddingRight: ICON_SIZES['icon/inline'] + SPACING['space/gap-tight'],
+  },
+  // The cross in the box's corner, as on Settings' `Rest notifications` plate (GT-219).
+  progressionHide: {
+    position: 'absolute',
+    top: SPACING['space/md'],
+    right: SPACING['space/md'],
+    zIndex: 1,
+  },
   sectionLabel: {
     marginBottom: -SPACING['space/gap'],
     fontSize: TYPOGRAPHY['type/label'].fontSize,
