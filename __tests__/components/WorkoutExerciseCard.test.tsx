@@ -903,8 +903,8 @@ describe('RIR badge popover', () => {
     fireEvent.press(badge());
 
     // LIVE_EXERCISE: targetRir 2, and its next set has target reps.
-    expect(screen.getByText('2 RIR: stop 2 reps before failure')).toBeTruthy();
-    expect(screen.getByText(/Your target for every set of this exercise/)).toBeTruthy();
+    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
+    expect(screen.getByText(/Your target for this exercise/)).toBeTruthy();
   });
 
   test('on a deload week the Deload badge takes its place, with the deload text', () => {
@@ -918,7 +918,7 @@ describe('RIR badge popover', () => {
     expect(screen.getByText('Deload week')).toBeTruthy();
     expect(screen.getByText("Don't push: this week is for recovery.")).toBeTruthy();
     expect(screen.getByText('About 50% of your usual load, fewer sets.')).toBeTruthy();
-    expect(screen.queryByText(/8 reps left/)).toBeNull();
+    expect(screen.queryByText(/8 reps/)).toBeNull();
   });
 
   test('a read-only card still explains its badge', () => {
@@ -928,7 +928,7 @@ describe('RIR badge popover', () => {
 
     fireEvent.press(badge());
 
-    expect(screen.getByText('2 RIR: stop 2 reps before failure')).toBeTruthy();
+    expect(screen.getByText('2 RIR means 2 reps in reserve')).toBeTruthy();
   });
 
   test('a power card says Load and Fast reps, with no RIR badge and no hit indicator', () => {
