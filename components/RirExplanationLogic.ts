@@ -1,6 +1,6 @@
 // What `N RIR` means, in the words 08.11 · Onboarding gives it — the one explanation behind the RIR
 // badge's popover (GT-40) and the first coachmark of the first workout (GT-42), so the two cannot
-// drift apart. Reworded in GT-149 to say what to do, not only what the term means.
+// drift apart. Reworded in GT-149 to say what to do, and in GT-228 to say what the term means.
 //
 // It is a picture and a few short theses rather than a paragraph (Artem, 06.10.2026): a track that
 // shows the reserve — the set you do, then the reps you leave in the tank, up to failure — and a
@@ -169,36 +169,26 @@ function repsLeft(reserve: number): string {
 export function rirExplanation({ targetRir }: RirExplanationInput): RirExplanation {
   const track = rirTrack(targetRir);
 
-  // Two theses, and no more: this explains RIR and what to aim for, not the engine around it — how
-  // rep targets work is the Reps ⓘ's to say (Artem, 06.10.2026).
+  // The title says what the term means; the two theses say what to aim for and how the weeks go,
+  // and no more: how rep targets work is the Weight ⓘ's to say (Artem, 06.10.2026). Reworded in
+  // GT-228: "1 RIR: stop 1 rep before failure" never said what RIR stands for.
   const aim: RirRow['text'] =
     targetRir === 0
-      ? [
-          'Your target for every set of this exercise: go until you ',
-          { strong: "can't do another rep" },
-          '.',
-        ]
+      ? ['Your target for this exercise: ', { strong: 'go to failure' }, '.']
       : [
-          'Your target for every set of this exercise: stop with about ',
-          { strong: `${repsLeft(targetRir)} left` },
+          'Your target for this exercise: stop with ',
+          { strong: `${repsLeft(targetRir)} before failure` },
           '.',
         ];
   return {
     title:
       targetRir === 0
-        ? '0 RIR: go to failure'
-        : `${targetRir} RIR: stop ${repsLeft(targetRir)} before failure`,
+        ? '0 RIR means no reps in reserve'
+        : `${targetRir} RIR means ${repsLeft(targetRir)} in reserve`,
     track,
     rows: [
       { icon: TargetIcon, text: aim },
-      {
-        icon: ArrowDownIcon,
-        text: [
-          'Every week gets closer to failure. The last one is a lighter ',
-          { strong: 'deload' },
-          '.',
-        ],
-      },
+      { icon: ArrowDownIcon, text: ['Every week gets closer to failure.'] },
     ],
   };
 }

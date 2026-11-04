@@ -81,20 +81,18 @@ describe('rirTrack', () => {
 });
 
 describe('rirExplanation', () => {
-  // GT-149: what to aim for and how the weeks go — the badge's popover and the coachmark say the same.
+  // GT-149, GT-228: what the term means, what to aim for and how the weeks go — the badge's
+  // popover and the coachmark say the same.
   test('DoD 149: the aim, with the exercise’s own number, and how the weeks go', () => {
     const text = rirExplanation({ targetRir: 3 });
 
-    expect(text.title).toBe('3 RIR: stop 3 reps before failure');
+    expect(text.title).toBe('3 RIR means 3 reps in reserve');
     expect(text.rows.map((row) => readRow(row.text))).toEqual([
       {
-        said: 'Your target for every set of this exercise: stop with about 3 reps left.',
-        strong: ['3 reps left'],
+        said: 'Your target for this exercise: stop with 3 reps before failure.',
+        strong: ['3 reps before failure'],
       },
-      {
-        said: 'Every week gets closer to failure. The last one is a lighter deload.',
-        strong: ['deload'],
-      },
+      { said: 'Every week gets closer to failure.', strong: [] },
     ]);
     expect(text.track.marker).toBe(rirTrack(3).marker);
   });
@@ -111,21 +109,17 @@ describe('rirExplanation', () => {
   });
 
   test('the number follows the week: 2 RIR, 1 RIR in the singular', () => {
-    expect(rirExplanation({ targetRir: 2 }).title).toBe(
-      '2 RIR: stop 2 reps before failure',
-    );
+    expect(rirExplanation({ targetRir: 2 }).title).toBe('2 RIR means 2 reps in reserve');
     const one = rirExplanation({ targetRir: 1 });
-    expect(one.title).toBe('1 RIR: stop 1 rep before failure');
-    expect(readRow(one.rows[0]!.text).strong).toEqual(['1 rep left']);
+    expect(one.title).toBe('1 RIR means 1 rep in reserve');
+    expect(readRow(one.rows[0]!.text).strong).toEqual(['1 rep before failure']);
   });
 
   test('DoD 149: 0 RIR goes to failure', () => {
     const last = rirExplanation({ targetRir: 0 });
 
-    expect(last.title).toBe('0 RIR: go to failure');
-    expect(readRow(last.rows[0]!.text).said).toBe(
-      "Your target for every set of this exercise: go until you can't do another rep.",
-    );
+    expect(last.title).toBe('0 RIR means no reps in reserve');
+    expect(readRow(last.rows[0]!.text).said).toBe('Your target for this exercise: go to failure.');
     expect(last.rows).toHaveLength(2);
     expect(last.track.labels).toHaveLength(1);
   });
@@ -144,9 +138,9 @@ describe('deloadExplanation', () => {
     const explanation = deloadExplanation(input);
 
     expect(explanation.title).toBe('Deload week');
-    expect(
-      [...rows(input), explanation.track?.accessibilityLabel ?? ''].join(' '),
-    ).not.toMatch(/RIR|reps left|reps? in reserve/);
+    expect([...rows(input), explanation.track?.accessibilityLabel ?? ''].join(' ')).not.toMatch(
+      /RIR|reps left|reps? in reserve/,
+    );
   });
 
   test.each([
@@ -169,12 +163,12 @@ describe('deloadExplanation', () => {
     });
   });
 
-  test.each([
-    { type: 'power', powerLoad: 'weight' },
-    { type: 'interval' },
-  ] as const)('the other types draw no track: %j', (input) => {
-    expect(deloadExplanation(input).track).toBeUndefined();
-  });
+  test.each([{ type: 'power', powerLoad: 'weight' }, { type: 'interval' }] as const)(
+    'the other types draw no track: %j',
+    (input) => {
+      expect(deloadExplanation(input).track).toBeUndefined();
+    },
+  );
 
   test('a strength exercise says what is cut, by what its weight means', () => {
     expect(rows({ type: 'strength', equipment: 'barbell' })).toEqual([
