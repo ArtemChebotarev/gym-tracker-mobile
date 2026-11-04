@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { FinishDialog } from '@components/FinishDialog';
 import type { FinishSummary } from '@components/FinishDialogLogic';
+import { SIZES } from '@design/tokens';
+import { StyleSheet } from 'react-native';
 
 const DAY: FinishSummary = {
   kind: 'day',
@@ -28,6 +30,25 @@ describe('FinishDialog', () => {
     expect(screen.getByText('80 kg × 10')).toBeTruthy();
     expect(screen.getByText('+1 rep')).toBeTruthy();
     expect(screen.getByText('Day 2')).toBeTruthy();
+  });
+
+  test('the list stops at seven rows tall and scrolls the rest (Artem, 04.11.2026)', () => {
+    const rows = Array.from({ length: 20 }, (_, index) => ({
+      key: `r${index}`,
+      name: `Exercise ${index + 1}`,
+      value: '0:30',
+    }));
+    render(<FinishDialog summary={{ ...DAY, rows }} onAction={() => {}} />);
+
+    const list = screen.getByTestId('finish-rows');
+    expect(StyleSheet.flatten(list.props.style)).toMatchObject({
+      maxHeight: SIZES['size/finish-list-max'],
+    });
+    expect(SIZES['size/finish-list-max']).toBe(7 * SIZES['size/finish-row'] + 8);
+    // Every row is there, the ones past the seventh reached by scrolling.
+    expect(screen.getByText('Exercise 20')).toBeTruthy();
+    // The button stays outside the list, never scrolled away with it.
+    expect(screen.getByText('Next workout')).toBeTruthy();
   });
 
   test('the button reports its action; there is no cross (only the button closes it)', () => {

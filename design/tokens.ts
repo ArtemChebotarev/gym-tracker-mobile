@@ -421,6 +421,11 @@ export const SIZES = {
   'size/plate-chip': 56,
   /** A row of the Finish popup's list (GT-220): a name, today's best and next week's change. */
   'size/finish-row': 36,
+  /**
+   * The Finish popup's list at its tallest: seven rows (`size/finish-row`) and the `space/xs` above
+   * and below them. An eighth and later row scrolls inside (Artem, 04.11.2026).
+   */
+  'size/finish-list-max': 7 * 36 + 2 * 4,
   /** The Finish popup's right column — one width for `+1 rep`, `Go heavier`, `−5 s rest` (GT-220). */
   'size/finish-delta': 76,
   /** The circle behind an EmptyState's icon (08.0.1). */

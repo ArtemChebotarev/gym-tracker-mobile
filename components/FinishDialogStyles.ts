@@ -19,11 +19,13 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     color: COLORS['text/secondary'],
   },
-  // The list gives way first when the day doesn't fit the window (Dialog's `maxHeight`), and
-  // never grows past its rows: a ScrollView grows by default.
+  // Seven rows at most, the rest scrolls inside (Artem, 04.11.2026). On a window too short even for
+  // that, the list gives way first (Dialog's `maxHeight`). It never grows past its rows: a
+  // ScrollView grows by default.
   list: {
     flexGrow: 0,
     flexShrink: 1,
+    maxHeight: SIZES['size/finish-list-max'],
     marginTop: SPACING['space/row'],
     borderRadius: RADII['radius/field'],
     borderWidth: BORDER_WIDTHS['border/default'],
@@ -47,7 +49,7 @@ export const styles = StyleSheet.create({
     color: COLORS['text/secondary'],
   },
   row: {
-    minHeight: SIZES['size/finish-row'],
+    height: SIZES['size/finish-row'],
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],

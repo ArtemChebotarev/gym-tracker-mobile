@@ -9,8 +9,10 @@
 // nothing, as on every Dialog without `onClose`. `Next workout` stays on the read-only screen, for
 // when the session is opened again later.
 //
-// A long day scrolls inside the card; the title and the button stay in view.
+// The list shows seven exercises at most; a longer day scrolls inside it, its scroll bar flashed once
+// as the popup opens so the rest is found, and the title and the button stay in view.
 
+import { useEffect, useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { Button } from '@design/components/Button';
@@ -40,6 +42,11 @@ function FinishBody({
   summary: FinishSummary;
   onAction: (action: FinishAction) => void;
 }) {
+  const listRef = useRef<ScrollView>(null);
+  useEffect(() => {
+    listRef.current?.flashScrollIndicators();
+  }, []);
+
   return (
     <>
       <Text style={styles.title}>{summary.title}</Text>
@@ -52,6 +59,7 @@ function FinishBody({
         <>
           {summary.lead !== undefined && <PlateText parts={summary.lead} style={styles.lead} />}
           <ScrollView
+            ref={listRef}
             testID="finish-rows"
             style={styles.list}
             contentContainerStyle={styles.plateRows}
