@@ -113,7 +113,7 @@ describe('formatSubtitle', () => {
       completed: true,
     };
 
-    expect(formatSubtitle(round, 'interval')).toMatch(/^Timed work · 2:00 · /);
+    expect(formatSubtitle(round, 'interval')).toMatch(/^Intervals · 2:00 · /);
   });
 });
 
@@ -185,7 +185,7 @@ describe("the type in a row's subtitle", () => {
     expect(formatSubtitle(null)).toBe('Never performed');
     expect(formatSubtitle(null, 'strength')).toBe('Never performed');
     expect(formatSubtitle(null, 'power')).toBe('Power · Never performed');
-    expect(formatSubtitle(null, 'interval')).toBe('Timed work · Never performed');
+    expect(formatSubtitle(null, 'interval')).toBe('Intervals · Never performed');
     expect(formatSubtitle(null, 'mobility')).toBe('Mobility · Never performed');
   });
 

@@ -51,7 +51,7 @@ import { styles } from './ExerciseFiltersSheetStyles';
 // spelled out rather than pulled from a MUSCLE_GROUPS-style constant array.
 const SOURCES: readonly ExerciseSource[] = ['catalog', 'custom'];
 
-// The four types, two to a row: "Timed work" beside a neighbour in a row of four would not fit.
+// The four types, two to a row: "Intervals" beside a neighbour in a row of four would not fit.
 const TYPE_ROWS: readonly (readonly ExerciseType[])[] = [
   EXERCISE_TYPES.slice(0, 2),
   EXERCISE_TYPES.slice(2),

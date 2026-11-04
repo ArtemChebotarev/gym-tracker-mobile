@@ -1044,7 +1044,7 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
               }
             }
           >
-            Timed work
+            Intervals
           </Text>
         </View>
         <View

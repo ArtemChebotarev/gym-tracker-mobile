@@ -97,7 +97,7 @@ export type ExerciseSettings = { rows: ExerciseSettingsRow[]; note?: string };
  * Power: its load, and `No heavier available` only while it is on — a row reading `Off` would only
  * say the user never pressed a button they may not know exists (10.1 FR-4).
  *
- * Timed work: the lever, its step only where it moves a time (`rounds` always moves by one, `None`
+ * Intervals: the lever, its step only where it moves a time (`rounds` always moves by one, `None`
  * not at all — FR-8), and under the card what the lever does next week, the sheet's own line for it.
  * Keeping the plan needs no explaining, so `None` has no line.
  */

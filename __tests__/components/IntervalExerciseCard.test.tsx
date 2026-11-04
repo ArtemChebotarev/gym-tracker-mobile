@@ -92,10 +92,10 @@ describe('Interval card (GT-88)', () => {
     expect(screen.queryByTestId('exercise-deload')).toBeNull();
   });
 
-  test('the type chip says Timed work', () => {
+  test('the type chip says Intervals', () => {
     render(<WorkoutExerciseCard {...makeProps()} />);
 
-    expect(within(screen.getByTestId('exercise-type-chip')).getByText('Timed work')).toBeTruthy();
+    expect(within(screen.getByTestId('exercise-type-chip')).getByText('Intervals')).toBeTruthy();
   });
 
   test('Start timer sits under the rounds with how many there are', () => {

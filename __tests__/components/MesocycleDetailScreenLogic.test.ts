@@ -148,7 +148,7 @@ describe('weeklyTableViews', () => {
       hybridTables: [{ type: 'interval', rows: [{ ...bag, counts: [...bag.counts] }] }],
     });
 
-    expect(tables.map((table) => table.title)).toEqual(['Strength', 'Timed work']);
+    expect(tables.map((table) => table.title)).toEqual(['Strength', 'Intervals']);
   });
 
   test('a block of hybrid work only has no Strength card', () => {
@@ -157,7 +157,7 @@ describe('weeklyTableViews', () => {
       hybridTables: [{ type: 'interval', rows: [{ ...bag, counts: [...bag.counts] }] }],
     });
 
-    expect(tables.map((table) => table.title)).toEqual(['Timed work']);
+    expect(tables.map((table) => table.title)).toEqual(['Intervals']);
   });
 
   test('a block with nothing logged keeps an empty Strength card for its empty-state line', () => {

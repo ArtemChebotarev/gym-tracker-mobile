@@ -14,9 +14,9 @@ export function exerciseTypeOf(exercise: Pick<Exercise, 'type'>): ExerciseType {
 }
 
 /**
- * The "Hold" preset of an `interval` exercise (10.1 FR-16, "Timed work"): a plank or a hang,
+ * The "Hold" preset of an `interval` exercise (10.1 FR-16, "Intervals"): a plank or a hang,
  * progressing on `workTime` in 5 s steps; its times come from history, as every interval's do.
- * The `interval` key stays; "Timed work" is only its label in the UI. Fresh object each call,
+ * The `interval` key stays; "Intervals" is only its label in the UI. Fresh object each call,
  * like the defaults.
  */
 export function holdIntervalConfig(): IntervalConfig {

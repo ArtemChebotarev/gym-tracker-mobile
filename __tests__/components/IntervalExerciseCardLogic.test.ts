@@ -66,7 +66,7 @@ describe('intervalProgressionPlate', () => {
   });
 });
 
-// 08.11, "Timed work: Work ⓘ".
+// 08.11, "Intervals: Work ⓘ".
 describe('intervalInfo', () => {
   const timed: WorkoutRoundRow[] = [{ roundNumber: 1, workSec: 60, restSec: 30, isFirstUnlogged: true }];
   const untimed: WorkoutRoundRow[] = [{ roundNumber: 1, isFirstUnlogged: true }];

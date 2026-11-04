@@ -178,7 +178,7 @@ describe('MesocycleDetailScreen', () => {
     });
 
     expect(screen.getByText('Strength')).toBeTruthy();
-    expect(screen.getByText('Timed work')).toBeTruthy();
+    expect(screen.getByText('Intervals')).toBeTruthy();
     expect(screen.getByTestId('weekly-interval')).toBeTruthy();
     expect(screen.getByText('Heavy bag')).toBeTruthy();
   });

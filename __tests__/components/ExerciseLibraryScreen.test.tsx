@@ -312,7 +312,7 @@ describe('ExerciseLibraryScreen', () => {
     expect(screen.getByText('Power')).toBeTruthy();
     expect(screen.getByText('Intervals')).toBeTruthy();
     expect(screen.getByText('Power · Never performed')).toBeTruthy();
-    expect(screen.getByText('Timed work · Never performed')).toBeTruthy();
+    expect(screen.getByText('Intervals · Never performed')).toBeTruthy();
     // Strength is the default and its row says nothing of its type.
     expect(screen.getAllByText('Never performed')).toHaveLength(1);
   });

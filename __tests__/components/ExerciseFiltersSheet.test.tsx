@@ -39,7 +39,7 @@ describe('ExerciseFiltersSheet', () => {
     expect(screen.getByText('Traps')).toBeTruthy();
 
     expect(screen.getByText('Type')).toBeTruthy();
-    for (const type of ['Strength', 'Power', 'Timed work', 'Mobility']) {
+    for (const type of ['Strength', 'Power', 'Intervals', 'Mobility']) {
       expect(screen.getByRole('button', { name: type })).toBeTruthy();
     }
 
