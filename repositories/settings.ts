@@ -27,6 +27,8 @@ export type OnboardingFlags = {
   restCoachmarkSeen: boolean;
   /** The one-step coachmark on the card of the first edit that carries over (GT-224). */
   editCoachmarkSeen: boolean;
+  /** The Review step's `How your cycle progresses` block, put away by its `Don't show this` (GT-225). */
+  reviewProgressionHidden: boolean;
   /** The `Rest notifications` plate in Settings, put away for good by its cross (GT-219). */
   restNotificationsPlateHidden: boolean;
   /** The popup on the first deload session. */

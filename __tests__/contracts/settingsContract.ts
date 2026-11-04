@@ -21,6 +21,7 @@ const DEFAULT_ONBOARDING: Settings['onboarding'] = {
   rangesCoachmarkSeen: false,
   restCoachmarkSeen: false,
   editCoachmarkSeen: false,
+  reviewProgressionHidden: false,
   restNotificationsPlateHidden: false,
 };
 
@@ -61,6 +62,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           rangesCoachmarkSeen: false,
           restCoachmarkSeen: false,
           editCoachmarkSeen: false,
+          reviewProgressionHidden: false,
           restNotificationsPlateHidden: false,
         },
         restBetweenSets: { enabled: false, restSec: 90 },
@@ -144,6 +146,7 @@ export function describeSettingsContract(harness: RepositoryHarness): void {
           rangesCoachmarkSeen: false,
           restCoachmarkSeen: false,
           editCoachmarkSeen: false,
+          reviewProgressionHidden: false,
           restNotificationsPlateHidden: false,
         },
       });

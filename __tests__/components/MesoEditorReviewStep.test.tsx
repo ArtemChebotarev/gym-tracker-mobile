@@ -107,6 +107,21 @@ describe('MesoEditorReviewStep — progression block (GT-225)', () => {
     expect(screen.getByText('Log')).toBeTruthy();
   });
 
+  test("its Don't show this link reports the tap", () => {
+    const onHideProgression = jest.fn();
+    render(
+      <MesoEditorReviewStep
+        {...BASE_PROPS}
+        showProgression
+        onHideProgression={onHideProgression}
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: "Don't show this" }));
+
+    expect(onHideProgression).toHaveBeenCalledTimes(1);
+  });
+
   test('absent by default', () => {
     render(<MesoEditorReviewStep {...BASE_PROPS} />);
 

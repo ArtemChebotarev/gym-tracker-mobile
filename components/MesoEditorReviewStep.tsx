@@ -1,7 +1,7 @@
 // Step 3 of 3's own content in the mesocycle editor, Flow A — see 08.5 · Редактор мезоцикла —
 // Flow A, "Шаг 3 — Review & confirm" (task 078). A read-only summary of the draft: a summary card
-// (name, length, days per week), before the first cycle only a block on how a cycle progresses
-// (GT-225), and a week 1 preview listing each day's exercises with `N sets` — or, for a power, interval or
+// (name, length, days per week), a block on how a cycle progresses until it is put away by its own
+// link (GT-225), and a week 1 preview listing each day's exercises with `N sets` — or, for a power, interval or
 // mobility one, its plan on one line (GT-157).
 // The `›` chevron in each day's header replaces the removed `Edit` button (08.5, "Убрано после
 // ревью") and hands `dayNumber` back to the caller, which returns to step 2 with that day active.
@@ -32,6 +32,7 @@ import {
   formatReviewCount,
   formatReviewSummary,
   REVIEW_PROGRESSION_FACTS,
+  REVIEW_PROGRESSION_HIDE_LABEL,
   REVIEW_PROGRESSION_LABEL,
 } from './MesoEditorReviewStepLogic';
 import { styles } from './MesoEditorReviewStepStyles';
@@ -42,8 +43,10 @@ export type MesoEditorReviewStepProps = {
   daysPerWeek: number;
   exercisesByDay: ExercisesByDay;
   exercisesById: ExercisesById;
-  /** The block on how a cycle progresses — before the first cycle only (`showsProgressionBlock`). */
+  /** The block on how a cycle progresses — until it is hidden (`showsProgressionBlock`). */
   showProgression?: boolean;
+  /** Its `Don't show this` link: puts the block away for good. */
+  onHideProgression?: () => void;
   onEditDay: (dayNumber: number) => void;
 };
 
@@ -54,6 +57,7 @@ export function MesoEditorReviewStep({
   exercisesByDay,
   exercisesById,
   showProgression = false,
+  onHideProgression,
   onEditDay,
 }: MesoEditorReviewStepProps) {
   return (
@@ -77,6 +81,16 @@ export function MesoEditorReviewStep({
                 <PlateRow key={index} compact accent leading={{ number: index + 1 }} text={text} />
               ))}
             </View>
+            {onHideProgression !== undefined && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={REVIEW_PROGRESSION_HIDE_LABEL}
+                onPress={onHideProgression}
+                style={styles.progressionHide}
+              >
+                <Text style={styles.progressionHideText}>{REVIEW_PROGRESSION_HIDE_LABEL}</Text>
+              </Pressable>
+            )}
           </PlateBox>
         </View>
       )}

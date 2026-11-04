@@ -13,7 +13,11 @@ import {
  * the 015 validators so the same 3..8 / 1..7 bounds gate the button as gate the domain model,
  * rather than a second hand-copied range check.
  */
-export function canContinueFromBasics(name: string, lengthWeeks: number, daysPerWeek: number): boolean {
+export function canContinueFromBasics(
+  name: string,
+  lengthWeeks: number,
+  daysPerWeek: number,
+): boolean {
   if (name.trim().length === 0) {
     return false;
   }

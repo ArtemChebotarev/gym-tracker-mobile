@@ -10,6 +10,8 @@ import {
   useDraftStore,
   type MesoBuilderDraft,
 } from '@state/draftStore';
+import { readOnboardingFlags } from '@usecases/onboarding';
+
 import { seedWorkoutFixture } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
@@ -81,7 +83,8 @@ async function renderAtReviewStep() {
 }
 
 describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
-  test('GT-225: before the first cycle, Review explains how a cycle progresses', async () => {
+  test('GT-225: Review explains how a cycle progresses, with cycles or without', async () => {
+    await seedWorkoutFixture(repositories());
     await renderAtReviewStep();
 
     expect(await screen.findByText('How your cycle progresses')).toBeTruthy();
@@ -90,13 +93,14 @@ describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
     expect(screen.getByText('last week')).toBeTruthy();
   });
 
-  test('GT-225: once there is a cycle, the block is gone', async () => {
-    await seedWorkoutFixture(repositories());
+  test("GT-225: Don't show this puts the block away for good", async () => {
     await renderAtReviewStep();
-    await waitFor(() => expect(screen.getByText('Week 1')).toBeTruthy());
-    await flushQueryNotifications();
 
-    expect(screen.queryByText('How your cycle progresses')).toBeNull();
+    fireEvent.press(await screen.findByRole('button', { name: "Don't show this" }));
+
+    await waitFor(() => expect(screen.queryByText('How your cycle progresses')).toBeNull());
+    const flags = await readOnboardingFlags({ settingsRepo: repositories().settingsRepo });
+    expect(flags.reviewProgressionHidden).toBe(true);
   });
 
   test('Save mesocycle saves a planned mesocycle via Confirm, creates no Session, and closes', async () => {

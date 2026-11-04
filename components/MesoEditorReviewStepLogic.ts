@@ -4,6 +4,7 @@
 
 import type { PlateTextPart } from '@design/components/PlateText';
 import type { WeekPlanExercise } from '@domain/plan';
+import type { OnboardingFlags } from '@repositories/settings';
 
 import { formatDaysPerWeekValue, formatMesocycleLengthValue } from './MesoEditorBasicsStepLogic';
 import {
@@ -45,12 +46,14 @@ export const REVIEW_PROGRESSION_FACTS: readonly (readonly PlateTextPart[])[] = [
   ['The ', { strong: 'last week' }, ' is lighter, so you recover.'],
 ];
 
+/** The link under the block that puts it away for good (GT-225). */
+export const REVIEW_PROGRESSION_HIDE_LABEL = "Don't show this";
+
 /**
- * Whether the Review step shows the progression block: only before the first cycle is saved —
- * after that it is noise that pushes the days down (GT-225). With no cycle at all, whatever its
- * status; never while the list is still being read. Flow C only exists after a finished cycle, so
- * it never shows there.
+ * Whether the Review step shows the progression block: on every Review, in every flow, until its
+ * `Don't show this` is tapped (Artem, 04.11.2026 — replaced "before the first cycle only"). Not
+ * while the flags are still being read, so it never flashes for someone who hid it.
  */
-export function showsProgressionBlock(mesocycles: readonly unknown[] | undefined): boolean {
-  return mesocycles !== undefined && mesocycles.length === 0;
+export function showsProgressionBlock(flags: OnboardingFlags | undefined): boolean {
+  return flags !== undefined && !flags.reviewProgressionHidden;
 }

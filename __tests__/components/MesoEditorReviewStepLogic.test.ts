@@ -4,6 +4,7 @@ import {
   formatReviewSummary,
   showsProgressionBlock,
 } from '@components/MesoEditorReviewStepLogic';
+import { DEFAULT_ONBOARDING } from '@storage/settingsDefaults';
 import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -63,9 +64,11 @@ describe('formatReviewSummary', () => {
 });
 
 describe('showsProgressionBlock', () => {
-  test('GT-225: only with no cycle at all, and not while the list is being read', () => {
-    expect(showsProgressionBlock([])).toBe(true);
-    expect(showsProgressionBlock([{}])).toBe(false);
+  test('GT-225: on every Review until hidden, and not while the flags are being read', () => {
+    expect(showsProgressionBlock(DEFAULT_ONBOARDING)).toBe(true);
+    expect(showsProgressionBlock({ ...DEFAULT_ONBOARDING, reviewProgressionHidden: true })).toBe(
+      false,
+    );
     expect(showsProgressionBlock(undefined)).toBe(false);
   });
 });

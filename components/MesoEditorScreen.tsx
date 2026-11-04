@@ -52,7 +52,7 @@ import {
 } from '@components/MesoEditorScreenLogic';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
-import { useMesocycles } from '@state/useMesocycles';
+import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { useExercisesByIds } from '@state/useExercisesByIds';
 
@@ -129,8 +129,9 @@ export function MesoEditorScreen({
 }: MesoEditorScreenProps) {
   const router = useRouter();
   const draft = useDraftStore((state) => state.mesoBuilder);
-  // Whether this is the first cycle — the Review step explains progression only then (GT-225).
-  const mesocyclesQuery = useMesocycles();
+  // The Review step's progression block, until its `Don't show this` (GT-225).
+  const onboarding = useOnboardingFlags();
+  const markOnboardingSeen = useMarkOnboardingSeen();
   const setDraft = useDraftStore((state) => state.setMesoBuilder);
   const resetDraft = useDraftStore((state) => state.resetMesoBuilder);
   const [step, setStep] = useState<Step>(leadStep ? 0 : 1);
@@ -364,7 +365,8 @@ export function MesoEditorScreen({
           daysPerWeek={draft.daysPerWeek}
           exercisesByDay={draft.exercisesByDay}
           exercisesById={exercisesQuery.data ?? {}}
-          showProgression={showsProgressionBlock(mesocyclesQuery.data)}
+          showProgression={showsProgressionBlock(onboarding.data)}
+          onHideProgression={() => markOnboardingSeen.mutate('reviewProgressionHidden')}
           onEditDay={handleEditDay}
         />
       </WizardScreen>

@@ -77,7 +77,8 @@ export function addExercisesToDraft(
   return {
     ...draft,
     exercisesByDay: ids.reduce(
-      (exercisesByDay, id) => addExerciseToDay(exercisesByDay, dayNumber, id, startingSets(exercisesById[id])),
+      (exercisesByDay, id) =>
+        addExerciseToDay(exercisesByDay, dayNumber, id, startingSets(exercisesById[id])),
       draft.exercisesByDay,
     ),
     exerciseSettings: ids

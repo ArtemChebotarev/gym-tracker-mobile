@@ -121,6 +121,7 @@ async function fill(deps: BackupDeps): Promise<void> {
       rangesCoachmarkSeen: false,
       restCoachmarkSeen: false,
       editCoachmarkSeen: false,
+      reviewProgressionHidden: false,
       restNotificationsPlateHidden: false,
     },
   });

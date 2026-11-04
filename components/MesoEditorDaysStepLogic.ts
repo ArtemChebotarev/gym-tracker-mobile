@@ -26,7 +26,10 @@ export function getDayNumbers(daysPerWeek: number): number[] {
   return Array.from({ length: daysPerWeek }, (_, index) => index + 1);
 }
 
-export function getDayExercises(exercisesByDay: ExercisesByDay, dayNumber: number): WeekPlanExercise[] {
+export function getDayExercises(
+  exercisesByDay: ExercisesByDay,
+  dayNumber: number,
+): WeekPlanExercise[] {
   return exercisesByDay[dayNumber] ?? [];
 }
 
@@ -168,7 +171,10 @@ export function canContinueFromDays(daysPerWeek: number, exercisesByDay: Exercis
   return getDayNumbers(daysPerWeek).every((day) => getDayExercises(exercisesByDay, day).length > 0);
 }
 
-export function exerciseDotColor(exercisesById: ExercisesById, exerciseId: string): string | undefined {
+export function exerciseDotColor(
+  exercisesById: ExercisesById,
+  exerciseId: string,
+): string | undefined {
   const muscleGroup = exercisesById[exerciseId]?.muscleGroup;
   if (!muscleGroup) {
     return undefined;
@@ -195,9 +201,16 @@ export function exerciseSubtitle(exercisesById: ExercisesById, exerciseId: strin
  * What stands in for the group dot of an exercise that has no group colour — a `fullBody` hybrid
  * one: the icon of its type (canvas 7.2). `undefined` wherever the dot has a colour to show.
  */
-export function exerciseTypeIcon(exercisesById: ExercisesById, exerciseId: string): IconComponent | undefined {
+export function exerciseTypeIcon(
+  exercisesById: ExercisesById,
+  exerciseId: string,
+): IconComponent | undefined {
   const exercise = exercisesById[exerciseId];
-  if (!exercise || exerciseTypeOf(exercise) === 'strength' || exerciseDotColor(exercisesById, exerciseId)) {
+  if (
+    !exercise ||
+    exerciseTypeOf(exercise) === 'strength' ||
+    exerciseDotColor(exercisesById, exerciseId)
+  ) {
     return undefined;
   }
   return getExerciseTypeIcon(exerciseTypeOf(exercise));

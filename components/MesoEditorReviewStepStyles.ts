@@ -52,6 +52,17 @@ export const styles = StyleSheet.create({
   progressionRows: {
     gap: SPACING['space/dots'],
   },
+  // The same quiet underlined link as power's `Hide this tip` (PowerExerciseCardStyles).
+  progressionHide: {
+    alignSelf: 'center',
+    marginTop: SPACING['space/gap-tight'],
+    paddingTop: SPACING['space/gap-tight'],
+  },
+  progressionHideText: {
+    fontSize: TYPOGRAPHY['type/meta'].fontSize,
+    color: COLORS['text/secondary'],
+    textDecorationLine: 'underline',
+  },
   sectionLabel: {
     marginBottom: -SPACING['space/gap'],
     fontSize: TYPOGRAPHY['type/label'].fontSize,
