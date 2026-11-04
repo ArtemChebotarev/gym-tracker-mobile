@@ -177,6 +177,8 @@ describe('finishSession', () => {
       result.nextSession?.id ?? '',
     );
     expect(nextExercises.map((exercise) => exercise.exerciseId).sort()).toEqual(['bench', 'row']);
+    // The Finish popup (GT-220) reads next week's targets from the result, not a second engine.
+    expect(result.nextExercises).toEqual(nextExercises);
   });
 
   test('DoD: the new session is written in the same transaction — a failure keeps the session open', async () => {
@@ -279,6 +281,7 @@ describe('finishSession', () => {
 
     expect(result.session.status).toBe('completed');
     expect(result.nextSession).toBeNull();
+    expect(result.nextExercises).toEqual([]);
     await expect(sessionsOf(deps)).resolves.toEqual([result.session]);
   });
 

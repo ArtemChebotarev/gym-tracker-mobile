@@ -21,7 +21,8 @@
 // `Finish workout` finishes the session through `useFinishSession` (094) without a confirmation;
 // the tab stays on it — pinned through the `sessionId` param, since the pick moves on — and the
 // re-read session comes back read-only, with `Next workout` leading to the mesocycle's current
-// session.
+// session. Over it, once it is re-read, the Finish popup (GT-220, `FinishDialog`) sums up the day
+// and leads on — after Skip workout too.
 //
 // The grid button opens the mesocycle overview (095, `MesoOverviewSheet`) over the shown session's
 // mesocycle. A cell closes it and opens its day here: by `sessionId` when the session exists, else
@@ -62,6 +63,12 @@ import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
 import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
 import { DeloadIntroDialog } from '@components/DeloadIntroDialog';
+import { FinishDialog } from '@components/FinishDialog';
+import {
+  buildFinishSummary,
+  finishSummaryInput,
+  type FinishAction,
+} from '@components/FinishDialogLogic';
 import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
@@ -120,6 +127,7 @@ import { useTodayWorkout } from '@state/useWorkoutSession';
 import { loadErrorOf } from '@state/loadError';
 import { useRestCoachmarkPending } from '@state/useRestNotifications';
 import type { LogRoundResult } from '@usecases/roundLogging';
+import type { SessionFinishResult } from '@usecases/sessionFinish';
 import type { LogSetResult } from '@usecases/setLogging';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
@@ -211,6 +219,12 @@ export default function TodayScreen() {
   const [bodyWeightText, setBodyWeightText] = useState('');
   const [isBodyWeightOpen, setIsBodyWeightOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
+  // The day Finish or Skip workout just closed (GT-220): the popup over it waits for the re-read
+  // read-only session and the grid, and goes when its button is tapped.
+  const [closedDay, setClosedDay] = useState<SessionFinishResult | undefined>(undefined);
+  const finishInput =
+    closedDay === undefined ? undefined : finishSummaryInput(closedDay, model, grid.data);
+  const finishSummary = finishInput === undefined ? undefined : buildFinishSummary(finishInput);
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
   const navigation = useNavigation<TodayTabNavigation>();
@@ -278,7 +292,10 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           skipWorkout.mutate(currentSessionId, {
-            onSuccess: clearRest,
+            onSuccess: (result) => {
+              clearRest();
+              setClosedDay(result);
+            },
             onError: () => Alert.alert("Couldn't skip the workout", 'Try again.'),
           });
         },
@@ -452,8 +469,19 @@ export default function TodayScreen() {
     );
   }
 
+  /** The Finish popup's button: it closes the popup, then does what it says. */
+  function runFinishAction(action: FinishAction) {
+    setClosedDay(undefined);
+    if (action === 'nextWorkout' && model?.nextSessionId !== undefined) {
+      router.navigate(workoutHref(model.nextSessionId));
+    } else if (action === 'finishCycle' && model !== undefined) {
+      confirmFinishMesocycle(model.mesoId);
+    }
+  }
+
   return (
     <>
+      <FinishDialog summary={finishSummary} onAction={runFinishAction} />
       <WelcomeDialog
         visible={onboarding.data !== undefined && !onboarding.data.welcomeSeen}
         onDismiss={() => markOnboardingSeen.mutate('welcomeSeen')}
@@ -607,7 +635,10 @@ export default function TodayScreen() {
           }
           pinCurrentSession();
           finishSession.mutate(currentSessionId, {
-            onSuccess: clearRest,
+            onSuccess: (result) => {
+              clearRest();
+              setClosedDay(result);
+            },
             onError: () => Alert.alert("Couldn't finish the workout", 'Try again.'),
           });
         }}

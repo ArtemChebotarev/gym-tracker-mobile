@@ -280,6 +280,13 @@ describe('Today tab — header menu', () => {
     pickMenuItem('skipWorkout');
     pressAlertButton('Skip');
 
+    // The Finish popup comes after Skip workout too (GT-220): nothing was logged, so the day reads
+    // skipped and so does its exercise. Its button closes it.
+    expect(await screen.findByText('Day 2 skipped')).toBeTruthy();
+    expect(within(screen.getByTestId('finish-rows')).getByText('Skipped')).toBeTruthy();
+    fireEvent.press(screen.getAllByRole('button', { name: 'Next workout' })[0]!);
+    expect(screen.queryByText('Day 2 skipped')).toBeNull();
+
     // Still this session, now read-only: its one exercise skipped with nothing logged — the
     // `Skipped` note in place of the rows, no Log boxes.
     expect(await screen.findByText('Skipped')).toBeTruthy();

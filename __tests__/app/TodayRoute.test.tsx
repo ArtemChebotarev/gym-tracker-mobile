@@ -307,9 +307,23 @@ describe('Today tab — Finish workout', () => {
     );
     expect(week3.map((next) => next.dayNumber)).toEqual([1]);
 
-    // Next workout goes to the earliest ready day — Week 2 Day 2 comes before the Week 3 Day 1
-    // that Finish just generated.
-    fireEvent.press(screen.getByRole('button', { name: 'Next workout' }));
+    // The Finish popup (GT-220) sums the day up over the read-only screen, each exercise with
+    // what next week does with it.
+    expect(await screen.findByText('Day 1 done')).toBeTruthy();
+    expect(screen.getByText('Up next:', { exact: false })).toBeTruthy();
+    expect(within(screen.getByTestId('finish-rows')).getByText('Bench Press')).toBeTruthy();
+    expect(within(screen.getByTestId('finish-rows')).getByText('Barbell Row')).toBeTruthy();
+
+    // Its Next workout goes where the screen's own does — the earliest ready day, Week 2 Day 2,
+    // which comes before the Week 3 Day 1 that Finish just generated — and the popup goes.
+    const [popupNext, screenNext] = screen.getAllByRole('button', { name: 'Next workout' });
+    fireEvent.press(popupNext!);
+    expect(mockNavigate).toHaveBeenCalledWith(workoutHref('ready-w2d2'));
+    expect(screen.queryByText('Day 1 done')).toBeNull();
+
+    // The screen's own Next workout stays, for a session opened again later.
+    mockNavigate.mockClear();
+    fireEvent.press(screenNext!);
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref('ready-w2d2'));
   });
 

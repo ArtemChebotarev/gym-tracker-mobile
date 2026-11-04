@@ -393,6 +393,8 @@ export const SIZES = {
   'size/form-fields': 480,
   /** Tallest a bottom sheet gets (and the height of a fixed-height one). */
   'size/sheet-max': '80%',
+  /** A Dialog's card at most: the window inside its safe area, so a long one scrolls inside (GT-220). */
+  'size/dialog-max': '100%',
   /** Popover's arrow to its anchor — a square of this side, turned 45°. */
   'size/popover-arrow': 12,
   /** A coachmark bubble's arrow — bigger and rounder than a Popover's, so it reads at a glance (08.11). */
@@ -417,6 +419,10 @@ export const SIZES = {
   'size/fact-chip': 96,
   /** The word chip of a plate's list: one width for `Work` and `Rest` (08.11, "Finding your time"). */
   'size/plate-chip': 56,
+  /** A row of the Finish popup's list (GT-220): a name, today's best and next week's change. */
+  'size/finish-row': 36,
+  /** The Finish popup's right column — one width for `+1 rep`, `Go heavier`, `−5 s rest` (GT-220). */
+  'size/finish-delta': 76,
   /** The circle behind an EmptyState's icon (08.0.1). */
   'size/empty-icon': 112,
   /** How wide an EmptyState's text may run, so a long line wraps instead of spanning the screen (08.0.1). */
