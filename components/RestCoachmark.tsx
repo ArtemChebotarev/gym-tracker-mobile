@@ -32,7 +32,7 @@ export function RestCoachmark({ capsuleRef }: { capsuleRef: RefObject<View | nul
   if (status === undefined) {
     return null;
   }
-  const { paragraph, primaryLabel, secondaryLabel } = restCoachmarkCopy(status);
+  const { paragraphs, primaryLabel, secondaryLabel } = restCoachmarkCopy(status);
 
   function handleFinish(end: CoachmarkTourEnd) {
     markSeen.mutate('restCoachmarkSeen');
@@ -48,7 +48,7 @@ export function RestCoachmark({ capsuleRef }: { capsuleRef: RefObject<View | nul
         {
           targetRef: capsuleRef,
           title: REST_COACHMARK_TITLE,
-          paragraphs: [paragraph],
+          paragraphs,
           ringRadius: RADII['radius/capsule'],
           primaryLabel,
           ...(secondaryLabel !== undefined ? { secondaryLabel } : {}),
