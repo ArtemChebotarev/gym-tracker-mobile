@@ -230,11 +230,17 @@ describe('formatExerciseMenuSubtitle', () => {
 
 describe('formatDeleteExerciseWarning', () => {
   test('names how many logged sets go with the exercise', () => {
-    expect(formatDeleteExerciseWarning({ unit: 'set', planned: 3, logged: 1 })).toBe(
+    expect(formatDeleteExerciseWarning({ unit: 'set', planned: 3, logged: 1 }, false)).toBe(
       'Delete exercise with 1 logged set?',
     );
-    expect(formatDeleteExerciseWarning({ unit: 'round', planned: 3, logged: 2 })).toBe(
+    expect(formatDeleteExerciseWarning({ unit: 'round', planned: 3, logged: 2 }, false)).toBe(
       'Delete exercise with 2 logged rounds?',
+    );
+  });
+
+  test('GT-224: says the exercise goes from future weeks too, when there are any', () => {
+    expect(formatDeleteExerciseWarning({ unit: 'set', planned: 3, logged: 1 }, true)).toBe(
+      "Delete exercise with 1 logged set? It's removed from future weeks too.",
     );
   });
 });

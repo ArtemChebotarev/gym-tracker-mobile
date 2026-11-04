@@ -1,7 +1,7 @@
 // Add set / Remove last set — task 046 (05 · Workout Execution & Logging, "Добавить подход",
-// "Удалить последний подход"). The fact may differ from the plan both ways. Adding a set changes
-// only this session's plan; removing one also lowers the set count of later weeks, since they
-// copy the row count at Finish (03, rule 1). An interval's rounds are set rows too, and Add round /
+// "Удалить последний подход"). The fact may differ from the plan both ways. Both carry over: later
+// weeks copy the row count at Finish (03, rule 1), so an added set raises it and a removed one
+// lowers it — the edit coachmark says so (GT-224). An interval's rounds are set rows too, and Add round /
 // Remove last round (GT-91; 10.1, "Меню ⋯ — как у силовых") follow the same rules. Orchestration
 // only — the row edits live in `domain/sessionExerciseSets.ts`, the status rule in
 // `domain/sessionExerciseStatus.ts`.

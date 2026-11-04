@@ -13,6 +13,7 @@ export const DEFAULT_ONBOARDING: OnboardingFlags = {
   tourGridSeen: false,
   rangesCoachmarkSeen: false,
   restCoachmarkSeen: false,
+  editCoachmarkSeen: false,
   restNotificationsPlateHidden: false,
   deloadIntroSeen: false,
   startCycleSeen: false,

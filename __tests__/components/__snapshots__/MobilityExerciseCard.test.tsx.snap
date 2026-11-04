@@ -113,6 +113,7 @@ exports[`Mobility card (GT-107) matches the live snapshot 1`] = `
     </Text>
   </View>
   <View
+    collapsable={false}
     style={
       [
         {

@@ -25,6 +25,8 @@ export type OnboardingFlags = {
   rangesCoachmarkSeen: boolean;
   /** The one-step coachmark on the capsule of the first rest, closed either way (GT-219). */
   restCoachmarkSeen: boolean;
+  /** The one-step coachmark on the card of the first edit that carries over (GT-224). */
+  editCoachmarkSeen: boolean;
   /** The `Rest notifications` plate in Settings, put away for good by its cross (GT-219). */
   restNotificationsPlateHidden: boolean;
   /** The popup on the first deload session. */

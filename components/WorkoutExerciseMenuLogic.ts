@@ -127,9 +127,17 @@ export type ExerciseLogCounts = {
 export function exerciseLogCounts(exercise: WorkoutExercise): ExerciseLogCounts {
   switch (exercise.type) {
     case 'interval':
-      return { unit: 'round', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+      return {
+        unit: 'round',
+        planned: exercise.plannedRoundCount,
+        logged: exercise.loggedRoundCount,
+      };
     case 'mobility':
-      return { unit: 'block', planned: exercise.plannedRoundCount, logged: exercise.loggedRoundCount };
+      return {
+        unit: 'block',
+        planned: exercise.plannedRoundCount,
+        logged: exercise.loggedRoundCount,
+      };
     default:
       return { unit: 'set', planned: exercise.plannedSetCount, logged: exercise.loggedSetCount };
   }
@@ -149,10 +157,21 @@ export function formatExerciseMenuSubtitle({ unit, planned, logged }: ExerciseLo
  * The Delete exercise confirmation's message (05, "Удалить упражнение"): it names what goes with
  * the exercise — its logged sets. By the app's own logic there are never none here (Artem,
  * 29.09.2026), so there is no wording for none.
+ *
+ * A delete is carried over to the weeks after it, so the message says so whenever there are any:
+ * the edit coachmark can't (GT-224), with no card left to ring once the exercise is gone. A deload
+ * session has no week after it to carry to.
  */
-export function formatDeleteExerciseWarning({ unit, logged }: ExerciseLogCounts): string {
-  return `Delete exercise with ${formatCount(logged, unit, 'logged')}?`;
+export function formatDeleteExerciseWarning(
+  { unit, logged }: ExerciseLogCounts,
+  carriesOver: boolean,
+): string {
+  const question = `Delete exercise with ${formatCount(logged, unit, 'logged')}?`;
+  return carriesOver ? `${question} ${DELETE_CARRIES_OVER}` : question;
 }
+
+/** The delete confirmation's second sentence (GT-224). */
+export const DELETE_CARRIES_OVER = "It's removed from future weeks too.";
 
 /**
  * The Skip exercise confirmation's message (05, "Пропустить упражнение"): it names what the skip

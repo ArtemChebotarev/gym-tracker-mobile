@@ -9,7 +9,7 @@
 // What shows is `exerciseCardView`'s call (WorkoutExerciseCardLogic.ts); the frame draws it and
 // knows nothing about sets, rounds or RIR.
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { ActionMenu, type ActionMenuItem } from '@design/components/ActionMenu';
@@ -49,6 +49,8 @@ export type ExerciseCardFrameProps = {
   children?: ReactNode;
   /** Drawn after the card, outside it — the popovers its ⓘ buttons open. */
   overlays?: ReactNode;
+  /** The card itself, without its chip — what the edit coachmark rings (GT-224). */
+  cardRef?: Ref<View>;
 };
 
 export function ExerciseCardFrame({
@@ -64,12 +66,15 @@ export function ExerciseCardFrame({
   menuSubtitle,
   children,
   overlays,
+  cardRef,
 }: ExerciseCardFrameProps) {
   return (
     <View style={styles.root}>
       {chip?.kind === 'group' && <GroupChip muscleGroup={chip.muscleGroup} />}
       {chip?.kind === 'type' && <TypeChip type={chip.type} />}
       <View
+        ref={cardRef}
+        collapsable={false}
         testID={`exercise-card-${exercise.sessionExerciseId}`}
         style={[styles.card, view.isNotDone && styles.skipped]}
       >

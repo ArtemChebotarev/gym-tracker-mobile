@@ -63,6 +63,11 @@ import { MesoCreationMethodSheet } from '@components/MesoCreationMethodSheet';
 import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { StopMesocycleSheet } from '@components/StopMesocycleSheet';
 import { DeloadIntroDialog } from '@components/DeloadIntroDialog';
+import {
+  isCarriedCommand,
+  lastWorkingWeekOf,
+  shouldShowEditCoachmark,
+} from '@components/EditCoachmarkLogic';
 import { FinishDialog } from '@components/FinishDialog';
 import {
   buildFinishSummary,
@@ -83,7 +88,11 @@ import {
   todayEmptyCopy,
 } from '@components/TodayScreenLogic';
 import { useHandoffSheet } from '@components/useHandoffSheet';
-import { exerciseDetailHref, exerciseHistoryHref, mesocycleDetailHref } from '@components/historyRoutes';
+import {
+  exerciseDetailHref,
+  exerciseHistoryHref,
+  mesocycleDetailHref,
+} from '@components/historyRoutes';
 import { MesoOverviewSheet } from '@components/MesoOverviewSheet';
 import {
   exerciseLogCounts,
@@ -225,6 +234,31 @@ export default function TodayScreen() {
   const finishInput =
     closedDay === undefined ? undefined : finishSummaryInput(closedDay, model, grid.data);
   const finishSummary = finishInput === undefined ? undefined : buildFinishSummary(finishInput);
+  // The edit coachmark (GT-224): the card the first edit that carries over changed. Only while the
+  // coachmark may show — once per install, on a live working week that has another after it, and
+  // not while the rest coachmark is waiting on the capsule.
+  const editCoachmarkOn =
+    !restCoachmarkPending &&
+    shouldShowEditCoachmark(
+      onboarding.data,
+      model === undefined
+        ? undefined
+        : {
+            mode: model.mode,
+            isDeload: model.header.isDeload,
+            weekNumber: model.header.weekNumber,
+          },
+      grid.data !== undefined && grid.data.mesoId === model?.mesoId
+        ? lastWorkingWeekOf(grid.data.weeks)
+        : undefined,
+    );
+  const [editedCard, setEditedCard] = useState<string | undefined>(undefined);
+  /** An edit that carries over has landed on this card: ring it, if the coachmark is still due. */
+  function noteCarriedEdit(sessionExerciseId: string | undefined) {
+    if (editCoachmarkOn && sessionExerciseId !== undefined) {
+      setEditedCard(sessionExerciseId);
+    }
+  }
   const emptyReason =
     query.data?.kind === 'session' ? 'unavailable' : (query.data?.kind ?? 'unavailable');
   const navigation = useNavigation<TodayTabNavigation>();
@@ -408,7 +442,14 @@ export default function TodayScreen() {
           command,
           ref: { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId },
         },
-        { onError: showExerciseError },
+        {
+          onSuccess: () => {
+            if (isCarriedCommand(command)) {
+              noteCarriedEdit(exercise.sessionExerciseId);
+            }
+          },
+          onError: showExerciseError,
+        },
       );
     };
 
@@ -437,11 +478,18 @@ export default function TodayScreen() {
         });
         return;
       case 'delete':
-        confirm('Delete exercise?', formatDeleteExerciseWarning(exerciseLogCounts(exercise)), {
-          text: 'Delete',
-          destructive: true,
-          onPress: () => runCommand('delete'),
-        });
+        confirm(
+          'Delete exercise?',
+          formatDeleteExerciseWarning(
+            exerciseLogCounts(exercise),
+            model !== undefined && !model.header.isDeload,
+          ),
+          {
+            text: 'Delete',
+            destructive: true,
+            onPress: () => runCommand('delete'),
+          },
+        );
         return;
       default:
         runCommand(item);
@@ -465,7 +513,10 @@ export default function TodayScreen() {
     }
     swapExercise.mutate(
       { sessionId: currentSessionId, sessionExerciseId: exercise.sessionExerciseId, exerciseId },
-      { onError: showExerciseError },
+      {
+        onSuccess: (swapped) => noteCarriedEdit(swapped.id),
+        onError: showExerciseError,
+      },
     );
   }
 
@@ -498,6 +549,7 @@ export default function TodayScreen() {
           visible: showCoachmarks,
           rangesVisible: showRangesCoachmark && !restCoachmarkPending,
           ...(onboarding.data !== undefined ? { seen: onboarding.data } : {}),
+          ...(editCoachmarkOn && editedCard !== undefined ? { editedCard } : {}),
           onFinish: (flags) => markOnboardingSeen.mutate(flags),
         }}
         onOpenGrid={() => setIsGridOpen(true)}
@@ -747,6 +799,7 @@ export default function TodayScreen() {
           addExercises.mutate(
             { sessionId: currentSessionId, exerciseIds: [exerciseId] },
             {
+              onSuccess: (added) => noteCarriedEdit(added[0]?.id),
               onError: () => Alert.alert("Couldn't add the exercise", 'Try again.'),
             },
           );

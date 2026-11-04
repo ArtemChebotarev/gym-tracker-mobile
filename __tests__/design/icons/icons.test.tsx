@@ -1,5 +1,6 @@
 import { ArchiveIcon } from '@design/icons/ArchiveIcon';
 import { ArrowDownIcon } from '@design/icons/ArrowDownIcon';
+import { ArrowRightIcon } from '@design/icons/ArrowRightIcon';
 import { ArrowUpIcon } from '@design/icons/ArrowUpIcon';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { ChevronDownIcon } from '@design/icons/ChevronDownIcon';
@@ -54,6 +55,7 @@ const ICONS: [string, IconComponent][] = [
   ['info', InfoIcon],
   ['arrow-up', ArrowUpIcon],
   ['arrow-down', ArrowDownIcon],
+  ['arrow-right', ArrowRightIcon],
   ['hourglass', HourglassIcon],
   ['pause', PauseIcon],
   ['chevron-down', ChevronDownIcon],
