@@ -9,10 +9,13 @@
 // swallowed too, so a dialog with only a button really has only that. The caller's handler is
 // what records that the message was read, so the cross and the button should do the same thing.
 // Presented through <Modal>, like BottomSheet, so the scrim covers the whole window including
-// the tab bar.
+// the tab bar. The card is never taller than the window inside its safe area: a caller with more
+// to say than fits puts that part in a ScrollView with `flexShrink: 1`, which then gives way while
+// the rest — the title, the button — stays in view (the Finish popup, GT-220).
 
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { CloseIcon } from '../icons/CloseIcon';
 import { COLORS, ICON_SIZES, RADII, SHADOWS, SIZES, SPACING } from '../tokens';
@@ -26,6 +29,11 @@ export type DialogProps = {
 };
 
 export function Dialog({ visible, onClose, children }: DialogProps) {
+  // From the root SafeAreaProvider, as BottomSheet reads it: a SafeAreaView inside <Modal>
+  // measures against the wrong window.
+  const insets = useContext(SafeAreaInsetsContext);
+  const top = insets?.top ?? 0;
+  const bottom = insets?.bottom ?? 0;
   return (
     <Modal
       visible={visible}
@@ -33,7 +41,15 @@ export function Dialog({ visible, onClose, children }: DialogProps) {
       animationType="fade"
       onRequestClose={onClose ?? swallowBack}
     >
-      <View style={styles.scrim}>
+      <View
+        style={[
+          styles.scrim,
+          {
+            paddingTop: top + SPACING['space/screen'],
+            paddingBottom: bottom + SPACING['space/screen'],
+          },
+        ]}
+      >
         <View testID="dialog" accessibilityViewIsModal style={styles.card}>
           {onClose !== undefined && (
             <View style={styles.close}>
@@ -66,6 +82,7 @@ const styles = StyleSheet.create({
   card: {
     width: SIZES['size/dialog'],
     flexShrink: 1,
+    maxHeight: SIZES['size/dialog-max'],
     paddingHorizontal: SPACING['space/dialog'],
     paddingVertical: SPACING['space/dialog-y'],
     borderRadius: RADII['radius/sheet'],

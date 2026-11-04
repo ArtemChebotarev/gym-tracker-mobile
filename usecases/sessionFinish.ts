@@ -4,7 +4,7 @@
 // A final status is irreversible, so a generated session is never recalculated.
 
 import { ConflictError } from '@domain/errors';
-import type { Session } from '@domain/execution';
+import type { Session, SessionExercise } from '@domain/execution';
 import { closedSession } from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import { canFinishSession } from '@domain/workoutViewRules';
@@ -22,6 +22,12 @@ export type SessionFinishResult = {
   session: Session;
   /** Next week's session of the same day, or `null` after the deload week. */
   nextSession: Session | null;
+  /**
+   * The exercises of `nextSession` with their targets — what the Finish popup compares today's
+   * logs with (GT-220), so it reads the engine's own answer instead of working it out again.
+   * Empty when there is no next session.
+   */
+  nextExercises: SessionExercise[];
 };
 
 /**
@@ -68,5 +74,8 @@ export async function closeSession(
   const finished = await repos.sessionRepo.update(
     closedSession(session, await hasLoggedWork(session.id, repos), now, 'skipped'),
   );
-  return { session: finished, nextSession: await generateNextSession(finished, repos, deps) };
+  const nextSession = await generateNextSession(finished, repos, deps);
+  const nextExercises =
+    nextSession === null ? [] : await repos.sessionExerciseRepo.listBySessionId(nextSession.id);
+  return { session: finished, nextSession, nextExercises };
 }
