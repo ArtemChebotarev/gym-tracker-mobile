@@ -1,5 +1,9 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import { formatReviewCount, formatReviewSummary } from '@components/MesoEditorReviewStepLogic';
+import {
+  formatReviewCount,
+  formatReviewSummary,
+  showsProgressionBlock,
+} from '@components/MesoEditorReviewStepLogic';
 import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -21,25 +25,33 @@ describe('formatReviewCount', () => {
   };
 
   test('a strength exercise shows its sets', () => {
-    expect(formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 1 })).toBe('1 set');
-    expect(formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 })).toBe('3 sets');
+    expect(
+      formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 1 }),
+    ).toBe('1 set');
+    expect(
+      formatReviewCount(exercisesById, { exerciseId: BENCH_PRESS.id, order: 0, sets: 3 }),
+    ).toBe('3 sets');
   });
 
   test('a power exercise shows its sets, an interval its rounds (GT-188, GT-190)', () => {
-    expect(formatReviewCount(exercisesById, { exerciseId: MEDBALL_THROW.id, order: 0, sets: 3 })).toBe(
-      '3 sets',
-    );
+    expect(
+      formatReviewCount(exercisesById, { exerciseId: MEDBALL_THROW.id, order: 0, sets: 3 }),
+    ).toBe('3 sets');
     expect(formatReviewCount(exercisesById, { exerciseId: HEAVY_BAG.id, order: 1, sets: 2 })).toBe(
       '2 rounds',
     );
   });
 
   test('a mobility exercise shows nothing: it is one block with nothing to set (GT-191)', () => {
-    expect(formatReviewCount(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe('');
+    expect(formatReviewCount(exercisesById, { exerciseId: COOLDOWN.id, order: 0, sets: 2 })).toBe(
+      '',
+    );
   });
 
   test('an exercise not loaded yet falls back to its sets', () => {
-    expect(formatReviewCount(exercisesById, { exerciseId: 'missing', order: 0, sets: 2 })).toBe('2 sets');
+    expect(formatReviewCount(exercisesById, { exerciseId: 'missing', order: 0, sets: 2 })).toBe(
+      '2 sets',
+    );
   });
 });
 
@@ -47,5 +59,13 @@ describe('formatReviewSummary', () => {
   test('combines length and days per week', () => {
     expect(formatReviewSummary(6, 4)).toBe('6 weeks · 4 days per week');
     expect(formatReviewSummary(3, 1)).toBe('3 weeks · 1 day per week');
+  });
+});
+
+describe('showsProgressionBlock', () => {
+  test('GT-225: only with no cycle at all, and not while the list is being read', () => {
+    expect(showsProgressionBlock([])).toBe(true);
+    expect(showsProgressionBlock([{}])).toBe(false);
+    expect(showsProgressionBlock(undefined)).toBe(false);
   });
 });

@@ -10,6 +10,7 @@ import {
   useDraftStore,
   type MesoBuilderDraft,
 } from '@state/draftStore';
+import { seedWorkoutFixture } from '../fixtures/workoutFixture';
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 
 const mockBack = jest.fn();
@@ -80,6 +81,24 @@ async function renderAtReviewStep() {
 }
 
 describe('MesoEditorRoute — step 3 (Review & confirm)', () => {
+  test('GT-225: before the first cycle, Review explains how a cycle progresses', async () => {
+    await renderAtReviewStep();
+
+    expect(await screen.findByText('How your cycle progresses')).toBeTruthy();
+    expect(screen.getByText('Log')).toBeTruthy();
+    expect(screen.getByText('Each week')).toBeTruthy();
+    expect(screen.getByText('last week')).toBeTruthy();
+  });
+
+  test('GT-225: once there is a cycle, the block is gone', async () => {
+    await seedWorkoutFixture(repositories());
+    await renderAtReviewStep();
+    await waitFor(() => expect(screen.getByText('Week 1')).toBeTruthy());
+    await flushQueryNotifications();
+
+    expect(screen.queryByText('How your cycle progresses')).toBeNull();
+  });
+
   test('Save mesocycle saves a planned mesocycle via Confirm, creates no Session, and closes', async () => {
     await renderAtReviewStep();
 

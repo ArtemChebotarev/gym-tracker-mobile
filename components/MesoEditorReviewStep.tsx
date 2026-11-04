@@ -1,6 +1,7 @@
 // Step 3 of 3's own content in the mesocycle editor, Flow A — see 08.5 · Редактор мезоцикла —
 // Flow A, "Шаг 3 — Review & confirm" (task 078). A read-only summary of the draft: a summary card
-// (name, length, days per week) and a week 1 preview listing each day's exercises with `N sets` — or, for a power, interval or
+// (name, length, days per week), before the first cycle only a block on how a cycle progresses
+// (GT-225), and a week 1 preview listing each day's exercises with `N sets` — or, for a power, interval or
 // mobility one, its plan on one line (GT-157).
 // The `›` chevron in each day's header replaces the removed `Edit` button (08.5, "Убрано после
 // ревью") and hands `dayNumber` back to the caller, which returns to step 2 with that day active.
@@ -14,6 +15,8 @@
 
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
+import { PlateBox } from '@design/components/PlateBox';
+import { PlateRow } from '@design/components/PlateRow';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 
 import {
@@ -25,7 +28,12 @@ import {
   type ExercisesByDay,
   type ExercisesById,
 } from './MesoEditorDaysStepLogic';
-import { formatReviewCount, formatReviewSummary } from './MesoEditorReviewStepLogic';
+import {
+  formatReviewCount,
+  formatReviewSummary,
+  REVIEW_PROGRESSION_FACTS,
+  REVIEW_PROGRESSION_LABEL,
+} from './MesoEditorReviewStepLogic';
 import { styles } from './MesoEditorReviewStepStyles';
 
 export type MesoEditorReviewStepProps = {
@@ -34,6 +42,8 @@ export type MesoEditorReviewStepProps = {
   daysPerWeek: number;
   exercisesByDay: ExercisesByDay;
   exercisesById: ExercisesById;
+  /** The block on how a cycle progresses — before the first cycle only (`showsProgressionBlock`). */
+  showProgression?: boolean;
   onEditDay: (dayNumber: number) => void;
 };
 
@@ -43,6 +53,7 @@ export function MesoEditorReviewStep({
   daysPerWeek,
   exercisesByDay,
   exercisesById,
+  showProgression = false,
   onEditDay,
 }: MesoEditorReviewStepProps) {
   return (
@@ -57,6 +68,18 @@ export function MesoEditorReviewStep({
         <Text style={styles.summaryName}>{name}</Text>
         <Text style={styles.summaryMeta}>{formatReviewSummary(lengthWeeks, daysPerWeek)}</Text>
       </View>
+
+      {showProgression && (
+        <View testID="review-progression" style={styles.progression}>
+          <PlateBox label={REVIEW_PROGRESSION_LABEL} accent>
+            <View style={styles.progressionRows}>
+              {REVIEW_PROGRESSION_FACTS.map((text, index) => (
+                <PlateRow key={index} compact accent leading={{ number: index + 1 }} text={text} />
+              ))}
+            </View>
+          </PlateBox>
+        </View>
+      )}
 
       <Text style={styles.sectionLabel}>Week 1</Text>
 
@@ -88,7 +111,9 @@ export function MesoEditorReviewStep({
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {exerciseTitle(exercisesById, exercise.exerciseId)}
                 </Text>
-                <Text style={styles.exerciseSets}>{formatReviewCount(exercisesById, exercise)}</Text>
+                <Text style={styles.exerciseSets}>
+                  {formatReviewCount(exercisesById, exercise)}
+                </Text>
               </View>
             );
           })}

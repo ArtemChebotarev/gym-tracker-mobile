@@ -44,6 +44,14 @@ export const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/muted'],
   },
+  // PlateBox puts its label `space/md` below whatever stands above it inside a plate; here the
+  // content's own gap already spaces it, so that margin is taken back (GT-225).
+  progression: {
+    marginTop: -SPACING['space/md'],
+  },
+  progressionRows: {
+    gap: SPACING['space/dots'],
+  },
   sectionLabel: {
     marginBottom: -SPACING['space/gap'],
     fontSize: TYPOGRAPHY['type/label'].fontSize,
