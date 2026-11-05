@@ -9,7 +9,7 @@ import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSetLogRepository } from './setLogRepository';
 import { SqliteSettingsRepository } from './settings';
 import { SqliteTemplateRepository } from './template';
-import { runInTransaction } from './transaction';
+import { runInStoreTransaction } from './transaction';
 
 function backupRepositoriesOver(db: SqliteDatabase): BackupRepositories {
   return {
@@ -32,6 +32,6 @@ function backupRepositoriesOver(db: SqliteDatabase): BackupRepositories {
 export function createSqliteBackupStore(db: SqliteDatabase): BackupStore {
   return {
     repos: backupRepositoriesOver(db),
-    transaction: (work) => runInTransaction(db, () => work(backupRepositoriesOver(db))),
+    transaction: (work) => runInStoreTransaction(db, () => work(backupRepositoriesOver(db))),
   };
 }

@@ -120,6 +120,56 @@ describe('the SQLite adapter’s writes', () => {
     close();
   });
 
+  // GT-233: Stop and log ends the interval timer — which logs the round it was in — and logs by
+  // hand at once. Two writes started together on the one connection used to both send BEGIN, and
+  // the second failed; a store's transactions now wait for each other.
+  test('two transactions started together both commit, one after the other', async () => {
+    const { mesocycleRepo, workoutStore, close } = await createRepositories();
+    await mesocycleRepo.create(makeMesocycle());
+    const session = await workoutStore.repos.sessionRepo.create(makeSession());
+    const order: string[] = [];
+
+    await Promise.all([
+      workoutStore.transaction(async (repos) => {
+        order.push('first begins');
+        await repos.sessionRepo.update({ ...session, status: 'in_progress' });
+        order.push('first ends');
+      }),
+      workoutStore.transaction(async (repos) => {
+        order.push('second begins');
+        const current = await repos.sessionRepo.getById('session-1');
+        await repos.sessionRepo.update({ ...current!, isDeload: true });
+        order.push('second ends');
+      }),
+    ]);
+
+    expect(order).toEqual(['first begins', 'first ends', 'second begins', 'second ends']);
+    await expect(workoutStore.repos.sessionRepo.getById('session-1')).resolves.toMatchObject({
+      status: 'in_progress',
+      isDeload: true,
+    });
+    close();
+  });
+
+  test('a transaction that fails lets the next one in', async () => {
+    const { mesocycleRepo, workoutStore, close } = await createRepositories();
+    await mesocycleRepo.create(makeMesocycle());
+    const session = await workoutStore.repos.sessionRepo.create(makeSession());
+
+    const [failed, committed] = await Promise.allSettled([
+      workoutStore.transaction(async () => {
+        throw new Error('first fails');
+      }),
+      workoutStore.transaction((repos) =>
+        repos.sessionRepo.update({ ...session, status: 'in_progress' }),
+      ),
+    ]);
+
+    expect(failed.status).toBe('rejected');
+    expect(committed.status).toBe('fulfilled');
+    close();
+  });
+
   test('a nested transaction that fails alone leaves the outer one free to commit', async () => {
     const { mesocycleRepo, workoutStore, close } = await createRepositories();
     await mesocycleRepo.create(makeMesocycle());
