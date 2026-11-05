@@ -1,11 +1,9 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
-import { Alert } from 'react-native';
 
 import {
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
-import { TIMER_OUT_LOG_ALERT } from '@components/IntervalRoundRowsLogic';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import type { IntervalWorkoutExercise, WorkoutRoundRow } from '@usecases/workoutSession';
@@ -419,8 +417,8 @@ describe('Interval card (GT-88)', () => {
       expect(screen.getByLabelText('Work, round 2, 2:00')).toBeDisabled();
     });
 
-    test('DoD: Log and un-log say the timer logs, and log nothing', () => {
-      const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    // The workout asks to stop the timer first, as for any log (GT-233): the card passes Log on.
+    test('Log and un-log still reach the workout', () => {
       const onLogRound = jest.fn();
       const onUnlogRound = jest.fn();
       const exercise = makeInterval({
@@ -442,11 +440,8 @@ describe('Interval card (GT-88)', () => {
       fireEvent.press(screen.getByLabelText('Log round 2'));
       fireEvent.press(screen.getByLabelText('Round 1 logged'));
 
-      expect(alert).toHaveBeenCalledTimes(2);
-      expect(alert).toHaveBeenCalledWith(TIMER_OUT_LOG_ALERT.title, TIMER_OUT_LOG_ALERT.message);
-      expect(onLogRound).not.toHaveBeenCalled();
-      expect(onUnlogRound).not.toHaveBeenCalled();
-      alert.mockRestore();
+      expect(onLogRound).toHaveBeenCalledWith(2, { workSec: 120, restSec: 45 });
+      expect(onUnlogRound).toHaveBeenCalledWith(1);
     });
 
     test('closed, the fields open their pickers again', () => {

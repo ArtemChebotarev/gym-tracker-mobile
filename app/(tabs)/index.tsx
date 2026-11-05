@@ -80,6 +80,7 @@ import {
   formatInProgressConflict,
   intervalTimerOnLog,
   intervalTimerStartOf,
+  timerLoggedRow,
   restAfterIntervalBlock,
   loggedSetKey,
   restAfterLog,
@@ -410,13 +411,18 @@ export default function TodayScreen() {
   }, [finishedBlock, model, noteLogged, startRest, stopRest]);
 
   /**
-   * Runs `log` — a set or a round of `exercise` — once no other exercise's interval timer is left
-   * running: one is ended early first, if the user agrees (10.1 FR-6, GT-233). Only one timer runs
-   * at a time, and the log starts a rest.
+   * Runs `log` — a set or round `rowNumber` of `exercise`, logged or un-logged by hand — once no
+   * interval timer is left running: one is ended early first, if the user agrees (10.1 FR-6,
+   * GT-233). Only one timer runs at a time, a log starts a rest, and a row the timer has just logged
+   * itself is left to it (`timerLoggedRow`).
    */
-  function logStoppingIntervalTimer(exercise: WorkoutExercise, log: () => void) {
+  function logStoppingIntervalTimer(
+    exercise: WorkoutExercise,
+    rowNumber: number | undefined,
+    log: () => void,
+  ) {
     const timers = useIntervalTimerStore.getState();
-    const onLog = intervalTimerOnLog(timers.active, exercise.sessionExerciseId, Date.now());
+    const onLog = intervalTimerOnLog(timers.active, Date.now());
     if (onLog.kind === 'none') {
       log();
       return;
@@ -433,10 +439,13 @@ export default function TodayScreen() {
         style: 'destructive',
         onPress: () => {
           // As End early on its screen: the rounds it leaves are logged by GT-98.
-          const current = useIntervalTimerStore.getState();
-          current.endEarly();
-          current.close();
-          log();
+          const store = useIntervalTimerStore.getState();
+          store.endEarly();
+          const stopped = useIntervalTimerStore.getState().active;
+          store.close();
+          if (!timerLoggedRow(stopped, exercise.sessionExerciseId, rowNumber)) {
+            log();
+          }
         },
       },
     ]);
@@ -623,7 +632,7 @@ export default function TodayScreen() {
             return;
           }
           const sessionId = currentSessionId;
-          logStoppingIntervalTimer(exercise, () =>
+          logStoppingIntervalTimer(exercise, undefined, () =>
             logSet.mutate(
               {
                 ref: { sessionId, sessionExerciseId: exercise.sessionExerciseId, setNumber },
@@ -641,7 +650,7 @@ export default function TodayScreen() {
             return;
           }
           const sessionId = currentSessionId;
-          logStoppingIntervalTimer(exercise, () =>
+          logStoppingIntervalTimer(exercise, roundNumber, () =>
             logRound.mutate(
               {
                 ref: { sessionId, sessionExerciseId: exercise.sessionExerciseId, roundNumber },
@@ -658,13 +667,12 @@ export default function TodayScreen() {
           if (currentSessionId === undefined) {
             return;
           }
-          unlogRound.mutate(
-            {
-              sessionId: currentSessionId,
-              sessionExerciseId: exercise.sessionExerciseId,
-              roundNumber,
-            },
-            { onError: showSaveError },
+          const sessionId = currentSessionId;
+          logStoppingIntervalTimer(exercise, undefined, () =>
+            unlogRound.mutate(
+              { sessionId, sessionExerciseId: exercise.sessionExerciseId, roundNumber },
+              { onError: showSaveError },
+            ),
           );
         }}
         onSetRoundTime={(exercise, column, roundNumbers, sec) => {
@@ -697,13 +705,12 @@ export default function TodayScreen() {
           if (currentSessionId === undefined) {
             return;
           }
-          unlogSet.mutate(
-            {
-              sessionId: currentSessionId,
-              sessionExerciseId: exercise.sessionExerciseId,
-              setNumber,
-            },
-            { onError: showSaveError },
+          const sessionId = currentSessionId;
+          logStoppingIntervalTimer(exercise, undefined, () =>
+            unlogSet.mutate(
+              { sessionId, sessionExerciseId: exercise.sessionExerciseId, setNumber },
+              { onError: showSaveError },
+            ),
           );
         }}
         onSetNoHeavierAvailable={(exercise) =>

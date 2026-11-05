@@ -11,8 +11,8 @@
 //   is out, the field counts the time left, a tap on it opens the timer again, and the action pauses
 //   and resumes it. The timer logs the block itself.
 // - Done is the Log box: one tap logs the block with the length the field shows, timer or not
-//   (FR-10); a second tap un-logs it. While the timer is out Done doesn't log — it says the timer
-//   does (GT-234).
+//   (FR-10); a second tap un-logs it. While the timer is out the workout asks to stop it first, as
+//   for any log beside it (GT-233).
 //
 // JSX/rendering only — pure helpers live in MobilityExerciseCardLogic.ts, per the code-style skill.
 
@@ -31,7 +31,6 @@ import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
 import { CardTimerAction } from './CardTimerAction';
 import type { RoundActions } from './IntervalRoundRows';
-import { alertTimerOut } from './IntervalRoundRowsLogic';
 import { styles as hintStyles } from './IntervalRoundRowsStyles';
 import {
   BLOCK_TIMER_LABEL,
@@ -92,7 +91,7 @@ export function MobilityBlockRow({
   const timerBlock = timerBlockOf(block, lengthSec);
   const canStart = actions?.onStartTimer !== undefined && timerBlock !== undefined;
   const fieldActive = editable && !logged;
-  const doneDisabled = !editable || isSaving || (!timerOut && !logged && lengthSec === undefined);
+  const doneDisabled = !editable || isSaving || (!logged && lengthSec === undefined);
 
   function pressField() {
     if (timerOut) {
@@ -169,10 +168,6 @@ export function MobilityBlockRow({
               disabled={doneDisabled}
               hitSlop={tapTargetSlop(SIZES['size/log-box'])}
               onPress={() => {
-                if (timerOut) {
-                  alertTimerOut();
-                  return;
-                }
                 if (logged) {
                   setPickedSec(undefined);
                   actions?.onUnlogRound?.(block.roundNumber);

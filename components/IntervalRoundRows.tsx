@@ -19,8 +19,8 @@
 //   (FR-7, GT-89).
 // - Start timer opens the interval timer (GT-96) over the rounds not yet logged, with the times
 //   their fields show. While it is out — running, paused or in the capsule — no time can be picked:
-//   the timer runs on the times it took at its start (FR-9, GT-234) — and Log doesn't log, it says
-//   the timer does: a hand log would start a rest timer over the running one.
+//   the timer runs on the times it took at its start (FR-9, GT-234). Log works as ever: the
+//   workout asks to stop the timer first, as for any log beside it (GT-233).
 //
 // JSX/rendering only — styles live in IntervalRoundRowsStyles.ts and pure helpers in
 // IntervalRoundRowsLogic.ts and IntervalExerciseCardLogic.ts, per the code-style skill.
@@ -59,7 +59,6 @@ import {
   type RoundTimeColumn,
   type RoundTimeEdits,
   roundsWithEdits,
-  alertTimerOut,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
   roundTimeToSave,
@@ -217,10 +216,7 @@ export function IntervalRoundRows({
 type RoundRowProps = {
   round: WorkoutRoundRow;
   editable: boolean;
-  /**
-   * This exercise's interval timer is out — Work and Rest can't be picked, and Log says why it
-   * doesn't log.
-   */
+  /** This exercise's interval timer is out — Work and Rest can't be picked. */
   timerOut: boolean;
   isSaving: boolean;
   /** The field of this round whose picker is open — its outline brightens. */
@@ -289,7 +285,7 @@ function RoundRow({
             accessibilityState={{ checked: logged, disabled: logDisabled }}
             disabled={logDisabled}
             hitSlop={tapTargetSlop(SIZES['size/log-box'])}
-            onPress={timerOut ? alertTimerOut : logged ? onUnlog : onLog}
+            onPress={logged ? onUnlog : onLog}
             style={({ pressed }) => [
               rowStyles.logBox,
               logged && rowStyles.logBoxLogged,

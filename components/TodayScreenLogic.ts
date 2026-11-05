@@ -320,13 +320,14 @@ export function restAfterIntervalBlock(
 }
 
 /**
- * What a log on exercise `sessionExerciseId` does with an interval timer that is out (10.1 FR-6,
- * GT-233). Only one timer runs at a time, and the log starts a rest:
+ * What a log by hand does with an interval timer that is out (10.1 FR-6, GT-233) — any log, on its
+ * own exercise or another: only one timer runs at a time, a log starts a rest, and the timer's own
+ * rows are the timer's to write.
  *
- * - `none` — no timer, or the one running is this exercise's own (its card holds Log, GT-234).
+ * - `none` — no timer.
  * - `close` — the timer has run to its end and only its summary is left: put it away, nothing to ask.
- * - `confirm` — another exercise's timer is running or paused: the log ends it early, as End early
- *   on its screen would, once the user says so — the question says what goes into its log.
+ * - `confirm` — a timer running or paused: the log ends it early, as End early on its screen would,
+ *   once the user says so — the question says what goes into its log.
  */
 export type IntervalTimerOnLog =
   | { kind: 'none' }
@@ -337,10 +338,9 @@ export const STOP_TIMER_AND_LOG = 'Stop and log';
 
 export function intervalTimerOnLog(
   active: ActiveIntervalTimer | null,
-  sessionExerciseId: string,
   now: number,
 ): IntervalTimerOnLog {
-  if (active === null || active.exercise.sessionExerciseId === sessionExerciseId) {
+  if (active === null) {
     return { kind: 'none' };
   }
   if (active.timer.phase === undefined) {
@@ -349,7 +349,24 @@ export function intervalTimerOnLog(
   return {
     kind: 'confirm',
     title: `Stop the ${active.exercise.name} timer?`,
-    message: `Logging here ends it. ${endEarlyMessage(active, now)}`,
+    message: `Logging by hand ends it. ${endEarlyMessage(active, now)}`,
     stopLabel: STOP_TIMER_AND_LOG,
   };
+}
+
+/**
+ * Whether the timer, just ended, logged row `rowNumber` of exercise `sessionExerciseId` itself — a
+ * round it ran, or the one it was in. That row's hand log is dropped: the timer's stands, and a
+ * second log of a logged round fails (GT-233). `rowNumber` absent — a set — never.
+ */
+export function timerLoggedRow(
+  stopped: ActiveIntervalTimer | null,
+  sessionExerciseId: string,
+  rowNumber: number | undefined,
+): boolean {
+  return (
+    rowNumber !== undefined &&
+    stopped?.exercise.sessionExerciseId === sessionExerciseId &&
+    stopped.timer.results.some((result) => result.roundNumber === rowNumber)
+  );
 }

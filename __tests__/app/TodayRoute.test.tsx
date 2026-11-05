@@ -245,7 +245,7 @@ describe('Today tab — set logging', () => {
   });
 });
 
-// GT-233 (10.1 FR-6): only one timer runs at a time. A set logged while another exercise's interval
+// GT-233 (10.1 FR-6): only one timer runs at a time. A set logged while an interval
 // timer is out would start a rest over it — so the log asks first, and ends that timer early.
 describe('Today tab — a log beside a running interval timer', () => {
   const benchCard = () =>
@@ -289,7 +289,7 @@ describe('Today tab — a log beside a running interval timer', () => {
     expect(alert).toHaveBeenCalledTimes(1);
     const [title, message, buttons] = alert.mock.calls[0] ?? [];
     expect(title).toBe('Stop the Heavy bag timer?');
-    expect(message).toBe('Logging here ends it. Nothing has been logged yet.');
+    expect(message).toBe('Logging by hand ends it. Nothing has been logged yet.');
     expect(buttons?.map((button: AlertButton) => button.text)).toEqual(['Cancel', 'Stop and log']);
 
     buttons?.find((button: AlertButton) => button.text === 'Cancel')?.onPress?.();

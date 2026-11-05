@@ -4,8 +4,6 @@
 // sets (task 106, `carryForward`). With no history a round's fields start empty, and the first pick
 // fills them. See the code-style skill.
 
-import { Alert } from 'react-native';
-
 import { ROUND_TIME_BOUNDS, type RoundTimeColumn } from '@domain/roundTimes';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
@@ -213,19 +211,4 @@ export function roundTimeToSave(
     .map(Number)
     .filter((n) => n !== roundNumber && after[column][n] !== before[column][n]);
   return { sec: picked.sec, roundNumbers: [roundNumber, ...followers.sort((a, b) => a - b)] };
-}
-
-/**
- * What a tap on Log says while the exercise's interval timer is out (GT-234): the timer logs the
- * rounds — or a mobility block — itself, and a hand log beside it would start a rest timer over the
- * running one.
- */
-export const TIMER_OUT_LOG_ALERT = {
-  title: 'Timer is running',
-  message: 'The timer logs this exercise itself. To log by hand, end it first.',
-} as const;
-
-/** Log while the exercise's timer is out: the timer logs it, so the tap says so instead (GT-234). */
-export function alertTimerOut(): void {
-  Alert.alert(TIMER_OUT_LOG_ALERT.title, TIMER_OUT_LOG_ALERT.message);
 }
