@@ -19,13 +19,21 @@ export const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/faint'],
   },
-  // Between groups: what SectionGap leaves between Library's groups.
   content: {
     paddingBottom: SPACING['space/section'],
-    gap: SPACING['space/row'],
+    gap: SPACING['space/section'],
+  },
+  group: {
+    gap: SPACING['space/gap'],
+  },
+  groupLabel: {
+    fontSize: TYPOGRAPHY['type/label'].fontSize,
+    fontWeight: TYPOGRAPHY['type/label'].fontWeight,
+    letterSpacing: TYPOGRAPHY['type/label'].letterSpacing,
+    textTransform: TYPOGRAPHY['type/label'].textTransform,
+    color: COLORS['text/muted'],
   },
   activeCard: {
-    marginTop: SPACING['space/list-block-gap'],
     backgroundColor: COLORS['surface/card'],
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['accent/border'],
