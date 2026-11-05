@@ -92,6 +92,7 @@ const EXPECTED_SPACING_TOKENS = [
   'space/row',
   'space/icon-drop',
   'space/list-block-gap',
+  'space/tag-gap',
   'space/xxs',
   'space/chip-y',
   'space/set-row-y',

@@ -10,27 +10,15 @@
 // Fully controlled, the same way the screens that render it are: no local state, just the active
 // filters and a live result count in, callbacks out.
 //
-// JSX/rendering only — styles live in ExerciseFilterRowStyles.ts and pure helpers in
-// ExerciseLibraryScreenLogic.ts (this row has none of its own beyond what that file already
-// exports), per the code-style skill.
+// The row itself — chip, active values, Reset — is design/components/FilterRow (GT-217, shared
+// with the template list); this file only names the exercise filters' active values.
 
-import { Pressable, Text, View } from 'react-native';
-
-import { Chip } from '@design/components/Chip';
+import { FilterRow, type FilterRowChip } from '@design/components/FilterRow';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
-import { SlidersIcon } from '@design/icons/SlidersIcon';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
-import { tapTargetSlop } from '@design/shapes';
-import { SIZES } from '@design/tokens';
 
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
-import {
-  filtersButtonLabel,
-  hasActiveFilters,
-  sectionDotColor,
-  sourceLabel,
-} from './ExerciseLibraryScreenLogic';
-import { styles } from './ExerciseFilterRowStyles';
+import { sectionDotColor, sourceLabel } from './ExerciseLibraryScreenLogic';
 
 export type ExerciseFilterRowProps = {
   filters: ExerciseLibraryFilters;
@@ -45,42 +33,29 @@ export function ExerciseFilterRow({
   onRequestFilters,
   onResetFilters,
 }: ExerciseFilterRowProps) {
-  const filtersActive = hasActiveFilters(filters);
+  const chips: FilterRowChip[] = [
+    ...(filters.muscleGroups ?? []).map((muscleGroup) => ({
+      key: `muscle-group-${muscleGroup}`,
+      label: getMuscleGroupLabel(muscleGroup),
+      dotColor: sectionDotColor(muscleGroup),
+    })),
+    ...(filters.types ?? []).map((type) => ({
+      key: `type-${type}`,
+      label: getExerciseTypeLabel(type),
+    })),
+    ...(filters.sources ?? []).map((source) => ({
+      key: `source-${source}`,
+      label: sourceLabel(source),
+    })),
+    ...(filters.performedOnly ? [{ key: 'performed-only', label: 'Performed only' }] : []),
+  ];
 
   return (
-    <View style={styles.filterRow}>
-      <Chip
-        variant="action"
-        label={filtersButtonLabel(filters, resultCount)}
-        icon={SlidersIcon}
-        active={filtersActive}
-        onPress={onRequestFilters}
-      />
-      {filters.muscleGroups?.map((muscleGroup) => (
-        <Chip
-          key={`muscle-group-${muscleGroup}`}
-          variant="static"
-          label={getMuscleGroupLabel(muscleGroup)}
-          dotColor={sectionDotColor(muscleGroup)}
-        />
-      ))}
-      {filters.types?.map((type) => (
-        <Chip key={`type-${type}`} variant="static" label={getExerciseTypeLabel(type)} />
-      ))}
-      {filters.sources?.map((source) => (
-        <Chip key={`source-${source}`} variant="static" label={sourceLabel(source)} />
-      ))}
-      {filters.performedOnly && <Chip variant="static" label="Performed only" />}
-      {filtersActive && (
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={tapTargetSlop(SIZES['size/chip'])}
-          style={styles.resetChip}
-          onPress={onResetFilters}
-        >
-          <Text style={styles.resetChipLabel}>Reset</Text>
-        </Pressable>
-      )}
-    </View>
+    <FilterRow
+      chips={chips}
+      resultCount={resultCount}
+      onRequestFilters={onRequestFilters}
+      onReset={onResetFilters}
+    />
   );
 }

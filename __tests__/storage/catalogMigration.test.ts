@@ -1,6 +1,6 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import { EXERCISE_CATALOG } from '@domain/exerciseCatalog';
-import type { MesoTemplate } from '@domain/plan';
+import { TEMPLATE_TAG_GROUP, type MesoTemplate } from '@domain/plan';
 import { TEMPLATE_CATALOG } from '@domain/templateCatalog';
 import type { Unsaved } from '@domain/timestamps';
 import { migrateToLatest } from '@storage/sqlite/migrations';
@@ -247,6 +247,21 @@ describe('the templates the migrations put in the database', () => {
     close();
   });
 
+  test('a tag this build does not know is dropped on read, not shown or thrown on (GT-217)', async () => {
+    // A database written by a newer build — one that ships, say, a `beginner` tag — opened by this one.
+    const { db, close } = await migratedTestDatabase();
+    await db.run(
+      sql.raw(
+        `UPDATE meso_template SET tags = '["beginner","full-body"]' WHERE id = 'upper-lower'`,
+      ),
+    );
+
+    const read = await createSqliteRepositories(db).templateRepo.getById('upper-lower');
+
+    expect(read?.tags).toEqual(['full-body']);
+    close();
+  });
+
   test('refer only to exercises the catalog has, in a plan that is well formed', () => {
     const exerciseIds = new Set<string>(EXERCISE_CATALOG.map((exercise) => exercise.id));
 
@@ -254,6 +269,9 @@ describe('the templates the migrations put in the database', () => {
       TEMPLATE_CATALOG.length,
     );
     for (const template of TEMPLATE_CATALOG) {
+      // GT-217: every catalog template says what it is and has a focus to be filtered by.
+      expect(template.description?.trim()).toBeTruthy();
+      expect(template.tags?.some((tag) => TEMPLATE_TAG_GROUP[tag] === 'focus')).toBe(true);
       expect(template.source).toBe('catalog');
       expect(template.isHidden).toBe(false);
       template.weekPlan.days.forEach((day, index) => {

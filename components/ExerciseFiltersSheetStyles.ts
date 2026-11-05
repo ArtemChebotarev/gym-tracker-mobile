@@ -7,22 +7,10 @@ import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } fro
 import { circle } from '@design/shapes';
 
 export const styles = StyleSheet.create({
-  section: {
-    marginBottom: SPACING['space/section'],
-  },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: SPACING['space/gap-tight'],
-  },
-  resetButton: {
-    minHeight: SIZES['size/chip'],
-    justifyContent: 'center',
-  },
-  reset: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
-    color: COLORS.accent,
   },
   // A muscle-group chip's selected colors are family-tinted (see getMuscleGroupChipColors in
   // design/muscleGroupColor.ts) and applied as an inline style override, the same pattern
@@ -62,36 +50,7 @@ export const styles = StyleSheet.create({
   optionRows: {
     gap: SPACING['space/gap'],
   },
-  sourceOption: {
-    flex: 1,
-    alignItems: 'center',
-    borderWidth: BORDER_WIDTHS['border/default'],
-    borderRadius: RADII['radius/field'],
-    paddingVertical: SPACING['space/row'],
-  },
-  sourceOptionUnselected: {
-    backgroundColor: COLORS['surface/card'],
-    borderColor: COLORS['border/default'],
-  },
-  sourceOptionSelected: {
-    backgroundColor: COLORS['accent/bg'],
-    borderColor: COLORS['accent/border'],
-  },
-  sourceOptionLabel: {
-    fontSize: TYPOGRAPHY['type/body'].fontSize,
-  },
-  sourceOptionLabelUnselected: {
-    color: COLORS['text/secondary'],
-  },
-  sourceOptionLabelSelected: {
-    color: COLORS.accent,
-  },
   pressed: {
     opacity: OPACITY['opacity/pressed'],
-  },
-  // Stretches the single confirm Button to the sheet's full width inside BottomSheet's
-  // flex-row, flex-end footer.
-  footerButton: {
-    flex: 1,
   },
 });

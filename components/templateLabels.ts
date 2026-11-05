@@ -3,7 +3,8 @@
 // (TemplatePreviewSheet.tsx). The list groups templates by days a week, so its rows carry the bare
 // name; the sheet stands alone and names the days in its title.
 
-import type { MesoTemplate } from '@domain/plan';
+import type { ListRowBadge } from '@design/components/ListRow';
+import type { MesoTemplate, TemplateTag } from '@domain/plan';
 import { templateDayCount } from '@domain/templateListing';
 
 function plural(count: number, noun: string): string {
@@ -39,4 +40,33 @@ export function formatTemplateSubtitle(
   const exercises = template.weekPlan.days.flatMap((day) => day.exercises);
   const sets = exercises.reduce((total, exercise) => total + exercise.sets, 0);
   return `${plural(exercises.length, 'exercise')} · ${plural(sets, 'set')} a week`;
+}
+
+const TAG_LABELS: Record<TemplateTag, string> = {
+  'full-body': 'Full body',
+  upper: 'Upper body',
+  lower: 'Lower body',
+  hybrid: 'Hybrid',
+};
+
+/** A template tag as the list, the filter row and the Filters sheet name it (GT-217). */
+export function templateTagLabel(tag: TemplateTag): string {
+  return TAG_LABELS[tag];
+}
+
+/**
+ * A template's tags as its row shows them, under the description (GT-217, canvas «Шаблоны»,
+ * `TemplatesRows`): grey pills, `Hybrid` in the accent — the one tag a new user is asked to
+ * notice, and the one the Filters sheet explains.
+ */
+export function templateRowTags(template: Pick<MesoTemplate, 'tags'>): ListRowBadge[] {
+  return (template.tags ?? []).map((tag) => ({
+    label: templateTagLabel(tag),
+    variant: tag === 'hybrid' ? 'accent' : 'neutral',
+  }));
+}
+
+/** A Days option in the Filters sheet, and its chip in the filter row: `2 days`. */
+export function templateDayCountLabel(dayCount: number): string {
+  return plural(dayCount, 'day');
 }

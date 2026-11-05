@@ -84,6 +84,8 @@ exports[`ListRow a badge sits in a wrapper so the row can centre it 1`] = `
               {
                 "backgroundColor": "#1A1C1F",
               },
+              false,
+              false,
             ]
           }
         >
@@ -407,6 +409,10 @@ exports[`ListRow a block row keeps the library row's content: title, equipment, 
             {
               "backgroundColor": "#1A1C1F",
             },
+            {
+              "backgroundColor": "#262A30",
+            },
+            false,
           ]
         }
       >

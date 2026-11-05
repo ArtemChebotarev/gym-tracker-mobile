@@ -57,6 +57,9 @@ export const templates = sqliteTable('meso_template', {
   name: text('name').notNull(),
   source: text('source').notNull().$type<MesoTemplate['source']>(),
   description: text('description'),
+  // What the template list filters by (GT-217). Plain strings, not `TemplateTag`: a database written
+  // by a newer build may hold a tag this one does not know, and the mapper drops it on read.
+  tags: text('tags', { mode: 'json' }).notNull().default([]).$type<string[]>(),
   weekPlan: text('week_plan', { mode: 'json' }).notNull().$type<WeekPlan>(),
   isHidden: integer('is_hidden', { mode: 'boolean' }).notNull(),
   ...timestamps,

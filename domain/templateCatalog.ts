@@ -13,6 +13,13 @@
 // - Every edit here needs a new migration (the test "is exactly the catalog this build ships"
 //   fails until there is one), so a template goes in once it is settled, not as a draft.
 //
+// Tags (GT-217) say what a template is filtered by. Focus is read off the week's strength sets:
+// `upper` where at least three quarters of them work the upper body (Push / Pull / Legs, 81%),
+// `lower` where about half work the legs (Full Body Lower Focus, 50%), `full-body` for a week that
+// trains the whole body — every other template, a split like Upper / Lower included, since over
+// the week it covers both. `hybrid` marks the templates that mix strength with power, boxing or
+// movement work.
+//
 // Names carry no number of days: the list appends it itself, from `weekPlan` ("Full Body · 3 days").
 // Day names are `Day N` only.
 import type { MesoTemplate } from './plan';
@@ -23,6 +30,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
     id: 'upper-lower',
     name: 'Upper / Lower',
     description: 'Upper and lower body on alternating days',
+    tags: ['full-body'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -82,6 +90,8 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
   {
     id: 'push-pull-legs',
     name: 'Push / Pull / Legs',
+    description: 'Push, pull and legs days, with most of the work on the upper body',
+    tags: ['upper'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -150,6 +160,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
     id: 'full-body-starter',
     name: 'Full Body Starter',
     description: 'Two easy full-body days, mostly bodyweight',
+    tags: ['full-body'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -186,6 +197,8 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
   {
     id: 'full-body-lower-focus',
     name: 'Full Body Lower Focus',
+    description: 'Two full-body days with more legs',
+    tags: ['full-body', 'lower'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -221,6 +234,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
     id: 'upper-lower-boxing-hybrid',
     name: 'Upper / Lower + Boxing Hybrid',
     description: 'Upper and lower days, with power, boxing and a cooldown on the lower ones',
+    tags: ['full-body', 'hybrid'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {
@@ -285,6 +299,7 @@ export const TEMPLATE_CATALOG: readonly Unsaved<MesoTemplate>[] = [
     id: 'hybrid-home-workout',
     name: 'Hybrid Home Workout',
     description: 'Dumbbells, a band and a rope at home: strength, skills and light movement days',
+    tags: ['full-body', 'hybrid'],
     source: 'catalog',
     isHidden: false,
     weekPlan: {

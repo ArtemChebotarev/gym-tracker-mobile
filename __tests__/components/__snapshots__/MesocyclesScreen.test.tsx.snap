@@ -316,6 +316,8 @@ exports[`MesocyclesScreen snapshots Active group 1`] = `
                       {
                         "backgroundColor": "#232B0A",
                       },
+                      false,
+                      false,
                     ]
                   }
                 >
@@ -1760,6 +1762,8 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                       {
                         "backgroundColor": "#232B0A",
                       },
+                      false,
+                      false,
                     ]
                   }
                 >

@@ -42,7 +42,12 @@
 // rounded corner, about 56pt tall, a small gap between neighbours — instead of a divider under it.
 // Same content, same accessories, same tap targets: only the frame changes, so one row serves both
 // a divided list and a list of blocks rather than a second, copied row component. `divider` stays
-// the default, so every list that did not ask for blocks looks as it did.
+// the default, so every list that did not ask for blocks looks as it did. On a block the badge
+// sits on `surface/card`, so it is drawn for a card (`Badge`'s `surface`), or it lost its pill.
+//
+// `tags` (GT-217, canvas «Шаблоны», `TemplatesRows`) are a line of compact badges under the
+// subtitle — what the row's thing is filtered by (a template's focus, `Hybrid`). The same
+// `ListRowBadge` shape as `badge`, so a tag looks like a badge everywhere else, only smaller.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -91,6 +96,8 @@ export type ListRowProps = {
   subtitle?: string;
   leading?: ListRowLeading;
   badge?: ListRowBadge;
+  /** Compact badges under the subtitle (GT-217). */
+  tags?: readonly ListRowBadge[];
   trailing?: ListRowTrailing;
   onPress?: () => void;
   /** Defaults to `divider`. */
@@ -103,12 +110,19 @@ export function ListRow({
   subtitle,
   leading,
   badge,
+  tags,
   trailing,
   onPress,
   variant = 'divider',
 }: ListRowProps) {
+  const badgeSurface = variant === 'block' ? 'card' : 'page';
   const container = variant === 'block' ? styles.block : styles.container;
-  const row = variant === 'block' ? [styles.row, styles.blockRow] : styles.row;
+  // A two-line block is centred by its own height and only needs its text kept off the border. A
+  // block with tags runs past that height to three lines, and pressed to that minimum it read as
+  // cramped (Artem, GT-217): it takes a divided row's padding instead, as the mockup's
+  // `TemplatesList` pads its rows.
+  const hasTags = tags !== undefined && tags.length > 0;
+  const row = variant === 'block' && !hasTags ? [styles.row, styles.blockRow] : styles.row;
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
   const body = (
@@ -130,13 +144,26 @@ export function ListRow({
             {subtitle}
           </Text>
         )}
+        {tags !== undefined && tags.length > 0 && (
+          <View style={styles.tags}>
+            {tags.map((tag) => (
+              <Badge
+                key={tag.label}
+                label={tag.label}
+                variant={tag.variant}
+                surface={badgeSurface}
+                size="compact"
+              />
+            ))}
+          </View>
+        )}
       </View>
       {badge !== undefined && (
         // Badge pins itself to the top (alignSelf), which in this row would leave it riding above
         // the pill and `⋯` beside it; the wrapper takes the row's own centring instead, the same
         // way the workout header wraps its Deload badge.
         <View>
-          <Badge label={badge.label} variant={badge.variant} />
+          <Badge label={badge.label} variant={badge.variant} surface={badgeSurface} />
         </View>
       )}
     </>
@@ -339,6 +366,12 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY['type/meta'].fontSize,
     fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
     color: COLORS['text/faint'],
+  },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING['space/tag-gap'],
+    marginTop: SPACING['space/tag-gap'],
   },
   chevron: {
     fontSize: TYPOGRAPHY['type/value'].fontSize,

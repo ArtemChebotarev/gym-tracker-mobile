@@ -12,8 +12,14 @@
 // first left sections out on the grounds that the day count was in every row's title, and the
 // count moved from the rows into the headers instead). Within a section, by name.
 //
-// No Filters button, chips or muscle-group colors — deliberately left out of v1.0 (08.10, "Чего
-// нет в v1.0"). Every row has a subtitle — see `formatTemplateSubtitle`.
+// Rows are blocks under plain group labels, as in the exercise library (GT-217, after GT-222):
+// the template's description, then its tags (`templateRowTags`). Under the search field, the same
+// Filters row as the library's (`FilterRow`): the Filters chip, a chip per applied value, Reset.
+// It lifts 08.10's "no filters in v1.0" (GT-217). The sheet it opens is the caller's — see
+// MesoTemplateEditorScreen — and so are the applied filters, like the search text.
+//
+// A search that finds nothing says so and offers to clear the search; filters that leave nothing,
+// with no search typed, say so and offer to reset them — the library's two empty states.
 //
 // JSX only — pure helpers live in TemplateListLogic.ts, per AGENTS.md's "Code organization".
 
@@ -21,14 +27,21 @@ import { useMemo } from 'react';
 import { SectionList } from 'react-native';
 
 import { EmptyState } from '@design/components/EmptyState';
+import { FilterRow } from '@design/components/FilterRow';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
-import { listBleed, SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionGap, SectionHeader } from '@design/components/SectionHeader';
 import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
-import { groupTemplatesByDayCount, listTemplates } from '@domain/templateListing';
+import {
+  groupTemplatesByDayCount,
+  hasActiveTemplateFilters,
+  listTemplates,
+  type TemplateFilters,
+} from '@domain/templateListing';
 
-import { formatTemplateSubtitle, templateSectionTitle } from './templateLabels';
+import { formatTemplateSubtitle, templateRowTags, templateSectionTitle } from './templateLabels';
+import { templateFilterChips } from './TemplateFiltersSheetLogic';
 import { templateBadge } from './TemplateListLogic';
 
 const BLEED = listBleed();
@@ -37,6 +50,10 @@ export type TemplateListProps = {
   templates: readonly MesoTemplate[];
   search: string;
   onSearchChange: (search: string) => void;
+  /** The applied filters (GT-217). */
+  filters: TemplateFilters;
+  onRequestFilters: () => void;
+  onResetFilters: () => void;
   onSelectTemplate: (template: MesoTemplate) => void;
 };
 
@@ -44,9 +61,15 @@ export function TemplateList({
   templates,
   search,
   onSearchChange,
+  filters,
+  onRequestFilters,
+  onResetFilters,
   onSelectTemplate,
 }: TemplateListProps) {
-  const visible = useMemo(() => listTemplates(templates, search), [templates, search]);
+  const visible = useMemo(
+    () => listTemplates(templates, search, filters),
+    [templates, search, filters],
+  );
   const sections = useMemo(
     () =>
       groupTemplatesByDayCount(visible).map((group) => ({
@@ -57,10 +80,18 @@ export function TemplateList({
     [visible],
   );
   const trimmedSearch = search.trim();
+  const filtersActive = hasActiveTemplateFilters(filters);
 
   return (
     <>
       <SearchField value={search} onChangeText={onSearchChange} placeholder="Search templates" />
+
+      <FilterRow
+        chips={templateFilterChips(filters)}
+        resultCount={visible.length}
+        onRequestFilters={onRequestFilters}
+        onReset={onResetFilters}
+      />
 
       {visible.length === 0 && trimmedSearch.length > 0 ? (
         <EmptyState
@@ -69,6 +100,14 @@ export function TemplateList({
           description="Check the spelling or clear the search."
           actionLabel="Clear search"
           onAction={() => onSearchChange('')}
+        />
+      ) : visible.length === 0 && filtersActive ? (
+        <EmptyState
+          icon={SearchIcon}
+          title="No templates match your filters"
+          description="Try different filters, or reset them."
+          actionLabel="Reset filters"
+          onAction={onResetFilters}
         />
       ) : (
         <SectionList
@@ -81,12 +120,15 @@ export function TemplateList({
           sections={sections}
           keyExtractor={(template) => template.id}
           renderSectionHeader={({ section }) => (
-            <SectionHeader title={section.title} count={section.data.length} />
+            <SectionHeader title={section.title} count={section.data.length} variant="label" />
           )}
+          renderSectionFooter={() => <SectionGap />}
           renderItem={({ item }) => (
             <ListRow
+              variant="block"
               title={item.name}
               subtitle={formatTemplateSubtitle(item)}
+              tags={templateRowTags(item)}
               badge={templateBadge(item)}
               trailing={{ type: 'chevron' }}
               onPress={() => onSelectTemplate(item)}

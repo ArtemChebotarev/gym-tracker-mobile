@@ -76,8 +76,8 @@ beforeEach(async () => {
   for (const shipped of await repos.templateRepo.getAll()) {
     await repos.templateRepo.deleteById(shipped.id);
   }
-  await repos.templateRepo.create(UPPER_LOWER);
-  await repos.templateRepo.create(FULL_BODY);
+  await repos.templateRepo.create({ ...UPPER_LOWER, tags: ['full-body', 'hybrid'] });
+  await repos.templateRepo.create({ ...FULL_BODY, tags: ['full-body'] });
 
   mockBack.mockClear();
   mockDismissTo.mockClear();
@@ -252,5 +252,36 @@ describe('TemplateMesocycleRoute — Save and Start', () => {
         .flatMap((exercise) => exercise.setTargets)
         .every((target) => target.targetReps === undefined && target.suggestedWeight === undefined),
     ).toBe(true);
+  });
+});
+
+describe('TemplateMesocycleRoute — filters (GT-217)', () => {
+  test('a draft in the sheet counts live, applies on Show, and Reset brings every template back', async () => {
+    renderRoute();
+    expect(await screen.findByText('Full Body')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Filters'));
+    fireEvent(screen.getByRole('switch', { name: 'Hybrid only' }), 'valueChange', true);
+    // Nothing applied yet: the list is as it was, only the button counts the draft.
+    expect(screen.getByText('Full Body')).toBeTruthy();
+    fireEvent.press(await screen.findByRole('button', { name: 'Show 1 template' }));
+
+    await waitFor(() => expect(screen.queryByText('Full Body')).toBeNull());
+    expect(screen.getByText('Upper / Lower')).toBeTruthy();
+    expect(screen.getByText('Filters (1)')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Reset'));
+    expect(await screen.findByText('Full Body')).toBeTruthy();
+    expect(screen.getByText('Filters')).toBeTruthy();
+  });
+
+  test('Reset in the sheet clears the draft, and the count with it', async () => {
+    renderRoute();
+    expect(await screen.findByText('Full Body')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Filters'));
+    fireEvent(screen.getByRole('switch', { name: 'Hybrid only' }), 'valueChange', true);
+    fireEvent.press(screen.getByRole('button', { name: 'Reset' }));
+    expect(await screen.findByRole('button', { name: 'Show 2 templates' })).toBeTruthy();
   });
 });

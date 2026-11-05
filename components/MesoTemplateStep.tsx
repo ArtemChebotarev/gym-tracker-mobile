@@ -8,6 +8,7 @@
 import { View } from 'react-native';
 
 import type { MesoTemplate } from '@domain/plan';
+import type { TemplateFilters } from '@domain/templateListing';
 
 import { styles } from './MesoTemplateStepStyles';
 import { TemplateList } from './TemplateList';
@@ -16,6 +17,9 @@ export type MesoTemplateStepProps = {
   templates: readonly MesoTemplate[];
   search: string;
   onSearchChange: (search: string) => void;
+  filters: TemplateFilters;
+  onRequestFilters: () => void;
+  onResetFilters: () => void;
   onSelectTemplate: (template: MesoTemplate) => void;
 };
 

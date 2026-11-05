@@ -7,6 +7,7 @@ import {
   type ExerciseType,
   type MuscleGroup,
 } from '@domain/catalog';
+import { filterApplyLabel } from '@design/components/FilterSheet';
 import { getMuscleGroupLabel } from '@design/muscleGroupLabel';
 import type { ExerciseLibraryFilters } from './ExerciseLibraryScreen';
 
@@ -57,8 +58,5 @@ export function toggleSource(
 
 /** Confirm-button copy (08.6, "Filters — лист": `Show 12 exercises`, or `No matches` at zero). */
 export function applyButtonLabel(resultCount: number): string {
-  if (resultCount === 0) {
-    return 'No matches';
-  }
-  return `Show ${resultCount} exercise${resultCount === 1 ? '' : 's'}`;
+  return filterApplyLabel(resultCount, 'exercise');
 }

@@ -26,9 +26,8 @@ import {
   type ExerciseType,
   type MuscleGroup,
 } from '@domain/catalog';
-import { BottomSheet } from '@design/components/BottomSheet';
-import { Button } from '@design/components/Button';
-import { fieldStyles } from '@design/components/fieldStyles';
+import { FilterOption } from '@design/components/FilterOption';
+import { FilterSection, FilterSheet } from '@design/components/FilterSheet';
 import { Toggle } from '@design/components/Toggle';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
 import { getMuscleGroupChipColors } from '@design/muscleGroupColor';
@@ -81,33 +80,16 @@ export function ExerciseFiltersSheet({
   animated,
 }: ExerciseFiltersSheetProps) {
   return (
-    <BottomSheet
+    <FilterSheet
       visible={visible}
       onClose={onClose}
-      title="Filters"
+      onReset={onReset}
+      applyLabel={applyButtonLabel(resultCount)}
+      applyDisabled={resultCount === 0}
+      onApply={onApply}
       animated={animated}
-      action={
-        <Pressable
-          accessibilityRole="button"
-          onPress={onReset}
-          hitSlop={tapTargetSlop(SIZES['size/chip'])}
-          style={styles.resetButton}
-        >
-          <Text style={styles.reset}>Reset</Text>
-        </Pressable>
-      }
-      footer={
-        <View style={styles.footerButton}>
-          <Button
-            label={applyButtonLabel(resultCount)}
-            onPress={onApply}
-            disabled={resultCount === 0}
-          />
-        </View>
-      }
     >
-      <View style={styles.section}>
-        <Text style={fieldStyles.label}>Muscle group</Text>
+      <FilterSection title="Muscle group">
         <View style={styles.chipRow}>
           {FILTER_MUSCLE_GROUPS.map((muscleGroup) => (
             <MuscleGroupChip
@@ -118,10 +100,9 @@ export function ExerciseFiltersSheet({
             />
           ))}
         </View>
-      </View>
+      </FilterSection>
 
-      <View style={styles.section}>
-        <Text style={fieldStyles.label}>Type</Text>
+      <FilterSection title="Type">
         <View style={styles.optionRows}>
           {TYPE_ROWS.map((row) => (
             <View key={row.join()} style={styles.sourceRow}>
@@ -136,10 +117,9 @@ export function ExerciseFiltersSheet({
             </View>
           ))}
         </View>
-      </View>
+      </FilterSection>
 
-      <View style={styles.section}>
-        <Text style={fieldStyles.label}>Source</Text>
+      <FilterSection title="Source">
         <View style={styles.sourceRow}>
           {SOURCES.map((source) => (
             <FilterOption
@@ -150,17 +130,17 @@ export function ExerciseFiltersSheet({
             />
           ))}
         </View>
-      </View>
+      </FilterSection>
 
-      <View style={styles.section}>
+      <FilterSection>
         <Toggle
           label="Performed only"
           description="Has at least one logged set"
           value={filters.performedOnly ?? false}
           onValueChange={(value) => onChangeFilters({ ...filters, performedOnly: value })}
         />
-      </View>
-    </BottomSheet>
+      </FilterSection>
+    </FilterSheet>
   );
 }
 
@@ -197,38 +177,6 @@ function MuscleGroupChip({ muscleGroup, selected, onPress }: MuscleGroupChipProp
         ]}
       >
         {getMuscleGroupLabel(muscleGroup)}
-      </Text>
-    </Pressable>
-  );
-}
-
-type FilterOptionProps = {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-};
-
-// Source and Type are both a few full-width options rather than pills (see the note on
-// `sourceRow` in the styles), so they are one component.
-function FilterOption({ label, selected, onPress }: FilterOptionProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.sourceOption,
-        selected ? styles.sourceOptionSelected : styles.sourceOptionUnselected,
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text
-        style={[
-          styles.sourceOptionLabel,
-          selected ? styles.sourceOptionLabelSelected : styles.sourceOptionLabelUnselected,
-        ]}
-      >
-        {label}
       </Text>
     </Pressable>
   );

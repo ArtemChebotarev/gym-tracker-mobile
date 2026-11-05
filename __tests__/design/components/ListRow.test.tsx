@@ -33,6 +33,26 @@ describe('ListRow', () => {
     expect(divided.borderBottomWidth).toBeGreaterThan(0);
   });
 
+  test('tags sit under the subtitle as compact badges, in the order given (GT-217)', () => {
+    render(
+      <ListRow
+        title="Upper / Lower + Boxing Hybrid"
+        subtitle="Upper and lower days"
+        tags={[{ label: 'Full body' }, { label: 'Hybrid', variant: 'accent' }]}
+        variant="block"
+      />,
+    );
+
+    const labels = screen.getAllByText(/^(Full body|Hybrid)$/).map((node) => node.props.children);
+    expect(labels).toEqual(['Full body', 'Hybrid']);
+  });
+
+  test('no tags, no tag line', () => {
+    const { toJSON } = render(<ListRow title="Bench press" subtitle="Chest" tags={[]} />);
+    const withoutProp = render(<ListRow title="Bench press" subtitle="Chest" />).toJSON();
+    expect(toJSON()).toEqual(withoutProp);
+  });
+
   test('a block row keeps the library row\'s content: title, equipment, last result, chevron', () => {
     const tree = render(
       <ListRow

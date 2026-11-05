@@ -36,6 +36,29 @@ export type WeekPlan = {
 export type MesoTemplateSource = 'catalog' | 'custom';
 
 /**
+ * What a template can be filtered by besides its number of days (GT-217, 08.10 "Шаг T"). One list
+ * rather than a field per filter: a tag added later — a level, a place — is a value here and a
+ * catalog migration, never a new column (Artem, 05.11.2026). A value is never renamed or removed
+ * once shipped: databases already hold it.
+ */
+export const TEMPLATE_TAGS = ['full-body', 'upper', 'lower', 'hybrid'] as const;
+
+export type TemplateTag = (typeof TEMPLATE_TAGS)[number];
+
+/**
+ * The filter a tag belongs to. Within one filter any selected tag lets a template through (Upper
+ * *or* Lower); across filters every one has to (Lower *and* Hybrid) — see `matchesTemplateFilters`.
+ */
+export type TemplateTagGroup = 'focus' | 'style';
+
+export const TEMPLATE_TAG_GROUP: Readonly<Record<TemplateTag, TemplateTagGroup>> = {
+  'full-body': 'focus',
+  upper: 'focus',
+  lower: 'focus',
+  hybrid: 'style',
+};
+
+/**
  * A reusable mesocycle blueprint: a `WeekPlan` plus the metadata needed to
  * offer it for selection. Templates carry no execution state — no statuses,
  * no dates, no actual performance data — only `createdAt`.
@@ -54,6 +77,8 @@ export type MesoTemplate = Timestamps & {
    * that has none — the list then falls back to the summary of its week.
    */
   description?: string;
+  /** What the template is filtered by (GT-217). Absent means none — a template saved by the user. */
+  tags?: readonly TemplateTag[];
   weekPlan: WeekPlan;
   isHidden: boolean;
 };
