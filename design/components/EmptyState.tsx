@@ -4,24 +4,36 @@
 // renders a way forward (08.0: "EmptyState всегда рендерит действие"). Reuses Button for the
 // action rather than a second button implementation.
 //
-// A second, `secondary` button may sit under the main one when an empty screen has two honest ways
+// The icon and the copy stand on the page, set large — the title at sheet-title size, the line at
+// body size, across the full width — since with nothing framing them they carry the screen by
+// themselves (a card around them was tried, and dropped). The actions sit apart, at the bottom of
+// the room, full width — where the thumb is.
+//
+// A second, `secondary` button may sit with the main one when an empty screen has two honest ways
 // forward — the Cycles tab's `Start from a template` and `Build from scratch` (08.10, GT-6). The
-// main one is still the one primary on the screen; both take the width of the wider, so the pair
-// reads as one block rather than two ragged buttons.
+// main one is still the one primary on the screen, and it comes last, nearest the thumb.
 //
 // The layout belongs here, not to the screens: the component fills whatever room is left under a
 // screen's header (a title, a back button or a search field — it doesn't care which) and centres
-// its content in it — a little above the geometric centre, where the eye puts the middle — so
-// every empty state sits the same way. A screen passes the icon, the copy
-// and the action, and `bottomInset` when something covers the bottom of that room (the tab bar).
+// the message in it — a little above the geometric centre, where the eye puts the middle — so every
+// empty state sits the same way. The actions float over the bottom of that room rather than take a
+// share of it, so the message stands in the same place whether one button is under it or two, and
+// tab to tab it doesn't jump. A screen passes the icon, the copy and the action, and `bottomInset`
+// when something covers the bottom of that room (the tab bar).
 //
-// `framed` is the newer look, being rolled out screen by screen: the icon and the copy on a card,
-// the buttons full width at the bottom of the room, the primary last.
+// The actions keep off the home indicator too, on a screen that doesn't (a detail screen whose
+// SafeAreaView covers only the top) — see useBottomEdge.
+//
+// A search screen shows an empty state with the keyboard still up. Then the circle goes and the
+// message and the actions stack just above the keyboard — the tab bar is behind it, so
+// `bottomInset` no longer counts — so the screen's one way forward, `Create "…"`, isn't under the
+// keyboard.
 
 import { StyleSheet, Text, View } from 'react-native';
 import type { IconComponent } from '../icons/IconFrame';
 import { circle } from '../shapes';
-import { BORDER_WIDTHS, COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { BORDER_WIDTHS, COLORS, ICON_SIZES, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
+import { useBottomEdge } from '../useBottomEdge';
 import { Button } from './Button';
 
 export type EmptyStateProps = {
@@ -31,15 +43,10 @@ export type EmptyStateProps = {
   description: string;
   actionLabel: string;
   onAction: () => void;
-  /** Room to leave at the bottom of the centred area — the tab bar's clearance on a tab screen. */
+  /** Room to leave at the bottom — the tab bar's clearance on a tab screen. */
   bottomInset?: number;
-  /** A second way forward, drawn as a `secondary` button under the main one. */
+  /** A second way forward, drawn as a `secondary` button above the main one. */
   secondaryAction?: { label: string; onPress: () => void };
-  /**
-   * Draws the message on a card, like the blocks the rest of the app is built of, and moves the
-   * actions to the bottom of the room. Workout and Cycles so far; the other empty states follow.
-   */
-  framed?: boolean;
 };
 
 export function EmptyState({
@@ -50,65 +57,50 @@ export function EmptyState({
   onAction,
   bottomInset = 0,
   secondaryAction,
-  framed = false,
 }: EmptyStateProps) {
-  const primary = <Button label={actionLabel} onPress={onAction} />;
-  const secondary = secondaryAction !== undefined && (
-    <Button label={secondaryAction.label} onPress={secondaryAction.onPress} variant="secondary" />
-  );
-  const message = (
-    <>
-      <View
-        testID="empty-state-icon"
-        style={[styles.iconCircle, framed && styles.iconCircleOnCard]}
-      >
-        <Icon size={ICON_SIZES['icon/empty']} color={COLORS.accent} />
-      </View>
-      <Text style={styles.title} numberOfLines={2}>
-        {title}
-      </Text>
-      <Text style={styles.description}>{description}</Text>
-    </>
-  );
+  const { ref, onLayout, keyboardOverlap, safeAreaShortfall } = useBottomEdge();
+  const raised = keyboardOverlap > 0;
+  // The tab bar's clearance already keeps off the home indicator; elsewhere the safe area may not.
+  const bottom = Math.max(bottomInset, safeAreaShortfall);
 
-  // Framed: the message sits on a card in the middle of the room, and the actions leave it for the
-  // bottom of the screen, full width, over the tab bar — where the thumb is, so the primary comes
-  // last, nearest to it. The actions float over the room rather than take a share of it: the card
-  // is centred in the whole room, so it stands in the same place whether one button is under it
-  // or two, and tab to tab it doesn't jump.
-  if (framed) {
-    return (
+  return (
+    <View ref={ref} onLayout={onLayout} style={styles.fill}>
       <View
         testID="empty-state"
         style={[
-          styles.framedContainer,
-          { paddingBottom: bottomInset + SPACING['space/empty-lift'] },
+          styles.container,
+          raised
+            ? [styles.containerRaised, { paddingBottom: keyboardOverlap + SPACING['space/screen'] }]
+            : { paddingBottom: bottom + SPACING['space/empty-lift'] },
         ]}
       >
-        <View testID="empty-state-card" style={styles.card}>
-          {message}
+        <View testID="empty-state-message" style={styles.message}>
+          {!raised && (
+            <View testID="empty-state-icon" style={styles.iconCircle}>
+              <Icon size={ICON_SIZES['icon/empty']} color={COLORS.accent} />
+            </View>
+          )}
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+          <Text style={styles.description}>{description}</Text>
         </View>
         <View
           testID="empty-state-actions"
-          style={[styles.bottomAction, { bottom: bottomInset + SPACING['space/screen'] }]}
+          style={
+            raised
+              ? styles.actionsRaised
+              : [styles.actions, { bottom: bottom + SPACING['space/screen'] }]
+          }
         >
-          {secondary}
-          {primary}
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <View
-      testID="empty-state"
-      style={[styles.container, { paddingBottom: bottomInset + SPACING['space/empty-lift'] }]}
-    >
-      <View style={styles.content}>
-        {message}
-        <View style={styles.action}>
-          {primary}
-          {secondary}
+          {secondaryAction !== undefined && (
+            <Button
+              label={secondaryAction.label}
+              onPress={secondaryAction.onPress}
+              variant="secondary"
+            />
+          )}
+          <Button label={actionLabel} onPress={onAction} />
         </View>
       </View>
     </View>
@@ -116,34 +108,22 @@ export function EmptyState({
 }
 
 const styles = StyleSheet.create({
+  fill: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: SPACING['space/screen'],
   },
-  content: {
+  // Keyboard up: the message and the actions stack at the bottom of what is left, nothing floats.
+  containerRaised: {
+    justifyContent: 'flex-end',
+    gap: SPACING['space/xl'],
+  },
+  message: {
     alignItems: 'center',
     gap: SPACING['space/gap-tight'],
-  },
-  framedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: SPACING['space/screen'],
-  },
-  bottomAction: {
-    position: 'absolute',
-    left: SPACING['space/screen'],
-    right: SPACING['space/screen'],
-    gap: SPACING['space/gap-tight'],
-  },
-  card: {
-    alignItems: 'center',
-    gap: SPACING['space/gap-tight'],
-    backgroundColor: COLORS['surface/card'],
-    borderRadius: RADII['radius/control'],
-    paddingHorizontal: SPACING['space/row'],
-    paddingVertical: SPACING['space/empty-card-y'],
   },
   iconCircle: {
     ...circle(SIZES['size/empty-icon']),
@@ -154,27 +134,25 @@ const styles = StyleSheet.create({
     borderColor: COLORS['border/default'],
     marginBottom: SPACING['space/md'],
   },
-  // On the card the circle would vanish into the same fill, so it sinks to the page colour.
-  iconCircleOnCard: {
-    backgroundColor: COLORS['surface/page'],
-  },
   title: {
-    maxWidth: SIZES['size/empty-text'],
-    fontSize: TYPOGRAPHY['type/card-title'].fontSize,
-    fontWeight: TYPOGRAPHY['type/card-title'].fontWeight,
+    fontSize: TYPOGRAPHY['type/sheet-title'].fontSize,
+    fontWeight: TYPOGRAPHY['type/sheet-title'].fontWeight,
     color: COLORS['text/primary'],
     textAlign: 'center',
   },
   description: {
-    maxWidth: SIZES['size/empty-text'],
-    fontSize: TYPOGRAPHY['type/meta'].fontSize,
-    fontWeight: TYPOGRAPHY['type/meta'].fontWeight,
+    fontSize: TYPOGRAPHY['type/body'].fontSize,
+    fontWeight: TYPOGRAPHY['type/body'].fontWeight,
     color: COLORS['text/secondary'],
     textAlign: 'center',
   },
-  action: {
-    marginTop: SPACING['space/gap'],
-    alignItems: 'stretch',
+  actions: {
+    position: 'absolute',
+    left: SPACING['space/screen'],
+    right: SPACING['space/screen'],
+    gap: SPACING['space/gap-tight'],
+  },
+  actionsRaised: {
     gap: SPACING['space/gap-tight'],
   },
 });

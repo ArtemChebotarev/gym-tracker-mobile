@@ -332,11 +332,7 @@ export function WorkoutScreen({
               bottomInset={onBack === undefined ? tabBarClearance : 0}
             />
           ) : (
-            <EmptyState
-              {...fallback}
-              framed
-              bottomInset={onBack === undefined ? tabBarClearance : 0}
-            />
+            <EmptyState {...fallback} bottomInset={onBack === undefined ? tabBarClearance : 0} />
           )}
         </RootScreen>
       </View>

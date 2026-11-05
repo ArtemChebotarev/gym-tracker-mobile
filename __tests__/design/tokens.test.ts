@@ -106,7 +106,6 @@ const EXPECTED_SPACING_TOKENS = [
   'space/coachmark-button',
   'space/dialog',
   'space/dialog-y',
-  'space/empty-card-y',
   'space/empty-lift',
 ];
 
