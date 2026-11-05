@@ -1,5 +1,7 @@
 import {
+  dayOptionRows,
   FOCUS_TAGS,
+  focusOptionRows,
   optionRows,
   isHybridOnly,
   setHybridOnly,
@@ -50,5 +52,13 @@ describe('TemplateFiltersSheetLogic (GT-217)', () => {
     expect(optionRows([2, 3, 4, 5, 6], 4)).toEqual([[2, 3, 4, 5], [6]]);
     expect(optionRows(['a', 'b', 'c', 'd'], 3)).toEqual([['a', 'b', 'c'], ['d']]);
     expect(optionRows([], 3)).toEqual([]);
+  });
+
+  test('days go four to a row, focus three', () => {
+    expect(dayOptionRows([2, 3, 4, 5, 6])).toEqual([[2, 3, 4, 5], [6]]);
+    expect(focusOptionRows(['full-body', 'upper', 'lower', 'hybrid'])).toEqual([
+      ['full-body', 'upper', 'lower'],
+      ['hybrid'],
+    ]);
   });
 });

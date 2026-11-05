@@ -55,8 +55,18 @@ export function optionRows<T>(values: readonly T[], perRow: number): T[][] {
   return rows;
 }
 
-export const DAY_OPTIONS_PER_ROW = 4;
-export const FOCUS_OPTIONS_PER_ROW = 3;
+const DAY_OPTIONS_PER_ROW = 4;
+const FOCUS_OPTIONS_PER_ROW = 3;
+
+/** The Days options, four to a row. */
+export function dayOptionRows(dayCounts: readonly number[]): number[][] {
+  return optionRows(dayCounts, DAY_OPTIONS_PER_ROW);
+}
+
+/** The Focus options, three to a row — longer labels than the days'. */
+export function focusOptionRows(tags: readonly TemplateTag[]): TemplateTag[][] {
+  return optionRows(tags, FOCUS_OPTIONS_PER_ROW);
+}
 
 /** The confirm button: `Show 3 templates`, or `No matches` at zero. */
 export function templateApplyLabel(resultCount: number): string {

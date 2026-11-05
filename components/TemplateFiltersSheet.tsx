@@ -22,10 +22,9 @@ import type { TemplateFilters } from '@domain/templateListing';
 
 import { templateDayCountLabel, templateTagLabel } from './templateLabels';
 import {
-  DAY_OPTIONS_PER_ROW,
-  FOCUS_OPTIONS_PER_ROW,
+  dayOptionRows,
+  focusOptionRows,
   FOCUS_TAGS,
-  optionRows,
   isHybridOnly,
   setHybridOnly,
   templateApplyLabel,
@@ -67,7 +66,7 @@ export function TemplateFiltersSheet({
     >
       <FilterSection title="Days a week">
         <View style={styles.optionRows}>
-          {optionRows(dayCountOptions, DAY_OPTIONS_PER_ROW).map((row) => (
+          {dayOptionRows(dayCountOptions).map((row) => (
             <View key={row.join()} style={styles.optionRow}>
               {row.map((dayCount) => (
                 <FilterOption
@@ -84,7 +83,7 @@ export function TemplateFiltersSheet({
 
       <FilterSection title="Focus">
         <View style={styles.optionRows}>
-          {optionRows(FOCUS_TAGS, FOCUS_OPTIONS_PER_ROW).map((row) => (
+          {focusOptionRows(FOCUS_TAGS).map((row) => (
             <View key={row.join()} style={styles.optionRow}>
               {row.map((tag) => (
                 <FilterOption
