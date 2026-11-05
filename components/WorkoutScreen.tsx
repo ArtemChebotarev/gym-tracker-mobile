@@ -52,6 +52,7 @@ import { ProgressBar } from '@design/components/ProgressBar';
 import { RootScreen } from '@design/components/RootScreen';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { GridIcon } from '@design/icons/GridIcon';
+import { StrengthIcon } from '@design/icons/StrengthIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
 import { COLORS, ICON_SIZES, RADII } from '@design/tokens';
 import type { RoundEntry } from '@domain/executionValidators';
@@ -82,8 +83,10 @@ import {
   type WorkoutMenuItem,
 } from './WorkoutHeaderMenuLogic';
 import {
+  EMPTY_WORKOUT,
   formatUnlocksCaption,
   formatWorkoutSubtitle,
+  showsEmptyWorkout,
   showsHeaderActions,
 } from './WorkoutScreenLogic';
 import { styles } from './WorkoutScreenStyles';
@@ -388,126 +391,147 @@ export function WorkoutScreen({
           ) : undefined
         }
       >
-        <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
-        <ScrollView
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
-          // A tap on Log while the keyboard is up logs the set rather than only closing the
-          // keyboard; the inset keeps the focused row above the keyboard.
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-          scrollEventThrottle={SCROLL_EVENT_MS}
-          onScroll={(event) => {
-            listMetrics.current.y = event.nativeEvent.contentOffset.y;
-          }}
-          onLayout={(event) => {
-            listMetrics.current.viewportHeight = event.nativeEvent.layout.height;
-          }}
-          onContentSizeChange={(_width, height) => {
-            listMetrics.current.contentHeight = height;
-          }}
-        >
-          {model.exercises.map((exercise, index) => (
-            <WorkoutExerciseCard
-              key={exercise.sessionExerciseId}
-              exercise={exercise}
-              mode={model.mode}
-              isDeload={model.header.isDeload}
-              coachmarkTargets={{
-                ...(tourSteps.some((step) => step.target === 'rir' && step.exerciseIndex === index)
-                  ? { rir: tourRir }
-                  : {}),
-                ...(tourSteps.some(
-                  (step) => step.target === 'weight' && step.exerciseIndex === index,
-                ) ||
-                (!tourPending && rangesIndex === index)
-                  ? { weight: tourWeight }
-                  : {}),
-                ...(editIndex === index ? { card: editCard } : {}),
+        {showsEmptyWorkout(model) ? (
+          // Every exercise deleted (GT-162): the list's place invites adding one, and Finish
+          // isn't offered — there is nothing to finish.
+          <EmptyState
+            icon={StrengthIcon}
+            title={EMPTY_WORKOUT.title}
+            description={EMPTY_WORKOUT.description}
+            actionLabel={EMPTY_WORKOUT.actionLabel}
+            onAction={menuActions.addExercise}
+            bottomInset={onBack === undefined ? tabBarClearance : 0}
+          />
+        ) : (
+          <>
+            <ProgressBar value={model.progress} accessibilityLabel="Workout progress" />
+            <ScrollView
+              ref={scrollRef}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
+              // A tap on Log while the keyboard is up logs the set rather than only closing the
+              // keyboard; the inset keeps the focused row above the keyboard.
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              automaticallyAdjustKeyboardInsets
+              scrollEventThrottle={SCROLL_EVENT_MS}
+              onScroll={(event) => {
+                listMetrics.current.y = event.nativeEvent.contentOffset.y;
               }}
-              onOpenRanges={() => {
-                if (coachmarks?.rangesVisible === true) {
-                  coachmarks.onFinish(['rangesCoachmarkSeen']);
-                }
+              onLayout={(event) => {
+                listMetrics.current.viewportHeight = event.nativeEvent.layout.height;
               }}
-              chip={cardChip(model.exercises, index)}
-              position={index}
-              onOpenHistory={() => onOpenExerciseHistory(exercise)}
-              onOpenOverview={() => onOpenExercise(exercise)}
-              menuItems={workoutExerciseMenuActions(exercise, (item) =>
-                onExerciseMenuAction(exercise, item),
-              )}
-              isSaving={isSaving}
-              sets={{
-                bodyWeight: model.bodyWeight,
-                onBodyWeightChange,
-                onRequestBodyWeight,
-                onLogSet: (setNumber, entry) => onLogSet(exercise, setNumber, entry),
-                onUnlogSet: (setNumber) => onUnlogSet(exercise, setNumber),
+              onContentSizeChange={(_width, height) => {
+                listMetrics.current.contentHeight = height;
               }}
-              rounds={{
-                onLogRound: (roundNumber, entry) => onLogRound(exercise, roundNumber, entry),
-                onUnlogRound: (roundNumber) => onUnlogRound(exercise, roundNumber),
-                ...(onStartIntervalTimer !== undefined
-                  ? { onStartTimer: (rounds) => onStartIntervalTimer(exercise, rounds) }
-                  : {}),
-                ...(onSetRoundTime !== undefined
-                  ? {
-                      onSetRoundTime: (column, roundNumbers, sec) =>
-                        onSetRoundTime(exercise, column, roundNumbers, sec),
+            >
+              {model.exercises.map((exercise, index) => (
+                <WorkoutExerciseCard
+                  key={exercise.sessionExerciseId}
+                  exercise={exercise}
+                  mode={model.mode}
+                  isDeload={model.header.isDeload}
+                  coachmarkTargets={{
+                    ...(tourSteps.some(
+                      (step) => step.target === 'rir' && step.exerciseIndex === index,
+                    )
+                      ? { rir: tourRir }
+                      : {}),
+                    ...(tourSteps.some(
+                      (step) => step.target === 'weight' && step.exerciseIndex === index,
+                    ) ||
+                    (!tourPending && rangesIndex === index)
+                      ? { weight: tourWeight }
+                      : {}),
+                    ...(editIndex === index ? { card: editCard } : {}),
+                  }}
+                  onOpenRanges={() => {
+                    if (coachmarks?.rangesVisible === true) {
+                      coachmarks.onFinish(['rangesCoachmarkSeen']);
                     }
-                  : {}),
-                ...(onOpenIntervalTimer !== undefined ? { onOpenTimer: onOpenIntervalTimer } : {}),
-              }}
-              ceiling={{
-                onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),
-                onReplaceExercise: () => onExerciseMenuAction(exercise, 'replace'),
-                onHideCeilingTip: () => onHideCeilingTip(exercise),
-              }}
-            />
-          ))}
-          {model.showFinish && (
-            <View style={styles.finish}>
-              <Button label="Finish workout" onPress={onFinish} disabled={isFinishing} />
-            </View>
-          )}
-          {model.showFinishLocked && (
-            <View style={styles.finish}>
-              <Button label="Finish workout" onPress={onFinish} disabled />
-              <Text style={styles.finishHint}>
-                Log or skip every exercise to finish the workout.
-              </Text>
-            </View>
-          )}
-          {nextSessionId !== undefined && (
-            <View style={styles.finish}>
-              <Button
-                label="Next workout"
-                variant="secondary"
-                onPress={() => onOpenNext(nextSessionId)}
-              />
-            </View>
-          )}
-          {model.showFinishMesocycle && (
-            <View style={styles.finish}>
-              <Button
-                label="Finish cycle"
-                onPress={onFinishMesocycle}
-                disabled={isFinishingMesocycle}
-              />
-            </View>
-          )}
-          {model.showCopyMesocycle && (
-            <View style={styles.finish}>
-              <Button label="Copy current cycle" onPress={onCopyMesocycle} />
-            </View>
-          )}
-          {model.unlocksAfter !== undefined && (
-            <Text style={styles.unlocksCaption}>{formatUnlocksCaption(model.unlocksAfter)}</Text>
-          )}
-        </ScrollView>
+                  }}
+                  chip={cardChip(model.exercises, index)}
+                  position={index}
+                  onOpenHistory={() => onOpenExerciseHistory(exercise)}
+                  onOpenOverview={() => onOpenExercise(exercise)}
+                  menuItems={workoutExerciseMenuActions(exercise, (item) =>
+                    onExerciseMenuAction(exercise, item),
+                  )}
+                  isSaving={isSaving}
+                  sets={{
+                    bodyWeight: model.bodyWeight,
+                    onBodyWeightChange,
+                    onRequestBodyWeight,
+                    onLogSet: (setNumber, entry) => onLogSet(exercise, setNumber, entry),
+                    onUnlogSet: (setNumber) => onUnlogSet(exercise, setNumber),
+                  }}
+                  rounds={{
+                    onLogRound: (roundNumber, entry) => onLogRound(exercise, roundNumber, entry),
+                    onUnlogRound: (roundNumber) => onUnlogRound(exercise, roundNumber),
+                    ...(onStartIntervalTimer !== undefined
+                      ? { onStartTimer: (rounds) => onStartIntervalTimer(exercise, rounds) }
+                      : {}),
+                    ...(onSetRoundTime !== undefined
+                      ? {
+                          onSetRoundTime: (column, roundNumbers, sec) =>
+                            onSetRoundTime(exercise, column, roundNumbers, sec),
+                        }
+                      : {}),
+                    ...(onOpenIntervalTimer !== undefined
+                      ? { onOpenTimer: onOpenIntervalTimer }
+                      : {}),
+                  }}
+                  ceiling={{
+                    onSetNoHeavierAvailable: () => onSetNoHeavierAvailable(exercise),
+                    onReplaceExercise: () => onExerciseMenuAction(exercise, 'replace'),
+                    onHideCeilingTip: () => onHideCeilingTip(exercise),
+                  }}
+                />
+              ))}
+              {model.showFinish && (
+                <View style={styles.finish}>
+                  <Button label="Finish workout" onPress={onFinish} disabled={isFinishing} />
+                </View>
+              )}
+              {model.showFinishLocked && (
+                <View style={styles.finish}>
+                  <Button label="Finish workout" onPress={onFinish} disabled />
+                  <Text style={styles.finishHint}>
+                    Log or skip every exercise to finish the workout.
+                  </Text>
+                </View>
+              )}
+              {nextSessionId !== undefined && (
+                <View style={styles.finish}>
+                  <Button
+                    label="Next workout"
+                    variant="secondary"
+                    onPress={() => onOpenNext(nextSessionId)}
+                  />
+                </View>
+              )}
+              {model.showFinishMesocycle && (
+                <View style={styles.finish}>
+                  <Button
+                    label="Finish cycle"
+                    onPress={onFinishMesocycle}
+                    disabled={isFinishingMesocycle}
+                  />
+                </View>
+              )}
+              {model.showCopyMesocycle && (
+                <View style={styles.finish}>
+                  <Button label="Copy current cycle" onPress={onCopyMesocycle} />
+                </View>
+              )}
+              {model.unlocksAfter !== undefined && (
+                <Text style={styles.unlocksCaption}>
+                  {formatUnlocksCaption(model.unlocksAfter)}
+                </Text>
+              )}
+            </ScrollView>
+          </>
+        )}
       </RootScreen>
       {coachmarks !== undefined && (
         // Keyed by the session: a step that waited comes up in the next workout, in a tour of its

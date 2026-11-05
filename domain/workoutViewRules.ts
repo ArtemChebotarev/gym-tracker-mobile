@@ -89,12 +89,16 @@ export function sessionProgress(
 
 /**
  * Whether a session can be finished (05, "Завершение тренировки"; 08.7, "Кнопка Finish workout"):
- * every exercise is `completed` or `skipped`.
+ * it has at least one exercise, and every one is `completed` or `skipped`. A session with every
+ * exercise deleted has nothing to finish (GT-162) — `every` alone would say yes to an empty list.
  */
 export function canFinishSession(
   sessionExercises: readonly Pick<SessionExercise, 'status'>[],
 ): boolean {
-  return sessionExercises.every((exercise) => exercise.status !== 'planned');
+  return (
+    sessionExercises.length > 0 &&
+    sessionExercises.every((exercise) => exercise.status !== 'planned')
+  );
 }
 
 /**

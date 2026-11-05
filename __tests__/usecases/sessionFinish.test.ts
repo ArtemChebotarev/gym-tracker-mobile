@@ -151,6 +151,16 @@ describe('finishSession', () => {
     await expect(sessionsOf(deps)).resolves.toEqual([session]);
   });
 
+  // GT-162: a session with every exercise deleted has nothing to finish.
+  test('DoD: rejects a session with no exercises at all, and writes nothing', async () => {
+    const deps = await setUp({ exercises: [], logs: [] });
+
+    const error = await rejectionOf(finishSession('session-w2', deps, NOW));
+
+    expect(isConflictError(error)).toBe(true);
+    await expect(sessionsOf(deps)).resolves.toEqual([session]);
+  });
+
   test('DoD: finishing completes the session and creates week 3 of the same day', async () => {
     const bench = makeExercise('bench', 1, 'completed');
     const deps = await setUp({

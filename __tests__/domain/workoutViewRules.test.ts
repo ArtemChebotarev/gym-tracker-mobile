@@ -148,6 +148,11 @@ describe('sessionProgress', () => {
 });
 
 describe('canFinishSession', () => {
+  // GT-162: `every` says yes to an empty list — a session with every exercise deleted.
+  test('DoD: not with no exercises at all', () => {
+    expect(canFinishSession([])).toBe(false);
+  });
+
   test('every exercise completed or skipped', () => {
     expect(canFinishSession([{ status: 'completed' }, { status: 'skipped' }])).toBe(true);
   });

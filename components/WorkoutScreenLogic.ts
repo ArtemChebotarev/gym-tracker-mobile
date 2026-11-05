@@ -33,3 +33,21 @@ export function formatUnlocksCaption(
 ): string {
   return `Unlocks when you finish Week ${unlocksAfter.weekNumber} Day ${unlocksAfter.dayNumber}`;
 }
+
+/**
+ * A live workout with every exercise deleted (GT-162): the list's place goes to an EmptyState whose
+ * one way forward is Add exercise — the header menu's own action. Only where an exercise can be
+ * added: a deload day can't take one, and keeps the plain screen with its locked Finish.
+ */
+export function showsEmptyWorkout(
+  model: Pick<WorkoutSessionModel, 'mode' | 'exercises' | 'actions'>,
+): boolean {
+  return model.mode === 'live' && model.exercises.length === 0 && model.actions.canAddExercise;
+}
+
+/** The empty workout's copy — an invitation, not an apology (08.0). */
+export const EMPTY_WORKOUT = {
+  title: 'Add an exercise',
+  description: 'Pick what you’ll train today, and it shows up here.',
+  actionLabel: 'Add exercise',
+} as const;
