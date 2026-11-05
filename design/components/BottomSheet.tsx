@@ -114,6 +114,12 @@ export type BottomSheetProps = {
    * (GT-151).
    */
   keyboardTaps?: 'handled' | 'through';
+  /**
+   * The sheet's plate. 'sheet' (default) — `surface/sheet`, a tone lighter than the page. 'page' —
+   * `surface/page`, the screen's own black, for a sheet that stands in for a screen's list (the
+   * exercise picker, which shows the library's own rows) and should read like that screen.
+   */
+  surface?: 'sheet' | 'page';
 };
 
 export function BottomSheet({
@@ -129,6 +135,7 @@ export function BottomSheet({
   height = 'content',
   bottomClearance = 0,
   keyboardTaps = 'handled',
+  surface = 'sheet',
 }: BottomSheetProps) {
   const dragStartY = useRef<number | null>(null);
   const bottomInset = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
@@ -186,6 +193,7 @@ export function BottomSheet({
   const sheetStyle = [
     styles.sheet,
     height === 'fixed' && styles.sheetFixed,
+    ...(surface === 'page' ? [styles.sheetPage] : []),
     {
       paddingBottom:
         SPACING['space/sheet'] + (keyboardVisible ? 0 : Math.max(bottomInset, bottomClearance)),
@@ -331,6 +339,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS['surface/sheet'],
     borderTopLeftRadius: RADII['radius/sheet'],
     borderTopRightRadius: RADII['radius/sheet'],
+  },
+  sheetPage: {
+    backgroundColor: COLORS['surface/page'],
   },
   sheetFixed: {
     height: SIZES['size/sheet-max'],

@@ -90,6 +90,9 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
             "height": "80%",
           },
           {
+            "backgroundColor": "#0E0F11",
+          },
+          {
             "paddingBottom": 20,
           },
         ]
