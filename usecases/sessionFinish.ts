@@ -37,8 +37,9 @@ export type SessionFinishResult = {
  * `skipped`. Either way next week's session of the same day is generated in the same transaction
  * (none after deload).
  *
- * Rejects with `ConflictError` if an exercise is still `planned` or the session is already final
- * or `awaiting_source`, and with `NotFoundError` if it doesn't exist; nothing is written then.
+ * Rejects with `ConflictError` if the session has no exercises (GT-162), an exercise is still
+ * `planned`, or the session is already final or `awaiting_source`, and with `NotFoundError` if it
+ * doesn't exist; nothing is written then.
  */
 export async function finishSession(
   sessionId: string,
@@ -50,7 +51,9 @@ export async function finishSession(
     if (!canFinishSession(sessionExercises)) {
       const unfinished = sessionExercises.filter((exercise) => exercise.status === 'planned');
       throw new ConflictError(
-        `Session "${sessionId}" has ${unfinished.length} exercise(s) neither completed nor skipped.`,
+        sessionExercises.length === 0
+          ? `Session "${sessionId}" has no exercises to finish.`
+          : `Session "${sessionId}" has ${unfinished.length} exercise(s) neither completed nor skipped.`,
       );
     }
 

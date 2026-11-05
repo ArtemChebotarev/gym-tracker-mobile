@@ -416,6 +416,44 @@ describe('WorkoutScreen Finish workout', () => {
   });
 });
 
+// GT-162: every exercise deleted — the list's place invites adding one, and Finish isn't there.
+describe('WorkoutScreen with every exercise deleted', () => {
+  const EMPTY: WorkoutSessionModel = { ...LIVE, exercises: [], showFinishLocked: true };
+
+  test('DoD: an empty state whose action is the header’s Add exercise, and no Finish', () => {
+    const props = makeProps({ model: EMPTY });
+    renderWithSafeArea(<WorkoutScreen {...props} />);
+
+    expect(screen.getByText('Add an exercise')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Finish workout' })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'Add exercise' }));
+    expect(props.menuActions.addExercise).toHaveBeenCalledTimes(1);
+    // The header menu stays.
+    expect(screen.getByLabelText('Workout menu')).toBeTruthy();
+  });
+
+  test('DoD: once an exercise is back, the list and the locked Finish are back', () => {
+    renderWithSafeArea(
+      <WorkoutScreen {...makeProps({ model: { ...LIVE, showFinishLocked: true } })} />,
+    );
+
+    expect(screen.queryByText('Add an exercise')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Finish workout' })).toBeTruthy();
+  });
+
+  test('a deload day, where nothing can be added, keeps the plain screen', () => {
+    renderWithSafeArea(
+      <WorkoutScreen
+        {...makeProps({
+          model: { ...EMPTY, actions: { ...EMPTY.actions, canAddExercise: false } },
+        })}
+      />,
+    );
+
+    expect(screen.queryByText('Add an exercise')).toBeNull();
+  });
+});
+
 describe('WorkoutScreen Next workout', () => {
   test('a read-only session with a next one offers it, and opens it on press', () => {
     const onOpenNext = jest.fn();
