@@ -30,7 +30,7 @@ export type ExerciseSwapInput = SessionExerciseRef & {
 /**
  * Swaps session exercise `sessionExerciseId` to `exerciseId`, in one transaction:
  *
- * - An exercise already started in this session loses its set logs here — the screen has asked
+ * - An exercise already started in this session loses its set and round logs here — the screen has asked
  *   for a danger confirmation first — and goes back to `planned` (as does a skipped one: it's a
  *   different exercise now, not yet done).
  * - Every row gets rule 6 targets for the new exercise; with no reference they're cleared and the
@@ -62,6 +62,11 @@ export async function swapExercise(
     const startedSets = await repos.setLogRepo.listBySessionExerciseId(current.id);
     for (const setLog of startedSets) {
       await repos.setLogRepo.deleteById(setLog.id);
+    }
+    // An interval or mobility exercise holds its fact in rounds, not sets (GT-232).
+    const startedRounds = await repos.roundLogRepo.listBySessionExerciseId(current.id);
+    for (const roundLog of startedRounds) {
+      await repos.roundLogRepo.deleteById(roundLog.id);
     }
 
     const swappedIn = await deps.exerciseRepo.getById(toExerciseId(input.exerciseId));
