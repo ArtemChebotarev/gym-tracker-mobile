@@ -14,18 +14,7 @@ export const POWER_MIN_REPS = 2;
 /** From this up the hint says to take more weight: past it the set trains endurance, not power. */
 export const POWER_MAX_REPS = 6;
 
-/**
- * A sum that came out at 0 or below is no recommendation at all (the row keeps `N RIR`: "не
- * уверен — не рекомендуй"). One rep is a target, with its hint.
- */
-export function usableReps(reps: number): number | undefined {
-  return reps >= 1 ? reps : undefined;
-}
-
 export const POWER_CORRIDOR: RepCorridor = { minReps: POWER_MIN_REPS, maxReps: POWER_MAX_REPS };
-
-/** A corridor that clamps nothing: `Math.min` / `Math.max` against it return the value as is. */
-export const UNBOUNDED_CORRIDOR: RepCorridor = { minReps: -Infinity, maxReps: Infinity };
 
 /**
  * Power's only weight hint: `increase` from the top of the corridor, with nothing for a drop — a

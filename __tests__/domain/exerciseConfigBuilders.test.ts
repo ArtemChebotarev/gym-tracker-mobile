@@ -86,7 +86,7 @@ describe('holdIntervalConfig', () => {
 });
 
 describe('defaultExerciseSettings', () => {
-  it('copies an interval config as it is — its rounds are the day\'s (GT-190)', () => {
+  it("copies an interval config as it is — its rounds are the day's (GT-190)", () => {
     const config = defaultExerciseConfig('interval')!;
     expect(defaultExerciseSettings(config)).toEqual({ ...config });
   });

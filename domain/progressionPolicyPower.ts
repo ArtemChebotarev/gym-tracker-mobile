@@ -7,10 +7,11 @@
 
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { SetLog, SetTarget } from '@domain/execution';
-import { powerWeightHint, usableReps } from '@domain/progressionCorridor';
+import { powerWeightHint } from '@domain/progressionCorridor';
 import { prescribePowerDeloadDay } from '@domain/progressionDeloadPower';
 import { prescribePowerFromReference } from '@domain/progressionHistoryPower';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
+import { nextTargetReps } from '@domain/progressionReps';
 import { targetRir } from '@domain/progressionRir';
 import { prescribePowerBlockStart } from '@domain/progressionStartPower';
 
@@ -38,7 +39,7 @@ export const powerPolicy: ProgressionPolicy = {
         }
         return target;
       }
-      const reps = usableReps(log.reps + 1);
+      const reps = nextTargetReps(log.reps);
       if (reps === undefined) {
         return target;
       }

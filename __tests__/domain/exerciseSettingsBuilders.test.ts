@@ -107,7 +107,12 @@ describe('weekPlanExerciseSettings (GT-159)', () => {
     const fromSource = {
       [HEAVY_BAG.id]: { ...HEAVY_BAG_CONFIG, lever: 'none' as const },
       // The source had this one, but the copied week does not: it stays behind.
-      [MEDBALL_THROW.id]: { type: 'power' as const, load: 'weight' as const, restSec: 90, noHeavierAvailable: true },
+      [MEDBALL_THROW.id]: {
+        type: 'power' as const,
+        load: 'weight' as const,
+        restSec: 90,
+        noHeavierAvailable: true,
+      },
     };
 
     expect(weekPlanExerciseSettings(weekPlan, library, fromSource)).toEqual({

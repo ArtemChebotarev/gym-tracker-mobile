@@ -12,12 +12,9 @@
 import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SetTarget } from '@domain/execution';
-import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
 import { referenceSetAt } from '@domain/progressionHistory';
 import { startTargetReps } from '@domain/progressionReps';
-
-type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
 // `startTargetReps` lives with the rest of the rep arithmetic now that rule 6's estimate from
 // another block uses it too (task 134.1); Flow C's callers keep reaching it here.
@@ -49,7 +46,6 @@ export function prescribeBlockStart(
   resolution: ReferenceResolution,
   startRir: number,
   rowCount: number,
-  settings: RepCorridor,
   equipment?: Equipment,
 ): SetTarget[] {
   const carriesWeight = !isPureBodyWeight(equipment);
@@ -62,15 +58,12 @@ export function prescribeBlockStart(
     if (resolution.kind === 'none' || reference === undefined) {
       return { setNumber };
     }
-    const target: SetTarget = {
-      setNumber,
-      targetReps: startTargetReps(
-        reference.reps,
-        resolution.reference.targetRir,
-        startRir,
-        settings,
-      ),
-    };
+    const reps = startTargetReps(reference.reps, resolution.reference.targetRir, startRir);
+    // A sum of 0 or less is no target, and no weight either: the row keeps `N RIR` (GT-163).
+    if (reps === undefined) {
+      return { setNumber };
+    }
+    const target: SetTarget = { setNumber, targetReps: reps };
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;
     }

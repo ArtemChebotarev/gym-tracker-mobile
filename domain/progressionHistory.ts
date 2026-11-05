@@ -10,7 +10,7 @@ import type { Equipment } from '@domain/catalog';
 import type { SetLog, SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { ReferenceResolution } from '@domain/progression';
-import { nextTargetReps, startTargetReps } from '@domain/progressionReps';
+import { nextTargetReps, startTargetReps, usableReps } from '@domain/progressionReps';
 import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
@@ -40,15 +40,14 @@ export function estimatedReps(
   reference: SetLog,
   resolution: Extract<ReferenceResolution, { kind: 'estimate' }>,
   weekRir: number,
-  settings: RepCorridor,
-): number {
+): number | undefined {
   switch (resolution.source) {
     case 'earlier_week':
-      return nextTargetReps(reference.reps, settings);
+      return nextTargetReps(reference.reps);
     case 'other_block':
-      return startTargetReps(reference.reps, resolution.reference.targetRir, weekRir, settings);
+      return startTargetReps(reference.reps, resolution.reference.targetRir, weekRir);
     case 'current_week':
-      return reference.reps;
+      return usableReps(reference.reps);
   }
 }
 
@@ -56,8 +55,8 @@ export function estimatedReps(
  * Set targets for `rowCount` rows of an exercise added or swapped in mid-session during a
  * working week, from what the reference resolver found for it (`resolveReference`, task 134.1):
  *
- * - `target` — the reference is in the exercise's own slot: `targetReps` = reference reps + 1
- *   clamped to the corridor (as rule 2), `suggestedWeight` = the reference weight as is, and a
+ * - `target` — the reference is in the exercise's own slot: `targetReps` = reference reps + 1,
+ *   unclamped (as rule 2, GT-163), `suggestedWeight` = the reference weight as is, and a
  *   weight hint from the reference reps (rule 3).
  * - `estimate` — numbers from another day or block, priced by where they came from
  *   (`estimatedReps`), the reference weight as is, no weight hint, each row marked with the
@@ -93,10 +92,12 @@ export function prescribeFromHistory(
       return { setNumber };
     }
     if (resolution.kind === 'estimate') {
-      const estimate: SetTarget = {
-        setNumber,
-        targetReps: estimatedReps(reference, resolution, weekRir, settings),
-      };
+      const reps = estimatedReps(reference, resolution, weekRir);
+      // No sum to go by, no weight either: the row keeps `N RIR` (GT-163).
+      if (reps === undefined) {
+        return { setNumber };
+      }
+      const estimate: SetTarget = { setNumber, targetReps: reps };
       if (carriesWeight) {
         estimate.suggestedWeight = reference.weight;
       }
@@ -105,8 +106,9 @@ export function prescribeFromHistory(
     }
     const hint = hintForReps(reference.reps, settings, equipment);
     const target: SetTarget = { setNumber };
-    if (!bandAtCeiling(hint, equipment)) {
-      target.targetReps = nextTargetReps(reference.reps, settings);
+    const reps = nextTargetReps(reference.reps);
+    if (reps !== undefined && !bandAtCeiling(hint, equipment)) {
+      target.targetReps = reps;
     }
     if (carriesWeight) {
       target.suggestedWeight = reference.weight;

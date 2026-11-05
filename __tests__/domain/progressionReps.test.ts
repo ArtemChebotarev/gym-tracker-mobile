@@ -22,17 +22,20 @@ function log(setNumber: number, reps: number, weight = 60): SetLog {
   };
 }
 
+// GT-163 (03, rule 2): the corridor is the trigger for the weight hint, not a limit on the sum.
 describe('nextTargetReps', () => {
   test('adds one rep inside the corridor', () => {
-    expect(nextTargetReps(10, defaultProgressionSettings)).toBe(11);
+    expect(nextTargetReps(10)).toBe(11);
   });
 
-  test('stays at 30 when the fact is already 30', () => {
-    expect(nextTargetReps(30, defaultProgressionSettings)).toBe(30);
+  test('DoD: past the corridor’s top it goes on — 30 → 31, 35 → 36', () => {
+    expect(nextTargetReps(30)).toBe(31);
+    expect(nextTargetReps(35)).toBe(36);
   });
 
-  test('clamps up to 5 when the fact is 3', () => {
-    expect(nextTargetReps(3, defaultProgressionSettings)).toBe(5);
+  test('DoD: under the corridor’s floor it goes on from the fact — 4 → 5, 1 → 2', () => {
+    expect(nextTargetReps(4)).toBe(5);
+    expect(nextTargetReps(1)).toBe(2);
   });
 });
 
@@ -105,7 +108,7 @@ describe('nextSetTargets', () => {
     );
 
     expect(next.map((target) => target.weightHint)).toEqual(['increase', undefined, 'decrease']);
-    expect(next.map((target) => target.targetReps)).toEqual([30, 13, 5]);
+    expect(next.map((target) => target.targetReps)).toEqual([31, 13, 4]);
   });
 });
 
@@ -127,7 +130,7 @@ describe('nextSetTarget on a resistance band (10.1, FR-14)', () => {
   });
 
   test('under the corridor it never says to go lighter: there is no lighter band to point at', () => {
-    expect(band(3)).toEqual<SetTarget>({ setNumber: 1, targetReps: 5 });
+    expect(band(3)).toEqual<SetTarget>({ setNumber: 1, targetReps: 4 });
   });
 
   test('pure bodyweight still gets no hint at all', () => {
@@ -138,7 +141,7 @@ describe('nextSetTarget on a resistance band (10.1, FR-14)', () => {
         defaultProgressionSettings,
         'bodyweight',
       ),
-    ).toEqual<SetTarget>({ setNumber: 1, targetReps: 30 });
+    ).toEqual<SetTarget>({ setNumber: 1, targetReps: 31 });
   });
 });
 
@@ -186,7 +189,7 @@ describe('a pure bodyweight exercise progresses on reps alone (task 105)', () =>
       'bodyweight',
     );
 
-    expect(next).toEqual({ setNumber: 1, targetReps: 30 });
+    expect(next).toEqual({ setNumber: 1, targetReps: 31 });
   });
 
   test('DoD: an unlogged set carries its reps over and drops the weight', () => {

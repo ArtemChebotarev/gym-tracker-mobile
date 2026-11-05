@@ -27,6 +27,6 @@ export const strengthPolicy: ProgressionPolicy = {
   prescribeDeload: (exercises, { logs, settings }) => prescribeDeloadDay(exercises, logs, settings),
   prescribeFromReference: ({ resolution, rowCount, weekRir, settings, equipment }) =>
     prescribeFromHistory(resolution, rowCount, weekRir, settings, equipment),
-  prescribeBlockStart: ({ resolution, startRir, rowCount, settings, equipment }) =>
-    prescribeBlockStart(resolution, startRir, rowCount, settings, equipment),
+  prescribeBlockStart: ({ resolution, startRir, rowCount, equipment }) =>
+    prescribeBlockStart(resolution, startRir, rowCount, equipment),
 };

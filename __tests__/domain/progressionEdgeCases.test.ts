@@ -131,17 +131,18 @@ describe('Progression engine edge cases (03 · Граничные случаи)'
     ]);
   });
 
-  test('reps already at 30: the target stays 30 with a hint to raise the weight', () => {
+  // GT-163: the corridor is the hint's trigger, not a clamp on the target.
+  test('reps already at 30: the target is 31 with a hint to raise the weight', () => {
     const plan = planAfter(bench('w1-bench', [{ setNumber: 1 }]), [log('w1-bench', 1, 20, 30)]);
     expect(plan?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 30, suggestedWeight: 20, weightHint: 'increase' },
+      { setNumber: 1, targetReps: 31, suggestedWeight: 20, weightHint: 'increase' },
     ]);
   });
 
-  test('reps below 5: the target is 5 with a hint to lower the weight', () => {
+  test('reps below 5: the target is fact + 1 with a hint to lower the weight', () => {
     const plan = planAfter(bench('w1-bench', [{ setNumber: 1 }]), [log('w1-bench', 1, 140, 3)]);
     expect(plan?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 5, suggestedWeight: 140, weightHint: 'decrease' },
+      { setNumber: 1, targetReps: 4, suggestedWeight: 140, weightHint: 'decrease' },
     ]);
   });
 });

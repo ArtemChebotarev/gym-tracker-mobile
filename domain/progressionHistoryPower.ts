@@ -8,8 +8,9 @@ import { isPureBodyWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SetTarget } from '@domain/execution';
 import type { ReferenceResolution } from '@domain/progression';
-import { UNBOUNDED_CORRIDOR, powerWeightHint, usableReps } from '@domain/progressionCorridor';
+import { powerWeightHint } from '@domain/progressionCorridor';
 import { estimatedReps, referenceSetAt } from '@domain/progressionHistory';
+import { nextTargetReps } from '@domain/progressionReps';
 
 /**
  * `rowCount` rows (numbered from 1), row N priced from the reference's set N and nothing else, as
@@ -36,7 +37,7 @@ export function prescribePowerFromReference(
       return { setNumber };
     }
     if (resolution.kind === 'estimate') {
-      const reps = usableReps(estimatedReps(reference, resolution, weekRir, UNBOUNDED_CORRIDOR));
+      const reps = estimatedReps(reference, resolution, weekRir);
       if (reps === undefined) {
         return { setNumber };
       }
@@ -47,7 +48,7 @@ export function prescribePowerFromReference(
       estimate.estimate = resolution.reason;
       return estimate;
     }
-    const reps = usableReps(reference.reps + 1);
+    const reps = nextTargetReps(reference.reps);
     if (reps === undefined) {
       return { setNumber };
     }
