@@ -42,7 +42,7 @@ import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
-import { SectionHeader } from '@design/components/SectionHeader';
+import { SectionGap, SectionHeader } from '@design/components/SectionHeader';
 import { useExercisePickStore } from '@state/exercisePickStore';
 
 import { ExerciseFilterRow } from './ExerciseFilterRow';
@@ -177,7 +177,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       {isPending && <Text style={styles.status}>Loading…</Text>}
 
       {!isPending &&
-        buildSections(groups ?? []).map((section, index) => (
+        buildSections(groups ?? []).map((section) => (
           <View key={section.key}>
             <SectionHeader
               title={section.title}
@@ -185,7 +185,6 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
               variant="label"
-              isFirst={index === 0}
             />
             {section.data.map((entry) => (
               <ListRow
@@ -211,6 +210,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
                 onPress={() => openPreview(entry.exercise.id)}
               />
             ))}
+            <SectionGap />
           </View>
         ))}
     </BottomSheet>

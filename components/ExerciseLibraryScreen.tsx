@@ -31,7 +31,7 @@ import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
-import { listBleed, SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionGap, SectionHeader } from '@design/components/SectionHeader';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
@@ -164,9 +164,9 @@ export function ExerciseLibraryScreen({
               count={section.data.length}
               dotColor={sectionDotColor(section.muscleGroup)}
               variant="label"
-              isFirst={section === sections[0]}
             />
           )}
+          renderSectionFooter={() => <SectionGap />}
           renderItem={({ item }) => (
             <ListRow
               title={item.exercise.name}

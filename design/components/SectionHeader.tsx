@@ -15,9 +15,10 @@
 // sticky header covers the blocks scrolling under it), the text a hair in from the blocks' edge,
 // space above it and none below, since each block brings its own gap. The count is set like the
 // title, so the header reads as one label line rather than a band with a figure at its end.
-// The space above is what parts one group from the last block of the one before; the first group
-// has none before it, only the screen's own gap to the controls above, so `isFirst` drops it —
-// otherwise the first label stood twice as far below Filters as a label stands below a block.
+// A label has no space above it: the space between two groups belongs to the end of the earlier
+// one — `SectionGap`, a list's section footer. Kept inside the header, it rode along when the
+// header stuck, so every label after the first stuck that much lower than the first one did, and
+// the first one stood twice as far below Filters as the others below a block (GT-222).
 
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -46,8 +47,6 @@ export type SectionHeaderProps = {
   inset?: SectionHeaderInset;
   /** Defaults to `band`. */
   variant?: SectionHeaderVariant;
-  /** The first group of the list: a `label` header then takes no space above it. */
-  isFirst?: boolean;
 };
 
 const EDGE_SPACING = { screen: SPACING['space/screen'], sheet: SPACING['space/sheet'] } as const;
@@ -74,7 +73,6 @@ export function SectionHeader({
   edge = 'screen',
   inset = 'none',
   variant = 'band',
-  isFirst = false,
 }: SectionHeaderProps) {
   const spacing = EDGE_SPACING[edge];
   const isLabel = variant === 'label';
@@ -85,11 +83,7 @@ export function SectionHeader({
       testID="section-header"
       style={[
         styles.container,
-        isLabel && [
-          styles.label,
-          isFirst && styles.labelFirst,
-          { backgroundColor: EDGE_SURFACE[edge] },
-        ],
+        isLabel && { backgroundColor: EDGE_SURFACE[edge], paddingTop: 0, paddingBottom: 0 },
         { marginHorizontal: -spacing, paddingHorizontal: textInset },
       ]}
     >
@@ -104,20 +98,24 @@ export function SectionHeader({
   );
 }
 
+/**
+ * The space that parts one group of `label` headers from the next: put it at the end of every
+ * group (a SectionList's `renderSectionFooter`), never above a header — see the note at the top.
+ */
+export function SectionGap() {
+  return <View style={styles.gap} />;
+}
+
 const styles = StyleSheet.create({
+  gap: {
+    height: SPACING['space/row'],
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS['surface/raised'],
     paddingVertical: SPACING['space/row'],
-  },
-  label: {
-    paddingTop: SPACING['space/row'],
-    paddingBottom: 0,
-  },
-  labelFirst: {
-    paddingTop: 0,
   },
   leading: {
     flexDirection: 'row',

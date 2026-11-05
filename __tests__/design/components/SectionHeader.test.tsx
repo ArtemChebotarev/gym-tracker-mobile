@@ -41,13 +41,12 @@ describe('SectionHeader', () => {
     expect(inSheet.backgroundColor).toBe(COLORS['surface/sheet']);
   });
 
-  test('the first label header takes no space above it, the others do', () => {
-    const { rerender } = render(<SectionHeader title="Back" count={8} variant="label" />);
-    const later = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
-    expect(later.paddingTop).toBe(SPACING['space/row']);
-
-    rerender(<SectionHeader title="Back" count={8} variant="label" isFirst />);
-    const first = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
-    expect(first.paddingTop).toBe(0);
+  test('a label header takes no space above or below it, so every label sticks at the same height', () => {
+    // GT-222: the space between groups is SectionGap's, at the end of the group before. Inside the
+    // header it rode along when the header stuck, and labels after the first stuck lower.
+    render(<SectionHeader title="Back" count={8} variant="label" />);
+    const style = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
+    expect(style.paddingTop).toBe(0);
+    expect(style.paddingBottom).toBe(0);
   });
 });

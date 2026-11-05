@@ -435,18 +435,11 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     "justifyContent": "space-between",
                     "paddingVertical": 12,
                   },
-                  [
-                    {
-                      "paddingBottom": 0,
-                      "paddingTop": 12,
-                    },
-                    {
-                      "paddingTop": 0,
-                    },
-                    {
-                      "backgroundColor": "#17191C",
-                    },
-                  ],
+                  {
+                    "backgroundColor": "#17191C",
+                    "paddingBottom": 0,
+                    "paddingTop": 0,
+                  },
                   {
                     "marginHorizontal": -20,
                     "paddingHorizontal": 24,
@@ -687,6 +680,13 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                 </View>
               </View>
             </View>
+            <View
+              style={
+                {
+                  "height": 12,
+                }
+              }
+            />
           </View>
           <View>
             <View
@@ -699,16 +699,11 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     "justifyContent": "space-between",
                     "paddingVertical": 12,
                   },
-                  [
-                    {
-                      "paddingBottom": 0,
-                      "paddingTop": 12,
-                    },
-                    false,
-                    {
-                      "backgroundColor": "#17191C",
-                    },
-                  ],
+                  {
+                    "backgroundColor": "#17191C",
+                    "paddingBottom": 0,
+                    "paddingTop": 0,
+                  },
                   {
                     "marginHorizontal": -20,
                     "paddingHorizontal": 24,
@@ -949,6 +944,13 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                 </View>
               </View>
             </View>
+            <View
+              style={
+                {
+                  "height": 12,
+                }
+              }
+            />
           </View>
         </View>
       </RCTScrollView>
