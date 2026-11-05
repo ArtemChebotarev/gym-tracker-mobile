@@ -17,13 +17,10 @@ import { STAMPS } from '../fixtures/stamps';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'generated-id-1' }));
 
+
 const twoDayWeekPlan: WeekPlan = {
   days: [
-    {
-      dayNumber: 1,
-      name: '',
-      exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }],
-    },
+    { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 3 }] },
     { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 4 }] },
   ],
 };
@@ -190,9 +187,9 @@ describe('buildCopyWeekMesocycleDraft', () => {
 
   // DoD (task 041): Flow C refuses the deload week.
   test('rejects the source block’s deload week', () => {
-    expect(() => buildCopyWeekMesocycleDraft({ ...input, sourceWeekNumber: 6 }, source)).toThrow(
-      /deload week/,
-    );
+    expect(() =>
+      buildCopyWeekMesocycleDraft({ ...input, sourceWeekNumber: 6 }, source),
+    ).toThrow(/deload week/);
   });
 
   test('takes the new block’s length from the draft, not from the source', () => {
@@ -235,17 +232,9 @@ describe('applyPlannedMesocycleEdit', () => {
 
   const threeDayWeekPlan: WeekPlan = {
     days: [
-      {
-        dayNumber: 1,
-        name: 'Push',
-        exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 5 }],
-      },
+      { dayNumber: 1, name: 'Push', exercises: [{ exerciseId: 'exercise-bench-press', order: 1, sets: 5 }] },
       { dayNumber: 2, name: 'Pull', exercises: [] },
-      {
-        dayNumber: 3,
-        name: 'Legs',
-        exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 2 }],
-      },
+      { dayNumber: 3, name: 'Legs', exercises: [{ exerciseId: 'exercise-squat', order: 1, sets: 2 }] },
     ],
   };
 
@@ -372,11 +361,7 @@ describe('buildMesocycleStart', () => {
             { exerciseId: 'exercise-bench-press', order: 0, sets: 3 },
           ],
         },
-        {
-          dayNumber: 2,
-          name: '',
-          exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 4 }],
-        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 4 }] },
       ],
     },
     createdAt: '2026-09-01T12:00:00.000Z',
@@ -435,11 +420,7 @@ describe('buildMesocycleStart', () => {
       origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
       weekPlan: {
         days: [
-          {
-            dayNumber: 1,
-            name: '',
-            exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2 }],
-          },
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 2 }] },
         ],
       },
     };
@@ -527,11 +508,7 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
             { exerciseId: 'exercise-row', order: 1, sets: 1 },
           ],
         },
-        {
-          dayNumber: 2,
-          name: '',
-          exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }],
-        },
+        { dayNumber: 2, name: '', exercises: [{ exerciseId: 'exercise-squat', order: 0, sets: 1 }] },
       ],
     },
   };
@@ -663,12 +640,9 @@ describe('exerciseSettings on the draft (GT-158)', () => {
   const input = { name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 2, weekPlan: twoDayWeekPlan };
 
   test('every flow saves the cycle’s own copy with it', () => {
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }).exerciseSettings).toEqual(settings);
     expect(
-      buildScratchMesocycleDraft({ ...input, exerciseSettings: settings }).exerciseSettings,
-    ).toEqual(settings);
-    expect(
-      buildTemplateMesocycleDraft({ ...input, exerciseSettings: settings, templateId: 't' })
-        .exerciseSettings,
+      buildTemplateMesocycleDraft({ ...input, exerciseSettings: settings, templateId: 't' }).exerciseSettings,
     ).toEqual(settings);
     expect(
       buildCopyWeekMesocycleDraft(
@@ -680,9 +654,7 @@ describe('exerciseSettings on the draft (GT-158)', () => {
 
   test('a cycle with nothing to keep has no exerciseSettings at all', () => {
     expect(buildScratchMesocycleDraft(input)).not.toHaveProperty('exerciseSettings');
-    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: {} })).not.toHaveProperty(
-      'exerciseSettings',
-    );
+    expect(buildScratchMesocycleDraft({ ...input, exerciseSettings: {} })).not.toHaveProperty('exerciseSettings');
   });
 
   test('the saved settings are a copy of the input, not the same object', () => {
@@ -698,9 +670,9 @@ describe('exerciseSettings on the draft (GT-158)', () => {
     };
     const edited = { 'heavy-bag': { ...settings['heavy-bag'], restSec: 30 } };
 
-    expect(
-      applyPlannedMesocycleEdit(planned, { ...input, exerciseSettings: edited }).exerciseSettings,
-    ).toEqual(edited);
+    expect(applyPlannedMesocycleEdit(planned, { ...input, exerciseSettings: edited }).exerciseSettings).toEqual(
+      edited,
+    );
     expect(applyPlannedMesocycleEdit(planned, input)).not.toHaveProperty('exerciseSettings');
   });
 });
@@ -740,24 +712,14 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
   ]);
 
   function rowsOf(weekOneTargets?: Parameters<typeof buildMesocycleStart>[3]) {
-    const { week } = buildMesocycleStart(
-      mixed,
-      null,
-      '2026-10-18T09:00:00.000Z',
-      weekOneTargets,
-      exercisesById,
-    );
+    const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z', weekOneTargets, exercisesById);
     return new Map(week[0]!.exercises.map((exercise) => [exercise.exerciseId, exercise]));
   }
 
   test('each type gets its own rows; every one carries the week’s RIR', () => {
     const rows = rowsOf();
 
-    expect(rows.get('bench')?.setTargets).toEqual([
-      { setNumber: 1 },
-      { setNumber: 2 },
-      { setNumber: 3 },
-    ]);
+    expect(rows.get('bench')?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
     expect(rows.get(MEDBALL_THROW.id)?.setTargets).toHaveLength(3);
     // The cycle's rounds, not its times: those are history's (GT-185).
     expect(rows.get(HEAVY_BAG.id)?.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
@@ -775,10 +737,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
         targetRestSec: 20,
       }));
     const length = (rowCount: number) =>
-      Array.from({ length: rowCount }, (_, index) => ({
-        setNumber: index + 1,
-        targetWorkSec: 600,
-      }));
+      Array.from({ length: rowCount }, (_, index) => ({ setNumber: index + 1, targetWorkSec: 600 }));
     const rows = rowsOf(
       new Map<string, (rowCount: number) => SetTarget[]>([
         [weekPlanSlotKey(1, MEDBALL_THROW.id), priced],
@@ -797,8 +756,9 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
   test('without exercise records every exercise is laid out as sets, as before', () => {
     const { week } = buildMesocycleStart(mixed, null, '2026-10-18T09:00:00.000Z');
 
-    expect(
-      week[0]!.exercises.find((exercise) => exercise.exerciseId === HEAVY_BAG.id)?.setTargets,
-    ).toEqual([{ setNumber: 1 }, { setNumber: 2 }]);
+    expect(week[0]!.exercises.find((exercise) => exercise.exerciseId === HEAVY_BAG.id)?.setTargets).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+    ]);
   });
 });

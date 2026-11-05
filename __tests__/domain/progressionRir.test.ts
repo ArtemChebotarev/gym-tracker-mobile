@@ -1,10 +1,4 @@
-import {
-  MAX_START_RIR,
-  rirSchedule,
-  startRir,
-  targetRir,
-  workingWeekCount,
-} from '@domain/progressionRir';
+import { MAX_START_RIR, rirSchedule, startRir, targetRir, workingWeekCount } from '@domain/progressionRir';
 
 describe('rirSchedule', () => {
   // The breakdown table from 03 · Progression Engine, "Правило 4 — целевой RIR".
@@ -58,9 +52,7 @@ describe('targetRir', () => {
   test.each([0, 6, 7, 1.5])(
     'rejects week %p of a 6-week block (not a working week)',
     (weekNumber) => {
-      expect(() => targetRir(6, weekNumber)).toThrow(
-        /Working week must be an integer between 1 and 5/,
-      );
+      expect(() => targetRir(6, weekNumber)).toThrow(/Working week must be an integer between 1 and 5/);
     },
   );
 });

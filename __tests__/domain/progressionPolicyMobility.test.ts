@@ -128,9 +128,9 @@ describe('mobility policy', () => {
 
     test('the length of the reference, as it ended', () => {
       const resolution = { kind: 'target', reference: performance } as const;
-      expect(mobilityPolicy.prescribeFromReference({ ...input, resolution, weekRir: 2 })).toEqual([
-        { setNumber: 1, targetWorkSec: 540 },
-      ]);
+      expect(mobilityPolicy.prescribeFromReference({ ...input, resolution, weekRir: 2 })).toEqual(
+        [{ setNumber: 1, targetWorkSec: 540 }],
+      );
       expect(mobilityPolicy.prescribeBlockStart({ ...input, resolution, startRir: 3 })).toEqual([
         { setNumber: 1, targetWorkSec: 540 },
       ]);

@@ -94,9 +94,9 @@ describe('canFinishMesocycle', () => {
   });
 
   test('not while a session is still to be trained — that block is stopped, not finished', () => {
-    expect(
-      canFinishMesocycle(mesocycle, [session('done', 'completed'), session('ready', 'planned')]),
-    ).toBe(false);
+    expect(canFinishMesocycle(mesocycle, [session('done', 'completed'), session('ready', 'planned')])).toBe(
+      false,
+    );
     expect(canFinishMesocycle(mesocycle, [session('live', 'in_progress')])).toBe(false);
   });
 

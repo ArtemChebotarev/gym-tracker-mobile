@@ -35,9 +35,7 @@ describe('EXERCISE_CATALOG', () => {
 
   test('no muscle group is empty', () => {
     for (const group of MUSCLE_GROUPS) {
-      const exercisesInGroup = EXERCISE_CATALOG.filter(
-        (exercise) => exercise.muscleGroup === group,
-      );
+      const exercisesInGroup = EXERCISE_CATALOG.filter((exercise) => exercise.muscleGroup === group);
       expect(exercisesInGroup.length).toBeGreaterThan(0);
     }
   });
