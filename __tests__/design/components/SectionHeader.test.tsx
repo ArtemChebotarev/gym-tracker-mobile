@@ -49,4 +49,11 @@ describe('SectionHeader', () => {
     expect(style.paddingTop).toBe(0);
     expect(style.paddingBottom).toBe(0);
   });
+
+  test('shows no figure when no count is given', () => {
+    // GT-223: Cycles' groups are headed by a label alone.
+    render(<SectionHeader title="Planned" variant="label" />);
+    expect(screen.getByText('Planned')).toBeTruthy();
+    expect(screen.queryByText(/\d/)).toBeNull();
+  });
 });

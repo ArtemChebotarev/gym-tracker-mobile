@@ -21,6 +21,11 @@
 // - Delete (the Planned row's one `⋯` action) opens `Delete training cycle? This can't be undone` and
 //   calls `onDelete` only from its destructive button.
 //
+// Rows are blocks of their own and the groups are headed by the same label as Library's groups
+// (GT-223, after GT-222's Library): `ListRow`'s `block` and `SectionHeader`'s `label`, spaced as
+// Library spaces them — a label sits a block-gap above its first row, and a group ends a
+// `space/row` before the next label. The Active card is a card already and keeps its own frame.
+//
 // Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
 // Rows inside a group sit in their own gap-less View: the group's `gap` is for the label only, and
 // applied between rows it pushed each row's content below the visual middle of its divider band.
@@ -52,6 +57,7 @@ import { TabCyclesIcon } from '@design/icons/TabCyclesIcon';
 import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
+import { SectionHeader } from '@design/components/SectionHeader';
 import { RADII } from '@design/tokens';
 import type { LoadError } from '@state/loadError';
 
@@ -203,8 +209,8 @@ export function MesocyclesScreen({
             showsVerticalScrollIndicator={false}
           >
             {active !== null && (
-              <View style={styles.group}>
-                <Text style={styles.groupLabel}>Active</Text>
+              <View>
+                <SectionHeader title="Active" variant="label" />
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={active.name}
@@ -238,12 +244,13 @@ export function MesocyclesScreen({
             )}
 
             {groups.planned.length > 0 && (
-              <View style={styles.group}>
-                <Text style={styles.groupLabel}>Planned</Text>
+              <View>
+                <SectionHeader title="Planned" variant="label" />
                 <View testID="planned-rows" onLayout={() => setPlannedLaidOut(true)}>
                   {groups.planned.map((mesocycle, index) => (
                     <ListRow
                       key={mesocycle.id}
+                      variant="block"
                       title={mesocycle.name}
                       subtitle={formatPlannedCaption(mesocycle)}
                       onPress={() => onEdit(mesocycle)}
@@ -269,12 +276,13 @@ export function MesocyclesScreen({
             )}
 
             {groups.completed.length > 0 && (
-              <View style={styles.group}>
-                <Text style={styles.groupLabel}>Completed</Text>
+              <View>
+                <SectionHeader title="Completed" variant="label" />
                 <View>
                   {groups.completed.map((mesocycle) => (
                     <ListRow
                       key={mesocycle.id}
+                      variant="block"
                       title={mesocycle.name}
                       subtitle={formatCompletedCaption(mesocycle)}
                       badge={mesocycleStoppedBadge(mesocycle)}
