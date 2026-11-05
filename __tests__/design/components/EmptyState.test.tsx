@@ -1,7 +1,7 @@
 import { EmptyState } from '@design/components/EmptyState';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import { SPACING } from '@design/tokens';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 describe('EmptyState', () => {
@@ -67,5 +67,62 @@ describe('EmptyState', () => {
     const style = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
     expect(style.flex).toBe(1);
     expect(style.paddingBottom).toBe(90 + SPACING['space/empty-lift']);
+  });
+
+  describe('framed', () => {
+    const renderFramed = (withSecondary: boolean) =>
+      render(
+        <EmptyState
+          icon={CheckIcon}
+          title="Plan your first training cycle"
+          description="Pick your days and exercises, then start."
+          actionLabel="Start from a template"
+          onAction={() => {}}
+          secondaryAction={
+            withSecondary ? { label: 'Build from scratch', onPress: () => {} } : undefined
+          }
+          bottomInset={90}
+          framed
+        />,
+      );
+
+    test('puts the icon and the copy on a card, and the buttons outside it', () => {
+      renderFramed(true);
+
+      const card = screen.getByTestId('empty-state-card');
+      expect(within(card).getByTestId('empty-state-icon')).toBeTruthy();
+      expect(within(card).getByText('Plan your first training cycle')).toBeTruthy();
+      expect(within(card).queryByRole('button')).toBeNull();
+    });
+
+    test('puts the primary action last, nearest the thumb', () => {
+      renderFramed(true);
+
+      const [first, last, ...rest] = within(screen.getByTestId('empty-state-actions')).getAllByRole(
+        'button',
+      );
+      expect(rest).toHaveLength(0);
+      expect(within(first!).getByText('Build from scratch')).toBeTruthy();
+      expect(within(last!).getByText('Start from a template')).toBeTruthy();
+    });
+
+    test('pins the actions above the bottom inset', () => {
+      renderFramed(false);
+
+      const style = StyleSheet.flatten(screen.getByTestId('empty-state-actions').props.style);
+      expect(style.position).toBe('absolute');
+      expect(style.bottom).toBe(90 + SPACING['space/screen']);
+    });
+
+    test('centres the card in the same room whether one button is under it or two', () => {
+      const { unmount } = renderFramed(false);
+      const one = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
+      unmount();
+      renderFramed(true);
+      const two = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
+
+      expect(one.justifyContent).toBe('center');
+      expect(two).toEqual(one);
+    });
   });
 });
