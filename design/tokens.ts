@@ -195,6 +195,8 @@ export const SPACING = {
   /** Either side of the label in a coachmark's `Next` / `Got it` button (08.11). */
   'space/coachmark-button': 22,
   'space/dialog': 32,
+  /** Above and below a framed EmptyState's message — one value for both, roomier than a list card. */
+  'space/empty-card-y': 32,
   /** Above and below a Dialog's content: a little more than at its sides, so the card reads as taller than it is wide-padded (08.11). */
   'space/dialog-y': 40,
   /**

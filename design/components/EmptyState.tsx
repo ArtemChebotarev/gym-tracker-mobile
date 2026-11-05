@@ -14,18 +14,14 @@
 // its content in it — a little above the geometric centre, where the eye puts the middle — so
 // every empty state sits the same way. A screen passes the icon, the copy
 // and the action, and `bottomInset` when something covers the bottom of that room (the tab bar).
+//
+// `framed` is the newer look, being rolled out screen by screen: the icon and the copy on a card,
+// the buttons full width at the bottom of the room, the primary last.
 
 import { StyleSheet, Text, View } from 'react-native';
 import type { IconComponent } from '../icons/IconFrame';
 import { circle } from '../shapes';
-import {
-  BORDER_WIDTHS,
-  COLORS,
-  ICON_SIZES,
-  SIZES,
-  SPACING,
-  TYPOGRAPHY,
-} from '../tokens';
+import { BORDER_WIDTHS, COLORS, ICON_SIZES, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
 import { Button } from './Button';
 
 export type EmptyStateProps = {
@@ -39,6 +35,11 @@ export type EmptyStateProps = {
   bottomInset?: number;
   /** A second way forward, drawn as a `secondary` button under the main one. */
   secondaryAction?: { label: string; onPress: () => void };
+  /**
+   * Draws the message on a card, like the blocks the rest of the app is built of, and moves the
+   * actions to the bottom of the room. Workout and Cycles so far; the other empty states follow.
+   */
+  framed?: boolean;
 };
 
 export function EmptyState({
@@ -49,28 +50,66 @@ export function EmptyState({
   onAction,
   bottomInset = 0,
   secondaryAction,
+  framed = false,
 }: EmptyStateProps) {
-  return (
-    <View
-      testID="empty-state"
-      style={[styles.container, { paddingBottom: bottomInset + SPACING['space/empty-lift'] }]}
-    >
-      <View testID="empty-state-icon" style={styles.iconCircle}>
+  const primary = <Button label={actionLabel} onPress={onAction} />;
+  const secondary = secondaryAction !== undefined && (
+    <Button label={secondaryAction.label} onPress={secondaryAction.onPress} variant="secondary" />
+  );
+  const message = (
+    <>
+      <View
+        testID="empty-state-icon"
+        style={[styles.iconCircle, framed && styles.iconCircleOnCard]}
+      >
         <Icon size={ICON_SIZES['icon/empty']} color={COLORS.accent} />
       </View>
       <Text style={styles.title} numberOfLines={2}>
         {title}
       </Text>
       <Text style={styles.description}>{description}</Text>
-      <View style={styles.action}>
-        <Button label={actionLabel} onPress={onAction} />
-        {secondaryAction !== undefined && (
-          <Button
-            label={secondaryAction.label}
-            onPress={secondaryAction.onPress}
-            variant="secondary"
-          />
-        )}
+    </>
+  );
+
+  // Framed: the message sits on a card in the middle of the room, and the actions leave it for the
+  // bottom of the screen, full width, over the tab bar — where the thumb is, so the primary comes
+  // last, nearest to it. The actions float over the room rather than take a share of it: the card
+  // is centred in the whole room, so it stands in the same place whether one button is under it
+  // or two, and tab to tab it doesn't jump.
+  if (framed) {
+    return (
+      <View
+        testID="empty-state"
+        style={[
+          styles.framedContainer,
+          { paddingBottom: bottomInset + SPACING['space/empty-lift'] },
+        ]}
+      >
+        <View testID="empty-state-card" style={styles.card}>
+          {message}
+        </View>
+        <View
+          testID="empty-state-actions"
+          style={[styles.bottomAction, { bottom: bottomInset + SPACING['space/screen'] }]}
+        >
+          {secondary}
+          {primary}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      testID="empty-state"
+      style={[styles.container, { paddingBottom: bottomInset + SPACING['space/empty-lift'] }]}
+    >
+      <View style={styles.content}>
+        {message}
+        <View style={styles.action}>
+          {primary}
+          {secondary}
+        </View>
       </View>
     </View>
   );
@@ -82,7 +121,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: SPACING['space/screen'],
+  },
+  content: {
+    alignItems: 'center',
     gap: SPACING['space/gap-tight'],
+  },
+  framedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING['space/screen'],
+  },
+  bottomAction: {
+    position: 'absolute',
+    left: SPACING['space/screen'],
+    right: SPACING['space/screen'],
+    gap: SPACING['space/gap-tight'],
+  },
+  card: {
+    alignItems: 'center',
+    gap: SPACING['space/gap-tight'],
+    backgroundColor: COLORS['surface/card'],
+    borderRadius: RADII['radius/control'],
+    paddingHorizontal: SPACING['space/row'],
+    paddingVertical: SPACING['space/empty-card-y'],
   },
   iconCircle: {
     ...circle(SIZES['size/empty-icon']),
@@ -92,6 +153,10 @@ const styles = StyleSheet.create({
     borderWidth: BORDER_WIDTHS['border/default'],
     borderColor: COLORS['border/default'],
     marginBottom: SPACING['space/md'],
+  },
+  // On the card the circle would vanish into the same fill, so it sinks to the page colour.
+  iconCircleOnCard: {
+    backgroundColor: COLORS['surface/page'],
   },
   title: {
     maxWidth: SIZES['size/empty-text'],

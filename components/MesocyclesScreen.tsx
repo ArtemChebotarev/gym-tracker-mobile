@@ -195,10 +195,11 @@ export function MesocyclesScreen({
           <EmptyState
             icon={TabCyclesIcon}
             title="Plan your first training cycle"
-            description="Choose your days and exercises, then start when you're ready."
+            description="Pick your days and exercises, then start."
             actionLabel="Start from a template"
             onAction={onCreateFromTemplate}
             secondaryAction={{ label: 'Build from scratch', onPress: onCreateFromScratch }}
+            framed
             bottomInset={tabBarClearance}
           />
         )}
