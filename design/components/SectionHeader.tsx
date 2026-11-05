@@ -13,10 +13,9 @@
 // `variant: 'label'` (GT-222, canvas «Шаблоны», `LibraryBlocks`) is the header over a list of
 // `block` ListRows: no band — it takes the colour of the surface it sits on (still opaque, so a
 // sticky header covers the blocks scrolling under it), the text a hair in from the blocks' edge,
-// no space below it, since each block brings its own gap. The count is set like the title, so the
-// header reads as one label line rather than a band with a figure at its end. No count at all
-// (GT-223, Cycles' Active / Planned / Completed) leaves the label alone on its line.
-// A label has no space above it either: the space between two groups belongs to the end of the earlier
+// space above it and none below, since each block brings its own gap. The count is set like the
+// title, so the header reads as one label line rather than a band with a figure at its end.
+// A label has no space above it: the space between two groups belongs to the end of the earlier
 // one — `SectionGap`, a list's section footer. Kept inside the header, it rode along when the
 // header stuck, so every label after the first stuck that much lower than the first one did, and
 // the first one stood twice as far below Filters as the others below a block (GT-222).
@@ -40,8 +39,7 @@ export type SectionHeaderVariant = 'band' | 'label';
 
 export type SectionHeaderProps = {
   title: string;
-  /** Left out, the header shows no figure (Cycles' groups, GT-223). */
-  count?: number;
+  count: number;
   dotColor?: string;
   /** Defaults to `screen`. */
   edge?: SectionHeaderEdge;
@@ -95,7 +93,7 @@ export function SectionHeader({
         )}
         <Text style={styles.title}>{title}</Text>
       </View>
-      {count !== undefined && <Text style={isLabel ? styles.title : styles.count}>{count}</Text>}
+      <Text style={isLabel ? styles.title : styles.count}>{count}</Text>
     </View>
   );
 }
