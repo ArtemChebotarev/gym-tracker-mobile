@@ -42,8 +42,8 @@
 // the menu first.
 //
 // Stop mesocycle (052) opens `StopMesocycleSheet`, which stops the block once `END CYCLE` has been
-// typed into it (`useStopMesocycle`); the tab then re-reads and, with no active mesocycle left,
-// invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
+// typed into it (`useStopMesocycle`); the tab then drops a picked day (`unpinDay`, GT-193), re-reads
+// and, with no active mesocycle left, invites planning the next one. `Finish mesocycle` — the button under the last workout, and the
 // action of the `Training cycle complete` EmptyState, so leaving that screen isn't a dead end — closes the
 // block through `useFinishMesocycle` after a plain confirmation: it throws nothing away. The screen
 // does not move afterwards — `Finish mesocycle` is replaced in place by `Copy current meso`
@@ -276,9 +276,10 @@ export default function TodayScreen() {
    * it — through tab switches, and past the moment the block itself was finished — until the app
    * was restarted and the route params went with it (Artem, 24.09.2026).
    *
-   * Leaving and coming back is the whole rule. Finishing or stopping the block deliberately does
+   * Leaving and coming back is the rule, with one exception. Finishing the block deliberately does
    * *not* release it: standing on the workout you just finished is the point, and that is where
-   * `Copy current meso` — and, later, the block's history — is offered from.
+   * `Copy current meso` — and, later, the block's history — is offered from. Stopping the block
+   * does (GT-193): it offers nothing on that workout, which would be left a dead end.
    *
    * It replaces the route rather than clearing the params on it. `setParams` does update the
    * navigator's own state — the route really does come back as `index:{}` — but expo-router reads
@@ -803,9 +804,11 @@ export default function TodayScreen() {
           }
           setIsStopOpen(false);
           stopMesocycle.mutate(model.mesoId, {
-            // Like Finish, this doesn't navigate. Releasing the picked day is the tab bar's job
-            // and only the tab bar's, so there is one rule for it rather than a list of actions
-            // that each remember to do it.
+            // Unlike Finish, Stop releases a picked day (GT-193): the day it stood on reads in
+            // history mode now, with nothing to act on — Stop has no Copy current meso to offer
+            // there — so the tab goes back to the current session, and with no active block left
+            // that invites planning the next one.
+            onSuccess: unpinDay,
             onError: () => Alert.alert("Couldn't stop the training cycle", 'Try again.'),
           });
         }}
