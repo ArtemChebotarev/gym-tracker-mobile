@@ -399,6 +399,34 @@ describe('swapExercise — an interval back from history (GT-185)', () => {
     ]);
   });
 
+  // GT-232: a started interval loses its rounds on Replace, as a strength one loses its sets — the
+  // confirmation has already warned about them.
+  test('DoD: an interval with logged rounds, swapped → no rounds left, back to planned', async () => {
+    const deps = await setUpBagHistory([round(1)]);
+    const punches = await storedExercise(deps.workout);
+    await deps.workout.repos.sessionExerciseRepo.update({ ...punches!, status: 'completed' });
+    for (const roundNumber of [1, 2]) {
+      await deps.workout.repos.roundLogRepo.create(
+        round(roundNumber, {
+          id: `punches-w2-round-${roundNumber}`,
+          sessionExerciseId: 'session-exercise-w2',
+          exerciseId: BAND_PUNCHES.id,
+        }),
+      );
+    }
+
+    const swapped = await swapExercise(swapToBag, deps, NOW);
+
+    expect(swapped.status).toBe('planned');
+    expect(
+      await deps.workout.repos.roundLogRepo.listBySessionExerciseId('session-exercise-w2'),
+    ).toEqual([]);
+    // Another slot's rounds aren't touched.
+    expect(await deps.workout.repos.roundLogRepo.listBySessionExerciseId(bagWeekOne.id)).toEqual([
+      round(1),
+    ]);
+  });
+
   test('no history of it: rounds with no times, to pick on the card', async () => {
     const deps = await setUpBagHistory([]);
 
