@@ -12,8 +12,8 @@
 // first left sections out on the grounds that the day count was in every row's title, and the
 // count moved from the rows into the headers instead). Within a section, by name.
 //
-// Rows are blocks under plain group labels, as in the exercise library (GT-217, after GT-222):
-// the template's description, then its tags (`templateRowTags`). Under the search field, the same
+// Rows are blocks under plain group labels (GT-217). A row carries the template's description, then
+// its tags (`templateRowTags`). Under the search field, the same
 // Filters row as the library's (`FilterRow`): the Filters chip, a chip per applied value, Reset.
 // It lifts 08.10's "no filters in v1.0" (GT-217). The sheet it opens is the caller's — see
 // MesoTemplateEditorScreen — and so are the applied filters, like the search text.
