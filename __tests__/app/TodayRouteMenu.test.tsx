@@ -37,6 +37,12 @@ jest.mock('expo-router', () => ({
     setParams: (params: { sessionId?: string }) => {
       mockParams = { ...mockParams, ...params };
     },
+    // How the picked day is dropped (`unpinDay`): replacing `/` leaves the tab with nothing picked.
+    replace: (href: string) => {
+      if (href === '/') {
+        mockParams = {};
+      }
+    },
   }),
   useLocalSearchParams: () => mockParams,
   // Called rather than passed: the factory runs while this file's imports are still being
@@ -190,6 +196,24 @@ describe('Today tab — header menu', () => {
     ).resolves.toHaveLength(2);
     // With no active mesocycle left, the tab invites planning the next one.
     expect(await screen.findByText('Start your next training cycle')).toBeTruthy();
+  });
+
+  // GT-193: a picked day — here the live session, as after Skip workout or a day from the grid —
+  // was left on screen in history mode after Stop, with nothing to act on.
+  test('DoD: Stop on a picked day lets the day go, and the tab invites the next block', async () => {
+    mockParams = { sessionId: WORKOUT_FIXTURE_IDS.live };
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+
+    pickMenuItem('stopMesocycle');
+    fireEvent.changeText(
+      await screen.findByLabelText(`Type ${STOP_MESOCYCLE_PHRASE} to confirm`),
+      STOP_MESOCYCLE_PHRASE,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Stop cycle' }));
+
+    expect(await screen.findByText('Start your next training cycle')).toBeTruthy();
+    expect(mockParams).toEqual({});
   });
 
   // Stop used to be the only thing a closed block took off this menu (052). Since 128 the whole
