@@ -4,6 +4,17 @@ import { SPACING } from '@design/tokens';
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
+const UNCOVERED = {
+  ref: { current: null },
+  onLayout: () => {},
+  keyboardOverlap: 0,
+  safeAreaShortfall: 0,
+};
+const mockBottomEdge = jest.fn(() => UNCOVERED);
+jest.mock('@design/useBottomEdge', () => ({
+  useBottomEdge: () => mockBottomEdge(),
+}));
+
 describe('EmptyState', () => {
   test('renders the title, description, and action', () => {
     render(
@@ -69,8 +80,8 @@ describe('EmptyState', () => {
     expect(style.paddingBottom).toBe(90 + SPACING['space/empty-lift']);
   });
 
-  describe('framed', () => {
-    const renderFramed = (withSecondary: boolean) =>
+  describe('layout', () => {
+    const renderWith = (withSecondary: boolean) =>
       render(
         <EmptyState
           icon={CheckIcon}
@@ -82,12 +93,11 @@ describe('EmptyState', () => {
             withSecondary ? { label: 'Build from scratch', onPress: () => {} } : undefined
           }
           bottomInset={90}
-          framed
         />,
       );
 
     test('puts the icon and the copy on a card, and the buttons outside it', () => {
-      renderFramed(true);
+      renderWith(true);
 
       const card = screen.getByTestId('empty-state-card');
       expect(within(card).getByTestId('empty-state-icon')).toBeTruthy();
@@ -96,7 +106,7 @@ describe('EmptyState', () => {
     });
 
     test('puts the primary action last, nearest the thumb', () => {
-      renderFramed(true);
+      renderWith(true);
 
       const [first, last, ...rest] = within(screen.getByTestId('empty-state-actions')).getAllByRole(
         'button',
@@ -107,7 +117,7 @@ describe('EmptyState', () => {
     });
 
     test('pins the actions above the bottom inset', () => {
-      renderFramed(false);
+      renderWith(false);
 
       const style = StyleSheet.flatten(screen.getByTestId('empty-state-actions').props.style);
       expect(style.position).toBe('absolute');
@@ -115,14 +125,71 @@ describe('EmptyState', () => {
     });
 
     test('centres the card in the same room whether one button is under it or two', () => {
-      const { unmount } = renderFramed(false);
+      const { unmount } = renderWith(false);
       const one = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
       unmount();
-      renderFramed(true);
+      renderWith(true);
       const two = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
 
       expect(one.justifyContent).toBe('center');
       expect(two).toEqual(one);
+    });
+  });
+
+  describe('what covers the bottom', () => {
+    const renderCovered = (edge: { keyboardOverlap: number; safeAreaShortfall: number }) => {
+      mockBottomEdge.mockReturnValue({ ref: { current: null }, onLayout: () => {}, ...edge });
+      return render(
+        <EmptyState
+          icon={CheckIcon}
+          title='No exercises match "row"'
+          description="Check the spelling or add it as a new exercise."
+          actionLabel='Create "row"'
+          onAction={() => {}}
+          bottomInset={90}
+        />,
+      );
+    };
+
+    afterEach(() => mockBottomEdge.mockReturnValue(UNCOVERED));
+
+    test('with the keyboard up, drops the circle and stacks card and button above the keyboard', () => {
+      renderCovered({ keyboardOverlap: 300, safeAreaShortfall: 0 });
+
+      expect(screen.queryByTestId('empty-state-icon')).toBeNull();
+      const room = StyleSheet.flatten(screen.getByTestId('empty-state').props.style);
+      expect(room.justifyContent).toBe('flex-end');
+      expect(room.paddingBottom).toBe(300 + SPACING['space/screen']);
+      const actions = StyleSheet.flatten(screen.getByTestId('empty-state-actions').props.style);
+      expect(actions.position).toBeUndefined();
+    });
+
+    test('keeps the actions off the home indicator when the screen reaches it', () => {
+      mockBottomEdge.mockReturnValue({
+        ref: { current: null },
+        onLayout: () => {},
+        keyboardOverlap: 0,
+        safeAreaShortfall: 34,
+      });
+      render(
+        <EmptyState
+          icon={CheckIcon}
+          title="Exercise not found"
+          description="It isn't in the library any more."
+          actionLabel="Go back"
+          onAction={() => {}}
+        />,
+      );
+
+      const actions = StyleSheet.flatten(screen.getByTestId('empty-state-actions').props.style);
+      expect(actions.bottom).toBe(34 + SPACING['space/screen']);
+    });
+
+    test('lets the tab bar clearance stand when it already clears the home indicator', () => {
+      renderCovered({ keyboardOverlap: 0, safeAreaShortfall: 34 });
+
+      const actions = StyleSheet.flatten(screen.getByTestId('empty-state-actions').props.style);
+      expect(actions.bottom).toBe(90 + SPACING['space/screen']);
     });
   });
 });

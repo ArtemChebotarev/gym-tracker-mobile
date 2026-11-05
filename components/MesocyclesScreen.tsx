@@ -199,7 +199,6 @@ export function MesocyclesScreen({
             actionLabel="Start from a template"
             onAction={onCreateFromTemplate}
             secondaryAction={{ label: 'Build from scratch', onPress: onCreateFromScratch }}
-            framed
             bottomInset={tabBarClearance}
           />
         )}
