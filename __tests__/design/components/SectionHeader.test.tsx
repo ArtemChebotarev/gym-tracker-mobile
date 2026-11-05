@@ -1,4 +1,6 @@
 import { SectionHeader } from '@design/components/SectionHeader';
+import { COLORS, SPACING } from '@design/tokens';
+import { StyleSheet } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 describe('SectionHeader', () => {
@@ -21,5 +23,21 @@ describe('SectionHeader', () => {
   test('renders no dot when no color is given', () => {
     render(<SectionHeader title="Back" count={8} />);
     expect(screen.queryByTestId('section-header-dot')).toBeNull();
+  });
+
+  test("a label header sits on its container's surface, text a hair in, the count set like the title", () => {
+    // GT-222: over a list of blocks there is no raised band. Still opaque, so a sticky header
+    // covers the blocks scrolling under it — the screen's surface on a screen, the sheet's in a sheet.
+    const { rerender } = render(<SectionHeader title="Back" count={8} variant="label" />);
+    const container = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
+    expect(container.backgroundColor).toBe(COLORS['surface/page']);
+    expect(container.paddingHorizontal).toBe(SPACING['space/screen'] + SPACING['space/xs']);
+    expect(StyleSheet.flatten(screen.getByText('8').props.style)).toEqual(
+      StyleSheet.flatten(screen.getByText('Back').props.style),
+    );
+
+    rerender(<SectionHeader title="Back" count={8} variant="label" edge="sheet" />);
+    const inSheet = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
+    expect(inSheet.backgroundColor).toBe(COLORS['surface/sheet']);
   });
 });

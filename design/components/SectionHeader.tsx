@@ -9,6 +9,12 @@
 // count with a row's chevron instead of both being inset a second time inside the band (GT-146).
 // That needs the list to reach the container's edge too, or the scroll view clips the bleed: the
 // lists give themselves the same negative margin and re-pad their content — see `listBleed`.
+//
+// `variant: 'label'` (GT-222, canvas «Шаблоны», `LibraryBlocks`) is the header over a list of
+// `block` ListRows: no band — it takes the colour of the surface it sits on (still opaque, so a
+// sticky header covers the blocks scrolling under it), the text a hair in from the blocks' edge,
+// space above it and none below, since each block brings its own gap. The count is set like the
+// title, so the header reads as one label line rather than a band with a figure at its end.
 
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -24,6 +30,9 @@ export type SectionHeaderEdge = 'screen' | 'sheet';
  */
 export type SectionHeaderInset = 'none' | 'card';
 
+/** `band`: the raised strip over a divided list (the default). `label`: over a list of blocks. */
+export type SectionHeaderVariant = 'band' | 'label';
+
 export type SectionHeaderProps = {
   title: string;
   count: number;
@@ -32,9 +41,13 @@ export type SectionHeaderProps = {
   edge?: SectionHeaderEdge;
   /** Defaults to `none` — the text on the content's own edge, where a row's text starts. */
   inset?: SectionHeaderInset;
+  /** Defaults to `band`. */
+  variant?: SectionHeaderVariant;
 };
 
 const EDGE_SPACING = { screen: SPACING['space/screen'], sheet: SPACING['space/sheet'] } as const;
+/** What a `label` header is drawn on: the surface of the container it sits in. */
+const EDGE_SURFACE = { screen: COLORS['surface/page'], sheet: COLORS['surface/sheet'] } as const;
 
 /**
  * What a list holding `SectionHeader`s adds so its scroll view spans the container's padding
@@ -55,18 +68,28 @@ export function SectionHeader({
   dotColor,
   edge = 'screen',
   inset = 'none',
+  variant = 'band',
 }: SectionHeaderProps) {
   const spacing = EDGE_SPACING[edge];
-  const textInset = spacing + (inset === 'card' ? SPACING['space/row'] : 0);
+  const isLabel = variant === 'label';
+  const textInset =
+    spacing + (inset === 'card' ? SPACING['space/row'] : 0) + (isLabel ? SPACING['space/xs'] : 0);
   return (
-    <View style={[styles.container, { marginHorizontal: -spacing, paddingHorizontal: textInset }]}>
+    <View
+      testID="section-header"
+      style={[
+        styles.container,
+        isLabel && [styles.label, { backgroundColor: EDGE_SURFACE[edge] }],
+        { marginHorizontal: -spacing, paddingHorizontal: textInset },
+      ]}
+    >
       <View style={styles.leading}>
         {dotColor !== undefined && (
           <View testID="section-header-dot" style={[styles.dot, { backgroundColor: dotColor }]} />
         )}
         <Text style={styles.title}>{title}</Text>
       </View>
-      <Text style={styles.count}>{count}</Text>
+      <Text style={isLabel ? styles.title : styles.count}>{count}</Text>
     </View>
   );
 }
@@ -78,6 +101,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: COLORS['surface/raised'],
     paddingVertical: SPACING['space/row'],
+  },
+  label: {
+    paddingTop: SPACING['space/row'],
+    paddingBottom: 0,
   },
   leading: {
     flexDirection: 'row',

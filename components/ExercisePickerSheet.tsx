@@ -187,10 +187,12 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               count={section.data.length}
               dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
+              variant="label"
             />
             {section.data.map((entry) => (
               <ListRow
                 key={entry.exercise.id}
+                variant="block"
                 title={entry.exercise.name}
                 titleSuffix={equipmentSuffix(entry.exercise)}
                 subtitle={rowSubtitle(entry)}
