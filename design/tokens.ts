@@ -180,8 +180,6 @@ export const SPACING = {
   'space/chip-y': 4,
   /** Set row: above and below its 44pt fields — kept tight, the fields already carry the height. */
   'space/set-row-y': 6,
-  /** Between two `block` ListRows — each row its own card instead of a divider (GT-222). */
-  'space/list-block-gap': 6,
   /** A ListRow's tags (GT-217): between two of them, and between the row's subtitle and them. */
   'space/tag-gap': 6,
   'space/xs': 4,
@@ -336,11 +334,6 @@ export const SIZES = {
   'size/time-wheel-inset': 82,
   /** A StepperRow's height — the same with a caption under the label as without one. */
   'size/stepper-row': 58,
-  /**
-   * A `block` ListRow's height (GT-222): the title line and a subtitle under it, set in a card of
-   * their own. A minimum — a longer row (a badge, a larger text size) grows rather than clips.
-   */
-  'size/list-block': 56,
   /** A compact Badge — a ListRow's tag (GT-217): a small pill under the row's subtitle. */
   'size/tag': 22,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */

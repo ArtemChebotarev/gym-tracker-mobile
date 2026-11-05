@@ -38,13 +38,6 @@
 // color at the title's size — rather than nested inside the title Text, so the title keeps its own
 // text node (and exact-match lookups) and truncates first while the short suffix stays whole.
 //
-// `variant: 'block'` (GT-222) draws the row as a card of its own — `surface/card`, a border and a
-// rounded corner, about 56pt tall, a small gap between neighbours — instead of a divider under it.
-// Same content, same accessories, same tap targets: only the frame changes, so one row serves both
-// a divided list and a list of blocks rather than a second, copied row component. `divider` stays
-// the default, so every list that did not ask for blocks looks as it did. On a block the badge
-// sits on `surface/card`, so it is drawn for a card (`Badge`'s `surface`), or it lost its pill.
-//
 // `tags` (GT-217, canvas «Шаблоны», `TemplatesRows`) are a line of compact badges under the
 // subtitle — what the row's thing is filtered by (a template's focus, `Hybrid`). The same
 // `ListRowBadge` shape as `badge`, so a tag looks like a badge everywhere else, only smaller.
@@ -87,9 +80,6 @@ export type ListRowLeading = {
 
 export type ListRowBadge = { label: string; variant?: BadgeVariant };
 
-/** `divider`: a line under the row (the default). `block`: the row as a card of its own. */
-export type ListRowVariant = 'divider' | 'block';
-
 export type ListRowProps = {
   title: string;
   titleSuffix?: string;
@@ -100,8 +90,6 @@ export type ListRowProps = {
   tags?: readonly ListRowBadge[];
   trailing?: ListRowTrailing;
   onPress?: () => void;
-  /** Defaults to `divider`. */
-  variant?: ListRowVariant;
 };
 
 export function ListRow({
@@ -113,16 +101,7 @@ export function ListRow({
   tags,
   trailing,
   onPress,
-  variant = 'divider',
 }: ListRowProps) {
-  const badgeSurface = variant === 'block' ? 'card' : 'page';
-  const container = variant === 'block' ? styles.block : styles.container;
-  // A two-line block is centred by its own height and only needs its text kept off the border. A
-  // block with tags runs past that height to three lines, and pressed to that minimum it read as
-  // cramped (Artem, GT-217): it takes a divided row's padding instead, as the mockup's
-  // `TemplatesList` pads its rows.
-  const hasTags = tags !== undefined && tags.length > 0;
-  const row = variant === 'block' && !hasTags ? [styles.row, styles.blockRow] : styles.row;
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
   const body = (
@@ -147,13 +126,7 @@ export function ListRow({
         {tags !== undefined && tags.length > 0 && (
           <View style={styles.tags}>
             {tags.map((tag) => (
-              <Badge
-                key={tag.label}
-                label={tag.label}
-                variant={tag.variant}
-                surface={badgeSurface}
-                size="compact"
-              />
+              <Badge key={tag.label} label={tag.label} variant={tag.variant} size="compact" />
             ))}
           </View>
         )}
@@ -163,7 +136,7 @@ export function ListRow({
         // the pill and `⋯` beside it; the wrapper takes the row's own centring instead, the same
         // way the workout header wraps its Deload badge.
         <View>
-          <Badge label={badge.label} variant={badge.variant} surface={badgeSurface} />
+          <Badge label={badge.label} variant={badge.variant} />
         </View>
       )}
     </>
@@ -178,8 +151,8 @@ export function ListRow({
 
   if (leading?.onPress !== undefined) {
     return (
-      <View style={container}>
-        <View style={row}>
+      <View style={styles.container}>
+        <View style={styles.row}>
           <Pressable
             accessibilityRole="checkbox"
             accessibilityLabel={`Select ${title}`}
@@ -207,8 +180,8 @@ export function ListRow({
   // An actions row keeps its accessories out of the tap target — see the note at the top.
   if (trailing?.type === 'actions') {
     return (
-      <View style={container}>
-        <View style={row}>
+      <View style={styles.container}>
+        <View style={styles.row}>
           {onPress === undefined ? (
             <View style={styles.body}>{body}</View>
           ) : (
@@ -227,7 +200,7 @@ export function ListRow({
   }
 
   const content = (
-    <View style={row}>
+    <View style={styles.row}>
       {body}
       {trailing !== undefined && <Trailing title={title} trailing={trailing} />}
     </View>
@@ -238,14 +211,14 @@ export function ListRow({
       <Pressable
         {...accessibility}
         onPress={onPress}
-        style={({ pressed }) => [container, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.container, pressed && styles.pressed]}
       >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={container}>{content}</View>;
+  return <View style={styles.container}>{content}</View>;
 }
 
 function Leading({ leading }: { leading: ListRowLeading }) {
@@ -308,22 +281,6 @@ const styles = StyleSheet.create({
   container: {
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
-  },
-  block: {
-    minHeight: SIZES['size/list-block'],
-    justifyContent: 'center',
-    marginTop: SPACING['space/list-block-gap'],
-    paddingLeft: SPACING['space/md'],
-    paddingRight: SPACING['space/row'],
-    backgroundColor: COLORS['surface/card'],
-    borderWidth: BORDER_WIDTHS['border/default'],
-    borderColor: COLORS['border/default'],
-    borderRadius: RADII['radius/field'],
-  },
-  // The block's own height centres the two lines, so the row's padding only keeps text off the
-  // border when a row grows past it.
-  blockRow: {
-    paddingVertical: SPACING['space/xs'],
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],

@@ -435,14 +435,12 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     "justifyContent": "space-between",
                     "paddingVertical": 12,
                   },
-                  false,
                   {
                     "marginHorizontal": -20,
                     "paddingHorizontal": 20,
                   },
                 ]
               }
-              testID="section-header"
             >
               <View
                 style={
@@ -674,14 +672,12 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                     "justifyContent": "space-between",
                     "paddingVertical": 12,
                   },
-                  false,
                   {
                     "marginHorizontal": -20,
                     "paddingHorizontal": 20,
                   },
                 ]
               }
-              testID="section-header"
             >
               <View
                 style={

@@ -12,11 +12,11 @@
 // first left sections out on the grounds that the day count was in every row's title, and the
 // count moved from the rows into the headers instead). Within a section, by name.
 //
-// Rows are blocks under plain group labels (GT-217). A row carries the template's description, then
-// its tags (`templateRowTags`). Under the search field, the same
-// Filters row as the library's (`FilterRow`): the Filters chip, a chip per applied value, Reset.
-// It lifts 08.10's "no filters in v1.0" (GT-217). The sheet it opens is the caller's — see
-// MesoTemplateEditorScreen — and so are the applied filters, like the search text.
+// Rows are divided under band headers, as in Library (GT-237; GT-217 had set them as blocks). A
+// row carries the template's description, then its tags (`templateRowTags`). Under the search
+// field, the same Filters row as the library's (`FilterRow`): the Filters chip, a chip per applied
+// value, Reset. It lifts 08.10's "no filters in v1.0" (GT-217). The sheet it opens is the caller's
+// — see MesoTemplateEditorScreen — and so are the applied filters, like the search text.
 //
 // A search that finds nothing says so and offers to clear the search; filters that leave nothing,
 // with no search typed, say so and offer to reset them — the library's two empty states.
@@ -30,7 +30,7 @@ import { EmptyState } from '@design/components/EmptyState';
 import { FilterRow } from '@design/components/FilterRow';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
-import { listBleed, SectionGap, SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionHeader } from '@design/components/SectionHeader';
 import { SearchIcon } from '@design/icons/SearchIcon';
 import type { MesoTemplate } from '@domain/plan';
 import {
@@ -120,12 +120,10 @@ export function TemplateList({
           sections={sections}
           keyExtractor={(template) => template.id}
           renderSectionHeader={({ section }) => (
-            <SectionHeader title={section.title} count={section.data.length} variant="label" />
+            <SectionHeader title={section.title} count={section.data.length} />
           )}
-          renderSectionFooter={() => <SectionGap />}
           renderItem={({ item }) => (
             <ListRow
-              variant="block"
               title={item.name}
               subtitle={formatTemplateSubtitle(item)}
               tags={templateRowTags(item)}
