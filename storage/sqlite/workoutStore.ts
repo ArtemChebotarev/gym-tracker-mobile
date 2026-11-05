@@ -5,7 +5,7 @@ import { SqliteRoundLogRepository } from './roundLogRepository';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSetLogRepository } from './setLogRepository';
-import { runInTransaction } from './transaction';
+import { runInStoreTransaction } from './transaction';
 
 /**
  * The workout repositories over `db` — exported for `createSqliteMesocycleClosingStore`, which is
@@ -22,7 +22,7 @@ export function workoutRepositoriesOver(db: SqliteDatabase): WorkoutRepositories
 
 /**
  * The SQLite `WorkoutStore`: workout repositories over `db`, with atomicity from SQLite's own
- * transactions (`runInTransaction`).
+ * transactions (`runInStoreTransaction`), one at a time.
  *
  * The repositories handed to `work` are built fresh rather than reused from `repos` — they are
  * the same objects in effect, because a transaction here runs on the one connection the whole
@@ -32,6 +32,6 @@ export function workoutRepositoriesOver(db: SqliteDatabase): WorkoutRepositories
 export function createSqliteWorkoutStore(db: SqliteDatabase): WorkoutStore {
   return {
     repos: workoutRepositoriesOver(db),
-    transaction: (work) => runInTransaction(db, () => work(workoutRepositoriesOver(db))),
+    transaction: (work) => runInStoreTransaction(db, () => work(workoutRepositoriesOver(db))),
   };
 }

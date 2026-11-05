@@ -180,12 +180,14 @@ describe('Mobility card (GT-107)', () => {
       );
     }
 
-    test('the button pauses and resumes it, the field opens it, and Done waits', () => {
+    test('the button pauses and resumes it, the field opens it, and Done reaches the workout', () => {
       const rounds = renderCard();
       startTimer();
 
       expect(screen.getByLabelText('10:00 left, open timer')).toBeTruthy();
-      expect(screen.getByRole('checkbox', { name: 'Mark done' })).toBeDisabled();
+      // The workout asks to stop the timer first, as for any log (GT-233).
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Mark done' }));
+      expect(rounds.onLogRound).toHaveBeenCalledWith(1, { workSec: 600 });
 
       expect(screen.getByText('Pause timer')).toBeTruthy();
       fireEvent.press(screen.getByRole('button', { name: 'Pause timer' }));
@@ -197,6 +199,21 @@ describe('Mobility card (GT-107)', () => {
       fireEvent.press(screen.getByLabelText('10:00 left, open timer'));
       expect(rounds.onOpenTimer).toHaveBeenCalled();
       expect(rounds.onStartTimer).not.toHaveBeenCalled();
+    });
+
+    // GT-234 (10.1 FR-9): the timer runs on the length it took at its start.
+    test('DoD: running, paused or put away, Duration opens the timer, not the wheels', () => {
+      const rounds = renderCard();
+      startTimer();
+
+      for (const step of [() => {}, () => useIntervalTimerStore.getState().pause()]) {
+        act(step);
+        act(() => useIntervalTimerStore.getState().minimize());
+        fireEvent.press(screen.getByLabelText('10:00 left, open timer'));
+        expect(screen.UNSAFE_queryByType(TimePickerSheet)).toBeNull();
+      }
+      expect(rounds.onOpenTimer).toHaveBeenCalledTimes(2);
+      expect(rounds.onSetRoundTime).not.toHaveBeenCalled();
     });
 
     test('another exercise’s timer leaves the card alone', () => {

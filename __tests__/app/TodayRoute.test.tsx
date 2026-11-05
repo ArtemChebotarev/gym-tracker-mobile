@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -16,6 +17,8 @@ import {
   seedWorkoutFixture,
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
+import { useRestTimerStore } from '@state/restTimerStore';
 import { markOnboardingSeen } from '@usecases/onboarding';
 import {
   queryClient,
@@ -239,6 +242,69 @@ describe('Today tab — set logging', () => {
     buttons?.find((button: AlertButton) => button.text === 'Open')?.onPress?.();
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref(WORKOUT_FIXTURE_IDS.live));
     alert.mockRestore();
+  });
+});
+
+// GT-233 (10.1 FR-6): only one timer runs at a time. A set logged while an interval
+// timer is out would start a rest over it — so the log asks first, and ends that timer early.
+describe('Today tab — a log beside a running interval timer', () => {
+  const benchCard = () =>
+    screen.getByTestId('exercise-card-fixture-session-w2d1-bench-press-barbell');
+
+  function startIntervalTimer() {
+    act(() =>
+      useIntervalTimerStore.getState().start({
+        exercise: {
+          sessionId: WORKOUT_FIXTURE_IDS.live,
+          sessionExerciseId: 'another-interval',
+          name: 'Heavy bag',
+          totalRounds: 3,
+          loggedRoundNumbers: [],
+        },
+        rounds: [{ roundNumber: 1, workSec: 120, restSec: 45 }],
+        getReadySec: 5,
+      }),
+    );
+  }
+
+  // A set logged by an earlier test is a correction now, and a correction starts no rest.
+  beforeEach(() => useRestTimerStore.getState().clear());
+
+  afterEach(() => {
+    act(() => {
+      useIntervalTimerStore.getState().close();
+      useIntervalTimerStore.getState().clearFinished();
+      useRestTimerStore.getState().clear();
+    });
+  });
+
+  test('DoD: Cancel logs nothing and the timer runs on; Stop and log ends it and starts the rest', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    startIntervalTimer();
+
+    fireEvent.press(within(benchCard()).getByRole('checkbox', { name: 'Log set 3' }));
+
+    expect(alert).toHaveBeenCalledTimes(1);
+    const [title, message, buttons] = alert.mock.calls[0] ?? [];
+    expect(title).toBe('Stop the Heavy bag timer?');
+    expect(message).toBe('Logging by hand ends it. Nothing has been logged yet.');
+    expect(buttons?.map((button: AlertButton) => button.text)).toEqual(['Cancel', 'Stop and log']);
+
+    buttons?.find((button: AlertButton) => button.text === 'Cancel')?.onPress?.();
+    expect(useIntervalTimerStore.getState().active).not.toBeNull();
+    expect(useRestTimerStore.getState().timer).toBeNull();
+
+    act(() => buttons?.find((button: AlertButton) => button.text === 'Stop and log')?.onPress?.());
+    const logged = await within(benchCard()).findByRole('checkbox', { name: 'Set 3 logged' });
+    expect(useIntervalTimerStore.getState().active).toBeNull();
+    expect(useRestTimerStore.getState().timer).not.toBeNull();
+
+    // Put the shared fixture session back the way the other tests expect it.
+    alert.mockRestore();
+    fireEvent.press(logged);
+    await within(benchCard()).findByRole('checkbox', { name: 'Log set 3' });
   });
 });
 

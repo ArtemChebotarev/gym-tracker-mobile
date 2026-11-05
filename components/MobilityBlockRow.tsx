@@ -11,7 +11,8 @@
 //   is out, the field counts the time left, a tap on it opens the timer again, and the action pauses
 //   and resumes it. The timer logs the block itself.
 // - Done is the Log box: one tap logs the block with the length the field shows, timer or not
-//   (FR-10); a second tap un-logs it.
+//   (FR-10); a second tap un-logs it. While the timer is out the workout asks to stop it first, as
+//   for any log beside it (GT-233).
 //
 // JSX/rendering only — pure helpers live in MobilityExerciseCardLogic.ts, per the code-style skill.
 
@@ -90,7 +91,7 @@ export function MobilityBlockRow({
   const timerBlock = timerBlockOf(block, lengthSec);
   const canStart = actions?.onStartTimer !== undefined && timerBlock !== undefined;
   const fieldActive = editable && !logged;
-  const doneDisabled = !editable || isSaving || timerOut || (!logged && lengthSec === undefined);
+  const doneDisabled = !editable || isSaving || (!logged && lengthSec === undefined);
 
   function pressField() {
     if (timerOut) {

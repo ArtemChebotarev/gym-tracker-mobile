@@ -18,7 +18,9 @@
 //   un-logged by a second tap on the filled one, which brings its logged times back into the fields
 //   (FR-7, GT-89).
 // - Start timer opens the interval timer (GT-96) over the rounds not yet logged, with the times
-//   their fields show.
+//   their fields show. While it is out — running, paused or in the capsule — no time can be picked:
+//   the timer runs on the times it took at its start (FR-9, GT-234). Log works as ever: the
+//   workout asks to stop the timer first, as for any log beside it (GT-233).
 //
 // JSX/rendering only — styles live in IntervalRoundRowsStyles.ts and pure helpers in
 // IntervalRoundRowsLogic.ts and IntervalExerciseCardLogic.ts, per the code-style skill.
@@ -34,6 +36,7 @@ import { tapTargetSlop } from '@design/shapes';
 import { COLORS, ICON_SIZES, SIZES } from '@design/tokens';
 import type { RoundEntry } from '@domain/executionValidators';
 import type { IntervalTimerRound } from '@domain/intervalTimer';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import type { WorkoutRoundRow } from '@usecases/workoutSession';
 
 import { CardTimerAction } from './CardTimerAction';
@@ -113,6 +116,14 @@ export function IntervalRoundRows({
     setEditedRounds(rounds);
     setEdits((current) => followRoundChanges(current, editedRounds, rounds));
   }
+  // The timer runs on the times it took at its start, so while this exercise's timer is out —
+  // running, paused or put away into the capsule — a picked time would part from what it logs:
+  // the fields wait for it to end (10.1 FR-9, GT-234).
+  const timerOut = useIntervalTimerStore(
+    (s) =>
+      s.active?.exercise.sessionExerciseId === sessionExerciseId &&
+      s.active.timer.phase !== undefined,
+  );
   const shown = roundsWithEdits(rounds, edits);
   const timerLabel = editable ? startTimerLabel(shown) : undefined;
   const timerRounds = timerRoundsOf(shown);
@@ -151,6 +162,7 @@ export function IntervalRoundRows({
           key={round.roundNumber}
           round={round}
           editable={editable}
+          timerOut={timerOut}
           isSaving={isSaving}
           openColumn={open?.roundNumber === round.roundNumber ? open.column : undefined}
           onOpenField={(column) => openPicker(column, round.roundNumber)}
@@ -204,6 +216,8 @@ export function IntervalRoundRows({
 type RoundRowProps = {
   round: WorkoutRoundRow;
   editable: boolean;
+  /** This exercise's interval timer is out — Work and Rest can't be picked. */
+  timerOut: boolean;
   isSaving: boolean;
   /** The field of this round whose picker is open — its outline brightens. */
   openColumn: RoundTimeColumn | undefined;
@@ -216,6 +230,7 @@ type RoundRowProps = {
 function RoundRow({
   round,
   editable,
+  timerOut,
   isSaving,
   openColumn,
   onOpenField,
@@ -227,7 +242,8 @@ function RoundRow({
   const restSec = shownRestSec(round);
   const restSkipped = round.log?.restSkipped === true;
   // An unlogged round's times can be picked; a logged one reads as it was logged — un-log to change.
-  const pickable = editable && !logged;
+  const pickable = editable && !logged && !timerOut;
+  const fieldsEditable = editable && !timerOut;
   // A round with an empty field can't be logged yet (FR-9); un-logging always works.
   const logDisabled = !editable || isSaving || (!logged && !hasRoundTimes(round));
 
@@ -243,7 +259,7 @@ function RoundRow({
             label={`Work, round ${round.roundNumber}`}
             sec={workSec}
             logged={logged}
-            editable={editable}
+            editable={fieldsEditable}
             focused={openColumn === 'work'}
             {...(pickable ? { onPress: () => onOpenField('work') } : {})}
           />
@@ -252,7 +268,7 @@ function RoundRow({
             sec={restSec}
             skipped={restSkipped}
             logged={logged}
-            editable={editable}
+            editable={fieldsEditable}
             focused={openColumn === 'rest'}
             {...(pickable ? { onPress: () => onOpenField('rest') } : {})}
           />

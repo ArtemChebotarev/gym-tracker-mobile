@@ -9,7 +9,15 @@ import {
   todayEmptyCopy,
   loggedSetKey,
   restAfterLog,
+  intervalTimerOnLog,
+  timerLoggedRow,
 } from '@components/TodayScreenLogic';
+import {
+  endIntervalTimerEarly,
+  intervalTimerAt,
+  startIntervalTimer,
+} from '@domain/intervalTimerRules';
+import type { ActiveIntervalTimer } from '@state/intervalTimerStore';
 import type { PowerWorkoutExercise, WorkoutExercise } from '@usecases/workoutSession';
 
 describe('formatInProgressConflict', () => {
@@ -506,5 +514,63 @@ describe('restAfterIntervalBlock (GT-98)', () => {
     expect(
       restAfterIntervalBlock([cooldown], { sessionExerciseId: 'bag', roundNumber: 2, restSec: 45 }),
     ).toBeUndefined();
+  });
+});
+
+// GT-233 (10.1 FR-6): what a log by hand does with an interval timer that is out.
+describe('intervalTimerOnLog and timerLoggedRow', () => {
+  const T0 = Date.UTC(2026, 10, 5, 10, 0, 0);
+  const rounds = [
+    { roundNumber: 1, workSec: 120, restSec: 45 },
+    { roundNumber: 2, workSec: 120, restSec: 45 },
+    { roundNumber: 3, workSec: 120, restSec: 45 },
+  ];
+
+  function active(timer = startIntervalTimer(rounds, 0, T0)): ActiveIntervalTimer {
+    return {
+      exercise: {
+        sessionId: 'session',
+        sessionExerciseId: 'bag',
+        name: 'Heavy bag',
+        totalRounds: 3,
+        loggedRoundNumbers: [],
+      },
+      timer,
+    };
+  }
+
+  test('no timer: nothing to do', () => {
+    expect(intervalTimerOnLog(null, T0)).toEqual({ kind: 'none' });
+  });
+
+  test('a timer mid-round, on any exercise: asks, saying what goes into its log', () => {
+    // Round 1 and its rest are over, and round 2 has run a second.
+    const now = T0 + (120 + 45 + 1) * 1000;
+    const timer = intervalTimerAt(startIntervalTimer(rounds, 0, T0), now);
+
+    expect(intervalTimerOnLog(active(timer), now)).toEqual({
+      kind: 'confirm',
+      title: 'Stop the Heavy bag timer?',
+      message: 'Logging by hand ends it. Round 1 is in the log. Round 2 will be logged as 0:01 of 2:00.',
+      stopLabel: 'Stop and log',
+    });
+  });
+
+  test('a timer already over, only its summary left: put away without asking', () => {
+    const timer = endIntervalTimerEarly(startIntervalTimer(rounds, 0, T0), T0 + 1000);
+
+    expect(intervalTimerOnLog(active(timer), T0 + 2000)).toEqual({ kind: 'close' });
+  });
+
+  test('the rounds the stopped timer logged are its own; a later round and a set are the hand’s', () => {
+    const now = T0 + (120 + 45 + 1) * 1000;
+    const stopped = active(endIntervalTimerEarly(intervalTimerAt(startIntervalTimer(rounds, 0, T0), now), now));
+
+    expect(timerLoggedRow(stopped, 'bag', 1)).toBe(true);
+    expect(timerLoggedRow(stopped, 'bag', 2)).toBe(true);
+    expect(timerLoggedRow(stopped, 'bag', 3)).toBe(false);
+    expect(timerLoggedRow(stopped, 'bench', 2)).toBe(false);
+    expect(timerLoggedRow(stopped, 'bag', undefined)).toBe(false);
+    expect(timerLoggedRow(null, 'bag', 2)).toBe(false);
   });
 });

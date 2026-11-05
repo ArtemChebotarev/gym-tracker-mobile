@@ -1,6 +1,7 @@
 // Pure helpers behind the Today tab (app/(tabs)/index.tsx, `TodayScreen`) — see the code-style
 // skill; they live here because every file under app/ is a route.
 
+import { endEarlyMessage } from '@components/IntervalTimerScreenLogic';
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
@@ -12,7 +13,11 @@ import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import { hasRounds, type WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
-import type { FinishedIntervalBlock, IntervalTimerExercise } from '@state/intervalTimerStore';
+import type {
+  ActiveIntervalTimer,
+  FinishedIntervalBlock,
+  IntervalTimerExercise,
+} from '@state/intervalTimerStore';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -312,4 +317,56 @@ export function restAfterIntervalBlock(
     return undefined;
   }
   return restAfterLog(exercises, exercise, finished.roundNumber, new Set(), finished.restSec);
+}
+
+/**
+ * What a log by hand does with an interval timer that is out (10.1 FR-6, GT-233) — any log, on its
+ * own exercise or another: only one timer runs at a time, a log starts a rest, and the timer's own
+ * rows are the timer's to write.
+ *
+ * - `none` — no timer.
+ * - `close` — the timer has run to its end and only its summary is left: put it away, nothing to ask.
+ * - `confirm` — a timer running or paused: the log ends it early, as End early on its screen would,
+ *   once the user says so — the question says what goes into its log.
+ */
+export type IntervalTimerOnLog =
+  | { kind: 'none' }
+  | { kind: 'close' }
+  | { kind: 'confirm'; title: string; message: string; stopLabel: string };
+
+export const STOP_TIMER_AND_LOG = 'Stop and log';
+
+export function intervalTimerOnLog(
+  active: ActiveIntervalTimer | null,
+  now: number,
+): IntervalTimerOnLog {
+  if (active === null) {
+    return { kind: 'none' };
+  }
+  if (active.timer.phase === undefined) {
+    return { kind: 'close' };
+  }
+  return {
+    kind: 'confirm',
+    title: `Stop the ${active.exercise.name} timer?`,
+    message: `Logging by hand ends it. ${endEarlyMessage(active, now)}`,
+    stopLabel: STOP_TIMER_AND_LOG,
+  };
+}
+
+/**
+ * Whether the timer, just ended, logged row `rowNumber` of exercise `sessionExerciseId` itself — a
+ * round it ran, or the one it was in. That row's hand log is dropped: the timer's stands, and a
+ * second log of a logged round fails (GT-233). `rowNumber` absent — a set — never.
+ */
+export function timerLoggedRow(
+  stopped: ActiveIntervalTimer | null,
+  sessionExerciseId: string,
+  rowNumber: number | undefined,
+): boolean {
+  return (
+    rowNumber !== undefined &&
+    stopped?.exercise.sessionExerciseId === sessionExerciseId &&
+    stopped.timer.results.some((result) => result.roundNumber === rowNumber)
+  );
 }

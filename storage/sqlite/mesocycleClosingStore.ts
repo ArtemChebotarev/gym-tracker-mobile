@@ -5,7 +5,7 @@ import type {
 
 import type { SqliteDatabase } from './db';
 import { SqliteMesocycleRepository } from './mesocycle';
-import { runInTransaction } from './transaction';
+import { runInStoreTransaction } from './transaction';
 import { workoutRepositoriesOver } from './workoutStore';
 
 function mesocycleClosingRepositoriesOver(db: SqliteDatabase): MesocycleClosingRepositories {
@@ -23,6 +23,7 @@ function mesocycleClosingRepositoriesOver(db: SqliteDatabase): MesocycleClosingR
 export function createSqliteMesocycleClosingStore(db: SqliteDatabase): MesocycleClosingStore {
   return {
     repos: mesocycleClosingRepositoriesOver(db),
-    transaction: (work) => runInTransaction(db, () => work(mesocycleClosingRepositoriesOver(db))),
+    transaction: (work) =>
+      runInStoreTransaction(db, () => work(mesocycleClosingRepositoriesOver(db))),
   };
 }

@@ -6,7 +6,7 @@ import { SqliteMesocycleRepository } from './mesocycle';
 import { SqliteSessionRepository } from './session';
 import { SqliteSessionExerciseRepository } from './sessionExercise';
 import { SqliteSetLogRepository } from './setLogRepository';
-import { runInTransaction } from './transaction';
+import { runInStoreTransaction } from './transaction';
 
 function mesocycleStartRepositoriesOver(db: SqliteDatabase): MesocycleStartRepositories {
   return {
@@ -26,6 +26,7 @@ function mesocycleStartRepositoriesOver(db: SqliteDatabase): MesocycleStartRepos
 export function createSqliteMesocycleStartStore(db: SqliteDatabase): MesocycleStartStore {
   return {
     repos: mesocycleStartRepositoriesOver(db),
-    transaction: (work) => runInTransaction(db, () => work(mesocycleStartRepositoriesOver(db))),
+    transaction: (work) =>
+      runInStoreTransaction(db, () => work(mesocycleStartRepositoriesOver(db))),
   };
 }

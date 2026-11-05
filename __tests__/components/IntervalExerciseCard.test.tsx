@@ -5,6 +5,7 @@ import {
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
+import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import type { IntervalWorkoutExercise, WorkoutRoundRow } from '@usecases/workoutSession';
 
 const NO_ACTIONS: IntervalWorkoutExercise['actions'] = {
@@ -370,6 +371,98 @@ describe('Interval card (GT-88)', () => {
     render(<WorkoutExerciseCard {...makeProps({ mode: 'readonly' })} />);
     fireEvent.press(screen.getAllByLabelText('Work, round 2, 2:00').at(-1)!);
     expect(screen.queryByText('Work · round 2')).toBeNull();
+  });
+
+  // GT-234 (10.1 FR-9): the timer runs on the times it took at its start, so while it is out no
+  // field of its exercise can be picked.
+  describe('while its interval timer is out', () => {
+    function startTimer(sessionExerciseId = 'session-exercise-bag') {
+      act(() =>
+        useIntervalTimerStore.getState().start({
+          exercise: {
+            sessionId: 'session',
+            sessionExerciseId,
+            name: 'Heavy bag',
+            totalRounds: 3,
+            loggedRoundNumbers: [],
+          },
+          rounds: ROUNDS.map(({ roundNumber, workSec, restSec }) => ({
+            roundNumber,
+            workSec: workSec!,
+            restSec: restSec!,
+          })),
+          getReadySec: 0,
+        }),
+      );
+    }
+
+    afterEach(() => {
+      act(() => useIntervalTimerStore.getState().close());
+      useIntervalTimerStore.getState().clearFinished();
+    });
+
+    test('DoD: running, paused or put away, Work and Rest open no picker', () => {
+      render(<WorkoutExerciseCard {...makeProps()} />);
+      startTimer();
+
+      fireEvent.press(screen.getByLabelText('Work, round 2, 2:00'));
+      fireEvent.press(screen.getByLabelText('Rest, round 3, 0:45'));
+      expect(screen.queryByText('Work · round 2')).toBeNull();
+      expect(screen.queryByText('Rest · round 3')).toBeNull();
+
+      act(() => useIntervalTimerStore.getState().pause());
+      act(() => useIntervalTimerStore.getState().minimize());
+      fireEvent.press(screen.getByLabelText('Work, round 2, 2:00'));
+      expect(screen.queryByText('Work · round 2')).toBeNull();
+      expect(screen.getByLabelText('Work, round 2, 2:00')).toBeDisabled();
+    });
+
+    // The workout asks to stop the timer first, as for any log (GT-233): the card passes Log on.
+    test('Log and un-log still reach the workout', () => {
+      const onLogRound = jest.fn();
+      const onUnlogRound = jest.fn();
+      const exercise = makeInterval({
+        rounds: [
+          {
+            ...ROUNDS[0]!,
+            isFirstUnlogged: false,
+            log: { workSec: 120, restSec: 45, restSkipped: false, completed: true },
+          },
+          { ...ROUNDS[1]!, isFirstUnlogged: true },
+          ROUNDS[2]!,
+        ],
+      });
+      render(
+        <WorkoutExerciseCard {...makeProps({ exercise, rounds: { onLogRound, onUnlogRound } })} />,
+      );
+      startTimer();
+
+      fireEvent.press(screen.getByLabelText('Log round 2'));
+      fireEvent.press(screen.getByLabelText('Round 1 logged'));
+
+      expect(onLogRound).toHaveBeenCalledWith(2, { workSec: 120, restSec: 45 });
+      expect(onUnlogRound).toHaveBeenCalledWith(1);
+    });
+
+    test('closed, the fields open their pickers again', () => {
+      render(<WorkoutExerciseCard {...makeProps()} />);
+      startTimer();
+      act(() => useIntervalTimerStore.getState().close());
+
+      fireEvent.press(screen.getByLabelText('Work, round 2, 2:00'));
+      expect(screen.getByText('Work · round 2')).toBeTruthy();
+    });
+
+    test('another exercise’s timer leaves the fields and Log alone', () => {
+      const onLogRound = jest.fn();
+      render(<WorkoutExerciseCard {...makeProps({ rounds: { onLogRound } })} />);
+      startTimer('session-exercise-other');
+
+      fireEvent.press(screen.getByLabelText('Log round 1'));
+      expect(onLogRound).toHaveBeenCalledWith(1, { workSec: 120, restSec: 45 });
+      fireEvent.press(screen.getByLabelText('Work, round 2, 2:00'));
+      expect(screen.getByText('Work · round 2')).toBeTruthy();
+    });
   });
 
   test('read-only rounds have nothing to press, and a save in flight holds Log', () => {

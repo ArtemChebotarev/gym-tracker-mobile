@@ -59,3 +59,32 @@ export async function runInTransaction<T>(
     openLevels.set(db, level);
   }
 }
+
+const storeQueues = new WeakMap<SqliteDatabase, Promise<unknown>>();
+
+/**
+ * A store's transaction (`WorkoutStore.transaction` and the like): `runInTransaction`, but in
+ * turn with every other store transaction on `db`. They all share the one connection, and two of
+ * them started at once used to both send BEGIN — the second failed (GT-233: Stop and log ends the
+ * interval timer, which logs the round it was in, and logs by hand at the same moment). The next
+ * one waits for the last to settle, whichever way it settled.
+ *
+ * Nesting is not this function's to do: a store transaction is never opened inside another, and a
+ * repository's own transaction inside one (`deleteWithChildren`) still goes through
+ * `runInTransaction` and becomes a savepoint there.
+ */
+export function runInStoreTransaction<T>(
+  db: SqliteDatabase,
+  work: () => Promise<T> | T,
+): Promise<T> {
+  const previous = storeQueues.get(db) ?? Promise.resolve();
+  const next = previous.then(
+    () => runInTransaction(db, work),
+    () => runInTransaction(db, work),
+  );
+  storeQueues.set(
+    db,
+    next.catch(() => undefined),
+  );
+  return next;
+}
