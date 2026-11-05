@@ -110,16 +110,33 @@ describe('prescribeFromHistory', () => {
     ).toEqual([{ setNumber: 1, targetReps: 13, suggestedWeight: 20 }]);
   });
 
-  test('clamps up to 5 and hints to lower the weight below the corridor', () => {
+  // GT-163: the corridor raises the hint, it doesn't clamp the sum.
+  test('under the corridor: fact + 1, unclamped, with the hint to lower the weight', () => {
     expect(
       prescribeFromHistory(target([log(1, 100, 3)]), 1, WEEK_RIR, defaultProgressionSettings),
-    ).toEqual([{ setNumber: 1, targetReps: 5, suggestedWeight: 100, weightHint: 'decrease' }]);
+    ).toEqual([{ setNumber: 1, targetReps: 4, suggestedWeight: 100, weightHint: 'decrease' }]);
   });
 
-  test('clamps down to 30 and hints to raise the weight at the top of the corridor', () => {
+  test('at the top of the corridor: fact + 1, unclamped, with the hint to raise the weight', () => {
     expect(
       prescribeFromHistory(target([log(1, 10, 30)]), 1, WEEK_RIR, defaultProgressionSettings),
-    ).toEqual([{ setNumber: 1, targetReps: 30, suggestedWeight: 10, weightHint: 'increase' }]);
+    ).toEqual([{ setNumber: 1, targetReps: 31, suggestedWeight: 10, weightHint: 'increase' }]);
+  });
+
+  // GT-163: an estimate from another block re-priced to 0 or less is no target and no weight.
+  test('DoD: an estimate whose sum is 0 or less leaves the row bare; 1 is a target', () => {
+    // Reference at RIR 0, week at RIR 2: reps + 1 − 2. Set 1: 1 rep → 0; set 2: 2 reps → 1.
+    expect(
+      prescribeFromHistory(
+        estimate([log(1, 100, 1), log(2, 100, 2)], 'other_block', 0),
+        2,
+        WEEK_RIR,
+        defaultProgressionSettings,
+      ),
+    ).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2, targetReps: 1, suggestedWeight: 100, estimate: 'other_slot' },
+    ]);
   });
 
   test('zero rows give an empty plan', () => {

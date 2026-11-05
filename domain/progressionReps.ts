@@ -10,13 +10,25 @@ import { bandAtCeiling, hintForReps } from '@domain/progressionWeightHint';
 
 type RepCorridor = Pick<ProgressionSettings, 'minReps' | 'maxReps'>;
 
-/** `clamp(loggedReps + 1, minReps, maxReps)`. */
-export function nextTargetReps(loggedReps: number, settings: RepCorridor): number {
-  return Math.min(Math.max(loggedReps + 1, settings.minReps), settings.maxReps);
+/**
+ * A sum that came out at 0 or below is no recommendation at all (the row keeps `N RIR`: "не
+ * уверен — не рекомендуй"). One rep is a target, with its hint.
+ *
+ * The corridor plays no part in the sum (GT-163, Artem 17.10.2026): it is the trigger for rule 3's
+ * weight hint, not a limit on the target. A fact of 35 is a target of 36 with "take more", not 30;
+ * a fact of 4 is 5 with "take less", not the corridor's floor. Strength and power alike.
+ */
+export function usableReps(reps: number): number | undefined {
+  return reps >= 1 ? reps : undefined;
+}
+
+/** `loggedReps + 1` — rule 2, unclamped. */
+export function nextTargetReps(loggedReps: number): number | undefined {
+  return usableReps(loggedReps + 1);
 }
 
 /**
- * `clamp(referenceReps + 1 − (startRir − referenceTargetRir), minReps, maxReps)` — rule 2's
+ * `referenceReps + 1 − (startRir − referenceTargetRir)`, unclamped (`usableReps`) — rule 2's
  * increment on the reference, then re-priced for a higher target RIR. Flow C's start reps (04,
  * "Расчёт startReps"), and rule 6's estimate from another block (task 134.1): both carry a
  * performance over into a block that runs at another RIR.
@@ -35,10 +47,8 @@ export function startTargetReps(
   referenceReps: number,
   referenceTargetRir: number,
   startRir: number,
-  settings: RepCorridor,
-): number {
-  const reps = referenceReps + 1 - (startRir - referenceTargetRir);
-  return Math.min(Math.max(reps, settings.minReps), settings.maxReps);
+): number | undefined {
+  return usableReps(referenceReps + 1 - (startRir - referenceTargetRir));
 }
 
 /**
@@ -76,8 +86,9 @@ export function nextSetTarget(
   }
   const hint = hintForReps(log.reps, settings, equipment);
   const target: SetTarget = { setNumber: source.setNumber };
-  if (!bandAtCeiling(hint, equipment)) {
-    target.targetReps = nextTargetReps(log.reps, settings);
+  const reps = nextTargetReps(log.reps);
+  if (reps !== undefined && !bandAtCeiling(hint, equipment)) {
+    target.targetReps = reps;
   }
   if (carriesWeight) {
     target.suggestedWeight = log.weight;

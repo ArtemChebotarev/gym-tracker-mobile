@@ -227,7 +227,7 @@ describe('prescribeNextSession', () => {
       }),
     );
     expect(plan?.setTargets).toEqual([
-      { setNumber: 1, targetReps: 15, suggestedWeight: 60, weightHint: 'increase' },
+      { setNumber: 1, targetReps: 16, suggestedWeight: 60, weightHint: 'increase' },
     ]);
   });
 
