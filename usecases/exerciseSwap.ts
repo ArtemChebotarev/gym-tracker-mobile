@@ -6,7 +6,7 @@
 
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId } from '@domain/catalog';
-import { NotFoundError } from '@domain/errors';
+import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
 import { nowAsUtcIso } from '@domain/time';
 import type { ExerciseRepository } from '@repositories/catalog';
@@ -41,7 +41,8 @@ export type ExerciseSwapInput = SessionExerciseRef & {
  * наследуется от факта").
  *
  * Rejects with `NotFoundError` if the session, its mesocycle or the session exercise doesn't
- * exist, and with `ConflictError` if the session is final or `awaiting_source`.
+ * exist, and with `ConflictError` if the session is final or `awaiting_source`, or if another of
+ * its exercises already is `exerciseId` (GT-155: one exercise once per day).
  */
 export async function swapExercise(
   input: ExerciseSwapInput,
@@ -49,9 +50,18 @@ export async function swapExercise(
   now: string = nowAsUtcIso(),
 ): Promise<SessionExercise> {
   return deps.workout.transaction(async (repos) => {
-    const { session, sessionExercise: current } = await openSessionExercise(input, repos);
+    const {
+      session,
+      sessionExercise: current,
+      sessionExercises,
+    } = await openSessionExercise(input, repos);
     if (current.exerciseId === input.exerciseId) {
       return current;
+    }
+    if (sessionExercises.some((exercise) => exercise.exerciseId === input.exerciseId)) {
+      throw new ConflictError(
+        `Exercise "${input.exerciseId}" is already in session "${session.id}"; a day takes it once.`,
+      );
     }
 
     const mesocycle = await deps.mesocycleRepo.getById(session.mesoId);

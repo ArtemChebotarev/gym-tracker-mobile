@@ -55,7 +55,11 @@ import {
   rowSubtitle,
   sectionDotColor,
 } from './ExerciseLibraryScreenLogic';
-import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
+import {
+  confirmButtonLabel,
+  IN_DAY_SUBTITLE,
+  toggleExerciseSelection,
+} from './ExercisePickerSheetLogic';
 import { styles } from './ExercisePickerSheetStyles';
 
 type ExercisePickerSelection =
@@ -93,6 +97,11 @@ export type ExercisePickerSheetProps = {
   animated?: boolean;
   presentation?: 'modal' | 'overlay';
   bottomClearance?: number;
+  /**
+   * Exercises already in the day being added to (GT-155): their rows stay, inactive, marked
+   * `Already in this day` — a day takes an exercise once.
+   */
+  inDayIds?: readonly ExerciseId[];
 } & ExercisePickerSelection;
 
 export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
@@ -187,29 +196,33 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
             />
-            {section.data.map((entry) => (
-              <ListRow
-                key={entry.exercise.id}
-                title={entry.exercise.name}
-                titleSuffix={equipmentSuffix(entry.exercise)}
-                subtitle={rowSubtitle(entry)}
-                leading={{
-                  type: 'checkbox',
-                  checked:
-                    props.mode === 'multi'
-                      ? props.selectedIds.includes(entry.exercise.id)
-                      : props.selectedId === entry.exercise.id,
-                  onPress: () =>
-                    props.mode === 'multi'
-                      ? props.onChangeSelectedIds(
-                          toggleExerciseSelection(props.selectedIds, entry.exercise.id),
-                        )
-                      : props.onChangeSelectedId(entry.exercise.id),
-                }}
-                trailing={{ type: 'chevron' }}
-                onPress={() => openPreview(entry.exercise.id)}
-              />
-            ))}
+            {section.data.map((entry) => {
+              const inDay = props.inDayIds?.includes(entry.exercise.id) === true;
+              return (
+                <ListRow
+                  key={entry.exercise.id}
+                  title={entry.exercise.name}
+                  titleSuffix={equipmentSuffix(entry.exercise)}
+                  subtitle={inDay ? IN_DAY_SUBTITLE : rowSubtitle(entry)}
+                  disabled={inDay}
+                  leading={{
+                    type: 'checkbox',
+                    checked:
+                      props.mode === 'multi'
+                        ? props.selectedIds.includes(entry.exercise.id)
+                        : props.selectedId === entry.exercise.id,
+                    onPress: () =>
+                      props.mode === 'multi'
+                        ? props.onChangeSelectedIds(
+                            toggleExerciseSelection(props.selectedIds, entry.exercise.id),
+                          )
+                        : props.onChangeSelectedId(entry.exercise.id),
+                  }}
+                  trailing={{ type: 'chevron' }}
+                  onPress={() => openPreview(entry.exercise.id)}
+                />
+              );
+            })}
           </View>
         ))}
     </BottomSheet>

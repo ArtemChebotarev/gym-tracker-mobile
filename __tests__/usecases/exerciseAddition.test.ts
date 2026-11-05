@@ -201,6 +201,30 @@ describe('addExercises', () => {
     expect(added?.targetRir).toBe(2);
   });
 
+  // GT-155: a day takes an exercise once.
+  test('DoD: rejects an exercise already in the session, and writes nothing', async () => {
+    const deps = await setUp();
+
+    const error = await rejectionOf(
+      addExercises({ sessionId: 'session-w2', exerciseIds: [CURL, bench.exerciseId] }, deps, NOW),
+    );
+
+    expect(isConflictError(error)).toBe(true);
+    await expect(
+      deps.workout.repos.sessionExerciseRepo.listBySessionId('session-w2'),
+    ).resolves.toEqual([bench]);
+  });
+
+  test('rejects the same exercise picked twice', async () => {
+    const deps = await setUp();
+
+    const error = await rejectionOf(
+      addExercises({ sessionId: 'session-w2', exerciseIds: [CURL, CURL] }, deps, NOW),
+    );
+
+    expect(isConflictError(error)).toBe(true);
+  });
+
   test('rejected in a deload session', async () => {
     const deps = await setUp({ ...session, weekNumber: 5, isDeload: true });
 

@@ -303,6 +303,22 @@ describe('swapExercise', () => {
     expect(swapped.setTargets).toEqual([{ setNumber: 1 }, { setNumber: 2 }, { setNumber: 3 }]);
   });
 
+  // GT-155: a day takes an exercise once — swapping to one already in the session is refused.
+  test('DoD: rejects swapping to an exercise already in this session, and changes nothing', async () => {
+    const deps = await setUp();
+    const barbellRow = makeExercise(2, {
+      id: 'session-exercise-w2-barbell',
+      exerciseId: BARBELL,
+      order: 2,
+    });
+    await deps.workout.repos.sessionExerciseRepo.create(barbellRow);
+
+    const error = await rejectionOf(swapExercise(swapToBarbell, deps, NOW));
+
+    expect(isConflictError(error)).toBe(true);
+    expect((await storedExercise(deps.workout))?.exerciseId).toBe(DUMBBELL);
+  });
+
   test('swapping to the exercise it already is changes nothing', async () => {
     const deps = await setUp();
 

@@ -39,6 +39,10 @@ export function getDayExercises(
  * next `order`. Called once per selected exercise by
  * app/meso-editor/new.tsx when task 077's "Add exercise" sheet confirms a (possibly multi-)
  * selection.
+ *
+ * An exercise already in the day isn't added again (GT-155: one exercise once per day — the
+ * reference resolver knows a day, not which of two copies) — the plan comes back as it was. The
+ * picker shows such an exercise inactive, so this only catches a way round it.
  */
 export function addExerciseToDay(
   exercisesByDay: ExercisesByDay,
@@ -47,6 +51,9 @@ export function addExerciseToDay(
   sets: number = DEFAULT_EXERCISE_SETS,
 ): ExercisesByDay {
   const existing = getDayExercises(exercisesByDay, dayNumber);
+  if (existing.some((exercise) => exercise.exerciseId === exerciseId)) {
+    return exercisesByDay;
+  }
   const order = existing.reduce((highest, exercise) => Math.max(highest, exercise.order), -1) + 1;
   const next: WeekPlanExercise = { exerciseId, order, sets };
   return { ...exercisesByDay, [dayNumber]: [...existing, next] };

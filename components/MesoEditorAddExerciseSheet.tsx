@@ -33,6 +33,8 @@ export type MesoEditorAddExerciseSheetProps = {
   /** The exercises to add — see ExercisePickerSheet's own `onConfirm`. */
   onConfirm: (exerciseIds: ExerciseId[]) => void;
   onClose: () => void;
+  /** The day's exercises — shown inactive, a day takes each once (GT-155). */
+  inDayIds: readonly ExerciseId[];
 };
 
 export function MesoEditorAddExerciseSheet({
@@ -49,6 +51,7 @@ export function MesoEditorAddExerciseSheet({
   onChangeSelectedIds,
   onConfirm,
   onClose,
+  inDayIds,
 }: MesoEditorAddExerciseSheetProps) {
   return (
     <ExercisePickerSheet
@@ -73,6 +76,7 @@ export function MesoEditorAddExerciseSheet({
       onChangeSelectedIds={onChangeSelectedIds}
       onConfirm={onConfirm}
       onClose={onClose}
+      inDayIds={inDayIds}
     />
   );
 }

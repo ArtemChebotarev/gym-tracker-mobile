@@ -452,6 +452,9 @@ export default function TodayScreen() {
     ]);
   }
 
+  // The day's exercises, inactive in the Add and Replace pickers: a day takes each once (GT-155).
+  const inDayIds = (model?.exercises ?? []).map((exercise) => toExerciseId(exercise.exerciseId));
+
   function showSaveError() {
     Alert.alert("Couldn't save the set", 'Try again.');
   }
@@ -833,6 +836,7 @@ export default function TodayScreen() {
       />
       <WorkoutExercisePickerSheet
         mode="add"
+        inDayIds={inDayIds}
         visible={isAddExerciseOpen}
         title="Add exercise"
         caption={model ? formatWorkoutMenuTitle(model.header) : ''}
@@ -864,6 +868,7 @@ export default function TodayScreen() {
       />
       <WorkoutExercisePickerSheet
         mode="replace"
+        inDayIds={inDayIds}
         visible={isReplaceOpen}
         title="Replace exercise"
         caption={menuExercise?.name ?? ''}

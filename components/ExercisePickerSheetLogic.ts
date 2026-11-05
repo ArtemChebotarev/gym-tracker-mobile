@@ -23,3 +23,10 @@ export function toggleExerciseSelection(
 export function confirmButtonLabel(count: number): string {
   return `Add ${count} exercise${count === 1 ? '' : 's'}`;
 }
+
+/**
+ * What an exercise already in the day reads as in the picker (GT-155: one exercise once per day):
+ * its row stays, inactive, with this in place of its last-set line — so it reads as taken, not as
+ * missing from the library.
+ */
+export const IN_DAY_SUBTITLE = 'Already in this day';

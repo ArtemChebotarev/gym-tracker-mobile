@@ -34,6 +34,7 @@ import { canContinueFromBasics } from '@components/MesoEditorBasicsStepLogic';
 import { MesoEditorDaysStep } from '@components/MesoEditorDaysStep';
 import {
   canContinueFromDays,
+  getDayExercises,
   reorderDayExercises,
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
@@ -424,6 +425,9 @@ export function MesoEditorScreen({
         // clash with. See BottomSheet.tsx's own doc on the `presentation` prop.
         visible={addExerciseDay !== null}
         dayNumber={addExerciseDay ?? activeDay}
+        inDayIds={getDayExercises(draft.exercisesByDay, addExerciseDay ?? activeDay).map(
+          (exercise) => toExerciseId(exercise.exerciseId),
+        )}
         groups={addExerciseQuery.data}
         isPending={addExerciseQuery.isPending}
         search={addExerciseSearch}

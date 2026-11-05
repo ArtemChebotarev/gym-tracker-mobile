@@ -79,6 +79,16 @@ describe('addExerciseToDay', () => {
     expect(result[1]?.map((e) => e.order)).toEqual([1, 2]);
   });
 
+  // GT-155: a day takes an exercise once; another day takes it too.
+  test('DoD: an exercise already in the day isn’t added again; another day takes it', () => {
+    const existing: ExercisesByDay = { 1: [{ exerciseId: 'squat', order: 0, sets: 2 }] };
+
+    expect(addExerciseToDay(existing, 1, 'squat')).toBe(existing);
+    expect(addExerciseToDay(existing, 2, 'squat')[2]).toEqual([
+      { exerciseId: 'squat', order: 0, sets: DEFAULT_EXERCISE_SETS },
+    ]);
+  });
+
   test('appends after existing exercises on the day with the next order', () => {
     const existing: ExercisesByDay = { 1: [{ exerciseId: 'squat', order: 0, sets: 2 }] };
 

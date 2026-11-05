@@ -45,10 +45,12 @@ export type WorkoutExercisePickerSheetProps = {
   /** The picked exercise. The sheet has already closed. */
   onSelect: (exerciseId: ExerciseId) => void;
   onClose: () => void;
+  /** The session's exercises — shown inactive, a day takes each once (GT-155). */
+  inDayIds: readonly ExerciseId[];
 };
 
 export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProps) {
-  const { visible, title, caption, mode, onSelect, onClose } = props;
+  const { visible, title, caption, mode, onSelect, onClose, inDayIds } = props;
   // The sheet is drawn over the floating tab bar, which would cover the list's last row (GT-47).
   const tabBarClearance = useTabBarClearance();
   const [search, setSearch] = useState('');
@@ -90,6 +92,7 @@ export function WorkoutExercisePickerSheet(props: WorkoutExercisePickerSheetProp
     },
     onResetFilters: () => setFilters({}),
     onClose: handleClose,
+    inDayIds,
   };
 
   return (
