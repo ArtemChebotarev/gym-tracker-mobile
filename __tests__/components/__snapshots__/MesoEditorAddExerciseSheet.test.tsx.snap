@@ -441,6 +441,9 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                       "paddingTop": 12,
                     },
                     {
+                      "paddingTop": 0,
+                    },
+                    {
                       "backgroundColor": "#17191C",
                     },
                   ],
@@ -701,6 +704,7 @@ exports[`MesoEditorAddExerciseSheet matches the sheet snapshot 1`] = `
                       "paddingBottom": 0,
                       "paddingTop": 12,
                     },
+                    false,
                     {
                       "backgroundColor": "#17191C",
                     },

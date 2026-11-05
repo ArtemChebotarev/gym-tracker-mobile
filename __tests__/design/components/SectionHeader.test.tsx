@@ -40,4 +40,14 @@ describe('SectionHeader', () => {
     const inSheet = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
     expect(inSheet.backgroundColor).toBe(COLORS['surface/sheet']);
   });
+
+  test('the first label header takes no space above it, the others do', () => {
+    const { rerender } = render(<SectionHeader title="Back" count={8} variant="label" />);
+    const later = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
+    expect(later.paddingTop).toBe(SPACING['space/row']);
+
+    rerender(<SectionHeader title="Back" count={8} variant="label" isFirst />);
+    const first = StyleSheet.flatten(screen.getByTestId('section-header').props.style);
+    expect(first.paddingTop).toBe(0);
+  });
 });

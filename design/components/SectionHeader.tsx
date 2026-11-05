@@ -15,6 +15,9 @@
 // sticky header covers the blocks scrolling under it), the text a hair in from the blocks' edge,
 // space above it and none below, since each block brings its own gap. The count is set like the
 // title, so the header reads as one label line rather than a band with a figure at its end.
+// The space above is what parts one group from the last block of the one before; the first group
+// has none before it, only the screen's own gap to the controls above, so `isFirst` drops it —
+// otherwise the first label stood twice as far below Filters as a label stands below a block.
 
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -43,6 +46,8 @@ export type SectionHeaderProps = {
   inset?: SectionHeaderInset;
   /** Defaults to `band`. */
   variant?: SectionHeaderVariant;
+  /** The first group of the list: a `label` header then takes no space above it. */
+  isFirst?: boolean;
 };
 
 const EDGE_SPACING = { screen: SPACING['space/screen'], sheet: SPACING['space/sheet'] } as const;
@@ -69,6 +74,7 @@ export function SectionHeader({
   edge = 'screen',
   inset = 'none',
   variant = 'band',
+  isFirst = false,
 }: SectionHeaderProps) {
   const spacing = EDGE_SPACING[edge];
   const isLabel = variant === 'label';
@@ -79,7 +85,11 @@ export function SectionHeader({
       testID="section-header"
       style={[
         styles.container,
-        isLabel && [styles.label, { backgroundColor: EDGE_SURFACE[edge] }],
+        isLabel && [
+          styles.label,
+          isFirst && styles.labelFirst,
+          { backgroundColor: EDGE_SURFACE[edge] },
+        ],
         { marginHorizontal: -spacing, paddingHorizontal: textInset },
       ]}
     >
@@ -105,6 +115,9 @@ const styles = StyleSheet.create({
   label: {
     paddingTop: SPACING['space/row'],
     paddingBottom: 0,
+  },
+  labelFirst: {
+    paddingTop: 0,
   },
   leading: {
     flexDirection: 'row',

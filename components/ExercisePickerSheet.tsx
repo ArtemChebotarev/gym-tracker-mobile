@@ -55,10 +55,7 @@ import {
   rowSubtitle,
   sectionDotColor,
 } from './ExerciseLibraryScreenLogic';
-import {
-  confirmButtonLabel,
-  toggleExerciseSelection,
-} from './ExercisePickerSheetLogic';
+import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
 import { styles } from './ExercisePickerSheetStyles';
 
 type ExercisePickerSelection =
@@ -180,7 +177,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
       {isPending && <Text style={styles.status}>Loading…</Text>}
 
       {!isPending &&
-        buildSections(groups ?? []).map((section) => (
+        buildSections(groups ?? []).map((section, index) => (
           <View key={section.key}>
             <SectionHeader
               title={section.title}
@@ -188,6 +185,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
               variant="label"
+              isFirst={index === 0}
             />
             {section.data.map((entry) => (
               <ListRow

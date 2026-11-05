@@ -164,6 +164,7 @@ export function ExerciseLibraryScreen({
               count={section.data.length}
               dotColor={sectionDotColor(section.muscleGroup)}
               variant="label"
+              isFirst={section === sections[0]}
             />
           )}
           renderItem={({ item }) => (
