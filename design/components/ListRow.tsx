@@ -37,6 +37,12 @@
 // for rows whose titles alone collide. Rendered as a sibling Text in `text/faint` — the subtitle's
 // color at the title's size — rather than nested inside the title Text, so the title keeps its own
 // text node (and exact-match lookups) and truncates first while the short suffix stays whole.
+//
+// `variant: 'block'` (GT-222) draws the row as a card of its own — `surface/card`, a border and a
+// rounded corner, about 56pt tall, a small gap between neighbours — instead of a divider under it.
+// Same content, same accessories, same tap targets: only the frame changes, so one row serves both
+// a divided list and a list of blocks rather than a second, copied row component. `divider` stays
+// the default, so every list that did not ask for blocks looks as it did.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -76,6 +82,9 @@ export type ListRowLeading = {
 
 export type ListRowBadge = { label: string; variant?: BadgeVariant };
 
+/** `divider`: a line under the row (the default). `block`: the row as a card of its own. */
+export type ListRowVariant = 'divider' | 'block';
+
 export type ListRowProps = {
   title: string;
   titleSuffix?: string;
@@ -84,6 +93,8 @@ export type ListRowProps = {
   badge?: ListRowBadge;
   trailing?: ListRowTrailing;
   onPress?: () => void;
+  /** Defaults to `divider`. */
+  variant?: ListRowVariant;
 };
 
 export function ListRow({
@@ -94,7 +105,10 @@ export function ListRow({
   badge,
   trailing,
   onPress,
+  variant = 'divider',
 }: ListRowProps) {
+  const container = variant === 'block' ? styles.block : styles.container;
+  const row = variant === 'block' ? [styles.row, styles.blockRow] : styles.row;
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
   const body = (
@@ -137,8 +151,8 @@ export function ListRow({
 
   if (leading?.onPress !== undefined) {
     return (
-      <View style={styles.container}>
-        <View style={styles.row}>
+      <View style={container}>
+        <View style={row}>
           <Pressable
             accessibilityRole="checkbox"
             accessibilityLabel={`Select ${title}`}
@@ -166,8 +180,8 @@ export function ListRow({
   // An actions row keeps its accessories out of the tap target — see the note at the top.
   if (trailing?.type === 'actions') {
     return (
-      <View style={styles.container}>
-        <View style={styles.row}>
+      <View style={container}>
+        <View style={row}>
           {onPress === undefined ? (
             <View style={styles.body}>{body}</View>
           ) : (
@@ -186,7 +200,7 @@ export function ListRow({
   }
 
   const content = (
-    <View style={styles.row}>
+    <View style={row}>
       {body}
       {trailing !== undefined && <Trailing title={title} trailing={trailing} />}
     </View>
@@ -197,14 +211,14 @@ export function ListRow({
       <Pressable
         {...accessibility}
         onPress={onPress}
-        style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+        style={({ pressed }) => [container, pressed && styles.pressed]}
       >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={styles.container}>{content}</View>;
+  return <View style={container}>{content}</View>;
 }
 
 function Leading({ leading }: { leading: ListRowLeading }) {
@@ -267,6 +281,22 @@ const styles = StyleSheet.create({
   container: {
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
+  },
+  block: {
+    minHeight: SIZES['size/list-block'],
+    justifyContent: 'center',
+    marginTop: SPACING['space/list-block-gap'],
+    paddingLeft: SPACING['space/md'],
+    paddingRight: SPACING['space/row'],
+    backgroundColor: COLORS['surface/card'],
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
+    borderRadius: RADII['radius/field'],
+  },
+  // The block's own height centres the two lines, so the row's padding only keeps text off the
+  // border when a row grows past it.
+  blockRow: {
+    paddingVertical: SPACING['space/xs'],
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],

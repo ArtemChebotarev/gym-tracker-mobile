@@ -3,6 +3,9 @@
 // in the caller, so this component can be rendered and asserted on with plain props, the same
 // way design/components are tested — no QueryProvider or real repositories needed here.
 //
+// Each row is a block of its own rather than a line between rows (GT-222, canvas "Шаблоны",
+// `LibraryBlocks`) — ListRow's `block` variant, the same row everywhere else draws divided.
+//
 // A row opens that exercise's own screen (065, `onOpenExercise`) — the chevron's promise, and
 // the library's job as "точка входа в историю" (08.6).
 //
@@ -170,6 +173,7 @@ export function ExerciseLibraryScreen({
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}
               onPress={() => onOpenExercise(item)}
+              variant="block"
             />
           )}
         />
