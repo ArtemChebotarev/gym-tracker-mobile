@@ -78,6 +78,7 @@ import { WelcomeDialog } from '@components/WelcomeDialog';
 import {
   FINISH_MESOCYCLE_CONFIRMATION,
   formatInProgressConflict,
+  intervalTimerOnLog,
   intervalTimerStartOf,
   restAfterIntervalBlock,
   loggedSetKey,
@@ -378,7 +379,8 @@ export default function TodayScreen() {
         'roundLog' in result ? result.roundLog.restSec : undefined,
       );
       noteLogged(loggedSetKey(exercise.sessionExerciseId, rowNumber));
-      if (rest.kind === 'start') {
+      // Never over a running interval timer (FR-6, GT-233) — a log beside one ends it first.
+      if (rest.kind === 'start' && useIntervalTimerStore.getState().active === null) {
         startRest(rest.rest);
       } else if (rest.kind === 'stop') {
         stopRest();
@@ -406,6 +408,39 @@ export default function TodayScreen() {
       stopRest();
     }
   }, [finishedBlock, model, noteLogged, startRest, stopRest]);
+
+  /**
+   * Runs `log` — a set or a round of `exercise` — once no other exercise's interval timer is left
+   * running: one is ended early first, if the user agrees (10.1 FR-6, GT-233). Only one timer runs
+   * at a time, and the log starts a rest.
+   */
+  function logStoppingIntervalTimer(exercise: WorkoutExercise, log: () => void) {
+    const timers = useIntervalTimerStore.getState();
+    const onLog = intervalTimerOnLog(timers.active, exercise.sessionExerciseId, Date.now());
+    if (onLog.kind === 'none') {
+      log();
+      return;
+    }
+    if (onLog.kind === 'close') {
+      timers.close();
+      log();
+      return;
+    }
+    Alert.alert(onLog.title, onLog.message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: onLog.stopLabel,
+        style: 'destructive',
+        onPress: () => {
+          // As End early on its screen: the rounds it leaves are logged by GT-98.
+          const current = useIntervalTimerStore.getState();
+          current.endEarly();
+          current.close();
+          log();
+        },
+      },
+    ]);
+  }
 
   function showSaveError() {
     Alert.alert("Couldn't save the set", 'Try again.');
@@ -587,38 +622,36 @@ export default function TodayScreen() {
           if (currentSessionId === undefined) {
             return;
           }
-          logSet.mutate(
-            {
-              ref: {
-                sessionId: currentSessionId,
-                sessionExerciseId: exercise.sessionExerciseId,
-                setNumber,
+          const sessionId = currentSessionId;
+          logStoppingIntervalTimer(exercise, () =>
+            logSet.mutate(
+              {
+                ref: { sessionId, sessionExerciseId: exercise.sessionExerciseId, setNumber },
+                entry,
               },
-              entry,
-            },
-            {
-              onSuccess: (result) => afterLog(exercise, setNumber, result),
-              onError: showSaveError,
-            },
+              {
+                onSuccess: (result) => afterLog(exercise, setNumber, result),
+                onError: showSaveError,
+              },
+            ),
           );
         }}
         onLogRound={(exercise, roundNumber, entry) => {
           if (currentSessionId === undefined) {
             return;
           }
-          logRound.mutate(
-            {
-              ref: {
-                sessionId: currentSessionId,
-                sessionExerciseId: exercise.sessionExerciseId,
-                roundNumber,
+          const sessionId = currentSessionId;
+          logStoppingIntervalTimer(exercise, () =>
+            logRound.mutate(
+              {
+                ref: { sessionId, sessionExerciseId: exercise.sessionExerciseId, roundNumber },
+                entry,
               },
-              entry,
-            },
-            {
-              onSuccess: (result) => afterLog(exercise, roundNumber, result),
-              onError: showSaveError,
-            },
+              {
+                onSuccess: (result) => afterLog(exercise, roundNumber, result),
+                onError: showSaveError,
+              },
+            ),
           );
         }}
         onUnlogRound={(exercise, roundNumber) => {

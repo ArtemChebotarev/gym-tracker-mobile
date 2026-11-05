@@ -1,6 +1,7 @@
 // Pure helpers behind the Today tab (app/(tabs)/index.tsx, `TodayScreen`) — see the code-style
 // skill; they live here because every file under app/ is a route.
 
+import { endEarlyMessage } from '@components/IntervalTimerScreenLogic';
 import { PLAN_MESOCYCLE_LABEL } from '@components/MesocyclesScreenLogic';
 import { CheckIcon } from '@design/icons/CheckIcon';
 import type { IconComponent } from '@design/icons/IconFrame';
@@ -12,7 +13,11 @@ import { nextSetAfter, type RestSetRow } from '@domain/restTimerRules';
 import type { WorkoutMode } from '@domain/workoutView';
 import { hasRounds, type WorkoutExercise } from '@usecases/workoutSession';
 import type { OnboardingFlags } from '@repositories/settings';
-import type { FinishedIntervalBlock, IntervalTimerExercise } from '@state/intervalTimerStore';
+import type {
+  ActiveIntervalTimer,
+  FinishedIntervalBlock,
+  IntervalTimerExercise,
+} from '@state/intervalTimerStore';
 
 /**
  * The alert title when a set can't be logged because another session is `in_progress` (05,
@@ -312,4 +317,39 @@ export function restAfterIntervalBlock(
     return undefined;
   }
   return restAfterLog(exercises, exercise, finished.roundNumber, new Set(), finished.restSec);
+}
+
+/**
+ * What a log on exercise `sessionExerciseId` does with an interval timer that is out (10.1 FR-6,
+ * GT-233). Only one timer runs at a time, and the log starts a rest:
+ *
+ * - `none` — no timer, or the one running is this exercise's own (its card holds Log, GT-234).
+ * - `close` — the timer has run to its end and only its summary is left: put it away, nothing to ask.
+ * - `confirm` — another exercise's timer is running or paused: the log ends it early, as End early
+ *   on its screen would, once the user says so — the question says what goes into its log.
+ */
+export type IntervalTimerOnLog =
+  | { kind: 'none' }
+  | { kind: 'close' }
+  | { kind: 'confirm'; title: string; message: string; stopLabel: string };
+
+export const STOP_TIMER_AND_LOG = 'Stop and log';
+
+export function intervalTimerOnLog(
+  active: ActiveIntervalTimer | null,
+  sessionExerciseId: string,
+  now: number,
+): IntervalTimerOnLog {
+  if (active === null || active.exercise.sessionExerciseId === sessionExerciseId) {
+    return { kind: 'none' };
+  }
+  if (active.timer.phase === undefined) {
+    return { kind: 'close' };
+  }
+  return {
+    kind: 'confirm',
+    title: `Stop the ${active.exercise.name} timer?`,
+    message: `Logging here ends it. ${endEarlyMessage(active, now)}`,
+    stopLabel: STOP_TIMER_AND_LOG,
+  };
 }
