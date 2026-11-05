@@ -1,7 +1,8 @@
 // FilterOption — one of a few full-width choices in a Filters sheet (08.6, "Filters — лист": the
 // exercise library's Type and Source; GT-217: the template list's Days a week and Focus). Laid out
-// by the caller in a row of equal-width options: a larger tap target and a different shape from
-// Chip's wrapping pills, with the field chrome's radius rather than the pill one.
+// by the caller in a row of equal-width options: a larger tap target than Chip's wrapping pills,
+// rounded at the ends the same way (Artem, GT-217 — the square field corners read as inputs, not
+// as choices; the library's sheet changed with the template one, both being this component).
 //
 // Lifted out of components/ExerciseFiltersSheet.tsx when the template list got its own sheet, so
 // both sheets draw the same option.
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     borderWidth: BORDER_WIDTHS['border/default'],
-    borderRadius: RADII['radius/field'],
+    borderRadius: RADII['radius/capsule'],
     paddingVertical: SPACING['space/row'],
   },
   optionUnselected: {

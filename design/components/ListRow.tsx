@@ -117,7 +117,12 @@ export function ListRow({
 }: ListRowProps) {
   const badgeSurface = variant === 'block' ? 'card' : 'page';
   const container = variant === 'block' ? styles.block : styles.container;
-  const row = variant === 'block' ? [styles.row, styles.blockRow] : styles.row;
+  // A two-line block is centred by its own height and only needs its text kept off the border. A
+  // block with tags runs past that height to three lines, and pressed to that minimum it read as
+  // cramped (Artem, GT-217): it takes a divided row's padding instead, as the mockup's
+  // `TemplatesList` pads its rows.
+  const hasTags = tags !== undefined && tags.length > 0;
+  const row = variant === 'block' && !hasTags ? [styles.row, styles.blockRow] : styles.row;
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
   const body = (
