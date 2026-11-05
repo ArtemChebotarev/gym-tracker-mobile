@@ -12,6 +12,11 @@
 // 1–2 — the draft already came from it — while a different template replaces the draft. The same
 // rule as Flow C's source week (`sourceWeekKey`).
 //
+// The list's filters (GT-217) live here too, beside the search text: the applied ones, and the
+// draft the Filters sheet edits until `Show N templates` applies it — the library's pattern
+// (app/(tabs)/library.tsx). The sheet's count is the draft run through the same `listTemplates`
+// the list uses, with the search typed, so the number on the button is what the list will show.
+//
 // JSX/state only — no styles or pure helpers of its own: the step, the list and the sheet carry them.
 
 import { useMemo, useState } from 'react';
@@ -20,6 +25,11 @@ import { Alert } from 'react-native';
 import { MesoEditorScreen } from '@components/MesoEditorScreen';
 import { toExerciseId } from '@domain/catalog';
 import type { MesoTemplate } from '@domain/plan';
+import {
+  listTemplates,
+  templateDayCountOptions,
+  type TemplateFilters,
+} from '@domain/templateListing';
 import { useDraftStore } from '@state/draftStore';
 import { useApplyTemplate } from '@state/useApplyTemplate';
 import { useConfirmTemplateDraft } from '@state/useConfirmTemplateDraft';
@@ -27,6 +37,7 @@ import { useExercisesByIds } from '@state/useExercisesByIds';
 import { useTemplates } from '@state/useTemplates';
 
 import { MesoTemplateStep } from './MesoTemplateStep';
+import { TemplateFiltersSheet } from './TemplateFiltersSheet';
 import { TemplatePreviewSheet } from './TemplatePreviewSheet';
 
 /** The template whose preview is up, and how its sheet closes — see the note above. */
@@ -39,6 +50,15 @@ export function MesoTemplateEditorScreen() {
   const templatesQuery = useTemplates();
 
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<TemplateFilters>({});
+  const [draftFilters, setDraftFilters] = useState<TemplateFilters>({});
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const templates = useMemo(() => templatesQuery.data ?? [], [templatesQuery.data]);
+  const draftResultCount = useMemo(
+    () => listTemplates(templates, search, draftFilters).length,
+    [templates, search, draftFilters],
+  );
+  const dayCountOptions = useMemo(() => templateDayCountOptions(templates), [templates]);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
 
@@ -86,12 +106,31 @@ export function MesoTemplateEditorScreen() {
         content: (next) => (
           <>
             <MesoTemplateStep
-              templates={templatesQuery.data ?? []}
+              templates={templates}
               search={search}
               onSearchChange={setSearch}
+              filters={filters}
+              onRequestFilters={() => {
+                setDraftFilters(filters);
+                setFiltersVisible(true);
+              }}
+              onResetFilters={() => setFilters({})}
               onSelectTemplate={(template) =>
                 setPreview({ template, visible: true, animated: true })
               }
+            />
+            <TemplateFiltersSheet
+              visible={filtersVisible}
+              filters={draftFilters}
+              onChangeFilters={setDraftFilters}
+              dayCountOptions={dayCountOptions}
+              resultCount={draftResultCount}
+              onReset={() => setDraftFilters({})}
+              onApply={() => {
+                setFilters(draftFilters);
+                setFiltersVisible(false);
+              }}
+              onClose={() => setFiltersVisible(false)}
             />
             {preview !== null && (
               <TemplatePreviewSheet

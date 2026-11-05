@@ -37,6 +37,9 @@ function renderList(overrides: Partial<TemplateListProps> = {}) {
     templates: [upperLower, fullBody, retired, mine],
     search: '',
     onSearchChange: jest.fn(),
+    filters: {},
+    onRequestFilters: jest.fn(),
+    onResetFilters: jest.fn(),
     onSelectTemplate: jest.fn(),
     ...overrides,
   };
@@ -120,5 +123,57 @@ describe('TemplateList', () => {
     fireEvent.press(screen.getByText('Clear search'));
 
     expect(props.onSearchChange).toHaveBeenCalledWith('');
+  });
+
+  describe('tags and filters (GT-217)', () => {
+    const hybrid = template('hybrid', 'Boxing Hybrid', 4, { tags: ['full-body', 'hybrid'] });
+    const lowerFocus = template('lower', 'Lower Focus', 2, { tags: ['full-body', 'lower'] });
+
+    test("each row shows its template's tags under the description", () => {
+      renderList({ templates: [hybrid] });
+
+      expect(screen.getByText('Full body')).toBeTruthy();
+      expect(screen.getByText('Hybrid')).toBeTruthy();
+    });
+
+    test('with no filter on, the Filters chip alone; it asks for the sheet', () => {
+      const props = renderList();
+
+      expect(screen.queryByText('Reset')).toBeNull();
+      fireEvent.press(screen.getByText('Filters'));
+      expect(props.onRequestFilters).toHaveBeenCalledTimes(1);
+    });
+
+    test('applied filters narrow the list, show as chips with what is left, and reset', () => {
+      const props = renderList({
+        templates: [hybrid, lowerFocus, fullBody],
+        filters: { tags: ['hybrid'] },
+      });
+
+      expect(screen.getByText('Boxing Hybrid')).toBeTruthy();
+      expect(screen.queryByText('Lower Focus')).toBeNull();
+      expect(screen.queryByText('Full Body')).toBeNull();
+      expect(screen.getByText('Filters (1)')).toBeTruthy();
+      fireEvent.press(screen.getByText('Reset'));
+      expect(props.onResetFilters).toHaveBeenCalledTimes(1);
+    });
+
+    test('filters that leave nothing say so and offer to reset them', () => {
+      const props = renderList({
+        templates: [hybrid, lowerFocus],
+        filters: { dayCounts: [2], tags: ['hybrid'] },
+      });
+
+      expect(screen.getByText('No templates match your filters')).toBeTruthy();
+      fireEvent.press(screen.getByRole('button', { name: 'Reset filters' }));
+      expect(props.onResetFilters).toHaveBeenCalledTimes(1);
+    });
+
+    test('a search that finds nothing under filters is the search empty state', () => {
+      renderList({ templates: [hybrid], search: 'zzz', filters: { tags: ['hybrid'] } });
+
+      expect(screen.getByText('No templates match "zzz"')).toBeTruthy();
+      expect(screen.queryByText('No templates match your filters')).toBeNull();
+    });
   });
 });

@@ -2,6 +2,7 @@ import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { MesoTemplate } from '@domain/plan';
+import { knownTemplateTags } from '@domain/templateListing';
 
 import type {
   exercises,
@@ -58,6 +59,9 @@ export function rowToTemplate(row: Row<typeof templates>): MesoTemplate {
     name: row.name,
     source: row.source,
     ...optional('description', row.description),
+    // Absent rather than `[]` when there are none, like `description`; a tag this build does not
+    // know is dropped (`knownTemplateTags`).
+    ...(knownTemplateTags(row.tags).length > 0 ? { tags: knownTemplateTags(row.tags) } : {}),
     weekPlan: row.weekPlan,
     isHidden: row.isHidden,
     createdAt: row.createdAt,
@@ -171,6 +175,7 @@ export function templateToRow(template: MesoTemplate): Insert<typeof templates> 
     name: template.name,
     source: template.source,
     description: nullable(template.description),
+    tags: [...(template.tags ?? [])],
     weekPlan: template.weekPlan,
     isHidden: template.isHidden,
     createdAt: template.createdAt,

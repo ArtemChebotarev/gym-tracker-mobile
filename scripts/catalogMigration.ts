@@ -102,6 +102,7 @@ const TEMPLATE_COLUMNS = [
   'name',
   'source',
   'description',
+  'tags',
   'week_plan',
   'is_hidden',
   'created_at',
@@ -111,10 +112,10 @@ const TEMPLATE_COLUMNS = [
 /**
  * What a re-seed may overwrite on a template that already exists — the same rule as
  * {@link OVERWRITTEN}: `is_hidden` is the user's and survives every release, `created_at` is when
- * the row first arrived, `id` and `source` identify it. The name, the line under it and the plan
- * itself are the catalog's to correct.
+ * the row first arrived, `id` and `source` identify it. The name, the line under it, its tags
+ * (GT-217) and the plan itself are the catalog's to correct.
  */
-const TEMPLATE_OVERWRITTEN = ['name', 'description', 'week_plan', 'updated_at'] as const;
+const TEMPLATE_OVERWRITTEN = ['name', 'description', 'tags', 'week_plan', 'updated_at'] as const;
 
 function templateValuesOf(template: Unsaved<MesoTemplate>, stampedAt: string): string {
   return [
@@ -122,6 +123,7 @@ function templateValuesOf(template: Unsaved<MesoTemplate>, stampedAt: string): s
     quote(template.name),
     quote(template.source),
     template.description === undefined ? 'NULL' : quote(template.description),
+    quote(JSON.stringify(template.tags ?? [])),
     quote(JSON.stringify(template.weekPlan)),
     template.isHidden ? '1' : '0',
     quote(stampedAt),

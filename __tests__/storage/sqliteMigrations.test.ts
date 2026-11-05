@@ -202,6 +202,8 @@ describe('the app’s own migrations', () => {
       '0008_settings_signals': 1793108004948,
       '0009_hybrid_catalog': 1793456789584,
       '0010_push_pull_legs_day_order': 1793458878488,
+      '0011_template_tags': 1793873246480,
+      '0012_catalog_template_tags': 1793873297036,
     });
   });
 

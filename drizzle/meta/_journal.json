@@ -78,6 +78,20 @@
       "when": 1793458878488,
       "tag": "0010_push_pull_legs_day_order",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793873246480,
+      "tag": "0011_template_tags",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793873297036,
+      "tag": "0012_catalog_template_tags",
+      "breakpoints": true
     }
   ]
 }

@@ -19,6 +19,20 @@ export function describeTemplateContract(harness: RepositoryHarness): void {
       await expect(templateRepo.getById('missing')).resolves.toBeNull();
     });
 
+    test('round-trips its tags, and a template without tags reads back without them (GT-217)', async () => {
+      const { templateRepo } = repositories();
+
+      const tagged = await templateRepo.create(
+        makeTemplate({ id: 'template-tagged', tags: ['full-body', 'hybrid'] }),
+      );
+      const untagged = await templateRepo.create(makeTemplate({ id: 'template-untagged' }));
+
+      await expect(templateRepo.getById(tagged.id)).resolves.toEqual(tagged);
+      const read = await templateRepo.getById(untagged.id);
+      expect(read).toEqual(untagged);
+      expect(read).not.toHaveProperty('tags');
+    });
+
     test('update replaces the stored template', async () => {
       const { templateRepo } = repositories();
       const stored = await templateRepo.create(makeTemplate());

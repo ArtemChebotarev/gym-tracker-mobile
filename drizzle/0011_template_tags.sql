@@ -1,0 +1,1 @@
+ALTER TABLE `meso_template` ADD `tags` text DEFAULT '[]' NOT NULL;

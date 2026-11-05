@@ -10,6 +10,8 @@ import m0007 from './0007_settings_get_ready.sql';
 import m0008 from './0008_settings_signals.sql';
 import m0009 from './0009_hybrid_catalog.sql';
 import m0010 from './0010_push_pull_legs_day_order.sql';
+import m0011 from './0011_template_tags.sql';
+import m0012 from './0012_catalog_template_tags.sql';
 
   export default {
     journal,
@@ -24,7 +26,9 @@ m0006,
 m0007,
 m0008,
 m0009,
-m0010
+m0010,
+m0011,
+m0012
     }
   }
   
