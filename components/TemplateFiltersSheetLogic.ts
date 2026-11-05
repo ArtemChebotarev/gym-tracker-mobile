@@ -43,16 +43,20 @@ export function isHybridOnly(filters: TemplateFilters): boolean {
 }
 
 /**
- * The Days options, four to a row at most: a fifth or sixth count side by side would squeeze
- * `5 days` past its width (the catalog trains 2, 4 and 5 today; a user's template can add more).
+ * Options laid out `perRow` to a row, the last row shorter: side by side past that, the equal-width
+ * options squeeze their labels (`5 days`, `Lower body`) past their width. Days go four to a row,
+ * Focus three — its labels are longer.
  */
-export function dayCountRows(dayCounts: readonly number[]): number[][] {
-  const rows: number[][] = [];
-  for (let index = 0; index < dayCounts.length; index += 4) {
-    rows.push(dayCounts.slice(index, index + 4));
+export function optionRows<T>(values: readonly T[], perRow: number): T[][] {
+  const rows: T[][] = [];
+  for (let index = 0; index < values.length; index += perRow) {
+    rows.push(values.slice(index, index + perRow));
   }
   return rows;
 }
+
+export const DAY_OPTIONS_PER_ROW = 4;
+export const FOCUS_OPTIONS_PER_ROW = 3;
 
 /** The confirm button: `Show 3 templates`, or `No matches` at zero. */
 export function templateApplyLabel(resultCount: number): string {

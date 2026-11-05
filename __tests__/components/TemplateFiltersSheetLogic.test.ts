@@ -1,6 +1,6 @@
 import {
-  dayCountRows,
   FOCUS_TAGS,
+  optionRows,
   isHybridOnly,
   setHybridOnly,
   templateApplyLabel,
@@ -46,8 +46,9 @@ describe('TemplateFiltersSheetLogic (GT-217)', () => {
     expect(templateFilterChips({})).toEqual([]);
   });
 
-  test('day options go four to a row', () => {
-    expect(dayCountRows([2, 3, 4, 5, 6])).toEqual([[2, 3, 4, 5], [6]]);
-    expect(dayCountRows([])).toEqual([]);
+  test('options go so many to a row, the last row shorter', () => {
+    expect(optionRows([2, 3, 4, 5, 6], 4)).toEqual([[2, 3, 4, 5], [6]]);
+    expect(optionRows(['a', 'b', 'c', 'd'], 3)).toEqual([['a', 'b', 'c'], ['d']]);
+    expect(optionRows([], 3)).toEqual([]);
   });
 });

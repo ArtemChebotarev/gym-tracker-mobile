@@ -22,8 +22,10 @@ import type { TemplateFilters } from '@domain/templateListing';
 
 import { templateDayCountLabel, templateTagLabel } from './templateLabels';
 import {
-  dayCountRows,
+  DAY_OPTIONS_PER_ROW,
+  FOCUS_OPTIONS_PER_ROW,
   FOCUS_TAGS,
+  optionRows,
   isHybridOnly,
   setHybridOnly,
   templateApplyLabel,
@@ -65,7 +67,7 @@ export function TemplateFiltersSheet({
     >
       <FilterSection title="Days a week">
         <View style={styles.optionRows}>
-          {dayCountRows(dayCountOptions).map((row) => (
+          {optionRows(dayCountOptions, DAY_OPTIONS_PER_ROW).map((row) => (
             <View key={row.join()} style={styles.optionRow}>
               {row.map((dayCount) => (
                 <FilterOption
@@ -81,14 +83,18 @@ export function TemplateFiltersSheet({
       </FilterSection>
 
       <FilterSection title="Focus">
-        <View style={styles.optionRow}>
-          {FOCUS_TAGS.map((tag) => (
-            <FilterOption
-              key={tag}
-              label={templateTagLabel(tag)}
-              selected={filters.tags?.includes(tag) ?? false}
-              onPress={() => onChangeFilters(toggleTag(filters, tag))}
-            />
+        <View style={styles.optionRows}>
+          {optionRows(FOCUS_TAGS, FOCUS_OPTIONS_PER_ROW).map((row) => (
+            <View key={row.join()} style={styles.optionRow}>
+              {row.map((tag) => (
+                <FilterOption
+                  key={tag}
+                  label={templateTagLabel(tag)}
+                  selected={filters.tags?.includes(tag) ?? false}
+                  onPress={() => onChangeFilters(toggleTag(filters, tag))}
+                />
+              ))}
+            </View>
           ))}
         </View>
       </FilterSection>
