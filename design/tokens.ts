@@ -182,6 +182,8 @@ export const SPACING = {
   'space/set-row-y': 6,
   /** Between two `block` ListRows — each row its own card instead of a divider (GT-222). */
   'space/list-block-gap': 6,
+  /** A ListRow's tags (GT-217): between two of them, and between the row's subtitle and them. */
+  'space/tag-gap': 6,
   'space/xs': 4,
   'space/dots': 6,
   'space/md': 14,
@@ -339,6 +341,8 @@ export const SIZES = {
    * their own. A minimum — a longer row (a badge, a larger text size) grows rather than clips.
    */
   'size/list-block': 56,
+  /** A compact Badge — a ListRow's tag (GT-217): a small pill under the row's subtitle. */
+  'size/tag': 22,
   /** A chip's minimum height — Chip, the filter chips, the editor's day tabs. */
   'size/chip': 36,
   /** ListRow's action pill (Start, Copy) — drawn smaller, 44pt to the touch. */
