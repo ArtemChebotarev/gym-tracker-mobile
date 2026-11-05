@@ -1,9 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import {
   WorkoutExerciseCard,
   type WorkoutExerciseCardProps,
 } from '@components/WorkoutExerciseCard';
+import { TIMER_OUT_LOG_ALERT } from '@components/IntervalRoundRowsLogic';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import type { MobilityWorkoutExercise, WorkoutRoundRow } from '@usecases/workoutSession';
@@ -180,12 +182,16 @@ describe('Mobility card (GT-107)', () => {
       );
     }
 
-    test('the button pauses and resumes it, the field opens it, and Done waits', () => {
+    test('the button pauses and resumes it, the field opens it, and Done says the timer logs', () => {
+      const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
       const rounds = renderCard();
       startTimer();
 
       expect(screen.getByLabelText('10:00 left, open timer')).toBeTruthy();
-      expect(screen.getByRole('checkbox', { name: 'Mark done' })).toBeDisabled();
+      fireEvent.press(screen.getByRole('checkbox', { name: 'Mark done' }));
+      expect(alert).toHaveBeenCalledWith(TIMER_OUT_LOG_ALERT.title, TIMER_OUT_LOG_ALERT.message);
+      expect(rounds.onLogRound).not.toHaveBeenCalled();
+      alert.mockRestore();
 
       expect(screen.getByText('Pause timer')).toBeTruthy();
       fireEvent.press(screen.getByRole('button', { name: 'Pause timer' }));

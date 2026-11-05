@@ -19,7 +19,8 @@
 //   (FR-7, GT-89).
 // - Start timer opens the interval timer (GT-96) over the rounds not yet logged, with the times
 //   their fields show. While it is out — running, paused or in the capsule — no time can be picked:
-//   the timer runs on the times it took at its start (FR-9, GT-234).
+//   the timer runs on the times it took at its start (FR-9, GT-234) — and Log doesn't log, it says
+//   the timer does: a hand log would start a rest timer over the running one.
 //
 // JSX/rendering only — styles live in IntervalRoundRowsStyles.ts and pure helpers in
 // IntervalRoundRowsLogic.ts and IntervalExerciseCardLogic.ts, per the code-style skill.
@@ -58,6 +59,7 @@ import {
   type RoundTimeColumn,
   type RoundTimeEdits,
   roundsWithEdits,
+  alertTimerOut,
   roundTimePickerSubtitle,
   roundTimePickerTitle,
   roundTimeToSave,
@@ -161,7 +163,7 @@ export function IntervalRoundRows({
           key={round.roundNumber}
           round={round}
           editable={editable}
-          timesLocked={timerOut}
+          timerOut={timerOut}
           isSaving={isSaving}
           openColumn={open?.roundNumber === round.roundNumber ? open.column : undefined}
           onOpenField={(column) => openPicker(column, round.roundNumber)}
@@ -215,8 +217,11 @@ export function IntervalRoundRows({
 type RoundRowProps = {
   round: WorkoutRoundRow;
   editable: boolean;
-  /** This exercise's interval timer is out — Work and Rest can't be picked. */
-  timesLocked: boolean;
+  /**
+   * This exercise's interval timer is out — Work and Rest can't be picked, and Log says why it
+   * doesn't log.
+   */
+  timerOut: boolean;
   isSaving: boolean;
   /** The field of this round whose picker is open — its outline brightens. */
   openColumn: RoundTimeColumn | undefined;
@@ -229,7 +234,7 @@ type RoundRowProps = {
 function RoundRow({
   round,
   editable,
-  timesLocked,
+  timerOut,
   isSaving,
   openColumn,
   onOpenField,
@@ -241,8 +246,8 @@ function RoundRow({
   const restSec = shownRestSec(round);
   const restSkipped = round.log?.restSkipped === true;
   // An unlogged round's times can be picked; a logged one reads as it was logged — un-log to change.
-  const pickable = editable && !logged && !timesLocked;
-  const fieldsEditable = editable && !timesLocked;
+  const pickable = editable && !logged && !timerOut;
+  const fieldsEditable = editable && !timerOut;
   // A round with an empty field can't be logged yet (FR-9); un-logging always works.
   const logDisabled = !editable || isSaving || (!logged && !hasRoundTimes(round));
 
@@ -284,7 +289,7 @@ function RoundRow({
             accessibilityState={{ checked: logged, disabled: logDisabled }}
             disabled={logDisabled}
             hitSlop={tapTargetSlop(SIZES['size/log-box'])}
-            onPress={logged ? onUnlog : onLog}
+            onPress={timerOut ? alertTimerOut : logged ? onUnlog : onLog}
             style={({ pressed }) => [
               rowStyles.logBox,
               logged && rowStyles.logBoxLogged,
