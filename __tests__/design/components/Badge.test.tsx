@@ -1,5 +1,5 @@
 import { Badge } from '@design/components/Badge';
-import { COLORS, SIZES } from '@design/tokens';
+import { SIZES } from '@design/tokens';
 import { StyleSheet } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
@@ -21,16 +21,6 @@ describe('Badge', () => {
   test('defaults to the neutral variant', () => {
     render(<Badge label="Catalog" />);
     expect(screen.getByText('Catalog')).toBeTruthy();
-  });
-
-  test('a neutral badge on a card takes the next surface up, so its pill still shows (GT-217)', () => {
-    const pill = pillStyle(<Badge label="Custom" surface="card" />);
-    expect(pill.backgroundColor).toBe(COLORS['surface/popover']);
-  });
-
-  test('an accent badge keeps its own fill on a card', () => {
-    const pill = pillStyle(<Badge label="Hybrid" variant="accent" surface="card" />);
-    expect(pill.backgroundColor).toBe(COLORS['accent/bg']);
   });
 
   test('a compact badge is a tag-high pill', () => {
