@@ -3,6 +3,9 @@
 // in the caller, so this component can be rendered and asserted on with plain props, the same
 // way design/components are tested — no QueryProvider or real repositories needed here.
 //
+// Each row is a block of its own rather than a line between rows (GT-222, canvas "Шаблоны",
+// `LibraryBlocks`) — ListRow's `block` variant, the same row everywhere else draws divided.
+//
 // A row opens that exercise's own screen (065, `onOpenExercise`) — the chevron's promise, and
 // the library's job as "точка входа в историю" (08.6).
 //
@@ -28,7 +31,7 @@ import { IconButton } from '@design/components/IconButton';
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { SearchField } from '@design/components/SearchField';
-import { listBleed, SectionHeader } from '@design/components/SectionHeader';
+import { listBleed, SectionGap, SectionHeader } from '@design/components/SectionHeader';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
@@ -160,8 +163,10 @@ export function ExerciseLibraryScreen({
               title={section.title}
               count={section.data.length}
               dotColor={sectionDotColor(section.muscleGroup)}
+              variant="label"
             />
           )}
+          renderSectionFooter={() => <SectionGap />}
           renderItem={({ item }) => (
             <ListRow
               title={item.exercise.name}
@@ -170,6 +175,7 @@ export function ExerciseLibraryScreen({
               badge={item.exercise.source === 'custom' ? { label: 'Custom' } : undefined}
               trailing={{ type: 'chevron' }}
               onPress={() => onOpenExercise(item)}
+              variant="block"
             />
           )}
         />

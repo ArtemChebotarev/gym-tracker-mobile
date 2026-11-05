@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import type { ActionMenuItem } from '@design/components/ActionMenu';
 import { ListRow } from '@design/components/ListRow';
 import { TrashIcon } from '@design/icons/TrashIcon';
@@ -17,6 +18,37 @@ function menuItems(onDelete: () => void): ActionMenuItem[] {
 }
 
 describe('ListRow', () => {
+  test('a block row draws itself as a card, a divided row as a line under it', () => {
+    // GT-222: one row, two frames. Asserted on the frame's own style — the variant changes
+    // nothing else, which the snapshot tests below hold.
+    const { rerender } = render(<ListRow title="Bench press" onPress={jest.fn()} variant="block" />);
+    const block = StyleSheet.flatten(screen.getByRole('button').props.style);
+    expect(block.borderRadius).toBeGreaterThan(0);
+    expect(block.borderWidth).toBeGreaterThan(0);
+    expect(block.borderBottomColor).toBeUndefined();
+
+    rerender(<ListRow title="Bench press" onPress={jest.fn()} />);
+    const divided = StyleSheet.flatten(screen.getByRole('button').props.style);
+    expect(divided.borderRadius).toBeUndefined();
+    expect(divided.borderBottomWidth).toBeGreaterThan(0);
+  });
+
+  test('a block row keeps the library row\'s content: title, equipment, last result, chevron', () => {
+    const tree = render(
+      <ListRow
+        title="Bench Press"
+        titleSuffix="Barbell"
+        subtitle="80 kg × 10 · yesterday"
+        badge={{ label: 'Custom' }}
+        trailing={{ type: 'chevron' }}
+        onPress={jest.fn()}
+        variant="block"
+      />,
+    );
+
+    expect(tree.toJSON()).toMatchSnapshot();
+  });
+
   test('renders without a subtitle', () => {
     render(<ListRow title="Bench press" />);
     expect(screen.getByText('Bench press')).toBeTruthy();

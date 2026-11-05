@@ -42,7 +42,7 @@ import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { ListRow } from '@design/components/ListRow';
 import { SearchField } from '@design/components/SearchField';
-import { SectionHeader } from '@design/components/SectionHeader';
+import { SectionGap, SectionHeader } from '@design/components/SectionHeader';
 import { useExercisePickStore } from '@state/exercisePickStore';
 
 import { ExerciseFilterRow } from './ExerciseFilterRow';
@@ -55,10 +55,7 @@ import {
   rowSubtitle,
   sectionDotColor,
 } from './ExerciseLibraryScreenLogic';
-import {
-  confirmButtonLabel,
-  toggleExerciseSelection,
-} from './ExercisePickerSheetLogic';
+import { confirmButtonLabel, toggleExerciseSelection } from './ExercisePickerSheetLogic';
 import { styles } from './ExercisePickerSheetStyles';
 
 type ExercisePickerSelection =
@@ -187,10 +184,12 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
               count={section.data.length}
               dotColor={sectionDotColor(section.muscleGroup)}
               edge="sheet"
+              variant="label"
             />
             {section.data.map((entry) => (
               <ListRow
                 key={entry.exercise.id}
+                variant="block"
                 title={entry.exercise.name}
                 titleSuffix={equipmentSuffix(entry.exercise)}
                 subtitle={rowSubtitle(entry)}
@@ -211,6 +210,7 @@ export function ExercisePickerSheet(props: ExercisePickerSheetProps) {
                 onPress={() => openPreview(entry.exercise.id)}
               />
             ))}
+            <SectionGap />
           </View>
         ))}
     </BottomSheet>
