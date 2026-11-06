@@ -41,6 +41,9 @@
 // `tags` (GT-217, canvas «Шаблоны», `TemplatesRows`) are a line of compact badges under the
 // subtitle — what the row's thing is filtered by (a template's focus, `Hybrid`). The same
 // `ListRowBadge` shape as `badge`, so a tag looks like a badge everywhere else, only smaller.
+//
+// `disabled` (GT-155) draws a row that stays in its list but can't be acted on — dimmed, with no
+// tap target and an inert checkbox. The caller says why in the subtitle; the row doesn't know.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BORDER_WIDTHS, COLORS, OPACITY, RADII, SIZES, SPACING, TYPOGRAPHY } from '../tokens';
@@ -90,6 +93,8 @@ export type ListRowProps = {
   tags?: readonly ListRowBadge[];
   trailing?: ListRowTrailing;
   onPress?: () => void;
+  /** In the list, but nothing on it can be pressed — see the note at the top. */
+  disabled?: boolean;
 };
 
 export function ListRow({
@@ -101,6 +106,7 @@ export function ListRow({
   tags,
   trailing,
   onPress,
+  disabled = false,
 }: ListRowProps) {
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
@@ -141,6 +147,22 @@ export function ListRow({
       )}
     </>
   );
+
+  if (disabled) {
+    return (
+      <View
+        accessible
+        accessibilityLabel={title}
+        accessibilityState={{ disabled: true }}
+        style={[styles.container, styles.disabled]}
+      >
+        <View style={styles.row}>
+          {isLeadingApart && leading !== undefined && <Leading leading={leading} />}
+          {isLeadingApart ? <View style={styles.body}>{body}</View> : body}
+        </View>
+      </View>
+    );
+  }
 
   const isCheckboxRow = leading?.type === 'checkbox' && !isLeadingApart;
   const accessibility = {
@@ -281,6 +303,9 @@ const styles = StyleSheet.create({
   container: {
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
+  },
+  disabled: {
+    opacity: OPACITY['opacity/dimmed'],
   },
   pressed: {
     opacity: OPACITY['opacity/pressed'],

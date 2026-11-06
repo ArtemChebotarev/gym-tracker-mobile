@@ -49,6 +49,7 @@ const BASE_PROPS: MesoEditorAddExerciseSheetProps = {
   onChangeSelectedIds: jest.fn(),
   onConfirm: jest.fn(),
   onClose: jest.fn(),
+  inDayIds: [],
 };
 
 function renderSheet(overrides: Partial<MesoEditorAddExerciseSheetProps> = {}) {
@@ -58,6 +59,19 @@ function renderSheet(overrides: Partial<MesoEditorAddExerciseSheetProps> = {}) {
 }
 
 describe('MesoEditorAddExerciseSheet', () => {
+  // GT-155: a day takes an exercise once — one already in it stays listed, inactive.
+  test('DoD: an exercise already in the day is listed inactive and can’t be checked', () => {
+    const props = renderSheet({ inDayIds: [toExerciseId('bench-press')] });
+
+    expect(screen.getByText('Already in this day')).toBeTruthy();
+    expect(screen.queryByRole('checkbox', { name: 'Select Bench Press' })).toBeNull();
+    expect(screen.getByLabelText('Bench Press').props.accessibilityState).toEqual({
+      disabled: true,
+    });
+    fireEvent.press(screen.getByText('Bench Press'));
+    expect(props.onChangeSelectedIds).not.toHaveBeenCalled();
+  });
+
   test('matches the sheet snapshot', () => {
     const tree = render(<MesoEditorAddExerciseSheet {...BASE_PROPS} />).toJSON();
 

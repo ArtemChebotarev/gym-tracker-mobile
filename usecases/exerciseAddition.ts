@@ -39,8 +39,9 @@ export type ExerciseAdditionInput = {
  * rule 6 targets from the exercise's last performance (none → the screen shows `N RIR`), the
  * week's `targetRir`, status `planned`. Resolves to the new session exercises, in order.
  *
- * Rejects with `ConflictError` in a deload session (03, rule 6: nothing can be added there) and in
- * a final or `awaiting_source` one, and with `NotFoundError` if the session or its mesocycle
+ * Rejects with `ConflictError` in a deload session (03, rule 6: nothing can be added there), when an
+ * exercise is already in the session or picked twice (GT-155: one exercise once per day), and in a
+ * final or `awaiting_source` one, and with `NotFoundError` if the session or its mesocycle
  * doesn't exist.
  */
 export async function addExercises(
@@ -54,6 +55,15 @@ export async function addExercises(
       throw new ConflictError(
         `Session "${session.id}" is a deload session; exercises can't be added.`,
       );
+    }
+    const inSession = new Set(sessionExercises.map((exercise) => exercise.exerciseId));
+    for (const exerciseId of input.exerciseIds) {
+      if (inSession.has(exerciseId)) {
+        throw new ConflictError(
+          `Exercise "${exerciseId}" is already in session "${session.id}"; a day takes it once.`,
+        );
+      }
+      inSession.add(exerciseId);
     }
     const mesocycle = await deps.mesocycleRepo.getById(session.mesoId);
     if (!mesocycle) {
