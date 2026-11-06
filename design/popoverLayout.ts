@@ -13,9 +13,12 @@ export type WindowSize = { width: number; height: number };
 /**
  * The plate spans the window minus `margin` on both sides, and sits under the anchor — or over it,
  * once the anchor is past the middle of the window and a plate below it would run off the bottom.
+ * Given the safe area and the plate's height (`PlateRoom`), that side is only kept while the plate
+ * fits there: otherwise it takes the other side, and with no room on either it is pinned inside the
+ * safe area, over the anchor.
+ *
  * Which edge is pinned is why this is a union: `below` grows downward from `top`, `above` upward
- * from `bottom`, and neither needs the plate's own height, which isn't known until it has been
- * laid out.
+ * from `bottom`, so the first frame — before the plate's height is known — needs neither.
  *
  * `arrowLeft` is the arrow's offset inside the plate: centered on the anchor, and never closer to
  * a corner than `margin`, where the plate's rounded edge would cut it.
@@ -25,7 +28,22 @@ export type PopoverLayout = {
   right: number;
   /** The arrow's offset from the plate's left edge. */
   arrowLeft: number;
+  /**
+   * `false` once the plate fits on neither side and is pinned to the edge of the safe area instead,
+   * over the anchor: an arrow there would point at nothing.
+   */
+  showsArrow: boolean;
 } & ({ placement: 'below'; top: number } | { placement: 'above'; bottom: number });
+
+/**
+ * What the plate has to fit in: the window's safe area — `insets` off its top and bottom, the
+ * status bar and Dynamic Island above, the home indicator below — and its own height, once it has
+ * been laid out.
+ */
+export type PlateRoom = {
+  insets: { top: number; bottom: number };
+  plateHeight: number;
+};
 
 /**
  * How far the arrow is pushed past the plate's edge — half of it, so the other half overlaps the
@@ -51,6 +69,11 @@ export function popoverLayout(
    * coachmark's anchor has a ring round it, and wants the arrow to stop short of that.
    */
   distance: number = arrowSize / 2,
+  /**
+   * The safe area and the plate's height. Without it — before the plate has been laid out — the
+   * side is picked by the anchor's place alone.
+   */
+  room?: PlateRoom,
 ): PopoverLayout {
   const overlap = arrowSize / 2;
   const plateWidth = window.width - margin * 2;
@@ -61,8 +84,45 @@ export function popoverLayout(
     // rather than letting the clamp invert.
     Math.max(plateWidth - margin - arrowSize, margin),
   );
-  const base = { left: margin, right: margin, arrowLeft };
-  return anchor.y + anchor.height < window.height / 2
-    ? { ...base, placement: 'below', top: anchor.y + anchor.height + distance }
-    : { ...base, placement: 'above', bottom: window.height - anchor.y + distance };
+  const base = { left: margin, right: margin, arrowLeft, showsArrow: true };
+  const top = anchor.y + anchor.height + distance;
+  const bottom = window.height - anchor.y + distance;
+  const below = { ...base, placement: 'below' as const, top };
+  const above = { ...base, placement: 'above' as const, bottom };
+  const preferred = anchor.y + anchor.height < window.height / 2 ? below : above;
+  if (room === undefined) {
+    return preferred;
+  }
+
+  // The plate keeps `margin` off the safe area's edges, as it does off the window's sides.
+  const safeTop = room.insets.top + margin;
+  const safeBottom = window.height - room.insets.bottom - margin;
+  const fitsBelow = top + room.plateHeight <= safeBottom;
+  const fitsAbove = window.height - bottom - room.plateHeight >= safeTop;
+  const other = preferred === below ? above : below;
+  if (preferred === below ? fitsBelow : fitsAbove) {
+    return preferred;
+  }
+  if (other === below ? fitsBelow : fitsAbove) {
+    return other;
+  }
+
+  // Neither side has room — a tall anchor, a card that fills most of the screen. The plate goes to
+  // the roomier side and is pushed back inside the safe area, over the anchor.
+  const roomBelow = safeBottom - top;
+  const roomAbove = window.height - bottom - safeTop;
+  return roomBelow >= roomAbove
+    ? {
+        ...below,
+        showsArrow: false,
+        top: Math.max(Math.min(top, safeBottom - room.plateHeight), safeTop),
+      }
+    : {
+        ...above,
+        showsArrow: false,
+        bottom: Math.max(
+          Math.min(bottom, window.height - safeTop - room.plateHeight),
+          window.height - safeBottom,
+        ),
+      };
 }

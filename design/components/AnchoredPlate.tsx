@@ -10,9 +10,14 @@
 // With no anchor measured — `measureInWindow` answers nothing under Jest, and a platform could
 // fail it too — the plate is centred and has no arrow. A tap that opens nothing is worse than a
 // plate that doesn't point anywhere. The arrow's test id is the plate's with `-arrow` appended.
+//
+// The plate measures its own height (`onLayout`) and keeps inside the safe area: past the status
+// bar and Dynamic Island at the top, the home indicator at the bottom (GT-241). Its first frame,
+// before the height is known, goes by the anchor's place alone; the next one corrects it.
 
-import type { ReactNode } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useContext, useState, type ReactNode } from 'react';
+import { type LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { arrowOffset, popoverLayout } from '../popoverLayout';
 import type { AnchorRect } from '../popoverLayout';
@@ -40,10 +45,27 @@ export function AnchoredPlate({
   children,
 }: AnchoredPlateProps) {
   const window = useWindowDimensions();
+  // From the root SafeAreaProvider, as Dialog and BottomSheet read it: a SafeAreaView inside
+  // <Modal> measures against the wrong window. Outside any provider (component tests) it is 0.
+  const insets = useContext(SafeAreaInsetsContext);
+  const [plateHeight, setPlateHeight] = useState<number | null>(null);
+  const onLayout = (event: LayoutChangeEvent) => setPlateHeight(event.nativeEvent.layout.height);
   const layout =
     anchor === null
       ? null
-      : popoverLayout(anchor, window, SPACING['space/screen'], arrowSize, distance);
+      : popoverLayout(
+          anchor,
+          window,
+          SPACING['space/screen'],
+          arrowSize,
+          distance,
+          plateHeight === null
+            ? undefined
+            : {
+                insets: { top: insets?.top ?? 0, bottom: insets?.bottom ?? 0 },
+                plateHeight,
+              },
+        );
 
   if (layout === null) {
     return (
@@ -58,6 +80,7 @@ export function AnchoredPlate({
   return (
     <View
       testID={testID}
+      onLayout={onLayout}
       style={[
         styles.plate,
         styles.anchored,
@@ -66,17 +89,19 @@ export function AnchoredPlate({
           : { left: layout.left, right: layout.right, bottom: layout.bottom },
       ]}
     >
-      <View
-        testID={`${testID}-arrow`}
-        style={[
-          styles.arrow,
-          { width: arrowSize, height: arrowSize, borderRadius: arrowRadius },
-          layout.placement === 'below'
-            ? { top: arrowOffset(arrowSize) }
-            : { bottom: arrowOffset(arrowSize) },
-          { left: layout.arrowLeft },
-        ]}
-      />
+      {layout.showsArrow && (
+        <View
+          testID={`${testID}-arrow`}
+          style={[
+            styles.arrow,
+            { width: arrowSize, height: arrowSize, borderRadius: arrowRadius },
+            layout.placement === 'below'
+              ? { top: arrowOffset(arrowSize) }
+              : { bottom: arrowOffset(arrowSize) },
+            { left: layout.arrowLeft },
+          ]}
+        />
+      )}
       {children}
     </View>
   );

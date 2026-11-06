@@ -51,4 +51,52 @@ describe('popoverLayout', () => {
     expect(below).toMatchObject({ placement: 'below', top: 200 + 24 + 16 });
     expect(above).toMatchObject({ placement: 'above', bottom: 844 - 700 + 16 });
   });
+
+  // GT-241: the edit coachmark rings a whole card. Its bottom past the middle sent the plate above
+  // it, and a card that starts near the top pushed the plate under the status bar.
+  describe('given the safe area and the plate’s height', () => {
+    const INSETS = { top: 59, bottom: 34 };
+    const DISTANCE = 16;
+
+    function fit(anchor: { y: number; height: number }, plateHeight: number) {
+      return popoverLayout({ x: 16, width: 358, ...anchor }, window, MARGIN, 14, DISTANCE, {
+        insets: INSETS,
+        plateHeight,
+      });
+    }
+
+    test('the usual side is kept while the plate fits there', () => {
+      expect(fit({ y: 600, height: 100 }, 200)).toMatchObject({
+        placement: 'above',
+        bottom: 844 - 600 + DISTANCE,
+        showsArrow: true,
+      });
+    });
+
+    test('a plate that would run under the status bar goes below the anchor instead', () => {
+      // The card's bottom (520) is past the middle, but only 50pt of safe area are above it.
+      expect(fit({ y: 140, height: 380 }, 200)).toMatchObject({
+        placement: 'below',
+        top: 140 + 380 + DISTANCE,
+        showsArrow: true,
+      });
+    });
+
+    test('with room on neither side the plate is pinned inside the safe area, without an arrow', () => {
+      // 120..720: 29pt of safe area above the anchor and 58 below it, both short of a 200pt plate.
+      // Below has more, so the plate goes there and is pushed up until its bottom clears the home
+      // indicator.
+      expect(fit({ y: 120, height: 600 }, 200)).toMatchObject({
+        placement: 'below',
+        top: 844 - INSETS.bottom - MARGIN - 200,
+        showsArrow: false,
+      });
+    });
+
+    test('without the plate’s height the side is picked by the anchor alone', () => {
+      expect(
+        popoverLayout({ x: 16, y: 140, width: 358, height: 380 }, window, MARGIN, 14, DISTANCE),
+      ).toMatchObject({ placement: 'above', showsArrow: true });
+    });
+  });
 });
