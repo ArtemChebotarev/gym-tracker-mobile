@@ -42,18 +42,20 @@ function planExerciseIds(plan: WeekPlan): string[] {
  * Week 1's targets for a `copyWeek` block (04 · Meso Creation Flows, "Расчёт startReps"; an
  * interval's rounds too, 10.1 FR-9 and GT-185): per
  * day and exercise of the plan (never per `order`, GT-148), the reference the resolver finds for
- * that day (`resolveReference`, task 134.2) among the exercise's performances inside
- * `historyLookbackDays`, re-priced for this block's starting RIR by the exercise type's policy (`prescribeBlockStart`).
+ * that day (`resolveReference`, task 134.2) among the exercise's performances — the source
+ * block's whole, other blocks' inside `historyLookbackDays` (GT-194) — re-priced for this block's starting RIR by the exercise type's policy (`prescribeBlockStart`).
  *
  * The source week gave the structure and nothing else. The numbers come from history because
  * copying rarely happens the day the block ended: between that week and this Start the user kept
  * training, and often the week copied isn't even from the last block. So the fresher fact wins.
  *
  * The slot the resolver is asked about is the day in the block being copied — the "own"
- * mesocycle is the source one, since the new block has no history yet — and no current week: the
- * reference week is simply the latest one in the window. So an exercise done twice a week gets
- * each day's own numbers, one placed on a day it wasn't done on gets an estimate, and one whose
- * latest week is from another split gets an estimate or nothing (cases C1–C7 of 03, rule 6).
+ * mesocycle is the source one, since the new block has no history yet — and no current week. The
+ * day's latest performance in the source block comes first, in any of its weeks (GT-194);
+ * without one the reference week is simply the latest one in the window. So an exercise done
+ * twice a week gets each day's own numbers, one placed on a day it wasn't done on gets an
+ * estimate, and one whose latest week is from another split gets an estimate or nothing (cases
+ * C1–C7 of 03, rule 6).
  *
  * A slot with no reference is left out of the map entirely — its rows stay bare and the screen
  * shows `N RIR`, the same "не уверен — не рекомендуй" rule as everywhere else. History is read
@@ -77,7 +79,14 @@ async function weekOneTargetsFromHistory(
     await Promise.all(
       exerciseIds.map(
         async (exerciseId) =>
-          [exerciseId, await repos.setLogRepo.listPerformances({ exerciseId, since })] as const,
+          [
+            exerciseId,
+            await repos.setLogRepo.listPerformances({
+              exerciseId,
+              since,
+              ownMesoId: mesocycle.origin.sourceMesoId,
+            }),
+          ] as const,
       ),
     ),
   );

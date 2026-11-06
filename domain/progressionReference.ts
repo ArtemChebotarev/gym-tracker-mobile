@@ -95,18 +95,26 @@ function estimateIfUnambiguous(
  * The reference for an exercise placed into `slot`, from its `performances` inside the history
  * window (`historyLookbackDays` — the caller has already cut the window).
  *
- * Deload performances and ones with nothing logged — no set and no round (GT-185) — don't count. Of what is left, the reference
- * week is the latest training week that has any; for rule 6 (`slot.currentWeek` given) that is the
- * latest week **before** the current one, and the current week only when there is none. Then:
+ * Deload performances and ones with nothing logged — no set and no round (GT-185) — don't count.
+ * Of what is left, the search goes by day and exercise, nearest first (GT-194):
  *
- * - Reference week is the current one: one performance, or several identical → estimate from the
- *   current week; several that differ → none. There is no +1 inside a week.
- * - Same day in the slot's own mesocycle → target from that day's performance, whatever the rest
- *   of the week says. Day numbers aren't compared across mesocycles.
+ * 1. **The slot's own day in its own mesocycle**, in any week before the current one — the latest
+ *    such performance is the target, whatever later weeks did on other days. Day numbers aren't
+ *    compared across mesocycles. Its target is + 1 however many weeks back it was (Artem,
+ *    06.11.2026): no allowance for the weeks between.
+ * 2. Otherwise the reference week is the latest training week that has any; for rule 6
+ *    (`slot.currentWeek` given) that is the latest week **before** the current one, and the
+ *    current week only when there is none.
+ *
+ * Then, in the reference week:
+ *
+ * - It is the current one: one performance, or several identical → estimate from the current
+ *   week; several that differ → none. There is no +1 inside a week.
  * - Several identical, own mesocycle → target: the result didn't depend on the slot.
  * - One performance → estimate from an earlier week; one, or several identical, in another
  *   mesocycle → estimate from another block. How each is priced is `prescribeFromHistory`'s.
- * - Several that differ → none. Rule 6 doesn't fall back onto the current week then.
+ * - Several that differ → none, not the newest of them as an estimate (Artem, 06.11.2026). Rule 6
+ *   doesn't fall back onto the current week then.
  */
 export function resolveReference(
   performances: readonly ExercisePerformance[],
@@ -121,6 +129,18 @@ export function resolveReference(
   const isCurrent = (week: readonly ExercisePerformance[]) =>
     currentWeek !== undefined && week[0] !== undefined && isSameWeek(week[0], currentWeek);
 
+  const ownDay = counted
+    .filter(
+      (performance) =>
+        performance.mesoId === slot.mesoId &&
+        performance.dayNumber === slot.dayNumber &&
+        !(currentWeek !== undefined && isSameWeek(performance, currentWeek)),
+    )
+    .sort(latestFirst)[0];
+  if (ownDay !== undefined) {
+    return { kind: 'target', reference: ownDay };
+  }
+
   const referenceWeek = weeks.find((week) => !isCurrent(week));
   if (referenceWeek === undefined) {
     const current = weeks.find(isCurrent);
@@ -129,13 +149,8 @@ export function resolveReference(
       : estimateIfUnambiguous(current, 'current_week');
   }
 
+  // The own day isn't in it: step 1 would have found it.
   const ownMeso = referenceWeek[0]?.mesoId === slot.mesoId;
-  const sameDay = ownMeso
-    ? referenceWeek.find((performance) => performance.dayNumber === slot.dayNumber)
-    : undefined;
-  if (sameDay !== undefined) {
-    return { kind: 'target', reference: sameDay };
-  }
   if (referenceWeek.length > 1 && ownMeso) {
     const [newest] = referenceWeek;
     return newest !== undefined && areIdentical(referenceWeek)

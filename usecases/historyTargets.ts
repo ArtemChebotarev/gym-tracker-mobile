@@ -40,8 +40,9 @@ export type HistoryTargetsQuery = {
  *
  * - Deload session: no targets at all — the week isn't for progression, `N RIR` is guidance
  *   enough, so no reference is looked up.
- * - Otherwise the exercise's performances logged no earlier than `now − historyLookbackDays` go
- *   to the reference resolver with the session's slot: a reference in the exercise's own slot
+ * - Otherwise the exercise's performances — every one in the session's own mesocycle, and the
+ *   other blocks' logged no earlier than `now − historyLookbackDays` (GT-194) — go to the
+ *   reference resolver with the session's slot: a reference in the exercise's own slot
  *   gives targets (reps + 1), one from another day or block an estimate (priced by where it came
  *   from — the type's policy), and none leaves the rows empty — the Reps fields show `–`, and the card's `N RIR` chip is the guide.
  */
@@ -72,6 +73,7 @@ export async function targetsFromHistory(
   const performances = await setLogRepo.listPerformances({
     exerciseId,
     since: daysBefore(now, settings.historyLookbackDays),
+    ownMesoId: session.mesoId,
     excludeSessionExerciseId: sessionExerciseId,
   });
   const resolution = resolveReference(performances, {
