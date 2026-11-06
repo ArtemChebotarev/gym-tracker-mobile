@@ -11,6 +11,9 @@
 //
 // The list shows seven exercises at most; a longer day scrolls inside it, its scroll bar flashed once
 // as the popup opens so the rest is found, and the title and the button stay in view.
+//
+// The change column is there only when some row has a change (GT-242): a day with no progression is
+// two columns, the name and today's best, across the whole list — not a blank column on the right.
 
 import { useEffect, useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -43,6 +46,7 @@ function FinishBody({
   onAction: (action: FinishAction) => void;
 }) {
   const listRef = useRef<ScrollView>(null);
+  const hasDelta = summary.kind === 'day' && summary.rows.some((row) => row.delta !== undefined);
   useEffect(() => {
     listRef.current?.flashScrollIndicators();
   }, []);
@@ -70,7 +74,7 @@ function FinishBody({
                   {row.name}
                 </Text>
                 <Text style={styles.value}>{row.value}</Text>
-                <Text style={styles.delta}>{row.delta ?? ''}</Text>
+                {hasDelta && <Text style={styles.delta}>{row.delta ?? ''}</Text>}
               </View>
             ))}
           </ScrollView>

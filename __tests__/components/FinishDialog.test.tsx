@@ -51,6 +51,27 @@ describe('FinishDialog', () => {
     expect(screen.getByText('Next workout')).toBeTruthy();
   });
 
+  test('GT-242: with no change in any row, there is no change column — two columns across', () => {
+    const rows = [
+      { key: 'a', name: 'Bench Press', value: '80 kg × 10' },
+      { key: 'b', name: 'A very long exercise name that does not fit the row', value: '0:40' },
+    ];
+    render(<FinishDialog summary={{ ...DAY, lead: undefined, rows }} onAction={() => {}} />);
+
+    const row = screen.getByText('80 kg × 10').parent?.parent;
+    expect(row?.children).toHaveLength(2);
+    const name = screen.getByText('A very long exercise name that does not fit the row');
+    expect(name.props.numberOfLines).toBe(1);
+    expect(StyleSheet.flatten(name.props.style)).toMatchObject({ flex: 1, minWidth: 0 });
+  });
+
+  test('with a change in some row, every row keeps the change column, so the values line up', () => {
+    render(<FinishDialog summary={DAY} onAction={() => {}} />);
+
+    const plain = screen.getByText('0:40').parent?.parent;
+    expect(plain?.children).toHaveLength(3);
+  });
+
   test('the button reports its action; there is no cross (only the button closes it)', () => {
     const onAction = jest.fn();
     render(<FinishDialog summary={DAY} onAction={onAction} />);
