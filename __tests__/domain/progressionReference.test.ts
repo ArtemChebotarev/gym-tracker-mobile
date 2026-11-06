@@ -177,15 +177,48 @@ describe('resolveReference — rule 6', () => {
     });
   });
 
-  test('the latest earlier week is the reference, not an older one with the same day', () => {
+  // GT-194: the own day is looked for in every earlier week first, not only in the latest one.
+  test('R2: an older week with the same day wins over a newer week with another day', () => {
     const olderSameDay = performance({ weekNumber: 1, dayNumber: 3 }, LATERAL_DAY_3);
     const newerOtherDay = performance({ weekNumber: 2, dayNumber: 1 }, TRICEPS);
 
     expect(resolveReference([olderSameDay, newerOtherDay], ruleSix(3, 3))).toEqual({
-      kind: 'estimate',
-      reference: newerOtherDay,
-      reason: 'other_slot',
-      source: 'earlier_week',
+      kind: 'target',
+      reference: olderSameDay,
+    });
+  });
+
+  test('R2: of several weeks with the same day, the latest one is the target', () => {
+    const week1 = performance({ weekNumber: 1, dayNumber: 3 }, LATERAL_DAY_1);
+    const week2 = performance({ weekNumber: 2, dayNumber: 3 }, LATERAL_DAY_3);
+    const week3OtherDay = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS);
+
+    expect(resolveReference([week1, week2, week3OtherDay], ruleSix(4, 3))).toEqual({
+      kind: 'target',
+      reference: week2,
+    });
+  });
+
+  test('R2: the same day in the current week is still parallel, an earlier one wins', () => {
+    const lastWeek = performance({ weekNumber: 1, dayNumber: 3 }, LATERAL_DAY_3);
+    const thisWeek = performance({ weekNumber: 2, dayNumber: 3 }, TRICEPS);
+
+    expect(resolveReference([lastWeek, thisWeek], ruleSix(2, 3))).toEqual({
+      kind: 'target',
+      reference: lastWeek,
+    });
+  });
+
+  // Artem's case, 27.10.2026: a 2-day cycle with the exercise on both days. Week 2 swapped it out
+  // of day 1; week 3 swaps it back in. Day 1 of week 1 is the reference, not day 2 of week 2.
+  test('Artem’s case: week 3 day 1 takes day 1 of week 1, not day 2 of week 2', () => {
+    const week1Day1 = performance({ weekNumber: 1, dayNumber: 1 }, LATERAL_DAY_1);
+    const week1Day2 = performance({ weekNumber: 1, dayNumber: 2 }, TRICEPS);
+    const week2Day2 = performance({ weekNumber: 2, dayNumber: 2 }, TRICEPS);
+
+    expect(resolveReference([week1Day1, week1Day2, week2Day2], ruleSix(3, 1))).toEqual({
+      kind: 'target',
+      reference: week1Day1,
     });
   });
 
@@ -308,15 +341,13 @@ describe('resolveReference — no current week (Flow C’s shape)', () => {
     });
   });
 
-  test('C4: the latest week decides even when an earlier one had the same day', () => {
+  test('C2: the same day in an earlier week of the copied block wins over a later other day', () => {
     const week2Day1 = performance({ weekNumber: 2, dayNumber: 1 }, TRICEPS);
     const week3Day2 = performance({ weekNumber: 3, dayNumber: 2 }, [[4.5, 16]]);
 
     expect(resolveReference([week2Day1, week3Day2], flowC(1))).toEqual({
-      kind: 'estimate',
-      reference: week3Day2,
-      reason: 'other_slot',
-      source: 'earlier_week',
+      kind: 'target',
+      reference: week2Day1,
     });
   });
 
@@ -358,7 +389,7 @@ describe('resolveReference — no current week (Flow C’s shape)', () => {
       expect(resolveReference([day1, day2], flowC(1))).toEqual({ kind: 'none' });
     });
 
-    test('an older same-day performance in the copied block doesn’t win over the newer week', () => {
+    test('the same day in the copied block wins over a newer week of another block', () => {
       const copied = performance({ weekNumber: 3, dayNumber: 1 }, TRICEPS, {
         performedAt: '2026-09-01T10:00:00.000Z',
       });
@@ -367,10 +398,8 @@ describe('resolveReference — no current week (Flow C’s shape)', () => {
       });
 
       expect(resolveReference([copied, other], flowC(1))).toEqual({
-        kind: 'estimate',
-        reference: other,
-        reason: 'other_slot',
-        source: 'other_block',
+        kind: 'target',
+        reference: copied,
       });
     });
   });
@@ -492,5 +521,24 @@ describe('resolveReference — rounds (GT-185)', () => {
     // A new day 3: the same rounds on both days give a target, different ones nothing.
     expect(resolveReference([day1, sameDay2], ruleSix(2, 3)).kind).toBe('target');
     expect(resolveReference([day1, otherDay2], ruleSix(2, 3))).toEqual({ kind: 'none' });
+  });
+
+  // Artem's case with an interval (GT-194): week 3 day 1 takes 2:00 / 0:15 from day 1 of week 1,
+  // not 1:00 / 0:10 from day 2 of week 2.
+  test('Artem’s case: week 3 day 1 takes day 1 of week 1, not day 2 of week 2', () => {
+    const week1Day1 = performance({ weekNumber: 1, dayNumber: 1 }, [], {
+      roundLogs: rounds([[120, 15]]),
+    });
+    const week1Day2 = performance({ weekNumber: 1, dayNumber: 2 }, [], {
+      roundLogs: rounds([[60, 10]]),
+    });
+    const week2Day2 = performance({ weekNumber: 2, dayNumber: 2 }, [], {
+      roundLogs: rounds([[60, 10]]),
+    });
+
+    expect(resolveReference([week1Day1, week1Day2, week2Day2], ruleSix(3, 1))).toEqual({
+      kind: 'target',
+      reference: week1Day1,
+    });
   });
 });

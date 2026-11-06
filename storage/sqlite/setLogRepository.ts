@@ -72,6 +72,7 @@ export class SqliteSetLogRepository implements SetLogRepository {
   async listPerformances({
     exerciseId,
     since,
+    ownMesoId,
     excludeSessionExerciseId,
   }: ListPerformancesQuery): Promise<ExercisePerformance[]> {
     const performances = await readExercisePerformances(this.db, exerciseId, {
@@ -89,7 +90,9 @@ export class SqliteSetLogRepository implements SetLogRepository {
         roundLogs: performance.roundLogs,
         roundTargets: performance.roundTargets,
       }))
-      .filter((performance) => performance.performedAt >= since)
+      .filter(
+        (performance) => performance.performedAt >= since || performance.mesoId === ownMesoId,
+      )
       .sort((a, b) => b.performedAt.localeCompare(a.performedAt));
   }
 

@@ -118,8 +118,9 @@ describe('targetsFromHistory', () => {
     ]);
   });
 
-  // Task 134.1: the window is the whole of what the resolver sees, the own mesocycle included.
-  test('a performance in this mesocycle older than the window doesn’t count', async () => {
+  // GT-194 (Artem, 06.11.2026): the own day is looked for in every week of the own block — the
+  // window binds the other blocks only. It used to bind the own one too (task 134.1).
+  test('the own day in this mesocycle older than the window still gives targets', async () => {
     const setLogRepo = await setLogRepoWith([
       {
         key: 'old',
@@ -131,7 +132,56 @@ describe('targetsFromHistory', () => {
     ]);
 
     await expect(targetsFromHistory(query({ rowCount: 1 }), setLogRepo)).resolves.toEqual([
-      { setNumber: 1 },
+      { setNumber: 1, targetReps: 9, suggestedWeight: 80 },
+    ]);
+  });
+
+  // Artem's case, 27.10.2026, for power: a 2-day cycle with the exercise on both days; week 2
+  // swapped it out of day 1, week 3 swaps it back in. Day 1 of week 1 is the target, not an
+  // estimate from day 2 of week 2.
+  test('Artem’s case, power: week 3 day 1 takes day 1 of week 1, not day 2 of week 2', async () => {
+    const setLogRepo = await setLogRepoWith([
+      {
+        key: 'w1d1',
+        mesoId: 'meso-now',
+        weekNumber: 1,
+        dayNumber: 1,
+        loggedAt: '2026-09-04T10:00:00.000Z',
+        reps: [5, 5],
+        weight: 60,
+      },
+      {
+        key: 'w1d2',
+        mesoId: 'meso-now',
+        weekNumber: 1,
+        dayNumber: 2,
+        loggedAt: '2026-09-06T10:00:00.000Z',
+        reps: [3, 3],
+        weight: 40,
+      },
+      {
+        key: 'w2d2',
+        mesoId: 'meso-now',
+        weekNumber: 2,
+        dayNumber: 2,
+        loggedAt: '2026-09-13T10:00:00.000Z',
+        reps: [3, 3],
+        weight: 40,
+      },
+    ]);
+
+    const targets = await targetsFromHistory(
+      query({
+        session: { ...currentSession, weekNumber: 3, dayNumber: 1 },
+        rowCount: 2,
+        type: 'power',
+      }),
+      setLogRepo,
+    );
+
+    expect(targets.map(({ suggestedWeight, estimate }) => ({ suggestedWeight, estimate }))).toEqual([
+      { suggestedWeight: 60, estimate: undefined },
+      { suggestedWeight: 60, estimate: undefined },
     ]);
   });
 

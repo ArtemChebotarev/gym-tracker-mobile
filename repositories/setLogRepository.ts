@@ -33,6 +33,12 @@ export type ListPerformancesQuery = {
   exerciseId: string;
   /** UTC ISO timestamp — `now − historyLookbackDays`, computed by the use-case layer. */
   since: string;
+  /**
+   * The mesocycle the reference is for — rule 6's own block, Flow C's source one. Its performances
+   * come back whatever `since` says: the own day is looked for in every week of the own block,
+   * and the window binds only the other blocks (GT-194).
+   */
+  ownMesoId?: string;
   /** The session exercise asking for a reference — never returned as one of its own. */
   excludeSessionExerciseId?: string;
 };
@@ -56,8 +62,9 @@ export interface SetLogRepository {
   getLastByExerciseId(exerciseId: string): Promise<SetLog | null>;
 
   /**
-   * Every performance of `exerciseId` logged no earlier than `since` — the history window the
-   * reference resolver reads (03 · Progression Engine, "Резолвер референса"; task 134.1) — each
+   * Every performance of `exerciseId` logged no earlier than `since`, and every one in `ownMesoId`
+   * however old — what the reference resolver reads (03 · Progression Engine, "Резолвер
+   * референса"; tasks 134.1, GT-194) — each
    * with the mesocycle, week and day of its session, newest first. Deload performances are
    * included: which ones count is the resolver's call, not the repository's (07, rule 2). A
    * performance is one session exercise's logged sets; one with none logged doesn't exist here.

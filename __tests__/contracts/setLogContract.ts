@@ -323,7 +323,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         ]);
       });
 
-      test('the window binds the current mesocycle too, and the asking exercise is left out', async () => {
+      test('with no own mesocycle given the window binds every one, and the asking exercise is left out', async () => {
         await seedPerformances(repositories(), [
           { sessionExerciseId: 'se-current-old', completedAt: OLDER_THAN_SINCE },
           { sessionExerciseId: 'se-today', completedAt: NEWER_THAN_SINCE },
@@ -341,6 +341,25 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
             excludeSessionExerciseId: 'se-today',
           }),
         ).resolves.toEqual([]);
+      });
+
+      // GT-194: the own day is looked for in every week of the own block; the window binds the
+      // other blocks only.
+      test('the own mesocycle comes back whatever the window says, other ones don’t', async () => {
+        await seedPerformances(repositories(), [
+          { sessionExerciseId: 'se-own-old', completedAt: OLDER_THAN_SINCE },
+          { sessionExerciseId: 'se-past-old', completedAt: OLDER_THAN_SINCE, mesoId: PAST_MESO },
+        ]);
+
+        const performances = await repositories().setLogRepo.listPerformances({
+          exerciseId: BENCH_PRESS,
+          since: SINCE,
+          ownMesoId: CURRENT_MESO,
+        });
+
+        expect(performances.map((performance) => performance.setLogs[0]?.id)).toEqual([
+          'se-own-old-set-1',
+        ]);
       });
     });
   });

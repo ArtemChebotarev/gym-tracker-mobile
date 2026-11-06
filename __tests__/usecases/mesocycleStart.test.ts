@@ -493,11 +493,12 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     expect(targets?.[0]).toEqual({ setNumber: 1, targetReps: 8, suggestedWeight: 60 });
   });
 
-  test('ignores a performance older than historyLookbackDays', async () => {
+  test('ignores another block’s performance older than historyLookbackDays', async () => {
     const store = await setUpCopied([
       {
         sessionExerciseId: 'sx-bench-ancient',
         exerciseId: 'bench',
+        mesoId: OTHER_MESO,
         targetRir: 0,
         // NOW is 2026-09-19 and historyLookbackDays is 30, so this falls outside the window.
         completedAt: '2026-06-01T08:00:00.000Z',
@@ -509,6 +510,28 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
 
     await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
       { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  // GT-194: the window binds the other blocks only — the copied block is read whole.
+  test('the copied block’s own day counts however long ago it was', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench-ancient',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-06-01T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    // 10 + 1 − (3 − 0) = 8.
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
       { setNumber: 2 },
       { setNumber: 3 },
     ]);
@@ -780,8 +803,8 @@ describe('startMesocycle — copyWeek targets per target day', () => {
 
   test('C6: the latest week is from another split — an estimate, re-priced for the RIR gap', async () => {
     const store = await setUpCopied([
-      // The copied block's own day 1, older…
-      bench('sx-copied', { weekNumber: 3, dayNumber: 1 }, [[60, 10]], '2026-09-01T08:00:00.000Z'),
+      // The copied block's day 2 only, older…
+      bench('sx-copied', { weekNumber: 3, dayNumber: 2 }, [[60, 10]], '2026-09-01T08:00:00.000Z'),
       // …then a newer week on another split, performed at RIR 2.
       {
         ...bench('sx-other', { mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 2 }, [[62.5, 9]]),
@@ -792,9 +815,29 @@ describe('startMesocycle — copyWeek targets per target day', () => {
 
     await startMesocycle('meso-copy', { store }, NOW);
 
-    // 9 + 1 − (3 − 2) = 9, from the newer block; the copied block's day 1 doesn't win.
+    // 9 + 1 − (3 − 2) = 9, from the newer block: day 1 has no own day to go by.
     await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
       { setNumber: 1, targetReps: 9, suggestedWeight: 62.5, estimate: 'other_slot' },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+  });
+
+  // GT-194: the own day of the copied block comes first, however much newer another block is.
+  test('C2: the copied block’s own day wins over a newer week on another split', async () => {
+    const store = await setUpCopied([
+      bench('sx-copied', { weekNumber: 3, dayNumber: 1 }, [[60, 10]], '2026-09-01T08:00:00.000Z'),
+      {
+        ...bench('sx-other', { mesoId: OTHER_MESO, weekNumber: 1, dayNumber: 2 }, [[62.5, 9]]),
+        targetRir: 2,
+        completedAt: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1, targetReps: 8, suggestedWeight: 60 },
       { setNumber: 2 },
       { setNumber: 3 },
     ]);
