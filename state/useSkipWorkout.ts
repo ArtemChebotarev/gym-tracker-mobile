@@ -11,6 +11,7 @@ import { skipWorkout } from '@usecases/workoutSkip';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
 import { useWorkoutSkipDeps } from './workoutStore';
+import { trackWorkoutCompleted } from './workoutTelemetry';
 
 export function useSkipWorkout() {
   const queryClient = useQueryClient();
@@ -19,6 +20,9 @@ export function useSkipWorkout() {
   return useMutation({
     meta: { operation: 'skipWorkout' },
     mutationFn: (sessionId: string) => skipWorkout(sessionId, deps),
-    onSuccess: () => invalidateWorkoutQueries(queryClient),
+    onSuccess: ({ session }) => {
+      void trackWorkoutCompleted(session, deps);
+      return invalidateWorkoutQueries(queryClient);
+    },
   });
 }

@@ -15,6 +15,11 @@ export function setTelemetryClient(next: TelemetryClient | undefined): void {
   client = next;
 }
 
+/** Whether events go anywhere — so an event that needs a read to describe it can skip the read. */
+export function isTelemetryEnabled(): boolean {
+  return client !== undefined;
+}
+
 export function track<E extends TelemetryEventName>(event: E, ...args: TelemetryArgs<E>): void {
   if (client === undefined) return;
   try {
