@@ -69,8 +69,9 @@ or a property means updating both.
   account, no email, no IDFA/advertising id, `identify()` is never called. A reinstall makes a
   new id.
 - **Device context the SDK attaches to every event:** app version and build, bundle id, OS name
-  and version, device manufacturer and model, whether it is a simulator, locale, time zone, SDK
-  name and version.
+  and version, device manufacturer and model, whether it is a simulator, screen width and height,
+  locale, time zone, SDK name and version. PostHog also keeps the first and latest of these on
+  the anonymous person profile (`Initial app version`, `Latest OS`, …).
 - **Not collected:** screen views, taps (autocapture), app lifecycle events, session recordings,
   crashes and errors, feature-flag calls, surveys, location (GeoIP lookup is off).
 - **Network:** the request's IP address reaches PostHog's servers as with any request; the
