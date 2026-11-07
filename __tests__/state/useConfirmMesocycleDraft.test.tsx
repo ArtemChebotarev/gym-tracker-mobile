@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/react-native';
 
 import type { MesoBuilderDraft } from '@state/draftStore';
+import { setTelemetryClient } from '@state/telemetry';
 import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useConfirmMesocycleDraft } from '@state/useConfirmMesocycleDraft';
 
@@ -34,6 +35,19 @@ describe('useConfirmMesocycleDraft', () => {
     expect(saved.origin).toEqual({ type: 'scratch' });
     expect(saved.weekPlan?.days).toHaveLength(2);
     await expect(repositories().mesocycleRepo.getById(saved.id)).resolves.toEqual(saved);
+  });
+
+  test('reports the new cycle to telemetry with the flow it came from', async () => {
+    const capture = jest.fn();
+    setTelemetryClient({ capture });
+    const { result } = renderHookWithRepositories(() => useConfirmMesocycleDraft());
+
+    result.current.mutate(DRAFT);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    setTelemetryClient(undefined);
+
+    expect(capture).toHaveBeenCalledWith('cycle_created', { source: 'scratch' });
   });
 
   test('creates no Session', async () => {

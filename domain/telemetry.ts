@@ -8,6 +8,9 @@
 // There is no user id either — the analytics service knows the phone only by a random id of its
 // own, which a reinstall replaces.
 
+import type { MesocycleOrigin } from './mesocycle';
+import type { WorkoutKind } from './workoutKind';
+
 /** Properties of one event: flat, and only kinds, counts and flags. */
 export type TelemetryProperties = Readonly<Record<string, string | number | boolean>>;
 
@@ -15,6 +18,10 @@ export type TelemetryProperties = Readonly<Record<string, string | number | bool
 export type TelemetryEvents = {
   /** The app came to the foreground — a cold start or a return from the background. */
   app_opened: Record<string, never>;
+  /** A cycle was saved, by the flow it was built in: `scratch`, `template` or `copyWeek`. */
+  cycle_created: { source: MesocycleOrigin['type'] };
+  /** A day was finished with work logged in it — Finish workout, or Skip workout after a set. */
+  workout_completed: { type: WorkoutKind };
 };
 
 export type TelemetryEventName = keyof TelemetryEvents;

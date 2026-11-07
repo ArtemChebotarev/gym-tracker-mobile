@@ -15,6 +15,7 @@ import { confirmCopyWeekMesocycleDraft } from '@usecases/mesocycleCreation';
 
 import { toCopyWeekMesocycleConfirmInput, type MesoBuilderDraft } from './draftStore';
 import { useMesocycleCreationDeps } from './mesocycleStore';
+import { track } from './telemetry';
 
 export function useConfirmCopyWeekDraft() {
   const queryClient = useQueryClient();
@@ -24,8 +25,9 @@ export function useConfirmCopyWeekDraft() {
     meta: { operation: 'confirmCopyWeekDraft' },
     mutationFn: async (draft: MesoBuilderDraft) =>
       confirmCopyWeekMesocycleDraft(toCopyWeekMesocycleConfirmInput(draft), deps),
-    onSuccess: () => {
+    onSuccess: (mesocycle) => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
+      track('cycle_created', { source: mesocycle.origin.type });
     },
   });
 }

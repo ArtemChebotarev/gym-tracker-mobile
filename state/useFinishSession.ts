@@ -10,6 +10,7 @@ import { finishSession } from '@usecases/sessionFinish';
 
 import { invalidateWorkoutQueries } from './useWorkoutSession';
 import { useSessionFinishDeps } from './workoutStore';
+import { trackWorkoutCompleted } from './workoutTelemetry';
 
 export function useFinishSession() {
   const queryClient = useQueryClient();
@@ -18,6 +19,9 @@ export function useFinishSession() {
   return useMutation({
     meta: { operation: 'finishSession' },
     mutationFn: (sessionId: string) => finishSession(sessionId, deps),
-    onSuccess: () => invalidateWorkoutQueries(queryClient),
+    onSuccess: ({ session }) => {
+      void trackWorkoutCompleted(session, deps);
+      return invalidateWorkoutQueries(queryClient);
+    },
   });
 }

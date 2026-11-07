@@ -10,6 +10,7 @@ import { confirmScratchMesocycleDraft } from '@usecases/mesocycleCreation';
 
 import { toScratchMesocycleDraftInput, type MesoBuilderDraft } from './draftStore';
 import { useMesocycleCreationDeps } from './mesocycleStore';
+import { track } from './telemetry';
 
 export function useConfirmMesocycleDraft() {
   const queryClient = useQueryClient();
@@ -19,8 +20,9 @@ export function useConfirmMesocycleDraft() {
     meta: { operation: 'confirmMesocycleDraft' },
     mutationFn: (draft: MesoBuilderDraft) =>
       confirmScratchMesocycleDraft(toScratchMesocycleDraftInput(draft), deps),
-    onSuccess: () => {
+    onSuccess: (mesocycle) => {
       queryClient.invalidateQueries({ queryKey: ['mesocycles'] });
+      track('cycle_created', { source: mesocycle.origin.type });
     },
   });
 }
