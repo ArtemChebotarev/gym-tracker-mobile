@@ -7,15 +7,20 @@ jest.mock('@state/posthogTelemetryClient', () => ({
 
 describe('telemetryApiKey', () => {
   test('a release build with a key sends with it', () => {
-    expect(telemetryApiKey('phc_key', false)).toBe('phc_key');
+    expect(telemetryApiKey('phc_key', false, false)).toBe('phc_key');
   });
 
   test('a build without a key stays silent', () => {
-    expect(telemetryApiKey(undefined, false)).toBeUndefined();
-    expect(telemetryApiKey('  ', false)).toBeUndefined();
+    expect(telemetryApiKey(undefined, false, false)).toBeUndefined();
+    expect(telemetryApiKey('  ', false, false)).toBeUndefined();
+    expect(telemetryApiKey(undefined, true, true)).toBeUndefined();
   });
 
   test('a development build stays silent even with a key', () => {
-    expect(telemetryApiKey('phc_key', true)).toBeUndefined();
+    expect(telemetryApiKey('phc_key', true, false)).toBeUndefined();
+  });
+
+  test('a development build sends when the local switch asks it to', () => {
+    expect(telemetryApiKey('phc_key', true, true)).toBe('phc_key');
   });
 });

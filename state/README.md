@@ -40,8 +40,13 @@ EU cloud) sits behind `posthogTelemetryClient.ts`, so replacing it touches that 
 
 Only a build that carries `EXPO_PUBLIC_POSTHOG_KEY` sends anything, and only the EAS `production`
 profile sets it (`eas.json`) — TestFlight and App Store builds. Local builds (`npm run ios`,
-`ios:device`, `ios:device:release`) have no key, and a development build never sends even with
+`ios:device`, `ios:device:release`) have no key, and a development build does not send even with
 one (`defaultTelemetry.ts`). Tests install no client and send nothing.
+
+To check events end to end from a development build, put the key and
+`EXPO_PUBLIC_TELEMETRY_IN_DEV=1` into a git-ignored `.env.local` and restart Metro; delete the file
+to stop. Events sent this way land in the same PostHog project, so do it only before real users
+are counted, or filter those events out.
 
 ### What is collected
 
