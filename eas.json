@@ -5,7 +5,10 @@
   },
   "build": {
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_ysa4BSAaRUoUZQTPiApnRQuAQgALqk7h5phqWL44ybrf"
+      }
     }
   },
   "submit": {

@@ -12,17 +12,24 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@components/AppErrorBoundary';
 import { StorageGate } from '@components/StorageGate';
 import { installDefaultLogSinks } from '@state/defaultLogSinks';
+import { installDefaultTelemetry } from '@state/defaultTelemetry';
 import { QueryProvider } from '@state/QueryProvider';
+import { useAppOpenedTelemetry } from '@state/useAppOpenedTelemetry';
 import { navigationTheme, styles } from '@components/RootLayoutStyles';
 
 // Module scope, like the splash in StorageGate: the log has to be listening before the storage
 // bootstrap runs, since that is the failure it matters most for (task 141.1).
 installDefaultLogSinks();
+// After the log: a telemetry failure is reported there (GT-246). A no-op without the analytics
+// key, which only release builds from EAS carry.
+installDefaultTelemetry();
 
 // What Expo Router shows when anything below throws while rendering (task 141.2).
 export const ErrorBoundary = AppErrorBoundary;
 
 export default function RootLayout() {
+  useAppOpenedTelemetry();
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <ThemeProvider value={navigationTheme}>

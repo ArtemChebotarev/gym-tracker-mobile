@@ -30,3 +30,38 @@ the stub mesocycles are a test fixture (`__tests__/fixtures/mesocycleMocks.ts`).
 ## Logging (task 141.1)
 
 `logger.ts` is the app's one `Logger` (port and entries in `domain/logging.ts`). It starts with no sinks, so tests write nowhere; `app/_layout.tsx` installs the real ones at startup through `defaultLogSinks.ts` — the log file (`storage/fileLogSink.ts`) always, the console too in development. Failures reach it from three places and nowhere else: `queryClient.ts` (`QueryCache` / `MutationCache` `onError`, named by the `meta.operation` every `useMutation` here carries), `useStorageBootstrap.ts`, and — from task 141.2 — the error boundary. Two levels only, `error` and `warn`; entries hold ids and event names, never what the user typed. The debug screen's "Export logs" hands the files to the share sheet (`useExportLogs.ts`).
+
+## Telemetry (GT-243, GT-246)
+
+Anonymous product analytics, to see whether people train and come back in their second week.
+`telemetry.ts` is the one way an event leaves the phone: `track(event, props)`, typed against the
+catalog in `domain/telemetry.ts` — an event not named there cannot be sent. The SDK (PostHog,
+EU cloud) sits behind `posthogTelemetryClient.ts`, so replacing it touches that file only.
+
+Only a build that carries `EXPO_PUBLIC_POSTHOG_KEY` sends anything, and only the EAS `production`
+profile sets it (`eas.json`) — TestFlight and App Store builds. Local builds (`npm run ios`,
+`ios:device`, `ios:device:release`) have no key, and a development build never sends even with
+one (`defaultTelemetry.ts`). Tests install no client and send nothing.
+
+### What is collected
+
+This list is what the privacy policy and the App Store privacy labels describe. Adding an event
+or a property means updating both.
+
+- **Events:** `app_opened` — a cold start or a return from the background (`useAppOpenedTelemetry.ts`).
+- **Event properties:** none yet. When there are some: kinds, counts and flags only — never a
+  database id, an exercise name, a weight or anything the user typed.
+- **Identity:** a random id the SDK creates on first launch and keeps in the app's files. No
+  account, no email, no IDFA/advertising id, `identify()` is never called. A reinstall makes a
+  new id.
+- **Device context the SDK attaches to every event:** app version and build, bundle id, OS name
+  and version, device manufacturer and model, whether it is a simulator, locale, time zone, SDK
+  name and version.
+- **Not collected:** screen views, taps (autocapture), app lifecycle events, session recordings,
+  crashes and errors, feature-flag calls, surveys, location (GeoIP lookup is off).
+- **Network:** the request's IP address reaches PostHog's servers as with any request; the
+  project's "Discard client IP data" setting keeps it from being stored.
+
+App Store privacy label, from the list above: _Usage Data → Product Interaction_ and
+_Identifiers → Device ID_ (the SDK's random id), both used for _Analytics_, **not linked** to the
+user, **not used for tracking**.
