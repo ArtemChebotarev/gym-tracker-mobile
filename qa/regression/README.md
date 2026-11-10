@@ -135,42 +135,42 @@ Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlig
 | ID | Scenario | P | Spec | Where |
 |---|---|---|---|---|
 | [R-01](scenarios/R-01-first-launch.md) | First launch: Welcome → empty Workout → Plan cycle | P0 | 08.11, 08.0.1 | Sim |
-| R-02 | First-workout tour: steps, Skip, not shown again after relaunch | P1 | 08.11 | Sim |
+| [R-02](scenarios/R-02-first-workout-hints.md) | First-workout tour: steps, Skip, not shown again after relaunch | P1 | 08.11 | Sim |
 | [R-03](scenarios/R-03-cycle-from-template.md) | Flow B: cycle from a template | P0 | 08.10 | Sim |
 | [R-04](scenarios/R-04-cycle-from-scratch.md) | Flow A: cycle from scratch | P0 | 08.5 | Sim |
 | [R-05](scenarios/R-05-copy-cycle.md) | Flow C: copy a week of a finished cycle, targets from history | P0 | 08.8, 04 | Sim |
-| R-06 | Planned cycle: discard draft, edit, delete | P1 | 08.5, 08.3 | Sim |
+| [R-06](scenarios/R-06-planned-cycle.md) | Planned cycle: discard draft, edit, delete | P1 | 08.5, 08.3 | Sim |
 | [R-07](scenarios/R-07-start-cycle.md) | Start a cycle; a second Start is blocked while one is active | P0 | 08.3 | Sim |
 | [R-08](scenarios/R-08-log-strength-workout.md) | Log a strength workout and finish it | P0 | 05, 08.7 | Sim |
 | [R-09](scenarios/R-09-rest-timer.md) | Rest timer in the app | P0 | 05, 08 | Sim |
-| R-10 | Only one workout in progress | P1 | 05 | Sim |
-| R-11 | Exercise ⋯ menu: replace, sets, move, skip, delete | P1 | 08.7 | Sim |
-| R-12 | Header ⋯ menu: add exercise, skip workout, rename, history | P1 | 08.7 | Sim |
-| R-13 | Weight swap: reps recalculated, ⓘ, estimates, out of range | P1 | 08.7.1 | Sim |
-| R-14 | Bodyweight: body weight once per cycle, added weight | P1 | 05 | Sim |
-| R-15 | Power exercise | P1 | 08.7 | Sim |
-| R-16 | Interval timer: phases, minimize, end early, summary, manual log | P1 | 05, 08 | Sim |
-| R-17 | Mobility block | P1 | 08.7 | Sim |
+| [R-10](scenarios/R-10-one-workout-in-progress.md) | Only one workout in progress | P1 | 05 | Sim |
+| [R-11](scenarios/R-11-exercise-menu.md) | Exercise ⋯ menu: replace, sets, move, skip, delete | P1 | 08.7 | Sim |
+| [R-12](scenarios/R-12-header-menu.md) | Header ⋯ menu: add exercise, skip workout, rename, history | P1 | 08.7 | Sim |
+| [R-13](scenarios/R-13-weight-swap.md) | Weight swap: reps recalculated, ⓘ, estimates, out of range | P1 | 08.7.1 | Sim |
+| [R-14](scenarios/R-14-bodyweight.md) | Bodyweight: body weight once per cycle, added weight | P1 | 05 | Sim |
+| [R-15](scenarios/R-15-power.md) | Power exercise | P1 | 08.7 | Sim |
+| [R-16](scenarios/R-16-interval-timer.md) | Interval timer: phases, minimize, end early, summary, manual log | P1 | 05, 08 | Sim |
+| [R-17](scenarios/R-17-mobility.md) | Mobility block | P1 | 08.7 | Sim |
 | [R-18](scenarios/R-18-kill-mid-workout.md) | Kill the app mid-workout, state restored | P0 | 05 | Sim |
-| R-19 | Week grid and preview of a future day | P1 | 08.7 | Sim |
+| [R-19](scenarios/R-19-grid-and-preview.md) | Week grid and preview of a future day | P1 | 08.7 | Sim |
 | [R-20](scenarios/R-20-week-progression.md) | Week 1 → 2: reps +1, structure carries, RIR by week | P0 | 03 | Sim |
 | [R-21](scenarios/R-21-deload.md) | Deload week | P0 | 03, 08.11 | Sim |
 | [R-22](scenarios/R-22-finish-cycle.md) | Last workout → Finish cycle → Completed | P0 | 04, 08.3 | Sim |
-| R-23 | Stop a cycle | P1 | 08.3 | Sim |
-| R-24 | Completed: archive and copy | P1 | 08.3 | Sim |
-| R-25 | Cycle detail: stats, volume, grid → history mode | P1 | 08.9 | Sim |
-| R-26 | Exercise history across cycles | P1 | 08.6 | Sim |
-| R-27 | Library: search, filters, create from search | P1 | 08.6 | Sim |
-| R-28 | Custom exercise: create, edit, hide | P1 | 08.6 | Sim |
-| R-29 | Exercise overview, "Watch how to perform" | P1 | 08.6 | Sim |
-| R-30 | Timer settings take effect | P1 | 08 | Sim |
+| [R-23](scenarios/R-23-stop-cycle.md) | Stop a cycle | P1 | 08.3 | Sim |
+| [R-24](scenarios/R-24-completed-archive-copy.md) | Completed: archive and copy | P1 | 08.3 | Sim |
+| [R-25](scenarios/R-25-cycle-detail.md) | Cycle detail: stats, volume, grid → history mode | P1 | 08.9 | Sim |
+| [R-26](scenarios/R-26-exercise-history.md) | Exercise history across cycles | P1 | 08.6 | Sim |
+| [R-27](scenarios/R-27-library-search-filters.md) | Library: search, filters, create from search | P1 | 08.6 | Sim |
+| [R-28](scenarios/R-28-custom-exercise.md) | Custom exercise: create, edit, hide | P1 | 08.6 | Sim |
+| [R-29](scenarios/R-29-exercise-overview.md) | Exercise overview, "Watch how to perform" | P1 | 08.6 | Sim |
+| [R-30](scenarios/R-30-timer-settings.md) | Timer settings take effect | P1 | 08 | Sim |
 | [R-31](scenarios/R-31-export-import.md) | Export on the phone → import on the simulator | P0 | 08 | Phone + Sim |
-| R-32 | Import: cancel changes nothing, a file from an older build is refused | P1 | 08 | Sim |
+| [R-32](scenarios/R-32-import-refusals.md) | Import: cancel changes nothing, a wrong file is refused | P1 | 08 | Sim |
 | [D-01](scenarios/D-01-rest-notification.md) | Rest notification in the background and on the lock screen | P0 | 05, 08 | Phone |
 | [D-02](scenarios/D-02-real-workout.md) | An ordinary workout on the TestFlight build | P0 | 05, 08.7 | Phone |
-| D-03 | In-app sound and vibration follow Settings | P1 | 08 | Phone |
-| D-04 | Keep-awake during rest | P1 | 05 | Phone |
-| D-05 | Interval timer in the background: ticks in silent mode, mixes with music | P1 | 05 | Phone |
+| [D-03](scenarios/D-03-sound-vibration.md) | In-app sound and vibration follow Settings | P1 | 08 | Phone |
+| [D-04](scenarios/D-04-keep-awake.md) | Keep-awake during rest | P1 | 05 | Phone |
+| [D-05](scenarios/D-05-interval-background.md) | Interval timer in the background: ticks in silent mode, mixes with music | P1 | 05 | Phone |
 
 Not covered on purpose: error states that can't be produced by hand (they are covered by unit
 tests), and what the spec defers past 1.0.
