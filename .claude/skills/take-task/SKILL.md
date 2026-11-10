@@ -18,6 +18,8 @@ Notion access requires a connected Notion MCP server (connected by default in Co
 3. Move it to "In progress" before starting work.
 4. Read the related Product Spec sections if the task references them.
 5. Complete the Definition of Done from the task description.
+   - If the change alters visible behaviour (a label, a step, a screen, a rule the user sees), update the regression scenarios it touches in [`qa/regression/`](../../../qa/regression/README.md) in the same PR. Find them by their `Spec:` field — a change to 08.7 means every scenario citing 08.7. A scenario holds steps and observable results only, not spec rules, so it changes when what the user does or sees changes.
+   - If the scenario and the spec now disagree with the code, decide which one is stale; a stale spec section is updated (with Artem's approval) rather than left for the next regression run to find.
 6. Invoke the `commit-and-push` skill to verify, commit, push the branch, and open a PR against `main` (use a `task/<Key>-<short-name>` branch name).
 7. Share the PR link with the user, describe what was done and how it satisfies the DoD, and wait for their review/approval — do not mark the task Done yet.
 8. After approval, move the status to Done.

@@ -1,0 +1,159 @@
+# Regression scenarios
+
+The release regression for GymTracker: what is checked before a release, and how. It is meant to
+be run three ways from the same text — by hand on a phone, by an agent driving the iOS simulator,
+and later by Maestro (story GT-249 turns these files into `.maestro/` flows).
+
+## Three sources, three questions
+
+| Source | Answers | Lives in |
+|---|---|---|
+| Product Spec | how it *should* behave, and why | Notion |
+| Code | how it *does* behave | this repo |
+| These scenarios | *what we check*, and how to get there | `qa/regression/` |
+
+A scenario does not restate the spec's rules. It holds steps and observable results, and points at
+the spec section with `Spec:`. The less product logic a scenario carries, the less it can drift.
+
+Keeping them in sync:
+
+- A PR that changes visible behaviour updates the scenarios it touches, in the same PR. Find them
+  by the `Spec:` field: change 08.7, look at every scenario that cites 08.7.
+- A failed step is one of three things: a bug in the code, a stale scenario, or a stale spec.
+  Decide which and fix that one. Bugs become Backlog tasks; they are not fixed during the run.
+
+## Scenario format
+
+One file per scenario in [`scenarios/`](scenarios/), named `R-NN-short-name.md` (simulator) or
+`D-NN-short-name.md` (phone only).
+
+```markdown
+# R-NN · Title
+
+Priority: P0 | P1 · Spec: 08.7, 05 · Where: Simulator | Phone
+
+Precondition: the state the scenario starts from — a named step of the chain below, or
+"empty database".
+
+## Steps
+
+1. Action on something visible: tap "Label", type 60 into the weight field of set 1.
+2. …
+
+## Expect
+
+- What is visible afterwards, stated so it can be checked without judgement.
+
+## Manual only
+
+- What the simulator can't show (sound, vibration, notifications, lock screen). Omit if none.
+```
+
+Rules for steps:
+
+- **Act on what is on screen.** Use the visible label in quotes ("Start workout"). Where a label is
+  ambiguous, name the element by its place ("the ⋯ in the header", "the weight field of set 2").
+  These map one to one to Maestro's `tapOn` / `inputText` / `assertVisible` later.
+- **A precondition is a state, not a list of steps.** Every scenario names the state it starts
+  from, so it can be run on its own once named seed states exist (GT-251). Until then the chain
+  below produces those states by hand.
+- **Expectations are observable.** "Set 1 shows ✓", not "the set is saved correctly".
+
+## Priorities
+
+- **P0** — a broken P0 blocks the release. The short smoke set, and later what the `e2e` PR label
+  runs.
+- **P1** — the rest of the coverage. Run in full before a release, together with P0.
+
+## Where each scenario runs
+
+- **Simulator, Release build** — everything that writes data. Release, not Debug, because the
+  TestFlight build is Release and some behaviour differs (keep-awake: Debug holds the screen on
+  regardless).
+- **Phone, TestFlight build** — only what the simulator can't show and what doesn't write test data
+  into the real training history: notifications, lock screen, sound, vibration, keep-awake, an
+  ordinary workout, and an export. The database on the phone is the only copy of real training
+  data, so no test cycles are created there.
+
+## Before a run
+
+- Simulator: switch its keyboard to English, or typed text comes out in another layout. Tap
+  steppers slowly — quick repeated taps register once. Let sheets (the ⊞ week grid) settle before
+  tapping into them.
+- A first run on an empty database shows every one-time hint: "Your cycle is ready" on Cycles, the
+  three-step tour on the first workout, "Rest starts after each set" after the first log, "Need a
+  different weight?" in week 2. They are R-01 / R-02 material; elsewhere close them and go on. Each
+  swallows the tap that closes it.
+- The rest bar and the "Rest is over" banner sit over the bottom of the workout list. Close them
+  with × when they cover a button.
+
+## Run order (the chain)
+
+Scenarios are independent by their preconditions, but the states they need are produced by
+earlier steps: only one cycle can be active, Copy needs a finished cycle, deload is the last week,
+onboarding needs an empty database. Run by hand, this order makes each step's end state the next
+one's precondition.
+
+Cycle **A** is created from the "Upper / Lower + Boxing Hybrid" template cut to 2 days a week and
+4 weeks: Day 1 is strength (with weighted and plain bodyweight), Day 2 adds power, an interval
+(heavy bag) and mobility (cooldown). That puts every exercise type into the chain.
+
+| Step | State | Scenarios |
+|---|---|---|
+| 1 | Empty database | R-01, R-02 |
+| 2 | Cycle A planned → active | R-03, R-07 |
+| 3 | A, week 1 | R-08 – R-19 |
+| 4 | A active, a second cycle B planned | R-04, R-07 (second Start blocked), R-06 |
+| 5 | A, weeks 2 – 4 | R-20, R-21, R-22 |
+| 6 | A completed | R-25, R-26 |
+| 7 | Cycle C copied from A | R-05, R-23 |
+| 8 | A and C in Completed | R-24 |
+| 9 | Any | R-27 – R-30 |
+| 10 | Last (an import replaces the database) | R-31, R-32 |
+
+Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlight build.
+
+## Scenario index
+
+| ID | Scenario | P | Spec | Where |
+|---|---|---|---|---|
+| R-01 | First launch: Welcome → empty Workout → Plan cycle | P0 | 08.11, 08.0.1 | Sim |
+| R-02 | First-workout tour: steps, Skip, not shown again after relaunch | P1 | 08.11 | Sim |
+| [R-03](scenarios/R-03-cycle-from-template.md) | Flow B: cycle from a template | P0 | 08.10 | Sim |
+| R-04 | Flow A: cycle from scratch | P0 | 08.5 | Sim |
+| R-05 | Flow C: copy a week of a finished cycle, targets from history | P0 | 08.8, 04 | Sim |
+| R-06 | Planned cycle: discard draft, edit, delete | P1 | 08.5, 08.3 | Sim |
+| R-07 | Start a cycle; a second Start is blocked while one is active | P0 | 08.3 | Sim |
+| [R-08](scenarios/R-08-log-strength-workout.md) | Log a strength workout and finish it | P0 | 05, 08.7 | Sim |
+| R-09 | Rest timer in the app | P0 | 05, 08 | Sim |
+| R-10 | Only one workout in progress | P1 | 05 | Sim |
+| R-11 | Exercise ⋯ menu: replace, sets, move, skip, delete | P1 | 08.7 | Sim |
+| R-12 | Header ⋯ menu: add exercise, skip workout, rename, history | P1 | 08.7 | Sim |
+| R-13 | Weight swap: reps recalculated, ⓘ, estimates, out of range | P1 | 08.7.1 | Sim |
+| R-14 | Bodyweight: body weight once per cycle, added weight | P1 | 05 | Sim |
+| R-15 | Power exercise | P1 | 08.7 | Sim |
+| R-16 | Interval timer: phases, minimize, end early, summary, manual log | P1 | 05, 08 | Sim |
+| R-17 | Mobility block | P1 | 08.7 | Sim |
+| R-18 | Kill the app mid-workout, state restored | P0 | 05 | Sim |
+| R-19 | Week grid and preview of a future day | P1 | 08.7 | Sim |
+| R-20 | Week 1 → 2: reps +1, structure carries, RIR by week | P0 | 03 | Sim |
+| R-21 | Deload week | P0 | 03, 08.11 | Sim |
+| R-22 | Last workout → Finish cycle → Completed | P0 | 04, 08.3 | Sim |
+| R-23 | Stop a cycle | P1 | 08.3 | Sim |
+| R-24 | Completed: archive and copy | P1 | 08.3 | Sim |
+| R-25 | Cycle detail: stats, volume, grid → history mode | P1 | 08.9 | Sim |
+| R-26 | Exercise history across cycles | P1 | 08.6 | Sim |
+| R-27 | Library: search, filters, create from search | P1 | 08.6 | Sim |
+| R-28 | Custom exercise: create, edit, hide | P1 | 08.6 | Sim |
+| R-29 | Exercise overview, "Watch how to perform" | P1 | 08.6 | Sim |
+| R-30 | Timer settings take effect | P1 | 08 | Sim |
+| R-31 | Export on the phone → import on the simulator | P0 | 08 | Phone + Sim |
+| R-32 | Import: cancel changes nothing, a file from an older build is refused | P1 | 08 | Sim |
+| D-01 | Rest notification in the background and on the lock screen | P0 | 05, 08 | Phone |
+| D-02 | An ordinary workout on the TestFlight build | P0 | 05, 08.7 | Phone |
+| D-03 | In-app sound and vibration follow Settings | P1 | 08 | Phone |
+| D-04 | Keep-awake during rest | P1 | 05 | Phone |
+| D-05 | Interval timer in the background: ticks in silent mode, mixes with music | P1 | 05 | Phone |
+
+Not covered on purpose: error states that can't be produced by hand (they are covered by unit
+tests), and what the spec defers past 1.0.
