@@ -7,26 +7,27 @@ Precondition: no active and no planned cycle (chain step 2: right after R-01).
 ## Steps
 
 1. Open the Cycles tab and tap the "+" in the header.
-2. In the "New cycle" sheet check that "From template" is selected, then tap "Next".
+2. In the new-cycle sheet check that "From template" is selected, then tap "Next".
 3. In the template list type "boxing" into the search.
 4. Tap "Upper / Lower + Boxing Hybrid".
 5. In the preview sheet tap "Use this template".
-6. On the Basics step:
+6. On the first step of the editor (name, length, days):
    - leave the name as it is;
-   - check the length reads "4 weeks";
-   - tap "−" next to days per week until it reads "2 days".
-7. Tap "Continue" until the Review step, then tap "Save cycle".
+   - check the length is 4 weeks;
+   - tap "−" next to days per week until it is 2.
+7. Tap "Continue" until the last step, then tap "Save cycle".
 
 ## Expect
 
-- Step 3: the list shows only templates matching "boxing"; the × in the search field clears it.
-- Step 5: the preview shows the template's days as tabs (Day 1 – Day 4), each with its exercises,
-  before anything is created.
-- Step 6: the Basics step opens prefilled with the template's name and "4 days"; after setting 2
-  days only Day 1 and Day 2 remain on the next step.
-- Day 2 contains the power exercises (medball throws), "Heavy Bag" tagged Intervals and "Cooldown"
-  tagged Mobility.
-- Step 7: the Review step reads "4 weeks · 2 days per week".
-- After saving: the Cycles tab shows the cycle as planned, with a "Start" pill, and a coachmark
-  "Your cycle is ready" points at it (first planned cycle only; close it with "Got it").
-- The Workout tab says "Your next cycle is ready" with "Go to Cycles". No workout exists yet.
+- Step 3: the list shows only the matching template; the × in the search field clears it.
+- Step 5: the preview shows the template's 4 days as tabs, each with its exercises, before
+  anything is created.
+- Step 6: the step opens prefilled with the template's name and 4 days; after setting 2 days only
+  Day 1 and Day 2 remain on the next step.
+- Day 2 contains power exercises (medball throws), "Heavy Bag" marked as an interval exercise and
+  "Cooldown" marked as mobility.
+- Step 7: the review step shows 4 weeks and 2 days per week.
+- After saving: the Cycles tab shows the cycle as planned, with a "Start" pill, and a one-time
+  coachmark points at it (first planned cycle only; close it).
+- The Workout tab shows the empty state for a cycle that is planned but not started, with a
+  button to the Cycles tab. No workout exists yet.

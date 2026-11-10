@@ -16,5 +16,5 @@ Precondition: during a real workout; rest timer on.
 ## Expect
 
 - Step 1: the system permission dialog appears only after "Turn on", never on its own.
-- Steps 3 and 4: a "Rest is over" notification arrives, on the home screen and on the lock screen.
+- Steps 3 and 4: a rest-over notification arrives, on the home screen and on the lock screen.
 - Step 5: the notification is gone from the notification list, without a sound on opening.

@@ -58,6 +58,17 @@ Rules for steps:
   from, so it can be run on its own once named seed states exist (GT-251). Until then the chain
   below produces those states by hand.
 - **Expectations are observable.** "Set 1 shows ✓", not "the set is saved correctly".
+- **Check behaviour, not copy.** Wording changes often and cheaply — after feedback, or on a second
+  thought — and a scenario that quotes it fails without anything being broken. So:
+  - titles, descriptions, hints and dialog texts are described by what they are and where they
+    appear ("a one-time dialog introduces the deload week", "a hint under the button says why"),
+    never quoted;
+  - a button that a step taps is named by its short label ("Finish workout") — the only way a
+    person finds it. Maestro will find it by `testID` instead (GT-252). A renamed button fails a
+    scenario loudly at that step and is fixed in the same PR as the rename;
+  - values computed by the app are checked exactly, because they are the behaviour: reps +1, a
+    rest of 0:15 after 0:20, half the weight on deload, 2 of 2 workouts, Week 2 Day 1;
+  - states are checked exactly: disabled, ✓ logged, read-only, planned / active / completed.
 
 ## Priorities
 
@@ -80,12 +91,12 @@ Rules for steps:
 - Simulator: switch its keyboard to English, or typed text comes out in another layout. Tap
   steppers slowly — quick repeated taps register once. Let sheets (the ⊞ week grid) settle before
   tapping into them.
-- A first run on an empty database shows every one-time hint: "Your cycle is ready" on Cycles, the
-  three-step tour on the first workout, "Rest starts after each set" after the first log, "Need a
-  different weight?" in week 2. They are R-01 / R-02 material; elsewhere close them and go on. Each
-  swallows the tap that closes it.
-- The rest bar and the "Rest is over" banner sit over the bottom of the workout list. Close them
-  with × when they cover a button.
+- A first run on an empty database shows every one-time hint: on the first planned cycle in
+  Cycles, the three-step tour on the first workout, the rest hint after the first log, the
+  weight-ranges hint in week 2, the deload dialog in the last week. They are R-01 / R-02
+  material; elsewhere close them and go on. Each swallows the tap that closes it.
+- The rest bar and the rest-over banner sit over the bottom of the workout list. Close them with
+  × when they cover a button.
 - After a log the list can shift for a second or two. Look again before the next tap — a tap
   that lands late hits the row that moved under it.
 - The prefilled reps target is grey like a placeholder, but tapping Log logs it as-is.

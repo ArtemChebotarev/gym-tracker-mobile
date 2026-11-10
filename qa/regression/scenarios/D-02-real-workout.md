@@ -15,6 +15,6 @@ today.
 ## Expect
 
 - Step 1: the app opens on the data from before the update — the same active cycle, week and day,
-  and history. No "Can't open your data".
+  and history. No can't-open-your-data error screen.
 - Logging, rest, and Finish work as in R-08 and R-09; the summary shows next week's progression.
 - Nothing looks different from the previous build except what the release notes promise.

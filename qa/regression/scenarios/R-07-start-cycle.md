@@ -14,12 +14,10 @@ Precondition: cycle A planned, nothing active (chain step 2, right after R-03).
 
 ### Expect
 
-- Step 1: a dialog "Start this training cycle?" with a short summary of the cycle, a cancel
-  option and "Start".
-- Step 2: the app switches to the Workout tab on "Week 1 Day 1", and a tour opens: step "1 of 3",
-  "Not sure about the load?".
-- Afterwards the Cycles tab lists cycle A under "Active", with an "Active" badge and "Week 1 of 4
-  · started {today}".
+- Step 1: a start confirmation with a short summary of the cycle, a cancel option and "Start".
+- Step 2: the app switches to the Workout tab on Week 1 Day 1, and a three-step tour opens.
+- Afterwards the Cycles tab lists cycle A in the active section, with an active badge, week 1 of 4
+  and today's start date.
 
 ## Part 2 — a second cycle can't start
 
@@ -29,6 +27,5 @@ Precondition: cycle A active, cycle "Scratch test" planned (chain step 4, right 
 
 ### Expect
 
-- Instead of the start confirmation, a popup "Can't start yet": "Upper / Lower + Boxing Hybrid"
-  is still active. Finish or stop it before starting another cycle. One button, "OK". Nothing
-  changes: A stays active, "Scratch test" stays planned.
+- Instead of the start confirmation, a popup says another cycle (naming A) is still active, with
+  a single "OK". Nothing changes: A stays active, "Scratch test" stays planned.
