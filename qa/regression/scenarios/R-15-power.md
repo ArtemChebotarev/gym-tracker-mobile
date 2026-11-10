@@ -2,8 +2,8 @@
 
 Priority: P1 · Spec: 08.7 · Where: Simulator
 
-Precondition: cycle A active, Day 2 of a week open, the previous week's Day 2 done
-(not skipped — otherwise nothing is prefilled) (it has the medball throws).
+Precondition: cycle A active, Day 2 of a week open (values are prefilled from each
+exercise's last logged session) (it has the medball throws).
 
 ## Steps
 
@@ -13,8 +13,7 @@ Precondition: cycle A active, Day 2 of a week open, the previous week's Day 2 do
 
 ## Expect
 
-- Step 1: the columns are load and fast reps; no RIR pill. (A load ⓘ shows only while the
-  exercise has no load history.)
+- Step 1: the columns are load and fast reps; no RIR pill.
 - Step 2: logged sets show ✓ only, no hit indicator.
 - Step 3: the app suggests going heavier or adding a set — or says nothing heavier is available —
   on the card or in the day's summary.

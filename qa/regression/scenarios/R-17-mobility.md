@@ -2,8 +2,8 @@
 
 Priority: P1 · Spec: 08.7, 05 · Where: Simulator
 
-Precondition: cycle A active, Day 2 of a week open, the previous week's Day 2 done
-(not skipped — otherwise nothing is prefilled); "Cooldown" not logged.
+Precondition: cycle A active, Day 2 of a week open (values are prefilled from each
+exercise's last logged session); "Cooldown" not logged.
 
 ## Steps
 

@@ -20,7 +20,7 @@ Precondition: any; for step 6, a cycle being created or a day open.
 - Step 1: the type is chosen first, then the fields.
 - Step 2: saving is blocked until a muscle group is picked; after saving the exercise is in the
   library under that group.
-- Step 3: the new name is kept; the type can't be changed.
+- Step 3: the new name is kept; the type can't be changed (locked from creation).
 - Step 4: power offers kg, level or none as load; interval has a progression step.
-- Step 5: the exercise disappears from the library list.
+- Step 5: a confirmation first; then the exercise disappears from the library list.
 - Step 6: the hidden exercise is not offered; the other custom ones are.
