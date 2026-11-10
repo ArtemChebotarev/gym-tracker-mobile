@@ -10,8 +10,8 @@ exercise of the day is used in step 5.
 
 1. Open the ⋯ of exercise 1.
 2. Tap "Replace exercise" and pick another exercise of the same muscle group.
-3. On exercise 2 log set 1. Open its ⋯ → "Replace exercise" and pick another exercise;
-   in the confirmation cancel.
+3. On exercise 2 log set 1. Open its ⋯ → "Replace exercise"; in the confirmation that comes
+   first, cancel.
 4. On exercise 3: ⋯ → "Add set", then ⋯ → "Remove last set", then "Remove last set" again
    until only one set is left; open the menu once more.
 5. On the last exercise of the day open the ⋯; on the first exercise of the day open the ⋯.
@@ -24,7 +24,7 @@ exercise of the day is used in step 5.
 ## Expect
 
 - Step 1: the menu offers replace, add / remove set, move up / down, skip and delete; items that
-  can't be used now are greyed out with a reason, not hidden.
+  can't be used now are greyed out, not hidden.
 - Step 2: before the exercise is started the replacement happens without a warning; the new
   exercise takes the old one's place and sets.
 - Step 3: replacing a started exercise asks first and warns that its logged sets will be deleted;

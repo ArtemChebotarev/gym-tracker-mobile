@@ -9,7 +9,7 @@ weighted one ("Dips Chest Focused Weighted"); body weight not yet given in this 
 
 1. Log set 1 of "Pull Up".
 2. Enter 80 and save.
-3. Log set 2 of "Pull Up"; then change the weight field of set 3 to 82 and log it.
+3. On the last set of "Pull Up" change the weight field to 82 and log it.
 4. On "Dips Chest Focused Weighted" type 10 into the added-weight column and log a set.
 5. Open another day of the same cycle that has a bodyweight exercise.
 

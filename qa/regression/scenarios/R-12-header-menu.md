@@ -21,5 +21,5 @@ Precondition: cycle A active, a working-week day open and not started.
 - Step 4: the cycle's summary opens; for an active cycle it has no workout grid.
 - Step 5: the summary lists the logged exercise with its sets and the others as skipped; with
   something logged the day counts as done (a day with no logs at all counts as skipped). The day
-  is read-only.
+  is read-only (check it from the ⊞ grid: the summary closes only into the next workout).
 - Step 6: the day shows as skipped; the ring moves to the next day to do.

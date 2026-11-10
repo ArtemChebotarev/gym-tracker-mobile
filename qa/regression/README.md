@@ -100,6 +100,9 @@ Rules for steps:
 - After a log the list can shift for a second or two. Look again before the next tap — a tap
   that lands late hits the row that moved under it.
 - The prefilled reps target is grey like a placeholder, but tapping Log logs it as-is.
+- Simulator only: the display sometimes freezes until the next touch — a tiny swipe in an empty
+  area refreshes it (and closes an open menu). Toggles may need a drag rather than a tap.
+- A tap on a sheet's dimmed backdrop can go through to what is under it.
 - The first tap after a menu or dropdown closes is often lost, and the next one lands. Mind the
   header ⋯ of a workout: "Stop cycle" is in it (its confirmation asks to type END CYCLE, so a
   stray tap can't stop the cycle by itself).

@@ -10,7 +10,8 @@ Precondition: a workout with unlogged strength sets and an unlogged interval exe
 2. Log a strength set.
 3. Settings → turn the rest timer off. Log another set.
 4. Turn it back on and set it to 2:00.
-5. Settings → get ready: set 10 s. Start an interval timer.
+5. Settings → get ready: set 10 s. Start an interval timer on the workout in progress (a timer on
+   another day can't save while one is in progress — R-10).
 6. Set get ready to 0 s and start an interval timer again.
 
 ## Expect

@@ -10,7 +10,7 @@ Precondition: any.
 2. Type "curl" into the search.
 3. Type a name that matches nothing, e.g. "zzz".
 4. Clear the search. Open the filters, pick a muscle group and "Performed only"; apply.
-5. Reset the filters. Close the app completely and open it again; open Library.
+5. Close the app completely and open it again; open Library. Then reset the filters.
 6. Search "zzz" again and use the create action from the empty result.
 
 ## Expect
