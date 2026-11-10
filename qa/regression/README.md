@@ -103,6 +103,8 @@ Rules for steps:
 - Simulator only: the display sometimes freezes until the next touch — a tiny swipe in an empty
   area refreshes it (and closes an open menu). Toggles may need a drag rather than a tap.
 - A tap on a sheet's dimmed backdrop can go through to what is under it.
+- The first tap after typing, or after a sheet or dialog closes, is often lost: Log and Start
+  timer may need a second tap — check the result before tapping again, a second tap on a ✓ unlogs.
 - The first tap after a menu or dropdown closes is often lost, and the next one lands. Mind the
   header ⋯ of a workout: "Stop cycle" is in it (its confirmation asks to type END CYCLE, so a
   stray tap can't stop the cycle by itself).
