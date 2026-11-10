@@ -8,7 +8,7 @@ workouts left.
 ## Steps
 
 1. Header ⋯ → "Stop cycle".
-2. Type something other than the confirmation phrase.
+2. Type something other than the confirmation phrase (the field capitalises the first letter).
 3. Type the confirmation phrase shown (END CYCLE) and stop.
 4. Open the Cycles tab, then the Workout tab.
 

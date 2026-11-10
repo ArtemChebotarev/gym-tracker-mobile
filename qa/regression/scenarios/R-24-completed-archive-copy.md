@@ -8,7 +8,8 @@ Precondition: at least one completed or stopped cycle; no active cycle.
 
 1. On the Cycles tab open a completed cycle's ⋯.
 2. Tap "Copy".
-3. Close the editor and discard.
+3. Close the copy flow with ✕ (on its first step nothing is drafted yet, so it closes without
+   asking).
 4. Open the same ⋯ → "Archive", then cancel.
 5. Open it again → "Archive", and confirm.
 

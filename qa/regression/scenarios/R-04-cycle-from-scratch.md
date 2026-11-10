@@ -2,7 +2,7 @@
 
 Priority: P0 · Spec: 08.5, 04 · Where: Simulator
 
-Precondition: cycle A active, no planned cycle (chain step 4).
+Precondition: no planned cycle (in the chain: step 4, cycle A active — needed by R-07 part 2).
 
 ## Steps
 

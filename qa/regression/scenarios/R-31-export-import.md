@@ -11,14 +11,14 @@ chain — the import replaces the simulator's whole database.
 
 On the phone:
 
-1. Open the Library tab and tap its title five times.
+1. Open the Library tab and tap its title five times quickly — a pause of more than 1.5 s starts the count over.
 2. On the debug screen tap "Export backup" and send the file to the Mac (AirDrop, or save to
    Files).
 
 On the simulator:
 
 3. Drag the file onto the simulator window (it lands in Files).
-4. Library → tap the title five times → "Import backup", pick the file.
+4. Library → tap the title five times quickly → "Import backup", pick the file.
 5. In the restore confirmation tap "Cancel". Check the data is unchanged.
 6. Repeat step 4, this time confirm the restore.
 

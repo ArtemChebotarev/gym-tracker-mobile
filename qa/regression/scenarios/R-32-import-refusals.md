@@ -6,7 +6,7 @@ Precondition: some data on the simulator.
 
 ## Steps
 
-1. Library → tap the title five times → "Export backup"; save the file to Files.
+1. Library → tap the title five times quickly → "Export backup"; save the file to Files.
 2. "Import backup" → pick that file → cancel in the confirmation.
 3. "Import backup" → pick a file that is not a backup (e.g. any text or image file in Files).
 4. "Import backup" → close the file picker without choosing.
