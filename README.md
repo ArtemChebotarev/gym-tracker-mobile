@@ -55,6 +55,16 @@ LANG=en_US.UTF-8 npm run ios:device:release
 
 Signing is the same either way. With a free Apple ID the provisioning profile expires seven days after it is issued, and the app stops launching until it is rebuilt with the phone connected; a paid Apple Developer account makes that a year. Rebuild before it expires rather than after, and do not delete the app — the database lives in its container and an install over the top keeps it.
 
+## Regression scenarios
+
+The checklist run before a release lives in [`qa/regression/`](qa/regression/README.md): one file per scenario, written so it can be followed by hand on a phone, by an agent on the simulator, and later by Maestro. Run the simulator part on a Release build, which embeds the JS bundle and behaves like TestFlight:
+
+```
+LANG=en_US.UTF-8 npm run ios -- --configuration Release
+```
+
+**Scenarios change with the code.** A PR that changes what the user does or sees updates the scenarios that cite the affected spec section (their `Spec:` field) in the same PR. A scenario holds steps and observable results, not the spec's rules — the spec in Notion stays the source of *how it should behave*. When a scenario, the spec and the app disagree, decide which one is stale and fix that one; a bug becomes a Backlog task.
+
 ## Releasing to TestFlight
 
 A release is a git tag. Pushing `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml): `npm run verify` → EAS build (`production` profile) → upload to TestFlight. The iOS build number is kept by EAS (remote, auto-incremented); the version comes from `app.json`.
