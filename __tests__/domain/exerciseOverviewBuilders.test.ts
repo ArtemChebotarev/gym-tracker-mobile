@@ -137,14 +137,37 @@ describe('buildExerciseOverview', () => {
     expect(overview.stats?.lastDoneAt).toBe('2026-09-17T11:30:00.000Z');
   });
 
-  test('a session still in progress counts in the tiles', () => {
+  // GT-260 (Artem, 11.11.2026): the tiles count what the History tab lists, so Sessions and the
+  // list can't disagree — a session still in progress is in neither.
+  test('a session still in progress is not counted yet', () => {
     const overview = buildExerciseOverview(exercise(), [
-      performance({ id: 'session-1', status: 'in_progress', completedAt: undefined }, [
-        { id: 'a' },
+      performance({ id: 'session-2', status: 'in_progress', completedAt: undefined }, [
+        { id: 'b', weight: 100, completedAt: '2026-09-17T11:30:00.000Z' },
       ]),
+      performance({ id: 'session-1' }, [{ id: 'a' }]),
     ]);
 
     expect(overview.stats?.sessionCount).toBe(1);
+    expect(overview.stats?.lastDoneAt).toBe('2026-09-10T12:00:00.000Z');
+    expect(overview.stats?.bestSet?.weight).toBe(80);
+  });
+
+  test('with only a session in progress there are no tiles yet', () => {
+    const overview = buildExerciseOverview(exercise(), [
+      performance({ status: 'in_progress', completedAt: undefined }, [{ id: 'a' }]),
+    ]);
+
+    expect(overview.stats).toBeNull();
+  });
+
+  test('an exercise skipped with nothing logged is not a session; skipped after one set, it is', () => {
+    const overview = buildExerciseOverview(exercise(), [
+      performance({ id: 'session-3' }, []),
+      performance({ id: 'session-2' }, [{ id: 'b' }]),
+      performance({ id: 'session-1' }, [{ id: 'a' }]),
+    ]);
+
+    expect(overview.stats?.sessionCount).toBe(2);
   });
 });
 
