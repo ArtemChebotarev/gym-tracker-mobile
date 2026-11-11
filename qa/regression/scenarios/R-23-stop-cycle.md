@@ -3,7 +3,8 @@
 Priority: P1 · Spec: 08.3, 04 · Where: Simulator
 
 Precondition: a cycle active with a workout in progress (at least one set logged) and later
-workouts left.
+workouts left, and a rest of that workout on screen — the rest bar counting down, or the rest-over
+banner after it ran out. Without one the last expectation passes by accident.
 
 ## Steps
 
@@ -21,5 +22,4 @@ workouts left.
 - Step 4: the cycle is in the completed section with a stopped badge; there is no active cycle.
   The Workout tab shows the empty state for a next cycle. The workout that was in progress is kept
   as done (it had logs); nothing new was generated.
-- No rest bar or rest-over banner of the stopped workout is left on screen. (Fails today:
-  the banner stays until tapped away — GT-261.)
+- No rest bar or rest-over banner of the stopped workout is left on screen.

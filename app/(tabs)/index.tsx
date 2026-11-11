@@ -810,8 +810,12 @@ export default function TodayScreen() {
             // Unlike Finish, Stop releases a picked day (GT-193): the day it stood on reads in
             // history mode now, with nothing to act on — Stop has no Copy current meso to offer
             // there — so the tab goes back to the current session, and with no active block left
-            // that invites planning the next one.
-            onSuccess: unpinDay,
+            // that invites planning the next one. A rest running or run out goes with the session it
+            // belonged to, its notification too, as after Skip and Finish (GT-261).
+            onSuccess: () => {
+              clearRest();
+              unpinDay();
+            },
             onError: () => Alert.alert("Couldn't stop the training cycle", 'Try again.'),
           });
         }}
