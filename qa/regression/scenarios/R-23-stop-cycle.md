@@ -3,7 +3,8 @@
 Priority: P1 · Spec: 08.3, 04 · Where: Simulator
 
 Precondition: a cycle active with a workout in progress (at least one set logged) and later
-workouts left.
+workouts left, and a rest of that workout on screen — the rest bar counting down, or the rest-over
+banner after it ran out. Without one the last expectation passes by accident.
 
 ## Steps
 
