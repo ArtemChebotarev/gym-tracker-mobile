@@ -1,6 +1,6 @@
 # R-32 · Import: cancel and a wrong file
 
-Priority: P1 · Spec: 08 (Debug) · Where: Simulator
+Priority: P1 · Spec: 08 (Debug) · Where: Simulator, by hand
 
 Precondition: some data on the simulator.
 

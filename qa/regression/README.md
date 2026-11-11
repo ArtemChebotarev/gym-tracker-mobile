@@ -81,6 +81,9 @@ Rules for steps:
 - **Simulator, Release build** — everything that writes data. Release, not Debug, because the
   TestFlight build is Release and some behaviour differs (keep-awake: Debug holds the screen on
   regardless).
+- **Simulator, by hand** — R-31's and R-32's simulator part: the debug screen opens with five
+  taps within 1.5 s, faster than an agent driving the simulator can tap. A person runs them (Maestro
+  can later, GT-249).
 - **Phone, TestFlight build** — only what the simulator can't show and what doesn't write test data
   into the real training history: notifications, lock screen, sound, vibration, keep-awake, an
   ordinary workout, and an export. The database on the phone is the only copy of real training
