@@ -15,6 +15,8 @@ import {
   seedWorkoutFixture,
   WORKOUT_FIXTURE_IDS,
 } from '../fixtures/workoutFixture';
+import { useRestTimerStore } from '@state/restTimerStore';
+
 import { renderWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 // Aliased with a `mock` prefix so the hoisted `jest.mock` factory below may refer to it.
 import { tabNavigation as mockTabNavigation } from '../fixtures/tabNavigation';
@@ -75,7 +77,29 @@ beforeEach(async () => {
 
 afterEach(() => {
   alertSpy.mockRestore();
+  act(() => useRestTimerStore.getState().clear());
 });
+
+/** A rest of the live session, as after a Log: running, or run out into `Rest is over`. */
+function startRest({ ranOut }: { ranOut: boolean }) {
+  act(() => {
+    const rest = useRestTimerStore.getState();
+    rest.start({
+      sessionExerciseId: 'bench',
+      next: { kind: 'set', name: 'Bench Press', setNumber: 2 },
+      durationSec: 120,
+    });
+    if (ranOut) {
+      rest.finish();
+    }
+  });
+}
+
+function expectNoRest() {
+  const { timer, finished } = useRestTimerStore.getState();
+  expect(timer).toBeNull();
+  expect(finished).toBeNull();
+}
 
 function renderToday() {
   return renderWithRepositories(
@@ -216,6 +240,27 @@ describe('Today tab — header menu', () => {
     expect(mockParams).toEqual({});
   });
 
+  // GT-261: the rest and `Rest is over` belonged to a session that is no longer live; they stayed
+  // over the empty tab, and the notification stayed scheduled (RestSignalDriver follows the store).
+  test.each([
+    ['running', false],
+    ['run out', true],
+  ])('DoD: Stop takes a %s rest of the session with it', async (_label, ranOut) => {
+    renderToday();
+    await screen.findByText('Week 2 Day 1');
+    startRest({ ranOut });
+
+    pickMenuItem('stopMesocycle');
+    fireEvent.changeText(
+      await screen.findByLabelText(`Type ${STOP_MESOCYCLE_PHRASE} to confirm`),
+      STOP_MESOCYCLE_PHRASE,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Stop cycle' }));
+
+    expect(await screen.findByText('Start your next training cycle')).toBeTruthy();
+    expectNoRest();
+  });
+
   // Stop used to be the only thing a closed block took off this menu (052). Since 128 the whole
   // header goes with it: a day of a block that has ended opens in history mode, which carries
   // neither the `⋯` nor the grid button — that block's actions and its grid live on its own detail
@@ -276,12 +321,16 @@ describe('Today tab — header menu', () => {
       name: 'Set 3 logged',
     });
 
+    startRest({ ranOut: true });
+
     pickMenuItem('skipWorkout');
     expect(alertSpy).toHaveBeenCalledWith('Skip workout?', SKIP_WORKOUT_WARNING, expect.any(Array));
     pressAlertButton('Skip');
 
     // Logged sets make it a completed session — still this one, now read-only.
     expect(await screen.findByTestId('workout-completed-check')).toBeTruthy();
+    // Its `Rest is over` goes with it (GT-261).
+    expectNoRest();
     expect(screen.getByText('Week 2 Day 1')).toBeTruthy();
     const exercises = await repositories().workoutStore.repos.sessionExerciseRepo.listBySessionId(
       WORKOUT_FIXTURE_IDS.live,
