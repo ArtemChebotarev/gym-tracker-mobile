@@ -21,5 +21,4 @@ workouts left.
 - Step 4: the cycle is in the completed section with a stopped badge; there is no active cycle.
   The Workout tab shows the empty state for a next cycle. The workout that was in progress is kept
   as done (it had logs); nothing new was generated.
-- No rest bar or rest-over banner of the stopped workout is left on screen. (Fails today:
-  the banner stays until tapped away — GT-261.)
+- No rest bar or rest-over banner of the stopped workout is left on screen.
