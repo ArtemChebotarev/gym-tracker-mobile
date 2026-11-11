@@ -19,6 +19,6 @@ weighted one ("Dips Chest Focused Weighted"); body weight not yet given in this 
 - Step 2: saving stores the body weight but does not log the set — tap Log again; the set logs
   with 80. The sheet does not come back in this cycle.
 - Step 3: for a plain bodyweight exercise, editing the weight changes the cycle's body weight —
-  later bodyweight exercises show 82. (Fails today: GT-258.)
+  later bodyweight exercises show 82.
 - Step 4: the weighted exercise logs body weight plus the added weight, shown as "82 (+10)".
 - Step 5: no body-weight sheet; the cycle's body weight is used.

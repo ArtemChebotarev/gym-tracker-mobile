@@ -562,6 +562,54 @@ describe('WorkoutExerciseCard — bodyweight exercises (task 105)', () => {
     expect(onBodyWeightChange).toHaveBeenCalledWith(82.5);
   });
 
+  // GT-258: a tap on Log doesn't blur the field on the phone, so a weight typed and logged at once
+  // never reached the block — the next bodyweight exercise and next week kept the old one.
+  test('DoD: a pure bodyweight set logged with a new weight sets the body weight, no blur needed', () => {
+    const onBodyWeightChange = jest.fn();
+    const onLogSet = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, bodyWeight: 80, onBodyWeightChange, onLogSet })}
+      />,
+    );
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '82');
+    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '8');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
+
+    expect(onBodyWeightChange).toHaveBeenCalledWith(82);
+    expect(onLogSet).toHaveBeenCalledWith(1, { weight: 82, reps: 8 });
+  });
+
+  test('logging a pure bodyweight set at the body weight changes nothing', () => {
+    const onBodyWeightChange = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: PULL_UP, bodyWeight: 80, onBodyWeightChange })}
+      />,
+    );
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '8');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
+
+    expect(onBodyWeightChange).not.toHaveBeenCalled();
+  });
+
+  test('logging a weighted set never touches the body weight — its weight is the added one', () => {
+    const onBodyWeightChange = jest.fn();
+    render(
+      <WorkoutExerciseCard
+        {...makeProps({ exercise: WEIGHTED, bodyWeight: 80, onBodyWeightChange })}
+      />,
+    );
+
+    fireEvent.changeText(screen.getByLabelText('Set 1 weight'), '12');
+    fireEvent.changeText(screen.getByLabelText('Set 1 reps'), '8');
+    fireEvent.press(screen.getByRole('checkbox', { name: 'Log set 1' }));
+
+    expect(onBodyWeightChange).not.toHaveBeenCalled();
+  });
+
   test('leaving the field at the same weight changes nothing', () => {
     const onBodyWeightChange = jest.fn();
     render(
