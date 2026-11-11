@@ -22,7 +22,9 @@ does not matter.
   cycle A's Week 3, including any set added in R-20.
 - Step 4: the start confirmation names the new cycle and says Week 1 Day 1 is next.
 - Step 5: unlike a template cycle's first week, the strength sets show reps targets and prefilled
-  weights computed from cycle A's history, with RIR 2 — e.g. Lateral Raise with the Week 3
-  weight. (The exact start targets are under question in GT-257.)
+  weights computed from cycle A's history, with RIR 2 — each set from the same set of the last
+  Week 3 Day 1 (deload doesn't count): the same weight, and reps of Week 3 + 1 − (2 − Week 3's
+  RIR 0), i.e. one fewer. E.g. Lateral Raise logged 10 kg × 14 / 14 / 12 in Week 3 starts at
+  10 kg × 13 / 13 / 11. Note Week 3's logged reps before finishing cycle A, to check this.
 - Bodyweight exercises (Pull Up, Dips) show no weight: body weight belongs to a cycle and is not
   copied — a known gap, asked again on the first log.
