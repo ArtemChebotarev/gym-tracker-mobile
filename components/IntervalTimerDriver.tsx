@@ -37,9 +37,19 @@ import { formatInProgressConflict } from './TodayScreenLogic';
 export function IntervalTimerDriver() {
   const onOutcome = useCallback((outcome: LogRoundResult | { kind: 'failed'; error: unknown }) => {
     if (outcome.kind === 'conflict') {
+      // Start timer is refused while another workout is in progress, but that workout can still
+      // be started elsewhere while this timer runs. Its rounds can't be saved then, so it stops —
+      // ended early, so no rest follows it — and says so once: rounds still on their way meet a
+      // timer already put away and say nothing (GT-259).
+      const timers = useIntervalTimerStore.getState();
+      if (timers.active === null) {
+        return;
+      }
+      timers.endEarly();
+      timers.close();
       Alert.alert(
         formatInProgressConflict(outcome),
-        "The timer's rounds can't be saved while another workout is in progress.",
+        "The timer stopped: its rounds can't be saved while another workout is in progress.",
       );
     } else if (outcome.kind === 'failed') {
       Alert.alert("Couldn't save the round", 'Log it by hand on the card.');

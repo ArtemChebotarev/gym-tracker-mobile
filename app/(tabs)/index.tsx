@@ -133,12 +133,14 @@ import { useSetNoHeavierAvailable } from '@state/useSetNoHeavierAvailable';
 import { useLogRound, useSetRoundTime, useUnlogRound } from '@state/useRoundLogging';
 import { useLogSet, useUnlogSet } from '@state/useSetLogging';
 import { useSetBodyWeight } from '@state/useSetBodyWeight';
+import { useLogConflictCheck } from '@state/useLogConflictCheck';
 import { useSkipWorkout } from '@state/useSkipWorkout';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 import { loadErrorOf } from '@state/loadError';
 import { useRestCoachmarkPending } from '@state/useRestNotifications';
 import type { LogRoundResult } from '@usecases/roundLogging';
 import type { SessionFinishResult } from '@usecases/sessionFinish';
+import type { InProgressConflict } from '@usecases/sessionStart';
 import type { LogSetResult } from '@usecases/setLogging';
 import type { WorkoutExercise } from '@usecases/workoutSession';
 
@@ -171,6 +173,7 @@ export default function TodayScreen() {
   const clearRest = useRestTimerStore((s) => s.clear);
   const finishedBlock = useIntervalTimerStore((s) => s.finished);
   const skipWorkout = useSkipWorkout();
+  const checkLogConflict = useLogConflictCheck();
   const addExercises = useAddExercises();
   const exerciseCommand = useExerciseCommand();
   const swapExercise = useSwapExercise();
@@ -389,9 +392,14 @@ export default function TodayScreen() {
       }
       return;
     }
-    Alert.alert(formatInProgressConflict(result), undefined, [
+    showInProgressConflict(result);
+  }
+
+  /** Another workout is in progress: this one can't log until it is finished — Open goes there. */
+  function showInProgressConflict(conflict: InProgressConflict) {
+    Alert.alert(formatInProgressConflict(conflict), undefined, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Open', onPress: () => router.navigate(workoutHref(result.inProgressSessionId)) },
+      { text: 'Open', onPress: () => router.navigate(workoutHref(conflict.inProgressSessionId)) },
     ]);
   }
 
@@ -701,8 +709,19 @@ export default function TodayScreen() {
           if (start === undefined) {
             return;
           }
-          useIntervalTimerStore.getState().start(start);
-          router.push('/interval-timer');
+          // Its rounds are logged as it runs, so it meets the rule a Log does before it starts: with
+          // another workout in progress they couldn't be saved, and it doesn't start (GT-259).
+          checkLogConflict.mutate(currentSessionId, {
+            onSuccess: (conflict) => {
+              if (conflict !== null) {
+                showInProgressConflict(conflict);
+                return;
+              }
+              useIntervalTimerStore.getState().start(start);
+              router.push('/interval-timer');
+            },
+            onError: showSaveError,
+          });
         }}
         onOpenIntervalTimer={() => router.push('/interval-timer')}
         onUnlogSet={(exercise, setNumber) => {

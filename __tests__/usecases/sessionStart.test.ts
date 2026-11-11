@@ -1,7 +1,7 @@
 import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
-import { startSessionOnFirstSet } from '@usecases/sessionStart';
+import { findLogConflict, startSessionOnFirstSet } from '@usecases/sessionStart';
 import { ANY_STAMPS, STAMPS } from '../fixtures/stamps';
 import { seedReferences } from '../fixtures/references';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
@@ -134,5 +134,44 @@ describe('startSessionOnFirstSet', () => {
     await expect(workout.repos.sessionRepo.getById('session-w1-d1')).resolves.toEqual(
       makeSession(),
     );
+  });
+});
+
+// GT-259: asked before the interval timer starts, whose rounds are logged later, as it runs.
+describe('findLogConflict', () => {
+  const other = makeSession({
+    id: 'session-w1-d2',
+    dayNumber: 2,
+    status: 'in_progress',
+    startedAt: '2026-09-18T09:00:00.000Z',
+  });
+
+  test('DoD: another session in progress is the conflict a log would meet, and nothing is written', async () => {
+    const workout = await workoutWith(makeSession(), other);
+
+    await expect(findLogConflict('session-w1-d1', workout.repos, FIRST_SET_AT)).resolves.toEqual({
+      kind: 'conflict',
+      inProgressSessionId: 'session-w1-d2',
+      weekNumber: 1,
+      dayNumber: 2,
+    });
+    await expect(workout.repos.sessionRepo.getById('session-w1-d1')).resolves.toEqual(
+      makeSession(),
+    );
+  });
+
+  test('none when nothing else is in progress — and the session is not started by asking', async () => {
+    const workout = await workoutWith(makeSession());
+
+    await expect(findLogConflict('session-w1-d1', workout.repos, FIRST_SET_AT)).resolves.toBeNull();
+    await expect(workout.repos.sessionRepo.getById('session-w1-d1')).resolves.toEqual(
+      makeSession(),
+    );
+  });
+
+  test('none when the session in progress is this one', async () => {
+    const workout = await workoutWith({ ...other });
+
+    await expect(findLogConflict('session-w1-d2', workout.repos, FIRST_SET_AT)).resolves.toBeNull();
   });
 });

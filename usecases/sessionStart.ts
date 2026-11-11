@@ -59,9 +59,38 @@ export async function startSessionForLog(
   if (start.kind !== 'conflict') {
     return { kind: 'open', session: start.session };
   }
-  const inProgress = await repos.sessionRepo.getById(start.inProgressSessionId);
+  return describeConflict(start.inProgressSessionId, repos);
+}
+
+/**
+ * Would logging into session `sessionId` run into another session `in_progress`? Asked before
+ * anything that will log into it later rather than now — the interval timer, whose rounds are
+ * logged as it runs (GT-259): it doesn't start where its rounds couldn't be saved. The same rule as
+ * a log (`decideSessionStart`), and nothing is written.
+ */
+export async function findLogConflict(
+  sessionId: string,
+  repos: Pick<WorkoutRepositories, 'sessionRepo'>,
+  now: string = nowAsUtcIso(),
+): Promise<InProgressConflict | null> {
+  const session = await repos.sessionRepo.getById(sessionId);
+  if (!session) {
+    throw new NotFoundError(`Session "${sessionId}" does not exist.`);
+  }
+  const decision = decideSessionStart(session, await repos.sessionRepo.getCurrentInProgress(), now);
+  return decision.kind === 'conflict'
+    ? describeConflict(decision.inProgressSessionId, repos)
+    : null;
+}
+
+/** The conflict with session `inProgressSessionId`, with its week and day for the alert. */
+async function describeConflict(
+  inProgressSessionId: string,
+  repos: Pick<WorkoutRepositories, 'sessionRepo'>,
+): Promise<InProgressConflict> {
+  const inProgress = await repos.sessionRepo.getById(inProgressSessionId);
   if (!inProgress) {
-    throw new NotFoundError(`Session "${start.inProgressSessionId}" does not exist.`);
+    throw new NotFoundError(`Session "${inProgressSessionId}" does not exist.`);
   }
   return {
     kind: 'conflict',
