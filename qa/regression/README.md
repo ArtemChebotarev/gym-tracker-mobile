@@ -134,7 +134,7 @@ Cycle **A** is created from the "Upper / Lower + Boxing Hybrid" template cut to 
 | 7 | Cycle C copied from A | R-05, R-23 |
 | 8 | A and C in Completed | R-24 |
 | 9 | Any | R-27 – R-30 |
-| 10 | Last (an import replaces the database) | R-31, R-32 |
+| 10 | R-32 on the chain's data; then a fresh install (a backup restores only into an empty app) | R-32, R-31 |
 
 Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlight build.
 
@@ -173,7 +173,7 @@ Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlig
 | [R-29](scenarios/R-29-exercise-overview.md) | Exercise overview, "Watch how to perform" | P1 | 08.6 | Sim |
 | [R-30](scenarios/R-30-timer-settings.md) | Timer settings take effect | P1 | 08 | Sim |
 | [R-31](scenarios/R-31-export-import.md) | Export on the phone → import on the simulator | P0 | 08 | Phone + Sim |
-| [R-32](scenarios/R-32-import-refusals.md) | Import: cancel changes nothing, a wrong file is refused | P1 | 08 | Sim |
+| [R-32](scenarios/R-32-import-refusals.md) | Import: cancel changes nothing; an app with data and a wrong file are refused | P1 | 08 | Sim |
 | [D-01](scenarios/D-01-rest-notification.md) | Rest notification in the background and on the lock screen | P0 | 05, 08 | Phone |
 | [D-02](scenarios/D-02-real-workout.md) | An ordinary workout on the TestFlight build | P0 | 05, 08.7 | Phone |
 | [D-03](scenarios/D-03-sound-vibration.md) | In-app sound and vibration follow Settings | P1 | 08 | Phone |

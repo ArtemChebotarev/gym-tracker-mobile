@@ -4,8 +4,10 @@ Priority: P0 · Spec: 08 (Debug) · Where: Phone + Simulator
 
 Checks backup with real data without writing anything on the phone: export only reads.
 
-Precondition: the TestFlight build on the phone with real data; on the simulator, the end of the
-chain — the import replaces the simulator's whole database.
+Precondition: the TestFlight build on the phone with real data; on the simulator, a fresh install
+with no data of its own — a backup restores only into an empty app, never merges. Reinstall the
+Release build (`xcrun simctl uninstall booted com.artemchebotarov.hybro`, then install the `.app`
+again); this wipes the simulator's test data, so it is the end of the chain.
 
 ## Steps
 
@@ -17,7 +19,8 @@ On the phone:
 
 On the simulator:
 
-3. Drag the file onto the simulator window (it lands in Files).
+3. Drag the file onto the simulator window (it lands in Files), or copy it into the simulator's
+   Files storage ("On My iPhone").
 4. Library → tap the title five times quickly → "Import backup", pick the file.
 5. In the restore confirmation tap "Cancel". Check the data is unchanged.
 6. Repeat step 4, this time confirm the restore.

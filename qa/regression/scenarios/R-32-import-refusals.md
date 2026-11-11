@@ -8,13 +8,16 @@ Precondition: some data on the simulator.
 
 1. Library → tap the title five times quickly → "Export backup"; save the file to Files.
 2. "Import backup" → pick that file → cancel in the confirmation.
-3. "Import backup" → pick a file that is not a backup (e.g. any text or image file in Files).
-4. "Import backup" → close the file picker without choosing.
+3. "Import backup" → pick that file again → confirm the restore.
+4. "Import backup" → pick a file that is not a backup (e.g. any text or image file in Files).
+5. "Import backup" → close the file picker without choosing.
 
 ## Expect
 
 - Step 1: the share sheet opens with a JSON file.
 - Step 2: nothing changes.
-- Step 3: an error says the file can't be restored and that the data was not changed.
-- Step 4: nothing happens.
+- Step 3: an error says the app already has data and a backup restores only into an empty one;
+  the data was not changed.
+- Step 4: an error says the file can't be restored and that the data was not changed.
+- Step 5: nothing happens.
 - A file from an older build is refused too; that path is covered by unit tests, not here.
