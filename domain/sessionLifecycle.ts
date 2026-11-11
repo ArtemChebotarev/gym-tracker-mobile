@@ -78,8 +78,24 @@ export function decideSessionStart(
   if (session.status === 'in_progress') {
     return { kind: 'continued', session };
   }
-  if (currentInProgress !== null && currentInProgress.id !== session.id) {
-    return { kind: 'conflict', inProgressSessionId: currentInProgress.id };
+  const blocking = blockingSession(session.id, currentInProgress);
+  if (blocking !== null) {
+    return { kind: 'conflict', inProgressSessionId: blocking.id };
   }
   return { kind: 'started', session: { ...session, status: 'in_progress', startedAt: now } };
+}
+
+/**
+ * The session that keeps session `sessionId` from being logged into: the one `in_progress`, when it
+ * is another (05, "Жизненный цикл сессии" — one at a time, app-wide). `null` when there is none, or
+ * when it is this one. The rule a log meets (`decideSessionStart`), and what Start timer asks before
+ * a timer whose rounds are logged as it runs (GT-259).
+ */
+export function blockingSession(
+  sessionId: string,
+  currentInProgress: Session | null,
+): Session | null {
+  return currentInProgress !== null && currentInProgress.id !== sessionId
+    ? currentInProgress
+    : null;
 }

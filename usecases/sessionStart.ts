@@ -6,7 +6,11 @@
 
 import { NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
-import { decideSessionStart, type SessionStartDecision } from '@domain/sessionLifecycle';
+import {
+  blockingSession,
+  decideSessionStart,
+  type SessionStartDecision,
+} from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import type { WorkoutRepositories } from '@repositories/workout';
 
@@ -59,39 +63,29 @@ export async function startSessionForLog(
   if (start.kind !== 'conflict') {
     return { kind: 'open', session: start.session };
   }
-  return describeConflict(start.inProgressSessionId, repos);
+  const inProgress = await repos.sessionRepo.getById(start.inProgressSessionId);
+  if (!inProgress) {
+    throw new NotFoundError(`Session "${start.inProgressSessionId}" does not exist.`);
+  }
+  return toConflict(inProgress);
 }
 
 /**
  * Would logging into session `sessionId` run into another session `in_progress`? Asked before
- * anything that will log into it later rather than now — the interval timer, whose rounds are
- * logged as it runs (GT-259): it doesn't start where its rounds couldn't be saved. The same rule as
- * a log (`decideSessionStart`), and nothing is written.
+ * anything that logs into it later rather than now — the interval timer, whose rounds are logged as
+ * it runs (GT-259): it doesn't start where its rounds couldn't be saved. The rule a log meets
+ * (`blockingSession`); one read, nothing written.
  */
 export async function findLogConflict(
   sessionId: string,
   repos: Pick<WorkoutRepositories, 'sessionRepo'>,
-  now: string = nowAsUtcIso(),
 ): Promise<InProgressConflict | null> {
-  const session = await repos.sessionRepo.getById(sessionId);
-  if (!session) {
-    throw new NotFoundError(`Session "${sessionId}" does not exist.`);
-  }
-  const decision = decideSessionStart(session, await repos.sessionRepo.getCurrentInProgress(), now);
-  return decision.kind === 'conflict'
-    ? describeConflict(decision.inProgressSessionId, repos)
-    : null;
+  const blocking = blockingSession(sessionId, await repos.sessionRepo.getCurrentInProgress());
+  return blocking === null ? null : toConflict(blocking);
 }
 
-/** The conflict with session `inProgressSessionId`, with its week and day for the alert. */
-async function describeConflict(
-  inProgressSessionId: string,
-  repos: Pick<WorkoutRepositories, 'sessionRepo'>,
-): Promise<InProgressConflict> {
-  const inProgress = await repos.sessionRepo.getById(inProgressSessionId);
-  if (!inProgress) {
-    throw new NotFoundError(`Session "${inProgressSessionId}" does not exist.`);
-  }
+/** The conflict with `inProgress`, with its week and day for the alert. */
+function toConflict(inProgress: Session): InProgressConflict {
   return {
     kind: 'conflict',
     inProgressSessionId: inProgress.id,

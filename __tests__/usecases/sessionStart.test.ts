@@ -149,7 +149,7 @@ describe('findLogConflict', () => {
   test('DoD: another session in progress is the conflict a log would meet, and nothing is written', async () => {
     const workout = await workoutWith(makeSession(), other);
 
-    await expect(findLogConflict('session-w1-d1', workout.repos, FIRST_SET_AT)).resolves.toEqual({
+    await expect(findLogConflict('session-w1-d1', workout.repos)).resolves.toEqual({
       kind: 'conflict',
       inProgressSessionId: 'session-w1-d2',
       weekNumber: 1,
@@ -163,7 +163,7 @@ describe('findLogConflict', () => {
   test('none when nothing else is in progress — and the session is not started by asking', async () => {
     const workout = await workoutWith(makeSession());
 
-    await expect(findLogConflict('session-w1-d1', workout.repos, FIRST_SET_AT)).resolves.toBeNull();
+    await expect(findLogConflict('session-w1-d1', workout.repos)).resolves.toBeNull();
     await expect(workout.repos.sessionRepo.getById('session-w1-d1')).resolves.toEqual(
       makeSession(),
     );
@@ -172,6 +172,6 @@ describe('findLogConflict', () => {
   test('none when the session in progress is this one', async () => {
     const workout = await workoutWith({ ...other });
 
-    await expect(findLogConflict('session-w1-d2', workout.repos, FIRST_SET_AT)).resolves.toBeNull();
+    await expect(findLogConflict('session-w1-d2', workout.repos)).resolves.toBeNull();
   });
 });

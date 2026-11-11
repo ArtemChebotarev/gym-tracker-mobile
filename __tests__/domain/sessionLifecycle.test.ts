@@ -1,6 +1,7 @@
 import { isConflictError } from '@domain/errors';
 import type { Session } from '@domain/execution';
 import {
+  blockingSession,
   assertSessionOpen,
   closedSession,
   decideSessionStart,
@@ -121,5 +122,18 @@ describe('closedSession', () => {
 
     expect(closed.status).toBe('abandoned');
     expect(closed.completedAt).toBeUndefined();
+  });
+});
+
+describe('blockingSession', () => {
+  const other = makeSession({ id: 'other', status: 'in_progress' });
+
+  test('another session in progress blocks this one', () => {
+    expect(blockingSession('this', other)).toBe(other);
+  });
+
+  test('nothing blocks when nothing is in progress, or when it is this session', () => {
+    expect(blockingSession('this', null)).toBeNull();
+    expect(blockingSession('other', other)).toBeNull();
   });
 });

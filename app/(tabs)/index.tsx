@@ -710,7 +710,11 @@ export default function TodayScreen() {
             return;
           }
           // Its rounds are logged as it runs, so it meets the rule a Log does before it starts: with
-          // another workout in progress they couldn't be saved, and it doesn't start (GT-259).
+          // another workout in progress they couldn't be saved, and it doesn't start (GT-259). The
+          // check is a read away, so a second tap meanwhile is dropped rather than starting twice.
+          if (checkLogConflict.isPending) {
+            return;
+          }
           checkLogConflict.mutate(currentSessionId, {
             onSuccess: (conflict) => {
               if (conflict !== null) {
