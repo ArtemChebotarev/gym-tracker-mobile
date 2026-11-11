@@ -243,6 +243,34 @@ describe('Today tab — set logging', () => {
     expect(mockNavigate).toHaveBeenCalledWith(workoutHref(WORKOUT_FIXTURE_IDS.live));
     alert.mockRestore();
   });
+
+  // GT-259: Start timer had no such check, so a timer ran on a day it could save nothing from —
+  // and End timer couldn't end it. It meets the rule a Log does now, before it starts.
+  test('DoD: another session in progress — Start timer names it, and no timer starts', async () => {
+    await seedFixtureDay(repositories(), { id: 'ready-w2d3', weekNumber: 2, dayNumber: 3 });
+    await repositories().workoutStore.repos.sessionExerciseRepo.create({
+      id: 'ready-w2d3-intervals',
+      sessionId: 'ready-w2d3',
+      exerciseId: 'band-punches',
+      order: 2,
+      setTargets: [{ setNumber: 1, targetWorkSec: 60, targetRestSec: 30 }],
+      targetRir: 0,
+      status: 'planned',
+    });
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    mockParams = { sessionId: 'ready-w2d3' };
+    renderToday();
+    await screen.findByText('Week 2 Day 3');
+
+    fireEvent.press(await screen.findByTestId('start-timer-ready-w2d3-intervals'));
+
+    await waitFor(() => expect(alert).toHaveBeenCalled());
+    const [title, , buttons] = alert.mock.calls[0] ?? [];
+    expect(title).toBe('Finish Week 2 Day 1 first');
+    expect(buttons?.map((button: AlertButton) => button.text)).toEqual(['Cancel', 'Open']);
+    expect(useIntervalTimerStore.getState().active).toBeNull();
+    alert.mockRestore();
+  });
 });
 
 // GT-233 (10.1 FR-6): only one timer runs at a time. A set logged while an interval
