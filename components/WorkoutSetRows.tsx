@@ -83,17 +83,25 @@ export function WorkoutSetRows({
   const asksForBodyWeight =
     isBodyWeightExercise(loadEquipment) && bodyWeight === undefined && editable;
 
-  function handleWeightBlur(setNumber: number, text: string) {
-    setWeights((edits) => carryWeightForward(edits, rows, setNumber));
+  /**
+   * On a pure bodyweight exercise the Weight field holds the body weight itself, so a weight typed
+   * there is the block's new one — it reaches every bodyweight set still to be logged (task 105).
+   * Asked both when the field is left and when its set is logged: a tap on Log doesn't take the
+   * focus off the field (the list keeps taps while the keyboard is up), so a weight typed and
+   * logged straight away never sees a blur (GT-258).
+   */
+  function noteBodyWeight(entered: number | null) {
     if (!isBodyWeightField || onBodyWeightChange === undefined) {
       return;
     }
-    // On a pure bodyweight exercise this field holds the body weight itself, so what was typed
-    // here is the block's new one — it reaches every bodyweight set still to be logged (task 105).
-    const entered = parseWeight(text);
     if (entered !== null && entered > 0 && entered !== bodyWeight) {
       onBodyWeightChange(entered);
     }
+  }
+
+  function handleWeightBlur(setNumber: number, text: string) {
+    setWeights((edits) => carryWeightForward(edits, rows, setNumber));
+    noteBodyWeight(parseWeight(text));
   }
 
   // One note per card, for the set that is next to do and only while its numbers aren't a target
@@ -131,7 +139,10 @@ export function WorkoutSetRows({
           }
           editable={editable}
           isSaving={isSaving}
-          onLog={(entry) => onLogSet(row.setNumber, entry)}
+          onLog={(entry) => {
+            noteBodyWeight(entry.weight);
+            onLogSet(row.setNumber, entry);
+          }}
           onUnlog={() => {
             const logged = row.log;
             if (logged !== undefined) {
