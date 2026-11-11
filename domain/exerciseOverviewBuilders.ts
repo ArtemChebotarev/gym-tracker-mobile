@@ -6,7 +6,7 @@
 
 import type { Exercise } from './catalog';
 import type { SetLog } from './execution';
-import { hasLogs } from './exerciseHistoryBuilders';
+import { isDonePerformance } from './exerciseHistoryBuilders';
 import type {
   ExerciseBestSet,
   ExerciseOverview,
@@ -18,8 +18,9 @@ import type {
 /**
  * The Overview model for `exercise` over every performance of it, in any order.
  *
- * With nothing logged at all, no set and no round, there are no tiles — the screen shows the empty
- * state instead (08.6, "Пустое состояние").
+ * The tiles count what the History tab lists — sessions that are over, with something logged
+ * (`isDonePerformance`, GT-260) — so Sessions and the list never disagree. With nothing like that,
+ * there are no tiles — the screen shows the empty state instead (08.6, "Пустое состояние").
  */
 export function buildExerciseOverview(
   exercise: Exercise,
@@ -27,7 +28,7 @@ export function buildExerciseOverview(
 ): ExerciseOverview {
   return {
     exercise,
-    stats: buildExerciseOverviewStats(performances.filter(hasLogs)),
+    stats: buildExerciseOverviewStats(performances.filter(isDonePerformance)),
     actions: exerciseOverviewActions(exercise),
   };
 }

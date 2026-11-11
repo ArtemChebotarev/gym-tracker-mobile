@@ -13,19 +13,14 @@ import type {
  * oldest across the mesocycle boundary (06: "Сквозная через все мезоциклы. Граница мезоцикла не
  * обрывает историю").
  *
- * A session still in progress is left out, the same way the Overview tab's blocks leave it out:
- * this is the record of what was already done.
+ * A session still in progress is left out, and so is one where the exercise was skipped with
+ * nothing logged (`isDonePerformance`): this is the record of what was already done.
  */
 export function buildExerciseHistory(
   performances: readonly ExerciseHistoryPerformance[],
 ): ExerciseHistoryMesocycle[] {
   const completed = performances
-    .filter(
-      (performance) =>
-        hasLogs(performance) &&
-        performance.session.status === 'completed' &&
-        performance.session.completedAt !== undefined,
-    )
+    .filter(isDonePerformance)
     .sort((a, b) => completionOf(b).localeCompare(completionOf(a)));
 
   // A Map keeps insertion order, so a mesocycle takes the place of its newest session — no second
@@ -62,9 +57,22 @@ function toHistorySession(performance: ExerciseHistoryPerformance): ExerciseHist
 }
 
 /**
- * A performance with something logged — sets or rounds, whichever its exercise has. Shared with
- * the Overview tab, which counts and dates the same performances.
+ * A performance that is part of the record: something logged in a session that is over. Shared
+ * with the Overview tab, so its tiles count the same sessions this list shows (GT-260, Artem
+ * 11.11.2026): a session still in progress is in neither, and an exercise skipped with nothing
+ * logged is in neither — skipped after one set, that one set is.
  */
+export function isDonePerformance(
+  performance: Pick<ExerciseHistoryPerformance, 'session' | 'setLogs' | 'roundLogs'>,
+): boolean {
+  return (
+    hasLogs(performance) &&
+    performance.session.status === 'completed' &&
+    performance.session.completedAt !== undefined
+  );
+}
+
+/** A performance with something logged — sets or rounds, whichever its exercise has. */
 export function hasLogs(performance: Pick<ExerciseHistoryPerformance, 'setLogs' | 'roundLogs'>) {
   return performance.setLogs.length > 0 || performance.roundLogs.length > 0;
 }
