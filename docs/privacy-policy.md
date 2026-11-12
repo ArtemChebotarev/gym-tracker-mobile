@@ -98,11 +98,20 @@ personal data, and to complain to a data protection authority.
 
 Hyperbro is not directed at children under 16 and does not knowingly collect data from them.
 
-## 7. Changes
+## 7. Health notice
+
+Hyperbro is a training log and planning tool, not a medical device, and it does not give medical
+advice. Its suggested weights, reps and rest times are calculated from what you logged and may not
+suit your health, fitness level or injuries. Consult a doctor before starting or changing an
+exercise programme, especially if you have a medical condition, an injury or are pregnant. Stop
+exercising and seek medical help if you feel pain, dizziness or shortness of breath. You train at
+your own risk.
+
+## 8. Changes
 
 If what the app collects changes, this page will be updated before the new version is released, and
 the date at the top will change.
 
-## 8. Contact
+## 9. Contact
 
 Questions about this policy or your data: [[EMAIL]].
