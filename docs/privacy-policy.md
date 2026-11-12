@@ -2,7 +2,7 @@
 DRAFT for GT-244 — placeholders below are filled in before the PR leaves draft.
 Before publishing, fill in every [[...]] placeholder:
   [[DATE]]       — the day the policy goes live
-Also confirm in PostHog that "Discard client IP data" is ON — section 3 promises it.
+IP discard checked 2026-11-12: EU org default is on and events carry no $ip — section 3 relies on it.
 Retention "1 year" is the PostHog Free plan (fixed). A paid plan keeps events 3 / 5 / 7 years
 (Boost / Scale / Enterprise) unless lowered in project settings — update section 3 on upgrade.
 Source of truth for what is collected: state/README.md → "Telemetry" → "What is collected".
