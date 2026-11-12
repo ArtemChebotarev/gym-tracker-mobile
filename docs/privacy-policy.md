@@ -7,7 +7,7 @@ Source of truth for what is collected: state/README.md → "Telemetry" → "What
 Any new event or property means updating this page AND the App Store privacy labels.
 -->
 
-# Hyperbro — Privacy Policy
+# Privacy Policy
 
 _Last updated: 12 November 2026_
 
