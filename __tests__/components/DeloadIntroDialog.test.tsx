@@ -14,7 +14,7 @@ describe('DeloadIntroDialog', () => {
     expect(screen.getByText('Go easy')).toBeTruthy();
     expect(screen.queryByText(/RIR|reps left/)).toBeNull();
     expect(screen.getByText('Reps shown are a guide based on last week.')).toBeTruthy();
-    expect(screen.queryByLabelText('Hybro')).toBeNull();
+    expect(screen.queryByLabelText('Hyperbro')).toBeNull();
     expect(screen.getByText('Got it')).toBeTruthy();
   });
 

@@ -23,9 +23,9 @@ describe('exportErrorMessage', () => {
 
 describe('importConfirmMessage', () => {
   test('names the file and says it cannot be undone', () => {
-    const message = importConfirmMessage('hybro-backup-2026-10-12.json');
+    const message = importConfirmMessage('hyperbro-backup-2026-10-12.json');
 
-    expect(message).toContain('hybro-backup-2026-10-12.json');
+    expect(message).toContain('hyperbro-backup-2026-10-12.json');
     expect(message).toContain("can't be undone");
   });
 });

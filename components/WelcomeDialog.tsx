@@ -11,7 +11,7 @@ import { Text, View } from 'react-native';
 
 import { Button } from '@design/components/Button';
 import { Dialog } from '@design/components/Dialog';
-import { HybroWordmark } from '@design/components/HybroWordmark';
+import { HyperbroWordmark } from '@design/components/HyperbroWordmark';
 import { COLORS, ICON_SIZES } from '@design/tokens';
 
 import { WELCOME_BUTTON_LABEL, WELCOME_STEPS, WELCOME_TITLE } from './WelcomeDialogLogic';
@@ -27,7 +27,7 @@ export function WelcomeDialog({ visible, onDismiss }: WelcomeDialogProps) {
   return (
     <Dialog visible={visible} onClose={onDismiss}>
       <View style={styles.header}>
-        <HybroWordmark />
+        <HyperbroWordmark />
         <Text style={styles.title}>{WELCOME_TITLE}</Text>
       </View>
       <View style={styles.steps}>

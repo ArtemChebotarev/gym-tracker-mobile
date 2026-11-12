@@ -18,11 +18,11 @@ describe('pickBackupFile', () => {
   test('returns the chosen file name and its text, and asks only for JSON', async () => {
     pickFileAsync.mockResolvedValue({
       canceled: false,
-      result: { name: 'hybro-backup-2026-10-12.json', text: async () => '{"kind":"x"}' },
+      result: { name: 'hyperbro-backup-2026-10-12.json', text: async () => '{"kind":"x"}' },
     });
 
     await expect(pickBackupFile()).resolves.toEqual({
-      fileName: 'hybro-backup-2026-10-12.json',
+      fileName: 'hyperbro-backup-2026-10-12.json',
       json: '{"kind":"x"}',
     });
     expect(pickFileAsync).toHaveBeenCalledWith({ mimeTypes: ['application/json'] });

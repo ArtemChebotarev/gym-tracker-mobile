@@ -265,7 +265,7 @@ describe('importBackup refuses what it cannot restore', () => {
   test('a JSON that is not a backup at all', async () => {
     await expect(importBackup({ hello: 'world' }, makeDeps(sourceDb))).rejects.toMatchObject({
       reason: 'not-a-backup',
-      message: 'This file is not a Hybro backup.',
+      message: 'This file is not a Hyperbro backup.',
     });
   });
 

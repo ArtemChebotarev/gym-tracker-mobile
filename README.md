@@ -1,4 +1,4 @@
-# Hybro
+# Hyperbro
 
 ## Running and debugging
 

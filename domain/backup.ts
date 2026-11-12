@@ -94,7 +94,7 @@ export type BackupFile = {
 export function assertRestorable(value: unknown, schemaVersion: number): asserts value is BackupFile {
   const file = value as Partial<BackupFile> | null;
   if (file === null || typeof file !== 'object' || file.kind !== BACKUP_KIND) {
-    throw new BackupRefusedError('not-a-backup', 'This file is not a Hybro backup.');
+    throw new BackupRefusedError('not-a-backup', 'This file is not a Hyperbro backup.');
   }
   if (file.schemaVersion !== schemaVersion) {
     throw new BackupRefusedError(

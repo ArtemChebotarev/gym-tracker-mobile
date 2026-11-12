@@ -48,7 +48,7 @@ export const COLORS = {
   'accent/border': '#4A5A20',
 
   /**
-   * The orange of the Hybro mark's crossbars (08.1 · Branding). Not a general UI colour — the SDK
+   * The orange of the HB mark's crossbars (08.1 · Branding). Not a general UI colour — the SDK
    * keeps one accent per screen. Besides the wordmark it marks two things only: time that is running
    * — a timer's progress ring (10.1 FR-5, FR-6) — and the action that starts a timer, the text and
    * icon of CardTimerAction (FR-14, GT-206). Nothing else, and never chips.
@@ -417,8 +417,13 @@ export const SIZES = {
   'size/dialog': 380,
   /** How wide a Dialog's title may run, so a long one wraps to two lines instead of touching the edges (08.11). */
   'size/dialog-title': 260,
-  /** The Hybro wordmark's drawn width in the Welcome dialog (08.11); its height follows the artwork. */
-  'size/wordmark': 190,
+  /** The Hyperbro wordmark's drawn width in the Welcome dialog (08.11); its height follows the artwork. */
+  'size/wordmark': 280,
+  /**
+   * The wordmark at most: its container's width, so a phone narrower than the dialog (a 360dp
+   * Android leaves 264 for content) shrinks the word instead of pushing it into the card's padding.
+   */
+  'size/wordmark-max': '100%',
   /** The fact chip of the deload popup: one width for `Half weight`, `Fewer sets` and `8 RIR` (08.11). */
   'size/fact-chip': 96,
   /** The word chip of a plate's list: one width for `Work` and `Rest` (08.11, "Finding your time"). */
