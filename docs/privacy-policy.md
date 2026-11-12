@@ -1,9 +1,10 @@
 <!--
 DRAFT for GT-244 — placeholders below are filled in before the PR leaves draft.
 Before publishing, fill in every [[...]] placeholder:
-  [[RETENTION]]  — PostHog event retention for the project (Project settings → Data retention)
   [[DATE]]       — the day the policy goes live
 Also confirm in PostHog that "Discard client IP data" is ON — section 3 promises it.
+Retention "1 year" is the PostHog Free plan (fixed). A paid plan keeps events 3 / 5 / 7 years
+(Boost / Scale / Enterprise) unless lowered in project settings — update section 3 on upgrade.
 Source of truth for what is collected: state/README.md → "Telemetry" → "What is collected".
 Any new event or property means updating this page AND the App Store privacy labels.
 -->
@@ -69,7 +70,7 @@ device's IP address. PostHog is configured not to store it and not to derive a l
 **Why (legal basis):** my legitimate interest in understanding whether the app works for the people
 using it, so I can improve it (Art. 6(1)(f) GDPR). The data is minimal and anonymous by design.
 
-**How long:** events are kept for [[RETENTION]], then deleted.
+**How long:** events are kept for up to 1 year, after which PostHog deletes them.
 
 **Who processes it:** PostHog Inc. acts as a processor on my behalf, with servers in the EU. It does
 not use this data for its own purposes. Analytics data is not shared with anyone else, not sold and
