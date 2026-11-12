@@ -8,7 +8,7 @@
     "icon": "./assets/hybro-icon-1024.png",
     "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.artemchebotarov.hybro",
       "config": {
         "usesNonExemptEncryption": false
