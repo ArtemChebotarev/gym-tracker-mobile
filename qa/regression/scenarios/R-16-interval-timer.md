@@ -21,6 +21,8 @@ exercise's last logged session) and not finished; "Heavy Bag" not logged. Set
 8. On another day (or after unlogging the rounds) start the timer again and end it early during
    round 2, confirming.
 9. Start it once more and let all rounds run to the end; leave through the summary's button.
+10. In a later week, log one set on Day 1 and leave it in progress. Open that week's Day 2 from
+    the ⊞ week grid and tap "Start timer" on "Heavy Bag".
 
 ## Expect
 
@@ -43,6 +45,9 @@ exercise's last logged session) and not finished; "Heavy Bag" not logged. Set
   workout, and a rest before the next exercise starts — as long as the last round's rest field,
   not the Settings rest (an interval has no rest from Settings). (If the timer ends while minimized there is no summary; a short
   message says the rounds are logged.)
+
+- Step 10: no timer starts. An alert says to finish the day in progress first, naming its week
+  and day, with Cancel and Open; Open goes to that day.
 
 ## Manual only
 

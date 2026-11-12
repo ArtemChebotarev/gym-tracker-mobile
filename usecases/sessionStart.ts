@@ -6,7 +6,11 @@
 
 import { NotFoundError } from '@domain/errors';
 import type { Session } from '@domain/execution';
-import { decideSessionStart, type SessionStartDecision } from '@domain/sessionLifecycle';
+import {
+  blockingSession,
+  decideSessionStart,
+  type SessionStartDecision,
+} from '@domain/sessionLifecycle';
 import { nowAsUtcIso } from '@domain/time';
 import type { WorkoutRepositories } from '@repositories/workout';
 
@@ -63,6 +67,25 @@ export async function startSessionForLog(
   if (!inProgress) {
     throw new NotFoundError(`Session "${start.inProgressSessionId}" does not exist.`);
   }
+  return toConflict(inProgress);
+}
+
+/**
+ * Would logging into session `sessionId` run into another session `in_progress`? Asked before
+ * anything that logs into it later rather than now — the interval timer, whose rounds are logged as
+ * it runs (GT-259): it doesn't start where its rounds couldn't be saved. The rule a log meets
+ * (`blockingSession`); one read, nothing written.
+ */
+export async function findLogConflict(
+  sessionId: string,
+  repos: Pick<WorkoutRepositories, 'sessionRepo'>,
+): Promise<InProgressConflict | null> {
+  const blocking = blockingSession(sessionId, await repos.sessionRepo.getCurrentInProgress());
+  return blocking === null ? null : toConflict(blocking);
+}
+
+/** The conflict with `inProgress`, with its week and day for the alert. */
+function toConflict(inProgress: Session): InProgressConflict {
   return {
     kind: 'conflict',
     inProgressSessionId: inProgress.id,
