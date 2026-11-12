@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hyperbro",
     "slug": "gym-tracker-mobile",
-    "version": "0.10.5",
+    "version": "1.0.0",
     "scheme": "gymtracker",
     "orientation": "portrait",
     "icon": "./assets/hybro-icon-1024.png",
