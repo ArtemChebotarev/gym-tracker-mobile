@@ -11,9 +11,9 @@ import { exportBackupJson, type BackupDeps } from '@usecases/backup';
 import { useBackupDeps } from './backupStore';
 import { shareTextFile } from './shareFile';
 
-/** `hybro-backup-2026-09-21.json` — the date is the file's own, in UTC like every stamp. */
+/** `hyperbro-backup-2026-09-21.json` — the date is the file's own, in UTC like every stamp. */
 export function backupFileName(now: Date = new Date()): string {
-  return `hybro-backup-${now.toISOString().slice(0, 10)}.json`;
+  return `hyperbro-backup-${now.toISOString().slice(0, 10)}.json`;
 }
 
 async function shareBackup(deps: BackupDeps): Promise<void> {
@@ -22,7 +22,7 @@ async function shareBackup(deps: BackupDeps): Promise<void> {
     content: await exportBackupJson(deps),
     mimeType: 'application/json',
     uti: 'public.json',
-    dialogTitle: 'Hybro backup',
+    dialogTitle: 'Hyperbro backup',
   });
 }
 

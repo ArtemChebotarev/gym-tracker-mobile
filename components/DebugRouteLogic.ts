@@ -29,7 +29,7 @@ export function importErrorMessage(error: Error): string {
       case 'not-json':
       case 'not-a-backup':
       case 'no-data':
-        return `This file isn't a Hybro backup, or it's damaged. Pick the file made by Export backup. ${NOT_CHANGED}`;
+        return `This file isn't a Hyperbro backup, or it's damaged. Pick the file made by Export backup. ${NOT_CHANGED}`;
     }
   }
   return `Something went wrong while restoring. Try again. ${NOT_CHANGED}`;

@@ -6,7 +6,7 @@ describe('WelcomeDialog', () => {
   test('DoD: the wordmark, the promise, three steps and a single Got it', () => {
     render(<WelcomeDialog visible onDismiss={() => {}} />);
 
-    expect(screen.getByLabelText('Hybro')).toBeTruthy();
+    expect(screen.getByLabelText('Hyperbro')).toBeTruthy();
     expect(screen.getByText('Progressive training that adapts to you')).toBeTruthy();
     expect(screen.getByText('Plan a training cycle')).toBeTruthy();
     expect(screen.getByText('Pick your days and exercises.')).toBeTruthy();

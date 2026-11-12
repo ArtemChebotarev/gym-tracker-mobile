@@ -10,9 +10,9 @@ import { logLinesToJsonArray } from '@domain/loggingBuilders';
 import { getFileLogSink } from './defaultLogSinks';
 import { shareTextFile } from './shareFile';
 
-/** `hybro-log-2026-10-01.json` — the date is the export's own, in UTC like every stamp. */
+/** `hyperbro-log-2026-10-01.json` — the date is the export's own, in UTC like every stamp. */
 export function logFileName(now: Date = new Date()): string {
-  return `hybro-log-${now.toISOString().slice(0, 10)}.json`;
+  return `hyperbro-log-${now.toISOString().slice(0, 10)}.json`;
 }
 
 export function useExportLogs() {
@@ -24,7 +24,7 @@ export function useExportLogs() {
         content: logLinesToJsonArray(getFileLogSink().readAll()),
         mimeType: 'application/json',
         uti: 'public.json',
-        dialogTitle: 'Hybro log',
+        dialogTitle: 'Hyperbro log',
       }),
   });
 }
