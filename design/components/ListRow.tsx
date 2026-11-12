@@ -95,6 +95,11 @@ export type ListRowProps = {
   onPress?: () => void;
   /** In the list, but nothing on it can be pressed — see the note at the top. */
   disabled?: boolean;
+  /**
+   * The divider under the row. On by default — a row among others; off for the last row of a card,
+   * whose edge already ends it (Settings, GT-244) — the same switch as StepperRow's.
+   */
+  divider?: boolean;
 };
 
 export function ListRow({
@@ -107,7 +112,9 @@ export function ListRow({
   trailing,
   onPress,
   disabled = false,
+  divider = true,
 }: ListRowProps) {
+  const container = divider ? styles.container : [styles.container, styles.noDivider];
   // A checkbox with its own press sits outside the row's tap target — see the note at the top.
   const isLeadingApart = leading?.onPress !== undefined;
   const body = (
@@ -154,7 +161,7 @@ export function ListRow({
         accessible
         accessibilityLabel={title}
         accessibilityState={{ disabled: true }}
-        style={[styles.container, styles.disabled]}
+        style={[container, styles.disabled]}
       >
         <View style={styles.row}>
           {isLeadingApart && leading !== undefined && <Leading leading={leading} />}
@@ -173,7 +180,7 @@ export function ListRow({
 
   if (leading?.onPress !== undefined) {
     return (
-      <View style={styles.container}>
+      <View style={container}>
         <View style={styles.row}>
           <Pressable
             accessibilityRole="checkbox"
@@ -202,7 +209,7 @@ export function ListRow({
   // An actions row keeps its accessories out of the tap target — see the note at the top.
   if (trailing?.type === 'actions') {
     return (
-      <View style={styles.container}>
+      <View style={container}>
         <View style={styles.row}>
           {onPress === undefined ? (
             <View style={styles.body}>{body}</View>
@@ -233,14 +240,14 @@ export function ListRow({
       <Pressable
         {...accessibility}
         onPress={onPress}
-        style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+        style={({ pressed }) => [container, pressed && styles.pressed]}
       >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={styles.container}>{content}</View>;
+  return <View style={container}>{content}</View>;
 }
 
 function Leading({ leading }: { leading: ListRowLeading }) {
@@ -303,6 +310,9 @@ const styles = StyleSheet.create({
   container: {
     borderBottomWidth: BORDER_WIDTHS['border/default'],
     borderBottomColor: COLORS['border/divider'],
+  },
+  noDivider: {
+    borderBottomWidth: 0,
   },
   disabled: {
     opacity: OPACITY['opacity/dimmed'],

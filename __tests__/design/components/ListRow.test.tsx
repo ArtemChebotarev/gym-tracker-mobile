@@ -2,6 +2,7 @@ import type { ActionMenuItem } from '@design/components/ActionMenu';
 import { ListRow } from '@design/components/ListRow';
 import { TrashIcon } from '@design/icons/TrashIcon';
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 function menuItems(onDelete: () => void): ActionMenuItem[] {
   return [
@@ -187,6 +188,17 @@ describe('ListRow', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Bench press' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  test('draws a divider under the row by default, and none with divider off (GT-244)', () => {
+    const { rerender } = render(<ListRow title="Support" onPress={jest.fn()} />);
+    const width = () =>
+      StyleSheet.flatten(screen.getByRole('button', { name: 'Support' }).props.style)
+        ?.borderBottomWidth;
+    expect(width()).toBeGreaterThan(0);
+
+    rerender(<ListRow title="Support" onPress={jest.fn()} divider={false} />);
+    expect(width()).toBe(0);
   });
 
   test('is not pressable without onPress', () => {

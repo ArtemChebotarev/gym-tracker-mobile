@@ -1,7 +1,5 @@
 <!--
-DRAFT for GT-244 — placeholders below are filled in before the PR leaves draft.
-Before publishing, fill in every [[...]] placeholder:
-  [[DATE]]       — the day the policy goes live
+Maintenance notes (GT-244). This comment does not render on the page.
 IP discard checked 2026-11-12: EU org default is on and events carry no $ip — section 3 relies on it.
 Retention "1 year" is the PostHog Free plan (fixed). A paid plan keeps events 3 / 5 / 7 years
 (Boost / Scale / Enterprise) unless lowered in project settings — update section 3 on upgrade.
@@ -11,7 +9,7 @@ Any new event or property means updating this page AND the App Store privacy lab
 
 # Hyperbro — Privacy Policy
 
-_Last updated: [[DATE]]_
+_Last updated: 12 November 2026_
 
 Hyperbro is a workout tracker made by Artem Chebotarov, an individual developer. This policy explains
 what happens to your data when you use the app. The short version:

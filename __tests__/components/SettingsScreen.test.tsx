@@ -13,6 +13,8 @@ function renderScreen(props: Partial<SettingsScreenProps> = {}) {
   const onChangeRestBetweenSets = jest.fn();
   const onChangeGetReadySec = jest.fn();
   const onChangeSignals = jest.fn();
+  const onOpenPrivacyPolicy = jest.fn();
+  const onOpenSupport = jest.fn();
   render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <SettingsScreen
@@ -22,11 +24,19 @@ function renderScreen(props: Partial<SettingsScreenProps> = {}) {
         onChangeRestBetweenSets={onChangeRestBetweenSets}
         onChangeGetReadySec={onChangeGetReadySec}
         onChangeSignals={onChangeSignals}
+        onOpenPrivacyPolicy={onOpenPrivacyPolicy}
+        onOpenSupport={onOpenSupport}
         {...props}
       />
     </SafeAreaProvider>,
   );
-  return { onChange: onChangeRestBetweenSets, onChangeGetReadySec, onChangeSignals };
+  return {
+    onChange: onChangeRestBetweenSets,
+    onChangeGetReadySec,
+    onChangeSignals,
+    onOpenPrivacyPolicy,
+    onOpenSupport,
+  };
 }
 
 describe('SettingsScreen', () => {
@@ -171,5 +181,23 @@ describe('Notifications', () => {
 
     const list = screen.UNSAFE_getByType(ScrollView);
     expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingBottom).toBeGreaterThan(0);
+  });
+
+  test('About opens the privacy policy and the support page (GT-244)', () => {
+    const { onOpenPrivacyPolicy, onOpenSupport } = renderScreen();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Privacy Policy' }));
+    expect(onOpenPrivacyPolicy).toHaveBeenCalledTimes(1);
+    expect(onOpenSupport).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Support' }));
+    expect(onOpenSupport).toHaveBeenCalledTimes(1);
+  });
+
+  test('About shows even while the timer settings could not be read', () => {
+    renderScreen({ restBetweenSets: undefined, getReadySec: undefined, signals: undefined });
+
+    expect(screen.getByText('About')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Privacy Policy' })).toBeTruthy();
   });
 });
