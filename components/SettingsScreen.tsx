@@ -1,7 +1,8 @@
 // The Settings tab (08 · Screens & Navigation, "Настройки"). For now it holds the timers (10.1 FR-5,
 // FR-6; canvas 5.x): the rest between sets of strength and power exercises — on or off, and how
 // long (GT-87) — the Get ready of interval rounds (GT-188), the signals they give in the app, sound
-// and vibration, each on or off (GT-172), and the notifications outside it (GT-219). Laid out as
+// and vibration, each on or off (GT-172), and the notifications outside it (GT-219). Last, About:
+// the privacy policy and the support page, which open in the browser (GT-244). Laid out as
 // canvas 5.x draws it: a card of rows under the section's label, a grey note under it.
 //
 // The rest is set with `−` / `+` in 15 s steps, or straight away in the time picker by tapping the
@@ -14,6 +15,7 @@
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
+import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
@@ -49,6 +51,8 @@ export type SettingsScreenProps = {
   onChangeRestBetweenSets: (setting: RestBetweenSets) => void;
   onChangeGetReadySec: (getReadySec: number) => void;
   onChangeSignals: (signals: Signals) => void;
+  onOpenPrivacyPolicy: () => void;
+  onOpenSupport: () => void;
 };
 
 export function SettingsScreen({
@@ -60,6 +64,8 @@ export function SettingsScreen({
   onChangeRestBetweenSets,
   onChangeGetReadySec,
   onChangeSignals,
+  onOpenPrivacyPolicy,
+  onOpenSupport,
 }: SettingsScreenProps) {
   const [openPicker, setOpenPicker] = useState<OpenPicker>(null);
   const tabBarClearance = useTabBarClearance();
@@ -169,6 +175,22 @@ export function SettingsScreen({
           </View>
         )}
         {notifications !== undefined && <RestNotificationsSection {...notifications} />}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>About</Text>
+          <View style={styles.card}>
+            <ListRow
+              title="Privacy Policy"
+              trailing={{ type: 'chevron' }}
+              onPress={onOpenPrivacyPolicy}
+            />
+            <ListRow
+              divider={false}
+              title="Support"
+              trailing={{ type: 'chevron' }}
+              onPress={onOpenSupport}
+            />
+          </View>
+        </View>
       </ScrollView>
     </RootScreen>
   );
