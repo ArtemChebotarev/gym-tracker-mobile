@@ -13,8 +13,15 @@ describe('HyperbroWordmark', () => {
   test('takes a width and keeps the artwork proportions through the aspect ratio', () => {
     render(<HyperbroWordmark width={100} />);
 
-    const wordmark = screen.getByTestId('hyperbro-wordmark');
-    expect(wordmark.props.width).toBe(100);
-    expect(StyleSheet.flatten(wordmark.props.style).aspectRatio).toBeCloseTo(2576 / 650);
+    const style = StyleSheet.flatten(screen.getByTestId('hyperbro-wordmark').props.style);
+    expect(style.width).toBe(100);
+    expect(style.aspectRatio).toBeCloseTo(2576 / 650);
+  });
+
+  test('never grows past its container, so a narrow dialog shrinks it', () => {
+    render(<HyperbroWordmark />);
+
+    const style = StyleSheet.flatten(screen.getByTestId('hyperbro-wordmark').props.style);
+    expect(style.maxWidth).toBe('100%');
   });
 });

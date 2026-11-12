@@ -32,9 +32,10 @@ export function HyperbroWordmark({ width = SIZES['size/wordmark'] }: HyperbroWor
       testID="hyperbro-wordmark"
       accessibilityRole="image"
       accessibilityLabel="Hyperbro"
-      width={width}
       viewBox={VIEW_BOX}
-      style={{ aspectRatio: ASPECT_RATIO }}
+      // `maxWidth`: a phone narrower than the dialog squeezes the card, and the word shrinks with
+      // it instead of reaching into the card's padding (a 360dp Android leaves 264 for content).
+      style={{ width, maxWidth: '100%', aspectRatio: ASPECT_RATIO }}
     >
       <Path
         fill={lime}
