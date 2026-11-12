@@ -1,0 +1,5 @@
+# GitHub Pages site for the app's public pages (GT-244): the privacy policy and support page
+# linked from Settings → About and from App Store Connect. Without a title the default theme
+# heads every page with the repository name.
+title: Hyperbro
+description: Progressive training that adapts to you.

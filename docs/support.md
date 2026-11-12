@@ -1,4 +1,4 @@
-# Hyperbro — Support
+# Support
 
 Hyperbro is made by one developer, Artem Chebotarov. Questions, bug reports and ideas are welcome.
 
