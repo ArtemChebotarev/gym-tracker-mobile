@@ -69,18 +69,34 @@ LANG=en_US.UTF-8 npm run ios -- --configuration Release
 
 A release is a git tag. Pushing `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml): `npm run verify` → EAS build (`production` profile) → upload to TestFlight. The iOS build number is kept by EAS (remote, auto-incremented); the version comes from `app.json`.
 
-1. Bump `expo.version` in `app.json` through a normal PR into `main` and merge it.
-2. Tag the merged commit and push the tag:
+### Branches
+
+- **`main`** is where the next version is built. Every task goes into it through a PR, as always.
+- **`release/X.Y`** holds a version that is already in review or in the App Store. It is cut once, from the exact commit the submitted build was made from, and only fixes for that version go into it.
+
+A fix for a released version: branch off `release/X.Y`, open the PR into `release/X.Y`, bump `expo.version` to the next patch (`1.0.1`) in the same branch, tag and release from there (below). Then bring the same fix into `main` — cherry-pick the commit, or merge `release/X.Y` into `main` through a PR — so the next version does not lose it.
+
+**No migrations on a release branch.** A migration's stamp is the schema version a database records, so a migration added on `release/X.Y` and a different one on `main` would leave phones with two schemas that never meet again. A fix that needs a schema change ships in the next version from `main`, not as a patch.
+
+A release branch is retired when the next version is out: the App Store only ever offers the latest version, so there is nothing left to patch.
+
+### Releasing a version
+
+1. Bump `expo.version` in `app.json` through a PR — into `main` for a new version, into `release/X.Y` for a patch — and merge it.
+2. For a new version, cut its release branch from the merged commit, then tag that commit and push both:
 
    ```
    git fetch origin
-   git tag v0.9.1 origin/main
-   git push origin v0.9.1
+   git push origin origin/main:refs/heads/release/1.1
+   git tag v1.1.0 origin/main
+   git push origin v1.1.0
    ```
 
-3. Watch **GitHub → Actions → Release**. The job fails fast if the tag is not on `main` or does not match `app.json`. The build itself is on [expo.dev](https://expo.dev/accounts/artemchebotarov/projects/gym-tracker-mobile/builds); after Apple processes it (a few minutes) it shows up in **App Store Connect → TestFlight**.
+   For a patch, tag the merged commit on the release branch instead: `git tag v1.0.1 origin/release/1.0`.
 
-No tag is needed for a rebuild or a quick fix: **GitHub → Actions → Release → Run workflow** on `main` builds the current `main` with the version already in `app.json` (EAS still assigns a new build number). It refuses to run on any other branch.
+3. Watch **GitHub → Actions → Release**. The job fails fast if the tagged commit is on neither `main` nor a `release/*` branch, or if the tag does not match `app.json`. The build itself is on [expo.dev](https://expo.dev/accounts/artemchebotarov/projects/gym-tracker-mobile/builds); after Apple processes it (a few minutes) it shows up in **App Store Connect → TestFlight**.
+
+No tag is needed for a rebuild or a quick fix: **GitHub → Actions → Release → Run workflow**, on `main` or on a `release/*` branch, builds that branch with the version already in `app.json` (EAS still assigns a new build number). It refuses to run on any other branch. A build that goes to App Review should be cut from the release branch, so the branch always holds what was submitted.
 
 Only tag forward: the app refuses to open a database written by a newer build, so an older tag installed over a newer one will not start.
 
