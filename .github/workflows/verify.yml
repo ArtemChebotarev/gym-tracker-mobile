@@ -1,10 +1,12 @@
 name: Verify
 
 on:
+  # release/* — a fix for a version already out goes through a PR into its release branch
+  # (README, "Releasing to TestFlight"), and is checked the same way as one into main.
   pull_request:
-    branches: [main, hybrid]
+    branches: [main, hybrid, 'release/**']
   push:
-    branches: [main, hybrid]
+    branches: [main, hybrid, 'release/**']
   workflow_dispatch: {}
 
 concurrency:
