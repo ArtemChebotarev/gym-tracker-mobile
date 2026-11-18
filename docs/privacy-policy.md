@@ -23,7 +23,7 @@ what happens to your data when you use the app. The short version:
 
 ## 1. Who is responsible
 
-Artem Chebotarov is the controller of the data described here. Contact: [artemchebotarov@gmail.com](mailto:artemchebotarov@gmail.com).
+Artem Chebotarov is the controller of the data described here. Contact: [support@hyperbro.app](mailto:support@hyperbro.app).
 
 ## 2. Data stored on your device
 
@@ -90,7 +90,7 @@ personal data, and to complain to a data protection authority.
   the app.
 - **Analytics data** is anonymous: I have no way to tell which events came from you, so I cannot
   look them up. Deleting or reinstalling the app ends the link between your device and any
-  previously sent events. If you have a question or request anyway, write to [artemchebotarov@gmail.com](mailto:artemchebotarov@gmail.com).
+  previously sent events. If you have a question or request anyway, write to [support@hyperbro.app](mailto:support@hyperbro.app).
 
 ## 6. Children
 
@@ -112,4 +112,4 @@ the date at the top will change.
 
 ## 9. Contact
 
-Questions about this policy or your data: [artemchebotarov@gmail.com](mailto:artemchebotarov@gmail.com).
+Questions about this policy or your data: [support@hyperbro.app](mailto:support@hyperbro.app).
