@@ -4,7 +4,7 @@ Hyperbro is made by one developer, Artem Chebotarov. Questions, bug reports and 
 
 ## Contact
 
-Email: [artemchebotarov@gmail.com](mailto:artemchebotarov@gmail.com)
+Email: [support@hyperbro.app](mailto:support@hyperbro.app)
 
 I usually reply within a few days. For a bug, please include the app version (App Store → Hyperbro, or
 iPhone Settings → General → iPhone Storage → Hyperbro), your iPhone model and iOS version, and what you did right before it happened — a screenshot helps a lot.
