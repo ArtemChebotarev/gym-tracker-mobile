@@ -7,14 +7,14 @@ description: Take or do a task from the Notion "Backlog" database (inside "GymTr
 
 Requirements live in Notion, page **"GymTracker — Product Spec"**. Its subpages hold the spec sections (Scope, Domain Model, Persistence Layer Contract, Screens & Navigation, etc.).
 
-Tasks are taken **only from the Notion Backlog database** (a child database of the same page, <https://app.notion.com/p/78932a42389c4b2e83bf94a9adb8ee7b>, data source `collection://15ab83b9-2d51-4399-badc-c6c76a1c7db1`). The old "Tasks" database is no longer a source. A task's number is the **`Key`** property (auto-increment id); "task 5" means the row with `Key = 5`. Relevant properties: `Name`, `Key`, `Type` (Epic / Story / Task / Spike / Bug), `Status`, `Parent` / `Sub-items` (story → tasks), `Rank`. Statuses: "Not started" → "In progress" → "Done". `Completed` is set by an automation on Done — don't fill it by hand.
+Tasks are taken **only from the Notion Backlog database** (a child database of the same page, <https://app.notion.com/p/78932a42389c4b2e83bf94a9adb8ee7b>, data source `collection://15ab83b9-2d51-4399-badc-c6c76a1c7db1`). The old "Tasks" database is no longer a source. A task's number is the **`Key`** property (auto-increment id); "task 5" means the row with `Key = 5`. Relevant properties: `Name`, `Key`, `Type` (Epic / Story / Task / Spike / Bug), `Status`, `Parent` / `Sub-items` (a task lives under a story; a story may have no sub-items at all), `Rank` (legacy: the board order is manual now). Statuses: "Not started" → "In progress" → "Done". `Completed` is set by an automation on Done — don't fill it by hand.
 
 Notion access requires a connected Notion MCP server (connected by default in Cowork; in Claude Code, add it via `claude mcp add` — see the Claude Code MCP docs). If it's not connected, tell the user and stop.
 
 ## Steps
 
 1. `git fetch origin` and sync local `main` with `origin/main` (fast-forward pull, or rebase/merge into your branch) before touching any files — `main` is protected and moves between sessions, so a stale base causes avoidable conflicts and rediscovering already-fixed bugs.
-2. Find the task in the Backlog database by `Key` (or by name). If the user gave no number, take the next "Not started" Task/Bug/Spike by `Rank` (within its story's order) and confirm the choice. A Story is a container: work on its sub-items, not the story itself, unless asked.
+2. Find the task in the Backlog database by `Key` (or by name). If the user names a task, take it as asked — even if it has no parent or its parent is Done; mention that at most once, never refuse. A Story is the unit of work: take it directly. If a Story has Task sub-items, work through those tasks and treat the story as done when all of them are. If the user gave no number, list the first three "Not started" Stories, Bugs and Spikes and let them choose — the board order is manual and not readable through the API, so don't pick by `Rank`.
 3. Move it to "In progress" before starting work.
 4. Read the related Product Spec sections if the task references them.
 5. Complete the Definition of Done from the task description.
