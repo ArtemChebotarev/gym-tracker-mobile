@@ -1,5 +1,9 @@
-// Settings tab (08 · Screens & Navigation, "Настройки"; GT-87, GT-188, GT-172, GT-244). See components/SettingsScreen.tsx.
+// Settings tab (08 · Screens & Navigation, "Настройки"; GT-87, GT-188, GT-172, GT-244, GT-262). See components/SettingsScreen.tsx.
+//
+// The two About pages open in an in-app browser sheet (SFSafariViewController, Done returns here)
+// rather than leaving for Safari; `Linking` stays for the system Settings link.
 
+import * as WebBrowser from 'expo-web-browser';
 import { Linking } from 'react-native';
 
 import { restNotificationsView } from '@components/RestNotificationsSectionLogic';
@@ -44,8 +48,8 @@ export default function SettingsRoute() {
       onChangeRestBetweenSets={(setting) => setRestBetweenSets.mutate(setting)}
       onChangeGetReadySec={(getReadySec) => setGetReadySec.mutate(getReadySec)}
       onChangeSignals={(signals) => setSignals.mutate(signals)}
-      onOpenPrivacyPolicy={() => void Linking.openURL(PRIVACY_POLICY_URL)}
-      onOpenSupport={() => void Linking.openURL(SUPPORT_URL)}
+      onOpenPrivacyPolicy={() => void WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+      onOpenSupport={() => void WebBrowser.openBrowserAsync(SUPPORT_URL)}
     />
   );
 }
