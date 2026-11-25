@@ -59,10 +59,18 @@ or a property means updating both.
     sets — are not sent. No properties.
   - `cycle_created` — a cycle was saved (`useConfirmMesocycleDraft.ts`,
     `useConfirmTemplateDraft.ts`, `useConfirmCopyWeekDraft.ts`).
+  - `cycle_started` — a planned cycle was started (`useStartMesocycle.ts`).
+  - `cycle_completed` — a started cycle was closed, by Finish mesocycle or Stop
+    (`useMesocycleClosing.ts`).
   - `workout_completed` — a day was finished with work logged in it, by Finish workout or Skip
     workout (`workoutTelemetry.ts`). A day closed with nothing logged is not sent.
 - **Event properties:**
-  - `cycle_created.source` — `scratch`, `template` or `copyWeek`: which flow built the cycle.
+  - `cycle_created.source`, `cycle_started.source` — `scratch`, `template` or `copyWeek`: which
+    flow built the cycle.
+  - `cycle_completed.outcome` — `completed` (Finish mesocycle) or `abandoned` (Stop).
+    `cycle_completed.weeks` — the cycle's planned length in weeks, deload week included.
+  - `workout_completed.week_number` — which week of the cycle the day belonged to (a number from
+    1); `workout_completed.is_deload` — whether that was the deload week (true/false).
   - `workout_completed.type` — `strength`, or `hybrid` when a power, interval or mobility
     exercise was done that day.
   - Nothing else: kinds, counts and flags only — never a database id, a template or exercise

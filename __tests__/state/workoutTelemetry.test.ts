@@ -12,7 +12,7 @@ jest.mock('@usecases/workoutKind', () => ({ sessionWorkoutKind: jest.fn() }));
 const kindOf = sessionWorkoutKind as jest.Mock;
 const DEPS = {} as WorkoutKindDeps;
 
-function closed(status: Session['status']): Session {
+function closed(status: Session['status'], week: Partial<Session> = {}): Session {
   return {
     ...STAMPS,
     id: 'session',
@@ -22,6 +22,7 @@ function closed(status: Session['status']): Session {
     isDeload: false,
     prescriptionStatus: 'ready',
     status,
+    ...week,
   };
 }
 
@@ -38,14 +39,31 @@ afterEach(() => {
 });
 
 describe('trackWorkoutCompleted', () => {
-  test('a completed day is sent with its kind', async () => {
+  test('a completed day is sent with its kind and place in the cycle', async () => {
     const capture = installClient();
     kindOf.mockResolvedValue('hybrid');
 
     await trackWorkoutCompleted(closed('completed'), DEPS);
 
     expect(kindOf).toHaveBeenCalledWith('session', DEPS);
-    expect(capture).toHaveBeenCalledWith('workout_completed', { type: 'hybrid' });
+    expect(capture).toHaveBeenCalledWith('workout_completed', {
+      type: 'hybrid',
+      week_number: 1,
+      is_deload: false,
+    });
+  });
+
+  test('a day of the deload week says so', async () => {
+    const capture = installClient();
+    kindOf.mockResolvedValue('strength');
+
+    await trackWorkoutCompleted(closed('completed', { weekNumber: 4, isDeload: true }), DEPS);
+
+    expect(capture).toHaveBeenCalledWith('workout_completed', {
+      type: 'strength',
+      week_number: 4,
+      is_deload: true,
+    });
   });
 
   test('a day closed with nothing logged is not a completed workout', async () => {

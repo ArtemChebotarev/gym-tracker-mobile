@@ -44,11 +44,13 @@ To understand whether the app is useful, Hyperbro sends a small number of events
 
 **Events sent:**
 
-| Event | When | Extra information |
-|---|---|---|
-| App opened | The app starts or returns from the background | — |
-| Cycle created | You save a new training cycle | How it was built: from scratch, from a template, or by copying a week |
-| Workout completed | You finish a workout day with work logged in it | Its type: strength or hybrid |
+| Event             | When                                                                   | Extra information                                                                                   |
+| ----------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| App opened        | The app starts, or returns after at least 30 minutes in the background | —                                                                                                   |
+| Cycle created     | You save a new training cycle                                          | How it was built: from scratch, from a template, or by copying a week                               |
+| Cycle started     | You start a planned training cycle                                     | How it was built: from scratch, from a template, or by copying a week                               |
+| Cycle closed      | You finish a cycle or stop it before the end                           | Whether it was finished or stopped, and how many weeks it was planned for                           |
+| Workout completed | You finish a workout day with work logged in it                        | Its type (strength or hybrid), which week of the cycle it was, and whether that was the deload week |
 
 **Sent with each event** (added automatically by the analytics SDK): app version and build, operating
 system and its version, device manufacturer and model, screen size, language and region setting,
