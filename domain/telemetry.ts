@@ -16,7 +16,7 @@ export type TelemetryProperties = Readonly<Record<string, string | number | bool
 
 /** Every event the app may send, with its properties. `Record<string, never>` = none. */
 export type TelemetryEvents = {
-  /** The app came to the foreground — a cold start or a return from the background. */
+  /** The app came to the foreground — a cold start, or a return after 30+ minutes in the background. */
   app_opened: Record<string, never>;
   /** A cycle was saved, by the flow it was built in: `scratch`, `template` or `copyWeek`. */
   cycle_created: { source: MesocycleOrigin['type'] };

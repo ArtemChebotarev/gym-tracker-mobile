@@ -3,7 +3,10 @@ import { AppState, type AppStateStatus } from 'react-native';
 
 import type { TelemetryClient } from '@domain/telemetry';
 import { setTelemetryClient } from '@state/telemetry';
-import { useAppOpenedTelemetry } from '@state/useAppOpenedTelemetry';
+import {
+  APP_OPENED_BACKGROUND_THRESHOLD_MS,
+  useAppOpenedTelemetry,
+} from '@state/useAppOpenedTelemetry';
 
 let listener: ((state: AppStateStatus) => void) | undefined;
 const remove = jest.fn();
@@ -20,7 +23,12 @@ function startIn(state: AppStateStatus): jest.Mock {
   return client.capture;
 }
 
+beforeEach(() => {
+  jest.useFakeTimers({ now: new Date('2026-11-25T10:00:00Z') });
+});
+
 afterEach(() => {
+  jest.useRealTimers();
   setTelemetryClient(undefined);
   listener = undefined;
   jest.restoreAllMocks();
@@ -34,10 +42,46 @@ describe('useAppOpenedTelemetry', () => {
     expect(capture).toHaveBeenCalledWith('app_opened', undefined);
   });
 
-  test('a return from the background counts again', () => {
+  test('a return after the threshold in the background counts again', () => {
     const capture = startIn('active');
 
     listener?.('background');
+    jest.advanceTimersByTime(APP_OPENED_BACKGROUND_THRESHOLD_MS);
+    listener?.('active');
+
+    expect(capture).toHaveBeenCalledTimes(2);
+  });
+
+  test('a return sooner than the threshold (screen lock between sets) is not an opening', () => {
+    const capture = startIn('active');
+
+    listener?.('background');
+    jest.advanceTimersByTime(APP_OPENED_BACKGROUND_THRESHOLD_MS - 1);
+    listener?.('active');
+
+    expect(capture).toHaveBeenCalledTimes(1);
+  });
+
+  test('the clock runs from leaving the screen, not from the last event sent', () => {
+    const capture = startIn('active');
+
+    // Locked every 20 minutes: each trip is short, none reaches the threshold on its own.
+    for (let i = 0; i < 3; i += 1) {
+      listener?.('background');
+      jest.advanceTimersByTime(20 * 60 * 1000);
+      listener?.('active');
+      jest.advanceTimersByTime(20 * 60 * 1000);
+    }
+
+    expect(capture).toHaveBeenCalledTimes(1);
+  });
+
+  test('inactive during the background stay does not restart the clock', () => {
+    const capture = startIn('active');
+
+    listener?.('background');
+    jest.advanceTimersByTime(APP_OPENED_BACKGROUND_THRESHOLD_MS);
+    listener?.('inactive');
     listener?.('active');
 
     expect(capture).toHaveBeenCalledTimes(2);
