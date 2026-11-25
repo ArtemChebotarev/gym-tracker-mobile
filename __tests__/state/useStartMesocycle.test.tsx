@@ -4,6 +4,7 @@ import { seedExerciseCatalog, seedMockMesocycles } from '../fixtures/appStorage'
 import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
 import { useMesocycles } from '@state/useMesocycles';
+import { setTelemetryClient } from '@state/telemetry';
 import { useStartMesocycle } from '@state/useStartMesocycle';
 import { useTodayWorkout } from '@state/useWorkoutSession';
 
@@ -53,5 +54,32 @@ describe('useStartMesocycle', () => {
       'Barbell Row',
       'Shoulder Press',
     ]);
+  });
+
+  test('reports the start to telemetry with the flow the cycle came from', async () => {
+    const capture = jest.fn();
+    setTelemetryClient({ capture });
+    const { result } = renderHookWithRepositories(() => useStartMesocycle());
+
+    act(() => result.current.mutate(MOCK_MESOCYCLE_IDS.planned));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    setTelemetryClient(undefined);
+
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(capture).toHaveBeenCalledWith('cycle_started', { source: 'scratch' });
+  });
+
+  test('a refused start sends nothing', async () => {
+    const capture = jest.fn();
+    setTelemetryClient({ capture });
+    const { result } = renderHookWithRepositories(() => useStartMesocycle());
+
+    act(() => result.current.mutate(MOCK_MESOCYCLE_IDS.completed));
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    setTelemetryClient(undefined);
+
+    expect(capture).not.toHaveBeenCalled();
   });
 });

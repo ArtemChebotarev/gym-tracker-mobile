@@ -18,7 +18,11 @@ export async function trackWorkoutCompleted(
 ): Promise<void> {
   if (session.status !== 'completed' || !isTelemetryEnabled()) return;
   try {
-    track('workout_completed', { type: await sessionWorkoutKind(session.id, deps) });
+    track('workout_completed', {
+      type: await sessionWorkoutKind(session.id, deps),
+      week_number: session.weekNumber,
+      is_deload: session.isDeload,
+    });
   } catch (error) {
     logger.error('telemetry.workoutCompleted', error, { sessionId: session.id });
   }

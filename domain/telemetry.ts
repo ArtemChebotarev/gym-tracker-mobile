@@ -20,8 +20,18 @@ export type TelemetryEvents = {
   app_opened: Record<string, never>;
   /** A cycle was saved, by the flow it was built in: `scratch`, `template` or `copyWeek`. */
   cycle_created: { source: MesocycleOrigin['type'] };
-  /** A day was finished with work logged in it — Finish workout, or Skip workout after a set. */
-  workout_completed: { type: WorkoutKind };
+  /** A planned cycle was started (Start), by the flow it was built in — same values as `cycle_created`. */
+  cycle_started: { source: MesocycleOrigin['type'] };
+  /**
+   * A started cycle was closed: `completed` through Finish mesocycle, `abandoned` through Stop.
+   * `weeks` is the planned length of the cycle, deload week included.
+   */
+  cycle_completed: { outcome: 'completed' | 'abandoned'; weeks: number };
+  /**
+   * A day was finished with work logged in it — Finish workout, or Skip workout after a set.
+   * `week_number` is the cycle week it belonged to (1-based), `is_deload` whether that was the deload week.
+   */
+  workout_completed: { type: WorkoutKind; week_number: number; is_deload: boolean };
 };
 
 export type TelemetryEventName = keyof TelemetryEvents;

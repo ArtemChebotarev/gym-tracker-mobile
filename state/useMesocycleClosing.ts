@@ -9,9 +9,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import type { Mesocycle } from '@domain/mesocycle';
 import { finishMesocycle, stopMesocycle } from '@usecases/mesocycleClosing';
 
 import { useMesocycleClosingDeps } from './mesocycleStore';
+import { track } from './telemetry';
 import { invalidateWorkoutQueries } from './useWorkoutSession';
 
 function invalidateClosedMesocycle(queryClient: ReturnType<typeof useQueryClient>) {
@@ -19,6 +21,11 @@ function invalidateClosedMesocycle(queryClient: ReturnType<typeof useQueryClient
     queryClient.invalidateQueries({ queryKey: ['mesocycles'] }),
     invalidateWorkoutQueries(queryClient),
   ]);
+}
+
+/** `cycle_completed` (GT-248): the block's outcome and its planned length, nothing about its content. */
+function trackCycleClosed(mesocycle: Mesocycle, outcome: 'completed' | 'abandoned'): void {
+  track('cycle_completed', { outcome, weeks: mesocycle.lengthWeeks });
 }
 
 /** Finishes the block — offered only once every session of it is final. */
@@ -29,7 +36,10 @@ export function useFinishMesocycle() {
   return useMutation({
     meta: { operation: 'finishMesocycle' },
     mutationFn: (mesoId: string) => finishMesocycle(mesoId, deps),
-    onSuccess: () => invalidateClosedMesocycle(queryClient),
+    onSuccess: (mesocycle) => {
+      trackCycleClosed(mesocycle, 'completed');
+      return invalidateClosedMesocycle(queryClient);
+    },
   });
 }
 
@@ -41,6 +51,9 @@ export function useStopMesocycle() {
   return useMutation({
     meta: { operation: 'stopMesocycle' },
     mutationFn: (mesoId: string) => stopMesocycle(mesoId, deps),
-    onSuccess: () => invalidateClosedMesocycle(queryClient),
+    onSuccess: ({ mesocycle }) => {
+      trackCycleClosed(mesocycle, 'abandoned');
+      return invalidateClosedMesocycle(queryClient);
+    },
   });
 }
