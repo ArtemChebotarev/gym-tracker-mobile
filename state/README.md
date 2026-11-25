@@ -54,7 +54,9 @@ This list is what the privacy policy and the App Store privacy labels describe. 
 or a property means updating both.
 
 - **Events:**
-  - `app_opened` — a cold start or a return from the background (`useAppOpenedTelemetry.ts`).
+  - `app_opened` — a cold start, or a return after at least 30 minutes in the background, timed
+    from leaving the screen (`useAppOpenedTelemetry.ts`). Shorter trips — a locked screen between
+    sets — are not sent. No properties.
   - `cycle_created` — a cycle was saved (`useConfirmMesocycleDraft.ts`,
     `useConfirmTemplateDraft.ts`, `useConfirmCopyWeekDraft.ts`).
   - `workout_completed` — a day was finished with work logged in it, by Finish workout or Skip
