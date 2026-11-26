@@ -471,12 +471,3 @@ export const SHADOWS = {
 } as const;
 
 export type ShadowToken = keyof typeof SHADOWS;
-
-/**
- * How long something stays up on its own, in milliseconds (08.0 · Design SDK).
- * `duration/snackbar`: a Snackbar's line and action — long enough to read it and reach the action,
- * short enough not to sit over the step's own button (GT-270, Artem, 26.11.2026).
- */
-export const DURATIONS = {
-  'duration/snackbar': 5000,
-} as const;

@@ -16,8 +16,6 @@ import {
   removeExerciseFromDay,
   reorderDayExercises,
   reorderDays,
-  invertDayOrder,
-  movesAnyDay,
   stepperNoun,
   updateExerciseSets,
   type ExercisesByDay,
@@ -57,9 +55,7 @@ describe('getDayExercises', () => {
   });
 
   test('reads the stored exercises for a day that has them', () => {
-    const exercisesByDay: ExercisesByDay = {
-      1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
-    };
+    const exercisesByDay: ExercisesByDay = { 1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] };
 
     expect(getDayExercises(exercisesByDay, 1)).toEqual([
       { exerciseId: 'bench-press', order: 0, sets: 3 },
@@ -71,9 +67,7 @@ describe('addExerciseToDay', () => {
   test('adds the exercise with the default sets and does not touch other days', () => {
     const result = addExerciseToDay({}, 1, 'bench-press');
 
-    expect(result[1]).toEqual([
-      { exerciseId: 'bench-press', order: 0, sets: DEFAULT_EXERCISE_SETS },
-    ]);
+    expect(result[1]).toEqual([{ exerciseId: 'bench-press', order: 0, sets: DEFAULT_EXERCISE_SETS }]);
   });
 
   // GT-148: a copied day arrives numbered from 1, so `existing.length` would repeat its last one.
@@ -181,7 +175,7 @@ describe('reorderDays (GT-270)', () => {
     3: [{ exerciseId: 'row', order: 0, sets: 2 }],
   };
 
-  test("moves the days' exercises, the numbers stay by position", () => {
+  test('moves the days\' exercises, the numbers stay by position', () => {
     expect(reorderDays(week, [3, 1, 2])).toEqual({
       1: [{ exerciseId: 'row', order: 0, sets: 2 }],
       2: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
@@ -198,45 +192,8 @@ describe('reorderDays (GT-270)', () => {
   });
 
   test('leaves an entry beyond the week alone', () => {
-    const withLeftover: ExercisesByDay = {
-      ...week,
-      4: [{ exerciseId: 'curl', order: 0, sets: 2 }],
-    };
+    const withLeftover: ExercisesByDay = { ...week, 4: [{ exerciseId: 'curl', order: 0, sets: 2 }] };
     expect(reorderDays(withLeftover, [2, 1, 3])[4]).toEqual(withLeftover[4]);
-  });
-});
-
-describe('undoing a reorder (GT-270)', () => {
-  const week: ExercisesByDay = {
-    1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
-    2: [{ exerciseId: 'squat', order: 0, sets: 3 }],
-    3: [{ exerciseId: 'row', order: 0, sets: 2 }],
-  };
-
-  test('only an order that moves a day has anything to undo', () => {
-    expect(movesAnyDay([1, 2, 3])).toBe(false);
-    expect(movesAnyDay([1, 3, 2])).toBe(true);
-  });
-
-  test('the inverse order puts every day back', () => {
-    for (const order of [
-      [3, 1, 2],
-      [2, 3, 1],
-      [1, 3, 2],
-      [3, 2, 1],
-    ]) {
-      expect(reorderDays(reorderDays(week, order), invertDayOrder(order))).toEqual(week);
-    }
-  });
-
-  test('a set changed after the move stays changed when the move is undone', () => {
-    const moved = reorderDays(week, [3, 1, 2]);
-    // Day 1 now holds the row; its sets go up before Undo.
-    const edited: ExercisesByDay = { ...moved, 1: [{ exerciseId: 'row', order: 0, sets: 4 }] };
-
-    expect(reorderDays(edited, invertDayOrder([3, 1, 2]))[3]).toEqual([
-      { exerciseId: 'row', order: 0, sets: 4 },
-    ]);
   });
 });
 
@@ -297,7 +254,7 @@ describe('hybrid rows (GT-157)', () => {
     expect(formatRoundCount(3)).toBe('3 rounds');
   });
 
-  test("every row has a stepper but a mobility one: sets, or an interval's rounds (GT-190, GT-191)", () => {
+  test('every row has a stepper but a mobility one: sets, or an interval\'s rounds (GT-190, GT-191)', () => {
     expect(hasSetsStepper(exercisesById, BENCH_PRESS.id)).toBe(true);
     expect(hasSetsStepper(exercisesById, MEDBALL_THROW.id)).toBe(true);
     expect(hasSetsStepper(exercisesById, HEAVY_BAG.id)).toBe(true);
@@ -305,7 +262,7 @@ describe('hybrid rows (GT-157)', () => {
     expect(hasSetsStepper(exercisesById, 'missing')).toBe(true);
   });
 
-  test("an interval's stepper counts rounds, every other one sets", () => {
+  test('an interval\'s stepper counts rounds, every other one sets', () => {
     expect(stepperNoun(exercisesById, HEAVY_BAG.id)).toBe('rounds');
     expect(stepperNoun(exercisesById, MEDBALL_THROW.id)).toBe('sets');
     expect(stepperNoun(exercisesById, BENCH_PRESS.id)).toBe('sets');
@@ -319,18 +276,14 @@ describe('hybrid rows (GT-157)', () => {
 
   test('exerciseSubtitle keeps the muscle group of a hybrid exercise that has one', () => {
     const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
-    expect(exerciseSubtitle({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBe(
-      'Shoulders',
-    );
+    expect(exerciseSubtitle({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBe('Shoulders');
   });
 
   test('exerciseTypeIcon stands in for the dot only where there is no group colour', () => {
     expect(exerciseTypeIcon(exercisesById, HEAVY_BAG.id)).toBeDefined();
     expect(exerciseTypeIcon(exercisesById, BENCH_PRESS.id)).toBeUndefined();
     const shoulderPower = { ...MEDBALL_THROW, muscleGroup: 'shoulders' as const };
-    expect(
-      exerciseTypeIcon({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id),
-    ).toBeUndefined();
+    expect(exerciseTypeIcon({ [MEDBALL_THROW.id]: shoulderPower }, MEDBALL_THROW.id)).toBeUndefined();
     expect(exerciseTypeIcon(exercisesById, 'missing')).toBeUndefined();
   });
 

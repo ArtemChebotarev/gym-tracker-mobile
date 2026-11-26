@@ -52,10 +52,6 @@ export const REORDER_DAYS_COACHMARK_STEP = {
   ] as PlateTextPart[][],
 };
 
-/** The snackbar after the Reorder days sheet's `Done` moved a day (GT-270). */
-export const DAYS_REORDERED_MESSAGE = 'Days reordered';
-export const UNDO_LABEL = 'Undo';
-
 /** The confirmation raised by ✕ (and Android's back) when `hasUnsavedDraft`: a question and two buttons. */
 export const DISCARD_DRAFT_TITLE = 'Discard training cycle?';
 export const DISCARD_DRAFT_MESSAGE = "What you've entered won't be saved.";

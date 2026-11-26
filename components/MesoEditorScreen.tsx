@@ -36,8 +36,6 @@ import {
   canContinueFromDays,
   getDayExercises,
   getDayNumbers,
-  invertDayOrder,
-  movesAnyDay,
   reorderDayExercises,
   reorderDays,
   updateExerciseSets,
@@ -48,7 +46,6 @@ import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
 import { showsProgressionBlock } from '@components/MesoEditorReviewStepLogic';
 import {
   addExercisesToDraft,
-  DAYS_REORDERED_MESSAGE,
   DISCARD_DRAFT_MESSAGE,
   DISCARD_DRAFT_TITLE,
   DISCARD_LABEL,
@@ -58,11 +55,9 @@ import {
   removeExerciseFromDraft,
   REORDER_DAYS_COACHMARK_STEP,
   showsReorderDaysCoachmark,
-  UNDO_LABEL,
 } from '@components/MesoEditorScreenLogic';
 import { useDelayedFlag } from '@components/useDelayedFlag';
 import { CoachmarkTour } from '@design/components/CoachmarkTour';
-import { Snackbar } from '@design/components/Snackbar';
 import { WizardScreen } from '@design/components/WizardScreen';
 import { RADII } from '@design/tokens';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
@@ -236,17 +231,8 @@ export function MesoEditorScreen({
     REORDER_DAYS_HINT_DELAY_MS,
   );
 
-  // The `Days reordered · Undo` snackbar after a `Done` that moved something: the order it applied,
-  // to take back, and a key that restarts its clock when another `Done` replaces it. Cleared when
-  // the step is left, so it never turns up again on the way back.
-  const [reorderUndo, setReorderUndo] = useState<{ order: number[]; key: number } | null>(null);
-
   function handleReorderDaysDone() {
     const { order } = reorderDaysSheet;
-    setReorderDaysSheet({ visible: false, order });
-    if (!movesAnyDay(order)) {
-      return;
-    }
     setDraft((current) => ({
       ...current,
       exercisesByDay: reorderDays(current.exercisesByDay, order),
@@ -257,26 +243,7 @@ export function MesoEditorScreen({
     if (moved !== -1) {
       setActiveDay(moved + 1);
     }
-    setReorderUndo((current) => ({ order, key: (current?.key ?? 0) + 1 }));
-  }
-
-  // Puts the days back as they were, on the draft as it is now, and the open day back on its tab.
-  function handleUndoReorderDays() {
-    if (reorderUndo === null) {
-      return;
-    }
-    const { order } = reorderUndo;
-    setDraft((current) => ({
-      ...current,
-      exercisesByDay: reorderDays(current.exercisesByDay, invertDayOrder(order)),
-    }));
-    setActiveDay(order[activeDay - 1] ?? activeDay);
-  }
-
-  /** Leaves the Days step — the snackbar's moment has passed with it. */
-  function leaveDaysStep(next: Step) {
-    setReorderUndo(null);
-    setStep(next);
+    setReorderDaysSheet({ visible: false, order });
   }
 
   // Every exercise id referenced across every day, not just the active one, so switching day
@@ -451,10 +418,10 @@ export function MesoEditorScreen({
         title="Days & exercises"
         currentStep={stepNumber}
         totalSteps={totalSteps}
-        onBack={() => leaveDaysStep(1)}
+        onBack={() => setStep(1)}
         footer={
           <MesoEditorFooter
-            onContinue={() => leaveDaysStep(3)}
+            onContinue={() => setStep(3)}
             continueDisabled={!canContinueFromDays(draft.daysPerWeek, draft.exercisesByDay)}
             hint="Every day needs at least one exercise"
           />
@@ -487,21 +454,11 @@ export function MesoEditorScreen({
             }))
           }
           onAddExercise={handleRequestAddExercise}
-          onRequestReorderDays={() => {
-            setReorderUndo(null);
-            setReorderDaysSheet({ visible: true, order: getDayNumbers(draft.daysPerWeek) });
-          }}
+          onRequestReorderDays={() =>
+            setReorderDaysSheet({ visible: true, order: getDayNumbers(draft.daysPerWeek) })
+          }
           reorderDaysRef={reorderDaysRef}
         />
-        {reorderUndo !== null && (
-          <Snackbar
-            key={reorderUndo.key}
-            message={DAYS_REORDERED_MESSAGE}
-            actionLabel={UNDO_LABEL}
-            onAction={handleUndoReorderDays}
-            onHide={() => setReorderUndo(null)}
-          />
-        )}
       </WizardScreen>
       <MesoEditorReorderDaysSheet
         visible={reorderDaysSheet.visible}

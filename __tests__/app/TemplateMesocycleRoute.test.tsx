@@ -258,8 +258,6 @@ describe('TemplateMesocycleRoute — reorder days (GT-270)', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Done' }));
 
     expect(useDraftStore.getState().mesoBuilder.exercisesByDay).toEqual(before.exercisesByDay);
-    // Nothing moved, so there is nothing to take back.
-    expect(screen.queryByText('Days reordered')).toBeNull();
   });
 });
 
