@@ -23,9 +23,12 @@ export const EXERCISE_DETAIL_TABS = [
   { value: 'history', label: 'History' },
 ] as const;
 
-/** `Best set` — `85×8`, no unit (08.6, "Определение плиток"). */
+/**
+ * `Best set` — `85 kg × 8`, in the unit it was logged in (08.6, "Определение плиток"; GT-269:
+ * a bare number could be either unit once a lifter has blocks in both).
+ */
 export function formatBestSet(bestSet: ExerciseBestSet): string {
-  return `${bestSet.weight}×${bestSet.reps}`;
+  return `${bestSet.weight} ${bestSet.weightUnit} × ${bestSet.reps}`;
 }
 
 /** `Last done` — `3 d`, `2 w` (08.6). */

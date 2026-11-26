@@ -55,18 +55,21 @@ function buildExerciseOverviewStats(
   }
 
   return {
-    bestSet: findBestSet(setLogsInLatestUnit(performances)),
+    bestSet: bestSetInLatestUnit(performances),
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
     lastDoneAt: completions.reduce((latest, at) => (at > latest ? at : latest), first),
   };
 }
 
 /**
- * The sets logged in the unit of the most recent block that logged any (GT-269). A weight is a
+ * The best set among those logged in the unit of the most recent block that logged any (GT-269),
+ * with that unit. A weight is a
  * number in its block's unit: 120 lb is not heavier than 60 kg, and a converted one is a guess — so
  * the best set is looked for in the unit the user lifts in now, as logged.
  */
-function setLogsInLatestUnit(performances: readonly ExerciseHistoryPerformance[]): SetLog[] {
+function bestSetInLatestUnit(
+  performances: readonly ExerciseHistoryPerformance[],
+): ExerciseBestSet | null {
   const withSets = performances.filter((performance) => performance.setLogs.length > 0);
   const latest = withSets.reduce<ExerciseHistoryPerformance | undefined>(
     (current, performance) =>
@@ -74,12 +77,15 @@ function setLogsInLatestUnit(performances: readonly ExerciseHistoryPerformance[]
     undefined,
   );
   if (latest === undefined) {
-    return [];
+    return null;
   }
   const unit = latest.mesocycle.weightUnit;
-  return withSets
-    .filter((performance) => performance.mesocycle.weightUnit === unit)
-    .flatMap((performance) => performance.setLogs);
+  const best = findBestSet(
+    withSets
+      .filter((performance) => performance.mesocycle.weightUnit === unit)
+      .flatMap((performance) => performance.setLogs),
+  );
+  return best === null ? null : { weight: best.weight, reps: best.reps, weightUnit: unit };
 }
 
 function lastSetAt(performance: ExerciseHistoryPerformance): string {
@@ -94,7 +100,7 @@ function lastSetAt(performance: ExerciseHistoryPerformance): string {
  * exercise `weight` is the added weight (task 105) — which is the axis that progresses, so it is
  * also the one this compares on.
  */
-function findBestSet(setLogs: readonly SetLog[]): ExerciseBestSet | null {
+function findBestSet(setLogs: readonly SetLog[]): SetLog | null {
   const best = setLogs.reduce<SetLog | null>((current, log) => {
     if (!current) {
       return log;
@@ -104,5 +110,5 @@ function findBestSet(setLogs: readonly SetLog[]): ExerciseBestSet | null {
     }
     return log.weight === current.weight && log.reps > current.reps ? log : current;
   }, null);
-  return best ? { weight: best.weight, reps: best.reps } : null;
+  return best;
 }

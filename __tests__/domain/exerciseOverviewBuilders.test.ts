@@ -129,7 +129,7 @@ describe('buildExerciseOverview', () => {
       ]),
     ]);
 
-    expect(overview.stats?.bestSet).toEqual({ weight: 90, reps: 7 });
+    expect(overview.stats?.bestSet).toEqual({ weight: 90, reps: 7, weightUnit: 'kg' });
   });
 
   // GT-269: 120 lb is not heavier than 60 kg — the best set is the best in the unit of the most
@@ -151,7 +151,7 @@ describe('buildExerciseOverview', () => {
       ),
     ]);
 
-    expect(overview.stats?.bestSet).toEqual({ weight: 50, reps: 6 });
+    expect(overview.stats?.bestSet).toEqual({ weight: 50, reps: 6, weightUnit: 'lb' });
   });
 
   test('counts distinct sessions', () => {

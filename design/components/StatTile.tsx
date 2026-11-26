@@ -17,7 +17,8 @@ export function StatTile({ label, value, total }: StatTileProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>
+      {/* One line, shrunk to fit rather than wrapped: a best set reads `120 lb × 12` (GT-269). */}
+      <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
         {value}
         {total !== undefined && <Text style={styles.total}> / {total}</Text>}
       </Text>

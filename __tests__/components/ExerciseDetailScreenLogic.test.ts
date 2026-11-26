@@ -28,8 +28,10 @@ function setLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 describe('formatBestSet', () => {
-  test('is weight by reps, with no unit', () => {
-    expect(formatBestSet({ weight: 85, reps: 8 })).toBe('85×8');
+  // GT-269: with blocks in both units a bare number could be either.
+  test('is weight by reps, in the unit it was logged in', () => {
+    expect(formatBestSet({ weight: 85, reps: 8, weightUnit: 'kg' })).toBe('85 kg × 8');
+    expect(formatBestSet({ weight: 185, reps: 5, weightUnit: 'lb' })).toBe('185 lb × 5');
   });
 });
 

@@ -33,7 +33,7 @@ is the one cycle A was created in (kg, or lb on a run in lb) and *the other unit
   history is in the chain's unit, which is no reference here. (In the chain's unit the same
   exercise would come with an estimate from cycle A.)
 - Step 6: the summary's best set reads 25 × 10 in the other unit (e.g. "25 lb × 10").
-- Step 7: the overview's Best set is 25×10 — the set just logged, in the other unit — whatever
+- Step 7: the overview's Best set is 25 × 10 with the other unit — the set just logged — whatever
   weights cycle A logged. The history tab's "Unit test" section shows 25 × 10 in the other unit;
   cycle A's sections show their sets in the chain's unit, the numbers exactly as logged.
 - Step 8: the row's caption names 25 × 10 in the other unit.

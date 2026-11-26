@@ -105,7 +105,7 @@ describe('loadExerciseOverview', () => {
     );
 
     expect(overview?.stats).toEqual({
-      bestSet: { weight: 85, reps: 8 },
+      bestSet: { weight: 85, reps: 8, weightUnit: 'kg' },
       sessionCount: 1,
       lastDoneAt: '2026-09-10T11:30:00.000Z',
     });

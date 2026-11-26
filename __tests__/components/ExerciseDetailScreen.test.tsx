@@ -49,7 +49,7 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
   return {
     exercise: exercise(),
     stats: {
-      bestSet: { weight: 90, reps: 6 },
+      bestSet: { weight: 90, reps: 6, weightUnit: 'kg' },
       sessionCount: 14,
       lastDoneAt: '2026-09-17T11:30:00.000Z',
     },
@@ -114,7 +114,7 @@ describe('ExerciseDetailScreen', () => {
     renderScreen();
 
     expect(screen.getByText('Best set')).toBeTruthy();
-    expect(screen.getByText('90×6')).toBeTruthy();
+    expect(screen.getByText('90 kg × 6')).toBeTruthy();
     expect(screen.getByText('Sessions')).toBeTruthy();
     expect(screen.getByText('14')).toBeTruthy();
     expect(screen.getByText('Last done')).toBeTruthy();
