@@ -143,6 +143,13 @@ then created in lb, and every weight on screen reads in lb. Examples in the scen
 unit stand for the unit of the run. R-33 checks the two units side by side whichever the chain
 ran in.
 
+**R-31 and a new migration.** A backup restores only into a build with the same schema version.
+When the release under test adds a migration (1.1: `0013_mesocycle_weight_unit`), a file exported
+by the phone's older TestFlight build is refused on the simulator as written by a different
+version — expected, not a bug. Run R-31 once the phone has the TestFlight build of this release.
+Run against the older build, the import ends in that refusal (an error naming both versions, nothing
+restored): record it as expected, not as a failure.
+
 ## Scenario index
 
 | ID | Scenario | P | Spec | Where |
