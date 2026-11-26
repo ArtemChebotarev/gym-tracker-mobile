@@ -120,6 +120,20 @@ export function reorderDays(
   return reordered;
 }
 
+/** Whether a Reorder days order moves anything — `[1, 2, 3]` doesn't, so there is nothing to undo. */
+export function movesAnyDay(newOrder: readonly number[]): boolean {
+  return newOrder.some((dayNumber, position) => dayNumber !== position + 1);
+}
+
+/**
+ * The order that takes a `reorderDays(…, newOrder)` back — what `Undo` applies (GT-270). It works
+ * on the draft as it is when `Undo` is pressed, not on a copy from before the move, so a set
+ * changed in between stays changed.
+ */
+export function invertDayOrder(newOrder: readonly number[]): number[] {
+  return newOrder.map((_, index) => newOrder.indexOf(index + 1) + 1);
+}
+
 /** Gates Continue (08.5, "Шаг 2": "Continue неактивна, пока хотя бы один день пуст"). */
 export function canContinueFromDays(daysPerWeek: number, exercisesByDay: ExercisesByDay): boolean {
   return getDayNumbers(daysPerWeek).every((day) => getDayExercises(exercisesByDay, day).length > 0);
