@@ -85,6 +85,9 @@ async function weekOneTargetsFromHistory(
               exerciseId,
               since,
               ownMesoId: mesocycle.origin.sourceMesoId,
+              // Only sets in the new block's unit are a reference (GT-269): a copy switched to
+              // another unit starts without targets, as a block with no history does.
+              weightUnit: mesocycle.weightUnit,
             }),
           ] as const,
       ),

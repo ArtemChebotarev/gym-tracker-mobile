@@ -11,7 +11,7 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
 
 /**
- * A span of weights, in kg, both ends usable. Bounds are rounded to halves of a kilo *inward*, so
+ * A span of weights, in the block's unit, both ends usable. Bounds are rounded to its step *inward*, so
  * a weight sitting exactly on one still has a rep target: 3.89 becomes 4, 17.78 becomes 17.5.
  */
 export type WeightRange = { min: number; max: number };

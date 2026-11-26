@@ -183,7 +183,7 @@ describe('ExerciseDetailScreen', () => {
     expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
       rendered.indexOf('Settings'),
     );
-    expect(screen.getByText('Kg')).toBeTruthy();
+    expect(screen.getByText('Weight')).toBeTruthy();
     expect(screen.queryByText('No heavier available')).toBeNull();
   });
 

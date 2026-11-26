@@ -494,6 +494,7 @@ function toRows(
           isDeload: context.isDeload,
           equipment: exercise.equipment,
           bodyWeight: context.bodyWeight,
+          weightUnit: context.weightUnit,
         });
     if (weightSwap !== undefined) {
       row.weightSwap = weightSwap;

@@ -46,6 +46,7 @@ describe('an estimate gets no marker', () => {
       target: { targetReps: 15, suggestedWeight: 4.5 },
       settings: defaultProgressionSettings,
       isDeload: false,
+      weightUnit: 'kg',
       equipment: 'cable',
     });
     expect(targetIndicatorAtWeight(estimate, { reps: 15, weight: 4.5 }, swap)).toBeUndefined();
@@ -58,6 +59,7 @@ describe('targetIndicatorAtWeight', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
 
@@ -97,6 +99,7 @@ describe('targetIndicatorAtWeight', () => {
       target: { targetReps: 7, suggestedWeight: 16 },
       settings,
       isDeload: false,
+      weightUnit: 'kg',
       equipment: 'bodyweight-weighted',
       bodyWeight: 83,
     });

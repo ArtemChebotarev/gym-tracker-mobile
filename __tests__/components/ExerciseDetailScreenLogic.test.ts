@@ -149,7 +149,7 @@ describe('exerciseSettings — power', () => {
     exerciseSettings({ type: 'power', config: { type: 'power', load, noHeavierAvailable } }).rows;
 
   test.each([
-    ['weight', 'Kg'],
+    ['weight', 'Weight'],
     ['level', 'Level'],
     ['none', 'None'],
   ] as const)('a power load of %s reads %s, as in the New exercise sheet', (load, value) => {
@@ -158,7 +158,7 @@ describe('exerciseSettings — power', () => {
 
   test('No heavier available shows only while it is on', () => {
     expect(power('weight', true)).toEqual([
-      { key: 'load', label: 'Load', value: 'Kg' },
+      { key: 'load', label: 'Load', value: 'Weight' },
       { key: 'noHeavier', label: 'No heavier available', value: 'On' },
     ]);
   });
@@ -173,7 +173,7 @@ describe('exerciseSettings — power', () => {
 
   test('a power exercise stored without a config reads as the default load', () => {
     expect(exerciseSettings({ type: 'power' })).toEqual({
-      rows: [{ key: 'load', label: 'Load', value: 'Kg' }],
+      rows: [{ key: 'load', label: 'Load', value: 'Weight' }],
     });
   });
 

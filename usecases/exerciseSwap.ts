@@ -88,6 +88,7 @@ export async function swapExercise(
         weekRir: current.targetRir,
         sessionExerciseId: current.id,
         settings: mesocycle.progressionSettings,
+        weightUnit: mesocycle.weightUnit,
         equipment: swappedIn === null ? undefined : loadEquipmentOf(swappedIn),
         type: swappedIn?.type,
         now,

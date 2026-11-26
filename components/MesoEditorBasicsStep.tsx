@@ -18,7 +18,7 @@
 // JSX/rendering only — styles live in MesoEditorBasicsStepStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsStepLogic.ts, per the code-style skill.
 
-import { Keyboard, Pressable, View } from 'react-native';
+import { Keyboard, Pressable, Text, View } from 'react-native';
 
 import {
   MAX_DAYS_PER_WEEK,
@@ -26,8 +26,12 @@ import {
   MIN_DAYS_PER_WEEK,
   MIN_EDITOR_LENGTH_WEEKS,
 } from '@domain/mesocycleValidators';
+import type { WeightUnit } from '@domain/weightUnit';
+import { assertWeightUnit } from '@domain/weightUnitValidators';
+import { SegmentedControl } from '@design/components/SegmentedControl';
 import { Stepper } from '@design/components/Stepper';
 import { TextField } from '@design/components/TextField';
+import { WEIGHT_UNIT_OPTIONS } from '@design/weightUnitLabel';
 
 import { formatDaysPerWeekValue, formatMesocycleLengthValue } from './MesoEditorBasicsStepLogic';
 import { styles } from './MesoEditorBasicsStepStyles';
@@ -36,9 +40,12 @@ export type MesoEditorBasicsStepProps = {
   name: string;
   lengthWeeks: number;
   daysPerWeek: number;
+  /** The unit the cycle is counted in (GT-269) — the draft's, or the unit new cycles start in. */
+  weightUnit: WeightUnit;
   onChangeName: (name: string) => void;
   onChangeLengthWeeks: (lengthWeeks: number) => void;
   onChangeDaysPerWeek: (daysPerWeek: number) => void;
+  onChangeWeightUnit: (weightUnit: WeightUnit) => void;
   /**
    * The days already hold exercises — from a template or a copied week (Flows B and C) — so the
    * note that exercises are picked next would be wrong (GT-51).
@@ -50,9 +57,11 @@ export function MesoEditorBasicsStep({
   name,
   lengthWeeks,
   daysPerWeek,
+  weightUnit,
   onChangeName,
   onChangeLengthWeeks,
   onChangeDaysPerWeek,
+  onChangeWeightUnit,
   exercisesPrefilled = false,
 }: MesoEditorBasicsStepProps) {
   return (
@@ -90,6 +99,18 @@ export function MesoEditorBasicsStep({
           max={MAX_DAYS_PER_WEEK}
           formatValue={formatDaysPerWeekValue}
           {...(exercisesPrefilled ? {} : { caption: "Next, you'll pick exercises for each day." })}
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Weight unit</Text>
+        <SegmentedControl
+          options={WEIGHT_UNIT_OPTIONS}
+          value={weightUnit}
+          onChange={(value) => {
+            assertWeightUnit(value);
+            onChangeWeightUnit(value);
+          }}
         />
       </View>
     </Pressable>

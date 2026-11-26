@@ -5,6 +5,7 @@
 
 import { StyleSheet } from 'react-native';
 
+import { fieldStyles } from '@design/components/fieldStyles';
 import { SPACING } from '@design/tokens';
 
 export const styles = StyleSheet.create({
@@ -16,5 +17,9 @@ export const styles = StyleSheet.create({
   },
   section: {
     marginBottom: SPACING['space/section'],
+  },
+  // The unit picker's label, the same caps label a TextField and a Stepper put over themselves.
+  label: {
+    ...fieldStyles.label,
   },
 });

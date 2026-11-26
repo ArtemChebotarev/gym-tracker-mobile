@@ -9,9 +9,11 @@ const BASE_PROPS: MesoEditorBasicsStepProps = {
   name: 'Upper/Lower — Block 6',
   lengthWeeks: 6,
   daysPerWeek: 4,
+  weightUnit: 'kg',
   onChangeName: jest.fn(),
   onChangeLengthWeeks: jest.fn(),
   onChangeDaysPerWeek: jest.fn(),
+  onChangeWeightUnit: jest.fn(),
 };
 
 describe('MesoEditorBasicsStep', () => {
@@ -104,5 +106,18 @@ describe('MesoEditorBasicsStep', () => {
           .disabled,
       ).toBe(true);
     });
+  });
+
+  // GT-269: the unit the cycle is counted in, picked on step 1.
+  test('shows the cycle’s unit, and a tap on the other one picks it', () => {
+    const onChangeWeightUnit = jest.fn();
+    render(<MesoEditorBasicsStep {...BASE_PROPS} onChangeWeightUnit={onChangeWeightUnit} />);
+
+    expect(screen.getByText('Weight unit')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Kilograms (kg)', selected: true })).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Pounds (lb)' }));
+
+    expect(onChangeWeightUnit).toHaveBeenCalledWith('lb');
   });
 });

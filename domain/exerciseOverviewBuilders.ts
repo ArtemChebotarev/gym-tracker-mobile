@@ -6,13 +6,13 @@
 
 import type { Exercise } from './catalog';
 import type { SetLog } from './execution';
+import type { ExerciseHistoryPerformance } from './exerciseHistory';
 import { isDonePerformance } from './exerciseHistoryBuilders';
 import type {
   ExerciseBestSet,
   ExerciseOverview,
   ExerciseOverviewAction,
   ExerciseOverviewStats,
-  ExercisePerformance,
 } from './exerciseOverview';
 
 /**
@@ -24,7 +24,7 @@ import type {
  */
 export function buildExerciseOverview(
   exercise: Exercise,
-  performances: readonly ExercisePerformance[],
+  performances: readonly ExerciseHistoryPerformance[],
 ): ExerciseOverview {
   return {
     exercise,
@@ -43,7 +43,7 @@ export function exerciseOverviewActions(exercise: Exercise): ExerciseOverviewAct
 }
 
 function buildExerciseOverviewStats(
-  performances: readonly ExercisePerformance[],
+  performances: readonly ExerciseHistoryPerformance[],
 ): ExerciseOverviewStats | null {
   const completions = performances.flatMap((performance) => [
     ...performance.setLogs.map((log) => log.completedAt),
@@ -55,10 +55,38 @@ function buildExerciseOverviewStats(
   }
 
   return {
-    bestSet: findBestSet(performances.flatMap((performance) => performance.setLogs)),
+    bestSet: findBestSet(setLogsInLatestUnit(performances)),
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
     lastDoneAt: completions.reduce((latest, at) => (at > latest ? at : latest), first),
   };
+}
+
+/**
+ * The sets logged in the unit of the most recent block that logged any (GT-269). A weight is a
+ * number in its block's unit: 120 lb is not heavier than 60 kg, and a converted one is a guess — so
+ * the best set is looked for in the unit the user lifts in now, as logged.
+ */
+function setLogsInLatestUnit(performances: readonly ExerciseHistoryPerformance[]): SetLog[] {
+  const withSets = performances.filter((performance) => performance.setLogs.length > 0);
+  const latest = withSets.reduce<ExerciseHistoryPerformance | undefined>(
+    (current, performance) =>
+      current === undefined || lastSetAt(performance) > lastSetAt(current) ? performance : current,
+    undefined,
+  );
+  if (latest === undefined) {
+    return [];
+  }
+  const unit = latest.mesocycle.weightUnit;
+  return withSets
+    .filter((performance) => performance.mesocycle.weightUnit === unit)
+    .flatMap((performance) => performance.setLogs);
+}
+
+function lastSetAt(performance: ExerciseHistoryPerformance): string {
+  return performance.setLogs.reduce(
+    (latest, log) => (log.completedAt > latest ? log.completedAt : latest),
+    '',
+  );
 }
 
 /**

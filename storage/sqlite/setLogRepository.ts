@@ -1,12 +1,13 @@
 import type { SetLog } from '@domain/execution';
 import type { ExercisePerformance } from '@domain/progression';
 import type { Incoming } from '@domain/timestamps';
+import type { WeightUnit } from '@domain/weightUnit';
 import type {
   ListPerformancesQuery,
   ListSetLogsByExerciseIdOptions,
   SetLogRepository,
 } from '@repositories/setLogRepository';
-import { asc, desc, eq } from 'drizzle-orm';
+import { asc, desc, eq, inArray } from 'drizzle-orm';
 
 import { NotFoundError } from '../errors';
 import { stampCreated, stampUpdated } from '../timestamps';
@@ -14,7 +15,7 @@ import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
 import { performedAt, readExercisePerformances } from './exerciseHistory';
 import { rowToSetLog, setLogToRow } from './mappers';
-import { sessionExercises, setLogs } from './schema';
+import { mesocycles, sessionExercises, setLogs } from './schema';
 
 export class SqliteSetLogRepository implements SetLogRepository {
   constructor(private readonly db: SqliteDatabase) {}
@@ -74,11 +75,21 @@ export class SqliteSetLogRepository implements SetLogRepository {
     since,
     ownMesoId,
     excludeSessionExerciseId,
+    weightUnit,
   }: ListPerformancesQuery): Promise<ExercisePerformance[]> {
     const performances = await readExercisePerformances(this.db, exerciseId, {
       excludeSessionExerciseId,
     });
+    const unitByMesoId = await this.weightUnitsOf(
+      performances.map((performance) => performance.session.mesoId),
+    );
     return performances
+      // Sets from a block in another unit are no reference (GT-269); rounds are unit-free.
+      .filter(
+        (performance) =>
+          performance.setLogs.length === 0 ||
+          unitByMesoId.get(performance.session.mesoId) === weightUnit,
+      )
       .map((performance): ExercisePerformance => ({
         mesoId: performance.session.mesoId,
         weekNumber: performance.session.weekNumber,
@@ -94,6 +105,22 @@ export class SqliteSetLogRepository implements SetLogRepository {
         (performance) => performance.performedAt >= since || performance.mesoId === ownMesoId,
       )
       .sort((a, b) => b.performedAt.localeCompare(a.performedAt));
+  }
+
+  /** Each mesocycle's unit, by id — one query for every block the performances come from. */
+  private async weightUnitsOf(mesoIds: readonly string[]): Promise<Map<string, WeightUnit>> {
+    const ids = [...new Set(mesoIds)];
+    if (ids.length === 0) {
+      return new Map();
+    }
+    const rows = await runQuery(() =>
+      this.db
+        .select({ id: mesocycles.id, weightUnit: mesocycles.weightUnit })
+        .from(mesocycles)
+        .where(inArray(mesocycles.id, ids))
+        .all(),
+    );
+    return new Map(rows.map((row) => [row.id, row.weightUnit]));
   }
 
   async create(setLog: Incoming<SetLog>): Promise<SetLog> {

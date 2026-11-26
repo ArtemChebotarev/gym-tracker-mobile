@@ -1,6 +1,8 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { Session, SetLog } from '@domain/execution';
-import type { ExercisePerformance } from '@domain/exerciseOverview';
+import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
+import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import type { WeightUnit } from '@domain/weightUnit';
 import { buildExerciseOverview, exerciseOverviewActions } from '@domain/exerciseOverviewBuilders';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -47,12 +49,29 @@ function setLog(overrides: Partial<SetLog> = {}): SetLog {
   };
 }
 
+function mesocycle(id: string, weightUnit: WeightUnit = 'kg'): Mesocycle {
+  return {
+    ...STAMPS,
+    id,
+    name: id,
+    lengthWeeks: 5,
+    daysPerWeek: 3,
+    status: 'completed',
+    origin: { type: 'scratch' },
+    progressionSettings: defaultProgressionSettings,
+    weightUnit,
+  };
+}
+
 function performance(
   sessionOverrides: Partial<Session>,
   setLogs: readonly Partial<SetLog>[],
-): ExercisePerformance {
+  weightUnit: WeightUnit = 'kg',
+): ExerciseHistoryPerformance {
+  const performed = session(sessionOverrides);
   return {
-    session: session(sessionOverrides),
+    session: performed,
+    mesocycle: mesocycle(performed.mesoId, weightUnit),
     roundLogs: [],
     setLogs: setLogs.map((overrides) => setLog(overrides)),
   };
@@ -79,6 +98,7 @@ describe('buildExerciseOverview', () => {
     const overview = buildExerciseOverview(exercise(), [
       {
         session: session({ id: 's1' }),
+        mesocycle: mesocycle('meso-1'),
         setLogs: [],
         roundLogs: [
           { ...round, id: 'round-2', roundNumber: 2, completedAt: '2026-09-10T12:05:00.000Z' },
@@ -110,6 +130,28 @@ describe('buildExerciseOverview', () => {
     ]);
 
     expect(overview.stats?.bestSet).toEqual({ weight: 90, reps: 7 });
+  });
+
+  // GT-269: 120 lb is not heavier than 60 kg — the best set is the best in the unit of the most
+  // recent block, as logged.
+  test('looks for the best set in the unit of the latest block that logged one', () => {
+    const overview = buildExerciseOverview(exercise(), [
+      performance(
+        { id: 'kg-block', mesoId: 'meso-kg' },
+        [{ id: 'a', weight: 60, reps: 8, completedAt: '2026-09-01T12:00:00.000Z' }],
+        'kg',
+      ),
+      performance(
+        { id: 'lb-block', mesoId: 'meso-lb' },
+        [
+          { id: 'b', weight: 45, reps: 10, completedAt: '2026-09-20T12:00:00.000Z' },
+          { id: 'c', weight: 50, reps: 6, completedAt: '2026-09-20T12:03:00.000Z' },
+        ],
+        'lb',
+      ),
+    ]);
+
+    expect(overview.stats?.bestSet).toEqual({ weight: 50, reps: 6 });
   });
 
   test('counts distinct sessions', () => {

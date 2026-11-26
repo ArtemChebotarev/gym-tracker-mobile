@@ -239,6 +239,7 @@ describe('CopyMesocycleRoute — prefilled draft', () => {
       name: 'Upper/Lower 2',
       lengthWeeks: 4,
       daysPerWeek: 2,
+      weightUnit: 'kg',
       exercisesByDay: {
         1: [
           { exerciseId: BENCH!.id, order: 1, sets: 3 },

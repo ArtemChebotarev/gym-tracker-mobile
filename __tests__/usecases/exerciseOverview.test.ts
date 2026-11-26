@@ -1,5 +1,6 @@
 import { toExerciseId, type Exercise } from '@domain/catalog';
-import type { ExercisePerformance } from '@domain/exerciseOverview';
+import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
+import { defaultProgressionSettings } from '@domain/mesocycle';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { loadExerciseOverview } from '@usecases/exerciseOverview';
@@ -22,14 +23,14 @@ function exercise(overrides: Partial<Exercise> = {}): Exercise {
   };
 }
 
-function historyRepo(performances: ExercisePerformance[] = []): ExerciseHistoryRepository {
+function historyRepo(performances: ExerciseHistoryPerformance[] = []): ExerciseHistoryRepository {
   return {
     listByExerciseId: jest.fn().mockResolvedValue(performances),
     getLastSet: jest.fn().mockResolvedValue(null),
   };
 }
 
-async function deps(exercises: Exercise[], performances: ExercisePerformance[] = []) {
+async function deps(exercises: Exercise[], performances: ExerciseHistoryPerformance[] = []) {
   const exerciseRepo = new SqliteExerciseRepository(db());
   for (const entry of exercises) {
     await exerciseRepo.createCustom(entry);
@@ -73,6 +74,17 @@ describe('loadExerciseOverview', () => {
               prescriptionStatus: 'ready',
               status: 'completed',
               completedAt: '2026-09-10T12:00:00.000Z',
+            },
+            mesocycle: {
+              ...STAMPS,
+              id: 'meso-1',
+              name: 'Upper/Lower',
+              lengthWeeks: 5,
+              daysPerWeek: 3,
+              status: 'active',
+              origin: { type: 'scratch' },
+              progressionSettings: defaultProgressionSettings,
+              weightUnit: 'kg',
             },
             roundLogs: [],
             setLogs: [

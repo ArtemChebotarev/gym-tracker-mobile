@@ -233,6 +233,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         const performances = await repositories().setLogRepo.listPerformances({
           exerciseId: BENCH_PRESS,
           since: SINCE,
+          weightUnit: 'kg',
         });
 
         expect(
@@ -303,6 +304,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         const performances = await setLogRepo.listPerformances({
           exerciseId: 'exercise-heavy-bag',
           since: SINCE,
+          weightUnit: 'kg',
         });
 
         expect(performances).toHaveLength(1);
@@ -338,9 +340,41 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
           repositories().setLogRepo.listPerformances({
             exerciseId: BENCH_PRESS,
             since: SINCE,
+            weightUnit: 'kg',
             excludeSessionExerciseId: 'se-today',
           }),
         ).resolves.toEqual([]);
+      });
+
+      // GT-269: a reference is in the asking block's unit — sets from a block in another one stay
+      // out, whichever block it is.
+      test('leaves out sets logged in a block counted in another unit', async () => {
+        await seedPerformances(repositories(), [
+          { sessionExerciseId: 'se-kg', completedAt: '2026-09-01T08:00:00.000Z' },
+          {
+            sessionExerciseId: 'se-lb',
+            completedAt: '2026-09-02T08:00:00.000Z',
+            mesoId: PAST_MESO,
+          },
+        ]);
+        const { mesocycleRepo, setLogRepo } = repositories();
+        const past = await mesocycleRepo.getById(PAST_MESO);
+        await mesocycleRepo.update({ ...past!, weightUnit: 'lb' });
+
+        const inKg = await setLogRepo.listPerformances({
+          exerciseId: BENCH_PRESS,
+          since: SINCE,
+          weightUnit: 'kg',
+        });
+        const inLb = await setLogRepo.listPerformances({
+          exerciseId: BENCH_PRESS,
+          since: SINCE,
+          weightUnit: 'lb',
+          ownMesoId: PAST_MESO,
+        });
+
+        expect(inKg.map((performance) => performance.mesoId)).toEqual([CURRENT_MESO]);
+        expect(inLb.map((performance) => performance.mesoId)).toEqual([PAST_MESO]);
       });
 
       // GT-194: the own day is looked for in every week of the own block; the window binds the
@@ -354,6 +388,7 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         const performances = await repositories().setLogRepo.listPerformances({
           exerciseId: BENCH_PRESS,
           since: SINCE,
+          weightUnit: 'kg',
           ownMesoId: CURRENT_MESO,
         });
 
