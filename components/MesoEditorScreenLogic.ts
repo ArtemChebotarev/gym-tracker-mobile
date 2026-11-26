@@ -3,6 +3,8 @@ import type { ExerciseListGroup } from '@domain/catalogListing';
 import { DEFAULT_INTERVAL_ROUNDS, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { prunedExerciseSettings, withExerciseSettings } from '@domain/exerciseSettingsBuilders';
 import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
+import type { PlateTextPart } from '@design/components/PlateText';
+import type { OnboardingFlags } from '@repositories/settings';
 import type { MesoBuilderDraft } from '@state/draftStore';
 
 import { addExerciseToDay, removeExerciseFromDay } from './MesoEditorDaysStepLogic';
@@ -22,6 +24,33 @@ export function hasUnsavedDraft(draft: MesoBuilderDraft): boolean {
     Object.values(draft.exercisesByDay).some((exercises) => exercises.length > 0)
   );
 }
+
+/**
+ * Whether the Days & exercises step points at its ⇅ (GT-270): once, and only for a draft that
+ * arrived filled in from a template or a copied week — a week laid out by someone else, whose day
+ * order is the one thing a person most often wants their own. A cycle built from scratch already
+ * puts each exercise in the day it means. Needs two days to have an order at all, and waits for
+ * the flags, so it never flashes for someone who has closed it.
+ */
+export function showsReorderDaysCoachmark(
+  flags: OnboardingFlags | undefined,
+  draft: MesoBuilderDraft,
+): boolean {
+  return (
+    flags !== undefined &&
+    !flags.reorderDaysCoachmarkSeen &&
+    (draft.templateId !== undefined || draft.source !== undefined) &&
+    draft.daysPerWeek > 1
+  );
+}
+
+/** Its one step (GT-270). */
+export const REORDER_DAYS_COACHMARK_STEP = {
+  title: 'Train in your own order',
+  paragraphs: [
+    ['Tap the ', { strong: 'arrows' }, ' to put the days in the order you train them.'],
+  ] as PlateTextPart[][],
+};
 
 /** The confirmation raised by ✕ (and Android's back) when `hasUnsavedDraft`: a question and two buttons. */
 export const DISCARD_DRAFT_TITLE = 'Discard training cycle?';

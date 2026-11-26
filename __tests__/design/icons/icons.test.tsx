@@ -20,6 +20,7 @@ import { PlusIcon } from '@design/icons/PlusIcon';
 import { PulseIcon } from '@design/icons/PulseIcon';
 import { SkipIcon } from '@design/icons/SkipIcon';
 import { SlidersIcon } from '@design/icons/SlidersIcon';
+import { ReorderIcon } from '@design/icons/ReorderIcon';
 import { StopIcon } from '@design/icons/StopIcon';
 import { SwapIcon } from '@design/icons/SwapIcon';
 import { TabLibraryIcon } from '@design/icons/TabLibraryIcon';
@@ -41,6 +42,7 @@ const ICONS: [string, IconComponent][] = [
   ['more', MoreIcon],
   ['history', HistoryIcon],
   ['swap', SwapIcon],
+  ['reorder', ReorderIcon],
   ['plus', PlusIcon],
   ['minus', MinusIcon],
   ['skip', SkipIcon],

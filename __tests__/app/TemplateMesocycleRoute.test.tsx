@@ -206,6 +206,61 @@ describe('TemplateMesocycleRoute — prefilled draft', () => {
   });
 });
 
+describe('TemplateMesocycleRoute — reorder days (GT-270)', () => {
+  /** Upper / Lower's Basics is up: Continue goes on to its Days step. */
+  async function continueToDays() {
+    fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+    await screen.findByText('Days & exercises');
+  }
+
+  test('DoD: the first Days step from a template points at Reorder, once; closing it is remembered', async () => {
+    renderRoute();
+    await useTemplate('Upper / Lower');
+    await continueToDays();
+
+    expect(await screen.findByText('Train in your own order', {}, { timeout: 3000 })).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Got it' }));
+
+    await waitFor(async () =>
+      expect((await repositories().settingsRepo.read()).onboarding.reorderDaysCoachmarkSeen).toBe(
+        true,
+      ),
+    );
+  });
+
+  test('no hint once it was closed before', async () => {
+    const settings = await repositories().settingsRepo.read();
+    await repositories().settingsRepo.write({
+      ...settings,
+      onboarding: { ...settings.onboarding, reorderDaysCoachmarkSeen: true },
+    });
+    renderRoute();
+    await useTemplate('Upper / Lower');
+    await continueToDays();
+
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByText('Train in your own order')).toBeNull();
+  });
+
+  test('Reorder opens the week as a list; Done with nothing moved leaves the draft as it was', async () => {
+    const settings = await repositories().settingsRepo.read();
+    await repositories().settingsRepo.write({
+      ...settings,
+      onboarding: { ...settings.onboarding, reorderDaysCoachmarkSeen: true },
+    });
+    renderRoute();
+    await useTemplate('Upper / Lower');
+    await continueToDays();
+    const before = useDraftStore.getState().mesoBuilder;
+
+    fireEvent.press(screen.getByRole('button', { name: 'Reorder days' }));
+    expect(await screen.findByTestId('reorder-day-2')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+
+    expect(useDraftStore.getState().mesoBuilder.exercisesByDay).toEqual(before.exercisesByDay);
+  });
+});
+
 describe('TemplateMesocycleRoute — Save and Start', () => {
   // DoD: the flow ends in a saved planned cycle with `origin.type = template`, and Start makes
   // week 1 with nothing left to set up.

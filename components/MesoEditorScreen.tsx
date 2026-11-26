@@ -20,8 +20,8 @@
 // words: "Я хочу это видеть как виджет, внутри которого меняется контент при передвижении вперёд
 // назад, но выравнивание и т.д. остаются на месте." One mounted component, step-driven content,
 // is the only way to actually get that — see design/components/WizardScreen.tsx.
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Alert, BackHandler } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Alert, BackHandler, type View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { toExerciseId, type Exercise, type ExerciseId } from '@domain/catalog';
@@ -35,10 +35,13 @@ import { MesoEditorDaysStep } from '@components/MesoEditorDaysStep';
 import {
   canContinueFromDays,
   getDayExercises,
+  getDayNumbers,
   reorderDayExercises,
+  reorderDays,
   updateExerciseSets,
 } from '@components/MesoEditorDaysStepLogic';
 import { MesoEditorFooter } from '@components/MesoEditorFooter';
+import { MesoEditorReorderDaysSheet } from '@components/MesoEditorReorderDaysSheet';
 import { MesoEditorReviewStep } from '@components/MesoEditorReviewStep';
 import { showsProgressionBlock } from '@components/MesoEditorReviewStepLogic';
 import {
@@ -50,14 +53,22 @@ import {
   KEEP_EDITING_LABEL,
   rememberSelectedExercises,
   removeExerciseFromDraft,
+  REORDER_DAYS_COACHMARK_STEP,
+  showsReorderDaysCoachmark,
 } from '@components/MesoEditorScreenLogic';
+import { useDelayedFlag } from '@components/useDelayedFlag';
+import { CoachmarkTour } from '@design/components/CoachmarkTour';
 import { WizardScreen } from '@design/components/WizardScreen';
+import { RADII } from '@design/tokens';
 import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { useExercisesByIds } from '@state/useExercisesByIds';
 
 const BASE_STEPS = 3;
+
+// The Days step has just slid in: `Reorder` is measured once it has settled (08.11).
+const REORDER_DAYS_HINT_DELAY_MS = 400;
 
 /** `0` is the optional lead step; 1–3 are Basics, Days & exercises and Review. */
 type Step = 0 | 1 | 2 | 3;
@@ -206,6 +217,33 @@ export function MesoEditorScreen({
     );
     setDraft(addExercisesToDraft(draft, addExerciseDay, exerciseIds, records));
     setAddExerciseDay(null);
+  }
+
+  // GT-270's Reorder days sheet: the order it is editing, top to bottom, kept while it slides away
+  // so its rows don't empty out on the way down. Only `Done` puts it into the draft.
+  const [reorderDaysSheet, setReorderDaysSheet] = useState<{
+    visible: boolean;
+    order: number[];
+  }>({ visible: false, order: [] });
+  const reorderDaysRef = useRef<View>(null);
+  const reorderDaysHintDue = useDelayedFlag(
+    step === 2 && showsReorderDaysCoachmark(onboarding.data, draft),
+    REORDER_DAYS_HINT_DELAY_MS,
+  );
+
+  function handleReorderDaysDone() {
+    const { order } = reorderDaysSheet;
+    setDraft((current) => ({
+      ...current,
+      exercisesByDay: reorderDays(current.exercisesByDay, order),
+    }));
+    // The open day stays open where it was moved to — the sheet lit it all the way there (Artem,
+    // 26.11.2026).
+    const moved = order.indexOf(activeDay);
+    if (moved !== -1) {
+      setActiveDay(moved + 1);
+    }
+    setReorderDaysSheet({ visible: false, order });
   }
 
   // Every exercise id referenced across every day, not just the active one, so switching day
@@ -416,8 +454,33 @@ export function MesoEditorScreen({
             }))
           }
           onAddExercise={handleRequestAddExercise}
+          onRequestReorderDays={() =>
+            setReorderDaysSheet({ visible: true, order: getDayNumbers(draft.daysPerWeek) })
+          }
+          reorderDaysRef={reorderDaysRef}
         />
       </WizardScreen>
+      <MesoEditorReorderDaysSheet
+        visible={reorderDaysSheet.visible}
+        order={reorderDaysSheet.order}
+        activeDay={activeDay}
+        onChangeOrder={(order) => setReorderDaysSheet({ visible: true, order })}
+        exercisesByDay={draft.exercisesByDay}
+        exercisesById={exercisesQuery.data ?? {}}
+        onDone={handleReorderDaysDone}
+        onClose={() => setReorderDaysSheet((current) => ({ ...current, visible: false }))}
+      />
+      <CoachmarkTour
+        visible={reorderDaysHintDue}
+        steps={[
+          {
+            targetRef: reorderDaysRef,
+            ...REORDER_DAYS_COACHMARK_STEP,
+            ringRadius: RADII['radius/pill'],
+          },
+        ]}
+        onFinish={() => markOnboardingSeen.mutate('reorderDaysCoachmarkSeen')}
+      />
       <MesoEditorAddExerciseSheet
         // Stays visible underneath Filters — it renders as a plain overlay
         // (`presentation="overlay"` inside MesoEditorAddExerciseSheet.tsx), not its own <Modal>,

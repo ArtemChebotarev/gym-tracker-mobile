@@ -3,6 +3,7 @@ import {
   hasUnsavedDraft,
   rememberSelectedExercises,
   removeExerciseFromDraft,
+  showsReorderDaysCoachmark,
 } from '@components/MesoEditorScreenLogic';
 import { toExerciseId, type Exercise } from '@domain/catalog';
 import type { ExerciseListGroup } from '@domain/catalogListing';
@@ -11,6 +12,7 @@ import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import { COOLDOWN, HEAVY_BAG, HEAVY_BAG_CONFIG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 import { DEFAULT_MESO_BUILDER_DRAFT, type MesoBuilderDraft } from '@state/draftStore';
+import { DEFAULT_ONBOARDING } from '@storage/settingsDefaults';
 
 const EXERCISE = { exerciseId: 'ex-1' as never, order: 0, sets: 2 };
 
@@ -150,5 +152,36 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
 
     remembered = rememberSelectedExercises(remembered, groupOf(COOLDOWN), [COOLDOWN.id]);
     expect(remembered).toEqual({ [COOLDOWN.id]: COOLDOWN });
+  });
+});
+
+describe('showsReorderDaysCoachmark (GT-270)', () => {
+  const FLAGS = DEFAULT_ONBOARDING;
+  const FROM_TEMPLATE: MesoBuilderDraft = {
+    ...DEFAULT_MESO_BUILDER_DRAFT,
+    daysPerWeek: 3,
+    templateId: 'upper-lower',
+  };
+
+  test('a template or a copied week gets it, once', () => {
+    expect(showsReorderDaysCoachmark(FLAGS, FROM_TEMPLATE)).toBe(true);
+    expect(
+      showsReorderDaysCoachmark(FLAGS, {
+        ...DEFAULT_MESO_BUILDER_DRAFT,
+        daysPerWeek: 3,
+        source: { mesoId: 'm1', weekNumber: 4 },
+      }),
+    ).toBe(true);
+    expect(
+      showsReorderDaysCoachmark({ ...FLAGS, reorderDaysCoachmarkSeen: true }, FROM_TEMPLATE),
+    ).toBe(false);
+  });
+
+  test('a cycle from scratch, a one-day week and unread flags do not', () => {
+    expect(showsReorderDaysCoachmark(FLAGS, { ...DEFAULT_MESO_BUILDER_DRAFT, daysPerWeek: 3 })).toBe(
+      false,
+    );
+    expect(showsReorderDaysCoachmark(FLAGS, { ...FROM_TEMPLATE, daysPerWeek: 1 })).toBe(false);
+    expect(showsReorderDaysCoachmark(undefined, FROM_TEMPLATE)).toBe(false);
   });
 });

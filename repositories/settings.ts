@@ -35,6 +35,8 @@ export type OnboardingFlags = {
   deloadIntroSeen: boolean;
   /** The one-step coachmark on `Start` of the first Planned cycle (GT-50). */
   startCycleSeen: boolean;
+  /** The one-step coachmark on the editor's ⇅ (Reorder days), for a cycle from a template or a copy (GT-270). */
+  reorderDaysCoachmarkSeen: boolean;
 };
 
 /** One of the {@link OnboardingFlags}. */

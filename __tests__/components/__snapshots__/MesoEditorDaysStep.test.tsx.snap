@@ -2,99 +2,119 @@
 
 exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 1`] = `
 [
-  <RCTScrollView
-    contentContainerStyle={
-      [
-        {
-          "flexDirection": "row",
-          "gap": 8,
-        },
-        {
-          "paddingBottom": 24,
-          "paddingHorizontal": 16,
-          "paddingTop": 4,
-        },
-      ]
-    }
-    horizontal={true}
-    showsHorizontalScrollIndicator={false}
+  <View
     style={
       {
-        "flexGrow": 0,
+        "alignItems": "flex-start",
+        "flexDirection": "row",
       }
     }
   >
-    <View>
-      <View
-        accessibilityLabel="Day 1"
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": undefined,
-            "expanded": undefined,
-            "selected": true,
-          }
+    <View
+      style={
+        {
+          "flex": 1,
         }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        hitSlop={4}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
+      }
+    >
+      <RCTScrollView
+        contentContainerStyle={
           [
             {
-              "backgroundColor": "#1A1C1F",
-              "borderColor": "#2A2D31",
-              "borderRadius": 20,
-              "borderWidth": 1,
-              "height": 36,
-              "justifyContent": "center",
-              "paddingHorizontal": 18,
+              "flexDirection": "row",
+              "gap": 8,
             },
-            {
-              "backgroundColor": "#232B0A",
-              "borderColor": "#4A5A20",
-            },
-          ]
-        }
-      >
-        <Text
-          style={
             [
               {
-                "color": "#C9CDD2",
-                "fontSize": 17,
-                "fontWeight": "400",
+                "paddingBottom": 24,
+                "paddingHorizontal": 16,
+                "paddingTop": 4,
               },
-              {
-                "color": "#CDFF57",
-              },
-            ]
+              false,
+            ],
+          ]
+        }
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        style={
+          {
+            "flexGrow": 0,
           }
-        >
-          Day 1
-        </Text>
-      </View>
+        }
+      >
+        <View>
+          <View
+            accessibilityLabel="Day 1"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": true,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={4}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "backgroundColor": "#1A1C1F",
+                  "borderColor": "#2A2D31",
+                  "borderRadius": 20,
+                  "borderWidth": 1,
+                  "height": 36,
+                  "justifyContent": "center",
+                  "paddingHorizontal": 18,
+                },
+                {
+                  "backgroundColor": "#232B0A",
+                  "borderColor": "#4A5A20",
+                },
+              ]
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#C9CDD2",
+                    "fontSize": 17,
+                    "fontWeight": "400",
+                  },
+                  {
+                    "color": "#CDFF57",
+                  },
+                ]
+              }
+            >
+              Day 1
+            </Text>
+          </View>
+        </View>
+      </RCTScrollView>
     </View>
-  </RCTScrollView>,
+  </View>,
   <RCTScrollView
     bounces={false}
     keyboardDismissMode="on-drag"
@@ -1583,162 +1603,182 @@ exports[`MesoEditorDaysStep hybrid rows (GT-157) matches the mixed day snapshot 
 
 exports[`MesoEditorDaysStep matches the step 2 content snapshot 1`] = `
 [
-  <RCTScrollView
-    contentContainerStyle={
-      [
-        {
-          "flexDirection": "row",
-          "gap": 8,
-        },
-        {
-          "paddingBottom": 24,
-          "paddingHorizontal": 16,
-          "paddingTop": 4,
-        },
-      ]
-    }
-    horizontal={true}
-    showsHorizontalScrollIndicator={false}
+  <View
     style={
       {
-        "flexGrow": 0,
+        "alignItems": "flex-start",
+        "flexDirection": "row",
       }
     }
   >
-    <View>
-      <View
-        accessibilityLabel="Day 1"
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": undefined,
-            "expanded": undefined,
-            "selected": true,
-          }
+    <View
+      style={
+        {
+          "flex": 1,
         }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        hitSlop={4}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
+      }
+    >
+      <RCTScrollView
+        contentContainerStyle={
           [
             {
-              "backgroundColor": "#1A1C1F",
-              "borderColor": "#2A2D31",
-              "borderRadius": 20,
-              "borderWidth": 1,
-              "height": 36,
-              "justifyContent": "center",
-              "paddingHorizontal": 18,
+              "flexDirection": "row",
+              "gap": 8,
             },
-            {
-              "backgroundColor": "#232B0A",
-              "borderColor": "#4A5A20",
-            },
-          ]
-        }
-      >
-        <Text
-          style={
             [
               {
-                "color": "#C9CDD2",
-                "fontSize": 17,
-                "fontWeight": "400",
-              },
-              {
-                "color": "#CDFF57",
-              },
-            ]
-          }
-        >
-          Day 1
-        </Text>
-      </View>
-      <View
-        accessibilityLabel="Day 2"
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": undefined,
-            "expanded": undefined,
-            "selected": false,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        hitSlop={4}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
-          [
-            {
-              "backgroundColor": "#1A1C1F",
-              "borderColor": "#2A2D31",
-              "borderRadius": 20,
-              "borderWidth": 1,
-              "height": 36,
-              "justifyContent": "center",
-              "paddingHorizontal": 18,
-            },
-            false,
-          ]
-        }
-      >
-        <Text
-          style={
-            [
-              {
-                "color": "#C9CDD2",
-                "fontSize": 17,
-                "fontWeight": "400",
+                "paddingBottom": 24,
+                "paddingHorizontal": 16,
+                "paddingTop": 4,
               },
               false,
-            ]
+            ],
+          ]
+        }
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        style={
+          {
+            "flexGrow": 0,
           }
-        >
-          Day 2
-        </Text>
-      </View>
+        }
+      >
+        <View>
+          <View
+            accessibilityLabel="Day 1"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": true,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={4}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "backgroundColor": "#1A1C1F",
+                  "borderColor": "#2A2D31",
+                  "borderRadius": 20,
+                  "borderWidth": 1,
+                  "height": 36,
+                  "justifyContent": "center",
+                  "paddingHorizontal": 18,
+                },
+                {
+                  "backgroundColor": "#232B0A",
+                  "borderColor": "#4A5A20",
+                },
+              ]
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#C9CDD2",
+                    "fontSize": 17,
+                    "fontWeight": "400",
+                  },
+                  {
+                    "color": "#CDFF57",
+                  },
+                ]
+              }
+            >
+              Day 1
+            </Text>
+          </View>
+          <View
+            accessibilityLabel="Day 2"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": false,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={4}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "backgroundColor": "#1A1C1F",
+                  "borderColor": "#2A2D31",
+                  "borderRadius": 20,
+                  "borderWidth": 1,
+                  "height": 36,
+                  "justifyContent": "center",
+                  "paddingHorizontal": 18,
+                },
+                false,
+              ]
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#C9CDD2",
+                    "fontSize": 17,
+                    "fontWeight": "400",
+                  },
+                  false,
+                ]
+              }
+            >
+              Day 2
+            </Text>
+          </View>
+        </View>
+      </RCTScrollView>
     </View>
-  </RCTScrollView>,
+  </View>,
   <RCTScrollView
     bounces={false}
     keyboardDismissMode="on-drag"

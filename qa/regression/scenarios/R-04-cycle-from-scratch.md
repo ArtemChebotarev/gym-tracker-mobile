@@ -19,7 +19,8 @@ Precondition: no planned cycle (in the chain: step 4, cycle A active — needed 
 
 ## Expect
 
-- Step 4: "Continue" is disabled, with a hint that every day needs an exercise.
+- Step 4: "Continue" is disabled, with a hint that every day needs an exercise. A ⇅ sits in front
+  of "Day 1" and stays put when the tabs scroll; no coachmark points at it in a cycle from scratch.
 - Step 5: both exercises appear on Day 1, each with 2 sets.
 - Step 6: the exercise already in the day is marked as already added and can't be ticked.
 - Step 8: the review shows 4 weeks and 2 days per week. After saving, the Cycles tab shows

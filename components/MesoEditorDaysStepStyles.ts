@@ -27,11 +27,36 @@ import { circle } from '@design/shapes';
 // N rows would land on N±1.
 
 export const styles = StyleSheet.create({
+  // The ⇅ sits in front of the tabs and stays put while they scroll (GT-270).
+  dayTabsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  dayTabsScroller: {
+    flex: 1,
+  },
+  // A round button the tabs' height, in their own neutral look, so it reads as part of the row; the
+  // arrows inside are accent, so it reads as an action rather than another tab.
+  reorderDays: {
+    ...circle(SIZES['size/chip']),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
+    backgroundColor: COLORS['surface/card'],
+    // Level with the tabs, which sit `space/xs` down inside their scroller (`dayTabsContent`).
+    marginTop: SPACING['space/xs'],
+    marginLeft: SPACING['space/screen'],
+  },
   dayTabsContent: {
     paddingHorizontal: SPACING['space/screen'],
     // The ScrollView clips its content, so this leaves room for the tabs' tap-target slop above.
     paddingTop: SPACING['space/xs'],
     paddingBottom: SPACING['space/section'],
+  },
+  // Behind the ⇅ the first tab starts a tab-gap away from it, not a screen margin.
+  dayTabsContentAfterReorder: {
+    paddingLeft: SPACING['space/gap-tight'],
   },
   content: {
     flex: 1,
