@@ -18,7 +18,7 @@
 // JSX/rendering only — styles live in MesoEditorBasicsStepStyles.ts and the pure Continue-gate
 // check in MesoEditorBasicsStepLogic.ts, per the code-style skill.
 
-import { Keyboard, Pressable, Text, View } from 'react-native';
+import { Keyboard, Pressable, View } from 'react-native';
 
 import {
   MAX_DAYS_PER_WEEK,
@@ -28,7 +28,7 @@ import {
 } from '@domain/mesocycleValidators';
 import type { WeightUnit } from '@domain/weightUnit';
 import { assertWeightUnit } from '@domain/weightUnitValidators';
-import { SegmentedControl } from '@design/components/SegmentedControl';
+import { SegmentedRow } from '@design/components/SegmentedRow';
 import { Stepper } from '@design/components/Stepper';
 import { TextField } from '@design/components/TextField';
 import { WEIGHT_UNIT_OPTIONS } from '@design/weightUnitLabel';
@@ -102,9 +102,9 @@ export function MesoEditorBasicsStep({
         />
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Weight unit</Text>
-        <SegmentedControl
+      <View style={[styles.section, styles.unitCard]}>
+        <SegmentedRow
+          label="Weight unit"
           options={WEIGHT_UNIT_OPTIONS}
           value={weightUnit}
           onChange={(value) => {

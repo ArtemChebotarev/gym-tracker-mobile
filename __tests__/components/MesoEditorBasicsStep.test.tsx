@@ -114,9 +114,9 @@ describe('MesoEditorBasicsStep', () => {
     render(<MesoEditorBasicsStep {...BASE_PROPS} onChangeWeightUnit={onChangeWeightUnit} />);
 
     expect(screen.getByText('Weight unit')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Kilograms (kg)', selected: true })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'kg', selected: true })).toBeTruthy();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Pounds (lb)' }));
+    fireEvent.press(screen.getByRole('button', { name: 'lb' }));
 
     expect(onChangeWeightUnit).toHaveBeenCalledWith('lb');
   });

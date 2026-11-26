@@ -211,9 +211,10 @@ describe('SettingsScreen — weight unit', () => {
   test('shows the current unit selected, with what it changes', () => {
     renderScreen({ weightUnit: 'kg' });
 
+    expect(screen.getByText('General')).toBeTruthy();
     expect(screen.getByText('Weight unit')).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: 'Kilograms (kg)', selected: true }),
+      screen.getByRole('button', { name: 'kg', selected: true }),
     ).toBeTruthy();
     expect(
       screen.getByText('New cycles start in this unit. A cycle keeps the unit it was created with.'),
@@ -223,7 +224,7 @@ describe('SettingsScreen — weight unit', () => {
   test('a tap on the other unit changes the setting', () => {
     const { onChangeWeightUnit } = renderScreen({ weightUnit: 'kg' });
 
-    fireEvent.press(screen.getByRole('button', { name: 'Pounds (lb)' }));
+    fireEvent.press(screen.getByRole('button', { name: 'lb' }));
 
     expect(onChangeWeightUnit).toHaveBeenCalledWith('lb');
   });
@@ -232,5 +233,6 @@ describe('SettingsScreen — weight unit', () => {
     renderScreen({ weightUnit: undefined });
 
     expect(screen.queryByText('Weight unit')).toBeNull();
+    expect(screen.queryByText('General')).toBeNull();
   });
 });

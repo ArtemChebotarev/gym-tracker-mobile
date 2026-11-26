@@ -5,8 +5,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { fieldStyles } from '@design/components/fieldStyles';
-import { SPACING } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, RADII, SPACING } from '@design/tokens';
 
 export const styles = StyleSheet.create({
   content: {
@@ -18,8 +17,13 @@ export const styles = StyleSheet.create({
   section: {
     marginBottom: SPACING['space/section'],
   },
-  // The unit picker's label, the same caps label a TextField and a Stepper put over themselves.
-  label: {
-    ...fieldStyles.label,
+  // The unit row's card — the steppers' own: the same ground, border, radius and left edge.
+  unitCard: {
+    backgroundColor: COLORS['surface/card'],
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
+    borderRadius: RADII['radius/field'],
+    paddingLeft: SPACING['space/screen'],
+    paddingRight: SPACING['space/row'],
   },
 });
