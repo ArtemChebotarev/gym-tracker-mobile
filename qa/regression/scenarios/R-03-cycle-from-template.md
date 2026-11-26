@@ -31,10 +31,11 @@ Precondition: no active and no planned cycle (chain step 2: right after R-01).
 - Step 7: the coachmark comes up a moment after the step opens, and does not come back when you
   step back to the first step and forward again.
 - Step 8: the sheet lists Day 1 and Day 2, each with its exercises' names under it; while dragging
-  the other day slides out of the way, and the top row is always called Day 1. The day open in the tabs
-  is lit in the sheet and stays lit as it moves. After "Done" Day 1 holds the medball throws, Heavy
-  Bag and Cooldown, Day 2 the former Day 1, and the tab of the day that was open is the one open. Opening
-  the sheet again and closing it by dragging it down changes nothing.
+  the other day slides out of the way, and each day keeps its own number in the sheet (the list
+  reads Day 2, Day 1). The day open in the tabs is lit in the sheet and stays lit as it moves.
+  After "Done" the tabs are renumbered: Day 1 holds the medball throws, Heavy Bag and Cooldown,
+  Day 2 the former Day 1, and the tab of the day that was open is the one open. Opening the sheet
+  again and closing it by dragging it down changes nothing.
 - Step 9: the review step shows 4 weeks and 2 days per week, with the days in the new order.
 - After saving: the Cycles tab shows the cycle as planned, with a "Start" pill, and a one-time
   coachmark points at it (first planned cycle only; close it).

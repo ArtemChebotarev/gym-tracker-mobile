@@ -38,12 +38,13 @@ describe('MesoEditorReorderDaysSheet (GT-270)', () => {
     expect(screen.getByLabelText('Move Day 3')).toBeTruthy();
   });
 
-  test('numbers the days by where they sit, so a moved day takes its new number', () => {
+  test('a dragged day keeps its own number until Done, so the move shows', () => {
     render(<MesoEditorReorderDaysSheet {...PROPS} order={[2, 1, 3]} />);
 
     const first = within(screen.getByTestId('reorder-day-1'));
-    expect(first.getByText('Day 1')).toBeTruthy();
+    expect(first.getByText('Day 2')).toBeTruthy();
     expect(first.getByText('Squat')).toBeTruthy();
+    expect(screen.getByLabelText('Move Day 2')).toBeTruthy();
   });
 
   test('lights the open day, and the light goes with it to where it was dragged', () => {

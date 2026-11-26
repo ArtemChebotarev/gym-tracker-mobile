@@ -2,9 +2,10 @@
 // as a list, each with its exercises under it, dragged into a new order by the "≡" handle — the
 // same drag as the step's own exercise rows (`useDragReorder`).
 //
-// Days have no names, only their number, so the numbers stay put and the days' contents move:
-// whatever is dragged to the top becomes Day 1. The labels follow the position as you drag, so
-// the list always reads the way the tabs will once it is applied.
+// Each row keeps the number its day has now while it is dragged, so the list can read 1, 4, 3, 2 and
+// shows what was moved (Artem, 26.11.2026 — numbers that followed the position hid every move).
+// Days have no names, only their number, so `Done` renumbers them by place: whatever ends up on
+// top becomes Day 1.
 //
 // The day open behind the sheet is lit, in its tab's own accent, and the light goes with it as it is
 // dragged; after `Done` its tab is the one open, wherever the day landed (Artem, 26.11.2026).
@@ -86,14 +87,14 @@ export function MesoEditorReorderDaysSheet({
           >
             <View
               {...drag.handleProps(index)}
-              accessibilityLabel={`Move Day ${position}`}
+              accessibilityLabel={`Move Day ${dayNumber}`}
               hitSlop={tapTargetSlop(SIZES['size/control-inline'])}
               style={styles.handle}
             >
               <Text style={styles.handleGlyph}>≡</Text>
             </View>
             <View style={styles.main}>
-              <Text style={[styles.dayTitle, isOpen && styles.dayTitleOpen]}>{`Day ${position}`}</Text>
+              <Text style={[styles.dayTitle, isOpen && styles.dayTitleOpen]}>{`Day ${dayNumber}`}</Text>
               <Text style={styles.summary} numberOfLines={1}>
                 {reorderDaySummary(getDayExercises(exercisesByDay, dayNumber), exercisesById)}
               </Text>
