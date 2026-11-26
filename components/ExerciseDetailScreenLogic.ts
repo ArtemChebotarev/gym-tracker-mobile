@@ -6,6 +6,7 @@ import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBui
 import type { RoundLog, SetLog } from '@domain/execution';
 import type { ExerciseBestSet } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
+import type { WeightUnit } from '@domain/weightUnit';
 import { formatClock } from '@design/formatClock';
 import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
@@ -38,7 +39,8 @@ export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
 }
 
 /**
- * A logged set's value: `80 kg × 9`. The `· 2 RIR` tail is rendered separately and a step quieter
+ * A logged set's value: `80 kg × 9`, in the unit of the block it was logged in (GT-269) — as it
+ * was logged, never converted. The `· 2 RIR` tail is rendered separately and a step quieter
  * (the mockup), so it isn't part of this string — see `formatSetRirTail`.
  *
  * The weight goes through the workout row's own formatter, so a `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
@@ -49,13 +51,14 @@ export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
  */
 export function formatSetValue(
   setLog: SetLog,
+  unit: WeightUnit,
   equipment?: Equipment,
   powerLoad?: PowerLoad,
 ): string {
   if (powerLoad === 'level') {
     return `Level ${formatRowWeight(setLog.weight)} × ${setLog.reps}`;
   }
-  return `${formatLoggedWeight(setLog, equipment)} kg × ${setLog.reps}`;
+  return `${formatLoggedWeight(setLog, equipment)} ${unit} × ${setLog.reps}`;
 }
 
 /**
@@ -162,6 +165,7 @@ export type ExerciseLogRow = { key: string; label: string; value: string; tail?:
  */
 export function exerciseLogRows(
   logs: { setLogs: readonly SetLog[]; roundLogs: readonly RoundLog[] },
+  unit: WeightUnit,
   equipment?: Equipment,
   powerLoad?: PowerLoad,
 ): ExerciseLogRow[] {
@@ -169,7 +173,7 @@ export function exerciseLogRows(
     ...logs.setLogs.map((setLog) => ({
       key: setLog.id,
       label: formatSetLabel(setLog),
-      value: formatSetValue(setLog, equipment, powerLoad),
+      value: formatSetValue(setLog, unit, equipment, powerLoad),
       tail: formatSetRirTail(setLog, powerLoad),
     })),
     ...logs.roundLogs.map((roundLog) => ({

@@ -116,12 +116,22 @@ describe('buildExerciseHistory', () => {
       weekNumber: 3,
       dayNumber: 2,
       completedAt: '2026-09-10T12:00:00.000Z',
+      weightUnit: 'kg',
       roundLogs: [],
       setLogs: [
         expect.objectContaining({ setNumber: 1 }),
         expect.objectContaining({ setNumber: 2 }),
       ],
     });
+  });
+
+  // GT-269: a session's sets are in the unit of its block.
+  test('carries the unit of the session’s mesocycle', () => {
+    const groups = buildExerciseHistory([
+      performance({ ...UPPER, weightUnit: 'lb' }, { weekNumber: 1, dayNumber: 1 }, [{ id: 'a' }]),
+    ]);
+
+    expect(groups[0]?.sessions[0]?.weightUnit).toBe('lb');
   });
 
   test('leaves out a session still in progress and one with no sets', () => {

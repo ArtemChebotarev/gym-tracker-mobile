@@ -144,5 +144,28 @@ export function describeExerciseHistoryContract(harness: RepositoryHarness): voi
         repositories().exerciseHistoryRepo.listByExerciseId('exercise-deadlift'),
       ).resolves.toEqual([]);
     });
+
+    // GT-269: the library's caption — the newest set, in the unit of the block it was logged in.
+    test('getLastSet gives the newest set with its mesocycle’s unit, or null', async () => {
+      const { mesocycleRepo, setLogRepo, exerciseHistoryRepo } = repositories();
+      const fullBody = await mesocycleRepo.getById('meso-2');
+      await mesocycleRepo.update({ ...fullBody!, weightUnit: 'lb' });
+      const newest = await setLogRepo.create(
+        makeSetLog({
+          id: 'log-4',
+          sessionExerciseId: 'se-3',
+          exerciseId: BENCH_PRESS,
+          setNumber: 2,
+          weight: 135,
+          completedAt: '2026-08-27T08:00:00.000Z',
+        }),
+      );
+
+      await expect(exerciseHistoryRepo.getLastSet(BENCH_PRESS)).resolves.toEqual({
+        setLog: newest,
+        weightUnit: 'lb',
+      });
+      await expect(exerciseHistoryRepo.getLastSet('exercise-deadlift')).resolves.toBeNull();
+    });
   });
 }

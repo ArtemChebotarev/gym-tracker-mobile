@@ -2,6 +2,7 @@ import type { Exercise } from '@domain/catalog';
 import { toExerciseId } from '@domain/catalog';
 import { buildExerciseListGroups } from '@domain/catalogListing';
 import type { RoundLog, SetLog } from '@domain/execution';
+import type { LastSetLog } from '@domain/exerciseHistory';
 import { STAMPS } from '../fixtures/stamps';
 
 function makeExercise(overrides: Partial<Exercise> = {}): Exercise {
@@ -69,7 +70,7 @@ describe('buildExerciseListGroups', () => {
     const groups = buildExerciseListGroups([jump], new Map());
 
     expect(groups).toEqual([
-      { muscleGroup: 'quads', entries: [{ exercise: jump, lastSetLog: null, lastRoundLog: null }] },
+      { muscleGroup: 'quads', entries: [{ exercise: jump, lastSet: null, lastRoundLog: null }] },
     ]);
   });
 
@@ -213,8 +214,8 @@ describe('buildExerciseListGroups', () => {
   test('performedOnly keeps only exercises with a last set log', () => {
     const performed = makeExercise({ id: toExerciseId('e-performed') });
     const neverPerformed = makeExercise({ id: toExerciseId('e-never'), name: 'Never Done' });
-    const lastSetLogByExerciseId = new Map([
-      ['e-performed', makeSetLog({ exerciseId: 'e-performed' })],
+    const lastSetLogByExerciseId = new Map<string, LastSetLog | null>([
+      ['e-performed', { setLog: makeSetLog({ exerciseId: 'e-performed' }), weightUnit: 'kg' }],
       ['e-never', null],
     ]);
 
@@ -248,14 +249,14 @@ describe('buildExerciseListGroups', () => {
       new Map([['e-bag', round]]),
     );
 
-    expect(groups[0]?.entries).toEqual([{ exercise: bag, lastSetLog: null, lastRoundLog: round }]);
+    expect(groups[0]?.entries).toEqual([{ exercise: bag, lastSet: null, lastRoundLog: round }]);
   });
 
   test('performedOnly false or omitted keeps exercises regardless of history', () => {
     const performed = makeExercise({ id: toExerciseId('e-performed') });
     const neverPerformed = makeExercise({ id: toExerciseId('e-never'), name: 'Never Done' });
-    const lastSetLogByExerciseId = new Map([
-      ['e-performed', makeSetLog({ exerciseId: 'e-performed' })],
+    const lastSetLogByExerciseId = new Map<string, LastSetLog | null>([
+      ['e-performed', { setLog: makeSetLog({ exerciseId: 'e-performed' }), weightUnit: 'kg' }],
     ]);
 
     const groups = buildExerciseListGroups([performed, neverPerformed], lastSetLogByExerciseId);
@@ -263,13 +264,13 @@ describe('buildExerciseListGroups', () => {
     expect(groups[0]?.entries).toHaveLength(2);
   });
 
-  test("each entry carries its exercise's last set log for the row caption", () => {
+  test("each entry carries its exercise's last set log, with its unit, for the row caption", () => {
     const exercise = makeExercise();
-    const lastSetLog = makeSetLog();
-    const lastSetLogByExerciseId = new Map([['exercise-bench-press', lastSetLog]]);
+    const lastSet: LastSetLog = { setLog: makeSetLog(), weightUnit: 'lb' };
+    const lastSetLogByExerciseId = new Map([['exercise-bench-press', lastSet]]);
 
     const groups = buildExerciseListGroups([exercise], lastSetLogByExerciseId);
 
-    expect(groups[0]?.entries[0]?.lastSetLog).toEqual(lastSetLog);
+    expect(groups[0]?.entries[0]?.lastSet).toEqual(lastSet);
   });
 });

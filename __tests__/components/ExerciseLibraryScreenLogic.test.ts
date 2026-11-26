@@ -58,12 +58,12 @@ describe('countEntries', () => {
         entries: [
           {
             exercise: exercise({ id: toExerciseId('a'), name: 'A', muscleGroup: 'back' }),
-            lastSetLog: null,
+            lastSet: null,
             lastRoundLog: null,
           },
           {
             exercise: exercise({ id: toExerciseId('b'), name: 'B', muscleGroup: 'back' }),
-            lastSetLog: null,
+            lastSet: null,
             lastRoundLog: null,
           },
         ],
@@ -80,11 +80,24 @@ describe('formatSubtitle', () => {
   });
 
   test('weight, reps, and a relative date when there is a last set log', () => {
-    expect(formatSubtitle(setLog({ weight: 85, reps: 8 }))).toContain('85 kg × 8');
+    expect(formatSubtitle({ setLog: setLog({ weight: 85, reps: 8 }), weightUnit: 'kg' })).toContain(
+      '85 kg × 8',
+    );
+  });
+
+  // GT-269: the last set as it was logged, in its own block's unit.
+  test('a set from a block in pounds reads in pounds', () => {
+    expect(
+      formatSubtitle({ setLog: setLog({ weight: 135, reps: 5 }), weightUnit: 'lb' }),
+    ).toContain('135 lb × 5');
   });
 
   test('a power set on levels reads as a level', () => {
-    expect(formatSubtitle(setLog({ weight: 2, reps: 3 }), 'power', 'level')).toMatch(
+    expect(formatSubtitle(
+        { setLog: setLog({ weight: 2, reps: 3 }), weightUnit: 'kg' },
+        'power',
+        'level',
+      )).toMatch(
       /^Power · Level 2 × 3 · /,
     );
   });
@@ -184,10 +197,10 @@ describe("the type in a row's subtitle", () => {
       type: 'power',
     });
 
-    expect(rowSubtitle({ exercise: plain, lastSetLog: null, lastRoundLog: null })).toBe(
+    expect(rowSubtitle({ exercise: plain, lastSet: null, lastRoundLog: null })).toBe(
       'Never performed',
     );
-    expect(rowSubtitle({ exercise: slam, lastSetLog: null, lastRoundLog: null })).toBe(
+    expect(rowSubtitle({ exercise: slam, lastSet: null, lastRoundLog: null })).toBe(
       'Power · Never performed',
     );
   });

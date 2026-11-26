@@ -1,4 +1,4 @@
-import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
+import type { ExerciseHistoryPerformance, LastSetLog } from '@domain/exerciseHistory';
 
 /**
  * Reads one exercise's performances across every mesocycle — the raw material behind the Exercise
@@ -18,4 +18,11 @@ export interface ExerciseHistoryRepository {
    * aggregate nor a history row can say where it belongs.
    */
   listByExerciseId(exerciseId: string): Promise<ExerciseHistoryPerformance[]>;
+
+  /**
+   * The most recent set log of `exerciseId`, by `completedAt`, with the unit of the mesocycle its
+   * session belongs to (GT-269) — or `null` when it has never logged a set. A set log carries no
+   * unit of its own: a block's unit is fixed once it starts, so the block's is the set's.
+   */
+  getLastSet(exerciseId: string): Promise<LastSetLog | null>;
 }

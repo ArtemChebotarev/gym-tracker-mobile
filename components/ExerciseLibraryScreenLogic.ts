@@ -3,9 +3,10 @@
 
 import type { Exercise, ExerciseType, MuscleGroup } from '@domain/catalog';
 import type { ExerciseListEntry, ExerciseListGroup } from '@domain/catalogListing';
-import type { RoundLog, SetLog } from '@domain/execution';
+import type { RoundLog } from '@domain/execution';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
+import type { LastSetLog } from '@domain/exerciseHistory';
 import { parseUtcIso } from '@domain/time';
 import { getEquipmentLabel } from '@design/equipmentLabel';
 import { getExerciseTypeLabel } from '@design/exerciseTypeLabel';
@@ -41,16 +42,17 @@ export function countEntries(groups: ExerciseListGroup[]): number {
 }
 
 /**
- * What the exercise was last done as, and when: a set — `85 kg × 8`, or `Level 2 × 3` for a power
- * exercise on levels — or a round of an interval or mobility one, by its work: `2:00` (10.1 FR-12).
+ * What the exercise was last done as, and when: a set — `85 kg × 8` in the unit of the block it was
+ * logged in (GT-269), or `Level 2 × 3` for a power exercise on levels — or a round of an interval
+ * or mobility one, by its work: `2:00` (10.1 FR-12).
  */
 export function formatSubtitle(
-  lastLog: SetLog | RoundLog | null,
+  lastLog: LastSetLog | RoundLog | null,
   type: ExerciseType = 'strength',
   powerLoad?: PowerLoad,
 ): string {
   const last = lastLog
-    ? `${formatLastLog(lastLog, powerLoad)} · ${formatRelativeDate(parseUtcIso(lastLog.completedAt))}`
+    ? `${formatLastLog(lastLog, powerLoad)} · ${formatRelativeDate(parseUtcIso(completedAtOf(lastLog)))}`
     : NEVER_PERFORMED;
   // The type is said for the hybrid ones; Strength is the library's default and goes unsaid.
   return type === 'strength' ? last : `${getExerciseTypeLabel(type)} · ${last}`;
@@ -59,16 +61,20 @@ export function formatSubtitle(
 /** The subtitle of a library row: what it was last done as, led by the type unless Strength. */
 export function rowSubtitle(entry: ExerciseListEntry): string {
   return formatSubtitle(
-    entry.lastSetLog ?? entry.lastRoundLog,
+    entry.lastSet ?? entry.lastRoundLog,
     exerciseTypeOf(entry.exercise),
     powerLoadOf(entry.exercise),
   );
 }
 
-function formatLastLog(lastLog: SetLog | RoundLog, powerLoad?: PowerLoad): string {
-  return 'roundNumber' in lastLog
-    ? formatClock(lastLog.workSec)
-    : formatSetValue(lastLog, undefined, powerLoad);
+function completedAtOf(lastLog: LastSetLog | RoundLog): string {
+  return 'setLog' in lastLog ? lastLog.setLog.completedAt : lastLog.completedAt;
+}
+
+function formatLastLog(lastLog: LastSetLog | RoundLog, powerLoad?: PowerLoad): string {
+  return 'setLog' in lastLog
+    ? formatSetValue(lastLog.setLog, lastLog.weightUnit, undefined, powerLoad)
+    : formatClock(lastLog.workSec);
 }
 
 /** Title-line qualifier telling same-named exercises apart (task 081: `Bench Press · Dumbbell`).

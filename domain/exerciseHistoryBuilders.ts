@@ -51,6 +51,7 @@ function toHistorySession(performance: ExerciseHistoryPerformance): ExerciseHist
     weekNumber: performance.session.weekNumber,
     dayNumber: performance.session.dayNumber,
     completedAt: completionOf(performance),
+    weightUnit: performance.mesocycle.weightUnit,
     setLogs,
     roundLogs,
   };

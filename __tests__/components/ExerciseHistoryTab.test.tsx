@@ -29,6 +29,7 @@ const GROUPS: ExerciseHistoryMesocycle[] = [
         weekNumber: 1,
         dayNumber: 2,
         completedAt: '2026-09-17T12:00:00.000Z',
+        weightUnit: 'kg',
         roundLogs: [],
         setLogs: [setLog({ id: 'log-3', weight: 85, reps: 8, rir: 2 })],
       },
@@ -43,6 +44,7 @@ const GROUPS: ExerciseHistoryMesocycle[] = [
         weekNumber: 3,
         dayNumber: 1,
         completedAt: '2026-08-10T12:00:00.000Z',
+        weightUnit: 'kg',
         roundLogs: [],
         setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 8 })],
       },
@@ -87,6 +89,23 @@ describe('ExerciseHistoryTab', () => {
     expect(screen.getByText('85 kg × 8 · 2 RIR')).toBeTruthy();
   });
 
+  // GT-269: every session in the unit its block was counted in, as logged — never converted.
+  test('reads each block’s sets in that block’s unit', () => {
+    const [fullBody, upperLower] = GROUPS;
+    renderTab({
+      groups: [
+        {
+          ...fullBody!,
+          sessions: fullBody!.sessions.map((session) => ({ ...session, weightUnit: 'lb' as const })),
+        },
+        upperLower!,
+      ],
+    });
+
+    expect(screen.getByText('85 lb × 8 · 2 RIR')).toBeTruthy();
+    expect(screen.getByText('80 kg × 9 · 2 RIR')).toBeTruthy();
+  });
+
   test('a set with no RIR renders without the tail', () => {
     renderTab();
 
@@ -106,6 +125,7 @@ describe('ExerciseHistoryTab', () => {
               weekNumber: 1,
               dayNumber: 1,
               completedAt: '2026-08-10T12:00:00.000Z',
+              weightUnit: 'kg',
               roundLogs: [],
               setLogs: [setLog({ weight: 5, bodyWeight: 83 })],
             },
@@ -142,6 +162,7 @@ describe('ExerciseHistoryTab', () => {
               weekNumber: 2,
               dayNumber: 1,
               completedAt: '2026-08-10T12:00:00.000Z',
+              weightUnit: 'kg',
               roundLogs: [],
               setLogs: [setLog({ weight: 2, reps: 3, rir: 2 })],
             },

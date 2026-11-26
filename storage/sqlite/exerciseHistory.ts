@@ -1,7 +1,7 @@
 import type { RoundLog, Session, SetLog, SetTarget } from '@domain/execution';
-import type { ExerciseHistoryPerformance } from '@domain/exerciseHistory';
+import type { ExerciseHistoryPerformance, LastSetLog } from '@domain/exerciseHistory';
 import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
-import { and, asc, eq, inArray, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 
 import type { SqliteDatabase } from './db';
 import { runQuery } from './errors';
@@ -153,5 +153,22 @@ export class SqliteExerciseHistoryRepository implements ExerciseHistoryRepositor
       const mesocycle = byId.get(session.mesoId);
       return mesocycle ? [{ session, mesocycle, setLogs: logs, roundLogs: rounds }] : [];
     });
+  }
+
+  async getLastSet(exerciseId: string): Promise<LastSetLog | null> {
+    // The `set_log_exercise_completed` index serves the order; the three hops are by primary key.
+    const [row] = await runQuery(() =>
+      this.db
+        .select({ setLog: setLogs, weightUnit: mesocycles.weightUnit })
+        .from(setLogs)
+        .innerJoin(sessionExercises, eq(setLogs.sessionExerciseId, sessionExercises.id))
+        .innerJoin(sessions, eq(sessionExercises.sessionId, sessions.id))
+        .innerJoin(mesocycles, eq(sessions.mesoId, mesocycles.id))
+        .where(eq(setLogs.exerciseId, exerciseId))
+        .orderBy(desc(setLogs.completedAt))
+        .limit(1)
+        .all(),
+    );
+    return row === undefined ? null : { setLog: rowToSetLog(row.setLog), weightUnit: row.weightUnit };
   }
 }

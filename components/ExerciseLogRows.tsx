@@ -4,6 +4,7 @@
 import type { Equipment } from '@domain/catalog';
 import type { RoundLog, SetLog } from '@domain/execution';
 import type { PowerLoad } from '@domain/exerciseConfig';
+import type { WeightUnit } from '@domain/weightUnit';
 
 import { ExerciseDetailCardRow } from './ExerciseDetailCard';
 import { exerciseLogRows } from './ExerciseDetailScreenLogic';
@@ -11,6 +12,8 @@ import { exerciseLogRows } from './ExerciseDetailScreenLogic';
 export type ExerciseLogRowsProps = {
   setLogs: readonly SetLog[];
   roundLogs: readonly RoundLog[];
+  /** The unit of the block the sets were logged in (GT-269). */
+  weightUnit: WeightUnit;
   /** The exercise's equipment — a `bodyweight-weighted` set reads back split (task 105). */
   equipment?: Equipment;
   /** Set for a power exercise: its sets read in its own load, with no RIR (GT-110). */
@@ -20,10 +23,11 @@ export type ExerciseLogRowsProps = {
 export function ExerciseLogRows({
   setLogs,
   roundLogs,
+  weightUnit,
   equipment,
   powerLoad,
 }: ExerciseLogRowsProps) {
-  const rows = exerciseLogRows({ setLogs, roundLogs }, equipment, powerLoad);
+  const rows = exerciseLogRows({ setLogs, roundLogs }, weightUnit, equipment, powerLoad);
   return (
     <>
       {rows.map((row, index) => (

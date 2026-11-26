@@ -68,6 +68,7 @@ const HISTORY: ExerciseHistoryMesocycle[] = [
         weekNumber: 3,
         dayNumber: 2,
         completedAt: '2026-09-17T12:00:00.000Z',
+        weightUnit: 'kg',
         roundLogs: [],
         setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
       },

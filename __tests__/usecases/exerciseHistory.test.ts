@@ -49,7 +49,12 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
 function deps(performances: ExerciseHistoryPerformance[]): {
   exerciseHistoryRepo: ExerciseHistoryRepository;
 } {
-  return { exerciseHistoryRepo: { listByExerciseId: jest.fn().mockResolvedValue(performances) } };
+  return {
+    exerciseHistoryRepo: {
+      listByExerciseId: jest.fn().mockResolvedValue(performances),
+      getLastSet: jest.fn().mockResolvedValue(null),
+    },
+  };
 }
 
 describe('loadExerciseHistory', () => {

@@ -32,7 +32,11 @@ function setLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 function entry(exerciseValue: Exercise, lastSetLog: SetLog | null = null): ExerciseListEntry {
-  return { exercise: exerciseValue, lastSetLog, lastRoundLog: null };
+  return {
+    exercise: exerciseValue,
+    lastSet: lastSetLog === null ? null : { setLog: lastSetLog, weightUnit: 'kg' },
+    lastRoundLog: null,
+  };
 }
 
 const BASE_PROPS: ExerciseLibraryScreenProps = {

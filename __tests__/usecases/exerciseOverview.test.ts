@@ -23,7 +23,10 @@ function exercise(overrides: Partial<Exercise> = {}): Exercise {
 }
 
 function historyRepo(performances: ExercisePerformance[] = []): ExerciseHistoryRepository {
-  return { listByExerciseId: jest.fn().mockResolvedValue(performances) };
+  return {
+    listByExerciseId: jest.fn().mockResolvedValue(performances),
+    getLastSet: jest.fn().mockResolvedValue(null),
+  };
 }
 
 async function deps(exercises: Exercise[], performances: ExercisePerformance[] = []) {
