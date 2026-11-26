@@ -147,6 +147,14 @@ describe('confirmScratchMesocycleDraft', () => {
     expect(stored?.progressionSettings.historyLookbackDays).toBe(30);
   });
 
+  test('counts a new mesocycle in the unit picked on step 1, over the setting (GT-269)', async () => {
+    const deps = makeDeps();
+
+    await expect(
+      confirmScratchMesocycleDraft({ ...draftInput, weightUnit: 'lb' }, deps),
+    ).resolves.toMatchObject({ weightUnit: 'lb' });
+  });
+
   // GT-269: the unit is chosen once, at creation, from the setting — and it stays the block's.
   test('counts a new mesocycle in the unit of the settings, and keeps it when they change', async () => {
     const deps = makeDeps();

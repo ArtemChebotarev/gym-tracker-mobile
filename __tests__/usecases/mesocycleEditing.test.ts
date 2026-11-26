@@ -104,6 +104,48 @@ describe('editPlannedMesocycle', () => {
     },
   );
 
+  // GT-269: nothing is logged before Start, so the unit is still the user's to change.
+  test('changes the unit of a planned mesocycle, and keeps it when the edit names none', async () => {
+    const deps = makeDeps();
+    await deps.mesocycleRepo.create(makeMesocycle({ id: 'meso' }));
+    const input = { name: 'Push/Pull', lengthWeeks: 6, daysPerWeek: 2, weekPlan: originalWeekPlan };
+
+    await expect(
+      editPlannedMesocycle('meso', { ...input, weightUnit: 'lb' }, deps),
+    ).resolves.toMatchObject({ weightUnit: 'lb' });
+    await expect(editPlannedMesocycle('meso', input, deps)).resolves.toMatchObject({
+      weightUnit: 'lb',
+    });
+  });
+
+  test('refuses a new unit for a started mesocycle, as it refuses every edit', async () => {
+    const deps = makeDeps();
+    const existing = makeMesocycle({
+      id: 'meso',
+      status: 'active',
+      startDate: '2026-09-02T08:00:00.000Z',
+      weekPlan: undefined,
+    });
+    await deps.mesocycleRepo.create(existing);
+
+    const error = await rejectionOf(
+      editPlannedMesocycle(
+        'meso',
+        {
+          name: 'Push/Pull',
+          lengthWeeks: 6,
+          daysPerWeek: 2,
+          weekPlan: originalWeekPlan,
+          weightUnit: 'lb',
+        },
+        deps,
+      ),
+    );
+
+    expect(isConflictError(error)).toBe(true);
+    await expect(deps.mesocycleRepo.getById('meso')).resolves.toMatchObject({ weightUnit: 'kg' });
+  });
+
   test('rejects an unknown id with a NotFoundError', async () => {
     const deps = makeDeps();
 

@@ -91,6 +91,7 @@ export async function addExercises(
             rowCount: addedExerciseRowCount(typeById.get(exerciseId)),
             weekRir,
             settings: mesocycle.progressionSettings,
+            weightUnit: mesocycle.weightUnit,
             equipment: equipmentById.get(exerciseId),
             type: typeById.get(exerciseId),
             now,

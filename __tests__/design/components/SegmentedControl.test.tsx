@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { SegmentedControl } from '@design/components/SegmentedControl';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
@@ -32,5 +33,15 @@ describe('SegmentedControl', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Meso' }));
 
     expect(onChange).toHaveBeenCalledWith('meso');
+  });
+
+  // GT-269: the small one at the end of a row — as tall as a pill, each segment its label's width.
+  test('compact: one pill tall, segments sized to their labels', () => {
+    render(<SegmentedControl compact options={OPTIONS} value="week" onChange={() => {}} />);
+
+    const segment = StyleSheet.flatten(
+      screen.getByRole('button', { name: 'Week' }).props.style,
+    ) as { flex?: number };
+    expect(segment.flex).toBe(0);
   });
 });

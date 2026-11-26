@@ -28,8 +28,10 @@ function setLog(overrides: Partial<SetLog> = {}): SetLog {
 }
 
 describe('formatBestSet', () => {
-  test('is weight by reps, with no unit', () => {
-    expect(formatBestSet({ weight: 85, reps: 8 })).toBe('85×8');
+  // GT-269: with blocks in both units a bare number could be either.
+  test('is weight by reps, in the unit it was logged in', () => {
+    expect(formatBestSet({ weight: 85, reps: 8, weightUnit: 'kg' })).toBe('85 kg × 8');
+    expect(formatBestSet({ weight: 185, reps: 5, weightUnit: 'lb' })).toBe('185 lb × 5');
   });
 });
 
@@ -149,7 +151,7 @@ describe('exerciseSettings — power', () => {
     exerciseSettings({ type: 'power', config: { type: 'power', load, noHeavierAvailable } }).rows;
 
   test.each([
-    ['weight', 'Kg'],
+    ['weight', 'Weight'],
     ['level', 'Level'],
     ['none', 'None'],
   ] as const)('a power load of %s reads %s, as in the New exercise sheet', (load, value) => {
@@ -158,7 +160,7 @@ describe('exerciseSettings — power', () => {
 
   test('No heavier available shows only while it is on', () => {
     expect(power('weight', true)).toEqual([
-      { key: 'load', label: 'Load', value: 'Kg' },
+      { key: 'load', label: 'Load', value: 'Weight' },
       { key: 'noHeavier', label: 'No heavier available', value: 'On' },
     ]);
   });
@@ -173,7 +175,7 @@ describe('exerciseSettings — power', () => {
 
   test('a power exercise stored without a config reads as the default load', () => {
     expect(exerciseSettings({ type: 'power' })).toEqual({
-      rows: [{ key: 'load', label: 'Load', value: 'Kg' }],
+      rows: [{ key: 'load', label: 'Load', value: 'Weight' }],
     });
   });
 

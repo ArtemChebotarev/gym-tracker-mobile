@@ -57,6 +57,11 @@ export type ScratchMesocycleDraftInput = {
    * with the cycle as `Mesocycle.exerciseSettings`; absent or empty for a cycle of strength only.
    */
   exerciseSettings?: ExerciseSettingsById;
+  /**
+   * The unit picked on step 1 (GT-269). Absent means the one the caller passes in — on Confirm,
+   * `Settings.weightUnit`; on an edit, what the block already has.
+   */
+  weightUnit?: WeightUnit;
 };
 
 /**
@@ -88,7 +93,7 @@ function buildMesocycleDraft(
     status: 'planned',
     origin,
     progressionSettings: { ...progressionSettings },
-    weightUnit,
+    weightUnit: input.weightUnit ?? weightUnit,
     weekPlan: input.weekPlan,
     ...exerciseSettingsField(input.exerciseSettings),
   };
@@ -206,6 +211,9 @@ export function applyPlannedMesocycleEdit(
   const { exerciseSettings: _previous, ...rest } = current;
   return {
     ...rest,
+    // A planned block has nothing logged yet, so its unit may still change (GT-269); once it
+    // starts, this function refuses it with everything else.
+    weightUnit: input.weightUnit ?? current.weightUnit,
     name: input.name,
     lengthWeeks: input.lengthWeeks,
     daysPerWeek: input.daysPerWeek,

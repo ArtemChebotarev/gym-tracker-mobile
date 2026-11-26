@@ -13,6 +13,7 @@ function renderScreen(props: Partial<SettingsScreenProps> = {}) {
   const onChangeRestBetweenSets = jest.fn();
   const onChangeGetReadySec = jest.fn();
   const onChangeSignals = jest.fn();
+  const onChangeWeightUnit = jest.fn();
   const onOpenPrivacyPolicy = jest.fn();
   const onOpenSupport = jest.fn();
   render(
@@ -21,9 +22,11 @@ function renderScreen(props: Partial<SettingsScreenProps> = {}) {
         restBetweenSets={{ enabled: true, restSec: 120 }}
         getReadySec={5}
         signals={{ sound: true, vibration: true }}
+        weightUnit="kg"
         onChangeRestBetweenSets={onChangeRestBetweenSets}
         onChangeGetReadySec={onChangeGetReadySec}
         onChangeSignals={onChangeSignals}
+        onChangeWeightUnit={onChangeWeightUnit}
         onOpenPrivacyPolicy={onOpenPrivacyPolicy}
         onOpenSupport={onOpenSupport}
         {...props}
@@ -34,6 +37,7 @@ function renderScreen(props: Partial<SettingsScreenProps> = {}) {
     onChange: onChangeRestBetweenSets,
     onChangeGetReadySec,
     onChangeSignals,
+    onChangeWeightUnit,
     onOpenPrivacyPolicy,
     onOpenSupport,
   };
@@ -199,5 +203,36 @@ describe('Notifications', () => {
 
     expect(screen.getByText('About')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Privacy Policy' })).toBeTruthy();
+  });
+});
+
+// GT-269: the unit new cycles start in.
+describe('SettingsScreen — weight unit', () => {
+  test('shows the current unit selected, with what it changes', () => {
+    renderScreen({ weightUnit: 'kg' });
+
+    expect(screen.getByText('General')).toBeTruthy();
+    expect(screen.getByText('Weight unit')).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'kg', selected: true }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('New cycles start in this unit. A cycle keeps the unit it was created with.'),
+    ).toBeTruthy();
+  });
+
+  test('a tap on the other unit changes the setting', () => {
+    const { onChangeWeightUnit } = renderScreen({ weightUnit: 'kg' });
+
+    fireEvent.press(screen.getByRole('button', { name: 'lb' }));
+
+    expect(onChangeWeightUnit).toHaveBeenCalledWith('lb');
+  });
+
+  test('is left out while it loads', () => {
+    renderScreen({ weightUnit: undefined });
+
+    expect(screen.queryByText('Weight unit')).toBeNull();
+    expect(screen.queryByText('General')).toBeNull();
   });
 });

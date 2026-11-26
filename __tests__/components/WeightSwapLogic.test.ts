@@ -14,6 +14,7 @@ describe('the weight swap popover and note', () => {
         target: { targetReps, suggestedWeight },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
         equipment: 'dumbbell' as const,
       }),
     };
@@ -25,6 +26,7 @@ describe('the weight swap popover and note', () => {
       target: { targetReps: 7, suggestedWeight: 16 },
       settings,
       isDeload: false,
+      weightUnit: 'kg',
       equipment: 'bodyweight-weighted' as const,
       bodyWeight: 83,
     }),
@@ -181,6 +183,7 @@ describe('the range track labels', () => {
           target: { targetReps, suggestedWeight },
           settings: defaultProgressionSettings,
           isDeload: false,
+          weightUnit: 'kg',
           equipment: 'dumbbell',
         }),
       },

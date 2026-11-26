@@ -11,6 +11,7 @@ import type {
   TemplateMesocycleDraftInput,
 } from '@domain/mesocycleBuilders';
 import type { WeekPlan, WeekPlanExercise } from '@domain/plan';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { TemplateDraft } from '@domain/templateConverters';
 import type { CopyWeekMesocycleConfirmInput } from '@usecases/mesocycleCreation';
 
@@ -48,6 +49,11 @@ export type MesoBuilderDraft = {
   source?: { mesoId: string; weekNumber: number };
   /** Flow B only — the template the draft was filled from. */
   templateId?: string;
+  /**
+   * The unit picked on step 1 (GT-269). Absent until it is picked or the draft arrives with one
+   * (an edit, a copy): step 1 then shows, and Save keeps, the unit new cycles start in.
+   */
+  weightUnit?: WeightUnit;
 };
 
 export const DEFAULT_MESO_BUILDER_DRAFT: MesoBuilderDraft = {
@@ -81,6 +87,7 @@ export function toScratchMesocycleDraftInput(draft: MesoBuilderDraft): ScratchMe
     daysPerWeek: draft.daysPerWeek,
     weekPlan: { days },
     ...(Object.keys(exerciseSettings).length > 0 && { exerciseSettings }),
+    ...(draft.weightUnit !== undefined && { weightUnit: draft.weightUnit }),
   };
 }
 
@@ -148,6 +155,7 @@ export function toMesoBuilderDraft(mesocycle: Mesocycle): MesoBuilderDraft {
     lengthWeeks: mesocycle.lengthWeeks,
     daysPerWeek: mesocycle.daysPerWeek,
     exercisesByDay: toExercisesByDay(mesocycle.weekPlan),
+    weightUnit: mesocycle.weightUnit,
     ...(mesocycle.exerciseSettings && { exerciseSettings: { ...mesocycle.exerciseSettings } }),
   };
 }
@@ -171,7 +179,7 @@ export function toMesoBuilderDraft(mesocycle: Mesocycle): MesoBuilderDraft {
  * (GT-159, `extractSourceWeek`) — the plan, not the load, so it does come across.
  */
 export function toCopiedMesoBuilderDraft(
-  source: Pick<Mesocycle, 'id' | 'name' | 'lengthWeeks' | 'daysPerWeek'>,
+  source: Pick<Mesocycle, 'id' | 'name' | 'lengthWeeks' | 'daysPerWeek' | 'weightUnit'>,
   weekPlan: WeekPlan,
   weekNumber: number,
   exerciseSettings: ExerciseSettingsById = {},
@@ -182,6 +190,8 @@ export function toCopiedMesoBuilderDraft(
     daysPerWeek: source.daysPerWeek,
     exercisesByDay: toExercisesByDay(weekPlan),
     source: { mesoId: source.id, weekNumber },
+    // A copy goes on in the unit its source was counted in: that is where its history is (GT-269).
+    weightUnit: source.weightUnit,
     ...(Object.keys(exerciseSettings).length > 0 && { exerciseSettings: { ...exerciseSettings } }),
   };
 }

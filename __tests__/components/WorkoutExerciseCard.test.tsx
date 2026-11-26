@@ -688,6 +688,7 @@ describe('WorkoutExerciseCard — another weight (task 121)', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
 
@@ -764,6 +765,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
 

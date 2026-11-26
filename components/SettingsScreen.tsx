@@ -17,13 +17,17 @@ import { ScrollView, Text, View } from 'react-native';
 
 import { ListRow } from '@design/components/ListRow';
 import { RootScreen } from '@design/components/RootScreen';
+import { SegmentedRow } from '@design/components/SegmentedRow';
 import { StepperRow } from '@design/components/StepperRow';
 import { TimePickerSheet } from '@design/components/TimePickerSheet';
 import { Toggle } from '@design/components/Toggle';
 import { formatClock } from '@design/formatClock';
+import { WEIGHT_UNIT_OPTIONS } from '@design/weightUnitLabel';
 import { GET_READY_RANGE_SEC, GET_READY_STEP_SEC } from '@domain/intervalTimer';
 import { REST_BETWEEN_SETS_RANGE_SEC, type RestBetweenSets } from '@domain/restTimer';
 import type { Signals } from '@domain/signals';
+import type { WeightUnit } from '@domain/weightUnit';
+import { assertWeightUnit } from '@domain/weightUnitValidators';
 import type { LoadError } from '@state/loadError';
 
 import { LoadErrorState } from './LoadErrorState';
@@ -45,12 +49,15 @@ export type SettingsScreenProps = {
   restBetweenSets?: RestBetweenSets;
   getReadySec?: number;
   signals?: Signals;
+  /** The unit new cycles start in (GT-269). Absent while it loads. */
+  weightUnit?: WeightUnit;
   /** Absent until the permission and the flags have been read. */
   notifications?: RestNotificationsSectionProps;
   loadError?: LoadError;
   onChangeRestBetweenSets: (setting: RestBetweenSets) => void;
   onChangeGetReadySec: (getReadySec: number) => void;
   onChangeSignals: (signals: Signals) => void;
+  onChangeWeightUnit: (weightUnit: WeightUnit) => void;
   onOpenPrivacyPolicy: () => void;
   onOpenSupport: () => void;
 };
@@ -59,11 +66,13 @@ export function SettingsScreen({
   restBetweenSets,
   getReadySec,
   signals,
+  weightUnit,
   notifications,
   loadError,
   onChangeRestBetweenSets,
   onChangeGetReadySec,
   onChangeSignals,
+  onChangeWeightUnit,
   onOpenPrivacyPolicy,
   onOpenSupport,
 }: SettingsScreenProps) {
@@ -175,6 +184,25 @@ export function SettingsScreen({
           </View>
         )}
         {notifications !== undefined && <RestNotificationsSection {...notifications} />}
+        {weightUnit !== undefined && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>General</Text>
+            <View style={styles.card}>
+              <SegmentedRow
+                label="Weight unit"
+                options={WEIGHT_UNIT_OPTIONS}
+                value={weightUnit}
+                onChange={(value) => {
+                  assertWeightUnit(value);
+                  onChangeWeightUnit(value);
+                }}
+              />
+            </View>
+            <Text style={styles.note}>
+              New cycles start in this unit. A cycle keeps the unit it was created with.
+            </Text>
+          </View>
+        )}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>About</Text>
           <View style={styles.card}>

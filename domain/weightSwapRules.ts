@@ -10,6 +10,7 @@ import { isPureBodyWeight, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import type { SetTarget } from '@domain/execution';
 import type { ProgressionSettings } from '@domain/mesocycle';
+import type { WeightUnit } from '@domain/weightUnit';
 import type {
   WeightRange,
   WeightSwap,
@@ -32,8 +33,11 @@ const BRZYCKI = 37;
  */
 const CLOSE_THRESHOLD = 0.2;
 
-/** Range bounds land on halves of a kilo — the smallest plate anyone actually has. */
-const WEIGHT_STEP = 0.5;
+/**
+ * What range bounds land on, in the block's unit: halves of a kilo, or 2.5 lb — the smallest plate
+ * a gym of either system actually has (GT-269, Artem).
+ */
+const WEIGHT_STEP: Record<WeightUnit, number> = { kg: 0.5, lb: 2.5 };
 
 /**
  * Slack for the 20% comparison. `84 / 70 - 1` is `0.20000000000000018` in binary floating point,
@@ -62,22 +66,22 @@ function loadFor(baseWeight: number, baseReps: number, reps: number): number {
 }
 
 /**
- * A bound moved onto a half kilo, `up` for the light end and `down` for the heavy one — always
- * inward, so the bound itself is a weight the corridor still answers for.
+ * A bound moved onto a `step` (`WEIGHT_STEP`), `up` for the light end and `down` for the heavy one
+ * — always inward, so the bound itself is a weight the corridor still answers for.
  */
-function snap(weight: number, direction: 'up' | 'down'): number {
-  const steps = withoutFloatNoise(weight / WEIGHT_STEP);
-  return (direction === 'up' ? Math.ceil(steps) : Math.floor(steps)) * WEIGHT_STEP;
+function snap(weight: number, direction: 'up' | 'down', step: number): number {
+  const steps = withoutFloatNoise(weight / step);
+  return (direction === 'up' ? Math.ceil(steps) : Math.floor(steps)) * step;
 }
 
 /**
  * A span of loads as the set row states weights: minus the body weight on a `bodyweight-weighted`
  * exercise, and never below +0 — there is no assisted variant to go lighter with.
  */
-function toRange(min: number, max: number, bodyWeight: number): WeightRange {
+function toRange(min: number, max: number, bodyWeight: number, step: number): WeightRange {
   return {
-    min: snap(Math.max(min - bodyWeight, 0), 'up'),
-    max: snap(Math.max(max - bodyWeight, 0), 'down'),
+    min: snap(Math.max(min - bodyWeight, 0), 'up', step),
+    max: snap(Math.max(max - bodyWeight, 0), 'down', step),
   };
 }
 
@@ -92,6 +96,8 @@ export type WeightSwapInput = {
   equipment?: Equipment;
   /** The block's body weight (task 105). Only a `bodyweight-weighted` exercise needs it. */
   bodyWeight?: number;
+  /** The block's unit, which picks the step the ranges land on (GT-269). */
+  weightUnit: WeightUnit;
 };
 
 /**
@@ -111,6 +117,7 @@ export function buildWeightSwap({
   isDeload,
   equipment,
   bodyWeight,
+  weightUnit,
 }: WeightSwapInput): WeightSwap | undefined {
   if (isDeload || isPureBodyWeight(equipment)) {
     return undefined;
@@ -137,6 +144,7 @@ export function buildWeightSwap({
   }
 
   const offset = addedWeight ? (bodyWeight ?? 0) : 0;
+  const step = WEIGHT_STEP[weightUnit];
   // The corridor read as weights: the lightest load still worth `maxReps`, the heaviest still
   // worth `minReps`. Zones are judged by the weight, because the formula's error grows with the
   // distance from the base, not with the rep count.
@@ -150,8 +158,9 @@ export function buildWeightSwap({
       Math.max(base * (1 - CLOSE_THRESHOLD), lightest),
       Math.min(base * (1 + CLOSE_THRESHOLD), heaviest),
       offset,
+      step,
     ),
-    estimateRange: toRange(lightest, heaviest, offset),
+    estimateRange: toRange(lightest, heaviest, offset, step),
   };
   if (addedWeight && bodyWeight !== undefined) {
     swap.bodyWeight = bodyWeight;

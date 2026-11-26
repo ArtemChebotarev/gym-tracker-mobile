@@ -271,6 +271,7 @@ describe('rangesCoachmarkIndex', () => {
       target: { targetReps: 10, suggestedWeight: 15 },
       settings: defaultProgressionSettings,
       isDeload: false,
+      weightUnit: 'kg',
       equipment: 'dumbbell',
     }),
   };

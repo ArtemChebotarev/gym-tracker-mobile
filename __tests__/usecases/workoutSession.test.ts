@@ -123,6 +123,7 @@ function swapOf(targetReps: number, equipment: Equipment, bodyWeight?: number): 
     target: { targetReps, suggestedWeight: 60 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment,
     bodyWeight,
   });

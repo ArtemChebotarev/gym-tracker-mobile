@@ -25,6 +25,7 @@ import { Alert, BackHandler, type View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { toExerciseId, type Exercise, type ExerciseId } from '@domain/catalog';
+import { DEFAULT_WEIGHT_UNIT } from '@domain/weightUnit';
 import { ExerciseFiltersSheet } from '@components/ExerciseFiltersSheet';
 import type { ExerciseLibraryFilters } from '@components/ExerciseLibraryScreen';
 import { countEntries } from '@components/ExerciseLibraryScreenLogic';
@@ -64,6 +65,7 @@ import { useDraftStore, type MesoBuilderDraft } from '@state/draftStore';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
 import { useExerciseLibrary } from '@state/useExerciseLibrary';
 import { useExercisesByIds } from '@state/useExercisesByIds';
+import { useDefaultWeightUnit } from '@state/useWeightUnitSetting';
 
 const BASE_STEPS = 3;
 
@@ -141,6 +143,8 @@ export function MesoEditorScreen({
 }: MesoEditorScreenProps) {
   const router = useRouter();
   const draft = useDraftStore((state) => state.mesoBuilder);
+  // A new cycle starts in the unit of Settings until step 1 picks another (GT-269).
+  const defaultWeightUnit = useDefaultWeightUnit().data ?? DEFAULT_WEIGHT_UNIT;
   // The Review step's progression block, until its cross (GT-225).
   const onboarding = useOnboardingFlags();
   const markOnboardingSeen = useMarkOnboardingSeen();
@@ -374,9 +378,11 @@ export function MesoEditorScreen({
           name={draft.name}
           lengthWeeks={draft.lengthWeeks}
           daysPerWeek={draft.daysPerWeek}
+          weightUnit={draft.weightUnit ?? defaultWeightUnit}
           onChangeName={(name) => setDraft({ ...draft, name })}
           onChangeLengthWeeks={(lengthWeeks) => setDraft({ ...draft, lengthWeeks })}
           onChangeDaysPerWeek={(daysPerWeek) => setDraft({ ...draft, daysPerWeek })}
+          onChangeWeightUnit={(weightUnit) => setDraft({ ...draft, weightUnit })}
           exercisesPrefilled={leadStep !== undefined}
         />
       </WizardScreen>

@@ -1,5 +1,6 @@
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { createSqliteWorkoutStore } from '@storage/sqlite/workoutStore';
 import { targetsFromHistory } from '@usecases/historyTargets';
 import { STAMPS } from '../fixtures/stamps';
@@ -94,6 +95,7 @@ function query(overrides: Partial<Parameters<typeof targetsFromHistory>[0]> = {}
     rowCount: 3,
     weekRir: 2,
     settings: defaultProgressionSettings,
+    weightUnit: 'kg' as const,
     now: NOW,
     ...overrides,
   };
@@ -224,6 +226,32 @@ describe('targetsFromHistory', () => {
     // Carried over as Flow C carries a block: + 1, and no RIR gap — both at RIR 2.
     await expect(targetsFromHistory(query({ rowCount: 1 }), setLogRepo)).resolves.toEqual([
       { setNumber: 1, targetReps: 11, suggestedWeight: 70, estimate: 'other_slot' },
+    ]);
+  });
+
+  // GT-269: a number from a block counted in another unit is not this block's, and a converted one
+  // is a guess — so it is no reference at all, and the rows stay bare.
+  test('sets from a block in another unit give nothing, not an estimate', async () => {
+    const setLogRepo = await setLogRepoWith([
+      {
+        key: 'recent',
+        mesoId: 'meso-past',
+        loggedAt: '2026-08-29T10:00:00.000Z',
+        reps: [10],
+        weight: 135,
+      },
+    ]);
+    const mesocycleRepo = new SqliteMesocycleRepository(db());
+    const past = await mesocycleRepo.getById('meso-past');
+    await mesocycleRepo.update({ ...past!, weightUnit: 'lb' });
+
+    await expect(targetsFromHistory(query({ rowCount: 1 }), setLogRepo)).resolves.toEqual([
+      { setNumber: 1 },
+    ]);
+    await expect(
+      targetsFromHistory(query({ rowCount: 1, weightUnit: 'lb' }), setLogRepo),
+    ).resolves.toEqual([
+      { setNumber: 1, targetReps: 11, suggestedWeight: 135, estimate: 'other_slot' },
     ]);
   });
 
