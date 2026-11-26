@@ -102,6 +102,25 @@ describe('MesoEditorDaysStep', () => {
     expect(onAddExercise).toHaveBeenCalledWith(2);
   });
 
+  test('Reorder opens the Reorder days sheet — only with somewhere for a day to go (GT-270)', () => {
+    const onRequestReorderDays = jest.fn();
+    const { rerender } = render(
+      <MesoEditorDaysStep {...BASE_PROPS} onRequestReorderDays={onRequestReorderDays} />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Reorder days' }));
+    expect(onRequestReorderDays).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <MesoEditorDaysStep
+        {...BASE_PROPS}
+        daysPerWeek={1}
+        onRequestReorderDays={onRequestReorderDays}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Reorder days' })).toBeNull();
+  });
+
   test('renders a drag handle for each row (task 080: drag-to-reorder)', () => {
     render(<MesoEditorDaysStep {...BASE_PROPS} />);
 

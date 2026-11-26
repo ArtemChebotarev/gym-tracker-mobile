@@ -4,7 +4,6 @@ import { DEFAULT_EXERCISE_SETS } from '@domain/planValidators';
 import {
   addExerciseToDay,
   canContinueFromDays,
-  dragTargetIndex,
   exerciseDotColor,
   exerciseSubtitle,
   exerciseTitle,
@@ -14,13 +13,14 @@ import {
   formatSetCount,
   getDayExercises,
   getDayNumbers,
-  moveIndex,
   removeExerciseFromDay,
   reorderDayExercises,
+  reorderDays,
   stepperNoun,
   updateExerciseSets,
   type ExercisesByDay,
 } from '@components/MesoEditorDaysStepLogic';
+import { moveIndex } from '@components/dragReorderLogic';
 import { COOLDOWN, HEAVY_BAG, MEDBALL_THROW } from '../fixtures/hybridExercises';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -134,57 +134,6 @@ describe('updateExerciseSets', () => {
   });
 });
 
-describe('dragTargetIndex', () => {
-  const ROW_HEIGHT = 58;
-
-  test('stays put when the drag distance is under half a row', () => {
-    expect(dragTargetIndex(1, 20, 4, ROW_HEIGHT)).toBe(1);
-    expect(dragTargetIndex(1, -20, 4, ROW_HEIGHT)).toBe(1);
-  });
-
-  test('moves down one row past the halfway point', () => {
-    expect(dragTargetIndex(0, ROW_HEIGHT, 4, ROW_HEIGHT)).toBe(1);
-  });
-
-  test('moves up one row past the halfway point', () => {
-    expect(dragTargetIndex(2, -ROW_HEIGHT, 4, ROW_HEIGHT)).toBe(1);
-  });
-
-  test('clamps to the last row rather than overshooting past the end', () => {
-    expect(dragTargetIndex(0, ROW_HEIGHT * 10, 4, ROW_HEIGHT)).toBe(3);
-  });
-
-  test('clamps to the first row rather than going negative', () => {
-    expect(dragTargetIndex(2, -ROW_HEIGHT * 10, 4, ROW_HEIGHT)).toBe(0);
-  });
-
-  test('is always computed from the total distance, not incrementally, so it cannot drift', () => {
-    // Two calls with the same (fromIndex, distance) always agree, regardless of how many times
-    // the caller re-evaluated it in between — there is no running state to get out of sync.
-    expect(dragTargetIndex(0, ROW_HEIGHT * 2, 5, ROW_HEIGHT)).toBe(
-      dragTargetIndex(0, ROW_HEIGHT * 2, 5, ROW_HEIGHT),
-    );
-  });
-});
-
-describe('moveIndex', () => {
-  test('moves an item later, shifting the ones in between back by one', () => {
-    expect(moveIndex(4, 0, 2)).toEqual([1, 2, 0, 3]);
-  });
-
-  test('moves an item earlier, shifting the ones in between forward by one', () => {
-    expect(moveIndex(4, 3, 1)).toEqual([0, 3, 1, 2]);
-  });
-
-  test('is a no-op permutation when fromIndex equals toIndex', () => {
-    expect(moveIndex(3, 1, 1)).toEqual([0, 1, 2]);
-  });
-
-  test('handles a single-item list', () => {
-    expect(moveIndex(1, 0, 0)).toEqual([0]);
-  });
-});
-
 describe('reorderDayExercises', () => {
   test('reorders the day to match newOrder and reindexes order to array position', () => {
     const existing: ExercisesByDay = {
@@ -216,6 +165,35 @@ describe('reorderDayExercises', () => {
     const result = reorderDayExercises(existing, 1, [1, 0]);
 
     expect(result[2]).toEqual([{ exerciseId: 'row', order: 0, sets: 4 }]);
+  });
+});
+
+describe('reorderDays (GT-270)', () => {
+  const week: ExercisesByDay = {
+    1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
+    2: [{ exerciseId: 'squat', order: 0, sets: 3 }],
+    3: [{ exerciseId: 'row', order: 0, sets: 2 }],
+  };
+
+  test('moves the days\' exercises, the numbers stay by position', () => {
+    expect(reorderDays(week, [3, 1, 2])).toEqual({
+      1: [{ exerciseId: 'row', order: 0, sets: 2 }],
+      2: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
+      3: [{ exerciseId: 'squat', order: 0, sets: 3 }],
+    });
+  });
+
+  test('the order as it was changes nothing', () => {
+    expect(reorderDays(week, [1, 2, 3])).toEqual(week);
+  });
+
+  test('a day with nothing yet moves as an empty day', () => {
+    expect(reorderDays({ 1: week[1]! }, [2, 1])).toEqual({ 1: [], 2: week[1] });
+  });
+
+  test('leaves an entry beyond the week alone', () => {
+    const withLeftover: ExercisesByDay = { ...week, 4: [{ exerciseId: 'curl', order: 0, sets: 2 }] };
+    expect(reorderDays(withLeftover, [2, 1, 3])[4]).toEqual(withLeftover[4]);
   });
 });
 

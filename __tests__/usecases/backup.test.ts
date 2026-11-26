@@ -115,6 +115,7 @@ async function fill(deps: BackupDeps): Promise<void> {
       coachmarksSeen: true,
       deloadIntroSeen: false,
       startCycleSeen: false,
+      reorderDaysCoachmarkSeen: false,
       tourInfoSeen: false,
       tourRirSeen: false,
       tourGridSeen: false,

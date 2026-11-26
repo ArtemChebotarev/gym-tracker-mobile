@@ -18,6 +18,7 @@ export const DEFAULT_ONBOARDING: OnboardingFlags = {
   restNotificationsPlateHidden: false,
   deloadIntroSeen: false,
   startCycleSeen: false,
+  reorderDaysCoachmarkSeen: false,
 };
 
 /** The rest timer as it ships: on, 2:00 — the same as the column defaults of migration 0006. */

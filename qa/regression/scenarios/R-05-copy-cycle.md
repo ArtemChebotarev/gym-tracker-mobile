@@ -1,6 +1,6 @@
 # R-05 · Flow C: copy a finished cycle
 
-Priority: P0 · Spec: 08.8, 04 · Where: Simulator
+Priority: P0 · Spec: 08.8, 08.11, 04 · Where: Simulator
 
 Precondition: cycle A completed (after R-22), nothing active; a planned "Scratch test" from R-04
 does not matter.
@@ -19,7 +19,8 @@ does not matter.
 - Step 2: cycle A is selected with its last working week, Week 3, showing 2 of 2 workouts done.
   The dropdown offers Weeks 1–3 only — the deload week is not offered.
 - Step 3: the name defaults to cycle A's name with " 2" appended; days and exercises are those of
-  cycle A's Week 3, including any set added in R-20.
+  cycle A's Week 3, including any set added in R-20. The days step has a ⇅ in front of "Day 1"
+  and no coachmark on it (it was closed in R-03).
 - Step 4: the start confirmation names the new cycle and says Week 1 Day 1 is next.
 - Step 5: unlike a template cycle's first week, the strength sets show reps targets and prefilled
   weights computed from cycle A's history, with RIR 2 — each set from the same set of the last
