@@ -87,6 +87,7 @@ async function seedSource(deps: ReturnType<typeof makeDeps>) {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     completedAt: '2026-10-01T00:00:00.000Z',
     exerciseSettings: SOURCE_SETTINGS,
   });

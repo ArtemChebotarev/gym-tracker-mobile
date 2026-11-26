@@ -5,6 +5,7 @@ import type { Timestamps } from './timestamps';
 // 03 · Progression Engine ("progressionSettings").
 
 import type { WeekPlan } from '@domain/plan';
+import type { WeightUnit } from '@domain/weightUnit';
 
 /**
  * `planned` — saved by Confirm (071), fully editable, not yet running: no `startDate`, and
@@ -89,7 +90,13 @@ export type Mesocycle = Timestamps & {
   origin: MesocycleOrigin;
   progressionSettings: ProgressionSettings;
   /**
-   * Body weight in kg, for the block's bodyweight exercises (task 105). Asked for the first time
+   * The unit every weight of the block is counted in — its targets, its logged sets and its body
+   * weight (GT-269). Chosen when the block is created and fixed once it starts, so a `SetLog` needs
+   * no unit of its own: it is in the unit of the mesocycle its session belongs to.
+   */
+  weightUnit: WeightUnit;
+  /**
+   * Body weight in the block's `weightUnit`, for the block's bodyweight exercises (task 105). Asked for the first time
    * one of them comes up and then filled into every later one, so it isn't retyped set after set.
    * Absent until then. Changing it moves only the sets still to come — a logged set keeps what it
    * was logged with (05, "История неизменяема").

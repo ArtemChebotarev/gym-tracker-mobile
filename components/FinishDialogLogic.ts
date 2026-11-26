@@ -256,7 +256,10 @@ export function bestSet(rows: readonly WorkoutSetRow[]): LoggedSetRow | undefine
   return best;
 }
 
-/** `80 kg × 10`, `Level 2 × 3`, or `12 reps` where the load is the body or nothing. */
+/**
+ * `80 kg × 10` in the block's unit, `Level 2 × 3`, or `12 reps` where the load is the body or
+ * nothing.
+ */
 function formatSet(
   exercise: Exclude<WorkoutExercise, RoundsWorkoutExercise>,
   log: LoggedSetRow['log'],
@@ -272,7 +275,7 @@ function formatSet(
   if (isPureBodyWeight(exercise.equipment)) {
     return `${log.reps} reps`;
   }
-  return `${formatLoggedWeight(log, exercise.equipment)} kg × ${log.reps}`;
+  return `${formatLoggedWeight(log, exercise.equipment)} ${exercise.weightUnit} × ${log.reps}`;
 }
 
 /**

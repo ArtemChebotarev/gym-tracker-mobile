@@ -204,6 +204,7 @@ describe('the app’s own migrations', () => {
       '0010_push_pull_legs_day_order': 1793458878488,
       '0011_template_tags': 1793873246480,
       '0012_catalog_template_tags': 1793873297036,
+      '0013_mesocycle_weight_unit': 1795719902760,
     });
   });
 
@@ -272,6 +273,8 @@ describe('the app’s own migrations', () => {
         status: 'completed',
         completedAt: '2026-02-20T10:00:00.000Z',
         createdAt: '2026-01-05T10:00:00.000Z',
+        // 0013 (GT-269): a block the previous build wrote was counted in kilograms — every one was.
+        weightUnit: 'kg',
       });
       expect(mesocycle?.archivedAt).toBeUndefined();
 

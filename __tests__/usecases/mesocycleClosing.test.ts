@@ -26,6 +26,7 @@ const mesocycle: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
 };
 
 function makeSession(overrides: Partial<Session> & Pick<Session, 'id'>): Session {

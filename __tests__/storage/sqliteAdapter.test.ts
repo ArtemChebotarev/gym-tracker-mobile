@@ -25,6 +25,7 @@ function makeMesocycle(overrides: Partial<Unsaved<Mesocycle>> = {}): Unsaved<Mes
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     ...overrides,
   };
 }

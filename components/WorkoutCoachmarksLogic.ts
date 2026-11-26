@@ -206,7 +206,7 @@ export function rangesCoachmarkIndex(
     mode,
     isDeload,
   ).weight;
-  return showsWeightInfo && weightSwapPopover(firstUnloggedRow(exercise.rows)) !== undefined
+  return showsWeightInfo && weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.weightUnit) !== undefined
     ? index
     : undefined;
 }

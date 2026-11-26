@@ -53,7 +53,11 @@ export async function confirmScratchMesocycleDraft(
   deps: MesocycleCreationDeps,
 ): Promise<Mesocycle> {
   const settings = await deps.settingsRepo.read();
-  const draft = buildScratchMesocycleDraft(input, settings.defaultProgressionSettings);
+  const draft = buildScratchMesocycleDraft(
+    input,
+    settings.defaultProgressionSettings,
+    settings.weightUnit,
+  );
   return deps.mesocycleRepo.create(draft);
 }
 
@@ -97,7 +101,11 @@ export async function confirmTemplateMesocycleDraft(
   deps: MesocycleCreationDeps,
 ): Promise<Mesocycle> {
   const settings = await deps.settingsRepo.read();
-  const draft = buildTemplateMesocycleDraft(input, settings.defaultProgressionSettings);
+  const draft = buildTemplateMesocycleDraft(
+    input,
+    settings.defaultProgressionSettings,
+    settings.weightUnit,
+  );
   return deps.mesocycleRepo.create(draft);
 }
 
@@ -230,6 +238,11 @@ export async function confirmCopyWeekMesocycleDraft(
     throw new NotFoundError(`Mesocycle "${input.sourceMesoId}" does not exist.`);
   }
   const settings = await deps.settingsRepo.read();
-  const draft = buildCopyWeekMesocycleDraft(input, source, settings.defaultProgressionSettings);
+  const draft = buildCopyWeekMesocycleDraft(
+    input,
+    source,
+    settings.defaultProgressionSettings,
+    settings.weightUnit,
+  );
   return deps.mesocycleRepo.create(draft);
 }

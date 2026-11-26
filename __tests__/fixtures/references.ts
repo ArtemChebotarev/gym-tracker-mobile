@@ -56,6 +56,7 @@ async function seedMesocycles(db: SqliteDatabase, sessions: readonly Session[]):
       status: 'active',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
     });
   }
 }

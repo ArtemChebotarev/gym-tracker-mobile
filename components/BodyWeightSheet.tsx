@@ -17,6 +17,7 @@ import { Text, View } from 'react-native';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Button } from '@design/components/Button';
 import { TextField } from '@design/components/TextField';
+import type { WeightUnit } from '@domain/weightUnit';
 
 import { parseBodyWeight } from './BodyWeightSheetLogic';
 import { styles } from './BodyWeightSheetStyles';
@@ -30,6 +31,8 @@ export type BodyWeightSheetProps = {
   onSave: (bodyWeight: number) => void;
   /** The save is in flight — Save waits for it so a double tap can't repeat it. */
   isSaving: boolean;
+  /** The cycle's unit, which the body weight is in (GT-269). */
+  weightUnit: WeightUnit;
 };
 
 export function BodyWeightSheet({
@@ -39,6 +42,7 @@ export function BodyWeightSheet({
   onChangeValue,
   onSave,
   isSaving,
+  weightUnit,
 }: BodyWeightSheetProps) {
   const bodyWeight = parseBodyWeight(value);
 
@@ -62,7 +66,7 @@ export function BodyWeightSheet({
     >
       <View style={styles.content}>
         <TextField
-          label="Body weight, kg"
+          label={`Body weight, ${weightUnit}`}
           value={value}
           onChangeText={onChangeValue}
           placeholder="80"

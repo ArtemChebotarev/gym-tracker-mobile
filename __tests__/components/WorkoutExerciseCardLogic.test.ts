@@ -248,6 +248,7 @@ describe('targetRirOf', () => {
     status: 'planned' as const,
     rows: [],
     plannedSetCount: 0,
+    weightUnit: 'kg' as const,
     loggedSetCount: 0,
     hasLoggedSets: false,
     actions: {
@@ -296,6 +297,7 @@ describe('setRowsOf', () => {
       status: 'planned',
       rows: [ROW],
       plannedSetCount: 1,
+      weightUnit: 'kg',
       loggedSetCount: 1,
       hasLoggedSets: true,
       actions: {

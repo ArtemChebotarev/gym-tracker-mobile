@@ -39,6 +39,7 @@ export function buildMockMesocycles(now: Date): Unsaved<Mesocycle>[] {
       status: 'planned',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
       weekPlan: {
         days: [
           {
@@ -67,6 +68,7 @@ export function buildMockMesocycles(now: Date): Unsaved<Mesocycle>[] {
       status: 'completed',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
       completedAt: daysBefore(now, 32),
     },
   ];

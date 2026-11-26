@@ -51,6 +51,7 @@ function strengthCard(actions: SetExerciseActions = ALL): StrengthWorkoutExercis
     status: 'planned',
     rows: [],
     plannedSetCount: 3,
+    weightUnit: 'kg',
     loggedSetCount: 1,
     hasLoggedSets: true,
     actions,

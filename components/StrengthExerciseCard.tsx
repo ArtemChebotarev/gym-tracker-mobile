@@ -89,7 +89,7 @@ export function StrengthExerciseCard({
   const bandInfo = showsBandInfo(mode, isDeload, exercise.equipment);
   // The ⓘ speaks for the set whose Log box carries the accent, and always for its original target
   // — never for whatever is in the Weight field right now (08.7.1).
-  const ranges = infoTargets.weight ? weightSwapPopover(firstUnloggedRow(exercise.rows)) : undefined;
+  const ranges = infoTargets.weight ? weightSwapPopover(firstUnloggedRow(exercise.rows), exercise.weightUnit) : undefined;
   const infoAnchor = usePopoverAnchor();
   const weightInfoLabel = ranges !== undefined ? 'Weight recommendations' : 'Finding your weight';
 
@@ -172,7 +172,7 @@ export function StrengthExerciseCard({
         <ExerciseColumnHeader
           columns={[
             {
-              label: strengthWeightColumnLabel(exercise.equipment),
+              label: strengthWeightColumnLabel(exercise.equipment, exercise.weightUnit),
               ...(infoTargets.weight || bandInfo
                 ? {
                     info: {
@@ -205,6 +205,7 @@ export function StrengthExerciseCard({
           targetRir={targetRir}
           loadEquipment={exercise.equipment}
           guided={exercise.isGuided === true}
+          weightUnit={exercise.weightUnit}
           editable={editable}
           isSaving={isSaving}
           {...sets}

@@ -49,6 +49,7 @@ const mesocycle: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   createdAt: '2026-09-01T08:00:00.000Z',
 };
 
@@ -786,6 +787,7 @@ describe('getWorkoutSession — preview', () => {
       status: 'planned',
       rows: [],
       plannedSetCount: 0,
+      weightUnit: 'kg',
       loggedSetCount: 0,
       hasLoggedSets: false,
       actions: expect.objectContaining({ canSkip: false, canDelete: false }),
@@ -950,6 +952,29 @@ describe('the block body weight on the workout model (task 105)', () => {
     const model = await getWorkoutSession('w2d1', deps);
 
     expect(rowsOf(model.exercises[0])[0]?.log).toEqual({ weight: 10, reps: 12, bodyWeight: 80 });
+  });
+});
+
+// GT-269: one unit for the block — the screen, its body weight and every card of sets read it.
+describe('the block weight unit on the workout model', () => {
+  test('a block counted in kilograms says so on the model and on each card of sets', async () => {
+    const { deps } = await setUp();
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.weightUnit).toBe('kg');
+    expect(model.exercises[0]).toMatchObject({ weightUnit: 'kg' });
+  });
+
+  test('a block counted in pounds says pounds, with its numbers as they are', async () => {
+    const { store, deps } = await setUp({ logs: [{ ...logOf(bench, 1, 12), weight: 135 }] });
+    await new SqliteMesocycleRepository(store).update({ ...mesocycle, weightUnit: 'lb' });
+
+    const model = await getWorkoutSession('w2d1', deps);
+
+    expect(model.weightUnit).toBe('lb');
+    expect(model.exercises[0]).toMatchObject({ weightUnit: 'lb' });
+    expect(rowsOf(model.exercises[0])[0]?.log).toEqual({ weight: 135, reps: 12 });
   });
 });
 

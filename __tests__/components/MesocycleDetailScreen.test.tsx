@@ -32,6 +32,7 @@ const mesocycle: Mesocycle = {
   status: 'completed',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
 };
 
 const summary: MesoSummary = {

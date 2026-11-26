@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { InlineNote } from '@design/components/InlineNote';
 import type { Equipment } from '@domain/catalog';
 import { isBodyWeightExercise, isPureBodyWeight } from '@domain/bodyWeightLoad';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { WorkoutSetRow as WorkoutSetRowModel } from '@usecases/workoutSession';
 
 import { estimateNote } from './WeightSwapLogic';
@@ -57,6 +58,8 @@ export type WorkoutSetRowsProps = SetLoggingProps & {
   guided: boolean;
   /** See `WorkoutSetRowProps.raisedWeightReps`. */
   raisedWeightReps?: number;
+  /** The block's unit, which the note's weights are in (GT-269). */
+  weightUnit: WeightUnit;
   editable: boolean;
   /** A log or un-log is being saved — every Log box waits for it. */
   isSaving: boolean;
@@ -68,6 +71,7 @@ export function WorkoutSetRows({
   loadEquipment,
   guided,
   raisedWeightReps,
+  weightUnit,
   editable,
   bodyWeight,
   onBodyWeightChange,
@@ -112,6 +116,7 @@ export function WorkoutSetRows({
     next,
     next === undefined ? '' : weightFieldText(weights, next, loadEquipment, bodyWeight),
     targetRir,
+    weightUnit,
   );
 
   return (

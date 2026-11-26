@@ -146,6 +146,24 @@ describe('confirmScratchMesocycleDraft', () => {
     const stored = await deps.mesocycleRepo.getById(saved.id);
     expect(stored?.progressionSettings.historyLookbackDays).toBe(30);
   });
+
+  // GT-269: the unit is chosen once, at creation, from the setting — and it stays the block's.
+  test('counts a new mesocycle in the unit of the settings, and keeps it when they change', async () => {
+    const deps = makeDeps();
+    await expect(confirmScratchMesocycleDraft(draftInput, deps)).resolves.toMatchObject({
+      weightUnit: 'kg',
+    });
+
+    const settings = await deps.settingsRepo.read();
+    await deps.settingsRepo.write({ ...settings, weightUnit: 'lb' });
+    const inPounds = await confirmScratchMesocycleDraft(draftInput, deps);
+    expect(inPounds.weightUnit).toBe('lb');
+
+    await deps.settingsRepo.write({ ...settings, weightUnit: 'kg' });
+    await expect(deps.mesocycleRepo.getById(inPounds.id)).resolves.toMatchObject({
+      weightUnit: 'lb',
+    });
+  });
 });
 
 // --- Flow C (task 041) --------------------------------------------------------------------
@@ -165,6 +183,7 @@ const sourceMesocycle = {
   status: 'completed' as const,
   origin: { type: 'scratch' as const },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg' as const,
   completedAt: '2026-08-15T00:00:00.000Z',
 };
 

@@ -40,6 +40,7 @@ const ACTIVE: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   createdAt: '2026-09-04T12:00:00.000Z',
 };
 
@@ -52,6 +53,7 @@ const PLANNED: Mesocycle = {
   status: 'planned',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   weekPlan: { days: [] },
   createdAt: '2026-09-14T12:00:00.000Z',
 };
@@ -66,6 +68,7 @@ const COMPLETED: Mesocycle = {
   status: 'completed',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   createdAt: '2026-07-16T12:00:00.000Z',
   completedAt: '2026-08-15T12:00:00.000Z',
 };

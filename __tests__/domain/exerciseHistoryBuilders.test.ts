@@ -16,6 +16,7 @@ function mesocycle(id: string, name: string): Mesocycle {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-08-01T08:00:00.000Z',
   };
 }

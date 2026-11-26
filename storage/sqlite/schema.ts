@@ -78,6 +78,9 @@ export const mesocycles = sqliteTable(
     progressionSettings: text('progression_settings', { mode: 'json' })
       .notNull()
       .$type<ProgressionSettings>(),
+    // The block's unit (GT-269). The column's default is what every block already on a device
+    // becomes when the migration adds it: before GT-269 every weight was in kilograms.
+    weightUnit: text('weight_unit').notNull().default('kg').$type<Mesocycle['weightUnit']>(),
     bodyWeight: real('body_weight'),
     // Draft week 1, present only while the mesocycle is `planned` (02 · Domain Model).
     weekPlan: text('week_plan', { mode: 'json' }).$type<WeekPlan>(),

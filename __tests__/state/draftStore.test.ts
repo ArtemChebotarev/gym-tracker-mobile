@@ -154,6 +154,7 @@ describe('toMesoBuilderDraft', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
@@ -196,6 +197,7 @@ describe('toCopiedMesoBuilderDraft', () => {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     completedAt: '2026-08-15T00:00:00.000Z',
   };
 
@@ -354,6 +356,7 @@ describe('exerciseSettings through the draft (GT-158)', () => {
       status: 'planned',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
       weekPlan: { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'heavy-bag', order: 0, sets: 2 }] }] },
       exerciseSettings: { 'heavy-bag': bagSettings },
     };

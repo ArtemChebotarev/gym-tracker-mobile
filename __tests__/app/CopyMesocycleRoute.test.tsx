@@ -55,6 +55,7 @@ function block(id: string, name: string, completedAt: string) {
     status: 'completed' as const,
     origin: { type: 'scratch' as const },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg' as const,
     completedAt,
   };
 }

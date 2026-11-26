@@ -30,6 +30,7 @@ function makeMesocycle(overrides: Partial<Mesocycle>): Mesocycle {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: originalWeekPlan,
     createdAt: '2026-09-01T12:00:00.000Z',
     ...overrides,

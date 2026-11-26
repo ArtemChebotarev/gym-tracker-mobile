@@ -28,6 +28,7 @@ import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
 import { materializeSetTargets } from '@domain/weekPlanMaterializers';
+import { DEFAULT_WEIGHT_UNIT, type WeightUnit } from '@domain/weightUnit';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -73,6 +74,7 @@ function buildMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   origin: MesocycleOrigin,
   progressionSettings: ProgressionSettings,
+  weightUnit: WeightUnit,
 ): Unsaved<Mesocycle> {
   validateMesocycleLengthWeeks(input.lengthWeeks);
   validateMesocycleDaysPerWeek(input.daysPerWeek);
@@ -86,6 +88,7 @@ function buildMesocycleDraft(
     status: 'planned',
     origin,
     progressionSettings: { ...progressionSettings },
+    weightUnit,
     weekPlan: input.weekPlan,
     ...exerciseSettingsField(input.exerciseSettings),
   };
@@ -106,8 +109,9 @@ function buildMesocycleDraft(
 export function buildScratchMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
+  weightUnit: WeightUnit = DEFAULT_WEIGHT_UNIT,
 ): Unsaved<Mesocycle> {
-  return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings);
+  return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings, weightUnit);
 }
 
 export type TemplateMesocycleDraftInput = ScratchMesocycleDraftInput & {
@@ -124,11 +128,13 @@ export type TemplateMesocycleDraftInput = ScratchMesocycleDraftInput & {
 export function buildTemplateMesocycleDraft(
   input: TemplateMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
+  weightUnit: WeightUnit = DEFAULT_WEIGHT_UNIT,
 ): Unsaved<Mesocycle> {
   return buildMesocycleDraft(
     input,
     { type: 'template', templateId: input.templateId },
     progressionSettings,
+    weightUnit,
   );
 }
 
@@ -158,6 +164,7 @@ export function buildCopyWeekMesocycleDraft(
   input: CopyWeekMesocycleDraftInput,
   source: Pick<Mesocycle, 'id' | 'lengthWeeks'>,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
+  weightUnit: WeightUnit = DEFAULT_WEIGHT_UNIT,
 ): Unsaved<Mesocycle> {
   validateCopyableSourceWeek(source, input.sourceWeekNumber);
 
@@ -165,6 +172,7 @@ export function buildCopyWeekMesocycleDraft(
     input,
     { type: 'copyWeek', sourceMesoId: source.id, sourceWeekNumber: input.sourceWeekNumber },
     progressionSettings,
+    weightUnit,
   );
 }
 

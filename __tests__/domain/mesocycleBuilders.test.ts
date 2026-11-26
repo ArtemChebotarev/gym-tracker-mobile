@@ -226,6 +226,7 @@ describe('applyPlannedMesocycleEdit', () => {
     status: 'planned',
     origin: { type: 'template', templateId: 'template-1' },
     progressionSettings: { ...defaultProgressionSettings, maxReps: 20 },
+    weightUnit: 'kg',
     weekPlan: twoDayWeekPlan,
     createdAt: '2026-09-01T12:00:00.000Z',
   };
@@ -316,6 +317,7 @@ describe('renamedMesocycle', () => {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-09-01T12:00:00.000Z',
   };
 
@@ -351,6 +353,7 @@ describe('buildMesocycleStart', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         {
@@ -496,6 +499,7 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
     daysPerWeek: 2,
     status: 'planned',
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-09-01T12:00:00.000Z',
     origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
     weekPlan: {
@@ -687,6 +691,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         {

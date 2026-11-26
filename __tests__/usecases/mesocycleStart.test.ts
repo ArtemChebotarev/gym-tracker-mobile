@@ -35,6 +35,7 @@ const planned: Mesocycle = {
   status: 'planned',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   weekPlan: {
     days: [
       {
@@ -323,6 +324,7 @@ async function setUpCopied(
       status: 'completed',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
       completedAt: '2026-09-10T00:00:00.000Z',
     });
   }
@@ -598,6 +600,7 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
       status: 'active',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
+      weightUnit: 'kg',
     });
     const counted = countingLookups(store);
 

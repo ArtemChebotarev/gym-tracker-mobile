@@ -25,6 +25,7 @@ const mesocycle: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
 };
 
 /** A fixed "now" for the archive stamp — the rules never read the clock themselves. */

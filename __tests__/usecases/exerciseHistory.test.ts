@@ -17,6 +17,7 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-08-01T08:00:00.000Z',
   },
   session: {

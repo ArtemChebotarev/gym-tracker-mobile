@@ -48,6 +48,7 @@ function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): Strengt
     status: 'planned',
     rows: [WEEK_1_ROW],
     plannedSetCount: 1,
+    weightUnit: 'kg',
     loggedSetCount: 0,
     hasLoggedSets: false,
     actions: NO_ACTIONS,

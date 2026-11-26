@@ -41,8 +41,7 @@ export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
  * A logged set's value: `80 kg × 9`. The `· 2 RIR` tail is rendered separately and a step quieter
  * (the mockup), so it isn't part of this string — see `formatSetRirTail`.
  *
- * The weight goes through the workout row's own formatter rather than `design/formatSet`, so a
- * `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
+ * The weight goes through the workout row's own formatter, so a `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
  * and what was hung on it kept apart (task 105).
  *
  * A power set is the same row in its own load (10.1 FR-12, GT-110): a level reads `Level 2 × 3`,

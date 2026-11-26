@@ -7,9 +7,16 @@ import {
 // GT-82, 10.1 FR-2: the Load column says what a power exercise's load is.
 describe('powerLoadColumnLabel', () => {
   test('kilograms, a level, or the body', () => {
-    expect(powerLoadColumnLabel('weight')).toBe('Load, kg');
-    expect(powerLoadColumnLabel('level')).toBe('Level');
-    expect(powerLoadColumnLabel('none')).toBe('Bodyweight, kg');
+    expect(powerLoadColumnLabel('weight', 'kg')).toBe('Load, kg');
+    expect(powerLoadColumnLabel('level', 'kg')).toBe('Level');
+    expect(powerLoadColumnLabel('none', 'kg')).toBe('Bodyweight, kg');
+  });
+
+  // GT-269: the block's unit, and a level has none.
+  test('in pounds on a block counted in pounds', () => {
+    expect(powerLoadColumnLabel('weight', 'lb')).toBe('Load, lb');
+    expect(powerLoadColumnLabel('level', 'lb')).toBe('Level');
+    expect(powerLoadColumnLabel('none', 'lb')).toBe('Bodyweight, lb');
   });
 });
 
@@ -22,7 +29,7 @@ describe('formatCeilingNote', () => {
     expect(
       formatCeilingNote(
         { options: ['heavier', 'add-set'], canFlagNoHeavier: true, canHideTip: false },
-        { load: 'weight', topWeight: 10 },
+        { load: 'weight', unit: 'kg', topWeight: 10 },
       ),
     ).toEqual({
       icon: 'up',
@@ -36,7 +43,7 @@ describe('formatCeilingNote', () => {
     expect(
       formatCeilingNote(
         { options: ['higher-level'], canFlagNoHeavier: true, canHideTip: false },
-        { load: 'level' },
+        { load: 'level', unit: 'kg' },
       ),
     ).toEqual({
       icon: 'up',
@@ -50,7 +57,7 @@ describe('formatCeilingNote', () => {
     expect(
       formatCeilingNote(
         { options: ['add-set'], canFlagNoHeavier: false, canHideTip: false },
-        { load: 'none' },
+        { load: 'none', unit: 'kg' },
       ),
     ).toEqual({ icon: 'plus', lead: 'Add a set.', text: didReps });
   });
@@ -59,7 +66,7 @@ describe('formatCeilingNote', () => {
     expect(
       formatCeilingNote(
         { options: ['harder-variation', 'add-set'], canFlagNoHeavier: false, canHideTip: true },
-        { load: 'weight', topWeight: 10 },
+        { load: 'weight', unit: 'kg', topWeight: 10 },
       ),
     ).toEqual({
       icon: 'swap',
@@ -71,9 +78,18 @@ describe('formatCeilingNote', () => {
     expect(
       formatCeilingNote(
         { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
-        { load: 'level' },
+        { load: 'level', unit: 'kg' },
       ).text,
     ).toBe('This is the highest level you have. Or keep it here while your strength catches up.');
+  });
+
+  test('the heaviest weight in the block’s unit (GT-269)', () => {
+    expect(
+      formatCeilingNote(
+        { options: ['harder-variation'], canFlagNoHeavier: false, canHideTip: true },
+        { load: 'weight', unit: 'lb', topWeight: 25 },
+      ).text,
+    ).toBe('25 lb is the heaviest you have. Or keep it here while your strength catches up.');
   });
 });
 

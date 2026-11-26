@@ -30,12 +30,18 @@ describe('formatWeightHint', () => {
 // GT-82; 10.1 FR-15 and Artem's review (18.10.2026): what the Weight column holds.
 describe('strengthWeightColumnLabel', () => {
   test('Weight, or Added on a weighted bodyweight exercise', () => {
-    expect(strengthWeightColumnLabel(undefined)).toBe('Weight, kg');
-    expect(strengthWeightColumnLabel('bodyweight-weighted')).toBe('Added, kg');
+    expect(strengthWeightColumnLabel(undefined, 'kg')).toBe('Weight, kg');
+    expect(strengthWeightColumnLabel('bodyweight-weighted', 'kg')).toBe('Added, kg');
   });
 
   test('a band holds the body weight, so its column says so', () => {
-    expect(strengthWeightColumnLabel('resistance-band')).toBe('Bodyweight, kg');
+    expect(strengthWeightColumnLabel('resistance-band', 'kg')).toBe('Bodyweight, kg');
+  });
+
+  test('in the block’s unit (GT-269)', () => {
+    expect(strengthWeightColumnLabel(undefined, 'lb')).toBe('Weight, lb');
+    expect(strengthWeightColumnLabel('bodyweight-weighted', 'lb')).toBe('Added, lb');
+    expect(strengthWeightColumnLabel('resistance-band', 'lb')).toBe('Bodyweight, lb');
   });
 });
 

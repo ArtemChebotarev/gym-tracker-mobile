@@ -23,6 +23,7 @@ function mesocycleOf(id: string, status: Mesocycle['status']): Mesocycle {
     status,
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-09-01T08:00:00.000Z',
     ...(status === 'planned' ? {} : { startDate: '2026-09-01T08:00:00.000Z' }),
   };

@@ -45,6 +45,7 @@ function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): Strengt
     status: 'planned',
     rows: [],
     plannedSetCount: 0,
+    weightUnit: 'kg',
     loggedSetCount: 0,
     hasLoggedSets: false,
     actions: NO_ACTIONS,
@@ -56,6 +57,7 @@ const LIVE: WorkoutSessionModel = {
   sessionId: 'session-1',
   mesoId: 'meso-1',
   mode: 'live',
+  weightUnit: 'kg',
   header: {
     weekNumber: 6,
     dayNumber: 2,
@@ -92,6 +94,7 @@ const HISTORY: WorkoutSessionModel = {
 const PREVIEW: WorkoutSessionModel = {
   mesoId: 'meso-1',
   mode: 'preview',
+  weightUnit: 'kg',
   header: {
     weekNumber: 7,
     dayNumber: 3,
@@ -402,6 +405,7 @@ describe('WorkoutScreen Finish workout', () => {
             },
           ],
           plannedSetCount: 1,
+          weightUnit: 'kg',
           loggedSetCount: 1,
           hasLoggedSets: true,
         }),

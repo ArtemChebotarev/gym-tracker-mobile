@@ -6,6 +6,7 @@
 // skill.
 
 import type { WeightRange, WeightSwapTarget } from '@domain/weightSwap';
+import type { WeightUnit } from '@domain/weightUnit';
 import { formatRir } from '@design/formatRir';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
@@ -16,19 +17,23 @@ function formatSwapWeight(weight: number, added: boolean): string {
   return added ? `+${formatRowWeight(weight)}` : formatRowWeight(weight);
 }
 
-function formatSwapSpans(spans: readonly WeightRange[], added: boolean): string {
+function formatSwapSpans(
+  spans: readonly WeightRange[],
+  added: boolean,
+  unit: WeightUnit,
+): string {
   const parts = spans.map((span) =>
     added
       ? `${formatSwapWeight(span.min, true)} to ${formatSwapWeight(span.max, true)}`
       : `${formatRowWeight(span.min)}–${formatRowWeight(span.max)}`,
   );
-  return `${parts.join(' and ')} kg`;
+  return `${parts.join(' and ')} ${unit}`;
 }
 
-/** `15 kg × 10`, or `+16 kg × 7` on a weighted bodyweight exercise. */
-function formatSwapTarget(swap: WeightSwapTarget): string {
+/** `15 kg × 10`, or `+16 kg × 7` on a weighted bodyweight exercise — in the block's unit. */
+function formatSwapTarget(swap: WeightSwapTarget, unit: WeightUnit): string {
   const added = swap.bodyWeight !== undefined;
-  return `${formatSwapWeight(targetWeightOf(swap), added)} kg × ${swap.baseReps}`;
+  return `${formatSwapWeight(targetWeightOf(swap), added)} ${unit} × ${swap.baseReps}`;
 }
 
 /**
@@ -99,6 +104,7 @@ export type WeightSwapPopover = {
 /** `undefined` while there are no ranges to show: the ⓘ then opens "Finding your weight" (08.11). */
 export function weightSwapPopover(
   row: Pick<WorkoutSetRow, 'setNumber' | 'weightSwap' | 'estimate'> | undefined,
+  unit: WeightUnit,
 ): WeightSwapPopover | undefined {
   if (row === undefined || row.weightSwap === undefined) {
     return undefined;
@@ -114,14 +120,14 @@ export function weightSwapPopover(
     {
       span: 'inner',
       label: 'Recommended weight',
-      value: formatSwapSpans([swap.closeRange], added),
+      value: formatSwapSpans([swap.closeRange], added, unit),
     },
   ];
   if (spans.length > 0) {
     legend.push({
       span: 'outer',
       label: 'Not ideal, but acceptable',
-      value: formatSwapSpans(spans, added),
+      value: formatSwapSpans(spans, added, unit),
     });
   }
   return {
@@ -129,7 +135,7 @@ export function weightSwapPopover(
     // you scan first, and the line under it says what may be done about it. The instruction is
     // the whole of it, so the plate needs no closing line (Artem's wording).
     // An estimate (task 134.1) says so here too: it is what the ranges are worked out from.
-    title: `Current set ${row.estimate === undefined ? 'target' : 'estimate'}: ${formatSwapTarget(swap)}`,
+    title: `Current set ${row.estimate === undefined ? 'target' : 'estimate'}: ${formatSwapTarget(swap, unit)}`,
     subtitle: 'Pick another weight and the reps update.',
     outer: swap.estimateRange,
     inner: swap.closeRange,
@@ -160,12 +166,13 @@ export function estimateNote(
   row: Pick<WorkoutSetRow, 'weightSwap' | 'estimate'> | undefined,
   weightText: string,
   targetRir: number | undefined,
+  unit: WeightUnit,
 ): EstimateNote | undefined {
   if (row === undefined) {
     return undefined;
   }
   const effort = targetRir === undefined ? 'the effort' : formatRir(targetRir);
-  const otherWeight = otherWeightNote(row, weightText, effort);
+  const otherWeight = otherWeightNote(row, weightText, effort, unit);
   if (otherWeight !== undefined) {
     return otherWeight;
   }
@@ -184,6 +191,7 @@ function otherWeightNote(
   row: Pick<WorkoutSetRow, 'weightSwap'>,
   weightText: string,
   effort: string,
+  unit: WeightUnit,
 ): EstimateNote | undefined {
   if (row.weightSwap === undefined || 'unavailable' in row.weightSwap) {
     return undefined;
@@ -199,12 +207,12 @@ function otherWeightNote(
     const bound = formatSwapWeight(evaluation.bound, added);
     return evaluation.direction === 'tooHeavy'
       ? {
-          lead: `${weight} kg is too heavy for ${swap.corridor.minReps}+ reps.`,
-          text: `Up to ${bound} kg keeps a rep target.`,
+          lead: `${weight} ${unit} is too heavy for ${swap.corridor.minReps}+ reps.`,
+          text: `Up to ${bound} ${unit} keeps a rep target.`,
         }
       : {
-          lead: `${weight} kg is too light for ${swap.corridor.maxReps} reps.`,
-          text: `From ${bound} kg keeps a rep target.`,
+          lead: `${weight} ${unit} is too light for ${swap.corridor.maxReps} reps.`,
+          text: `From ${bound} ${unit} keeps a rep target.`,
         };
   }
   if (evaluation.zone !== 'estimate') {
@@ -212,7 +220,7 @@ function otherWeightNote(
     return undefined;
   }
   return {
-    lead: `~ Estimated from ${formatSwapTarget(swap)}.`,
+    lead: `~ Estimated from ${formatSwapTarget(swap, unit)}.`,
     text: `Stop at ${effort}, not at the number.`,
   };
 }
