@@ -40,7 +40,9 @@ exercise's last logged session) and not finished; "Heavy Bag" not logged. Set
 - Step 7: the timer stops; the round is logged with the time at the moment of confirming.
 - Step 8: ending early asks first; the timer keeps running while the question is open, and the
   work done by the moment of confirming is logged; the timer closes without a summary and no rest
-  starts.
+  starts. The question's text is written when it opens and doesn't follow the clock: opened in get
+  ready it says the round hasn't started, and if work begins before you confirm, the round is
+  still logged with its time. That is expected.
 - Step 9: a summary says all rounds are done; it closes only through its button, back to the
   workout, and a rest before the next exercise starts — as long as the last round's rest field,
   not the Settings rest (an interval has no rest from Settings). (If the timer ends while minimized there is no summary; a short
