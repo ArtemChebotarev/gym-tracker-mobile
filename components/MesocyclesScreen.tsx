@@ -18,8 +18,9 @@
 //   screen. The Today tab's empty state still raises the sheet.
 // - Start opens a `Start this training cycle?` popup and calls `onStart` only once accepted — or, if a
 //   mesocycle is already active, an explanation popup instead, never a silent no-op.
-// - Delete (the Planned row's one `⋯` action) opens `Delete training cycle? This can't be undone` and
-//   calls `onDelete` only from its destructive button.
+// - Delete (the Planned row's one `⋯` action, and the last of a Completed row's) opens `Delete
+//   training cycle?` and calls `onDelete` only from its destructive button. For a finished block the
+//   popup says its workouts and sets go too, out of exercise history (GT-268).
 //
 // Planned rows carry no `Planned` badge — the section label already says it (Artem's review).
 // Rows inside a group sit in their own gap-less View: the group's `gap` is for the label only, and
@@ -31,9 +32,10 @@
 // one action worth a button, and the rest live behind the `⋯`, which opens the same native menu
 // as every other `⋯` in the app (`ActionMenu`, the other half of 117):
 // - Planned: tap opens the editor, `Start` is the accent pill, `⋯` holds Delete.
-// - Completed: tap opens that block's history (`onOpenHistory`), `⋯` holds Copy and Archive.
+// - Completed: tap opens that block's history (`onOpenHistory`), `⋯` holds Copy, Archive and Delete.
 //   Archive asks first (`Archive training cycle?`) and then takes the block off the list for good —
 //   a soft delete, so nothing logged in it is touched, but there is no way back from the app yet.
+//   Delete removes the block with everything logged in it (GT-268).
 // The tap and the buttons don't overlap: `ListRow` keeps an actions row's accessories outside its
 // press region, so a tap on `Start` starts and a tap anywhere else on the row opens the editor.
 // `SwipeableRow` stays in the SDK, unused for now (Artem's call).
@@ -65,6 +67,7 @@ import {
   completedMenuItems,
   formatActiveCaption,
   formatArchiveConfirmMessage,
+  formatDeleteConfirmMessage,
   formatCompletedCaption,
   formatPlannedCaption,
   formatStartBlockedMessage,
@@ -154,7 +157,7 @@ export function MesocyclesScreen({
   }
 
   function confirmDelete(mesocycle: Mesocycle) {
-    Alert.alert('Delete training cycle?', "This can't be undone.", [
+    Alert.alert('Delete training cycle?', formatDeleteConfirmMessage(mesocycle), [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDelete(mesocycle) },
     ]);
@@ -286,6 +289,7 @@ export function MesocyclesScreen({
                           items: completedMenuItems(mesocycle, {
                             onCopy,
                             onArchive: confirmArchive,
+                            onDelete: confirmDelete,
                           }),
                         },
                       }}

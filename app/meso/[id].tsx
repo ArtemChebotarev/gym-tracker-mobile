@@ -5,8 +5,8 @@
 // Composes the screen with the Rename sheet as a sibling, the way the Today route does. Copy opens
 // Flow C at its Source week step with this block already chosen — the same way in as a Completed
 // row's `⋯` on 08.3 (124); saving it leaves in one slide, not two (`useQuietPopUnderModal`).
-// Archive asks first with the list's own confirmation, then goes back — the block has left the
-// list. A closed block's grid cell pushes that day as `session/[id]`, in History mode (130); back
+// Archive and Delete ask first with the list's own confirmations, then go back — the block has
+// left the list (Delete, GT-268, takes everything logged in it too). A closed block's grid cell pushes that day as `session/[id]`, in History mode (130); back
 // from it returns here.
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -15,10 +15,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MesocycleDetailScreen } from '@components/MesocycleDetailScreen';
 import { historySessionHref } from '@components/workoutRoutes';
 import { mesocycleDetailMenuItems } from '@components/MesocycleDetailScreenLogic';
-import { formatArchiveConfirmMessage } from '@components/MesocyclesScreenLogic';
+import {
+  formatArchiveConfirmMessage,
+  formatDeleteConfirmMessage,
+} from '@components/MesocyclesScreenLogic';
 import { RenameMesocycleSheet } from '@components/RenameMesocycleSheet';
 import { useQuietPopUnderModal } from '@components/useQuietPopUnderModal';
 import { useArchiveMesocycle } from '@state/useArchiveMesocycle';
+import { useDeleteMesocycle } from '@state/useDeleteMesocycle';
 import { useMesocycleDetail } from '@state/useMesocycleDetail';
 import { loadErrorOf } from '@state/loadError';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
@@ -29,6 +33,7 @@ export default function MesocycleDetailRoute() {
   const query = useMesocycleDetail(id);
   const renameMesocycle = useRenameMesocycle();
   const archiveMesocycle = useArchiveMesocycle();
+  const deleteMesocycle = useDeleteMesocycle();
   const quietPop = useQuietPopUnderModal();
 
   // The Rename sheet and the name being typed into it — prefilled with the current name.
@@ -72,6 +77,24 @@ export default function MesocycleDetailRoute() {
                           onError: () =>
                             Alert.alert(
                               "Couldn't archive training cycle",
+                              'Something went wrong. Try again.',
+                            ),
+                        }),
+                    },
+                  ]),
+                onDelete: () =>
+                  Alert.alert('Delete training cycle?', formatDeleteConfirmMessage(mesocycle), [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Delete',
+                      style: 'destructive',
+                      onPress: () =>
+                        deleteMesocycle.mutate(mesocycle.id, {
+                          // The block is gone — back to where it was opened from.
+                          onSuccess: () => router.back(),
+                          onError: () =>
+                            Alert.alert(
+                              "Couldn't delete training cycle",
                               'Something went wrong. Try again.',
                             ),
                         }),

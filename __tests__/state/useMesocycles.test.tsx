@@ -3,7 +3,7 @@ import { act, waitFor } from '@testing-library/react-native';
 import { seedMockMesocycles } from '../fixtures/appStorage';
 import { MOCK_MESOCYCLE_IDS } from '../fixtures/mesocycleMocks';
 import { renderHookWithRepositories, withRepositories } from '../fixtures/renderWithRepositories';
-import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
+import { useDeleteMesocycle } from '@state/useDeleteMesocycle';
 import { useMesocycles } from '@state/useMesocycles';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
 
@@ -13,7 +13,7 @@ beforeEach(async () => {
   await seedMockMesocycles(repositories());
 });
 
-describe('useMesocycles / useDeletePlannedMesocycle', () => {
+describe('useMesocycles / useDeleteMesocycle', () => {
   test('lists what storage holds', async () => {
     const { result } = renderHookWithRepositories(() => useMesocycles());
 
@@ -27,7 +27,7 @@ describe('useMesocycles / useDeletePlannedMesocycle', () => {
   test('deleting the planned mesocycle removes it and refreshes the list', async () => {
     const { result } = renderHookWithRepositories(() => ({
       list: useMesocycles(),
-      remove: useDeletePlannedMesocycle(),
+      remove: useDeleteMesocycle(),
     }));
     await waitFor(() => expect(result.current.list.isSuccess).toBe(true));
 

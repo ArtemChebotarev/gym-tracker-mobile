@@ -140,40 +140,63 @@ export function plannedMenuItems(
   mesocycle: Mesocycle,
   handlers: { onDelete: (mesocycle: Mesocycle) => void },
 ): ActionMenuItem[] {
-  return [
-    {
-      key: 'delete',
-      label: 'Delete',
-      icon: TrashIcon,
-      systemImage: 'trash',
-      destructive: true,
-      onPress: () => handlers.onDelete(mesocycle),
-    },
-  ];
+  return [deleteMenuItem(() => handlers.onDelete(mesocycle))];
 }
 
 /**
- * What the `Archive training cycle?` confirmation says under its title: it asks, and says it can't be
- * undone — for now there is no Unarchive.
+ * The `Delete` item every mesocycle menu ends with — a Planned row, a Completed row, and the detail
+ * screen's header (08.9). Destructive, so iOS draws it red; what it deletes is said by the screen's
+ * confirmation (`formatDeleteConfirmMessage`), never by the menu.
+ */
+export function deleteMenuItem(onPress: () => void): ActionMenuItem {
+  return {
+    key: 'delete',
+    label: 'Delete',
+    icon: TrashIcon,
+    systemImage: 'trash',
+    destructive: true,
+    onPress,
+  };
+}
+
+/**
+ * What the `Archive training cycle?` confirmation says under its title — two short facts, read at a
+ * glance: what happens to the block and that its history stays (what sets Archive apart from
+ * Delete, GT-268). Wording is Artem's (27.11.2026).
  */
 export function formatArchiveConfirmMessage(): string {
-  return "Are you sure you want to archive this training cycle? This can't be undone.";
+  return 'The cycle will be archived. Its exercise history stays.';
+}
+
+/**
+ * What the `Delete training cycle?` confirmation says under its title. A planned block has nothing
+ * logged, so it only warns that there is no way back. A finished or stopped one (GT-268) says in
+ * one line that it goes for good and takes its exercise history with it — someone deleting a block
+ * expecting to keep their progress must learn otherwise here, before the button. Mirrors Archive's
+ * line, so the two read as a pair: history stays / history deleted (wording Artem's, 27.11.2026;
+ * "its", not "all", so it can't read as every exercise's history).
+ */
+export function formatDeleteConfirmMessage(mesocycle: Pick<Mesocycle, 'status'>): string {
+  if (mesocycle.status === 'planned') {
+    return "This can't be undone.";
+  }
+  return 'The cycle will be permanently deleted, along with its exercise history.';
 }
 
 /**
  * What a Completed row's `⋯` offers. Copy plans the next block from this one (Flow C); Archive
  * takes it out of the list — and out of Flow C's source dropdown — without touching anything
- * logged in it. No Delete: a finished block is history, and nothing in the app hard-deletes one.
+ * logged in it; Delete (GT-268) removes the block together with everything logged in it.
  *
- * Archive is not marked `destructive`: iOS red means data goes, and here none does — the
- * confirmation in front of it, which is the screen's rather than the menu's (as with Delete), is
- * what says the block won't come back.
+ * Archive is not marked `destructive`: iOS red means data goes, and there none does. Delete is —
+ * there all of it does. The confirmation in front of either is the screen's, not the menu's.
  */
 export function completedMenuItems(
   mesocycle: Mesocycle,
   handlers: {
     onCopy: (mesocycle: Mesocycle) => void;
     onArchive: (mesocycle: Mesocycle) => void;
+    onDelete: (mesocycle: Mesocycle) => void;
   },
 ): ActionMenuItem[] {
   return [
@@ -191,5 +214,6 @@ export function completedMenuItems(
       systemImage: 'archivebox',
       onPress: () => handlers.onArchive(mesocycle),
     },
+    deleteMenuItem(() => handlers.onDelete(mesocycle)),
   ];
 }

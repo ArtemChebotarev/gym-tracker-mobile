@@ -2,7 +2,7 @@ import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
 import { defaultProgressionSettings } from '@domain/mesocycle';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
-import { archiveMesocycle, deletePlannedMesocycle, listMesocycles } from '@usecases/mesocycleList';
+import { archiveMesocycle, deleteMesocycle, listMesocycles } from '@usecases/mesocycleList';
 import { STAMPS } from '../fixtures/stamps';
 import { withTestDatabase } from '../fixtures/sqliteDatabase';
 
@@ -40,28 +40,50 @@ describe('listMesocycles', () => {
   });
 });
 
-describe('deletePlannedMesocycle', () => {
+describe('deleteMesocycle', () => {
   test('deletes a planned mesocycle', async () => {
     const deps = makeDeps();
     await deps.mesocycleRepo.create(makeMesocycle({ id: 'p' }));
 
-    await deletePlannedMesocycle('p', deps);
+    await deleteMesocycle('p', deps);
 
     await expect(deps.mesocycleRepo.getById('p')).resolves.toBeNull();
   });
 
-  test('refuses to delete a mesocycle that is not planned', async () => {
+  // GT-268: a finished block can go too, history and all — what goes with it is the repository's
+  // cascade (`deleteWithChildren`, mesocycleContract / exerciseHistoryContract).
+  test.each(['completed', 'abandoned'] as const)('deletes a %s mesocycle', async (status) => {
     const deps = makeDeps();
-    await deps.mesocycleRepo.create(makeMesocycle({ id: 'c', status: 'completed' }));
+    await deps.mesocycleRepo.create(makeMesocycle({ id: 'f', status }));
 
-    const error = await deletePlannedMesocycle('c', deps).catch((e: unknown) => e);
+    await deleteMesocycle('f', deps);
+
+    await expect(deps.mesocycleRepo.getById('f')).resolves.toBeNull();
+  });
+
+  test('deletes an archived block too', async () => {
+    const deps = makeDeps();
+    await deps.mesocycleRepo.create(
+      makeMesocycle({ id: 'f', status: 'completed', archivedAt: '2026-09-25T10:00:00.000Z' }),
+    );
+
+    await deleteMesocycle('f', deps);
+
+    await expect(deps.mesocycleRepo.getById('f')).resolves.toBeNull();
+  });
+
+  test('refuses to delete the active mesocycle and deletes nothing', async () => {
+    const deps = makeDeps();
+    await deps.mesocycleRepo.create(makeMesocycle({ id: 'a', status: 'active' }));
+
+    const error = await deleteMesocycle('a', deps).catch((e: unknown) => e);
 
     expect(isConflictError(error)).toBe(true);
-    await expect(deps.mesocycleRepo.getById('c')).resolves.not.toBeNull();
+    await expect(deps.mesocycleRepo.getById('a')).resolves.not.toBeNull();
   });
 
   test('rejects an unknown id with NotFoundError', async () => {
-    const error = await deletePlannedMesocycle('missing', makeDeps()).catch((e: unknown) => e);
+    const error = await deleteMesocycle('missing', makeDeps()).catch((e: unknown) => e);
 
     expect(isNotFoundError(error)).toBe(true);
   });

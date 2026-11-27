@@ -12,6 +12,8 @@
 // Completed `⋯` → Archive hides the block (`useArchiveMesocycle`) after the screen's own
 // confirmation: a soft delete, so its sessions and set logs stay — it just stops being listed, and
 // stops being offered as a Flow C source. There is no Unarchive yet.
+// Delete — Planned `⋯`, and Completed `⋯` since GT-268 — removes the block after the screen's own
+// confirmation (`useDeleteMesocycle`); a finished one takes its sessions and set logs with it.
 // A tap on a Planned row opens the editor on that mesocycle (app/meso-editor/edit/[id].tsx), with
 // that mesocycle loaded into the editor draft first.
 // The Active card's current week comes from the mesocycle's grid (useMesoGrid, 089) — its sessions,
@@ -26,7 +28,7 @@ import { mesocycleDetailHref } from '@components/historyRoutes';
 import { MesocyclesScreen } from '@components/MesocyclesScreen';
 import { toMesoBuilderDraft, useDraftStore } from '@state/draftStore';
 import { useArchiveMesocycle } from '@state/useArchiveMesocycle';
-import { useDeletePlannedMesocycle } from '@state/useDeletePlannedMesocycle';
+import { useDeleteMesocycle } from '@state/useDeleteMesocycle';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
@@ -38,7 +40,7 @@ export default function MesocyclesRoute() {
   const query = useMesocycles();
   const activeId = query.data?.find((mesocycle) => mesocycle.status === 'active')?.id;
   const activeGrid = useMesoGrid(activeId);
-  const deleteMesocycle = useDeletePlannedMesocycle();
+  const deleteMesocycle = useDeleteMesocycle();
   const archiveMesocycle = useArchiveMesocycle();
   const startMesocycle = useStartMesocycle();
   const onboarding = useOnboardingFlags();

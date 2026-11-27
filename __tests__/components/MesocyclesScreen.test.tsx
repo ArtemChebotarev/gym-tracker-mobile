@@ -9,6 +9,7 @@ import { MesocyclesScreen, type MesocyclesScreenProps } from '@components/Mesocy
 import { copyMethodCaption } from '@components/MesoCreationMethodSheetLogic';
 import {
   formatArchiveConfirmMessage,
+  formatDeleteConfirmMessage,
 } from '@components/MesocyclesScreenLogic';
 import { STAMPS } from '../fixtures/stamps';
 
@@ -393,7 +394,7 @@ describe('MesocyclesScreen', () => {
   });
 
   describe('Completed', () => {
-    test('the row taps through to its history, and the `\u22ef` holds Copy and Archive', () => {
+    test('the row taps through to its history, and the `\u22ef` holds Copy, Archive and Delete', () => {
       const onCopy = jest.fn();
       const onOpenHistory = jest.fn();
       const onArchive = jest.fn();
@@ -432,10 +433,31 @@ describe('MesocyclesScreen', () => {
       expect(onArchive).toHaveBeenCalledWith(COMPLETED);
     });
 
-    test('a finished block is neither edited nor deleted, and carries no pill', () => {
+    // GT-268: Delete takes the block's history too, and the popup says so before the button.
+    test('Delete is not performed without accepting a confirmation that names the history', () => {
+      const onDelete = jest.fn();
+      renderWithSafeArea(<MesocyclesScreen {...makeProps({ onDelete })} />);
+
+      pickMenuItem('completed', 'delete');
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Delete training cycle?',
+        formatDeleteConfirmMessage(COMPLETED),
+        expect.any(Array),
+      );
+      expect(formatDeleteConfirmMessage(COMPLETED)).toContain('along with its exercise history');
+      expect(onDelete).not.toHaveBeenCalled();
+
+      pressAlertButton(alertSpy, 'Cancel');
+      expect(onDelete).not.toHaveBeenCalled();
+
+      pressAlertButton(alertSpy, 'Delete');
+      expect(onDelete).toHaveBeenCalledWith(COMPLETED);
+    });
+
+    test('a finished block is not edited and carries no pill', () => {
       renderWithSafeArea(<MesocyclesScreen {...makeProps({ mesocycles: [COMPLETED] })} />);
 
-      expect(screen.queryByTestId('mesocycle-menu-completed-delete')).toBeNull();
       expect(screen.queryByTestId('mesocycle-menu-completed-edit')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Copy Strength Base' })).toBeNull();
     });

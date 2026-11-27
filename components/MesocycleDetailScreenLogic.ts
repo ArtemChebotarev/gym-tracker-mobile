@@ -25,6 +25,8 @@ import type {
 } from '@domain/mesoSummary';
 import { FINAL_MESOCYCLE_STATUSES } from '@domain/mesocycleLifecycle';
 
+import { deleteMenuItem } from './MesocyclesScreenLogic';
+
 /**
  * The badge beside the title (08.9, "Шапка"): `Active` in accent, `Stopped` neutral, and none for a
  * block that ran to its end.
@@ -217,14 +219,20 @@ export function showsWorkoutGrid(status: Mesocycle['status']): boolean {
 }
 
 /**
- * What the header's `⋯` offers (08.9, "Шапка"): Rename always; Copy and Archive only for a closed
- * block — the same two a Completed row's `⋯` holds on 08.3, in the same order and with the same
- * icons. Stop isn't here; it stays in the workout's menu. Archive isn't `destructive`, for the
- * reason `completedMenuItems` gives: nothing logged goes, and the confirmation says the rest.
+ * What the header's `⋯` offers (08.9, "Шапка"): Rename always; Copy, Archive and Delete only for a
+ * closed block — the same three a Completed row's `⋯` holds on 08.3, in the same order and with the
+ * same icons (Delete since GT-268). Stop isn't here; it stays in the workout's menu. Archive isn't
+ * `destructive`, for the reason `completedMenuItems` gives: nothing logged goes, and the
+ * confirmation says the rest.
  */
 export function mesocycleDetailMenuItems(
   status: Mesocycle['status'],
-  handlers: { onRename: () => void; onCopy: () => void; onArchive: () => void },
+  handlers: {
+    onRename: () => void;
+    onCopy: () => void;
+    onArchive: () => void;
+    onDelete: () => void;
+  },
 ): ActionMenuItem[] {
   const items: ActionMenuItem[] = [
     {
@@ -250,6 +258,7 @@ export function mesocycleDetailMenuItems(
       systemImage: 'archivebox',
       onPress: handlers.onArchive,
     });
+    items.push(deleteMenuItem(handlers.onDelete));
   }
   return items;
 }

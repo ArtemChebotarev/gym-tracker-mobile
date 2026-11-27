@@ -103,6 +103,7 @@ function renderScreen(props: Partial<MesocycleDetailScreenProps> = {}) {
           onRename: jest.fn(),
           onCopy: jest.fn(),
           onArchive: jest.fn(),
+          onDelete: jest.fn(),
         })}
         {...props}
       />

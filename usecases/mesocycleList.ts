@@ -1,10 +1,13 @@
 // Mesocycles-list use cases — task 074 (08.3 · Мезоциклы — список). Orchestration only, per
-// usecases/README.md: reading every mesocycle for the list, deleting a planned one, and archiving
-// a finished one.
+// usecases/README.md: reading every mesocycle for the list, deleting one, and archiving a finished
+// one.
 //
-// The two ways a block leaves the list are deliberately not the same thing. A `planned` block has
-// no history, so Delete really deletes it; a finished one is training that happened, so Archive
-// only hides it (`archivedMesocycle`) and the rows stay where they are.
+// The two ways a finished block leaves the list are deliberately not the same thing (GT-268).
+// Archive only hides it (`archivedMesocycle`): the rows stay where they are, so its sets keep
+// showing in exercise history and keep feeding the targets of the next block. Delete removes the
+// block and everything logged in it, for a block whose numbers are wrong — a first cycle logged
+// with made-up weights would otherwise steer every target after it. A `planned` block has no
+// history, so for it Delete is the only way out.
 
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { Mesocycle } from '@domain/mesocycle';
@@ -22,20 +25,23 @@ export async function listMesocycles(deps: MesocycleListDeps): Promise<Mesocycle
 }
 
 /**
- * Permanently deletes a planned mesocycle (08.3, "`⋯` — меню Planned": no trash, no safe delete).
- * Rejects with `NotFoundError` if `id` doesn't exist, or `ConflictError` if it isn't `planned` —
- * the list only offers Delete on Planned rows (08.3: deleting a Completed one is deliberately not
- * offered), so anything else reaching here is a bug, not a user action to honor.
+ * Permanently deletes mesocycle `id` with every session, session exercise, set log and round log
+ * under it, in one transaction (`deleteWithChildren`; 08.3: no trash, no safe delete). A planned
+ * block has none of those yet; a finished or stopped one (GT-268, Artem's approval 27.11.2026)
+ * takes its whole history with it, so exercise history and the targets of later blocks stop
+ * seeing those sets.
+ *
+ * Rejects with `NotFoundError` if `id` doesn't exist, or `ConflictError` if the block is `active`
+ * — it is ended (Stop) before it can go, and the list offers Delete on Planned and Completed rows
+ * only, so an active one reaching here is a bug, not a user action to honor. Nothing is deleted then.
  */
-export async function deletePlannedMesocycle(id: string, deps: MesocycleListDeps): Promise<void> {
+export async function deleteMesocycle(id: string, deps: MesocycleListDeps): Promise<void> {
   const existing = await deps.mesocycleRepo.getById(id);
   if (!existing) {
     throw new NotFoundError(`Mesocycle "${id}" does not exist.`);
   }
-  if (existing.status !== 'planned') {
-    throw new ConflictError(
-      `Mesocycle "${id}" is ${existing.status}; only planned ones can be deleted.`,
-    );
+  if (existing.status === 'active') {
+    throw new ConflictError(`Mesocycle "${id}" is active; stop it before deleting it.`);
   }
   await deps.mesocycleRepo.deleteWithChildren(id);
 }
