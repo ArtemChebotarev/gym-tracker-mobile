@@ -132,7 +132,7 @@ describe('MesocyclesRoute — Archive', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Archive training cycle?',
-      "Its exercise history is kept. This can't be undone.",
+      'The cycle will be archived. Its exercise history stays.',
       expect.any(Array),
     );
 
@@ -273,7 +273,7 @@ describe('MesocyclesRoute — Delete a finished block', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-delete`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Delete training cycle?',
-      expect.stringContaining('exercise history will be deleted'),
+      expect.stringContaining('permanently deleted, along with its exercise history'),
       expect.any(Array),
     );
 
@@ -282,9 +282,7 @@ describe('MesocyclesRoute — Delete a finished block', () => {
     await waitFor(() => expect(screen.queryByText('Upper/Lower')).toBeNull());
     await expect(repositories().mesocycleRepo.getById(FINISHED_ID)).resolves.toBeNull();
     await expect(repositories().sessionRepo.getById('session-done')).resolves.toBeNull();
-    await expect(repositories().setLogRepo.listBySessionExerciseId('se-done')).resolves.toEqual(
-      [],
-    );
+    await expect(repositories().setLogRepo.listBySessionExerciseId('se-done')).resolves.toEqual([]);
   });
 
   test('cancelling the confirmation deletes nothing', async () => {
@@ -296,8 +294,8 @@ describe('MesocyclesRoute — Delete a finished block', () => {
 
     expect(screen.getByText('Upper/Lower')).toBeTruthy();
     await expect(repositories().mesocycleRepo.getById(FINISHED_ID)).resolves.not.toBeNull();
-    await expect(repositories().setLogRepo.listBySessionExerciseId('se-done')).resolves.toHaveLength(
-      1,
-    );
+    await expect(
+      repositories().setLogRepo.listBySessionExerciseId('se-done'),
+    ).resolves.toHaveLength(1);
   });
 });

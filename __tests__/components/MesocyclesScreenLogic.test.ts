@@ -182,7 +182,7 @@ describe('formatDeleteConfirmMessage', () => {
     'a %s block: says its workouts and history go too, in one short line',
     (status) => {
       expect(formatDeleteConfirmMessage({ status })).toBe(
-        "Its workouts and exercise history will be deleted too. This can't be undone.",
+        'The cycle will be permanently deleted, along with its exercise history.',
       );
     },
   );
@@ -190,7 +190,9 @@ describe('formatDeleteConfirmMessage', () => {
 
 describe('formatArchiveConfirmMessage', () => {
   test('says the history stays, unlike Delete', () => {
-    expect(formatArchiveConfirmMessage()).toBe("Its exercise history is kept. This can't be undone.");
+    expect(formatArchiveConfirmMessage()).toBe(
+      'The cycle will be archived. Its exercise history stays.',
+    );
   });
 });
 

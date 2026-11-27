@@ -161,26 +161,26 @@ export function deleteMenuItem(onPress: () => void): ActionMenuItem {
 
 /**
  * What the `Archive training cycle?` confirmation says under its title — two short facts, read at a
- * glance: the block's history stays (what sets Archive apart from Delete, GT-268), and there is no
- * way back — for now there is no Unarchive.
+ * glance: what happens to the block and that its history stays (what sets Archive apart from
+ * Delete, GT-268). Wording is Artem's (27.11.2026).
  */
 export function formatArchiveConfirmMessage(): string {
-  return "Its exercise history is kept. This can't be undone.";
+  return 'The cycle will be archived. Its exercise history stays.';
 }
 
 /**
  * What the `Delete training cycle?` confirmation says under its title. A planned block has nothing
  * logged, so it only warns that there is no way back. A finished or stopped one (GT-268) says in
- * one line that its workouts and exercise history go too — someone deleting a block expecting to
- * keep their progress must learn otherwise here, before the button. Kept as short as Archive's, so
- * the two read as a pair: history kept / history deleted (Artem's review: the long version wasn't
- * read).
+ * one line that it goes for good and takes its exercise history with it — someone deleting a block
+ * expecting to keep their progress must learn otherwise here, before the button. Mirrors Archive's
+ * line, so the two read as a pair: history stays / history deleted (wording Artem's, 27.11.2026;
+ * "its", not "all", so it can't read as every exercise's history).
  */
 export function formatDeleteConfirmMessage(mesocycle: Pick<Mesocycle, 'status'>): string {
   if (mesocycle.status === 'planned') {
     return "This can't be undone.";
   }
-  return "Its workouts and exercise history will be deleted too. This can't be undone.";
+  return 'The cycle will be permanently deleted, along with its exercise history.';
 }
 
 /**

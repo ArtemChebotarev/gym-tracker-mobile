@@ -17,6 +17,6 @@ Precondition: at least one completed or stopped cycle; no active cycle.
 
 - Step 1: the menu has copy, archive and delete; only delete is red (R-34 covers it).
 - Step 2: the copy flow opens with this cycle already selected as the source.
-- Step 4: the confirmation says the exercise history is kept and that it can't be undone; Cancel
+- Step 4: the confirmation says the cycle will be archived and its exercise history stays; Cancel
   keeps the cycle.
 - Step 5: the cycle disappears from the list.
