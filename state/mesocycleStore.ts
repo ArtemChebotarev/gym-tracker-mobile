@@ -20,6 +20,7 @@ import type {
   TemplateDraftDeps,
 } from '@usecases/mesocycleCreation';
 import type { MesocycleEditingDeps } from '@usecases/mesocycleEditing';
+import type { MesocycleLengthDeps } from '@usecases/mesocycleLength';
 import type { MesocycleDetailDeps } from '@usecases/mesocycleDetail';
 import type { MesoGridDeps } from '@usecases/mesoGrid';
 import type { MesocycleListDeps } from '@usecases/mesocycleList';
@@ -51,6 +52,11 @@ export function useMesocycleStartDeps(): MesocycleStartDeps {
 export function useMesocycleClosingDeps(): MesocycleClosingDeps {
   const { mesocycleClosingStore } = useRepositories();
   return { store: mesocycleClosingStore };
+}
+
+export function useMesocycleLengthDeps(): MesocycleLengthDeps {
+  const { mesocycleClosingStore, exerciseRepo } = useRepositories();
+  return { store: mesocycleClosingStore, exerciseRepo };
 }
 
 export function useMesoGridDeps(): MesoGridDeps {

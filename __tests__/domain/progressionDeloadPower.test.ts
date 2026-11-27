@@ -165,7 +165,7 @@ test('the power policy plans its deload day this way, not strength’s', () => {
       logs: [log(1, 10), log(2, 10), log(3, 10)],
       roundLogs: [],
       weekNumber: 5,
-      lengthWeeks: 5,
+      targetRir: settings.deloadRir,
       settings,
     },
   );

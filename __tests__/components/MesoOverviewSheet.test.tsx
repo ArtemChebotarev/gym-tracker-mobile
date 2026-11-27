@@ -107,3 +107,34 @@ describe('MesoOverviewSheet', () => {
     expect(screen.queryByTestId('meso-grid-week-1')).toBeNull();
   });
 });
+
+describe('MesoOverviewSheet — Cycle length (GT-240)', () => {
+  const active: MesoGrid = { ...GRID, lengthBounds: { min: 3, max: 8 } };
+
+  test('an active block shows its length, how short it may go, and the stepper changes it', () => {
+    const onChangeLength = jest.fn();
+    renderWithSafeArea(<MesoOverviewSheet {...makeProps({ grid: active, onChangeLength })} />);
+
+    expect(screen.getByText('Cycle length')).toBeTruthy();
+    expect(screen.getByText('3 weeks')).toBeTruthy();
+    expect(screen.getByText('Shortest now: 3 weeks')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Increase Cycle length'));
+    expect(onChangeLength).toHaveBeenCalledWith(4);
+    // Already at the shortest: − is greyed out.
+    expect(screen.getByLabelText('Decrease Cycle length')).toBeDisabled();
+  });
+
+  test('while a change saves, both buttons hold still', () => {
+    renderWithSafeArea(
+      <MesoOverviewSheet
+        {...makeProps({ grid: active, onChangeLength: jest.fn(), lengthChanging: true })}
+      />,
+    );
+    expect(screen.getByLabelText('Increase Cycle length')).toBeDisabled();
+  });
+
+  test('a closed block has no stepper', () => {
+    renderWithSafeArea(<MesoOverviewSheet {...makeProps({ onChangeLength: jest.fn() })} />);
+    expect(screen.queryByText('Cycle length')).toBeNull();
+  });
+});

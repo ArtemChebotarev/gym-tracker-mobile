@@ -12,9 +12,11 @@ import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import { exerciseSettingsFor } from '@domain/exerciseSettingsBuilders';
 import { buildNextSession, nextWeekNumber } from '@domain/nextSessionBuilders';
 import { loadEquipmentOf } from '@domain/bodyWeightLoad';
-import type { SourceExercise } from '@domain/progression';
+import type { Mesocycle } from '@domain/mesocycle';
+import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 import { policyFor } from '@domain/progressionPolicies';
 import { prescribeNextSession } from '@domain/progressionPlan';
+import { weekRirOf } from '@domain/progressionRir';
 import { resolveBaseSession } from '@domain/progressionSource';
 import type { ExerciseRepository } from '@repositories/catalog';
 import type { MesocycleRepository } from '@repositories/mesocycle';
@@ -68,6 +70,38 @@ export async function generateNextSession(
   }
   const { base } = resolution;
 
+  const draft = buildNextSession({
+    trigger,
+    base,
+    weekNumber,
+    lengthWeeks: mesocycle.lengthWeeks,
+    prescriptions: await prescribeFromBase(base, mesocycle, weekNumber, repos, deps, {
+      previousRir: weekRirOf(await repos.sessionExerciseRepo.listBySessionId(trigger.id)),
+    }),
+  });
+  const created = await repos.sessionRepo.create(draft.session);
+  await repos.sessionExerciseRepo.createMany(draft.sessionExercises);
+  return created;
+}
+
+/**
+ * The plan of week `weekNumber` of `mesocycle`, from `base` — the session it is progressed from.
+ * Shared by generation and by a length change (GT-240), which plans an already generated, untouched
+ * session again when its week turns into the deload or stops being one.
+ *
+ * `previousRir` is the RIR of the week before `weekNumber` (the trigger's, `weekRirOf`), which the
+ * working week's RIR stays within one step of (`clampedTargetRir`).
+ *
+ * Rejects with `NotFoundError` if one of the base's exercises is missing.
+ */
+export async function prescribeFromBase(
+  base: Pick<Session, 'id'>,
+  mesocycle: Mesocycle,
+  weekNumber: number,
+  repos: WorkoutRepositories,
+  deps: Pick<NextSessionGenerationDeps, 'exerciseRepo'>,
+  week: { previousRir: number | undefined },
+): Promise<ExercisePrescription[]> {
   const baseExercises = await repos.sessionExerciseRepo.listBySessionId(base.id);
   const catalog = await deps.exerciseRepo.listByIds(
     baseExercises.map((sessionExercise) => toExerciseId(sessionExercise.exerciseId)),
@@ -93,21 +127,13 @@ export async function generateNextSession(
     return { ...source, ...policyFor(source).sourceFacts(settings) };
   });
 
-  const draft = buildNextSession({
-    trigger,
-    base,
+  return prescribeNextSession({
+    exercises,
+    logs: await repos.setLogRepo.listBySessionId(base.id),
+    roundLogs: await repos.roundLogRepo.listBySessionId(base.id),
     weekNumber,
     lengthWeeks: mesocycle.lengthWeeks,
-    prescriptions: prescribeNextSession({
-      exercises,
-      logs: await repos.setLogRepo.listBySessionId(base.id),
-      roundLogs: await repos.roundLogRepo.listBySessionId(base.id),
-      weekNumber,
-      lengthWeeks: mesocycle.lengthWeeks,
-      settings: mesocycle.progressionSettings,
-    }),
+    ...(week.previousRir === undefined ? {} : { previousRir: week.previousRir }),
+    settings: mesocycle.progressionSettings,
   });
-  const created = await repos.sessionRepo.create(draft.session);
-  await repos.sessionExerciseRepo.createMany(draft.sessionExercises);
-  return created;
 }

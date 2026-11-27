@@ -18,6 +18,7 @@ the current day not finished.
 
 - Step 1: every week and day of the cycle, each marked done, skipped or left to do — a skipped
   day looks different from a done one; a ring marks the day open now; the deload week is labelled.
+  Under the grid, "Cycle length" shows the cycle's weeks with "−" / "+" (R-35 changes it).
 - Step 2: the next week's day opens in preview: every card says it is not programmed yet, and a
   caption at the bottom of the list (scroll down) names the workout that unlocks it. A day
   further ahead says it is not programmed yet.

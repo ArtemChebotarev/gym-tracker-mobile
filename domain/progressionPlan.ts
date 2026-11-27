@@ -10,6 +10,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import type { ExercisePrescription, SourceExercise } from '@domain/progression';
 import { policyFor } from '@domain/progressionPolicies';
+import { clampedTargetRir } from '@domain/progressionRir';
 import type { ProgressionContext } from '@domain/progressionPolicy';
 
 export type NextSessionInput = {
@@ -29,6 +30,12 @@ export type NextSessionInput = {
   /** Week number of the session being planned (the source's week + 1). */
   weekNumber: number;
   lengthWeeks: number;
+  /**
+   * The target RIR of the week before — the trigger's (`weekRirOf`). A working week's RIR is rule
+   * 4's table kept within one step of it (`clampedTargetRir`), which only matters once the
+   * block's length was changed (GT-240). Absent, the table alone.
+   */
+  previousRir?: number;
   settings: ProgressionSettings;
 };
 
@@ -45,10 +52,14 @@ export type NextSessionInput = {
 export function prescribeNextSession(input: NextSessionInput): ExercisePrescription[] {
   const { exercises, logs, roundLogs = [], weekNumber, lengthWeeks, settings } = input;
   assertWeekInBlock(weekNumber, lengthWeeks);
-  const context = { logs, roundLogs, weekNumber, lengthWeeks, settings };
+  const deload = isDeloadWeek(lengthWeeks, weekNumber);
+  const targetRir = deload
+    ? settings.deloadRir
+    : clampedTargetRir(lengthWeeks, weekNumber, input.previousRir);
+  const context = { logs, roundLogs, weekNumber, targetRir, settings };
 
   const ordered = [...exercises].sort((a, b) => a.sessionExercise.order - b.sessionExercise.order);
-  if (isDeloadWeek(lengthWeeks, weekNumber)) {
+  if (deload) {
     return prescribeDeloadByType(ordered, context);
   }
   return ordered.map((exercise) => policyFor(exercise).prescribeWorkingWeek(exercise, context));

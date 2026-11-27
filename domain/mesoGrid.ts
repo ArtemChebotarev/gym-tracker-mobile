@@ -38,4 +38,9 @@ export type MesoGrid = {
   currentWeekNumber: number;
   /** One per week, `weekNumber` 1..lengthWeeks. */
   weeks: MesoGridWeek[];
+  /**
+   * How short and how long the block may be made now (GT-240, `mesocycleLengthBounds`) — present
+   * only while it is `active`; a closed block's length is history.
+   */
+  lengthBounds?: { min: number; max: number };
 };

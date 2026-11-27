@@ -13,18 +13,17 @@
 
 import type { RoundLog, SessionExercise, SetTarget } from '@domain/execution';
 import type { ProgressionPolicy, ReferenceTargetsInput } from '@domain/progressionPolicy';
-import { targetRir } from '@domain/progressionRir';
 import { intervalLogsByRound, referenceRounds } from '@domain/progressionRoundsInterval';
 import { roundTimesOf } from '@domain/roundTimes';
 
 export const mobilityPolicy: ProgressionPolicy = {
   sourceFacts: () => ({}),
-  prescribeWorkingWeek: ({ sessionExercise }, { roundLogs, weekNumber, lengthWeeks }) => ({
+  prescribeWorkingWeek: ({ sessionExercise }, { roundLogs, targetRir }) => ({
     exerciseId: sessionExercise.exerciseId,
     order: sessionExercise.order,
     setTargets: inheritedBlocks(sessionExercise, roundLogs),
     // Mobility has no RIR on screen, but every session exercise carries the week's.
-    targetRir: targetRir(lengthWeeks, weekNumber),
+    targetRir,
   }),
   prescribeDeload: (exercises, { roundLogs, settings }) =>
     exercises.map(({ sessionExercise }) => ({

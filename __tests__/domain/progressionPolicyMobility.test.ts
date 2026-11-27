@@ -41,7 +41,7 @@ const context = {
   logs: [],
   roundLogs: [],
   weekNumber: 2,
-  lengthWeeks: 5,
+  targetRir: targetRir(5, 2),
   settings: defaultProgressionSettings,
 };
 
@@ -165,6 +165,7 @@ describe('mobility policy', () => {
     };
     const plan = prescribeNextSession({
       ...context,
+      lengthWeeks: 5,
       weekNumber: 5,
       exercises: [curl, stretch()],
     });

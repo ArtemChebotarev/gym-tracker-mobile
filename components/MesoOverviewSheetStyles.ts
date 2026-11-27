@@ -5,9 +5,13 @@
 
 import { StyleSheet } from 'react-native';
 
-import { COLORS, TYPOGRAPHY } from '@design/tokens';
+import { COLORS, SPACING, TYPOGRAPHY } from '@design/tokens';
 
 export const styles = StyleSheet.create({
+  // Cycle length sits under the grid as its own block (GT-240), the way a field follows another.
+  length: {
+    marginTop: SPACING['space/section'],
+  },
   status: {
     fontSize: TYPOGRAPHY['type/body'].fontSize,
     color: COLORS['text/secondary'],

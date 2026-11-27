@@ -13,7 +13,6 @@
 
 import { stepIntervalLever } from '@domain/progressionLeverInterval';
 import type { ProgressionPolicy, ReferenceTargetsInput } from '@domain/progressionPolicy';
-import { targetRir } from '@domain/progressionRir';
 import {
   allIntervalRoundsDone,
   deloadIntervalRounds,
@@ -30,7 +29,7 @@ export const intervalPolicy: ProgressionPolicy = {
       : {},
   prescribeWorkingWeek(
     { sessionExercise, intervalProgression },
-    { roundLogs, weekNumber, lengthWeeks },
+    { roundLogs, targetRir },
   ) {
     const logByRound = intervalLogsByRound(sessionExercise, roundLogs);
     const rounds = inheritedIntervalRounds(sessionExercise.setTargets, logByRound);
@@ -42,7 +41,7 @@ export const intervalPolicy: ProgressionPolicy = {
       order: sessionExercise.order,
       setTargets: steps ? stepIntervalLever(rounds, intervalProgression) : rounds,
       // An interval has no RIR on screen, but every session exercise carries the week's.
-      targetRir: targetRir(lengthWeeks, weekNumber),
+      targetRir,
     };
   },
   prescribeDeload: (exercises, { roundLogs, settings }) =>
