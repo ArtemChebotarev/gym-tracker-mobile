@@ -2,6 +2,7 @@ import { type Exercise, type MuscleGroup, toExerciseId } from '@domain/catalog';
 import { isConflictError } from '@domain/errors';
 import type { RoundLog, Session, SessionExercise, SetLog } from '@domain/execution';
 import { defaultProgressionSettings, type Mesocycle } from '@domain/mesocycle';
+import { targetRir } from '@domain/progressionRir';
 import type { WorkoutStore } from '@repositories/workout';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
 import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
@@ -68,7 +69,8 @@ function makeExercise(weekNumber: number, exerciseId: string, order: number): Se
       { setNumber: 1, targetReps: 10, suggestedWeight: 60 },
       { setNumber: 2, targetReps: 9, suggestedWeight: 60 },
     ],
-    targetRir: 3,
+    // Planned at the 5-week row of rule 4, as generation planned it (the deload at its RIR).
+    targetRir: weekNumber < 5 ? targetRir(5, weekNumber) : defaultProgressionSettings.deloadRir,
     status: 'completed',
   };
 }

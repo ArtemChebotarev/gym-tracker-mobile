@@ -126,6 +126,7 @@ import { useIntervalTimerStore } from '@state/intervalTimerStore';
 import { useRestTimerStore } from '@state/restTimerStore';
 import { useFinishMesocycle, useStopMesocycle } from '@state/useMesocycleClosing';
 import { useRenameMesocycle } from '@state/useRenameMesocycle';
+import { useChangeMesocycleLength } from '@state/useChangeMesocycleLength';
 import { useMesoGrid } from '@state/useMesoGrid';
 import { useMesocycles } from '@state/useMesocycles';
 import { useMarkOnboardingSeen, useOnboardingFlags } from '@state/useOnboardingFlags';
@@ -234,6 +235,7 @@ export default function TodayScreen() {
   const [bodyWeightText, setBodyWeightText] = useState('');
   const [isBodyWeightOpen, setIsBodyWeightOpen] = useState(false);
   const grid = useMesoGrid(model?.mesoId);
+  const changeLength = useChangeMesocycleLength();
   // The day Finish or Skip workout just closed (GT-220): the popup over it waits for the re-read
   // read-only session and the grid, and goes when its button is tapped.
   const [closedDay, setClosedDay] = useState<SessionFinishResult | undefined>(undefined);
@@ -818,6 +820,23 @@ export default function TodayScreen() {
             router.navigate(mesoGridCellHref(grid.data.mesoId, cell));
           }
         }}
+        onChangeLength={(lengthWeeks) => {
+          if (grid.data !== undefined) {
+            changeLength.mutate(
+              { mesoId: grid.data.mesoId, lengthWeeks },
+              {
+                // A day shown past the new last week (a preview picked in the grid) is gone: back
+                // to today's.
+                onSuccess: () => {
+                  if (model !== undefined && model.header.weekNumber > lengthWeeks) {
+                    unpinDay();
+                  }
+                },
+              },
+            );
+          }
+        }}
+        lengthChanging={changeLength.isPending}
       />
       <StopMesocycleSheet
         visible={isStopOpen}

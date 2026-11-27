@@ -9,7 +9,7 @@ import { toExerciseId, type Equipment } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
 import { generateId } from '@domain/id';
-import { targetRir } from '@domain/progressionRir';
+import { targetRir, weekRirOf } from '@domain/progressionRir';
 import { nextOrder } from '@domain/sessionExerciseOrder';
 import { addedExerciseRowCount } from '@domain/sessionExerciseSets';
 import { nowAsUtcIso } from '@domain/time';
@@ -80,7 +80,10 @@ export async function addExercises(
         .filter((exercise) => !historyNeedsSameUnit(exercise))
         .map((exercise) => exercise.id as string),
     );
-    const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
+    // The day's own RIR — what its exercises were planned at, after any length change (GT-240);
+    // the table's only for a day with none left.
+    const weekRir =
+      weekRirOf(sessionExercises) ?? targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
     const added: Unsaved<SessionExercise>[] = [];
     for (const [index, exerciseId] of input.exerciseIds.entries()) {

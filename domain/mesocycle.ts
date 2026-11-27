@@ -66,8 +66,9 @@ export const defaultProgressionSettings: ProgressionSettings = {
  * - Deload is always the block's last week — there is no separate
  *   `deloadWeek` field.
  * - At most one mesocycle has `status: 'active'` at a time.
- * - `lengthWeeks` and `daysPerWeek` are immutable once Start runs (`status` leaves `planned`);
- *   while `planned`, the whole mesocycle is editable (04 · Meso Creation Flows).
+ * - `daysPerWeek` is immutable once Start runs (`status` leaves `planned`); while `planned`, the
+ *   whole mesocycle is editable (04 · Meso Creation Flows). An `active` block's `lengthWeeks`
+ *   changes only through `changeMesocycleLength` (GT-240), never below a week already started.
  * - `progressionSettings` is a snapshot copied in at creation, not read live
  *   from global settings.
  * - `startDate` and `weekPlan` are mutually exclusive over the mesocycle's lifetime: while

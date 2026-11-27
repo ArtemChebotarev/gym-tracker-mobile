@@ -12,12 +12,11 @@ import { prescribePowerDeloadDay } from '@domain/progressionDeloadPower';
 import { prescribePowerFromReference } from '@domain/progressionHistoryPower';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
 import { nextTargetReps } from '@domain/progressionReps';
-import { targetRir } from '@domain/progressionRir';
 import { prescribePowerBlockStart } from '@domain/progressionStartPower';
 
 export const powerPolicy: ProgressionPolicy = {
   sourceFacts: (settings) => (settings?.type === 'power' ? { powerLoad: settings.load } : {}),
-  prescribeWorkingWeek({ sessionExercise, equipment }, { logs, weekNumber, lengthWeeks }) {
+  prescribeWorkingWeek({ sessionExercise, equipment }, { logs, targetRir }) {
     const logBySet = new Map<number, SetLog>();
     for (const log of logs) {
       if (log.sessionExerciseId === sessionExercise.id && !logBySet.has(log.setNumber)) {
@@ -57,7 +56,7 @@ export const powerPolicy: ProgressionPolicy = {
       exerciseId: sessionExercise.exerciseId,
       order: sessionExercise.order,
       setTargets,
-      targetRir: targetRir(lengthWeeks, weekNumber),
+      targetRir,
     };
   },
   prescribeDeload: (exercises, { logs, settings }) =>

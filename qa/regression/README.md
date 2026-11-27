@@ -133,7 +133,7 @@ Cycle **A** is created from the "Upper / Lower + Boxing Hybrid" template cut to 
 | 6 | A completed | R-25, R-26 |
 | 7 | Cycle C copied from A | R-05, R-23 |
 | 8 | A and C in Completed | R-24 |
-| 9 | Any; R-34 makes and deletes its own throwaway cycle | R-27 – R-30, R-33, R-34 |
+| 9 | Any; R-34 makes and deletes its own throwaway cycle, R-35 starts and stops one | R-27 – R-30, R-33 – R-35 |
 | 10 | R-32 on the chain's data; then a fresh install (a backup restores only into an empty app) | R-32, R-31 |
 
 Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlight build.
@@ -188,6 +188,7 @@ restored): record it as expected, not as a failure.
 | [R-32](scenarios/R-32-import-refusals.md) | Import: cancel changes nothing; an app with data and a wrong file are refused | P1 | 08 | Sim |
 | [R-33](scenarios/R-33-weight-unit.md) | Weight unit: Settings default, picked per cycle, history per unit | P0 | 08, 08.5, 08.6, 03 | Sim |
 | [R-34](scenarios/R-34-completed-delete.md) | Completed: delete a cycle with its history, from the list and the detail | P1 | 08.3, 08.9, 08.6 | Sim |
+| [R-35](scenarios/R-35-cycle-length.md) | Change the length of a running cycle: deload moves, the next week re-plans | P1 | 08.7, 03 | Sim |
 | [D-01](scenarios/D-01-rest-notification.md) | Rest notification in the background and on the lock screen | P0 | 05, 08 | Phone |
 | [D-02](scenarios/D-02-real-workout.md) | An ordinary workout on the TestFlight build | P0 | 05, 08.7 | Phone |
 | [D-03](scenarios/D-03-sound-vibration.md) | In-app sound and vibration follow Settings | P1 | 08 | Phone |

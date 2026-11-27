@@ -6,6 +6,7 @@
 import type { Session } from '@domain/execution';
 import type { Mesocycle } from '@domain/mesocycle';
 import type { MesoGrid, MesoGridCellStatus } from '@domain/mesoGrid';
+import { mesocycleLengthBounds } from '@domain/mesocycleLength';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 
 /** The state of a cell whose session is `session` — or which has none yet. */
@@ -97,7 +98,7 @@ export function buildMesoGrid(mesocycle: Mesocycle, sessions: readonly Session[]
     };
   });
 
-  return {
+  const grid: MesoGrid = {
     mesoId: mesocycle.id,
     name: mesocycle.name,
     lengthWeeks: mesocycle.lengthWeeks,
@@ -105,4 +106,7 @@ export function buildMesoGrid(mesocycle: Mesocycle, sessions: readonly Session[]
     currentWeekNumber: currentWeekNumber(own),
     weeks,
   };
+  return mesocycle.status === 'active'
+    ? { ...grid, lengthBounds: mesocycleLengthBounds(mesocycle, own) }
+    : grid;
 }

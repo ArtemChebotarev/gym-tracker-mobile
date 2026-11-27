@@ -4,16 +4,19 @@
 //
 // The grid itself is `MesoGrid` (task 127) — the mesocycle detail screen (08.9) draws the same one,
 // so the cells, their looks and what a tap does live there. This file is the sheet around it: the
-// title, the subtitle, and the state before the grid arrives.
+// title, the subtitle, the Cycle length stepper under the grid (GT-240) and the state before the
+// grid arrives.
 //
 // Presentational: the grid and what a tap does come in as props from the Today tab
 // (app/(tabs)/index.tsx). JSX/rendering only — styles live in MesoOverviewSheetStyles.ts and pure
 // helpers in MesoOverviewSheetLogic.ts, per the code-style skill.
 
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { MesoGrid as MesoGridBody } from '@components/MesoGrid';
 import { BottomSheet } from '@design/components/BottomSheet';
+import { Stepper } from '@design/components/Stepper';
+import { SIZES } from '@design/tokens';
 import type { MesoGrid, MesoGridCell } from '@domain/mesoGrid';
 
 import { formatMesoOverviewSubtitle } from './MesoOverviewSheetLogic';
@@ -28,6 +31,13 @@ export type MesoOverviewSheetProps = {
   openSessionId?: string;
   /** A cell was tapped — the caller closes the sheet and opens that day. */
   onOpenCell: (cell: MesoGridCell) => void;
+  /**
+   * A tap of the Cycle length stepper (GT-240) — the caller changes the block's length. Without
+   * it, or for a block that isn't active (no `grid.lengthBounds`), the stepper isn't shown.
+   */
+  onChangeLength?: (lengthWeeks: number) => void;
+  /** A length change is being saved: both stepper buttons hold still until the grid re-reads. */
+  lengthChanging?: boolean;
 };
 
 export function MesoOverviewSheet({
@@ -36,6 +46,8 @@ export function MesoOverviewSheet({
   grid,
   openSessionId,
   onOpenCell,
+  onChangeLength,
+  lengthChanging = false,
 }: MesoOverviewSheetProps) {
   if (grid === undefined) {
     return (
@@ -53,6 +65,23 @@ export function MesoOverviewSheet({
       subtitle={formatMesoOverviewSubtitle(grid)}
     >
       <MesoGridBody grid={grid} openSessionId={openSessionId} onCellPress={onOpenCell} />
+      {grid.lengthBounds !== undefined && onChangeLength !== undefined && (
+        <View style={styles.length}>
+          <Text style={styles.lengthLabel}>
+            Cycle length<Text style={styles.lengthUnit}> · weeks</Text>
+          </Text>
+          <Stepper
+            variant="inline"
+            label="Cycle length"
+            valueWidth={SIZES['size/stepper-value']}
+            value={grid.lengthWeeks}
+            onChange={onChangeLength}
+            // While a change saves, the bounds collapse onto the value, which greys out both buttons.
+            min={lengthChanging ? grid.lengthWeeks : grid.lengthBounds.min}
+            max={lengthChanging ? grid.lengthWeeks : grid.lengthBounds.max}
+          />
+        </View>
+      )}
     </BottomSheet>
   );
 }

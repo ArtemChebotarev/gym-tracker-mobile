@@ -25,7 +25,12 @@ export type ProgressionContext = {
   roundLogs: readonly RoundLog[];
   /** Week number of the session being planned (the source's week + 1). */
   weekNumber: number;
-  lengthWeeks: number;
+  /**
+   * The planned week's target RIR (rule 4) — from the block's RIR curve, which a length change
+   * (GT-240) may have reshaped, so a policy never derives it from the length itself. On the deload
+   * week it is `settings.deloadRir`.
+   */
+  targetRir: number;
   settings: ProgressionSettings;
 };
 

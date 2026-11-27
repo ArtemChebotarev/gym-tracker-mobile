@@ -7,7 +7,6 @@ import { prescribeDeloadDay } from '@domain/progressionDeload';
 import { prescribeFromHistory } from '@domain/progressionHistory';
 import type { ProgressionPolicy } from '@domain/progressionPolicy';
 import { nextSetTargets } from '@domain/progressionReps';
-import { targetRir } from '@domain/progressionRir';
 import { prescribeBlockStart } from '@domain/progressionStartReps';
 
 export const strengthPolicy: ProgressionPolicy = {
@@ -15,13 +14,13 @@ export const strengthPolicy: ProgressionPolicy = {
   sourceFacts: () => ({}),
   prescribeWorkingWeek(
     { sessionExercise, equipment },
-    { logs, weekNumber, lengthWeeks, settings },
+    { logs, targetRir, settings },
   ) {
     return {
       exerciseId: sessionExercise.exerciseId,
       order: sessionExercise.order,
       setTargets: nextSetTargets(sessionExercise, logs, settings, equipment),
-      targetRir: targetRir(lengthWeeks, weekNumber),
+      targetRir,
     };
   },
   prescribeDeload: (exercises, { logs, settings }) => prescribeDeloadDay(exercises, logs, settings),

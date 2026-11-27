@@ -180,6 +180,8 @@ describe('buildMesoGrid', () => {
       lengthWeeks: 3,
       daysPerWeek: 2,
       currentWeekNumber: 1,
+      // An active block may be made 3 to 8 weeks long (GT-240): week 1 is the last one started.
+      lengthBounds: { min: 3, max: 8 },
       weeks: [
         {
           weekNumber: 1,
