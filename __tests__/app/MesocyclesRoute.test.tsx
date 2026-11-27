@@ -132,7 +132,8 @@ describe('MesocyclesRoute — Archive', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Archive training cycle?',
-      "Are you sure you want to archive this training cycle? This can't be undone.",
+      'Are you sure you want to archive this training cycle? Its workouts stay in exercise ' +
+        "history and still count toward progression targets. This can't be undone.",
       expect.any(Array),
     );
 
@@ -226,5 +227,78 @@ describe('MesocyclesRoute — first Start (GT-50)', () => {
     pressAlertButton('Start');
 
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
+  });
+});
+
+// GT-268: Delete on a finished block removes it with everything logged in it, after a popup that
+// says the history goes too.
+describe('MesocyclesRoute — Delete a finished block', () => {
+  async function seedLoggedSession() {
+    const { sessionRepo, sessionExerciseRepo, setLogRepo, exerciseRepo } = repositories();
+    await seedExerciseCatalog(repositories());
+    const [exercise] = await exerciseRepo.getAll();
+    await sessionRepo.create({
+      id: 'session-done',
+      mesoId: FINISHED_ID,
+      weekNumber: 1,
+      dayNumber: 1,
+      isDeload: false,
+      prescriptionStatus: 'ready',
+      status: 'completed',
+      completedAt: '2026-06-02T10:00:00.000Z',
+    });
+    await sessionExerciseRepo.create({
+      id: 'se-done',
+      sessionId: 'session-done',
+      exerciseId: exercise!.id,
+      order: 1,
+      setTargets: [],
+      targetRir: 2,
+      status: 'completed',
+    });
+    await setLogRepo.create({
+      id: 'log-done',
+      sessionExerciseId: 'se-done',
+      exerciseId: exercise!.id,
+      setNumber: 1,
+      weight: 500,
+      reps: 5,
+      completedAt: '2026-06-02T09:30:00.000Z',
+    });
+  }
+
+  test('deletes the block, its sessions and its sets once the confirmation is accepted', async () => {
+    await seedLoggedSession();
+    await renderRoute();
+
+    fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-delete`), 'buttonPress');
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Delete training cycle?',
+      expect.stringContaining('every workout and set logged in it'),
+      expect.any(Array),
+    );
+
+    pressAlertButton('Delete');
+
+    await waitFor(() => expect(screen.queryByText('Upper/Lower')).toBeNull());
+    await expect(repositories().mesocycleRepo.getById(FINISHED_ID)).resolves.toBeNull();
+    await expect(repositories().sessionRepo.getById('session-done')).resolves.toBeNull();
+    await expect(repositories().setLogRepo.listBySessionExerciseId('se-done')).resolves.toEqual(
+      [],
+    );
+  });
+
+  test('cancelling the confirmation deletes nothing', async () => {
+    await seedLoggedSession();
+    await renderRoute();
+
+    fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-delete`), 'buttonPress');
+    pressAlertButton('Cancel');
+
+    expect(screen.getByText('Upper/Lower')).toBeTruthy();
+    await expect(repositories().mesocycleRepo.getById(FINISHED_ID)).resolves.not.toBeNull();
+    await expect(repositories().setLogRepo.listBySessionExerciseId('se-done')).resolves.toHaveLength(
+      1,
+    );
   });
 });

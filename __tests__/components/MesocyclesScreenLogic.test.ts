@@ -3,7 +3,9 @@ import { defaultProgressionSettings } from '@domain/mesocycle';
 import {
   completedMenuItems,
   formatActiveCaption,
+  formatArchiveConfirmMessage,
   formatCompletedCaption,
+  formatDeleteConfirmMessage,
   formatPlannedCaption,
   getWeekDots,
   groupMesocycles,
@@ -143,25 +145,54 @@ describe('plannedMenuItems', () => {
 describe('completedMenuItems', () => {
   const mesocycle = makeMesocycle({ id: 'c', status: 'completed' });
 
-  test('offers Copy and Archive, each calling its handler with that mesocycle', () => {
+  test('offers Copy, Archive and Delete, each calling its handler with that mesocycle', () => {
     const onCopy = jest.fn();
     const onArchive = jest.fn();
-    const items = completedMenuItems(mesocycle, { onCopy, onArchive });
+    const onDelete = jest.fn();
+    const items = completedMenuItems(mesocycle, { onCopy, onArchive, onDelete });
 
-    expect(items.map((item) => item.key)).toEqual(['copy', 'archive']);
-    expect(items.map((item) => item.label)).toEqual(['Copy', 'Archive']);
+    expect(items.map((item) => item.key)).toEqual(['copy', 'archive', 'delete']);
+    expect(items.map((item) => item.label)).toEqual(['Copy', 'Archive', 'Delete']);
 
     items[0]?.onPress();
     items[1]?.onPress();
+    items[2]?.onPress();
     expect(onCopy).toHaveBeenCalledWith(mesocycle);
     expect(onArchive).toHaveBeenCalledWith(mesocycle);
+    expect(onDelete).toHaveBeenCalledWith(mesocycle);
   });
 
-  test('nothing here is destructive — a finished block is never hard-deleted', () => {
-    const items = completedMenuItems(mesocycle, { onCopy: jest.fn(), onArchive: jest.fn() });
+  test('only Delete is destructive — Archive keeps everything logged (GT-268)', () => {
+    const items = completedMenuItems(mesocycle, {
+      onCopy: jest.fn(),
+      onArchive: jest.fn(),
+      onDelete: jest.fn(),
+    });
 
-    expect(items.every((item) => item.destructive === undefined)).toBe(true);
-    expect(items.map((item) => item.key)).not.toContain('delete');
+    expect(items.filter((item) => item.destructive).map((item) => item.key)).toEqual(['delete']);
+  });
+});
+
+describe('formatDeleteConfirmMessage', () => {
+  test('a planned block has nothing logged: only that there is no way back', () => {
+    expect(formatDeleteConfirmMessage({ status: 'planned' })).toBe("This can't be undone.");
+  });
+
+  test.each(['completed', 'abandoned'] as const)(
+    'a %s block: says its workouts and history go too, and points at Archive',
+    (status) => {
+      const message = formatDeleteConfirmMessage({ status });
+      expect(message).toContain('every workout and set logged in it');
+      expect(message).toContain('exercise history');
+      expect(message).toContain("can't be undone");
+      expect(message).toContain('archive the cycle instead');
+    },
+  );
+});
+
+describe('formatArchiveConfirmMessage', () => {
+  test('says the history stays, unlike Delete', () => {
+    expect(formatArchiveConfirmMessage()).toContain('stay in exercise history');
   });
 });
 

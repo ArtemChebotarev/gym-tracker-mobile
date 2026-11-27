@@ -830,6 +830,13 @@ exports[`MesocyclesScreen snapshots Completed group 1`] = `
                             systemImage="archivebox"
                             testID="mesocycle-menu-completed-archive"
                           />
+                          <ViewManagerAdapter_ExpoUI
+                            label="Delete"
+                            onButtonPress={[Function]}
+                            role="destructive"
+                            systemImage="trash"
+                            testID="mesocycle-menu-completed-delete"
+                          />
                         </ViewManagerAdapter_ExpoUI>
                       </ViewManagerAdapter_ExpoUI>
                     </View>
@@ -2272,6 +2279,13 @@ exports[`MesocyclesScreen snapshots all three groups 1`] = `
                             role="default"
                             systemImage="archivebox"
                             testID="mesocycle-menu-completed-archive"
+                          />
+                          <ViewManagerAdapter_ExpoUI
+                            label="Delete"
+                            onButtonPress={[Function]}
+                            role="destructive"
+                            systemImage="trash"
+                            testID="mesocycle-menu-completed-delete"
                           />
                         </ViewManagerAdapter_ExpoUI>
                       </ViewManagerAdapter_ExpoUI>

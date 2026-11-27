@@ -1354,6 +1354,13 @@ exports[`MesocycleDetailScreen Completed: no badge, both denominators, the weekl
               systemImage="archivebox"
               testID="action-menu-archive"
             />
+            <ViewManagerAdapter_ExpoUI
+              label="Delete"
+              onButtonPress={[MockFunction]}
+              role="destructive"
+              systemImage="trash"
+              testID="action-menu-delete"
+            />
           </ViewManagerAdapter_ExpoUI>
         </ViewManagerAdapter_ExpoUI>
       </View>
@@ -3595,6 +3602,13 @@ exports[`MesocycleDetailScreen Stopped: the Stopped badge and no workouts denomi
               role="default"
               systemImage="archivebox"
               testID="action-menu-archive"
+            />
+            <ViewManagerAdapter_ExpoUI
+              label="Delete"
+              onButtonPress={[MockFunction]}
+              role="destructive"
+              systemImage="trash"
+              testID="action-menu-delete"
             />
           </ViewManagerAdapter_ExpoUI>
         </ViewManagerAdapter_ExpoUI>

@@ -145,6 +145,27 @@ export function describeExerciseHistoryContract(harness: RepositoryHarness): voi
       ).resolves.toEqual([]);
     });
 
+    // GT-268: deleting a finished block takes its sets out of every history read — exercise
+    // history, the library's last-set caption, and the window progression targets come from.
+    test('forgets a mesocycle deleted with its children, keeping the other block', async () => {
+      const { mesocycleRepo, exerciseHistoryRepo, setLogRepo } = repositories();
+
+      await mesocycleRepo.deleteWithChildren('meso-2');
+
+      const performances = await exerciseHistoryRepo.listByExerciseId(BENCH_PRESS);
+      expect(performances.map((performance) => performance.mesocycle.id)).toEqual(['meso-1']);
+      await expect(exerciseHistoryRepo.listByExerciseId(HEAVY_BAG)).resolves.toEqual([]);
+      expect((await exerciseHistoryRepo.getLastSet(BENCH_PRESS))?.setLog.sessionExerciseId).toBe(
+        'se-1',
+      );
+      const window = await setLogRepo.listPerformances({
+        exerciseId: BENCH_PRESS,
+        since: '2000-01-01T00:00:00.000Z',
+        weightUnit: 'kg',
+      });
+      expect(window.map((performance) => performance.mesoId)).toEqual(['meso-1']);
+    });
+
     // GT-269: the library's caption — the newest set, in the unit of the block it was logged in.
     test('getLastSet gives the newest set with its mesocycle’s unit, or null', async () => {
       const { mesocycleRepo, setLogRepo, exerciseHistoryRepo } = repositories();
