@@ -88,6 +88,25 @@ export function SettingsScreen({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingBottom: tabBarClearance }]}
       >
+        {weightUnit !== undefined && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>General</Text>
+            <View style={styles.card}>
+              <SegmentedRow
+                label="Weight unit"
+                options={WEIGHT_UNIT_OPTIONS}
+                value={weightUnit}
+                onChange={(value) => {
+                  assertWeightUnit(value);
+                  onChangeWeightUnit(value);
+                }}
+              />
+            </View>
+            <Text style={styles.note}>
+              New cycles start in this unit. A cycle keeps the unit it was created with.
+            </Text>
+          </View>
+        )}
         {restBetweenSets !== undefined && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Rest timer</Text>
@@ -184,25 +203,6 @@ export function SettingsScreen({
           </View>
         )}
         {notifications !== undefined && <RestNotificationsSection {...notifications} />}
-        {weightUnit !== undefined && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>General</Text>
-            <View style={styles.card}>
-              <SegmentedRow
-                label="Weight unit"
-                options={WEIGHT_UNIT_OPTIONS}
-                value={weightUnit}
-                onChange={(value) => {
-                  assertWeightUnit(value);
-                  onChangeWeightUnit(value);
-                }}
-              />
-            </View>
-            <Text style={styles.note}>
-              New cycles start in this unit. A cycle keeps the unit it was created with.
-            </Text>
-          </View>
-        )}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>About</Text>
           <View style={styles.card}>

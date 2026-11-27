@@ -26,8 +26,11 @@ export type HistoryTargetsQuery = {
   sessionExerciseId?: string;
   /** The session's mesocycle settings: rep corridor and `historyLookbackDays`. */
   settings: ProgressionSettings;
-  /** The session's mesocycle's unit: only sets logged in it are a reference (GT-269). */
-  weightUnit: WeightUnit;
+  /**
+   * The session's mesocycle's unit: only sets logged in it are a reference (GT-269). `null` for an
+   * exercise whose logs hold no weight in a unit (`historyNeedsSameUnit`).
+   */
+  weightUnit: WeightUnit | null;
   /**
    * The exercise's equipment, when its catalog entry names one. A pure `bodyweight` exercise gets
    * reps but no weight target (task 105) — the engine decides, this only carries the fact.

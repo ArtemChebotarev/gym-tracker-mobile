@@ -4,7 +4,7 @@
 // факта"). Orchestration only — targets come from rule 6 (`targetsFromHistory`), the week's RIR
 // from rule 4.
 
-import { loadEquipmentOf } from '@domain/bodyWeightLoad';
+import { historyNeedsSameUnit, loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId, type Equipment } from '@domain/catalog';
 import { ConflictError, NotFoundError } from '@domain/errors';
 import type { SessionExercise } from '@domain/execution';
@@ -75,6 +75,11 @@ export async function addExercises(
       catalog.map((exercise) => [exercise.id as string, loadEquipmentOf(exercise)]),
     );
     const typeById = new Map(catalog.map((exercise) => [exercise.id as string, exercise.type]));
+    const unitFreeIds = new Set(
+      catalog
+        .filter((exercise) => !historyNeedsSameUnit(exercise))
+        .map((exercise) => exercise.id as string),
+    );
     const weekRir = targetRir(mesocycle.lengthWeeks, session.weekNumber);
     const firstOrder = nextOrder(sessionExercises);
     const added: Unsaved<SessionExercise>[] = [];
@@ -91,7 +96,7 @@ export async function addExercises(
             rowCount: addedExerciseRowCount(typeById.get(exerciseId)),
             weekRir,
             settings: mesocycle.progressionSettings,
-            weightUnit: mesocycle.weightUnit,
+            weightUnit: unitFreeIds.has(exerciseId) ? null : mesocycle.weightUnit,
             equipment: equipmentById.get(exerciseId),
             type: typeById.get(exerciseId),
             now,

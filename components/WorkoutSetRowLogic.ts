@@ -18,7 +18,7 @@ export function formatNotDone(status: NotDoneStatus): string {
   return status === 'abandoned' ? 'Abandoned' : 'Skipped';
 }
 
-/** A weight as the row shows it — `62.5`, no unit (the column header says `kg`). */
+/** A weight as the row shows it — `62.5`, no unit (the column header names the block's, `Weight, kg`). */
 export function formatRowWeight(weight: number): string {
   return String(weight);
 }

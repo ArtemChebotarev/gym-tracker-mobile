@@ -33,6 +33,10 @@ describe('formatBestSet', () => {
     expect(formatBestSet({ weight: 85, reps: 8, weightUnit: 'kg' })).toBe('85 kg × 8');
     expect(formatBestSet({ weight: 185, reps: 5, weightUnit: 'lb' })).toBe('185 lb × 5');
   });
+
+  test('a power level is a level, with no unit', () => {
+    expect(formatBestSet({ weight: 2, reps: 3, weightUnit: 'kg' }, 'level')).toBe('Level 2 × 3');
+  });
 });
 
 describe('formatLastDone', () => {

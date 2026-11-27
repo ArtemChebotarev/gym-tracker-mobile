@@ -5,7 +5,7 @@
 // stay in `domain/`; this reads the history window they are priced from, the part that needs
 // storage.
 
-import { loadEquipmentOf } from '@domain/bodyWeightLoad';
+import { historyNeedsSameUnit, loadEquipmentOf } from '@domain/bodyWeightLoad';
 import { toExerciseId, type Equipment, type Exercise } from '@domain/catalog';
 import { NotFoundError } from '@domain/errors';
 import type { SetTarget } from '@domain/execution';
@@ -74,6 +74,11 @@ async function weekOneTargetsFromHistory(
   const exerciseIds = planExerciseIds(plan);
   const settings = mesocycle.progressionSettings;
   const since = daysBefore(now, settings.historyLookbackDays);
+  const unitFreeIds = new Set(
+    catalog
+      .filter((exercise) => !historyNeedsSameUnit(exercise))
+      .map((exercise) => exercise.id as string),
+  );
 
   const performances = new Map<string, ExercisePerformance[]>(
     await Promise.all(
@@ -86,8 +91,9 @@ async function weekOneTargetsFromHistory(
               since,
               ownMesoId: mesocycle.origin.sourceMesoId,
               // Only sets in the new block's unit are a reference (GT-269): a copy switched to
-              // another unit starts without targets, as a block with no history does.
-              weightUnit: mesocycle.weightUnit,
+              // another unit starts without targets, as a block with no history does — unless
+              // the exercise's logs hold no weight in a unit (reps on the body weight, a level).
+              weightUnit: unitFreeIds.has(exerciseId) ? null : mesocycle.weightUnit,
             }),
           ] as const,
       ),

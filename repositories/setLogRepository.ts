@@ -46,9 +46,10 @@ export type ListPerformancesQuery = {
    * The unit of the block the reference is for (GT-269). Sets logged in a block counted in another
    * unit are left out: their numbers are not this block's, and a converted number is a guess —
    * with nothing in this unit there is no reference, and so no advice. Rounds are seconds and come
-   * back whatever the unit.
+   * back whatever the unit. `null` when the exercise's logs hold no weight in a unit
+   * (`historyNeedsSameUnit`): reps on the body weight or a power level read the same in any block.
    */
-  weightUnit: WeightUnit;
+  weightUnit: WeightUnit | null;
 };
 
 export interface SetLogRepository {

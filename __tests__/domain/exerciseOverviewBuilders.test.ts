@@ -154,6 +154,28 @@ describe('buildExerciseOverview', () => {
     expect(overview.stats?.bestSet).toEqual({ weight: 50, reps: 6, weightUnit: 'lb' });
   });
 
+  // A power level is a rung, not a weight: every block's levels compete, whatever its unit.
+  test('a power level’s best set is looked for in every block', () => {
+    const boxJump = exercise({
+      type: 'power',
+      config: { type: 'power', load: 'level', noHeavierAvailable: false },
+    });
+    const overview = buildExerciseOverview(boxJump, [
+      performance(
+        { id: 'kg-block', mesoId: 'meso-kg' },
+        [{ id: 'a', weight: 3, reps: 5, completedAt: '2026-09-01T12:00:00.000Z' }],
+        'kg',
+      ),
+      performance(
+        { id: 'lb-block', mesoId: 'meso-lb' },
+        [{ id: 'b', weight: 2, reps: 5, completedAt: '2026-09-20T12:00:00.000Z' }],
+        'lb',
+      ),
+    ]);
+
+    expect(overview.stats?.bestSet).toEqual(expect.objectContaining({ weight: 3, reps: 5 }));
+  });
+
   test('counts distinct sessions', () => {
     const overview = buildExerciseOverview(exercise(), [
       performance({ id: 'session-1', mesoId: 'meso-1' }, [

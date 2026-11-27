@@ -446,6 +446,45 @@ describe('startMesocycle — copyWeek week 1 targets', () => {
     ]);
   });
 
+  // GT-269: a copy switched to the other unit has no reference in its unit — except an exercise
+  // whose logs hold no weight in a unit: reps on the body weight read the same in lb.
+  test('a copy in another unit: a weight gets no targets, reps on the body weight do', async () => {
+    const store = await setUpCopied([
+      {
+        sessionExerciseId: 'sx-bench',
+        exerciseId: 'bench',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:00:00.000Z',
+        sets: [[60, 10]],
+      },
+      {
+        sessionExerciseId: 'sx-row',
+        exerciseId: 'row',
+        targetRir: 0,
+        completedAt: '2026-09-10T08:10:00.000Z',
+        sets: [[80, 12]],
+      },
+    ]);
+    await db()
+      .update(exercises)
+      .set({ equipment: 'bodyweight' })
+      .where(eq(exercises.id, toExerciseId('row')));
+    const copy = await store.repos.mesocycleRepo.getById('meso-copy');
+    await store.repos.mesocycleRepo.update({ ...copy!, weightUnit: 'lb' });
+
+    await startMesocycle('meso-copy', { store }, NOW);
+
+    await expect(startedTargetsOf(store, 'bench')).resolves.toEqual([
+      { setNumber: 1 },
+      { setNumber: 2 },
+      { setNumber: 3 },
+    ]);
+    // 12 + 1 − 3 = 10 reps; a pure bodyweight exercise gets no weight target (task 105).
+    const row = await startedTargetsOf(store, 'row');
+    expect(row?.[0]).toEqual(expect.objectContaining({ setNumber: 1, targetReps: 10 }));
+    expect(row?.[0]).not.toHaveProperty('suggestedWeight');
+  });
+
   // DoD: a reference from mid-block is re-priced by its own targetRir. Set on set since 134.2:
   // the reference had one set, so only row 1 has numbers to go by (was: all three took set 1).
   test('re-prices a mid-block reference by the RIR it was actually performed at', async () => {

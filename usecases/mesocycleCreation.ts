@@ -238,11 +238,6 @@ export async function confirmCopyWeekMesocycleDraft(
     throw new NotFoundError(`Mesocycle "${input.sourceMesoId}" does not exist.`);
   }
   const settings = await deps.settingsRepo.read();
-  const draft = buildCopyWeekMesocycleDraft(
-    input,
-    source,
-    settings.defaultProgressionSettings,
-    settings.weightUnit,
-  );
+  const draft = buildCopyWeekMesocycleDraft(input, source, settings.defaultProgressionSettings);
   return deps.mesocycleRepo.create(draft);
 }
