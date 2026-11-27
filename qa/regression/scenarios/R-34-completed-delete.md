@@ -19,7 +19,7 @@ Cycle A is still in Completed or archived.
 
 - Step 1: the history lists D's set (500) and A's sets.
 - Step 2: the header ⋯ has Rename, Copy, Archive and Delete; Delete is red. The confirmation says
-  the cycle's workouts and sets go too, out of exercise history, and that it can't be undone.
+  the cycle's workouts and exercise history are deleted too, and that it can't be undone.
   Cancel keeps D.
 - Step 3: the row's ⋯ has copy, archive and delete; delete is red.
 - Step 4: the same confirmation; after it D disappears from the list.

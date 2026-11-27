@@ -132,8 +132,7 @@ describe('MesocyclesRoute — Archive', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-archive`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Archive training cycle?',
-      'Are you sure you want to archive this training cycle? Its workouts stay in exercise ' +
-        "history and still count toward progression targets. This can't be undone.",
+      "Its exercise history is kept. This can't be undone.",
       expect.any(Array),
     );
 
@@ -274,7 +273,7 @@ describe('MesocyclesRoute — Delete a finished block', () => {
     fireEvent(screen.getByTestId(`mesocycle-menu-${FINISHED_ID}-delete`), 'buttonPress');
     expect(alertSpy).toHaveBeenCalledWith(
       'Delete training cycle?',
-      expect.stringContaining('every workout and set logged in it'),
+      expect.stringContaining('exercise history will be deleted'),
       expect.any(Array),
     );
 

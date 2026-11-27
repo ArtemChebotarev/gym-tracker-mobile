@@ -179,20 +179,18 @@ describe('formatDeleteConfirmMessage', () => {
   });
 
   test.each(['completed', 'abandoned'] as const)(
-    'a %s block: says its workouts and history go too, and points at Archive',
+    'a %s block: says its workouts and history go too, in one short line',
     (status) => {
-      const message = formatDeleteConfirmMessage({ status });
-      expect(message).toContain('every workout and set logged in it');
-      expect(message).toContain('exercise history');
-      expect(message).toContain("can't be undone");
-      expect(message).toContain('archive the cycle instead');
+      expect(formatDeleteConfirmMessage({ status })).toBe(
+        "Its workouts and exercise history will be deleted too. This can't be undone.",
+      );
     },
   );
 });
 
 describe('formatArchiveConfirmMessage', () => {
   test('says the history stays, unlike Delete', () => {
-    expect(formatArchiveConfirmMessage()).toContain('stay in exercise history');
+    expect(formatArchiveConfirmMessage()).toBe("Its exercise history is kept. This can't be undone.");
   });
 });
 

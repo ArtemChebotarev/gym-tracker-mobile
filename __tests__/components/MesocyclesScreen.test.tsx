@@ -445,7 +445,7 @@ describe('MesocyclesScreen', () => {
         formatDeleteConfirmMessage(COMPLETED),
         expect.any(Array),
       );
-      expect(formatDeleteConfirmMessage(COMPLETED)).toContain('exercise history');
+      expect(formatDeleteConfirmMessage(COMPLETED)).toContain('exercise history will be deleted');
       expect(onDelete).not.toHaveBeenCalled();
 
       pressAlertButton(alertSpy, 'Cancel');

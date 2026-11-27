@@ -160,34 +160,27 @@ export function deleteMenuItem(onPress: () => void): ActionMenuItem {
 }
 
 /**
- * What the `Archive training cycle?` confirmation says under its title: it asks, says what stays —
- * the block's sets, still in exercise history and still behind the next block's targets, which is
- * what sets Archive apart from Delete (GT-268) — and says it can't be undone: for now there is no
- * Unarchive.
+ * What the `Archive training cycle?` confirmation says under its title — two short facts, read at a
+ * glance: the block's history stays (what sets Archive apart from Delete, GT-268), and there is no
+ * way back — for now there is no Unarchive.
  */
 export function formatArchiveConfirmMessage(): string {
-  return (
-    'Are you sure you want to archive this training cycle? Its workouts stay in exercise history ' +
-    "and still count toward progression targets. This can't be undone."
-  );
+  return "Its exercise history is kept. This can't be undone.";
 }
 
 /**
  * What the `Delete training cycle?` confirmation says under its title. A planned block has nothing
- * logged, so it only warns that there is no way back. A finished or stopped one (GT-268) says
- * outright that its workouts and sets go too, out of exercise history and out of progression
- * targets — someone deleting a block expecting to keep their progress must learn otherwise here,
- * before the button — and points at Archive for keeping them.
+ * logged, so it only warns that there is no way back. A finished or stopped one (GT-268) says in
+ * one line that its workouts and exercise history go too — someone deleting a block expecting to
+ * keep their progress must learn otherwise here, before the button. Kept as short as Archive's, so
+ * the two read as a pair: history kept / history deleted (Artem's review: the long version wasn't
+ * read).
  */
 export function formatDeleteConfirmMessage(mesocycle: Pick<Mesocycle, 'status'>): string {
   if (mesocycle.status === 'planned') {
     return "This can't be undone.";
   }
-  return (
-    'This deletes the cycle and every workout and set logged in it. They will disappear from ' +
-    "exercise history and no longer count toward progression targets. This can't be undone. " +
-    'To keep the history, archive the cycle instead.'
-  );
+  return "Its workouts and exercise history will be deleted too. This can't be undone.";
 }
 
 /**
