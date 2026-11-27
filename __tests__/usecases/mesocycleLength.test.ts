@@ -199,9 +199,9 @@ describe('changeMesocycleLength', () => {
     expect(added).toMatchObject({ exerciseId: 'fly', targetRir: 2 });
   });
 
-  test('week 1 keeps what Start planned even before anything in it is started', async () => {
+  test('an unstarted week 1 is planned again like any other week', async () => {
     // A fresh 4-week block: week 1 planned at 2 RIR, nothing logged. Grown to 5, whose row starts
-    // at 3 — week 1 stays at 2.
+    // at 3 — week 1 takes 3.
     const store = createSqliteMesocycleClosingStore(db());
     await store.repos.mesocycleRepo.create(makeMesocycle(4));
     const week1 = session(1, { status: 'planned' });
@@ -213,7 +213,7 @@ describe('changeMesocycleLength', () => {
 
     await changeMesocycleLength('meso', 5, deps);
 
-    expect((await plannedWeek(deps, 1)).exercises[0]).toMatchObject({ targetRir: 2 });
+    expect((await plannedWeek(deps, 1)).exercises[0]).toMatchObject({ targetRir: 3 });
   });
 
   test('the grid offers the bounds of an active block', async () => {
