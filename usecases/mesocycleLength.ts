@@ -28,7 +28,7 @@ export type MesocycleLengthDeps = {
 /**
  * Sets active mesocycle `id` to `lengthWeeks` weeks and resolves to it. In one transaction: the
  * block gets its new length, and every already generated session of a week after the last started
- * one is planned again, week by week, as generation would plan it now — its `targetRir` (the new
+ * one (and after week 1, which keeps what Start planned) is planned again, week by week, as generation would plan it now — its `targetRir` (the new
  * length's table within one step of the week before, `clampedTargetRir`), and, when its week became
  * the deload or stopped being it, `isDeload` and its targets from its source session.
  *
@@ -65,7 +65,11 @@ export async function changeMesocycleLength(
       return weekRir.get(session.id);
     };
     const replanned = sessions
-      .filter((session) => session.status === 'planned' && session.weekNumber > startedWeek)
+      // Week 1 is never re-planned, started or not: it was planned at Start for its RIR — and
+      // Flow C priced its reps and weights for it.
+      .filter(
+        (session) => session.status === 'planned' && session.weekNumber > Math.max(1, startedWeek),
+      )
       .sort((a, b) => a.weekNumber - b.weekNumber);
 
     for (const session of replanned) {

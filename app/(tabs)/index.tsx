@@ -822,7 +822,18 @@ export default function TodayScreen() {
         }}
         onChangeLength={(lengthWeeks) => {
           if (grid.data !== undefined) {
-            changeLength.mutate({ mesoId: grid.data.mesoId, lengthWeeks });
+            changeLength.mutate(
+              { mesoId: grid.data.mesoId, lengthWeeks },
+              {
+                // A day shown past the new last week (a preview picked in the grid) is gone: back
+                // to today's.
+                onSuccess: () => {
+                  if (model !== undefined && model.header.weekNumber > lengthWeeks) {
+                    unpinDay();
+                  }
+                },
+              },
+            );
           }
         }}
         lengthChanging={changeLength.isPending}
