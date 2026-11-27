@@ -111,13 +111,12 @@ describe('MesoOverviewSheet', () => {
 describe('MesoOverviewSheet — Cycle length (GT-240)', () => {
   const active: MesoGrid = { ...GRID, lengthBounds: { min: 3, max: 8 } };
 
-  test('an active block shows its length, how short it may go, and the stepper changes it', () => {
+  test('an active block shows its length, and the stepper changes it within its bounds', () => {
     const onChangeLength = jest.fn();
     renderWithSafeArea(<MesoOverviewSheet {...makeProps({ grid: active, onChangeLength })} />);
 
-    expect(screen.getByText('Cycle length')).toBeTruthy();
-    expect(screen.getByText('3 weeks')).toBeTruthy();
-    expect(screen.getByText('Shortest now: 3 weeks')).toBeTruthy();
+    expect(screen.getByText(/^Cycle length/)).toBeTruthy();
+    expect(screen.getByText('3')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Increase Cycle length'));
     expect(onChangeLength).toHaveBeenCalledWith(4);
     // Already at the shortest: − is greyed out.
@@ -135,6 +134,6 @@ describe('MesoOverviewSheet — Cycle length (GT-240)', () => {
 
   test('a closed block has no stepper', () => {
     renderWithSafeArea(<MesoOverviewSheet {...makeProps({ onChangeLength: jest.fn() })} />);
-    expect(screen.queryByText('Cycle length')).toBeNull();
+    expect(screen.queryByText(/^Cycle length/)).toBeNull();
   });
 });

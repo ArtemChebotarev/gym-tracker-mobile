@@ -16,10 +16,10 @@ import { Text, View } from 'react-native';
 import { MesoGrid as MesoGridBody } from '@components/MesoGrid';
 import { BottomSheet } from '@design/components/BottomSheet';
 import { Stepper } from '@design/components/Stepper';
+import { SIZES } from '@design/tokens';
 import type { MesoGrid, MesoGridCell } from '@domain/mesoGrid';
 
-import { formatMesocycleLengthValue } from './MesoEditorBasicsStepLogic';
-import { formatCycleLengthCaption, formatMesoOverviewSubtitle } from './MesoOverviewSheetLogic';
+import { formatMesoOverviewSubtitle } from './MesoOverviewSheetLogic';
 import { styles } from './MesoOverviewSheetStyles';
 
 export type MesoOverviewSheetProps = {
@@ -67,15 +67,18 @@ export function MesoOverviewSheet({
       <MesoGridBody grid={grid} openSessionId={openSessionId} onCellPress={onOpenCell} />
       {grid.lengthBounds !== undefined && onChangeLength !== undefined && (
         <View style={styles.length}>
+          <Text style={styles.lengthLabel}>
+            Cycle length<Text style={styles.lengthUnit}> · weeks</Text>
+          </Text>
           <Stepper
+            variant="inline"
             label="Cycle length"
+            valueWidth={SIZES['size/stepper-value']}
             value={grid.lengthWeeks}
             onChange={onChangeLength}
             // While a change saves, the bounds collapse onto the value, which greys out both buttons.
             min={lengthChanging ? grid.lengthWeeks : grid.lengthBounds.min}
             max={lengthChanging ? grid.lengthWeeks : grid.lengthBounds.max}
-            formatValue={formatMesocycleLengthValue}
-            caption={formatCycleLengthCaption(grid.lengthWeeks, grid.lengthBounds)}
           />
         </View>
       )}

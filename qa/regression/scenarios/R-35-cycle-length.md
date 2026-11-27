@@ -18,12 +18,12 @@ all three workouts, so week 4 is the next one and nothing in it is logged.
 
 ## Expect
 
-- Step 1: under the grid "Cycle length" reads "5 weeks", with "Shortest now: 4 weeks" under it.
-- Step 2: "4 weeks"; the grid has 4 weeks and week 4 is labelled Deload; the subtitle reads
+- Step 1: under the grid "Cycle length · weeks" reads 5, with "−" and "+" both active.
+- Step 2: 4; the grid has 4 weeks and week 4 is labelled Deload; the subtitle reads
   "Week 4 of 4"; "−" is greyed out.
 - Step 3: the header shows the Deload badge; the exercise has 2 sets at half of week 3's weight.
-- Step 4: "6 weeks"; the grid has 6 weeks and only week 6 is labelled Deload.
+- Step 4: 6; the grid has 6 weeks and only week 6 is labelled Deload.
 - Step 5: no Deload badge; 3 sets at week 3's weight; the RIR badge reads "1 RIR" — the same as
   week 3, not higher.
-- Step 6: "Shortest now: 5 weeks", and "−" is greyed out at 5.
+- Step 6: tap "−" once: 5, and "−" is now greyed out.
 - Step 7: E leaves the Today tab like any stopped cycle.
