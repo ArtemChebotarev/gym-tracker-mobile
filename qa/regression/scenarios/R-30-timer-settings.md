@@ -2,7 +2,9 @@
 
 Priority: P1 · Spec: 08 · Where: Simulator
 
-Precondition: a workout with unlogged strength sets and an unlogged interval exercise.
+Precondition: a workout with unlogged strength sets and an unlogged interval exercise. Log the
+sets in steps 2 and 3 on an exercise with nothing logged below it in the day: a set logged above
+an exercise already started counts as a correction and starts no rest.
 
 ## Steps
 

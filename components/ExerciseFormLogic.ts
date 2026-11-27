@@ -78,7 +78,7 @@ export const POWER_LOAD_OPTIONS = POWER_LOADS.map((load) => ({
 export function describePowerLoad(load: PowerLoad): string {
   switch (load) {
     case 'weight':
-      return 'You log the kilograms, e.g. a medicine ball or a kettlebell.';
+      return 'You log the weight, e.g. a medicine ball or a kettlebell.';
     case 'level':
       return 'You log a level, 1, 2 or 3, e.g. a box with several heights.';
     case 'none':

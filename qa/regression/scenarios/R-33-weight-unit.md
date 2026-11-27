@@ -12,7 +12,7 @@ is the one cycle A was created in (kg, or lb on a run in lb) and *the other unit
 2. Cycles → "+" → "From scratch" → "Next". On the first step look at the weight unit, set days per
    week to 1, name it "Unit test", "Continue". Add "Lateral Raise" to Day 1, "Continue", "Save
    cycle".
-3. Open the planned "Unit test" with its ⋯ → Edit; on the first step pick the chain's unit, then
+3. Tap the planned "Unit test" row to open its editor; on the first step pick the chain's unit, then
    the other unit again, and save.
 4. Start "Unit test" and open its Week 1 Day 1.
 5. Header ⋯ → "Add exercise" → add another exercise logged in cycle A in the last 30 days.
@@ -27,7 +27,7 @@ is the one cycle A was created in (kg, or lb on a run in lb) and *the other unit
 
 - Step 1: the chain's unit is selected; a note under it says new cycles start in this unit.
 - Step 2: the first step shows the weight unit with the other unit selected.
-- Step 3: after saving, Edit opens on the other unit again.
+- Step 3: after saving, the editor opens on the other unit again.
 - Step 4: every column header of the day names the other unit (e.g. "Weight, lb").
 - Step 5: the added exercise has no reps target, no prefilled weight and no estimate note — its
   history is in the chain's unit, which is no reference here. (In the chain's unit the same
