@@ -26,8 +26,8 @@ exercise's last logged session) and not finished; "Heavy Bag" not logged. Set
 
 ## Expect
 
-- Step 1: a full-screen timer opens with the round count, on get ready (5 s). Note: in the rest
-  view the big middle button is skip rest, where pause sits during work.
+- Step 1: a full-screen timer opens with the round count, on get ready (5 s). Note: the rest view
+  keeps pause in the middle and adds a separate "Skip rest" button.
 - Step 2: phases go get ready → work → rest; pause stops the clock and says it continues from here;
   resume continues from the same time. Each round logs itself when its work ends.
 - Step 3: the rest ends at once and is recorded as skipped on the card; the next round starts
