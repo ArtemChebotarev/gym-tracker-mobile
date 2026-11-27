@@ -25,9 +25,13 @@ export const EXERCISE_DETAIL_TABS = [
 
 /**
  * `Best set` — `85 kg × 8`, in the unit it was logged in (08.6, "Определение плиток"; GT-269:
- * a bare number could be either unit once a lifter has blocks in both).
+ * a bare number could be either unit once a lifter has blocks in both). A power level is a rung,
+ * not a weight: `Level 2 × 3`, as the History tab prints it.
  */
-export function formatBestSet(bestSet: ExerciseBestSet): string {
+export function formatBestSet(bestSet: ExerciseBestSet, powerLoad?: PowerLoad): string {
+  if (powerLoad === 'level') {
+    return `Level ${formatRowWeight(bestSet.weight)} × ${bestSet.reps}`;
+  }
   return `${bestSet.weight} ${bestSet.weightUnit} × ${bestSet.reps}`;
 }
 

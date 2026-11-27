@@ -59,7 +59,7 @@ const CEILING_OPTION_TEXT: Record<CeilingOption, string> = {
   'add-set': 'add a set',
 };
 
-/** What the note says about the load the exercise is at: the kilograms, or that it is a level. */
+/** What the note says about the load the exercise is at: the weight in the block's unit, or that it is a level. */
 export type CeilingNoteContext = {
   load: PowerLoad;
   /** The block's unit, which `topWeight` is in. */

@@ -69,7 +69,7 @@ export function BodyWeightSheet({
           label={`Body weight, ${weightUnit}`}
           value={value}
           onChangeText={onChangeValue}
-          placeholder="80"
+          placeholder="Enter your weight"
         />
         <Text style={styles.note}>
           You can change it later in any bodyweight exercise.

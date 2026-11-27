@@ -15,7 +15,8 @@ is the one cycle A was created in (kg, or lb on a run in lb) and *the other unit
 3. Tap the planned "Unit test" row to open its editor; on the first step pick the chain's unit, then
    the other unit again, and save.
 4. Start "Unit test" and open its Week 1 Day 1.
-5. Header ⋯ → "Add exercise" → add another exercise logged in cycle A in the last 30 days.
+5. Header ⋯ → "Add exercise" → add another exercise logged in cycle A in the last 30 days, one
+   lifted with a weight (not a bodyweight, band or power-level one).
 6. Skip the added exercise. Log every set of "Lateral Raise" with weight 25 and reps 10, then
    "Finish workout" and close the summary.
 7. In the finished workout tap "Lateral Raise"'s name; then open the history tab.
@@ -31,7 +32,8 @@ is the one cycle A was created in (kg, or lb on a run in lb) and *the other unit
 - Step 4: every column header of the day names the other unit (e.g. "Weight, lb").
 - Step 5: the added exercise has no reps target, no prefilled weight and no estimate note — its
   history is in the chain's unit, which is no reference here. (In the chain's unit the same
-  exercise would come with an estimate from cycle A.)
+  exercise would come with an estimate from cycle A. A bodyweight, band or power-level exercise
+  would come with one in either unit: its logs hold no weight in a unit.)
 - Step 6: the summary's best set reads 25 × 10 in the other unit (e.g. "25 lb × 10").
 - Step 7: the overview's Best set is 25 × 10 with the other unit — the set just logged — whatever
   weights cycle A logged. The history tab's "Unit test" section shows 25 × 10 in the other unit;

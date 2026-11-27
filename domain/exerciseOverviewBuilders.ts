@@ -28,7 +28,10 @@ export function buildExerciseOverview(
 ): ExerciseOverview {
   return {
     exercise,
-    stats: buildExerciseOverviewStats(performances.filter(isDonePerformance)),
+    stats: buildExerciseOverviewStats(
+      performances.filter(isDonePerformance),
+      isPowerLevel(exercise),
+    ),
     actions: exerciseOverviewActions(exercise),
   };
 }
@@ -44,6 +47,7 @@ export function exerciseOverviewActions(exercise: Exercise): ExerciseOverviewAct
 
 function buildExerciseOverviewStats(
   performances: readonly ExerciseHistoryPerformance[],
+  unitFree: boolean,
 ): ExerciseOverviewStats | null {
   const completions = performances.flatMap((performance) => [
     ...performance.setLogs.map((log) => log.completedAt),
@@ -55,7 +59,7 @@ function buildExerciseOverviewStats(
   }
 
   return {
-    bestSet: bestSetInLatestUnit(performances),
+    bestSet: bestSetInLatestUnit(performances, unitFree),
     sessionCount: new Set(performances.map((performance) => performance.session.id)).size,
     lastDoneAt: completions.reduce((latest, at) => (at > latest ? at : latest), first),
   };
@@ -65,10 +69,12 @@ function buildExerciseOverviewStats(
  * The best set among those logged in the unit of the most recent block that logged any (GT-269),
  * with that unit. A weight is a
  * number in its block's unit: 120 lb is not heavier than 60 kg, and a converted one is a guess — so
- * the best set is looked for in the unit the user lifts in now, as logged.
+ * the best set is looked for in the unit the user lifts in now, as logged. A power level is no
+ * weight (`unitFree`): every block's levels compete.
  */
 function bestSetInLatestUnit(
   performances: readonly ExerciseHistoryPerformance[],
+  unitFree: boolean,
 ): ExerciseBestSet | null {
   const withSets = performances.filter((performance) => performance.setLogs.length > 0);
   const latest = withSets.reduce<ExerciseHistoryPerformance | undefined>(
@@ -82,7 +88,7 @@ function bestSetInLatestUnit(
   const unit = latest.mesocycle.weightUnit;
   const best = findBestSet(
     withSets
-      .filter((performance) => performance.mesocycle.weightUnit === unit)
+      .filter((performance) => unitFree || performance.mesocycle.weightUnit === unit)
       .flatMap((performance) => performance.setLogs),
   );
   return best === null ? null : { weight: best.weight, reps: best.reps, weightUnit: unit };
@@ -111,4 +117,9 @@ function findBestSet(setLogs: readonly SetLog[]): SetLog | null {
     return log.weight === current.weight && log.reps > current.reps ? log : current;
   }, null);
   return best;
+}
+
+/** A power exercise logged in levels: its `weight` is a rung, in no unit (10.1 FR-2, GT-269). */
+function isPowerLevel(exercise: Pick<Exercise, 'config'>): boolean {
+  return exercise.config?.type === 'power' && exercise.config.load === 'level';
 }

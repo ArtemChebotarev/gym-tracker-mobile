@@ -1,4 +1,5 @@
 import {
+  historyNeedsSameUnit,
   isBodyWeightExercise,
   isPureBodyWeight,
   loadEquipmentOf,
@@ -56,5 +57,28 @@ describe('loadEquipmentOf', () => {
     );
     expect(loadEquipmentOf({ equipment: 'barbell' })).toBe('barbell');
     expect(loadEquipmentOf({})).toBeUndefined();
+  });
+});
+
+// GT-269: history from a block in another unit is no reference — unless the logs hold no weight
+// in a unit at all.
+describe('historyNeedsSameUnit', () => {
+  const power = (load: 'weight' | 'level' | 'none') =>
+    ({ type: 'power', load, restSec: 60, noHeavierAvailable: false }) as const;
+
+  test('a weight lifted, or added on the body, is in its block’s unit', () => {
+    expect(historyNeedsSameUnit({ equipment: 'barbell' })).toBe(true);
+    expect(historyNeedsSameUnit({ equipment: 'bodyweight-weighted' })).toBe(true);
+    expect(historyNeedsSameUnit({ equipment: 'medicine-ball', config: power('weight') })).toBe(
+      true,
+    );
+    expect(historyNeedsSameUnit({})).toBe(true);
+  });
+
+  test('the body weight alone, a band and a power level or no load are in no unit', () => {
+    expect(historyNeedsSameUnit({ equipment: 'bodyweight' })).toBe(false);
+    expect(historyNeedsSameUnit({ equipment: 'resistance-band' })).toBe(false);
+    expect(historyNeedsSameUnit({ equipment: 'plyo-box', config: power('level') })).toBe(false);
+    expect(historyNeedsSameUnit({ equipment: 'plyo-box', config: power('none') })).toBe(false);
   });
 });

@@ -377,6 +377,33 @@ export function describeSetLogContract(harness: RepositoryHarness): void {
         expect(inLb.map((performance) => performance.mesoId)).toEqual([PAST_MESO]);
       });
 
+      // An exercise whose logs hold no weight in a unit — reps on the body weight, a power level —
+      // asks with no unit, and every block's sets come back.
+      test('with no unit, keeps the sets of every block', async () => {
+        await seedPerformances(repositories(), [
+          { sessionExerciseId: 'se-kg', completedAt: '2026-09-01T08:00:00.000Z' },
+          {
+            sessionExerciseId: 'se-lb',
+            completedAt: '2026-09-02T08:00:00.000Z',
+            mesoId: PAST_MESO,
+          },
+        ]);
+        const { mesocycleRepo, setLogRepo } = repositories();
+        const past = await mesocycleRepo.getById(PAST_MESO);
+        await mesocycleRepo.update({ ...past!, weightUnit: 'lb' });
+
+        const performances = await setLogRepo.listPerformances({
+          exerciseId: BENCH_PRESS,
+          since: SINCE,
+          weightUnit: null,
+        });
+
+        expect(performances.map((performance) => performance.mesoId)).toEqual([
+          PAST_MESO,
+          CURRENT_MESO,
+        ]);
+      });
+
       // GT-194: the own day is looked for in every week of the own block; the window binds the
       // other blocks only.
       test('the own mesocycle comes back whatever the window says, other ones don’t', async () => {

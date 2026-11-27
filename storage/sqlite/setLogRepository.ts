@@ -80,13 +80,16 @@ export class SqliteSetLogRepository implements SetLogRepository {
     const performances = await readExercisePerformances(this.db, exerciseId, {
       excludeSessionExerciseId,
     });
-    const unitByMesoId = await this.weightUnitsOf(
-      performances.map((performance) => performance.session.mesoId),
-    );
+    const unitByMesoId =
+      weightUnit === null
+        ? new Map<string, WeightUnit>()
+        : await this.weightUnitsOf(performances.map((performance) => performance.session.mesoId));
     return performances
-      // Sets from a block in another unit are no reference (GT-269); rounds are unit-free.
+      // Sets from a block in another unit are no reference (GT-269); rounds are unit-free, and so
+      // is an exercise whose logs hold no weight in a unit (`weightUnit` null).
       .filter(
         (performance) =>
+          weightUnit === null ||
           performance.setLogs.length === 0 ||
           unitByMesoId.get(performance.session.mesoId) === weightUnit,
       )

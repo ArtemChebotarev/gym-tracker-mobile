@@ -46,6 +46,20 @@ export function isPureBodyWeight(equipment: Equipment | undefined): boolean {
   return equipment === 'bodyweight' || equipment === 'resistance-band';
 }
 
+/**
+ * Whether an exercise's logged `weight` is a weight in its block's unit, so that history from a
+ * block in another unit is no reference for it (GT-269). Not when it is the body weight alone
+ * (`bodyweight`, a band, a power exercise with no load: only reps progress, and a body weighs the
+ * same in either unit) or a power level (a rung, not a weight). Asked of the exercise as
+ * `loadEquipmentOf` sees it.
+ */
+export function historyNeedsSameUnit(exercise: Pick<Exercise, 'equipment' | 'config'>): boolean {
+  if (exercise.config?.type === 'power' && exercise.config.load === 'level') {
+    return false;
+  }
+  return !isPureBodyWeight(loadEquipmentOf(exercise));
+}
+
 /** A band exercise: loads like pure bodyweight, but has its own advice at the top of the corridor. */
 export function isResistanceBand(equipment: Equipment | undefined): boolean {
   return equipment === 'resistance-band';
