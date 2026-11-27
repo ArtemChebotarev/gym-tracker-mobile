@@ -195,6 +195,7 @@ describe('restAfterLog', () => {
           : { setNumber, isFirstUnlogged: setNumber === logged.length + 1 },
       ),
       plannedSetCount: 3,
+      weightUnit: 'kg',
       loggedSetCount: logged.length,
       hasLoggedSets: logged.length > 0,
       actions: {

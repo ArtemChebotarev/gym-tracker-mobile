@@ -3,7 +3,7 @@ import type { ExerciseOverviewStats } from '@domain/exerciseOverview';
 import { overviewSections } from '@components/ExerciseOverviewLayout';
 
 const STATS: ExerciseOverviewStats = {
-  bestSet: { weight: 90, reps: 6 },
+  bestSet: { weight: 90, reps: 6, weightUnit: 'kg' },
   sessionCount: 4,
   lastDoneAt: '2026-09-17T11:30:00.000Z',
 };

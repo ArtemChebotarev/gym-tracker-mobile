@@ -30,9 +30,9 @@ const SQUAT: Exercise = {
 const GROUPS: ExerciseListGroup[] = [
   {
     muscleGroup: 'chest',
-    entries: [{ exercise: BENCH_PRESS, lastSetLog: null, lastRoundLog: null }],
+    entries: [{ exercise: BENCH_PRESS, lastSet: null, lastRoundLog: null }],
   },
-  { muscleGroup: 'quads', entries: [{ exercise: SQUAT, lastSetLog: null, lastRoundLog: null }] },
+  { muscleGroup: 'quads', entries: [{ exercise: SQUAT, lastSet: null, lastRoundLog: null }] },
 ];
 
 const BASE_PROPS: MesoEditorAddExerciseSheetProps = {

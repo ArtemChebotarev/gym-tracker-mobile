@@ -1,0 +1,1 @@
+ALTER TABLE `mesocycle` ADD `weight_unit` text DEFAULT 'kg' NOT NULL;

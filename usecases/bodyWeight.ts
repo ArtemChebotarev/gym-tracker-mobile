@@ -12,7 +12,7 @@ import type { MesocycleRepository } from '@repositories/mesocycle';
 
 export type BodyWeightInput = {
   mesoId: string;
-  /** Kilograms. Must be a finite number above 0 — a body weight of 0 is not a body weight. */
+  /** In the mesocycle's unit (GT-269). Must be a finite number above 0 — a body weight of 0 is not a body weight. */
   bodyWeight: number;
 };
 

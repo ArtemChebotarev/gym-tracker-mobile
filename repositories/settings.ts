@@ -1,6 +1,7 @@
 import type { ProgressionSettings } from '@domain/mesocycle';
 import type { RestBetweenSets } from '@domain/restTimer';
 import type { Signals } from '@domain/signals';
+import type { WeightUnit } from '@domain/weightUnit';
 
 /**
  * Which of the first-run windows of 08.11 · Onboarding the user has already closed. Each flag
@@ -62,12 +63,11 @@ export type Settings = {
    */
   defaultProgressionSettings: ProgressionSettings;
   /**
-   * Display-only unit preference. Weight is stored in kilograms everywhere in
-   * the domain (01 · Scope: "Вес хранится в одной канонической единице (кг)
-   * на уровне домена; конвертация — только на отображении") — this field
-   * never changes how a weight is stored, only how it is shown.
+   * The unit a new mesocycle is counted in unless the user picks another (GT-269). Copied onto the
+   * block when it is created, like `defaultProgressionSettings`: changing it moves no block that
+   * already exists — see `Mesocycle.weightUnit`.
    */
-  weightUnit: 'kg' | 'lb';
+  weightUnit: WeightUnit;
   /**
    * First-run windows already dismissed (08.11 · Onboarding, "Хранение"). Lives with the rest of
    * the user's data on purpose: wiping the data brings the onboarding back, and a backup carries it.

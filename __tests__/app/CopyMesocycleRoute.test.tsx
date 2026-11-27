@@ -55,6 +55,7 @@ function block(id: string, name: string, completedAt: string) {
     status: 'completed' as const,
     origin: { type: 'scratch' as const },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg' as const,
     completedAt,
   };
 }
@@ -238,6 +239,7 @@ describe('CopyMesocycleRoute — prefilled draft', () => {
       name: 'Upper/Lower 2',
       lengthWeeks: 4,
       daysPerWeek: 2,
+      weightUnit: 'kg',
       exercisesByDay: {
         1: [
           { exerciseId: BENCH!.id, order: 1, sets: 3 },

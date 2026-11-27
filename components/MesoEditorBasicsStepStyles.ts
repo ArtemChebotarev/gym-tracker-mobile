@@ -5,7 +5,7 @@
 
 import { StyleSheet } from 'react-native';
 
-import { SPACING } from '@design/tokens';
+import { BORDER_WIDTHS, COLORS, RADII, SPACING } from '@design/tokens';
 
 export const styles = StyleSheet.create({
   content: {
@@ -16,5 +16,14 @@ export const styles = StyleSheet.create({
   },
   section: {
     marginBottom: SPACING['space/section'],
+  },
+  // The unit row's card — the steppers' own: the same ground, border, radius and left edge.
+  unitCard: {
+    backgroundColor: COLORS['surface/card'],
+    borderWidth: BORDER_WIDTHS['border/default'],
+    borderColor: COLORS['border/default'],
+    borderRadius: RADII['radius/field'],
+    paddingLeft: SPACING['space/screen'],
+    paddingRight: SPACING['space/row'],
   },
 });

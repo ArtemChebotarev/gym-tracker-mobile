@@ -22,6 +22,7 @@ function makeProps(overrides: Partial<BodyWeightSheetProps> = {}): BodyWeightShe
     onChangeValue: jest.fn(),
     onSave: jest.fn(),
     isSaving: false,
+    weightUnit: 'kg',
     ...overrides,
   };
 }
@@ -37,6 +38,12 @@ describe('BodyWeightSheet', () => {
     expect(screen.getByText('Your body weight')).toBeTruthy();
     expect(screen.getByText('Used for bodyweight exercises in this cycle')).toBeTruthy();
     expect(screen.getByLabelText('Body weight, kg')).toBeTruthy();
+  });
+
+  test('asks in the unit of the cycle (GT-269)', () => {
+    renderWithSafeArea(<BodyWeightSheet {...makeProps({ weightUnit: 'lb' })} />);
+
+    expect(screen.getByLabelText('Body weight, lb')).toBeTruthy();
   });
 
   test.each(['', '0', '-80', 'eighty'])(

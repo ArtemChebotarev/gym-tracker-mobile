@@ -53,6 +53,7 @@ function makeExercise(overrides: Partial<StrengthWorkoutExercise> = {}): Strengt
     status: 'planned',
     rows: [loggedRow(1, 62.5, 10), unloggedRow(2, true), unloggedRow(3)],
     plannedSetCount: 3,
+    weightUnit: 'kg',
     loggedSetCount: 1,
     hasLoggedSets: true,
     actions: NO_ACTIONS,
@@ -94,6 +95,7 @@ const PREVIEW_EXERCISE = makeExercise({
   targetRir: undefined,
   rows: [],
   plannedSetCount: 0,
+  weightUnit: 'kg',
   loggedSetCount: 0,
   hasLoggedSets: false,
 });
@@ -686,6 +688,7 @@ describe('WorkoutExerciseCard — another weight (task 121)', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
 
@@ -762,6 +765,7 @@ describe('WorkoutExerciseCard — the ⓘ popover (task 121)', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
 
@@ -986,6 +990,7 @@ describe('RIR badge popover', () => {
       equipment: undefined,
       rows: [{ setNumber: 1, targetReps: 5, suggestedWeight: 4, isFirstUnlogged: true }],
       plannedSetCount: 1,
+      weightUnit: 'kg',
       loggedSetCount: 0,
       hasLoggedSets: false,
     });
@@ -1088,6 +1093,7 @@ describe('RIR badge popover', () => {
       loadEquipment: 'bodyweight',
       rows: [{ setNumber: 1, targetReps: 5, isFirstUnlogged: true }],
       plannedSetCount: 1,
+      weightUnit: 'kg',
       loggedSetCount: 0,
       hasLoggedSets: false,
     });
@@ -1111,6 +1117,7 @@ describe('WorkoutExerciseCard — the power ⓘ', () => {
       ...(powerLoad === 'none' ? { loadEquipment: 'bodyweight' as const } : {}),
       rows: [{ setNumber: 1, isFirstUnlogged: true, ...row }],
       plannedSetCount: 1,
+      weightUnit: 'kg',
       loggedSetCount: 0,
       hasLoggedSets: false,
     });
@@ -1180,6 +1187,7 @@ describe('WorkoutExerciseCard — a resistance band', () => {
     targetRir: 2,
     rows: [{ setNumber: 1, isFirstUnlogged: true }],
     plannedSetCount: 1,
+    weightUnit: 'kg',
     loggedSetCount: 0,
     hasLoggedSets: false,
   });

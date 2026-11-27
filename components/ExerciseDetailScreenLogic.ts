@@ -6,6 +6,7 @@ import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBui
 import type { RoundLog, SetLog } from '@domain/execution';
 import type { ExerciseBestSet } from '@domain/exerciseOverview';
 import { parseUtcIso } from '@domain/time';
+import type { WeightUnit } from '@domain/weightUnit';
 import { formatClock } from '@design/formatClock';
 import { formatRir } from '@design/formatRir';
 import { formatShortDuration } from '@design/formatShortDuration';
@@ -22,9 +23,16 @@ export const EXERCISE_DETAIL_TABS = [
   { value: 'history', label: 'History' },
 ] as const;
 
-/** `Best set` — `85×8`, no unit (08.6, "Определение плиток"). */
-export function formatBestSet(bestSet: ExerciseBestSet): string {
-  return `${bestSet.weight}×${bestSet.reps}`;
+/**
+ * `Best set` — `85 kg × 8`, in the unit it was logged in (08.6, "Определение плиток"; GT-269:
+ * a bare number could be either unit once a lifter has blocks in both). A power level is a rung,
+ * not a weight: `Level 2 × 3`, as the History tab prints it.
+ */
+export function formatBestSet(bestSet: ExerciseBestSet, powerLoad?: PowerLoad): string {
+  if (powerLoad === 'level') {
+    return `Level ${formatRowWeight(bestSet.weight)} × ${bestSet.reps}`;
+  }
+  return `${bestSet.weight} ${bestSet.weightUnit} × ${bestSet.reps}`;
 }
 
 /** `Last done` — `3 d`, `2 w` (08.6). */
@@ -38,11 +46,11 @@ export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
 }
 
 /**
- * A logged set's value: `80 kg × 9`. The `· 2 RIR` tail is rendered separately and a step quieter
+ * A logged set's value: `80 kg × 9`, in the unit of the block it was logged in (GT-269) — as it
+ * was logged, never converted. The `· 2 RIR` tail is rendered separately and a step quieter
  * (the mockup), so it isn't part of this string — see `formatSetRirTail`.
  *
- * The weight goes through the workout row's own formatter rather than `design/formatSet`, so a
- * `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
+ * The weight goes through the workout row's own formatter, so a `bodyweight-weighted` set reads back the way it was logged — `83 (+5) kg × 9`, the body weight
  * and what was hung on it kept apart (task 105).
  *
  * A power set is the same row in its own load (10.1 FR-12, GT-110): a level reads `Level 2 × 3`,
@@ -50,13 +58,14 @@ export function formatSetLabel(setLog: Pick<SetLog, 'setNumber'>): string {
  */
 export function formatSetValue(
   setLog: SetLog,
+  unit: WeightUnit,
   equipment?: Equipment,
   powerLoad?: PowerLoad,
 ): string {
   if (powerLoad === 'level') {
     return `Level ${formatRowWeight(setLog.weight)} × ${setLog.reps}`;
   }
-  return `${formatLoggedWeight(setLog, equipment)} kg × ${setLog.reps}`;
+  return `${formatLoggedWeight(setLog, equipment)} ${unit} × ${setLog.reps}`;
 }
 
 /**
@@ -163,6 +172,7 @@ export type ExerciseLogRow = { key: string; label: string; value: string; tail?:
  */
 export function exerciseLogRows(
   logs: { setLogs: readonly SetLog[]; roundLogs: readonly RoundLog[] },
+  unit: WeightUnit,
   equipment?: Equipment,
   powerLoad?: PowerLoad,
 ): ExerciseLogRow[] {
@@ -170,7 +180,7 @@ export function exerciseLogRows(
     ...logs.setLogs.map((setLog) => ({
       key: setLog.id,
       label: formatSetLabel(setLog),
-      value: formatSetValue(setLog, equipment, powerLoad),
+      value: formatSetValue(setLog, unit, equipment, powerLoad),
       tail: formatSetRirTail(setLog, powerLoad),
     })),
     ...logs.roundLogs.map((roundLog) => ({

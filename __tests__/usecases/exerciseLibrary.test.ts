@@ -4,7 +4,9 @@ import { isConflictError, isNotFoundError } from '@domain/errors';
 import type { IntervalConfig } from '@domain/exerciseConfig';
 import { defaultExerciseConfig } from '@domain/exerciseConfigBuilders';
 import type { Session, SessionExercise, SetLog } from '@domain/execution';
+import { SqliteExerciseHistoryRepository } from '@storage/sqlite/exerciseHistory';
 import { SqliteExerciseRepository } from '@storage/sqlite/exerciseRepository';
+import { SqliteMesocycleRepository } from '@storage/sqlite/mesocycle';
 import { SqliteRoundLogRepository } from '@storage/sqlite/roundLogRepository';
 import { SqliteSessionExerciseRepository } from '@storage/sqlite/sessionExercise';
 import { SqliteSessionRepository } from '@storage/sqlite/session';
@@ -61,6 +63,7 @@ function makeDeps() {
     exerciseRepo: new SqliteExerciseRepository(store),
     setLogRepo: new SqliteSetLogRepository(store),
     roundLogRepo: new SqliteRoundLogRepository(store),
+    exerciseHistoryRepo: new SqliteExerciseHistoryRepository(store),
   };
 }
 
@@ -455,7 +458,7 @@ describe('listExerciseGroups', () => {
     const entries = groups.flatMap((group) => group.entries);
     expect(entries.map((entry) => entry.exercise.id)).toEqual(['e-bag']);
     expect(entries[0]?.lastRoundLog?.id).toBe('round-1');
-    expect(entries[0]?.lastSetLog).toBeNull();
+    expect(entries[0]?.lastSet).toBeNull();
   });
 
   test("attaches each exercise's last set log for the row caption", async () => {
@@ -469,7 +472,23 @@ describe('listExerciseGroups', () => {
 
     const groups = await listExerciseGroups({}, deps);
 
-    expect(groups[0]?.entries[0]?.lastSetLog).toEqual(newer);
+    expect(groups[0]?.entries[0]?.lastSet).toEqual({ setLog: newer, weightUnit: 'kg' });
+  });
+
+  // GT-269: the last set says what it was in — its own block's unit, read through its session.
+  test('attaches the unit of the block the last set was logged in', async () => {
+    const deps = makeDeps();
+    await deps.exerciseRepo.seedCatalog([makeExercise()]);
+    await seedLogHost();
+    const mesocycleRepo = new SqliteMesocycleRepository(db());
+    const block = await mesocycleRepo.getById('meso');
+    await mesocycleRepo.update({ ...block!, weightUnit: 'lb' });
+    const set = makeSetLog({ id: 'log-1', weight: 135 });
+    await deps.setLogRepo.create(set);
+
+    const groups = await listExerciseGroups({}, deps);
+
+    expect(groups[0]?.entries[0]?.lastSet).toEqual({ setLog: set, weightUnit: 'lb' });
   });
 });
 

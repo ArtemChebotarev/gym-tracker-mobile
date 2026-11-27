@@ -28,6 +28,8 @@ import { targetRir } from '@domain/progressionRir';
 import { renumbered } from '@domain/sessionExerciseOrder';
 import type { Unsaved } from '@domain/timestamps';
 import { materializeSetTargets } from '@domain/weekPlanMaterializers';
+import { DEFAULT_WEIGHT_UNIT, type WeightUnit } from '@domain/weightUnit';
+import { assertWeightUnit } from '@domain/weightUnitValidators';
 
 /**
  * What the editor collects, whichever flow filled it in. All three flows meet in the same wizard
@@ -56,6 +58,11 @@ export type ScratchMesocycleDraftInput = {
    * with the cycle as `Mesocycle.exerciseSettings`; absent or empty for a cycle of strength only.
    */
   exerciseSettings?: ExerciseSettingsById;
+  /**
+   * The unit picked on step 1 (GT-269). Absent means the one the caller passes in — on Confirm,
+   * `Settings.weightUnit`; on an edit, what the block already has.
+   */
+  weightUnit?: WeightUnit;
 };
 
 /**
@@ -73,10 +80,13 @@ function buildMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   origin: MesocycleOrigin,
   progressionSettings: ProgressionSettings,
+  weightUnit: WeightUnit,
 ): Unsaved<Mesocycle> {
   validateMesocycleLengthWeeks(input.lengthWeeks);
   validateMesocycleDaysPerWeek(input.daysPerWeek);
   validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
+  const unit = input.weightUnit ?? weightUnit;
+  assertWeightUnit(unit);
 
   return {
     id: generateId(),
@@ -86,6 +96,7 @@ function buildMesocycleDraft(
     status: 'planned',
     origin,
     progressionSettings: { ...progressionSettings },
+    weightUnit: unit,
     weekPlan: input.weekPlan,
     ...exerciseSettingsField(input.exerciseSettings),
   };
@@ -106,8 +117,9 @@ function buildMesocycleDraft(
 export function buildScratchMesocycleDraft(
   input: ScratchMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
+  weightUnit: WeightUnit = DEFAULT_WEIGHT_UNIT,
 ): Unsaved<Mesocycle> {
-  return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings);
+  return buildMesocycleDraft(input, { type: 'scratch' }, progressionSettings, weightUnit);
 }
 
 export type TemplateMesocycleDraftInput = ScratchMesocycleDraftInput & {
@@ -124,11 +136,13 @@ export type TemplateMesocycleDraftInput = ScratchMesocycleDraftInput & {
 export function buildTemplateMesocycleDraft(
   input: TemplateMesocycleDraftInput,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
+  weightUnit: WeightUnit = DEFAULT_WEIGHT_UNIT,
 ): Unsaved<Mesocycle> {
   return buildMesocycleDraft(
     input,
     { type: 'template', templateId: input.templateId },
     progressionSettings,
+    weightUnit,
   );
 }
 
@@ -156,15 +170,18 @@ export type CopyWeekMesocycleDraftInput = ScratchMesocycleDraftInput & {
  */
 export function buildCopyWeekMesocycleDraft(
   input: CopyWeekMesocycleDraftInput,
-  source: Pick<Mesocycle, 'id' | 'lengthWeeks'>,
+  source: Pick<Mesocycle, 'id' | 'lengthWeeks' | 'weightUnit'>,
   progressionSettings: ProgressionSettings = defaultProgressionSettings,
 ): Unsaved<Mesocycle> {
   validateCopyableSourceWeek(source, input.sourceWeekNumber);
 
+  // A copy is in its source's unit unless the editor picked another (GT-269): that's where its
+  // history is.
   return buildMesocycleDraft(
     input,
     { type: 'copyWeek', sourceMesoId: source.id, sourceWeekNumber: input.sourceWeekNumber },
     progressionSettings,
+    source.weightUnit,
   );
 }
 
@@ -193,11 +210,18 @@ export function applyPlannedMesocycleEdit(
   validateMesocycleDaysPerWeek(input.daysPerWeek);
   validateWeekPlanDayCount(input.weekPlan, input.daysPerWeek);
 
+  if (input.weightUnit !== undefined) {
+    assertWeightUnit(input.weightUnit);
+  }
+
   // The edit's settings replace the stored ones whole: an exercise the edit removed takes its copy
   // with it, and a cycle left with strength only goes back to having none.
   const { exerciseSettings: _previous, ...rest } = current;
   return {
     ...rest,
+    // A planned block has nothing logged yet, so its unit may still change (GT-269); once it
+    // starts, this function refuses it with everything else.
+    weightUnit: input.weightUnit ?? current.weightUnit,
     name: input.name,
     lengthWeeks: input.lengthWeeks,
     daysPerWeek: input.daysPerWeek,

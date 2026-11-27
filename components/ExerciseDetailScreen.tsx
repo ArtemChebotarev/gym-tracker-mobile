@@ -28,6 +28,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Exercise, MuscleGroup } from '@domain/catalog';
+import type { PowerLoad } from '@domain/exerciseConfig';
 import { exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import type { ExerciseHistoryMesocycle } from '@domain/exerciseHistory';
 import type { ExerciseOverview, ExerciseOverviewStats } from '@domain/exerciseOverview';
@@ -146,7 +147,10 @@ export function ExerciseDetailScreen({
   const { exercise, stats } = overview;
 
   return (
-    <SafeAreaView style={styles.container} edges={footer !== undefined ? ['top', 'bottom'] : ['top']}>
+    <SafeAreaView
+      style={styles.container}
+      edges={footer !== undefined ? ['top', 'bottom'] : ['top']}
+    >
       <View style={styles.header}>
         <IconButton accessibilityLabel="Back" onPress={onBack}>
           <BackIcon size={ICON_SIZES['icon/button']} color={COLORS['text/secondary']} />
@@ -249,7 +253,9 @@ function OverviewSectionView({
 }) {
   switch (section.kind) {
     case 'tiles':
-      return stats === null ? null : <OverviewTiles tiles={section.tiles} stats={stats} />;
+      return stats === null ? null : (
+        <OverviewTiles tiles={section.tiles} stats={stats} powerLoad={powerLoadOf(exercise)} />
+      );
     case 'empty':
       return (
         <ExerciseDetailEmpty
@@ -298,9 +304,11 @@ function SettingsCard({ exercise }: { exercise: Exercise }) {
 function OverviewTiles({
   tiles,
   stats,
+  powerLoad,
 }: {
   tiles: readonly OverviewTile[];
   stats: ExerciseOverviewStats;
+  powerLoad: PowerLoad | undefined;
 }) {
   return (
     <View style={styles.tiles}>
@@ -309,7 +317,11 @@ function OverviewTiles({
           case 'bestSet':
             // `null` only without a logged set — never for a type whose layout lists the tile.
             return stats.bestSet === null ? null : (
-              <StatTile key={tile} label="Best set" value={formatBestSet(stats.bestSet)} />
+              <StatTile
+                key={tile}
+                label="Best set"
+                value={formatBestSet(stats.bestSet, powerLoad)}
+              />
             );
           case 'sessions':
             return <StatTile key={tile} label="Sessions" value={String(stats.sessionCount)} />;

@@ -37,6 +37,7 @@ function makePlanned(id: string): Mesocycle {
     status: 'planned',
     origin: { type: 'template', templateId: 'template-1' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         {

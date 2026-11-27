@@ -49,9 +49,12 @@ export function valuesForType(values: ExerciseFormValues, type: ExerciseType): E
   return { ...values, type, config: defaultExerciseConfig(type), muscleGroup };
 }
 
-/** What each power load is called where it is picked (10.1 FR-2). */
+/**
+ * What each power load is called where it is picked (10.1 FR-2). `Weight`, not a unit: an
+ * exercise belongs to no block, and the unit is each block's own (GT-269).
+ */
 export const POWER_LOAD_LABEL: Record<PowerLoad, string> = {
-  weight: 'Kg',
+  weight: 'Weight',
   level: 'Level',
   none: 'None',
 };
@@ -75,7 +78,7 @@ export const POWER_LOAD_OPTIONS = POWER_LOADS.map((load) => ({
 export function describePowerLoad(load: PowerLoad): string {
   switch (load) {
     case 'weight':
-      return 'You log the kilograms, e.g. a medicine ball or a kettlebell.';
+      return 'You log the weight, e.g. a medicine ball or a kettlebell.';
     case 'level':
       return 'You log a level, 1, 2 or 3, e.g. a box with several heights.';
     case 'none':

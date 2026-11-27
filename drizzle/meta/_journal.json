@@ -92,6 +92,13 @@
       "when": 1793873297036,
       "tag": "0012_catalog_template_tags",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1795719902760,
+      "tag": "0013_mesocycle_weight_unit",
+      "breakpoints": true
     }
   ]
 }

@@ -19,8 +19,8 @@ import type { ExerciseHistoryDeps } from '@usecases/exerciseHistory';
 import type { ExerciseOverviewDeps } from '@usecases/exerciseOverview';
 
 export function useExerciseLibraryDeps(): ExerciseLibraryDeps {
-  const { exerciseRepo, setLogRepo, roundLogRepo } = useRepositories();
-  return { exerciseRepo, setLogRepo, roundLogRepo };
+  const { exerciseRepo, setLogRepo, roundLogRepo, exerciseHistoryRepo } = useRepositories();
+  return { exerciseRepo, setLogRepo, roundLogRepo, exerciseHistoryRepo };
 }
 
 /** What the Exercise screen's History tab (108) reads — and the Overview tab's aggregates too. */

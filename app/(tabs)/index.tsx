@@ -114,6 +114,7 @@ import {
 } from '@components/workoutRoutes';
 import { toExerciseId } from '@domain/catalog';
 import { finishedMesocyclesNewestFirst } from '@domain/mesocycleLifecycle';
+import { DEFAULT_WEIGHT_UNIT } from '@domain/weightUnit';
 import { useAddExercises } from '@state/useAddExercises';
 import {
   useExerciseCommand,
@@ -892,6 +893,7 @@ export default function TodayScreen() {
           setIsBodyWeightOpen(false);
         }}
         isSaving={setBodyWeight.isPending}
+        weightUnit={model?.weightUnit ?? DEFAULT_WEIGHT_UNIT}
       />
       <WorkoutExercisePickerSheet
         mode="replace"

@@ -19,6 +19,7 @@ Precondition: no planned cycle (in the chain: step 4, cycle A active — needed 
 
 ## Expect
 
+- Step 3: the first step also offers the weight unit, with the one from Settings selected.
 - Step 4: "Continue" is disabled, with a hint that every day needs an exercise. A ⇅ sits in front
   of "Day 1" and stays put when the tabs scroll; no coachmark points at it in a cycle from scratch.
 - Step 5: both exercises appear on Day 1, each with 2 sets.

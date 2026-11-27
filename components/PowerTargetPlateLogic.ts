@@ -6,6 +6,7 @@
 import type { PlateTextPart } from '@design/components/PlateText';
 import type { PowerLoad } from '@domain/exerciseConfig';
 import { POWER_MAX_REPS, POWER_MIN_REPS } from '@domain/progressionCorridor';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 import { type RepCorridorTrack, repCorridorTrack } from './CorridorStepsPlateLogic';
@@ -25,13 +26,14 @@ function formatPowerTarget(
   load: PowerLoad,
   weight: number | undefined,
   reps: number,
+  unit: WeightUnit,
 ): string {
   if (load === 'none' || weight === undefined) {
     return `${reps} reps`;
   }
   return load === 'level'
     ? `Level ${formatRowWeight(weight)} × ${reps}`
-    : `${formatRowWeight(weight)} kg × ${reps}`;
+    : `${formatRowWeight(weight)} ${unit} × ${reps}`;
 }
 
 const POWER_TARGET_SUBTITLE: Record<PowerLoad, string | undefined> = {
@@ -70,6 +72,7 @@ function powerCorridor(target: number): RepCorridorTrack {
 export function powerTargetPlate(
   row: Pick<WorkoutSetRow, 'targetReps' | 'suggestedWeight' | 'estimate'> | undefined,
   load: PowerLoad,
+  unit: WeightUnit,
 ): PowerTargetPlate | undefined {
   if (row?.targetReps === undefined) {
     return undefined;
@@ -77,7 +80,7 @@ export function powerTargetPlate(
   const subtitle = POWER_TARGET_SUBTITLE[load];
   const label = row.estimate === undefined ? 'target' : 'estimate';
   return {
-    title: `Current set ${label}: ${formatPowerTarget(load, row.suggestedWeight, row.targetReps)}`,
+    title: `Current set ${label}: ${formatPowerTarget(load, row.suggestedWeight, row.targetReps, unit)}`,
     ...(subtitle === undefined ? {} : { subtitle }),
     corridor: powerCorridor(row.targetReps),
     marker: row.targetReps,

@@ -100,6 +100,11 @@ describe('power load', () => {
     const lines = new Set((['weight', 'level', 'none'] as const).map(describePowerLoad));
     expect(lines.size).toBe(3);
   });
+
+  // GT-269: an exercise belongs to no cycle, and each cycle has its own unit.
+  it('names no weight unit for a weight load', () => {
+    expect(describePowerLoad('weight')).not.toMatch(/kilogram|pound|\bkg\b|\blb\b/i);
+  });
 });
 
 describe('sortedByLabel', () => {

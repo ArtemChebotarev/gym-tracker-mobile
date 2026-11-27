@@ -21,7 +21,8 @@ import {
   validateExerciseEquipment,
 } from '@domain/catalogValidators';
 import { ConflictError, NotFoundError } from '@domain/errors';
-import type { RoundLog, SetLog } from '@domain/execution';
+import type { RoundLog } from '@domain/execution';
+import type { LastSetLog } from '@domain/exerciseHistory';
 import type { ExerciseConfig, PowerConfig } from '@domain/exerciseConfig';
 import { defaultExerciseConfig, exerciseTypeOf } from '@domain/exerciseConfigBuilders';
 import {
@@ -32,6 +33,7 @@ import {
 } from '@domain/exerciseConfigValidators';
 import { generateId } from '@domain/id';
 import type { ExerciseRepository } from '@repositories/catalog';
+import type { ExerciseHistoryRepository } from '@repositories/exerciseHistory';
 import type { RoundLogRepository } from '@repositories/roundLogRepository';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 
@@ -39,6 +41,8 @@ export type ExerciseLibraryDeps = {
   exerciseRepo: ExerciseRepository;
   setLogRepo: SetLogRepository;
   roundLogRepo: RoundLogRepository;
+  /** The last set with its block's unit, for the list's subtitles (GT-269). */
+  exerciseHistoryRepo: ExerciseHistoryRepository;
 };
 
 export type CreateCustomExerciseInput = {
@@ -235,16 +239,16 @@ export async function listExerciseGroups(
   const exercises = await deps.exerciseRepo.getAll();
 
   const lastLogEntries = await Promise.all(
-    exercises.map(async (exercise): Promise<[string, SetLog | null, RoundLog | null]> => [
+    exercises.map(async (exercise): Promise<[string, LastSetLog | null, RoundLog | null]> => [
       exercise.id,
-      await deps.setLogRepo.getLastByExerciseId(exercise.id),
+      await deps.exerciseHistoryRepo.getLastSet(exercise.id),
       await deps.roundLogRepo.getLastByExerciseId(exercise.id),
     ]),
   );
 
   return buildExerciseListGroups(
     exercises,
-    new Map(lastLogEntries.map(([id, setLog]) => [id, setLog])),
+    new Map(lastLogEntries.map(([id, lastSet]) => [id, lastSet])),
     query,
     new Map(lastLogEntries.map(([id, , roundLog]) => [id, roundLog])),
   );

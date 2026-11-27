@@ -88,6 +88,7 @@ function buildWorkoutFixture(now: Date) {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: new Date(now.getTime() - 12 * DAY_MS).toISOString(),
   };
 

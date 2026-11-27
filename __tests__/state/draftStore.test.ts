@@ -154,6 +154,7 @@ describe('toMesoBuilderDraft', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },
@@ -168,6 +169,7 @@ describe('toMesoBuilderDraft', () => {
       name: 'Push/Pull',
       lengthWeeks: 5,
       daysPerWeek: 2,
+      weightUnit: 'kg',
       exercisesByDay: {
         1: [{ exerciseId: 'bench-press', order: 0, sets: 3 }],
         2: [{ exerciseId: 'squat', order: 0, sets: 4 }],
@@ -196,6 +198,7 @@ describe('toCopiedMesoBuilderDraft', () => {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     completedAt: '2026-08-15T00:00:00.000Z',
   };
 
@@ -212,6 +215,7 @@ describe('toCopiedMesoBuilderDraft', () => {
       name: 'Push/Pull 2',
       lengthWeeks: 6,
       daysPerWeek: 2,
+      weightUnit: 'kg',
       exercisesByDay: {
         1: [{ exerciseId: 'bench-press', order: 1, sets: 3 }],
         2: [{ exerciseId: 'row', order: 1, sets: 4 }],
@@ -238,6 +242,7 @@ describe('toCopyWeekMesocycleConfirmInput', () => {
       name: 'Push/Pull',
       lengthWeeks: 6,
       daysPerWeek: 2,
+      weightUnit: 'kg',
     },
     { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench', order: 1, sets: 3 }] }] },
     4,
@@ -249,6 +254,7 @@ describe('toCopyWeekMesocycleConfirmInput', () => {
       name: 'Push/Pull 2',
       lengthWeeks: 6,
       daysPerWeek: 2,
+      weightUnit: 'kg',
       weekPlan: {
         days: [
           { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench', order: 1, sets: 3 }] },
@@ -354,7 +360,12 @@ describe('exerciseSettings through the draft (GT-158)', () => {
       status: 'planned',
       origin: { type: 'scratch' },
       progressionSettings: defaultProgressionSettings,
-      weekPlan: { days: [{ dayNumber: 1, name: '', exercises: [{ exerciseId: 'heavy-bag', order: 0, sets: 2 }] }] },
+      weightUnit: 'kg',
+      weekPlan: {
+        days: [
+          { dayNumber: 1, name: '', exercises: [{ exerciseId: 'heavy-bag', order: 0, sets: 2 }] },
+        ],
+      },
       exerciseSettings: { 'heavy-bag': bagSettings },
     };
 
@@ -382,7 +393,7 @@ describe('prefilled drafts carry their hybrid settings (GT-159)', () => {
   test('Flow C: the copied week’s settings, as a copy', () => {
     const settings = { 'heavy-bag': bag };
     const draft = toCopiedMesoBuilderDraft(
-      { id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1 },
+      { id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1, weightUnit: 'kg' },
       weekPlan,
       2,
       settings,
@@ -392,9 +403,24 @@ describe('prefilled drafts carry their hybrid settings (GT-159)', () => {
     expect(draft.exerciseSettings).not.toBe(settings);
   });
 
+  // GT-269: a copy goes on in its source's unit — where its history is.
+  test('Flow C: the source block’s unit', () => {
+    expect(
+      toCopiedMesoBuilderDraft(
+        { id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1, weightUnit: 'lb' },
+        weekPlan,
+        2,
+      ).weightUnit,
+    ).toBe('lb');
+  });
+
   test('Flow C without settings leaves the field absent', () => {
     expect(
-      toCopiedMesoBuilderDraft({ id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1 }, weekPlan, 2),
+      toCopiedMesoBuilderDraft(
+        { id: 'meso-source', name: 'Hybrid', lengthWeeks: 6, daysPerWeek: 1, weightUnit: 'kg' },
+        weekPlan,
+        2,
+      ),
     ).not.toHaveProperty('exerciseSettings');
   });
 

@@ -22,6 +22,7 @@ export function makeMesocycle(overrides: Partial<Unsaved<Mesocycle>> = {}): Unsa
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     ...overrides,
   };
 }

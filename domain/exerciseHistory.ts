@@ -9,6 +9,7 @@
 
 import type { RoundLog, Session, SetLog } from './execution';
 import type { Mesocycle } from './mesocycle';
+import type { WeightUnit } from './weightUnit';
 
 /**
  * One performance of an exercise: a session and the sets or rounds logged for that exercise in
@@ -37,6 +38,12 @@ export type ExerciseHistoryPerformance = ExercisePerformance & {
   mesocycle: Mesocycle;
 };
 
+/**
+ * An exercise's most recent set, with the unit of the block it was logged in (GT-269) — what the
+ * library says the exercise was last done as.
+ */
+export type LastSetLog = { setLog: SetLog; weightUnit: WeightUnit };
+
 /** One session in the history list — the same shape the Overview tab's `Last session` block has. */
 export type ExerciseHistorySession = {
   /**
@@ -49,6 +56,11 @@ export type ExerciseHistorySession = {
   dayNumber: number;
   /** UTC ISO timestamp of the session's completion — the row's date. */
   completedAt: string;
+  /**
+   * The unit of the session's mesocycle, which its sets are in (GT-269). Shown as logged: a set
+   * from a block in pounds reads in pounds beside one in kilograms, never converted.
+   */
+  weightUnit: WeightUnit;
   /** Every set of this exercise in that session, ascending by `setNumber`. */
   setLogs: SetLog[];
   /** Every round of this exercise in that session, ascending by `roundNumber` (10.1 FR-12). */

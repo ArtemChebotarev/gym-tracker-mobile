@@ -10,6 +10,7 @@ function swapFor(targetReps: number, suggestedWeight: number): WeightSwapTarget 
     target: { targetReps, suggestedWeight },
     settings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
   if (swap === undefined || 'unavailable' in swap) {
@@ -24,6 +25,7 @@ function dipSwap(): WeightSwapTarget {
     target: { targetReps: 7, suggestedWeight: 16 },
     settings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'bodyweight-weighted',
     bodyWeight: 83,
   });
@@ -65,6 +67,23 @@ describe('evaluateWeightSwap — the spec’s reference examples', () => {
     });
     expect(swap.closeRange).toEqual({ min: 12, max: 17.5 });
     expect(swap.estimateRange).toEqual({ min: 4, max: 17.5 });
+  });
+
+  // GT-269: a block in pounds lands its bounds on 2.5 lb, the smallest plate it has.
+  test('35 lb × 10 — the same formula, bounds on 2.5 lb', () => {
+    const swap = buildWeightSwap({
+      target: { targetReps: 10, suggestedWeight: 35 },
+      settings,
+      isDeload: false,
+      weightUnit: 'lb',
+      equipment: 'dumbbell',
+    });
+
+    // 9.07 → 10 and 41.48 → 40, where kilograms would stop at 9.5 and 41.
+    expect(swap).toMatchObject({
+      closeRange: { min: 30, max: 40 },
+      estimateRange: { min: 10, max: 40 },
+    });
   });
 
   test('15 kg × 9 — the same weight, one rep less in the third set', () => {
@@ -174,7 +193,7 @@ describe('buildWeightSwap — when the rule applies at all', () => {
   const target = { targetReps: 10, suggestedWeight: 15 };
 
   test('a deload set has no swap: its weight is a fraction of a working one', () => {
-    expect(buildWeightSwap({ target, settings, isDeload: true })).toBeUndefined();
+    expect(buildWeightSwap({ target, settings, isDeload: true, weightUnit: 'kg' })).toBeUndefined();
   });
 
   test('a pure bodyweight set has no swap: there is no weight to change', () => {
@@ -183,6 +202,7 @@ describe('buildWeightSwap — when the rule applies at all', () => {
         target: { targetReps: 10 },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
         equipment: 'bodyweight',
       }),
     ).toBeUndefined();
@@ -194,19 +214,20 @@ describe('buildWeightSwap — when the rule applies at all', () => {
         target: { targetReps: 7, suggestedWeight: 16 },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
         equipment: 'bodyweight-weighted',
       }),
     ).toBeUndefined();
   });
 
   test('half a target is no target — week 1 of Flow A/B, or no reference under rule 6', () => {
-    expect(buildWeightSwap({ target: {}, settings, isDeload: false })).toEqual({
+    expect(buildWeightSwap({ target: {}, settings, isDeload: false, weightUnit: 'kg' })).toEqual({
       unavailable: 'no_history',
     });
-    expect(buildWeightSwap({ target: { targetReps: 10 }, settings, isDeload: false })).toEqual({
+    expect(buildWeightSwap({ target: { targetReps: 10 }, settings, isDeload: false, weightUnit: 'kg' })).toEqual({
       unavailable: 'no_history',
     });
-    expect(buildWeightSwap({ target: { suggestedWeight: 15 }, settings, isDeload: false })).toEqual(
+    expect(buildWeightSwap({ target: { suggestedWeight: 15 }, settings, isDeload: false, weightUnit: 'kg' })).toEqual(
       { unavailable: 'no_history' },
     );
   });
@@ -217,6 +238,7 @@ describe('buildWeightSwap — when the rule applies at all', () => {
         target: { targetReps: 10, suggestedWeight: 0 },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
       }),
     ).toEqual({ unavailable: 'no_history' });
     expect(
@@ -224,6 +246,7 @@ describe('buildWeightSwap — when the rule applies at all', () => {
         target: { targetReps: 31, suggestedWeight: 15 },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
       }),
     ).toEqual({ unavailable: 'no_history' });
   });
@@ -233,6 +256,7 @@ describe('buildWeightSwap — when the rule applies at all', () => {
       target,
       settings: { minReps: 8, maxReps: 20 },
       isDeload: false,
+      weightUnit: 'kg',
     });
 
     expect(swap).toMatchObject({ corridor: { minReps: 8, maxReps: 20 } });

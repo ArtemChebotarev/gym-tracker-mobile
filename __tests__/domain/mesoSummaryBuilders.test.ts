@@ -16,6 +16,7 @@ const mesocycle: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
 };
 
 const exercises: Pick<Exercise, 'id' | 'name' | 'muscleGroup' | 'type'>[] = [

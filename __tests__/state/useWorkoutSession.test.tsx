@@ -36,6 +36,7 @@ async function seedHookSession(store: RepositorySet): Promise<void> {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
   });
   await store.exerciseRepo.createCustom({
     id: toExerciseId('hook-exercise'),

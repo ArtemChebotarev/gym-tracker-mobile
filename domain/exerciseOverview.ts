@@ -9,6 +9,7 @@
 
 import type { Exercise } from './catalog';
 import type { ExercisePerformance } from './exerciseHistory';
+import type { WeightUnit } from './weightUnit';
 
 export type { ExercisePerformance };
 
@@ -16,6 +17,8 @@ export type { ExercisePerformance };
 export type ExerciseBestSet = {
   weight: number;
   reps: number;
+  /** The unit of the block it was logged in (GT-269) — the tile says it, as logged. */
+  weightUnit: WeightUnit;
 };
 
 /** The three tiles (08.6, "Определение плиток"). */

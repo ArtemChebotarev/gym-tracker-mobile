@@ -9,6 +9,7 @@ import type { ProgressionSettings } from '@domain/mesocycle';
 import { policyFor } from '@domain/progressionPolicies';
 import { resolveReference } from '@domain/progressionReference';
 import { daysBefore } from '@domain/time';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { SetLogRepository } from '@repositories/setLogRepository';
 
 export type HistoryTargetsQuery = {
@@ -25,6 +26,11 @@ export type HistoryTargetsQuery = {
   sessionExerciseId?: string;
   /** The session's mesocycle settings: rep corridor and `historyLookbackDays`. */
   settings: ProgressionSettings;
+  /**
+   * The session's mesocycle's unit: only sets logged in it are a reference (GT-269). `null` for an
+   * exercise whose logs hold no weight in a unit (`historyNeedsSameUnit`).
+   */
+  weightUnit: WeightUnit | null;
   /**
    * The exercise's equipment, when its catalog entry names one. A pure `bodyweight` exercise gets
    * reps but no weight target (task 105) — the engine decides, this only carries the fact.
@@ -57,6 +63,7 @@ export async function targetsFromHistory(
     weekRir,
     sessionExerciseId,
     settings,
+    weightUnit,
     equipment,
     type,
     now,
@@ -75,6 +82,7 @@ export async function targetsFromHistory(
     since: daysBefore(now, settings.historyLookbackDays),
     ownMesoId: session.mesoId,
     excludeSessionExerciseId: sessionExerciseId,
+    weightUnit,
   });
   const resolution = resolveReference(performances, {
     mesoId: session.mesoId,

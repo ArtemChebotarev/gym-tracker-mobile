@@ -155,7 +155,7 @@ describe('buildTemplateMesocycleDraft', () => {
 
 describe('buildCopyWeekMesocycleDraft', () => {
   // A 6-week source block: 5 working weeks, deload on week 6.
-  const source = { id: 'meso-previous', lengthWeeks: 6 };
+  const source = { id: 'meso-previous', lengthWeeks: 6, weightUnit: 'lb' as const };
   const input = {
     name: 'Push/Pull 2',
     lengthWeeks: 6,
@@ -214,6 +214,23 @@ describe('buildCopyWeekMesocycleDraft', () => {
 
     expect(draft.progressionSettings.historyLookbackDays).toBe(45);
   });
+
+  // GT-269: the copy's history is its source's, so a draft that names no unit takes the source's.
+  test('is in the source’s unit when the draft names none', () => {
+    expect(buildCopyWeekMesocycleDraft(input, source).weightUnit).toBe('lb');
+  });
+
+  test('keeps the unit the editor picked', () => {
+    expect(buildCopyWeekMesocycleDraft({ ...input, weightUnit: 'kg' }, source).weightUnit).toBe(
+      'kg',
+    );
+  });
+
+  test('refuses a unit that is not kg or lb', () => {
+    expect(() =>
+      buildCopyWeekMesocycleDraft({ ...input, weightUnit: 'stone' as never }, source),
+    ).toThrow(/Weight unit must be one of kg, lb/);
+  });
 });
 
 describe('applyPlannedMesocycleEdit', () => {
@@ -226,6 +243,7 @@ describe('applyPlannedMesocycleEdit', () => {
     status: 'planned',
     origin: { type: 'template', templateId: 'template-1' },
     progressionSettings: { ...defaultProgressionSettings, maxReps: 20 },
+    weightUnit: 'kg',
     weekPlan: twoDayWeekPlan,
     createdAt: '2026-09-01T12:00:00.000Z',
   };
@@ -303,6 +321,18 @@ describe('applyPlannedMesocycleEdit', () => {
       }),
     ).toThrow(/lengthWeeks must be between 3 and 8/);
   });
+
+  test('refuses a unit that is not kg or lb (GT-269)', () => {
+    expect(() =>
+      applyPlannedMesocycleEdit(plannedMesocycle, {
+        name: 'PPL v2',
+        lengthWeeks: 6,
+        daysPerWeek: 2,
+        weekPlan: twoDayWeekPlan,
+        weightUnit: 'stone' as never,
+      }),
+    ).toThrow(/Weight unit must be one of kg, lb/);
+  });
 });
 
 describe('renamedMesocycle', () => {
@@ -316,6 +346,7 @@ describe('renamedMesocycle', () => {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-09-01T12:00:00.000Z',
   };
 
@@ -351,6 +382,7 @@ describe('buildMesocycleStart', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         {
@@ -496,6 +528,7 @@ describe('buildMesocycleStart with ready week 1 targets (task 122)', () => {
     daysPerWeek: 2,
     status: 'planned',
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-09-01T12:00:00.000Z',
     origin: { type: 'copyWeek', sourceMesoId: 'meso-previous', sourceWeekNumber: 3 },
     weekPlan: {
@@ -647,7 +680,7 @@ describe('exerciseSettings on the draft (GT-158)', () => {
     expect(
       buildCopyWeekMesocycleDraft(
         { ...input, exerciseSettings: settings, sourceWeekNumber: 1 },
-        { id: 'source', lengthWeeks: 6 },
+        { id: 'source', lengthWeeks: 6, weightUnit: 'kg' },
       ).exerciseSettings,
     ).toEqual(settings);
   });
@@ -687,6 +720,7 @@ describe('buildMesocycleStart: rows by exercise type (GT-160)', () => {
     status: 'planned',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     weekPlan: {
       days: [
         {

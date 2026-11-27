@@ -49,7 +49,7 @@ function overview(overrides: Partial<ExerciseOverview> = {}): ExerciseOverview {
   return {
     exercise: exercise(),
     stats: {
-      bestSet: { weight: 90, reps: 6 },
+      bestSet: { weight: 90, reps: 6, weightUnit: 'kg' },
       sessionCount: 14,
       lastDoneAt: '2026-09-17T11:30:00.000Z',
     },
@@ -68,6 +68,7 @@ const HISTORY: ExerciseHistoryMesocycle[] = [
         weekNumber: 3,
         dayNumber: 2,
         completedAt: '2026-09-17T12:00:00.000Z',
+        weightUnit: 'kg',
         roundLogs: [],
         setLogs: [setLog({ rir: 2 }), setLog({ id: 'log-2', setNumber: 2, reps: 7, rir: 1 })],
       },
@@ -113,7 +114,7 @@ describe('ExerciseDetailScreen', () => {
     renderScreen();
 
     expect(screen.getByText('Best set')).toBeTruthy();
-    expect(screen.getByText('90×6')).toBeTruthy();
+    expect(screen.getByText('90 kg × 6')).toBeTruthy();
     expect(screen.getByText('Sessions')).toBeTruthy();
     expect(screen.getByText('14')).toBeTruthy();
     expect(screen.getByText('Last done')).toBeTruthy();
@@ -182,7 +183,7 @@ describe('ExerciseDetailScreen', () => {
     expect(rendered.indexOf('Watch how to perform exercise')).toBeLessThan(
       rendered.indexOf('Settings'),
     );
-    expect(screen.getByText('Kg')).toBeTruthy();
+    expect(screen.getByText('Weight')).toBeTruthy();
     expect(screen.queryByText('No heavier available')).toBeNull();
   });
 

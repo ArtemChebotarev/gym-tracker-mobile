@@ -44,6 +44,7 @@ beforeEach(async () => {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     completedAt: '2026-08-20T00:00:00.000Z',
   });
   mockPush.mockClear();

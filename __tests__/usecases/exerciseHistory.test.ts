@@ -17,6 +17,7 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
     status: 'active',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
     createdAt: '2026-08-01T08:00:00.000Z',
   },
   session: {
@@ -48,7 +49,12 @@ const PERFORMANCE: ExerciseHistoryPerformance = {
 function deps(performances: ExerciseHistoryPerformance[]): {
   exerciseHistoryRepo: ExerciseHistoryRepository;
 } {
-  return { exerciseHistoryRepo: { listByExerciseId: jest.fn().mockResolvedValue(performances) } };
+  return {
+    exerciseHistoryRepo: {
+      listByExerciseId: jest.fn().mockResolvedValue(performances),
+      getLastSet: jest.fn().mockResolvedValue(null),
+    },
+  };
 }
 
 describe('loadExerciseHistory', () => {

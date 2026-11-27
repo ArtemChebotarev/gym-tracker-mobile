@@ -66,7 +66,7 @@ describe('the cycle’s own exercise settings (GT-158)', () => {
   const groupOf = (...exercises: Exercise[]): ExerciseListGroup[] => [
     {
       muscleGroup: 'fullBody',
-      entries: exercises.map((exercise) => ({ exercise, lastSetLog: null, lastRoundLog: null })),
+      entries: exercises.map((exercise) => ({ exercise, lastSet: null, lastRoundLog: null })),
     },
   ];
 

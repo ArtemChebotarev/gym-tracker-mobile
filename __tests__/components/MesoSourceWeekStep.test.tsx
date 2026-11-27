@@ -21,6 +21,7 @@ function mesocycle(id: string, name: string): Mesocycle {
     status: 'completed',
     origin: { type: 'scratch' },
     progressionSettings: defaultProgressionSettings,
+    weightUnit: 'kg',
   };
 }
 

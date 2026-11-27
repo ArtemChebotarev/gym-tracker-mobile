@@ -8,9 +8,9 @@ targets and weights prefilled).
 ## Steps
 
 1. On the first strength exercise tap the ⓘ by the weight column.
-2. On set 1 change the weight by less than 20% of the prefilled one (e.g. 10 → 11 kg) and leave
+2. On set 1 change the weight by less than 20% of the prefilled one (e.g. 10 → 11) and leave
    the field.
-3. Change it by more than 20% but still inside the full range the ⓘ showed (e.g. 10 → 13 kg).
+3. Change it by more than 20% but still inside the full range the ⓘ showed (e.g. 10 → 13).
 4. Change it to much more than the range (e.g. double).
 5. Change it to much less (e.g. a quarter).
 6. Put the prefilled weight back.

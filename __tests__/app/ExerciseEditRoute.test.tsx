@@ -105,7 +105,7 @@ describe('Edit exercise page', () => {
     renderRoute();
     await screen.findByText('Edit exercise');
 
-    expect(screen.getByRole('button', { name: 'Kg' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByRole('button', { name: 'Weight' }).props.accessibilityState.selected).toBe(true);
     fireEvent.press(screen.getByRole('button', { name: 'Level' }));
     expect(screen.getByRole('button', { name: 'Level' }).props.accessibilityState.selected).toBe(
       true,

@@ -133,10 +133,22 @@ Cycle **A** is created from the "Upper / Lower + Boxing Hybrid" template cut to 
 | 6 | A completed | R-25, R-26 |
 | 7 | Cycle C copied from A | R-05, R-23 |
 | 8 | A and C in Completed | R-24 |
-| 9 | Any | R-27 – R-30 |
+| 9 | Any | R-27 – R-30, R-33 |
 | 10 | R-32 on the chain's data; then a fresh install (a backup restores only into an empty app) | R-32, R-31 |
 
 Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlight build.
+
+**A run in pounds.** Before step 2 set Settings → Weight unit to pounds: every cycle of the chain is
+then created in lb, and every weight on screen reads in lb. Examples in the scenarios that name a
+unit stand for the unit of the run. R-33 checks the two units side by side whichever the chain
+ran in.
+
+**R-31 and a new migration.** A backup restores only into a build with the same schema version.
+When the release under test adds a migration (1.1: `0013_mesocycle_weight_unit`), a file exported
+by the phone's older TestFlight build is refused on the simulator as written by a different
+version — expected, not a bug. Run R-31 once the phone has the TestFlight build of this release.
+Run against the older build, the import ends in that refusal (an error naming both versions, nothing
+restored): record it as expected, not as a failure.
 
 ## Scenario index
 
@@ -174,6 +186,7 @@ Phone scenarios D-01 – D-05 run separately, on real workouts with the TestFlig
 | [R-30](scenarios/R-30-timer-settings.md) | Timer settings take effect | P1 | 08 | Sim |
 | [R-31](scenarios/R-31-export-import.md) | Export on the phone → import on the simulator | P0 | 08 | Phone + Sim |
 | [R-32](scenarios/R-32-import-refusals.md) | Import: cancel changes nothing; an app with data and a wrong file are refused | P1 | 08 | Sim |
+| [R-33](scenarios/R-33-weight-unit.md) | Weight unit: Settings default, picked per cycle, history per unit | P0 | 08, 08.5, 08.6, 03 | Sim |
 | [D-01](scenarios/D-01-rest-notification.md) | Rest notification in the background and on the lock screen | P0 | 05, 08 | Phone |
 | [D-02](scenarios/D-02-real-workout.md) | An ordinary workout on the TestFlight build | P0 | 05, 08.7 | Phone |
 | [D-03](scenarios/D-03-sound-vibration.md) | In-app sound and vibration follow Settings | P1 | 08 | Phone |

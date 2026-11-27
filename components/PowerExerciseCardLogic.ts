@@ -4,19 +4,23 @@ import type { PowerLoad } from '@domain/exerciseConfig';
 import type { CeilingOption, PowerCeilingHint } from '@domain/powerCeilingHint';
 import { POWER_MAX_REPS } from '@domain/progressionCorridor';
 import type { WorkoutMode } from '@domain/workoutView';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { WorkoutSetRow } from '@usecases/workoutSession';
 
 import { powerNoHeavierLabel } from './ExerciseFormLogic';
 
-/** The Load column's header (10.1 FR-2, GT-82): what the load is — kilograms, a level, or the body. */
-export function powerLoadColumnLabel(load: PowerLoad): string {
+/**
+ * The Load column's header (10.1 FR-2, GT-82): what the load is — a weight in the block's unit, a
+ * level, or the body.
+ */
+export function powerLoadColumnLabel(load: PowerLoad, unit: WeightUnit): string {
   switch (load) {
     case 'level':
       return 'Level';
     case 'none':
-      return 'Bodyweight, kg';
+      return `Bodyweight, ${unit}`;
     case 'weight':
-      return 'Load, kg';
+      return `Load, ${unit}`;
   }
 }
 
@@ -55,9 +59,11 @@ const CEILING_OPTION_TEXT: Record<CeilingOption, string> = {
   'add-set': 'add a set',
 };
 
-/** What the note says about the load the exercise is at: the kilograms, or that it is a level. */
+/** What the note says about the load the exercise is at: the weight in the block's unit, or that it is a level. */
 export type CeilingNoteContext = {
   load: PowerLoad;
+  /** The block's unit, which `topWeight` is in. */
+  unit: WeightUnit;
   /** The heaviest weight in the exercise's rows, for "10 kg is the heaviest you have". */
   topWeight?: number;
 };
@@ -82,7 +88,7 @@ export function formatCeilingNote(
       ? 'This is the highest level you have.'
       : context.topWeight === undefined
         ? 'This is the heaviest you have.'
-        : `${context.topWeight} kg is the heaviest you have.`;
+        : `${context.topWeight} ${context.unit} is the heaviest you have.`;
   const icon: CeilingNoteIcon = isVariation
     ? 'swap'
     : first === undefined || (rest.length === 0 && first === 'add-set')

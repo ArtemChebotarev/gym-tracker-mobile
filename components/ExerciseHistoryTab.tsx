@@ -93,6 +93,7 @@ export function ExerciseHistoryTab({
           <ExerciseLogRows
             setLogs={item.setLogs}
             roundLogs={item.roundLogs}
+            weightUnit={item.weightUnit}
             equipment={equipment}
             powerLoad={powerLoad}
           />

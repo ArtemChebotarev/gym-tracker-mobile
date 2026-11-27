@@ -14,6 +14,7 @@ describe('the weight swap popover and note', () => {
         target: { targetReps, suggestedWeight },
         settings,
         isDeload: false,
+        weightUnit: 'kg',
         equipment: 'dumbbell' as const,
       }),
     };
@@ -25,6 +26,7 @@ describe('the weight swap popover and note', () => {
       target: { targetReps: 7, suggestedWeight: 16 },
       settings,
       isDeload: false,
+      weightUnit: 'kg',
       equipment: 'bodyweight-weighted' as const,
       bodyWeight: 83,
     }),
@@ -32,12 +34,12 @@ describe('the weight swap popover and note', () => {
 
   describe('weightSwapPopover', () => {
     test('an estimate is titled as one (task 134.1)', () => {
-      const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' });
+      const popover = weightSwapPopover({ ...rowWith(15, 4.5), estimate: 'other_slot' }, 'kg');
       expect(popover?.title).toBe('Current set estimate: 4.5 kg × 15');
     });
 
     test('the ranges of the set, from its own target and never from what is typed', () => {
-      const popover = weightSwapPopover(rowWith(10, 15));
+      const popover = weightSwapPopover(rowWith(10, 15), 'kg');
 
       expect(popover).toMatchObject({
                 title: 'Current set target: 15 kg × 10',
@@ -49,7 +51,7 @@ describe('the weight swap popover and note', () => {
     });
 
     test('the track is labelled at every bound it has, each value once', () => {
-      expect(weightSwapPopover(rowWith(10, 15))).toMatchObject({
+      expect(weightSwapPopover(rowWith(10, 15), 'kg')).toMatchObject({
         labels: [
           { value: 4, text: '4' },
           { value: 12, text: '12' },
@@ -60,7 +62,7 @@ describe('the weight swap popover and note', () => {
     });
 
     test('the legend names the close span, and what is left of the full one', () => {
-      expect(weightSwapPopover(rowWith(10, 15))).toMatchObject({
+      expect(weightSwapPopover(rowWith(10, 15), 'kg')).toMatchObject({
         legend: [
           { span: 'inner', label: 'Recommended weight', value: '12–17.5 kg' },
           { span: 'outer', label: 'Not ideal, but acceptable', value: '4–12 kg' },
@@ -71,7 +73,7 @@ describe('the weight swap popover and note', () => {
     test('a close span that reaches both ends leaves no estimate line to write', () => {
       // A dip's close span runs the whole corridor: the body weight is most of the load, so ±20%
       // of it covers every added weight there is.
-      expect(weightSwapPopover(dipRow)).toMatchObject({
+      expect(weightSwapPopover(dipRow, 'kg')).toMatchObject({
         title: 'Current set target: +16 kg × 7',
         legend: [{ span: 'inner', label: 'Recommended weight', value: '+0 to +22.5 kg' }],
       });
@@ -79,7 +81,7 @@ describe('the weight swap popover and note', () => {
 
     test('a close span narrower on both sides names both leftovers', () => {
       // 5 kg × 25: ±20% is 4–6 kg, while the rep corridor reaches from 3 to 13.
-      expect(weightSwapPopover(rowWith(25, 5))).toMatchObject({
+      expect(weightSwapPopover(rowWith(25, 5), 'kg')).toMatchObject({
         legend: [
           { span: 'inner', value: '4–6 kg' },
           { span: 'outer', value: '3–4 and 6–13 kg' },
@@ -89,45 +91,55 @@ describe('the weight swap popover and note', () => {
 
     test('with no history there are no ranges: the ⓘ opens "Finding your weight" instead', () => {
       expect(
-        weightSwapPopover({ setNumber: 1, weightSwap: { unavailable: 'no_history' } }),
+        weightSwapPopover({ setNumber: 1, weightSwap: { unavailable: 'no_history' } }, 'kg'),
       ).toBeUndefined();
     });
 
     test('no swap, no popover — a deload set or a pure bodyweight one', () => {
-      expect(weightSwapPopover({ setNumber: 1 })).toBeUndefined();
-      expect(weightSwapPopover(undefined)).toBeUndefined();
+      expect(weightSwapPopover({ setNumber: 1 }, 'kg')).toBeUndefined();
+      expect(weightSwapPopover(undefined, 'kg')).toBeUndefined();
     });
   });
 
   describe('estimateNote', () => {
     test('a weight that still hits the target needs no note', () => {
-      expect(estimateNote(rowWith(10, 15), '15', 2)).toBeUndefined();
-      expect(estimateNote(rowWith(10, 15), '14', 2)).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '15', 2, 'kg')).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '14', 2, 'kg')).toBeUndefined();
     });
 
     test('an estimate says where the number came from and what to go by instead', () => {
-      expect(estimateNote(rowWith(10, 15), '10', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '10', 2, 'kg')).toEqual({
         lead: '~ Estimated from 15 kg × 10.',
         text: 'Stop at 2 RIR, not at the number.',
       });
     });
 
     test('too heavy says how far the target still reaches', () => {
-      expect(estimateNote(rowWith(10, 15), '20', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '20', 2, 'kg')).toEqual({
         lead: '20 kg is too heavy for 5+ reps.',
         text: 'Up to 17.5 kg keeps a rep target.',
       });
     });
 
+    test('in the block’s unit (GT-269)', () => {
+      expect(estimateNote(rowWith(10, 15), '20', 2, 'lb')).toEqual({
+        lead: '20 lb is too heavy for 5+ reps.',
+        text: 'Up to 17.5 lb keeps a rep target.',
+      });
+      expect(estimateNote(rowWith(10, 15), '10', 2, 'lb')?.lead).toBe(
+        '~ Estimated from 15 lb × 10.',
+      );
+    });
+
     test('too light says where it starts again', () => {
-      expect(estimateNote(rowWith(10, 15), '2', 2)).toEqual({
+      expect(estimateNote(rowWith(10, 15), '2', 2, 'kg')).toEqual({
         lead: '2 kg is too light for 30 reps.',
         text: 'From 4 kg keeps a rep target.',
       });
     });
 
     test('on a weighted bodyweight set the weights read as added ones', () => {
-      expect(estimateNote(dipRow, '30', 2)).toEqual({
+      expect(estimateNote(dipRow, '30', 2, 'kg')).toEqual({
         lead: '+30 kg is too heavy for 5+ reps.',
         text: 'Up to +22.5 kg keeps a rep target.',
       });
@@ -136,14 +148,14 @@ describe('the weight swap popover and note', () => {
     // Task 134.1: the second reason — numbers from another day or block.
     test('an estimate from another slot says so, with nothing typed', () => {
       const row = { ...rowWith(15, 4.5), estimate: 'other_slot' as const };
-      expect(estimateNote(row, '4.5', 2)).toEqual({
+      expect(estimateNote(row, '4.5', 2, 'kg')).toEqual({
         lead: 'Approximate estimation based on your previous activity.',
         text: 'Stop at 2 RIR.',
       });
     });
 
     test('an estimate from another slot on a pure bodyweight set, with no swap at all', () => {
-      expect(estimateNote({ estimate: 'other_slot' }, '80', undefined)).toEqual({
+      expect(estimateNote({ estimate: 'other_slot' }, '80', undefined, 'kg')).toEqual({
         lead: 'Approximate estimation based on your previous activity.',
         text: 'Stop at the effort.',
       });
@@ -151,13 +163,13 @@ describe('the weight swap popover and note', () => {
 
     test('the weight in the field speaks first when it has moved the target away', () => {
       const row = { ...rowWith(10, 15), estimate: 'other_slot' as const };
-      expect(estimateNote(row, '20', 2)?.lead).toBe('20 kg is too heavy for 5+ reps.');
+      expect(estimateNote(row, '20', 2, 'kg')?.lead).toBe('20 kg is too heavy for 5+ reps.');
     });
 
     test('nothing typed, no note — and none without a swap behind the set', () => {
-      expect(estimateNote(rowWith(10, 15), '', 2)).toBeUndefined();
-      expect(estimateNote({ weightSwap: { unavailable: 'no_history' } }, '10', 2)).toBeUndefined();
-      expect(estimateNote(undefined, '10', 2)).toBeUndefined();
+      expect(estimateNote(rowWith(10, 15), '', 2, 'kg')).toBeUndefined();
+      expect(estimateNote({ weightSwap: { unavailable: 'no_history' } }, '10', 2, 'kg')).toBeUndefined();
+      expect(estimateNote(undefined, '10', 2, 'kg')).toBeUndefined();
     });
   });
 });
@@ -171,9 +183,11 @@ describe('the range track labels', () => {
           target: { targetReps, suggestedWeight },
           settings: defaultProgressionSettings,
           isDeload: false,
+          weightUnit: 'kg',
           equipment: 'dumbbell',
         }),
       },
+      'kg',
     );
     return popover?.labels.map((label) => label.text);
   }

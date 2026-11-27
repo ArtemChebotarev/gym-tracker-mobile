@@ -8,21 +8,25 @@
 import { isResistanceBand, usesAddedWeight } from '@domain/bodyWeightLoad';
 import type { Equipment } from '@domain/catalog';
 import { defaultProgressionSettings } from '@domain/mesocycle';
+import type { WeightUnit } from '@domain/weightUnit';
 import type { WorkoutMode } from '@domain/workoutView';
 import type { ExerciseWeightHint } from '@domain/workoutViewRules';
 
 import { type CorridorStepsPlate, repCorridorTrack } from './CorridorStepsPlateLogic';
 
 /**
- * The Weight column's header: `Weight, kg`, `Added, kg` on a weighted bodyweight exercise, and
- * `Bodyweight, kg` on a band — its field holds the body weight (`isPureBodyWeight`), as a power
- * exercise with no load does.
+ * The Weight column's header, in the block's unit: `Weight, kg`, `Added, kg` on a weighted
+ * bodyweight exercise, and `Bodyweight, kg` on a band — its field holds the body weight
+ * (`isPureBodyWeight`), as a power exercise with no load does.
  */
-export function strengthWeightColumnLabel(equipment: Equipment | undefined): string {
+export function strengthWeightColumnLabel(
+  equipment: Equipment | undefined,
+  unit: WeightUnit,
+): string {
   if (isResistanceBand(equipment)) {
-    return 'Bodyweight, kg';
+    return `Bodyweight, ${unit}`;
   }
-  return usesAddedWeight(equipment) ? 'Added, kg' : 'Weight, kg';
+  return usesAddedWeight(equipment) ? `Added, ${unit}` : `Weight, ${unit}`;
 }
 
 /** The card's weight hint line: `Go heavier — 30+ reps last week` / `Go lighter — under 5 reps…`. */

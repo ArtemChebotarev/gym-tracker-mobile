@@ -16,6 +16,7 @@ const PLANNED: Mesocycle = {
   status: 'planned',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   weekPlan: {
     days: [
       { dayNumber: 1, name: '', exercises: [{ exerciseId: 'bench-press', order: 0, sets: 3 }] },

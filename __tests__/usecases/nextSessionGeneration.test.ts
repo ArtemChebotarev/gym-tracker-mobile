@@ -32,6 +32,7 @@ const mesocycle: Mesocycle = {
   status: 'active',
   origin: { type: 'scratch' },
   progressionSettings: defaultProgressionSettings,
+  weightUnit: 'kg',
   createdAt: '2026-08-30T08:00:00.000Z',
 };
 

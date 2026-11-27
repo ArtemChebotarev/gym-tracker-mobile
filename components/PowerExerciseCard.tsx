@@ -76,11 +76,16 @@ export function PowerExerciseCard({
       ? undefined
       : formatCeilingNote(exercise.ceilingHint, {
           load: exercise.powerLoad,
+          unit: exercise.weightUnit,
           ...topWeightOf(exercise.rows),
         });
   const showsInfo = showsPowerInfo(mode, isDeload);
   // The ⓘ speaks for the set whose Log box carries the accent, as a strength card's does.
-  const target = powerTargetPlate(firstUnloggedRow(exercise.rows), exercise.powerLoad);
+  const target = powerTargetPlate(
+    firstUnloggedRow(exercise.rows),
+    exercise.powerLoad,
+    exercise.weightUnit,
+  );
   const loadCopy = firstWeightCopy('power', undefined, exercise.powerLoad);
   const infoAnchor = usePopoverAnchor();
 
@@ -157,7 +162,7 @@ export function PowerExerciseCard({
         <ExerciseColumnHeader
           columns={[
             {
-              label: powerLoadColumnLabel(exercise.powerLoad),
+              label: powerLoadColumnLabel(exercise.powerLoad, exercise.weightUnit),
               ...(showsInfo
                 ? {
                     info: {
@@ -186,6 +191,7 @@ export function PowerExerciseCard({
           loadEquipment={loadEquipment}
           guided
           raisedWeightReps={POWER_MIN_REPS}
+          weightUnit={exercise.weightUnit}
           editable={editable}
           isSaving={isSaving}
           {...sets}

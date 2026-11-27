@@ -25,6 +25,7 @@ import type {
 } from '@domain/execution';
 import { currentSession } from '@domain/mesoGridBuilders';
 import type { ProgressionSettings } from '@domain/mesocycle';
+import type { WeightUnit } from '@domain/weightUnit';
 import { canFinishMesocycle } from '@domain/mesocycleLifecycle';
 import { isDeloadWeek } from '@domain/mesocycleWeeks';
 import { DEFAULT_GET_READY_SEC } from '@domain/intervalTimer';
@@ -197,6 +198,8 @@ type WorkoutExerciseBase = {
  * a mobility one a single block, so neither carries these.
  */
 type SetRowsWorkoutExercise = WorkoutExerciseBase & {
+  /** The unit of every weight on the card — its block's (GT-269). */
+  weightUnit: WeightUnit;
   /**
    * Set rows are guided by their target, not scored against it (10.2 P11): no hit indicator, no
    * weight swap. Power and a resistance band; absent on every other exercise.
@@ -335,6 +338,8 @@ export type WorkoutSessionModel = {
   /** 0..1, for the progress bar. */
   progress: number;
   exercises: WorkoutExercise[];
+  /** The block's unit (GT-269): what its body weight and every weight on its cards are in. */
+  weightUnit: WeightUnit;
   /**
    * The block's body weight (task 105), for its bodyweight exercises: it fills a pure one's Weight
    * field and adds onto a weighted one's total. Absent until it's been asked for — the screen then
@@ -425,6 +430,8 @@ type SessionContext = {
   /** Get ready from Settings (GT-188). */
   getReadySec: number;
   isDeload: boolean;
+  /** The block's unit (GT-269). */
+  weightUnit: WeightUnit;
   bodyWeight?: number;
   referenceLogs: ReferenceLogs;
 };
@@ -487,6 +494,7 @@ function toRows(
           isDeload: context.isDeload,
           equipment: exercise.equipment,
           bodyWeight: context.bodyWeight,
+          weightUnit: context.weightUnit,
         });
     if (weightSwap !== undefined) {
       row.weightSwap = weightSwap;
@@ -582,6 +590,7 @@ function toSetRowsExercise(
   const plannedSetCount = sessionExercise.setTargets.length;
   const model: SetRowsWorkoutExercise = {
     ...base,
+    weightUnit: context.weightUnit,
     rows: toRows(tree, mode, context),
     plannedSetCount,
     loggedSetCount,
@@ -815,6 +824,7 @@ function fromTree(
     exerciseSettings: mesocycle.exerciseSettings ?? {},
     ...timers,
     isDeload: session.isDeload,
+    weightUnit: mesocycle.weightUnit,
     referenceLogs: referenceLogsOf(source),
   };
   if (mesocycle.bodyWeight !== undefined) {
@@ -826,6 +836,7 @@ function fromTree(
     mode,
     header,
     progress: sessionProgress(session, exercises),
+    weightUnit: mesocycle.weightUnit,
     exercises: exercises.map((exercise, index) =>
       toExercise(exercise, index, exercises.length, mode, context),
     ),
@@ -877,6 +888,7 @@ async function previewOf(
       isCompleted: false,
     },
     progress: 0,
+    weightUnit: tree.mesocycle.weightUnit,
     exercises: tree.exercises.map(({ sessionExercise, exercise }) => {
       const base: WorkoutExerciseBase = {
         sessionExerciseId: sessionExercise.id,
@@ -915,6 +927,7 @@ async function previewOf(
               }
             : {
               ...base,
+              weightUnit: tree.mesocycle.weightUnit,
               rows: [],
               plannedSetCount: 0,
               loggedSetCount: 0,

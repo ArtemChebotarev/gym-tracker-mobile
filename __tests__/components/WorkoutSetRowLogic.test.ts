@@ -55,6 +55,7 @@ describe('a set with an estimate', () => {
     target: row,
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'cable',
   });
 
@@ -229,6 +230,7 @@ describe('the row at another weight', () => {
     target: { targetReps: 10, suggestedWeight: 15 },
     settings: defaultProgressionSettings,
     isDeload: false,
+    weightUnit: 'kg',
     equipment: 'dumbbell',
   });
   const row = { targetReps: 10, suggestedWeight: 15, weightSwap: swap };
@@ -286,6 +288,7 @@ describe('the row at another weight', () => {
         target: { targetReps: 7, suggestedWeight: 16 },
         settings: defaultProgressionSettings,
         isDeload: false,
+        weightUnit: 'kg',
         equipment: 'bodyweight-weighted',
         bodyWeight: 83,
       }),
